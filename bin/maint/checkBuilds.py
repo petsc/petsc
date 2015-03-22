@@ -34,8 +34,10 @@ class BuildChecker(script.Script):
     import nargs,datetime
 
     help = script.Script.setupHelp(self, help)
+    webArchive = 'http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/archive/' + datetime.date.today().strftime("%Y/%m/%d/")
     help.addArgument('BuildCheck', '-remoteMachine',    nargs.Arg(None, 'login.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-logDirectory',     nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-webDirectory',     nargs.Arg(None, webArchive, 'The web address where PETSc logs are archived'))
     help.addArgument('BuildCheck', '-archCompilers',    nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
     help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 1, 'Generate blame emails'))
     help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 1, 'Ignore deprecated warnings'))
@@ -172,7 +174,7 @@ class BuildChecker(script.Script):
     relpath = os.path.relpath(absfile,topabsdir)
     return relpath
 
-  def addLineBlameDict(self,line,filename,ln,petscdir, commit, branch, arch, machine):
+  def addLineBlameDict(self,line,filename,ln,petscdir,commit,arch,logfile):
     ''' hack to avoid C++ instantiation sequences '''
     if re.search(r'instantiated from here',line):
       return
@@ -184,7 +186,7 @@ class BuildChecker(script.Script):
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
     relpath = self.fileNameToRelPath(filename,petscdir,arch)
-    message = '['+machine+','+arch+','+branch+'] '+message
+    message = '['+self.argDB['webDirectory']+logfile+']\n      '+message
     if (commit,relpath) not in self.commitfileDict:
       self.commitfileDict[(commit,relpath)] = {ln}
     else:
@@ -270,7 +272,7 @@ class BuildChecker(script.Script):
             if not type: type = 'Error'
             print 'From '+filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line')
             if addBlameDict and commit and petscdir:
-              self.addLineBlameDict(line,m.group('filename'),m.group('line'),petscdir,commit,branch,arch,machine)
+              self.addLineBlameDict(line,m.group('filename'),m.group('line'),petscdir,commit,arch,os.path.basename(filename))
           except IndexError:
             # For win32fe
             print 'From '+filename+': '+m.group('type')+' for '+m.group('filename')
@@ -338,12 +340,11 @@ class BuildChecker(script.Script):
 
 This email contains listings of contributions attributed to you by
 `git blame` that caused compiler errors or warnings in PETSc nightly
-build testing.  Warnings are labeled by the machine, PETSC_ARCH, and
-git branch that generated the warnings.  These warnings may be
-missing some context: for the full context, please go to the nightly
-build website [1] and find the corresponding log file: either
-build_(branch)_(PETSC_ARCH)_(machine).log, or
-examples_(branch)_(PETSC_ARCH)_(machine).log.
+build testing.  Warnings are labeled by the log file where they were
+found: the names of these log files indicate the git branch,
+PETSC_ARCH, and machine where they were generated.  These warnings
+may be missing some context: for the full context, please follow the
+links to see the full log files.
 
 Thanks,
   The PETSc development team
