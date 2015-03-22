@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# coding: utf-8
+
 import user
 import os
 import re
@@ -332,13 +334,7 @@ class BuildChecker(script.Script):
           self.blameDict[fullauthor].append((commit,key[1]+":"+lns[current],warnings))
     for author in self.blameDict.keys():
 
-      justaddress = re.search(r'<(?P<address>.*)>',author).group('address')
-      today = self.argDB['blameMailDate']
-      mailname = '-'.join(['blame',today,justaddress])
-      mail = open(mailname,"w")
-      mail.write("To: %s\n" % author)
-      mail.write("Subject: PETSc nightly blame digest, %s\n\n" % today)
-      mail.write('''Dear PETSc developer,
+      buf ='''Dear PETSc developer,
 
 This email contains listings of contributions attributed to you by
 `git blame` that caused compiler errors or warnings in PETSc nightly
@@ -353,7 +349,7 @@ Thanks,
   The PETSc development team
 
 [1] http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/%s
-''' % self.logurl)
+''' % self.logurl
 
       allwarnings = self.blameDict[author]
       allwarnings = sorted(allwarnings)
@@ -362,13 +358,39 @@ Thanks,
         newline = False
         warning = allwarnings[i]
         if i == 0 or not warning[0] == allwarnings[i-1][0]:
-          mail.write("\n---\n\nwarnings attributed to commit %s\n" % warning[0])
+          buf +="\n---\n\nwarnings attributed to commit %s\n" % warning[0]
           newcommit = True
         if newcommit or not warning[1] == allwarnings[i-1][1]:
-          mail.write("\n  %s\n" % warning[1])
+          buf +="\n  %s\n" % warning[1]
         for message in warning[2]:
-          mail.write("    %s\n" % message)
-      mail.write('\n')
+          buf +="    %s\n" % message
+      buf += '\n'
+
+      #The followng chars appear to cause grief to sendmail - so replace them
+      buf = buf.replace("‘","'").replace("’","'")
+
+      # now send e-mail
+      import smtplib
+      from email.mime.text import MIMEText
+
+      today = self.argDB['blameMailDate']
+      FROM = 'checkBuilds <petsc-dev@mcs.anl.gov>'
+      TO   =  [author,'bsmith@mcs.anl.gov','balay@mcs.anl.gov']
+
+      msg = MIMEText(buf)
+      msg['From'] = FROM
+      msg['To'] = ','.join(TO)
+      msg['Subject'] = "Subject: PETSc nightly blame digest, %s\n\n" % today
+
+      server = smtplib.SMTP('localhost')
+      server.sendmail(FROM, TO, msg.as_string())
+      server.quit()
+
+      # create log of e-mails sent in PETSC_DIR
+      justaddress = re.search(r'<(?P<address>.*)>',author).group('address')
+      mailname = '-'.join(['blame',today,justaddress])
+      mail = open(mailname,"w")
+      mail.write(msg.as_string())
       mail.close()
 
   def run(self):
