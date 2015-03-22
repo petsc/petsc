@@ -5277,13 +5277,14 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
 @*/
 PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
 {
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
 
   if(ts->adapt->wnormtype == NORM_2) {
+    PetscErrorCode    ierr;
     ierr = TSErrorWeightedNorm2(ts,Y,norm);
   } else if(ts->adapt->wnormtype == NORM_INFINITY) {
+    PetscErrorCode    ierr;
     ierr = TSErrorWeightedNormInfinity(ts,Y,norm);
   }
 
