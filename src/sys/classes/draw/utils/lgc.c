@@ -112,7 +112,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
-        if (lg->use_dots) {
+        if (lg->use_markers) {
           ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
         }
       }
@@ -184,7 +184,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
 
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
-  lg->use_dots= PETSC_FALSE;
+  lg->use_markers= PETSC_FALSE;
 
   ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis);CHKERRQ(ierr);
@@ -402,30 +402,30 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGIndicateDataPoints"
+#define __FUNCT__ "PetscDrawLGSetUseMarkers"
 /*@
-   PetscDrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
+   PetscDrawLGSetUseMarkers - Causes LG to draw a marker for each data-point.
 
    Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
 +  lg - the linegraph context
--  flg - should mark each data point 
+-  flg - should mark each data point
 
    Options Database:
-.  -lg_indicate_data_points  <true,false>
+.  -lg_use_markers  <true,false>
 
    Level: intermediate
 
    Concepts: line graph^showing points
 
 @*/
-PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG lg,PetscBool flg)
+PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
-  lg->use_dots = flg;
+  lg->use_markers = flg;
   PetscFunctionReturn(0);
 }
 
@@ -490,7 +490,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         if (lg->colors) cl = lg->colors[i];
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
-        if (lg->use_dots) {
+        if (lg->use_markers) {
           ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         }
       }
@@ -581,12 +581,10 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 PetscErrorCode  PetscDrawLGSetFromOptions(PetscDrawLG lg)
 {
   PetscErrorCode ierr;
-  PetscBool      flg,set;
+  PetscBool      flg=PETSC_FALSE, set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,"-lg_indicate_data_points",&flg,&set);CHKERRQ(ierr);
-  if (set) {
-    ierr = PetscDrawLGIndicateDataPoints(lg,flg);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsGetBool(NULL,"-lg_use_markers",&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscDrawLGSetUseMarkers(lg,flg);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

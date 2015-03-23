@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
-PETSC_EXTERN PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetColors(PetscDrawLG,const int*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetFromOptions(PetscDrawLG);
