@@ -40,7 +40,7 @@ class BuildChecker(script.Script):
     help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 1, 'Generate blame emails'))
     help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 1, 'Ignore deprecated warnings'))
     help.addArgument('BuildCheck', '-ignorePragma',     nargs.ArgBool(None, 1, 'Ignore unknown pragma'))
-    help.addArgument('BuildCheck', '-ignoreNote',       nargs.ArgBool(None, 0, 'Ignore note warnings'))
+    help.addArgument('BuildCheck', '-ignoreNote',       nargs.ArgBool(None, 1, 'Ignore note warnings'))
     help.addArgument('BuildCheck', '-blameMailDate',    nargs.Arg(None, str(datetime.date.today()), 'Date given in blame mail subject'))
     help.addArgument('BuildCheck', '-buildBranch',      nargs.Arg(None, '', 'Check build logs coresponding to given branch name'))
     return help
