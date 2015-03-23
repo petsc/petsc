@@ -54,24 +54,25 @@ struct _PetscDrawOps {
 
 struct _p_PetscDraw {
   PETSCHEADER(struct _PetscDrawOps);
-  PetscReal       pause;       /* sleep time after a synchronized flush */
-  PetscReal       port_xl,port_yl,port_xr,port_yr;
-  PetscReal       coor_xl,coor_yl,coor_xr,coor_yr;
-  PetscReal       currentpoint_x[20],currentpoint_y[20];
-  PetscReal       boundbox_xl,boundbox_yl,boundbox_xr,boundbox_yr; /* need to have this for each current point? */
-  PetscInt        currentpoint;
-  char            *title;
-  char            *display;
-  PetscDraw       popup;
-  int             x,y,h,w;
-  char            *savefilename;
-  char            *savefilenameext;
-  PetscInt        savefilecount;
-  PetscBool       savefilemovie;
-  PetscBool       saveonflush;       /* save a new image for every PetscDrawFlush() called */
-  PetscBool       savesinglefile;
-  char            *savefinalfilename;
-  void            *data;
+  PetscReal           pause;       /* sleep time after a synchronized flush */
+  PetscReal           port_xl,port_yl,port_xr,port_yr;
+  PetscReal           coor_xl,coor_yl,coor_xr,coor_yr;
+  PetscReal           currentpoint_x[20],currentpoint_y[20];
+  PetscReal           boundbox_xl,boundbox_yl,boundbox_xr,boundbox_yr; /* need to have this for each current point? */
+  PetscInt            currentpoint;
+  PetscDrawMarkerType markertype;
+  char                *title;
+  char                *display;
+  PetscDraw           popup;
+  int                 x,y,h,w;
+  char                *savefilename;
+  char                *savefilenameext;
+  PetscInt            savefilecount;
+  PetscBool           savefilemovie;
+  PetscBool           saveonflush;       /* save a new image for every PetscDrawFlush() called */
+  PetscBool           savesinglefile;
+  char                *savefinalfilename;
+  void                *data;
 };
 
 #endif

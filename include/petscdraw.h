@@ -91,7 +91,22 @@ PETSC_EXTERN PetscErrorCode PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscRe
 PETSC_EXTERN PetscErrorCode PetscDrawLineSetWidth(PetscDraw,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
+/*E
+    PetscDrawMarkerType - How a "mark" is indicate in a figure
+
+   Level: intermediate
+
+$  PETSC_MARK_X     - a small pixel based x symbol or the character x if that is not available
+$  PETSC_MARK_POINT - the make obtained with PetscDrawPoint()
+
+.seealso: PetscDrawMarker(), PetscDrawSetMarkerType()
+E*/
+typedef enum {PETSC_DRAW_MARKER_X, PETSC_DRAW_MARKER_POINT} PetscDrawMarkerType;
+PETSC_EXTERN const char *const PetscDrawMarkerTypes[];
+
 PETSC_EXTERN PetscErrorCode PetscDrawMarker(PetscDraw,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawSetMarkerType(PetscDraw,PetscDrawMarkerType);
+PETSC_EXTERN PetscErrorCode PetscDrawGetMarkerType(PetscDraw,PetscDrawMarkerType*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointPixel(PetscDraw,PetscInt,PetscInt,int);

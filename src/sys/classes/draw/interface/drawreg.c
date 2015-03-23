@@ -313,6 +313,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
 .   -nox_warning - when X windows support is not installed this prevents the warning message from being printed
 .   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
+.   -draw_marker_type - <x,point>
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
 .   -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
 .   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
@@ -392,6 +393,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #endif
   ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flg);CHKERRQ(ierr);
   if (flg) draw->pause = dpause;
+
+  ierr = PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL);CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
