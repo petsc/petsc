@@ -34,10 +34,8 @@ class BuildChecker(script.Script):
     import nargs,datetime
 
     help = script.Script.setupHelp(self, help)
-    webArchive = 'http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/archive/' + datetime.date.today().strftime("%Y/%m/%d/")
     help.addArgument('BuildCheck', '-remoteMachine',    nargs.Arg(None, 'login.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-logDirectory',     nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
-    help.addArgument('BuildCheck', '-webDirectory',     nargs.Arg(None, webArchive, 'The web address where PETSc logs are archived'))
     help.addArgument('BuildCheck', '-archCompilers',    nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
     help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 1, 'Generate blame emails'))
     help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 1, 'Ignore deprecated warnings'))
@@ -186,7 +184,7 @@ class BuildChecker(script.Script):
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
     relpath = self.fileNameToRelPath(filename,petscdir,arch)
-    message = '['+self.argDB['webDirectory']+logfile+']\n      '+message
+    message = '['+self.logurl+logfile+']\n      '+message
     if (commit,relpath) not in self.commitfileDict:
       self.commitfileDict[(commit,relpath)] = {ln}
     else:
@@ -348,9 +346,7 @@ links to see the full log files.
 
 Thanks,
   The PETSc development team
-
-[1] http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/%s
-''' % self.logurl
+'''
 
       allwarnings = self.blameDict[author]
       allwarnings = sorted(allwarnings)
@@ -398,7 +394,7 @@ Thanks,
     self.setup()
     self.isLocal = os.path.isdir(self.argDB['logDirectory'])
     if self.argDB['logDirectory'].startswith('/mcs/ftp/pub/petsc/nightlylogs/'):
-      self.logurl = self.argDB['logDirectory'].replace('/mcs/ftp/pub/petsc/nightlylogs/','')
+      self.logurl = self.argDB['logDirectory'].replace('/mcs/ftp/pub/petsc/nightlylogs/','http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/')
     else:
       self.logurl=''
     print self.isLocal
