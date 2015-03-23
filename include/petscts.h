@@ -39,6 +39,7 @@ typedef const char* TSType;
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
 #define TSEIMEX           "eimex"
+#define TSMIMEX           "mimex"
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -325,6 +326,7 @@ PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,vo
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeSolutionFunction(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeIJacobianDefaultColor(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS,PetscReal));

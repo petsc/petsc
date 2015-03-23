@@ -44,6 +44,7 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_rtol <rtol> - relative tolerance for local truncation error
 .  -ts_atol <atol> Absolute tolerance for local truncation error
 .  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
+.  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_solution - Monitor solution graphically
@@ -318,6 +319,19 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
     ierr = TSMonitorEnvelopeCtxCreate(ts,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorEnvelope,ctx,(PetscErrorCode (*)(void**))TSMonitorEnvelopeCtxDestroy);CHKERRQ(ierr);
+  }
+
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_fd_color", "Use finite differences with coloring to compute IJacobian", "TSComputeJacobianDefaultColor", flg, &flg, NULL);CHKERRQ(ierr);
+  if (flg) {
+    DM   dm;
+    DMTS tdm;
+
+    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+    ierr = DMGetDMTS(dm, &tdm);CHKERRQ(ierr);
+    tdm->ijacobianctx = NULL;
+    ierr = TSSetIJacobian(ts, NULL, NULL, TSComputeIJacobianDefaultColor, 0);CHKERRQ(ierr);
+    ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
   /*
@@ -3251,6 +3265,11 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ts->reason            = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
+  {
+    DM dm;
+    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+    ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+  }
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
@@ -6364,3 +6383,89 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeIJacobianDefaultColor"
+/*@C
+  TSComputeIJacobianDefaultColor - Computes the Jacobian using finite differences and coloring to exploit matrix sparsity.
+
+  Collective on SNES
+
+  Input Parameters:
++ ts - the TS context
+. t - current timestep
+. U - state vector
+. Udot - time derivative of state vector
+. shift - shift to apply, see note below
+- ctx - an optional user context
+
+  Output Parameters:
++ J - Jacobian matrix (not altered in this routine)
+- B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
+
+  Level: intermediate
+
+  Notes:
+  If F(t,U,Udot)=0 is the DAE, the required Jacobian is
+
+  dF/dU + shift*dF/dUdot
+
+  Most users should not need to explicitly call this routine, as it
+  is used internally within the nonlinear solvers.
+
+  This will first try to get the coloring from the DM.  If the DM type has no coloring
+  routine, then it will try to get the coloring from the matrix.  This requires that the
+  matrix have nonzero entries precomputed.
+
+.keywords: TS, finite differences, Jacobian, coloring, sparse
+.seealso: TSSetIJacobian(), MatFDColoringCreate(), MatFDColoringSetFunction()
+@*/
+PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat J,Mat B,void *ctx)
+{
+  SNES           snes;
+  MatFDColoring  color;
+  PetscBool      hascolor, matcolor = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(((PetscObject) ts)->prefix, "-ts_fd_color_use_mat", &matcolor, NULL);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) B, "TSMatFDColoring", (PetscObject *) &color);CHKERRQ(ierr);
+  if (!color) {
+    DM         dm;
+    ISColoring iscoloring;
+
+    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+    ierr = DMHasColoring(dm, &hascolor);CHKERRQ(ierr);
+    if (hascolor && !matcolor) {
+      ierr = DMCreateColoring(dm, IS_COLORING_GLOBAL, &iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(B, iscoloring, &color);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(color, (PetscErrorCode (*)(void)) SNESTSFormFunction, (void *) ts);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
+      ierr = MatFDColoringSetUp(B, iscoloring, color);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    } else {
+      MatColoring mc;
+
+      ierr = MatColoringCreate(B, &mc);CHKERRQ(ierr);
+      ierr = MatColoringSetDistance(mc, 2);CHKERRQ(ierr);
+      ierr = MatColoringSetType(mc, MATCOLORINGSL);CHKERRQ(ierr);
+      ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+      ierr = MatColoringApply(mc, &iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(B, iscoloring, &color);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(color, (PetscErrorCode (*)(void)) SNESTSFormFunction, (void *) ts);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
+      ierr = MatFDColoringSetUp(B, iscoloring, color);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectCompose((PetscObject) B, "TSMatFDColoring", (PetscObject) color);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject) color);CHKERRQ(ierr);
+  }
+  ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
+  ierr = MatFDColoringApply(B, color, U, snes);CHKERRQ(ierr);
+  if (J != B) {
+    ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

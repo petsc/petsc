@@ -195,6 +195,10 @@ PetscSF Object: 2 MPI processes
 1 2
 2 0
 3 8
+[0]: component 0, Found representative leaf 3 (face 10) connecting to face 13 on (1, 0) with orientation -1
+Proc 0 Comp 0:
+  edge (1, 0) (1):
+Proc 1 Comp 0:
 [0]BT for parallel flipped cells:
 0 0
 1 2

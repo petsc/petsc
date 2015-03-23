@@ -24,6 +24,8 @@ struct _p_PetscDS {
   void        *data;      /* Implementation object */
   PetscBool    setup;     /* Flag for setup */
   PetscInt     Nf;        /* The number of solution fields */
+  PetscBool   *implicit;  /* Flag for implicit or explicit solve */
+  PetscBool   *adjacency; /* Flag for variable influence */
   PetscObject *disc;      /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscObject *discBd;    /* The boundary discretization for each solution field (PetscFE, PetscFV, etc.) */
   PointFunc   *obj;       /* Scalar integral (like an objective function) */

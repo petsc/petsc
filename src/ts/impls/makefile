@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = explicit implicit pseudo python arkimex rosw eimex
+DIRS     = explicit implicit pseudo python arkimex rosw eimex mimex
 LOCDIR   = src/ts/impls/
 MANSEC   = TS
 

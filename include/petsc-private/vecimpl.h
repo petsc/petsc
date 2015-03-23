@@ -364,6 +364,8 @@ PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 #endif
 
+PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
+PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

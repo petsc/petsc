@@ -6,9 +6,10 @@
 #include <petscbt.h>
 #include <petscsf.h>
 #include <petsc-private/dmimpl.h>
+#include <petsc-private/isimpl.h>     /* for inline access to atlasOff */
 #include <../src/sys/utils/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
@@ -222,6 +223,7 @@ PETSC_EXTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const Pe
 PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer, PetscBool, PetscBool, GmshElement *);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
@@ -326,5 +328,113 @@ PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const Petsc
 #define __FUNCT__ "DMPlex_NormD_Internal"
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLocalOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    ierr = PetscSectionGetOffset(dm->defaultSection,point,offset);CHKERRQ(ierr);
+  }
+#else
+  {
+    const PetscSection s = dm->defaultSection;
+    *offset = s->atlasOff[point - s->pStart];
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLocalFieldOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm,PetscInt point,PetscInt field,PetscInt *offset)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    ierr = PetscSectionGetFieldOffset(dm->defaultSection,point,field,offset);CHKERRQ(ierr);
+  }
+#else
+  {
+    const PetscSection s = dm->defaultSection->field[field];
+    *offset = s->atlasOff[point - s->pStart];
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetGlobalOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    PetscInt       dof,cdof;
+    ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);
+    *end = *start + dof-cdof;
+  }
+#else
+  {
+    const PetscSection s    = dm->defaultGlobalSection;
+    const PetscInt     dof  = s->atlasDof[point - s->pStart];
+    const PetscInt     cdof = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
+    *start = s->atlasOff[point - s->pStart];
+    *end   = *start + dof-cdof;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetGlobalFieldOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt       loff, lfoff, fdof, fcdof, ffcdof, f;
+    PetscErrorCode ierr;
+
+    ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(dm->defaultSection, point, &loff);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, &lfoff);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &fdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, field, &fcdof);CHKERRQ(ierr);
+    *start += lfoff - loff;
+    for (f = 0; f < field; ++f) {
+      ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, f, &ffcdof);CHKERRQ(ierr);
+      *start -= ffcdof;
+    }
+    *end = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
+  }
+#else
+  {
+    const PetscSection s     = dm->defaultSection;
+    const PetscSection fs    = dm->defaultSection->field[field];
+    const PetscSection gs    = dm->defaultGlobalSection;
+    const PetscInt     loff  = s->atlasOff[point - s->pStart];
+    const PetscInt     lfoff = fs->atlasOff[point - s->pStart];
+    const PetscInt     fdof  = fs->atlasDof[point - s->pStart];
+    const PetscInt     fcdof = fs->bc ? fs->bc->atlasDof[point - fs->bc->pStart] : 0;
+    PetscInt           ffcdof = 0, f;
+
+    for (f = 0; f < field; ++f) {
+      const PetscSection ffs = dm->defaultSection->field[f];
+      ffcdof += ffs->bc ? ffs->bc->atlasDof[point - ffs->bc->pStart] : 0;
+    }
+    *start = gs->atlasOff[point - s->pStart] + lfoff - loff - ffcdof;
+    *end = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
 
 #endif /* _PLEXIMPL_H */

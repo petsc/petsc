@@ -167,6 +167,17 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelView"
+/*@C
+  DMLabelView - View the label
+
+  Input Parameters:
++ label - The DMLabel
+- viewer - The PetscViewer
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelDestroy()
+@*/
 PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 {
   PetscBool      iascii;

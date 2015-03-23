@@ -4,7 +4,7 @@
 #include <petscds.h>
 
 /* Logging support */
-PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
@@ -14,7 +14,7 @@ PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 #define __FUNCT__ "DMPlexGetFieldType_Internal"
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
-  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, vdof = 0, cdof = 0;
+  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, cEndInterior, vdof = 0, cdof = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -22,6 +22,8 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   if (field >= 0) {
     if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vdof);CHKERRQ(ierr);}
@@ -679,7 +681,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
 #define __FUNCT__ "DMCreateMatrix_Plex"
 PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 {
-  PetscSection   section, sectionGlobal;
+  PetscSection   sectionGlobal;
   PetscInt       bs = -1;
   PetscInt       localSize;
   PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
@@ -690,7 +692,6 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscFunctionBegin;
   ierr = MatInitializePackage();CHKERRQ(ierr);
   mtype = dm->mattype;
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   /* ierr = PetscSectionGetStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr); */
   ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
@@ -742,7 +743,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       }
     }
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
-    ierr = DMPlexPreallocateOperator(dm, bs, section, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
+    ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
 
     /* Set localtoglobalmapping on the matrix for MatSetValuesLocal() to work */
@@ -2458,7 +2459,58 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexLocalizeCoordinate"
+/*@
+  DMPlexLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
+
+  Input Parameters:
++ dm     - The DM
+- in     - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out - The localized coordinate point
+
+  Level: developer
+
+.seealso: DMPlexLocalizeCoordinates(), DMPlexLocalizeAddCoordinate()
+@*/
+PetscErrorCode DMPlexLocalizeCoordinate(DM dm, const PetscScalar in[], PetscScalar out[])
+{
+  PetscInt       dim, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] = in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      out[d] = in[d] - dm->L[d]*floor(PetscRealPart(in[d])/dm->L[d]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexLocalizeCoordinate_Internal"
+/*
+  DMPlexLocalizeCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
+
+  Input Parameters:
++ dm     - The DM
+. dim    - The spatial dimension
+. anchor - The anchor point, the input point can be no more than maxCell away from it
+- in     - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out - The localized coordinate point
+
+  Level: developer
+
+  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+
+.seealso: DMPlexLocalizeCoordinates(), DMPlexLocalizeAddCoordinate()
+*/
 PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
   PetscInt d;
@@ -2477,9 +2529,48 @@ PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM dm, PetscInt dim, const Pets
   }
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexLocalizeCoordinateReal_Internal"
+PetscErrorCode DMPlexLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] = in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      if (PetscAbsReal(anchor[d] - in[d]) > dm->maxCell[d]) {
+        out[d] = anchor[d] > in[d] ? dm->L[d] + in[d] : in[d] - dm->L[d];
+      } else {
+        out[d] = in[d];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexLocalizeAddCoordinate_Internal"
+/*
+  DMPlexLocalizeAddCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
+
+  Input Parameters:
++ dm     - The DM
+. dim    - The spatial dimension
+. anchor - The anchor point, the input point can be no more than maxCell away from it
+. in     - The input coordinate delta (dim numbers)
+- out    - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out    - The localized coordinate in + out
+
+  Level: developer
+
+  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+
+.seealso: DMPlexLocalizeCoordinates(), DMPlexLocalizeCoordinate()
+*/
 PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
   PetscInt d;
@@ -2501,6 +2592,16 @@ PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexLocalizeCoordinates"
+/*@
+  DMPlexLocalizeCoordinates - If a mesh is periodic, create local coordinates for each cell
+
+  Input Parameter:
+. dm - The DM
+
+  Level: developer
+
+.seealso: DMPlexLocalizeCoordinate(), DMPlexLocalizeAddCoordinate()
+@*/
 PetscErrorCode DMPlexLocalizeCoordinates(DM dm)
 {
   PetscSection   coordSection, cSection;

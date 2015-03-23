@@ -121,11 +121,13 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 {
   IS              valueIS;
   const PetscInt *values;
-  PetscInt        numValues, v, cStart, cEnd;
+  PetscInt        numValues, v, cStart, cEnd, cEndInterior;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
   ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
   ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
@@ -139,11 +141,13 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
       PetscInt *closure = NULL;
-      PetscInt  closureSize, point;
+      PetscInt  closureSize, point, cl;
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closure);CHKERRQ(ierr);
-      point = closure[(closureSize-1)*2];
-      if ((point >= cStart) && (point < cEnd)) {ierr = DMLabelSetValue(label, point, values[v]);CHKERRQ(ierr);}
+      for (cl = closureSize-1; cl > 0; --cl) {
+        point = closure[cl*2];
+        if ((point >= cStart) && (point < cEnd)) {ierr = DMLabelSetValue(label, point, values[v]);CHKERRQ(ierr); break;}
+      }
       ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
@@ -576,8 +580,9 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   /* Step 7: Periodicity */
   if (dm->maxCell) {
     const PetscReal *maxCell, *L;
-    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(gdm,  maxCell,  L);CHKERRQ(ierr);
+    const DMBoundaryType *bd;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(gdm,  maxCell,  L,  bd);CHKERRQ(ierr);
   }
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);

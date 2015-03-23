@@ -48,6 +48,10 @@ PETSC_EXTERN PetscErrorCode PetscDSAddDiscretization(PetscDS, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdDiscretization(PetscDS, PetscInt, PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscDSSetBdDiscretization(PetscDS, PetscInt, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscDSAddBdDiscretization(PetscDS, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscDSGetImplicit(PetscDS, PetscInt, PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscDSSetImplicit(PetscDS, PetscInt, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscDSGetAdjacency(PetscDS, PetscInt, PetscBool*, PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscDSSetAdjacency(PetscDS, PetscInt, PetscBool,  PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDSGetObjective(PetscDS, PetscInt, void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSSetObjective(PetscDS, PetscInt, void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetResidual(PetscDS, PetscInt,

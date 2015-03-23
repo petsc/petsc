@@ -778,6 +778,12 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
+  ierr = PetscOptionsString("-snes_monitor_field","Monitor norm of function (split into fields)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(snes,SNESMonitorDefaultField,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)snes,monfilename);CHKERRQ(ierr);}
 
@@ -1212,10 +1218,13 @@ PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
    Output Parameter:
 .  nfails - number of failed solves
 
+   Level: intermediate
+
+   Options Database Keys:
+. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
+
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
-
-   Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 
@@ -1243,6 +1252,9 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
 -  maxFails - maximum allowed linear solve failures
 
    Level: intermediate
+
+   Options Database Keys:
+. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
 
    Notes: By default this is 0; that is SNES returns on the first failed linear solve
 
