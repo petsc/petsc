@@ -201,7 +201,7 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
 
 .seealso: KSPMonitorLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorDefault()
 @*/
-PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
+PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -216,7 +216,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host
   ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norms");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
- ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
   (*objs)[0] = (PetscObject)draw;
   (*objs)[1] = (PetscObject)win;
   PetscFunctionReturn(0);
