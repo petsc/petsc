@@ -583,9 +583,9 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
         }
         break;
       case OPTION_SCALAR_ARRAY:
-        sprintf(value,"%g+%gi",(double)PetscRealPart(((PetscReal*)PetscOptionsObject->next->data)[0]),(double)PetscImaginaryPart(((PetscReal*)PetscOptionsObject->next->data)[0]));
+        sprintf(value,"%g+%gi",(double)PetscRealPart(((PetscScalar*)PetscOptionsObject->next->data)[0]),(double)PetscImaginaryPart(((PetscScalar*)PetscOptionsObject->next->data)[0]));
         for (j=1; j<PetscOptionsObject->next->arraylength; j++) {
-          sprintf(tmp,"%g+%gi",(double)PetscRealPart(((PetscReal*)PetscOptionsObject->next->data)[j]),(double)PetscImaginaryPart(((PetscReal*)PetscOptionsObject->next->data)[j]));
+          sprintf(tmp,"%g+%gi",(double)PetscRealPart(((PetscScalar*)PetscOptionsObject->next->data)[j]),(double)PetscImaginaryPart(((PetscScalar*)PetscOptionsObject->next->data)[j]));
           ierr = PetscStrcat(value,",");CHKERRQ(ierr);
           ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
         }
@@ -1412,9 +1412,9 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptions *PetscOptionsObject,
   }
   ierr = PetscOptionsGetScalarArray(PetscOptionsObject->prefix,opt,value,n,set);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,(double)value[0]);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g+%gi",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,(double)PetscRealPart(value[0]),(double)PetscImaginaryPart(value[0]));CHKERRQ(ierr);
     for (i=1; i<*n; i++) {
-      ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,",%g",(double)value[i]);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,",%g+%gi",(double)PetscRealPart(value[i]),(double)PetscImaginaryPart(value[i]));CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,">: %s (%s)\n",text,ManSection(man));CHKERRQ(ierr);
   }
