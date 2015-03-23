@@ -217,7 +217,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
       goto reject_step;
     }
 
-    /* This in only used in the context of TSAdjoint. Evaluate cost integral if there is any */
+    /* This is only used in the context of TSAdjoint. Evaluate cost integral if there is any */
     if (ts->vec_costintegral) {
       /* Evolve ts->vec_costintegral to compute integrals */
       if (th->endpoint) {
