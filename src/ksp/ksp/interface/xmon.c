@@ -43,6 +43,7 @@ PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char labe
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norm");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
@@ -211,6 +212,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,2,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norms");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
