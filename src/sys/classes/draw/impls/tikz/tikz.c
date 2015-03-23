@@ -52,7 +52,7 @@ PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_DOCUMENT);CHKERRQ(ierr);
   ierr = PetscFClose(PetscObjectComm((PetscObject)draw),win->fd);CHKERRQ(ierr);
   ierr = PetscFree(win->filename);CHKERRQ(ierr);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
