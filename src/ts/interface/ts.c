@@ -2465,7 +2465,7 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
-  if (!ts->numcost) {ts->numcost=numcost;}
+  if (!ts->numcost) ts->numcost=numcost;
 
   ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
