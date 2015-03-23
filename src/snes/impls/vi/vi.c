@@ -102,7 +102,7 @@ PetscErrorCode  SNESVIMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,vo
   ierr = VecDuplicate(F,&Finactive);CHKERRQ(ierr);
   ierr = VecCopy(F,Finactive);CHKERRQ(ierr);
   ierr = VecISSet(Finactive,isactive,0.0);CHKERRQ(ierr);
-
+  ierr = ISDestroy(&isactive);CHKERRQ(ierr);
   if (!viewer) {
     viewer = PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes));
   }
@@ -592,6 +592,7 @@ PetscErrorCode SNESSetFromOptions_VI(PetscOptions *PetscOptionsObject,SNES snes)
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESMonitorVI,0,0);CHKERRQ(ierr);
   }
+  flg = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_vi_monitor_residual","Monitor residual all non-active variables; using zero for active constraints","SNESMonitorVIResidual",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL);CHKERRQ(ierr);
