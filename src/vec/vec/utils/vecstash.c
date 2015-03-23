@@ -424,7 +424,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
     }
     stash->n = j + 1;
   } else {                      /* block stash */
-    PetscInt *perm;
+    PetscInt *perm = NULL;
     PetscScalar *arr;
     ierr = PetscMalloc2(stash->n,&perm,stash->n*bs,&arr);CHKERRQ(ierr);
     for (i=0; i<stash->n; i++) perm[i] = i;
