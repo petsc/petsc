@@ -217,6 +217,21 @@ static PetscErrorCode TSStep_Theta(TS ts)
       goto reject_step;
     }
 
+    /* This in only used in the context of TSAdjoint. Evaluate cost integral if there is any */
+    if (ts->vec_costintegral) {
+      /* Evolve ts->vec_costintegral to compute integrals */
+      if (th->endpoint) {
+        ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,th->X0,ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(1.-th->Theta),ts->vec_costintegrand);CHKERRQ(ierr);
+      }
+      ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+      if (th->endpoint) {
+        ierr = VecAXPY(ts->vec_costintegral,ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
+      }else {
+        ierr = VecAXPY(ts->vec_costintegral,ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
+      }
+    }
+
     /* ignore next_scheme for now */
     ts->ptime    += ts->time_step;
     ts->time_step = next_time_step;
@@ -291,6 +306,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
+    }
+    if (!ts->costintegraldone) {
       /* Evolve ts->vec_costintegral to compute integrals */
       ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
@@ -332,6 +349,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
+    }
+    if (!ts->costintegraldone) {
       /* Evolve ts->vec_costintegral to compute integrals */
       ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costintegral,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);

@@ -2341,6 +2341,7 @@ PetscErrorCode  TSAdjointSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec
   PetscValidPointer(lambda,2);
   ts->vecs_sensi  = lambda;
   ts->vecs_sensip = mu;
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostIntegrand");
   ts->numcost  = numcost;
   PetscFunctionReturn(0);
 }
@@ -2463,8 +2464,8 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetCostGradients() first so that the number of cost functions can be determined.");
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
+  if (!ts->numcost) {ts->numcost=numcost;}
 
   ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
@@ -3309,6 +3310,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
+  if (ts->vec_costintegral) ts->costintegraldone=PETSC_TRUE;
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   }
