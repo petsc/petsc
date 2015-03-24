@@ -290,6 +290,15 @@ extern "C" {
       self.logPrint('Warning: <fenv.h> with FE_DFL_ENV not found')
     return
 
+  def checkMathLog2(self):
+    '''Check for log2() in libm, the math library'''
+    if not self.math is None and self.check(self.math, ['log2'], prototype = ['double log2(double);'], call = ['double x = 1,y; y = log2(x);\n']):
+      self.logPrint('log2() found')
+      self.addDefine('HAVE_LOG2', 1)
+    else:
+      self.logPrint('Warning: log2() not found')
+    return
+
   def checkCompression(self):
     '''Check for libz, the compression library'''
     self.compression = None
@@ -488,6 +497,7 @@ int checkInit(void) {
     self.executeTest(self.checkMathErf)
     self.executeTest(self.checkMathTgamma)
     self.executeTest(self.checkMathFenv)
+    self.executeTest(self.checkMathLog2)
     self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
