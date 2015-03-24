@@ -1,65 +1,67 @@
-static char help[] =  "   Solves the compressible plane strain elasticity equations in 2d on the unit domain using Q1 finite elements. \n\
-   Material properties E (Youngs modulus) and nu (Poisson ratio) may vary as a function of space. \n\
-   The model utilises boundary conditions which produce compression in the x direction. \n\
-Options: \n\
-     -mx : number of elements in x-direction \n\
-     -my : number of elements in y-direction \n\
-     -c_str : indicates the structure of the coefficients to use. \n\
-          -c_str 0 => Setup for an isotropic material with constant coefficients. \n\
-                         Parameters: \n\
-                             -iso_E  : Youngs modulus \n\
-                             -iso_nu : Poisson ratio \n\
-          -c_str 1 => Setup for a step function in the material properties in x. \n\
-                         Parameters: \n\
-                              -step_E0  : Youngs modulus to the left of the step \n\
-                              -step_nu0 : Poisson ratio to the left of the step \n\
-                              -step_E1  : Youngs modulus to the right of the step \n\
-                              -step_n1  : Poisson ratio to the right of the step \n\
-                              -step_xc  : x coordinate of the step \n\
-          -c_str 2 => Setup for a checkerboard material with alternating properties. \n\
-                      Repeats the following pattern throughout the domain. For example with 4 materials specified, we would heve \n\
-                      -------------------------\n\
-                      |  D  |  A  |  B  |  C  |\n\
-                      ------|-----|-----|------\n\
-                      |  C  |  D  |  A  |  B  |\n\
-                      ------|-----|-----|------\n\
-                      |  B  |  C  |  D  |  A  |\n\
-                      ------|-----|-----|------\n\
-                      |  A  |  B  |  C  |  D  |\n\
-                      -------------------------\n\
-                      \n\
-                         Parameters: \n\
-                              -brick_E    : a comma separated list of Young's modulii \n\
-                              -brick_nu   : a comma separated list of Poisson ratios  \n\
-                              -brick_span : the number of elements in x and y each brick will span \n\
-          -c_str 3 => Setup for a sponge-like material with alternating properties. \n\
-                      Repeats the following pattern throughout the domain \n\
-                      -----------------------------\n\
-                      |       [background]        |\n\
-                      |          E0,nu0           |\n\
-                      |     -----------------     |\n\
-                      |     |  [inclusion]  |     |\n\
-                      |     |    E1,nu1     |     |\n\
-                      |     |               |     |\n\
-                      |     | <---- w ----> |     |\n\
-                      |     |               |     |\n\
-                      |     |               |     |\n\
-                      |     -----------------     |\n\
-                      |                           |\n\
-                      |                           |\n\
-                      -----------------------------\n\
-                      <--------  t + w + t ------->\n\
-                      \n\
-                         Parameters: \n\
-                              -sponge_E0  : Youngs modulus of the surrounding material \n\
-                              -sponge_E1  : Youngs modulus of the inclusion \n\
-                              -sponge_nu0 : Poisson ratio of the surrounding material \n\
-                              -sponge_nu1 : Poisson ratio of the inclusion \n\
-                              -sponge_t   : the number of elements defining the border around each inclusion \n\
-                              -sponge_w   : the number of elements in x and y each inclusion will span\n\
-     -use_gp_coords : Evaluate the Youngs modulus, Poisson ratio and the body force at the global coordinates of the quadrature points.\n\
-     By default, E, nu and the body force are evaulated at the element center and applied as a constant over the entire element.\n\
-     -use_nonsymbc : Option to use non-symmetric boundary condition imposition. This choice will use less memory.";
+static char help[] =  "   Solves the compressible plane strain elasticity equations in 2d on the unit domain using Q1 finite elements.\n\n";
+/*
+   Material properties E (Youngs modulus) and nu (Poisson ratio) may vary as a function of space.
+   The model utilises boundary conditions which produce compression in the x direction.
+Options:
+     -mx : number of elements in x-direction
+     -my : number of elements in y-direction
+     -c_str : indicates the structure of the coefficients to use.
+          -c_str 0 => Setup for an isotropic material with constant coefficients.
+                         Parameters:
+                             -iso_E  : Youngs modulus
+                             -iso_nu : Poisson ratio
+          -c_str 1 => Setup for a step function in the material properties in x.
+                         Parameters:
+                              -step_E0  : Youngs modulus to the left of the step
+                              -step_nu0 : Poisson ratio to the left of the step
+                              -step_E1  : Youngs modulus to the right of the step
+                              -step_n1  : Poisson ratio to the right of the step
+                              -step_xc  : x coordinate of the step
+          -c_str 2 => Setup for a checkerboard material with alternating properties.
+                      Repeats the following pattern throughout the domain. For example with 4 materials specified, we would heve
+                      -------------------------
+                      |  D  |  A  |  B  |  C  |
+                      ------|-----|-----|------
+                      |  C  |  D  |  A  |  B  |
+                      ------|-----|-----|------
+                      |  B  |  C  |  D  |  A  |
+                      ------|-----|-----|------
+                      |  A  |  B  |  C  |  D  |
+                      -------------------------
+                     
+                         Parameters:
+                              -brick_E    : a comma separated list of Young's modulii
+                              -brick_nu   : a comma separated list of Poisson ratios 
+                              -brick_span : the number of elements in x and y each brick will span
+          -c_str 3 => Setup for a sponge-like material with alternating properties.
+                      Repeats the following pattern throughout the domain
+                      -----------------------------
+                      |       [background]        |
+                      |          E0,nu0           |
+                      |     -----------------     |
+                      |     |  [inclusion]  |     |
+                      |     |    E1,nu1     |     |
+                      |     |               |     |
+                      |     | <---- w ----> |     |
+                      |     |               |     |
+                      |     |               |     |
+                      |     -----------------     |
+                      |                           |
+                      |                           |
+                      -----------------------------
+                      <--------  t + w + t ------->
+                     
+                         Parameters:
+                              -sponge_E0  : Youngs modulus of the surrounding material
+                              -sponge_E1  : Youngs modulus of the inclusion
+                              -sponge_nu0 : Poisson ratio of the surrounding material
+                              -sponge_nu1 : Poisson ratio of the inclusion
+                              -sponge_t   : the number of elements defining the border around each inclusion
+                              -sponge_w   : the number of elements in x and y each inclusion will span
+     -use_gp_coords : Evaluate the Youngs modulus, Poisson ratio and the body force at the global coordinates of the quadrature points.
+     By default, E, nu and the body force are evaulated at the element center and applied as a constant over the entire element.
+     -use_nonsymbc : Option to use non-symmetric boundary condition imposition. This choice will use less memory.
+*/
 
 /* Contributed by Dave May */
 
