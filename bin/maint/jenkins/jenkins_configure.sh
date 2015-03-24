@@ -16,6 +16,7 @@ echo branch=${branch}
 echo options=${configure_options}
 echo mailto=${mailto} 
 echo named_test=${named_test}
+echo id_tag=${id_tag}
 
 if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
  if [[ ${slave_label} != "macos" ]]; then

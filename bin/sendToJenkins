@@ -165,27 +165,42 @@ if [ ${architecture} == "default" ]; then
   bn=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
   for archp in jenkins-linux-gcc-gfortran-g++-c-no-yes-real-no-__float128 jenkins-linux-gcc-gfortran-g++-c-yes-no-complex-yes-double jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double jenkins-osx-clang-gfortran-clang++-c++-yes-yes-real-no-single; do
     arch=${archp//+/%2B}
-    echo submitting arch ${arch}, buildnumber ${bn}
+    id_tag=`echo $(($(date +'%s * 1000 + %-N / 1000000')))`
+    echo submitting arch ${archp}, id_tag ${id_tag}
 
-    command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}"
+    command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}\&id_tag={id_tag}"
     if [ ${silent} == "no" ]; then
 	echo "${command}"
     fi
     ${command}
-    buildlist="${buildlist} ${bn}"
+    # confirm build number with id_tag
+    #sleep 2
+    #test_id=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${bn}/api/json?depth=1 | python -c 'import sys,json; print json.load(sys.stdin)["actions"][0]["parameters"][4]["id_tag"]'`
+    #echo "test_id" = ${test_id}
+    #if [ ${test_id} != ${id_tag} ]; then
+    #    echo "Warning -- job number not correct"
+    #fi
     let "bn += 1"
   done
   let "bn -= 1"
 else
-  command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}${testall}"
+  id_tag=`echo $(($(date +'%s * 1000 + %-N / 1000000')))`
+  command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}${testall}\&id_tag=${id_tag}"
   if [ ${silent} == "no" ]; then
       echo "${command}"
   fi
 
   bn=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
 
-  echo buildnumber=$bn
   ${command}
+
+  # confirm build number with id_tag
+  echo buildnumber=$bn
+  #sleep 2
+  #test_id=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${bn}/api/json?depth=1 | python -c 'import sys,json; print json.load(sys.stdin)["actions"][0]["parameters"][4]["id_tag"]'`
+  #if [ ${test_id} != ${id_tag} ]; then
+  #    echo "Warning -- job number not correct"
+  #fi
 fi
 
 
@@ -200,7 +215,7 @@ else
 fi
 
 echo
-echo "Submission to Jenkis complete."
+echo "Submission to Jenkins complete."
 if [ "x${email}" == "x" ]; then
   echo "Note: No email address give. Use -m <email> or set JENKINS_EMAIL"
 else
