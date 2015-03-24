@@ -1,44 +1,46 @@
-static char help[] = "Solves the incompressible, variable viscosity Stokes equation in 2d on the unit domain \n\n";
-
-/*
-Uses Q1Q1 elements, stabilized with Bochev's polynomial projection method.
-The models defined utilise free slip boundary conditions on all sides.
-Options:
-     -mx : Number of elements in the x-direction
-     -my : Number of elements in the y-direction
-     -o : Specify output filename for solution (will be petsc binary format or paraview format if the extension is .vts)
-     -gnuplot : Output Gauss point coordinates, coefficients and u,p solution in gnuplot format
-     -c_str : Indicates the structure of the coefficients to use
-          -c_str 0 => Coefficient definition for an analytic solution with a vertical jump in viscosity at x = xc
-                      This problem is driven by the forcing function f(x,y) = (0, sin(nz pi y)cos(pi x)
-                         Parameters:
-                              -solcx_eta0  : Viscosity to the left of the interface
-                              -solcx_eta1  : Viscosity to the right of the interface
-                              -solcx_xc    : Location of the interface
-                              -solcx_nz    : Wavenumber in the y direction
-          -c_str 1 => Coefficient definition for a dense rectangular blob located at the center of the domain
-                         Parameters:
-                              -sinker_eta0 : Viscosity of the background fluid
-                              -sinker_eta1 : Viscosity of the blob
-                              -sinker_dx   : Width of the blob
-                              -sinker_dy   : Height of the blob
-          -c_str 2 => Coefficient definition for a dense circular blob located at the center of the domain
-                         Parameters:
-                              -sinker_eta0 : Viscosity of the background fluid
-                              -sinker_eta1 : Viscosity of the blob
-                              -sinker_r    : Radius of the blob
-          -c_str 3 => Coefficient definition for a dense circular and rectangular inclusion (located at the center of the domain)
-                              -sinker_eta0 : Viscosity of the background fluid
-                              -sinker_eta1 : Viscosity of the two inclusions
-                              -sinker_r    : Radius of the circular inclusion
-                              -sinker_c0x  : Origin (x-coord) of the circular inclusion
-                              -sinker_c0y  : Origin (y-coord) of the circular inclusion
-                              -sinker_dx   : Width of the rectangular inclusion
-                              -sinker_dy   : Height of the rectangular inclusion
-                              -sinker_phi  : Rotation angle of the rectangular inclusion
-     -use_gp_coords : Evaluate the viscosity and force term at the global coordinates of each quadrature point
-                      By default, the viscosity and force term are evaulated at the element center and applied as a constant over the entire element
-*/
+static char help[] = "Solves the incompressible, variable viscosity Stokes equation in 2d on the unit domain \n\
+using Q1Q1 elements, stabilized with Bochev's polynomial projection method. \n\
+The models defined utilise free slip boundary conditions on all sides. \n\
+Options: \n"
+"\
+     -mx : Number of elements in the x-direction \n\
+     -my : Number of elements in the y-direction \n\
+     -o : Specify output filename for solution (will be petsc binary format or paraview format if the extension is .vts) \n\
+     -gnuplot : Output Gauss point coordinates, coefficients and u,p solution in gnuplot format \n\
+     -c_str : Indicates the structure of the coefficients to use \n"
+"\
+          -c_str 0 => Coefficient definition for an analytic solution with a vertical jump in viscosity at x = xc \n\
+                      This problem is driven by the forcing function f(x,y) = (0, sin(nz pi y)cos(pi x) \n\
+                         Parameters: \n\
+                              -solcx_eta0  : Viscosity to the left of the interface \n\
+                              -solcx_eta1  : Viscosity to the right of the interface \n\
+                              -solcx_xc    : Location of the interface \n\
+                              -solcx_nz    : Wavenumber in the y direction \n"
+"\
+          -c_str 1 => Coefficient definition for a dense rectangular blob located at the center of the domain \n\
+                         Parameters: \n\
+                              -sinker_eta0 : Viscosity of the background fluid \n\
+                              -sinker_eta1 : Viscosity of the blob \n\
+                              -sinker_dx   : Width of the blob \n\
+                              -sinker_dy   : Height of the blob \n"
+"\
+          -c_str 2 => Coefficient definition for a dense circular blob located at the center of the domain \n\
+                         Parameters: \n\
+                              -sinker_eta0 : Viscosity of the background fluid \n\
+                              -sinker_eta1 : Viscosity of the blob \n\
+                              -sinker_r    : Radius of the blob \n"
+"\
+          -c_str 3 => Coefficient definition for a dense circular and rectangular inclusion (located at the center of the domain) \n\
+                              -sinker_eta0 : Viscosity of the background fluid \n\
+                              -sinker_eta1 : Viscosity of the two inclusions \n\
+                              -sinker_r    : Radius of the circular inclusion \n\
+                              -sinker_c0x  : Origin (x-coord) of the circular inclusion \n\
+                              -sinker_c0y  : Origin (y-coord) of the circular inclusion \n\
+                              -sinker_dx   : Width of the rectangular inclusion \n\
+                              -sinker_dy   : Height of the rectangular inclusion \n\
+                              -sinker_phi  : Rotation angle of the rectangular inclusion \n\
+     -use_gp_coords : Evaluate the viscosity and force term at the global coordinates of each quadrature point \n\
+                      By default, the viscosity and force term are evaulated at the element center and applied as a constant over the entire element \n";
 
 /* Contributed by Dave May */
 
