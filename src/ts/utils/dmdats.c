@@ -292,14 +292,13 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
 
    Calling sequence for func:
 
-$ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,MatStructure *flg,void *ctx);
+$ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,void *ctx);
 
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate residual
 .  x    - array of local state information
 .  J    - Jacobian matrix
 .  B    - preconditioner matrix; often same as J
-.  flg  - flag indicating information about the preconditioner matrix structure (same as flag in KSPSetOperators())
 -  ctx  - optional context passed above
 
    Level: beginner
@@ -378,7 +377,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
 
    Calling sequence for func:
 
-$ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,Mat J,Mat B,MatStructure *flg,void *ctx);
+$ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,Mat J,Mat B,void *ctx);
 
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate the jacobian
@@ -386,7 +385,6 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,Mat J,Mat B,MatStructu
 .  xdot - time derivative at this state
 .  J    - Jacobian matrix
 .  B    - preconditioner matrix; often same as J
-.  flg  - flag indicating information about the preconditioner matrix structure (same as flag in KSPSetOperators())
 -  ctx  - optional context passed above
 
    Level: beginner
