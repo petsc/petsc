@@ -338,12 +338,10 @@ class BuildChecker(script.Script):
       buf ='''Dear PETSc developer,
 
 This email contains listings of contributions attributed to you by
-`git blame` that caused compiler errors or warnings in PETSc nightly
-build testing.  Warnings are labeled by the log file where they were
-found: the names of these log files indicate the git branch,
-PETSC_ARCH, and machine where they were generated.  These warnings
-may be missing some context: for the full context, please follow the
-links to see the full log files.
+`git blame` that caused compiler errors or warnings in PETSc automated
+testing.  Follow the links to see the full log files. Please attempt to fix
+the issues promptly or let us know at petsc-dev@mcs.anl.gov if you are unable
+to resolve the issues.
 
 Thanks,
   The PETSc development team
