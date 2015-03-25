@@ -17,7 +17,7 @@ extern MPI_Op VecMin_Local_Op;
    Input Parameter:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
--  s - value to multiply each subvector entry by
+-  s - value to set for each entry in that subvector
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride
@@ -204,7 +204,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Output Parameter:
 +  index - the location where the maximum occurred  (pass NULL if not required)
--  nrm - the max
+-  nrm - the maximum value in the subvector
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride
@@ -286,7 +286,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Output Parameter:
 +  idex - the location where the minimum occurred. (pass NULL if not required)
--  nrm - the min
+-  nrm - the minimum value in the subvector
 
    Level: advanced
 
@@ -370,6 +370,8 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
+   The dimension of scales must be the same as the vector block size
+
 
    Level: advanced
 
@@ -404,7 +406,7 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 #undef __FUNCT__
 #define __FUNCT__ "VecStrideNormAll"
 /*@
-   VecStrideNormAll - Computes the norms  subvectors of a vector defined
+   VecStrideNormAll - Computes the norms of subvectors of a vector defined
    by a starting point and a stride.
 
    Collective on Vec
@@ -421,10 +423,9 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
    information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this computes the norm
-   of the array (x[start],x[start+stride],x[start+2*stride], ....)
+   of the array (x[start],x[start+stride],x[start+2*stride], ....) for each start < stride
 
-   This is useful for computing, say the norm of the pressure variable when
-   the pressure is stored (interlaced) with other variables, say density etc.
+   The dimension of nrm must be the same as the vector block size
 
    This will only work if the desire subvector is a stride subvector
 
@@ -502,15 +503,13 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
    Output Parameter:
 +  index - the location where the maximum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
--  nrm - the maximums
+-  nrm - the maximum values of each subvector
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
-   This is useful for computing, say the maximum of the pressure variable when
-   the pressure is stored (interlaced) with other variables, e.g., density, etc.
-   This will only work if the desire subvector is a stride subvector.
+   The dimension of nrm must be the same as the vector block size
 
    Level: advanced
 
@@ -569,7 +568,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
    Output Parameter:
 +  idex - the location where the minimum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
--  nrm - the minimums
+-  nrm - the minimums of each subvector
 
    Level: advanced
 
@@ -577,9 +576,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
    One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
-   This is useful for computing, say the minimum of the pressure variable when
-   the pressure is stored (interlaced) with other variables, e.g., density, etc.
-   This will only work if the desire subvector is a stride subvector.
+   The dimension of nrm must be the same as the vector block size
 
    Concepts: minimum^on stride of vector
    Concepts: stride^minimum
