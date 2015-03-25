@@ -38,6 +38,7 @@ class BuildChecker(script.Script):
     help.addArgument('BuildCheck', '-logDirectory',     nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-archCompilers',    nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
     help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 1, 'Generate blame emails'))
+    help.addArgument('BuildCheck', '-blameMailPost',    nargs.ArgBool(None, 1, 'Post (send) blame emails'))
     help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 1, 'Ignore deprecated warnings'))
     help.addArgument('BuildCheck', '-ignorePragma',     nargs.ArgBool(None, 1, 'Ignore unknown pragma'))
     help.addArgument('BuildCheck', '-ignoreNote',       nargs.ArgBool(None, 1, 'Ignore note warnings'))
@@ -184,7 +185,7 @@ class BuildChecker(script.Script):
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
     relpath = self.fileNameToRelPath(filename,petscdir,arch)
-    message = '['+self.logurl+logfile+']\n      '+message
+    message = '['+os.path.join(self.logurl,logfile)+']\n      '+message
     if (commit,relpath) not in self.commitfileDict:
       self.commitfileDict[(commit,relpath)] = {ln}
     else:
@@ -337,12 +338,10 @@ class BuildChecker(script.Script):
       buf ='''Dear PETSc developer,
 
 This email contains listings of contributions attributed to you by
-`git blame` that caused compiler errors or warnings in PETSc nightly
-build testing.  Warnings are labeled by the log file where they were
-found: the names of these log files indicate the git branch,
-PETSC_ARCH, and machine where they were generated.  These warnings
-may be missing some context: for the full context, please follow the
-links to see the full log files.
+`git blame` that caused compiler errors or warnings in PETSc automated
+testing.  Follow the links to see the full log files. Please attempt to fix
+the issues promptly or let us know at petsc-dev@mcs.anl.gov if you are unable
+to resolve the issues.
 
 Thanks,
   The PETSc development team
@@ -379,9 +378,10 @@ Thanks,
       msg['To'] = ','.join(TO)
       msg['Subject'] = "Subject: PETSc nightly blame digest, %s\n\n" % today
 
-      server = smtplib.SMTP('localhost')
-      server.sendmail(FROM, TO, msg.as_string())
-      server.quit()
+      if self.argDB['blameMailPost']:
+        server = smtplib.SMTP('localhost')
+        server.sendmail(FROM, TO, msg.as_string())
+        server.quit()
 
       # create log of e-mails sent in PETSC_DIR
       justaddress = re.search(r'<(?P<address>.*)>',author).group('address')
