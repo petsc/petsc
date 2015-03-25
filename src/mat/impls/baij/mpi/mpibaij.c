@@ -290,7 +290,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %D max %D",im[i],baij->Mbs-1);
+    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed row too large %D max %D",im[i],baij->Mbs-1);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
@@ -318,7 +318,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);
+        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexec column too large %D max %D",in[j],baij->Nbs-1);
 #endif
         else {
           if (mat->was_assembled) {
@@ -345,13 +345,13 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->B->data))->nonew) {
               ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr);
               col  =  in[j];
-            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", bs*im[i], bs*in[j]);
+            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new blocked indexed nonzero block (%D, %D) into matrix",im[i],in[j]);
           } else col = in[j];
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
       }
     } else {
-      if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
+      if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process block indexed row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!baij->donotstash) {
         if (roworiented) {
           ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
