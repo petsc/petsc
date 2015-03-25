@@ -96,12 +96,14 @@ PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
    Level: intermediate
 
-$  PETSC_MARK_X     - a small pixel based x symbol or the character x if that is not available
-$  PETSC_MARK_POINT - the make obtained with PetscDrawPoint()
+$  PETSC_MARKER_CROSS - a small pixel based x symbol or the character x if that is not available
+$  PETSC_MARKER_PLUS - a small pixel based + symbol or the character + if that is not available
+$  PETSC_MARKER_CIRCLE - a small pixel based circle symbol or the character o if that is not available
+$  PETSC_MARKER_POINT - the make obtained with PetscDrawPoint()
 
 .seealso: PetscDrawMarker(), PetscDrawSetMarkerType()
 E*/
-typedef enum {PETSC_DRAW_MARKER_X, PETSC_DRAW_MARKER_POINT} PetscDrawMarkerType;
+typedef enum {PETSC_DRAW_MARKER_CROSS, PETSC_DRAW_MARKER_POINT,PETSC_DRAW_MARKER_PLUS,PETSC_DRAW_MARKER_CIRCLE} PetscDrawMarkerType;
 PETSC_EXTERN const char *const PetscDrawMarkerTypes[];
 
 PETSC_EXTERN PetscErrorCode PetscDrawMarker(PetscDraw,PetscReal,PetscReal,int);
