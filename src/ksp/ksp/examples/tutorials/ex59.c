@@ -811,7 +811,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   KSP            temp_ksp;
   PC             pc;
   IS             dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
-  PetscInt       localsize,*xadj,*adjncy;
+  PetscInt       localsize,*xadj=NULL,*adjncy=NULL;
   MatNullSpace   near_null_space;
 
   PetscFunctionBeginUser;
