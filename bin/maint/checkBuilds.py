@@ -38,6 +38,7 @@ class BuildChecker(script.Script):
     help.addArgument('BuildCheck', '-logDirectory',     nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-archCompilers',    nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
     help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 1, 'Generate blame emails'))
+    help.addArgument('BuildCheck', '-blameMailPost',    nargs.ArgBool(None, 1, 'Post (send) blame emails'))
     help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 1, 'Ignore deprecated warnings'))
     help.addArgument('BuildCheck', '-ignorePragma',     nargs.ArgBool(None, 1, 'Ignore unknown pragma'))
     help.addArgument('BuildCheck', '-ignoreNote',       nargs.ArgBool(None, 1, 'Ignore note warnings'))
@@ -379,9 +380,10 @@ Thanks,
       msg['To'] = ','.join(TO)
       msg['Subject'] = "Subject: PETSc nightly blame digest, %s\n\n" % today
 
-      server = smtplib.SMTP('localhost')
-      server.sendmail(FROM, TO, msg.as_string())
-      server.quit()
+      if self.argDB['blameMailPost']:
+        server = smtplib.SMTP('localhost')
+        server.sendmail(FROM, TO, msg.as_string())
+        server.quit()
 
       # create log of e-mails sent in PETSC_DIR
       justaddress = re.search(r'<(?P<address>.*)>',author).group('address')
