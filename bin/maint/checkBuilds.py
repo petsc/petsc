@@ -184,7 +184,7 @@ class BuildChecker(script.Script):
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
     relpath = self.fileNameToRelPath(filename,petscdir,arch)
-    message = '['+self.logurl+logfile+']\n      '+message
+    message = '['+os.path.join(self.logurl,logfile)+']\n      '+message
     if (commit,relpath) not in self.commitfileDict:
       self.commitfileDict[(commit,relpath)] = {ln}
     else:
