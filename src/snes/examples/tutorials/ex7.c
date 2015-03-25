@@ -337,12 +337,13 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
 #define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+  Field       rLocal[3];
   PetscScalar phi[3]    = {0.0, 0.0, 0.0};
   Field       res;
   PetscInt    q;
 
   PetscFunctionBeginUser;
+  ierr = PetscMemzero(&rLocal,sizeof(rLocal));CHKERRQ(ierr);
   for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
