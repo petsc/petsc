@@ -33,7 +33,7 @@ PetscErrorCode  MatRetrieveValues_MPISBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#define  MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv) \
+#define  MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv,orow,ocol)      \
   { \
  \
     brow = row/bs;  \
@@ -57,7 +57,7 @@ PetscErrorCode  MatRetrieveValues_MPISBAIJ(Mat mat)
       } \
     } \
     if (a->nonew == 1) goto a_noinsert; \
-    if (a->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
+    if (a->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
     MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,aimax,a->nonew,MatScalar); \
     N = nrow++ - 1;  \
     /* shift up all the later entries in this row */ \
@@ -73,7 +73,7 @@ a_noinsert:; \
     ailen[brow] = nrow; \
   }
 
-#define  MatSetValues_SeqSBAIJ_B_Private(row,col,value,addv) \
+#define  MatSetValues_SeqSBAIJ_B_Private(row,col,value,addv,orow,ocol) \
   { \
     brow = row/bs;  \
     rp   = bj + bi[brow]; ap = ba + bs2*bi[brow]; \
@@ -96,7 +96,7 @@ a_noinsert:; \
       } \
     } \
     if (b->nonew == 1) goto b_noinsert; \
-    if (b->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
+    if (b->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
     MatSeqXAIJReallocateAIJ(B,b->mbs,bs2,nrow,brow,bcol,rmax,ba,bi,bj,rp,ap,bimax,b->nonew,MatScalar); \
     N = nrow++ - 1;  \
     /* shift up all the later entries in this row */ \
@@ -180,7 +180,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
           if (brow > bcol) continue;  /* ignore lower triangular blocks of A */
           if (roworiented) value = v[i*n+j];
           else             value = v[i+j*m];
-          MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv);
+          MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv,im[i],in[j]);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -209,7 +209,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
           } else col = in[j];
           if (roworiented) value = v[i*n+j];
           else             value = v[i+j*m];
-          MatSetValues_SeqSBAIJ_B_Private(row,col,value,addv);
+          MatSetValues_SeqSBAIJ_B_Private(row,col,value,addv,im[i],in[j]);
           /* ierr = MatSetValues_SeqBAIJ(baij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
       }

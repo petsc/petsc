@@ -424,7 +424,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
+#define MatSetValues_SeqAIJ_A_Private(row,col,value,addv,orow,ocol)     \
 { \
     if (col <= lastcol1)  low1 = 0;     \
     else                 high1 = nrow1; \
@@ -444,7 +444,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
       }  \
       if (value == 0.0 && ignorezeroentries) {low1 = 0; high1 = nrow1;goto a_noinsert;} \
       if (nonew == 1) {low1 = 0; high1 = nrow1; goto a_noinsert;}                \
-      if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
+      if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
       MatSeqXAIJReallocateAIJ(A,am,1,nrow1,row,col,rmax1,aa,ai,aj,rp1,ap1,aimax,nonew,MatScalar); \
       N = nrow1++ - 1; a->nz++; high1++; \
       /* shift up all the later entries in this row */ \
@@ -460,7 +460,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 }
 
 
-#define MatSetValues_SeqAIJ_B_Private(row,col,value,addv) \
+#define MatSetValues_SeqAIJ_B_Private(row,col,value,addv,orow,ocol) \
   { \
     if (col <= lastcol2) low2 = 0;                        \
     else high2 = nrow2;                                   \
@@ -480,7 +480,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     }                                                     \
     if (value == 0.0 && ignorezeroentries) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
     if (nonew == 1) {low2 = 0; high2 = nrow2; goto b_noinsert;}                        \
-    if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
+    if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
     MatSeqXAIJReallocateAIJ(B,bm,1,nrow2,row,col,rmax2,ba,bi,bj,rp2,ap2,bimax,nonew,MatScalar); \
     N = nrow2++ - 1; b->nz++; high2++;                    \
     /* shift up all the later entries in this row */      \
@@ -579,7 +579,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
           nonew = a->nonew;
-          MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
+          MatSetValues_SeqAIJ_A_Private(row,col,value,addv,im[i],in[j]);
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
@@ -610,10 +610,10 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               high2 = nrow2;
               bm    = aij->B->rmap->n;
               ba    = b->a;
-            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", im[i], in[j]);
+            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", im[i], in[j]);
           } else col = in[j];
           nonew = b->nonew;
-          MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
+          MatSetValues_SeqAIJ_B_Private(row,col,value,addv,im[i],in[j]);
         }
       }
     } else {
@@ -5267,7 +5267,7 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
           if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
           if (in[j] >= cstart && in[j] < cend) {
             col = in[j] - cstart;
-            MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
+            MatSetValues_SeqAIJ_A_Private(row,col,value,addv,im[i],in[j]);
           } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
           else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
@@ -5300,7 +5300,7 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
                 ba    = b->a;
               }
             } else col = in[j];
-            MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
+            MatSetValues_SeqAIJ_B_Private(row,col,value,addv,im[i],in[j]);
           }
         }
       } else if (!aij->donotstash) {
