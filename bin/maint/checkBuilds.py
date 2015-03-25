@@ -360,7 +360,7 @@ Thanks,
           buf +="\n  %s\n" % warning[1]
         for message in warning[2]:
           buf +="    %s\n" % message
-      buf += '\n'
+      buf += '\n----\nTo opt-out from receiving these messages - send a request to petsc-dev@mcs.anl.gov.\n'
 
       #The followng chars appear to cause grief to sendmail - so replace them
       buf = buf.replace("‘","'").replace("’","'")
