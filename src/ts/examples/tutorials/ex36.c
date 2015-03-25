@@ -38,13 +38,14 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 */
 static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *y,*ydot,*f;
+  PetscErrorCode    ierr;
+  const PetscScalar *y,*ydot;
+  PetscScalar       *f;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(Ydot,&ydot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   f[0]= PetscSinReal(200*PETSC_PI*t)/2500. - y[0]/1000. - ydot[0]/1.e6 + ydot[1]/1.e6;
@@ -53,8 +54,8 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
   f[3]=0.0006676566666666666 - (99* PetscExpReal((500*(y[1] - y[2]))/13.))/1.e8 - y[3]/9000. - (3*ydot[3])/1.e6 + (3*ydot[4])/1.e6;
   f[4]=-y[4]/9000. + (3*ydot[3])/1.e6 - (3*ydot[4])/1.e6;
  
-  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Ydot,&ydot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -67,9 +68,9 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
 static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1,2,3,4};
+  PetscInt             rowcol[] = {0,1,2,3,4};
   const PetscScalar    *y,*ydot;
-  PetscScalar    J[5][5];
+  PetscScalar          J[5][5];
 
   PetscFunctionBegin;
   ierr    = VecGetArrayRead(Y,&y);CHKERRQ(ierr);

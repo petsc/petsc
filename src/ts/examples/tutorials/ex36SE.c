@@ -37,13 +37,14 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 */
 static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *y,*ydot,*f;
+  PetscErrorCode     ierr;
+  const PetscScalar  *y,*ydot;
+  PetscScalar        *f;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(Ydot,&ydot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   f[0]=-400* PetscSinReal(200*PETSC_PI*t) + 1000*y[3] + ydot[0];
@@ -52,8 +53,8 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
   f[3]=0.0006666766666666667 - 1/(1.e8* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) +  PetscSinReal(200*PETSC_PI*t)/2500. + y[0]/4500. - (11*y[3])/9000.;
   f[4]=0.0006676566666666666 - 99/(1.e8* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) + y[2]/9000. - y[4]/4500.;
 
-  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Ydot,&ydot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -65,10 +66,10 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
 */
 static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1,2,3,4};
-  const PetscScalar    *y,*ydot;
-  PetscScalar    J[5][5];
+  PetscErrorCode     ierr;
+  PetscInt           rowcol[] = {0,1,2,3,4};
+  const PetscScalar  *y,*ydot;
+  PetscScalar        J[5][5];
 
   PetscFunctionBegin;
   ierr    = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
