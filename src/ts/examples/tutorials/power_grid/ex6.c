@@ -339,8 +339,8 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
   ierr = DMDAVecGetArrayRead(cda,gc,&coors);CHKERRQ(ierr);
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
-      xi = coors[j][i].x; yi = coors[j][i].y;
       PetscInt nc = 0;
+      xi = coors[j][i].x; yi = coors[j][i].y;
       row.i = i; row.j = j;
       if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         if (user->bc == 0) {
