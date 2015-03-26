@@ -4975,13 +4975,14 @@ PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNorm2"
 /*@
-   TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between a vector and the current state
+   TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between two state vectors
 
    Collective on TS
 
    Input Arguments:
 +  ts - time stepping context
--  Y - state vector to be compared to ts->vec_sol
+.  U - state vector, usually ts->vec_sol
+-  Y - state vector to be compared to U
 
    Output Arguments:
 .  norm - weighted norm, a value of 1.0 is considered small
@@ -4990,22 +4991,23 @@ PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
 
 .seealso: TSErrorWeightedNorm(), TSErrorWeightedNormInfinity()
 @*/
-PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,N,rstart;
   const PetscScalar *u,*y;
-  Vec               U;
   PetscReal         sum,gsum;
   PetscReal         tol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
-  PetscValidPointer(norm,3);
-  U = ts->vec_sol;
-  PetscCheckSameTypeAndComm(U,1,Y,2);
-  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,3);
+  PetscValidType(U,2);
+  PetscValidType(Y,3);
+  PetscCheckSameComm(U,2,Y,3);
+  PetscValidPointer(norm,4);
+  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
@@ -5109,13 +5111,14 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNormInfinity"
 /*@
-   TSErrorWeightedNormInfinity - compute a weighted infinity-norm of the difference between a vector and the current state
+   TSErrorWeightedNormInfinity - compute a weighted infinity-norm of the difference between two state vectors
 
    Collective on TS
 
    Input Arguments:
 +  ts - time stepping context
--  Y - state vector to be compared to ts->vec_sol
+.  U - state vector, usually ts->vec_sol
+-  Y - state vector to be compared to U
 
    Output Arguments:
 .  norm - weighted norm, a value of 1.0 is considered small
@@ -5124,22 +5127,23 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 
 .seealso: TSErrorWeightedNorm(), TSErrorWeightedNorm2()
 @*/
-PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,N,rstart,k;
   const PetscScalar *u,*y;
-  Vec               U;
   PetscReal         max,gmax;
   PetscReal         tol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
-  PetscValidPointer(norm,3);
-  U = ts->vec_sol;
-  PetscCheckSameTypeAndComm(U,1,Y,2);
-  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,3);
+  PetscValidType(U,2);
+  PetscValidType(Y,3);
+  PetscCheckSameComm(U,2,Y,3);
+  PetscValidPointer(norm,4);
+  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
@@ -5267,34 +5271,37 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNorm"
 /*@
-   TSErrorWeightedNorm - compute a weighted norm of the difference between a vector and the current state
+   TSErrorWeightedNorm - compute a weighted norm of the difference between two state vectors
 
    Collective on TS
 
    Input Arguments:
 +  ts - time stepping context
--  Y - state vector to be compared to ts->vec_sol
-
-   Options Database Keys:
-.  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
+.  U - state vector, usually ts->vec_sol
+.  Y - state vector to be compared to U
+-  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
    Output Arguments:
 .  norm - weighted norm, a value of 1.0 is considered small
+
+
+   Options Database Keys:
+.  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
 
    Level: developer
 
 .seealso: TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2()
 @*/
-PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscReal *norm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(ts->adapt->wnormtype == NORM_2) {
-    ierr = TSErrorWeightedNorm2(ts,Y,norm);CHKERRQ(ierr);
-  } else if(ts->adapt->wnormtype == NORM_INFINITY) {
-    ierr = TSErrorWeightedNormInfinity(ts,Y,norm);CHKERRQ(ierr);
-  }
+  if (wnormtype == NORM_2) {
+    ierr = TSErrorWeightedNorm2(ts,U,Y,norm);CHKERRQ(ierr);
+  } else if(wnormtype == NORM_INFINITY) {
+    ierr = TSErrorWeightedNormInfinity(ts,U,Y,norm);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
   PetscFunctionReturn(0);
 }
 
