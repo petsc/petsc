@@ -15,7 +15,7 @@
 .  snes - the SNES context
 
    Output parameter
-.  ISact - active set index set
+.  inact - inactive set index set
 
  */
 PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
@@ -714,7 +714,6 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 
@@ -771,18 +770,16 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
       SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
++   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner
 
    References:
-   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
+  - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
-           SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
 #undef __FUNCT__

@@ -424,7 +424,6 @@ PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 
