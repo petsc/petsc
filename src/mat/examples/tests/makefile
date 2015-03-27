@@ -21,7 +21,9 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
-                ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.c ex180.c
+                ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c \
+                ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.c \
+                ex175.c ex180.c
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
 include ${PETSC_DIR}/lib/petsc-conf/variables
@@ -693,6 +695,10 @@ ex173: ex173.o chkopts
 ex174: ex174.o chkopts
 	-${CLINKER} -o ex174 ex174.o ${PETSC_MAT_LIB}
 	${RM} ex174.o
+
+ex175: ex175.o chkopts
+	-${CLINKER} -o ex175 ex175.o ${PETSC_MAT_LIB}
+	${RM} ex175.o
 
 ex180: ex180.o chkopts
 	-${CLINKER} -o ex180 ex180.o ${PETSC_MAT_LIB}
@@ -2203,6 +2209,12 @@ runex174_2_sbaij:
 	   else printf "${PWD}\nPossible problem with ex174_2_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex174.tmp
 
+runex175:
+	-@${MPIEXEC} -n 1 ./ex175 > ex175.tmp 2>&1; \
+	   if (${DIFF} output/ex175.out ex175.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex175, diffs above\n=========================================\n"; fi;
+
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij runex9_4_baij runex9_4_sbaij ex9.rm \
@@ -2231,7 +2243,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
                                  ex164.PETSc runex164 ex164.rm ex172.PETSc runex172 runex172_2 runex172_3 runex172_4 \
-                                 runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm
+                                 runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex175.PETSc runex175 ex175.rm\
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
