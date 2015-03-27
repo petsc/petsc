@@ -668,9 +668,9 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
     if (!user->simplex) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
     ierr = SetupSection(rdm, user);CHKERRQ(ierr);
     ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
-    p    = log2(errorOld/error);
+    p    = PetscLog2Real(errorOld/error);
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %d: %.2g\n", r, p);CHKERRQ(ierr);
-    p    = log2(errorDerOld/errorDer);
+    p    = PetscLog2Real(errorDerOld/errorDer);
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %d: %.2g\n", r, p);CHKERRQ(ierr);
     ierr = DMDestroy(&odm);CHKERRQ(ierr);
     odm         = rdm;
