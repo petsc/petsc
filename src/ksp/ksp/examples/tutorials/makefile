@@ -599,7 +599,7 @@ runex10_7:
                     1.0e-15 -ksp_monitor_short -pc_factor_levels 1 >> ex10_7.tmp 2>&1 ; \
 	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_type preonly \
-                    -ksp_monitor_short -pc_type lu  >> ex10_7.tmp 2>&1 ; \
+                    -pc_type lu  >> ex10_7.tmp 2>&1 ; \
          done;
 	-@if (${DIFF} output/ex10_7.out ex10_7.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_7, diffs above\n=========================================\n"; fi;
