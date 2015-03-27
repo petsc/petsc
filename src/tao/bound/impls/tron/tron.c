@@ -146,6 +146,13 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     if (tron->n_free == 0) {
       actred=0;
       ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
+      ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+      if (!reason) {
+        reason = TAO_CONVERGED_STEPTOL;
+        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      }
+
       break;
 
     }
