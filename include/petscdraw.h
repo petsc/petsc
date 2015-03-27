@@ -91,6 +91,25 @@ PETSC_EXTERN PetscErrorCode PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscRe
 PETSC_EXTERN PetscErrorCode PetscDrawLineSetWidth(PetscDraw,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
+/*E
+    PetscDrawMarkerType - How a "mark" is indicate in a figure
+
+   Level: intermediate
+
+$  PETSC_MARKER_CROSS - a small pixel based x symbol or the character x if that is not available
+$  PETSC_MARKER_PLUS - a small pixel based + symbol or the character + if that is not available
+$  PETSC_MARKER_CIRCLE - a small pixel based circle symbol or the character o if that is not available
+$  PETSC_MARKER_POINT - the make obtained with PetscDrawPoint()
+
+.seealso: PetscDrawMarker(), PetscDrawSetMarkerType()
+E*/
+typedef enum {PETSC_DRAW_MARKER_CROSS, PETSC_DRAW_MARKER_POINT,PETSC_DRAW_MARKER_PLUS,PETSC_DRAW_MARKER_CIRCLE} PetscDrawMarkerType;
+PETSC_EXTERN const char *const PetscDrawMarkerTypes[];
+
+PETSC_EXTERN PetscErrorCode PetscDrawMarker(PetscDraw,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawSetMarkerType(PetscDraw,PetscDrawMarkerType);
+PETSC_EXTERN PetscErrorCode PetscDrawGetMarkerType(PetscDraw,PetscDrawMarkerType*);
+
 PETSC_EXTERN PetscErrorCode PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointPixel(PetscDraw,PetscInt,PetscInt,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointSetSize(PetscDraw,PetscReal);
@@ -206,7 +225,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
-PETSC_EXTERN PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetColors(PetscDrawLG,const int*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetFromOptions(PetscDrawLG);

@@ -18,7 +18,7 @@ struct _p_PetscDrawLG {
   PetscDrawAxis  axis;
   PetscReal      xmin,xmax,ymin,ymax,*x,*y;
   int            nopts,dim,*colors;
-  PetscBool      use_dots;
+  PetscBool      use_markers;
   char           **legend;
 };
 #define CHUNCKSIZE 100

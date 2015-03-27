@@ -206,6 +206,7 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char 
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(draw,2,&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(drawlg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(drawlg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence of Residual Norm","Iteration","Residual Norm");CHKERRQ(ierr);
   ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);

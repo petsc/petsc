@@ -30,7 +30,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 
      Options for visualizing the solution:
         Watch certain variables in each cell evolve with time
-        -draw_solution 1 -ts_monitor_lg_solution_variables Temp,H2,O2,H2O,CH4,CO,CO2,C2H2,N2 -lg_indicate_data_points false  -draw_pause -2
+        -draw_solution 1 -ts_monitor_lg_solution_variables Temp,H2,O2,H2O,CH4,CO,CO2,C2H2,N2 -lg_use_markers false  -draw_pause -2
 
         Watch certain variables in all cells evolve with time
         -da_refine 4 -ts_monitor_draw_solution -draw_fields_by_name Temp,H2 -draw_vec_mark_points  -draw_pause -2
