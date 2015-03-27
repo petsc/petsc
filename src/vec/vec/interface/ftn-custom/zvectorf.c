@@ -8,7 +8,7 @@
 #define vecload_                  VECLOAD
 #define vecview_                  VECVIEW
 #define vecgetarray_              VECGETARRAY
-#define vecgetarrayread           VECGETARRAYREAD
+#define vecgetarrayread_          VECGETARRAYREAD
 #define vecgetarrayaligned_       VECGETARRAYALIGNED
 #define vecrestorearray_          VECRESTOREARRAY
 #define vecrestorearrayread_      VECRESTOREARRAYREAD
