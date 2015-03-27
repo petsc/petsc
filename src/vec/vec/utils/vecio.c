@@ -17,12 +17,12 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscInt       tr[2],type;
+  PetscInt       tr[2],type,num = 2;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   /* Read vector header */
-  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,tr,&num,PETSC_INT);CHKERRQ(ierr);
   type = tr[0];
   if (type != VEC_FILE_CLASSID) {
     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);

@@ -1561,7 +1561,7 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
-  PetscInt       classid;
+  PetscInt       classid, num = 1, len = 256;
   char           type[256];
 
   PetscFunctionBegin;
@@ -1570,9 +1570,9 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&classid,&num,PETSC_INT);CHKERRQ(ierr);
   if (classid != PC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,&len,PETSC_CHAR);CHKERRQ(ierr);
   ierr = PCSetType(newdm, type);CHKERRQ(ierr);
   if (newdm->ops->load) {
     ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);

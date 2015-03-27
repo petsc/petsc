@@ -365,6 +365,9 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 .  count    - Number of items of data to read
 -  datatype - Type of data to read
 
+   Output Parameters:
+.  count - number of items of data actually read
+
    Level: beginner
 
    Concepts: binary files, ascii files
@@ -373,25 +376,26 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer
 @*/
-PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype)
+PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt *count, PetscDataType dtype)
 {
-  PetscErrorCode    ierr;
+  PetscInt       cnt = *count;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (dtype == PETSC_STRING) {
-    PetscInt c, i = 0;
+    PetscInt c, i = 0, num = 1;
     char *s = (char *)data;
-    for (c = 0; c < count; c++) {
+    for (c = 0; c < cnt; c++) {
       /* Skip leading whitespaces */
-      do {ierr = (*viewer->ops->read)(viewer, &(s[i]), 1, PETSC_CHAR);CHKERRQ(ierr);}
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i]), &num, PETSC_CHAR);CHKERRQ(ierr); if (!num) break;}
       while (s[i]=='\n' || s[i]=='\t' || s[i]==' ' || s[i]=='\0');
       i++;
       /* Read strings one char at a time */
-      do {ierr = (*viewer->ops->read)(viewer, &(s[i++]), 1, PETSC_CHAR);CHKERRQ(ierr);}
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i++]), &num, PETSC_CHAR);CHKERRQ(ierr); if (!num) break;}
       while (s[i-1]!='\n' && s[i-1]!='\t' && s[i-1]!=' ' && s[i-1]!='\0');
       /* Terminate final string */
-      if (c == count-1) s[i-1] = '\0';
+      if (c == cnt-1) s[i-1] = '\0';
     }
   } else {
     ierr = (*viewer->ops->read)(viewer, data, count, dtype);CHKERRQ(ierr);

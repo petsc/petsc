@@ -1007,6 +1007,9 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 .  count - number of items of data to read
 -  datatype - type of data to read
 
+   Output Parameters:
+.  count - number of items of data actually read
+
    Level: beginner
 
    Concepts: ascii files
@@ -1015,31 +1018,35 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype)
+PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt *count,PetscDataType dtype)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = vascii->fd;
   PetscInt           i;
+  int                ret;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  for (i=0; i<count; i++) {
-    if (dtype == PETSC_CHAR)         fscanf(fd, "%c",  &(((char*)data)[i]));
-    else if (dtype == PETSC_STRING)  fscanf(fd, "%s",  &(((char*)data)[i]));
+  for (i=0; i<*count; i++) {
+    if (dtype == PETSC_CHAR)         ret = fscanf(fd, "%c",  &(((char*)data)[i]));
+    else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
 #if PETSC_USE_64BIT_INDICES
 #if (PETSC_SIZEOF_LONG_LONG == 8)
-    else if (dtype == PETSC_INT)     fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
+    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
 #else
-    else if (dtype == PETSC_INT)     fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
+    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
 #endif
 #else
-    else if (dtype == PETSC_INT)     fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
+    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
 #endif
-    else if (dtype == PETSC_ENUM)    fscanf(fd, "%d",  &(((int*)data)[i]));
-    else if (dtype == PETSC_FLOAT)   fscanf(fd, "%f",  &(((float*)data)[i]));
-    else if (dtype == PETSC_DOUBLE)  fscanf(fd, "%lg", &(((double*)data)[i]));
-    else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type not supported in PetscViewerASCIIRead()", dtype);}
+    else if (dtype == PETSC_ENUM)    ret = fscanf(fd, "%d",  &(((int*)data)[i]));
+    else if (dtype == PETSC_FLOAT)   ret = fscanf(fd, "%f",  &(((float*)data)[i]));
+    else if (dtype == PETSC_DOUBLE)  ret = fscanf(fd, "%lg", &(((double*)data)[i]));
+    else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type %d not supported", (int) dtype);}
+    if (!ret) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Conversion error for data type %d", (int) dtype);
+    else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */
   }
+  *count = i;
   PetscFunctionReturn(0);
 }
 

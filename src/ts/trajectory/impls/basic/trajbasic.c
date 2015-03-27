@@ -75,7 +75,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt step,PetscR
 {
   PetscReal      ptime;
   Vec            Sol,*Y;
-  PetscInt       Nr,i;
+  PetscInt       Nr,i,num = 1;
   PetscViewer    viewer;
   PetscReal      timepre;
   char           filename[PETSC_MAX_PATH_LEN];
@@ -91,7 +91,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt step,PetscR
 
   Nr   = 1;
   /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&timepre,&num,PETSC_REAL);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
   for (i=0;i<Nr ;i++) {

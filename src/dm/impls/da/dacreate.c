@@ -140,7 +140,7 @@ extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,Ve
 PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
-  PetscInt         dim,m,n,p,dof,swidth;
+  PetscInt         dim,m,n,p,dof,swidth,num = 1;
   DMDAStencilType  stencil;
   DMBoundaryType   bx,by,bz;
   PetscBool        coors;
@@ -148,16 +148,16 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   Vec              c;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryRead(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&p,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&dof,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&swidth,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&bx,1,PETSC_ENUM);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&by,1,PETSC_ENUM);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&bz,1,PETSC_ENUM);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&stencil,1,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&dim,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&m,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&n,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&p,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&dof,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&swidth,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&bx,&num,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&by,&num,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&bz,&num,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&stencil,&num,PETSC_ENUM);CHKERRQ(ierr);
 
   ierr = DMSetDimension(da, dim);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, m,n,p);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   ierr = DMDASetStencilType(da, stencil);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, swidth);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&coors,1,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&coors,&num,PETSC_ENUM);CHKERRQ(ierr);
   if (coors) {
     ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(dac,&c);CHKERRQ(ierr);
