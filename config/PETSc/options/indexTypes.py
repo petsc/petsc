@@ -12,8 +12,8 @@ class Configure(config.base.Configure):
 
   def __str1__(self):
     desc = []
-    if hasattr(self, 'indexsize'):
-      desc.append('  Index size: ' + self.indexsize)
+    if hasattr(self, 'integerSize'):
+      desc.append('  Integer size: ' + str(self.integerSize))
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
