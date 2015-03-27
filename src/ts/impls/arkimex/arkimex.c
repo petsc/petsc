@@ -715,8 +715,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     if (!isvalid || valid_time != ts->ptime) {
       TS        ts_start;
 
-      ierr = TSDuplicate(PetscObjectComm((PetscObject)ts),ts,&ts_start);CHKERRQ(ierr);
-      
+      ierr = TSClone(PetscObjectComm((PetscObject)ts),ts,&ts_start);CHKERRQ(ierr);
+
       ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
       ierr = TSSetDuration(ts_start,1,ts->ptime+ts->time_step);CHKERRQ(ierr);
@@ -732,8 +732,18 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
 
-      ierr = TSDuplicateDestroy(ts,ts_start);CHKERRQ(ierr);
+      //PetscInt cnt;
+      //PetscObjectGetReference((PetscObject)ts->snes,&cnt);
+      //printf("Ref count: %d\n",cnt);
 
+      /*I don't understand why this needs to be here*/
+      SNES snes_dup=NULL;
+      ierr = TSGetSNES(ts,&snes_dup);CHKERRQ(ierr);
+      ts_start->snes=NULL;
+      ierr = TSSetSNES(ts,snes_dup);CHKERRQ(ierr);
+      ierr = SNESDestroy(&snes_dup);CHKERRQ(ierr);
+      /* END */
+      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
     }
   }
 
@@ -773,7 +783,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
 	for (j=0; j<i; j++) w[j] = h*A[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotRHS);CHKERRQ(ierr);
-	
+
         if (init_guess_extrp && ark->prev_step_valid) {
           /* Initial guess extrapolated from previous time step stage values */
           ierr        = TSExtrapolate_ARKIMEX(ts,c[i],Y[i]);CHKERRQ(ierr);
