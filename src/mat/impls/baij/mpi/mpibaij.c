@@ -267,121 +267,108 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlocked_SeqBAIJ_Inlined"
-PETSC_STATIC_INLINE PetscErrorCode MatSetValuesBlocked_SeqBAIJ_Inlined(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is,PetscInt orow,PetscInt ocol)
+PETSC_STATIC_INLINE PetscErrorCode MatSetValuesBlocked_SeqBAIJ_Inlined(Mat A,PetscInt row,PetscInt col,const PetscScalar v[],InsertMode is,PetscInt orow,PetscInt ocol)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  PetscInt          *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,lastcol = -1;
+  PetscInt          *rp,low,high,t,ii,jj,nrow,i,rmax,N;
   PetscInt          *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   PetscErrorCode    ierr;
-  PetscInt          *aj        =a->j,nonew=a->nonew,bs2=a->bs2,bs=A->rmap->bs,stepval;
+  PetscInt          *aj        =a->j,nonew=a->nonew,bs2=a->bs2,bs=A->rmap->bs;
   PetscBool         roworiented=a->roworiented;
   const PetscScalar *value     = v;
   MatScalar         *ap,*aa = a->a,*bap;
 
   PetscFunctionBegin;
-  if (roworiented) {
-    stepval = (n-1)*bs;
-  } else {
-    stepval = (m-1)*bs;
+  rp   = aj + ai[row];
+  ap   = aa + bs2*ai[row];
+  rmax = imax[row];
+  nrow = ailen[row];
+  low  = 0;
+  high = nrow;
+  value = v;
+  low = 0;
+  high = nrow;
+  while (high-low > 7) {
+    t = (low+high)/2;
+    if (rp[t] > col) high = t;
+    else             low  = t;
   }
-  for (k=0; k<m; k++) { /* loop over added rows */
-    row = im[k];
-    rp   = aj + ai[row];
-    ap   = aa + bs2*ai[row];
-    rmax = imax[row];
-    nrow = ailen[row];
-    low  = 0;
-    high = nrow;
-    for (l=0; l<n; l++) { /* loop over added columns */
-      col = in[l];
+  for (i=low; i<high; i++) {
+    if (rp[i] > col) break;
+    if (rp[i] == col) {
+      bap = ap +  bs2*i;
       if (roworiented) {
-        value = v + (k*(stepval+bs) + l)*bs;
-      } else {
-        value = v + (l*(stepval+bs) + k)*bs;
-      }
-      if (col <= lastcol) low = 0;
-      else high = nrow;
-      lastcol = col;
-      while (high-low > 7) {
-        t = (low+high)/2;
-        if (rp[t] > col) high = t;
-        else             low  = t;
-      }
-      for (i=low; i<high; i++) {
-        if (rp[i] > col) break;
-        if (rp[i] == col) {
-          bap = ap +  bs2*i;
-          if (roworiented) {
-            if (is == ADD_VALUES) {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
-                for (jj=ii; jj<bs2; jj+=bs) {
-                  bap[jj] += *value++;
-                }
-              }
-            } else {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
-                for (jj=ii; jj<bs2; jj+=bs) {
-                  bap[jj] = *value++;
-                }
-              }
-            }
-          } else {
-            if (is == ADD_VALUES) {
-              for (ii=0; ii<bs; ii++,value+=bs+stepval) {
-                for (jj=0; jj<bs; jj++) {
-                  bap[jj] += value[jj];
-                }
-                bap += bs;
-              }
-            } else {
-              for (ii=0; ii<bs; ii++,value+=bs+stepval) {
-                for (jj=0; jj<bs; jj++) {
-                  bap[jj]  = value[jj];
-                }
-                bap += bs;
-              }
+        if (is == ADD_VALUES) {
+          for (ii=0; ii<bs; ii++) {
+            for (jj=ii; jj<bs2; jj+=bs) {
+              bap[jj] += *value++;
             }
           }
-          goto noinsert2;
-        }
-      }
-      if (nonew == 1) goto noinsert2;
-      if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new global block indexed nonzero block (%D, %D) in the matrix", orow, ocol);
-      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
-      N = nrow++ - 1; high++;
-      /* shift up all the later entries in this row */
-      for (ii=N; ii>=i; ii--) {
-        rp[ii+1] = rp[ii];
-        ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      }
-      if (N >= i) {
-        ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      }
-      rp[i] = col;
-      bap   = ap +  bs2*i;
-      if (roworiented) {
-        for (ii=0; ii<bs; ii++,value+=stepval) {
-          for (jj=ii; jj<bs2; jj+=bs) {
-            bap[jj] = *value++;
+        } else {
+          for (ii=0; ii<bs; ii++) {
+            for (jj=ii; jj<bs2; jj+=bs) {
+              bap[jj] = *value++;
+            }
           }
         }
       } else {
-        for (ii=0; ii<bs; ii++,value+=stepval) {
-          for (jj=0; jj<bs; jj++) {
-            *bap++ = *value++;
+        if (is == ADD_VALUES) {
+          for (ii=0; ii<bs; ii++,value+=bs) {
+            for (jj=0; jj<bs; jj++) {
+              bap[jj] += value[jj];
+            }
+            bap += bs;
+          }
+        } else {
+          for (ii=0; ii<bs; ii++,value+=bs) {
+            for (jj=0; jj<bs; jj++) {
+              bap[jj]  = value[jj];
+            }
+            bap += bs;
           }
         }
       }
-noinsert2:;
-      low = i;
+      goto noinsert2;
     }
-    ailen[row] = nrow;
   }
+  if (nonew == 1) goto noinsert2;
+  if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new global block indexed nonzero block (%D, %D) in the matrix", orow, ocol);
+  MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+  N = nrow++ - 1; high++;
+  /* shift up all the later entries in this row */
+  for (ii=N; ii>=i; ii--) {
+    rp[ii+1] = rp[ii];
+    ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
+  }
+  if (N >= i) {
+    ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+  }
+  rp[i] = col;
+  bap   = ap +  bs2*i;
+  if (roworiented) {
+    for (ii=0; ii<bs; ii++) {
+      for (jj=ii; jj<bs2; jj+=bs) {
+        bap[jj] = *value++;
+      }
+    }
+  } else {
+    for (ii=0; ii<bs; ii++) {
+      for (jj=0; jj<bs; jj++) {
+        *bap++ = *value++;
+      }
+    }
+  }
+  noinsert2:;
+  ailen[row] = nrow;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ"
+/*
+    This routine should be optimized so that the block copy at ** Here a copy is required ** below is not needed
+    by passing additional stride information into the MatSetValuesBlocked_SeqBAIJ_Inlined() routine
+*/
 PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ       *baij = (Mat_MPIBAIJ*)mat->data;
@@ -430,10 +417,10 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
 
         if (in[j] >= cstart && in[j] < cend) {
           col  = in[j] - cstart;
-          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,1,&row,1,&col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexec column too large %D max %D",in[j],baij->Nbs-1);
+        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block indexed column too large %D max %D",in[j],baij->Nbs-1);
 #endif
         else {
           if (mat->was_assembled) {
@@ -462,7 +449,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
               col  =  in[j];
             } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new blocked indexed nonzero block (%D, %D) into matrix",im[i],in[j]);
           } else col = in[j];
-          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->B,1,&row,1,&col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->B,row,col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -3923,7 +3910,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
 
         if (in[j] >= cstart && in[j] < cend) {
           col  = in[j] - cstart;
-          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,1,&row,1,&col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->A,row,col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
         else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);
@@ -3955,7 +3942,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
               col  =  in[j];
             }
           } else col = in[j];
-          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->B,1,&row,1,&col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ_Inlined(baij->B,row,col,barray,addv,im[i],in[j]);CHKERRQ(ierr);
         }
       }
     } else {
