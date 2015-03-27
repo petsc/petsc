@@ -7,7 +7,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetBoundingBox"
 /*@
-   PetscDrawGetBoundingBox - Gets the bounding box of all PetscDrawBoxedString() commands
+   PetscDrawGetBoundingBox - Gets the bounding box of all PetscDrawStringBoxed() commands
 
    Not collective
 
