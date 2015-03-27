@@ -5296,20 +5296,16 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
 @*/
 PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if(ts->adapt->wnormtype == NORM_2) {
-    PetscErrorCode    ierr;
-    ierr = TSErrorWeightedNorm2(ts,Y,norm);
+    ierr = TSErrorWeightedNorm2(ts,Y,norm);CHKERRQ(ierr);
   } else if(ts->adapt->wnormtype == NORM_INFINITY) {
-    PetscErrorCode    ierr;
-    ierr = TSErrorWeightedNormInfinity(ts,Y,norm);
+    ierr = TSErrorWeightedNormInfinity(ts,Y,norm);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetCFLTimeLocal"
