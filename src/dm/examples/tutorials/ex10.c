@@ -64,6 +64,7 @@ int main(int argc,char **argv)
 
   /* Create the HDF5 viewer */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
 
   /* Write the H5 file */
   ierr = VecView(gauss,H5viewer);CHKERRQ(ierr);
@@ -77,6 +78,7 @@ int main(int argc,char **argv)
 
   /* Create the HDF5 viewer for reading */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_READ,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
   ierr = VecLoad(input,H5viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
 

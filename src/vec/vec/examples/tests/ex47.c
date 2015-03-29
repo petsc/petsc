@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   const char     *vecname;
   PetscViewer    H5viewer;
-  
+
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
@@ -22,6 +22,7 @@ int main(int argc,char **args)
   ierr = VecSet(x,22.3);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"x.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
   ierr = VecView(x,H5viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
 
@@ -31,6 +32,7 @@ int main(int argc,char **args)
 
   /* Create the HDF5 viewer for reading */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"x.h5",FILE_MODE_READ,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
   ierr = VecLoad(y,H5viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
 

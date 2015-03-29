@@ -487,6 +487,7 @@ runex46_mpiio:
 
 runex47:
 	-@${MPIEXEC} -n 4 ./ex47
+	-@${MPIEXEC} -n 4 ./ex47  -viewer_hdf5_base_dimension2
 
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
