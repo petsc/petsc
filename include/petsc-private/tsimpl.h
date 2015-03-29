@@ -182,6 +182,7 @@ struct _TSAdaptOps {
   PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*);
   PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
   PetscErrorCode (*destroy)(TSAdapt);
+  PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
   PetscErrorCode (*setfromoptions)(PetscOptions*,TSAdapt);
   PetscErrorCode (*load)(TSAdapt,PetscViewer);

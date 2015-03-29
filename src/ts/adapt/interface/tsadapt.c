@@ -242,6 +242,30 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdaptReset"
+/*@
+   TSAdaptReset - Resets a TSAdapt context.
+
+   Collective on TS
+
+   Input Parameter:
+.  adapt - the TSAdapt context obtained from TSAdaptCreate()
+
+   Level: developer
+
+.seealso: TSAdaptCreate(), TSAdaptDestroy()
+@*/
+PetscErrorCode  TSAdaptReset(TSAdapt adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (adapt->ops->reset) {ierr = (*adapt->ops->reset)(adapt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptDestroy"
 PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 {
@@ -251,6 +275,9 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt,TSADAPT_CLASSID,1);
   if (--((PetscObject)(*adapt))->refct > 0) {*adapt = NULL; PetscFunctionReturn(0);}
+
+  ierr = TSAdaptReset(*adapt);CHKERRQ(ierr);
+
   if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*adapt)->monitor);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
