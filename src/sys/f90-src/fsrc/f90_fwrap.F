@@ -1,45 +1,45 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine F90Array1dCreateScalar(array,start,len,ptr)
+      subroutine F90Array1dCreateScalar(array,start,len1,ptr)
       implicit none
 #include <petsc-finclude/petscsys.h>
-      PetscInt start,len
+      PetscInt start,len1
       PetscScalar, target ::                                                      &
-     &     array(start:start+len-1)
+     &     array(start:start+len1-1)
       PetscScalar, pointer :: ptr(:)
 
       ptr => array
       end subroutine
 
-      subroutine F90Array1dCreateReal(array,start,len,ptr)
+      subroutine F90Array1dCreateReal(array,start,len1,ptr)
       implicit none
 #include <petsc-finclude/petscsys.h>
-      PetscInt start,len
+      PetscInt start,len1
       PetscReal, target ::                                                        &
-     &     array(start:start+len-1)
+     &     array(start:start+len1-1)
       PetscReal, pointer :: ptr(:)
 
       ptr => array
       end subroutine
 
-      subroutine F90Array1dCreateInt(array,start,len,ptr)
+      subroutine F90Array1dCreateInt(array,start,len1,ptr)
       implicit none
 #include <petsc-finclude/petscsys.h>
-      PetscInt start,len
+      PetscInt start,len1
       PetscInt, target ::                                                         &
-     &     array(start:start+len-1)
+     &     array(start:start+len1-1)
       PetscInt, pointer :: ptr(:)
 
       ptr => array
       end subroutine
 
-      subroutine F90Array1dCreateFortranAddr(array,start,len,ptr)
+      subroutine F90Array1dCreateFortranAddr(array,start,len1,ptr)
       implicit none
 #include <petsc-finclude/petscsys.h>
-      PetscInt start,len
+      PetscInt start,len1
       PetscFortranAddr, target ::                                                 &
-     &     array(start:start+len-1)
+     &     array(start:start+len1-1)
       PetscFortranAddr, pointer :: ptr(:)
 
       ptr => array
