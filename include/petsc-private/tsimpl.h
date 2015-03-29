@@ -180,7 +180,6 @@ struct _p_TS {
 
 struct _TSAdaptOps {
   PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*);
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
@@ -191,6 +190,7 @@ struct _TSAdaptOps {
 struct _p_TSAdapt {
   PETSCHEADER(struct _TSAdaptOps);
   void *data;
+  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
   struct {
     PetscInt   n;                /* number of candidate schemes, including the one currently in use */
     PetscBool  inuse_set;        /* the current scheme has been set */

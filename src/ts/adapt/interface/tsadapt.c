@@ -127,7 +127,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
   PetscBool      match;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
@@ -137,12 +136,9 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
-  /* Reinitialize function pointers in TSAdaptOps structure */
-  checkstage = adapt->ops->checkstage;
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
-  adapt->ops->checkstage = checkstage;
-  ierr = (*r)(adapt);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
+  ierr = (*r)(adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +337,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  adapt->ops->checkstage = func;
+  adapt->checkstage = func;
   PetscFunctionReturn(0);
 }
 
@@ -647,7 +643,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
       }
     }
   }
-  if (adapt->ops->checkstage) {ierr = (*adapt->ops->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
+  if (adapt->checkstage) {ierr = (*adapt->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
