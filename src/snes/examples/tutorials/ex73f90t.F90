@@ -46,14 +46,14 @@
 #include <petsc-finclude/petscdmdef.h>
       use petscdmdef
       type petsc_kkt_solver
-        type(DM) da
+        DM::da
 !     temp A block stuff 
         PetscInt mx,my
         PetscMPIInt rank
         PetscReal lambda
 !     Mats
-        type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
-        type(IS)  isPhi,isLambda
+        Mat::Amat,AmatLin,Bmat,CMat,Dmat
+        IS::isPhi,isLambda
       end type petsc_kkt_solver
 
       end module petsc_kkt_solver_module
@@ -66,7 +66,7 @@
 #include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
-          type(SNES)    snesIn
+          SNES::    snesIn
           type(petsc_kkt_solver) ctx
           PetscErrorCode ierr
         End Subroutine
@@ -77,7 +77,7 @@
 #include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
-          type(SNES)     snesIn
+          SNES::     snesIn
           type(petsc_kkt_solver), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
@@ -104,11 +104,11 @@
 !     its         - iterations for convergence
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !
-      type(SNES)       mysnes
-      type(Vec)        x,r,x2,x1,x1loc,x2loc,vecArray(2)
-      type(Mat)        Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
-      type(DM)         daphi,dalam
-      type(IS)         isglobal(2)
+      SNES::       mysnes
+      Vec::        x,r,x2,x1,x1loc,x2loc,vecArray(2)
+      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
+      DM::       daphi,dalam
+      IS::        isglobal(2)
       PetscErrorCode   ierr
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
@@ -392,15 +392,15 @@
       use petsc_kkt_solver_moduleinterfaces
       implicit none
 !  Input/output variables:
-      type(SNES)     mysnes
-      type(Vec)      Xnest
+      SNES::     mysnes
+      Vec::      Xnest
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
       type(petsc_kkt_solver), pointer:: solver
-      type(Vec)      Xsub(2)
-      PetscInt       izero,ione,itwo
-      type(DM)       daphi,dmarray(2)
+      Vec::      Xsub(2)
+      PetscInt::  izero,ione,itwo
+      DM::  daphi,dmarray(2)
 
       izero = 0
       ione = 1
@@ -442,7 +442,7 @@
       implicit none
 !  Input/output variables:
       type (petsc_kkt_solver)         solver
-      type(Vec)      X1
+      Vec::      X1
       PetscErrorCode ierr
 
 !  Local variables:
@@ -496,15 +496,15 @@
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
-      type(SNES)     dummy
-      type(Vec)      X
-      type(Mat)      jac,jac_prec
+      SNES::     dummy
+      Vec::      X
+     Mat::     jac,jac_prec
       type(petsc_kkt_solver)  solver
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-      type(Vec)      Xsub(1)
-      type(Mat)      Amat
+      Vec::      Xsub(1)
+     Mat::     Amat
       PetscInt       izero,ione
 
       izero = 0
@@ -556,8 +556,8 @@
       implicit none
 !  Input/output variables:
       type (petsc_kkt_solver) solver
-      type(Vec)      X1
-      type(Mat)      jac
+      Vec::      X1
+     Mat::     jac
       logical        add_nl_term
       PetscErrorCode ierr
 
@@ -638,13 +638,13 @@
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
-      type(SNES)     snesIn
-      type(Vec)      X,F
+      SNES::     snesIn
+     Vec::      X,F
       PetscErrorCode ierr
       type (petsc_kkt_solver) solver
 
 !  Declarations for use with local arrays:
-      type(Vec)              Xsub(2),Fsub(2)
+     Vec::              Xsub(2),Fsub(2)
       PetscInt               izero,ione,itwo
 
 !  Scatter ghost points to local vector, using the 2-step process
@@ -694,7 +694,7 @@
       implicit none
 !  Input/output variables:
       type (petsc_kkt_solver) solver
-      type(Vec)      X1,F1
+     Vec::      X1,F1
       PetscErrorCode ierr
 !  Local variables:
       PetscScalar one,sc
