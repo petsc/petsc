@@ -57,6 +57,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   ierr = PetscClassIdRegister("Axis",&PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Line Graph",&PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Histogram",&PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Bar Grap",&PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll();CHKERRQ(ierr);

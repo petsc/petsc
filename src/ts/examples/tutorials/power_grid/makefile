@@ -182,7 +182,9 @@ runex2f:
 	  ${RM} -f ex2_1.tmp
 
 runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005  > ex3_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex3_1.tmp
 
 runex3adj:
 	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_1.tmp 2>&1;	  \
@@ -204,12 +206,6 @@ runex3opt_fd:
 	-@${MPIEXEC} -n 1 ./ex3opt_fd -viewer_binary_skip_info  -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_fd_1.out ex3opt_fd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fd_1.tmp
-
-
-runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;	  \
-	   ${DIFF} output/ex3_1.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_2.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
@@ -403,7 +399,7 @@ clean_files:
 	-@${RM} *.bin; \
 	  ${RM} *.info
 
-TESTEXAMPLES_C_NOCOMPLEX   = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
+TESTEXAMPLES_C_NOCOMPLEX   = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex3adj.PETSc runex3adj ex3adj.rm \
 			    ex3adj_events.PETSc runex3adj_events ex3adj_events.rm \
                             ex3opt.PETSc runex3opt ex3opt.rm \

@@ -387,7 +387,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
       /* boundary points */
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         v[0] =  2.0*(hydhx + hxdhy);
-        ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jacpre,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         k = 0;
         /* interior grid points */
@@ -414,7 +414,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
           col[k].j = j + 1; col[k].i = i;
           k++;
         }
-        ierr = MatSetValuesStencil(jac,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jacpre,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -423,8 +423,8 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jacpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jacpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
