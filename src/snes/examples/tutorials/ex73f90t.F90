@@ -580,7 +580,7 @@
       hy2inv = one/(hy*hy)
 
       call VecGetOwnershipRange(X1,low,high,ierr)
-      call VecGetArrayF90(X1,lx_v,ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr)
 
       ii = 0
       do 20 row=low,high-1
@@ -613,7 +613,7 @@
          endif
  20   continue
 
-      call VecRestoreArrayF90(X1,lx_v,ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr)
 
       return
       end subroutine FormJacobianLocal
@@ -706,7 +706,7 @@
       sc     = solver%lambda
       ione   = 1
 
-      call VecGetArrayF90(X1,lx_v,ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr)
       call VecGetOwnershipRange(X1,low,high,ierr)
 
 !     Compute function over the locally owned part of the grid
@@ -725,7 +725,7 @@
          call VecSetValues(F1,ione,row,v,INSERT_VALUES,ierr)
  20   continue
 
-      call VecRestoreArrayF90(X1,lx_v,ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr)
 
       call VecAssemblyBegin(F1,ierr)
       call VecAssemblyEnd(F1,ierr)
