@@ -19,6 +19,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   IS             *is1,*is2;
   PetscRandom    r;
+  PetscLayout    rmap;
   PetscScalar    rand;
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -38,12 +39,15 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  /*ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  ierr = MatGetLayouts(A,&rmap,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read the matrix again as a sequential matrix */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(B,fd);CHKERRQ(ierr);
+  /*ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Create the IS corresponding to subdomains */
@@ -66,9 +70,6 @@ int main(int argc,char **args)
   }
   ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRQ(ierr);
-
-
-
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
