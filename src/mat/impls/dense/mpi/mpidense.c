@@ -1569,6 +1569,8 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
 #define __FUNCT__ "MatLoad_MPIDense"
 PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 {
+  Mat_MPIDense   *a;
+  Mat_SeqDense   *A;
   PetscScalar    *vals,*svals;
   MPI_Comm       comm;
   MPI_Status     status;
@@ -1702,7 +1704,11 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   if (!sizesset) {
     ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   }
-  ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  a = (Mat_MPIDense*)newmat->data;
+  A = (Mat_SeqDense*)a->A->data;
+  if (!A->user_alloc) {
+    ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  }
   for (i=0; i<m; i++) ourlens[i] += offlens[i];
 
   if (!rank) {
