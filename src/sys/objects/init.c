@@ -252,6 +252,10 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 #include <cublas.h>
 #endif
 
+#if defined(PETSC_USE_LOG)
+extern PetscBool   PetscObjectsLog;
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
@@ -317,6 +321,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1) {
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   }
+
+  ierr = PetscOptionsHasName(NULL,"-objects_dump",&PetscObjectsLog);CHKERRQ(ierr);
 
   /*
       Set the display variable for graphics
