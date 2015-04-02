@@ -154,7 +154,6 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
-  PetscInt       i,start,end;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
@@ -162,17 +161,8 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   if (Y->factortype) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
 
-  if (Y->ops->shift) {
-    ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
-  } else {
-    PetscScalar alpha = a;
-    ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-    for (i=start; i<end; i++) {
-      ierr = MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
+  ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_CUSP)
   if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_CUSP_CPU;

@@ -2584,6 +2584,22 @@ static PetscErrorCode  MatSetRandom_MPIAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_MPIAIJ"
+PetscErrorCode MatShift_MPIAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *maij = (Mat_MPIAIJ*)Y->data;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)maij->A->data,*bij = (Mat_SeqAIJ*)maij->B->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz && !bij->nz) {
+    ierr = MatMPIAIJSetPreallocation(Y,1,NULL,0,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetRow_MPIAIJ,
@@ -2643,7 +2659,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatCopy_MPIAIJ,
                                 /*44*/ MatGetRowMax_MPIAIJ,
                                        MatScale_MPIAIJ,
-                                       0,
+                                       MatShift_MPIAIJ,
                                        MatDiagonalSet_MPIAIJ,
                                        MatZeroRowsColumns_MPIAIJ,
                                 /*49*/ MatSetRandom_MPIAIJ,

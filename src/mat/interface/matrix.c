@@ -5316,6 +5316,63 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetOption"
+/*@
+   MatGetOption - Sets a parameter option that has been set for a matrix.
+
+   Logically Collective on Mat for certain operations, such as MAT_SPD, not collective for MAT_ROW_ORIENTED, see MatOption
+
+   Input Parameters:
++  mat - the matrix
+-  option - the option, this only responds to certain options, check the code for which ones
+
+   Output Parameter:
+.  flg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE)
+
+    Notes: Can only be called after MatSetSizes() and MatSetType() have been set.
+
+   Level: intermediate
+
+   Concepts: matrices^setting options
+
+.seealso:  MatOption, MatSetOption()
+
+@*/
+PetscErrorCode  MatGetOption(Mat mat,MatOption op,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+
+  if (((int) op) <= MAT_OPTION_MIN || ((int) op) >= MAT_OPTION_MAX) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
+  if (!((PetscObject)mat)->type_name) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_TYPENOTSET,"Cannot get options until type and size have been set, see MatSetType() and MatSetSizes()");
+
+  switch (op) {
+  case MAT_NO_OFF_PROC_ENTRIES:
+    *flg = mat->nooffprocentries;
+    break;
+  case MAT_NO_OFF_PROC_ZERO_ROWS:
+    *flg = mat->nooffproczerorows;
+    break;
+  case MAT_SYMMETRIC:
+    *flg = mat->symmetric;
+    break;
+  case MAT_HERMITIAN:
+    *flg = mat->hermitian;
+    break;
+  case MAT_STRUCTURALLY_SYMMETRIC:
+    *flg = mat->structurally_symmetric;
+    break;
+  case MAT_SYMMETRY_ETERNAL:
+    *flg = mat->symmetric_eternal;
+    break;
+  default:
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatZeroEntries"
 /*@
    MatZeroEntries - Zeros all entries of a matrix.  For sparse matrices

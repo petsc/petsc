@@ -2,6 +2,28 @@
 #include <petsc-private/matimpl.h>       /*I "petscmat.h"  I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatShift_Basic"
+PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,start,end;
+  PetscScalar    alpha = a;
+  PetscBool      prevoption;
+
+  PetscFunctionBegin;
+  ierr = MatGetOption(Y,MAT_NO_OFF_PROC_ENTRIES,&prevoption);CHKERRQ(ierr);
+  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
+  for (i=start; i<end; i++) {
+    ierr = MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,prevoption);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate"
 /*@
    MatCreate - Creates a matrix where the type is determined
