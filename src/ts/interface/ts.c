@@ -6488,7 +6488,12 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
   Output Parameter:
 . tsout   - The output TS (cloned)
 
-  Level: beginner
+  Notes:
+  This function is used to create a clone of a TS object. It is used in ARKIMEX for initializing the slope for first stage explicit methods. It will likely be replaced in the future with a mechanism of switching methods on the fly. 
+
+  When using TSDestroy() on a clone the user has to first reset the correct TS reference in the embedded SNES object: e.g.: by running SNES snes_dup=NULL; ierr = TSGetSNES(ts,&snes_dup);CHKERRQ(ierr); ierr = TSSetSNES(ts,snes_dup);CHKERRQ(ierr);
+
+  Level: developer
 
 .keywords: TS, clone
 .seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
