@@ -71,7 +71,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscStrcpy(str,"PetscDraw: ");CHKERRQ(ierr);
     ierr   = PetscStrcat(str,((PetscObject)indraw)->type_name);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
@@ -226,9 +226,8 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 
   ierr =  PetscFunctionListFind(PetscDrawList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
-  if (draw->data) {ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);}
-  draw->ops->destroy = NULL;
-  draw->data         = NULL;
+  if (draw->ops->destroy) {ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);}
+  ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
   ierr       = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
   ierr       = (*r)(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -314,6 +313,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
 .   -nox_warning - when X windows support is not installed this prevents the warning message from being printed
 .   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
+.   -draw_marker_type - <x,point>
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
 .   -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
 .   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
@@ -393,6 +393,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #endif
   ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flg);CHKERRQ(ierr);
   if (flg) draw->pause = dpause;
+
+  ierr = PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL);CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);

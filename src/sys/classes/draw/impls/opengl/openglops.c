@@ -426,7 +426,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   glutDestroyWindow(win->win);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -629,7 +629,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 
   PetscFunctionBegin;
   globalGLKViewUsed[win->view] = 0;
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }

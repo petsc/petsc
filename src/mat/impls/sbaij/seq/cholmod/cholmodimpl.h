@@ -10,17 +10,18 @@
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#  define CHOLMOD_INT_TYPE          CHOLMOD_LONG
-#  define cholmod_X_start           cholmod_l_start
-#  define cholmod_X_analyze         cholmod_l_analyze
-#  define cholmod_X_analyze_p       cholmod_l_analyze_p
-#  define cholmod_X_copy            cholmod_l_copy
-#  define cholmod_X_factorize       cholmod_l_factorize
-#  define cholmod_X_finish          cholmod_l_finish
-#  define cholmod_X_free_factor     cholmod_l_free_factor
-#  define cholmod_X_free_dense      cholmod_l_free_dense
-#  define cholmod_X_resymbol        cholmod_l_resymbol
-#  define cholmod_X_solve           cholmod_l_solve
+#  define CHOLMOD_INT_TYPE                CHOLMOD_LONG
+#  define cholmod_X_start                 cholmod_l_start
+#  define cholmod_X_analyze               cholmod_l_analyze
+/* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
+#  define cholmod_X_analyze_p(a,b,c,d,f)  cholmod_l_analyze_p(a,(SuiteSparse_long *)b,(SuiteSparse_long *)c,d,f)
+#  define cholmod_X_copy                  cholmod_l_copy
+#  define cholmod_X_factorize             cholmod_l_factorize
+#  define cholmod_X_finish                cholmod_l_finish
+#  define cholmod_X_free_factor           cholmod_l_free_factor
+#  define cholmod_X_free_dense            cholmod_l_free_dense
+#  define cholmod_X_resymbol(a,b,c,d,f,e) cholmod_l_resymbol(a,(SuiteSparse_long *)b,c,d,f,e)
+#  define cholmod_X_solve                 cholmod_l_solve
 #else
 #  define CHOLMOD_INT_TYPE          CHOLMOD_INT
 #  define cholmod_X_start           cholmod_start

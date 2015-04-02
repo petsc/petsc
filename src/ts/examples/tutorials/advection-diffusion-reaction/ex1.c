@@ -24,11 +24,11 @@ static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
          -ts_monitor_lg_error      -  plots each component of the error in the solution as a function of time (at each timestep)
          -draw_pause -2            -  hold the plots a the end of the solution process, enter a mouse press in each window to end the process
 
-         -ts_monitor_lg_timestep -1       -  plots the size of each timestep (at the end of the solution process)
-         -ts_monitor_lg_solution -1       -  plots each component of the solution as a function of time (at the end of the solution process)
-         -ts_monitor_lg_error -1          -  plots each component of the error in the solution as a function of time (at the end of the solution process)
-         -lg_indicate_data_points false   -  do NOT show the data points on the plots
-         -draw_save                       -  save the timestep and solution plot as a .Gif image file
+         -ts_monitor_lg_timestep -1  -  plots the size of each timestep (at the end of the solution process)
+         -ts_monitor_lg_solution -1  -  plots each component of the solution as a function of time (at the end of the solution process)
+         -ts_monitor_lg_error -1     -  plots each component of the error in the solution as a function of time (at the end of the solution process)
+         -lg_use_markers false       -  do NOT show the data points on the plots
+         -draw_save                  -  save the timestep and solution plot as a .Gif image file
 
 F*/
 

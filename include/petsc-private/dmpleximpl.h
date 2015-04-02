@@ -331,18 +331,22 @@ PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetLocalOffset_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
 #if defined(PETSC_USE_DEBUG)
   {
+    PetscInt       dof;
     PetscErrorCode ierr;
-    ierr = PetscSectionGetOffset(dm->defaultSection,point,offset);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(dm->defaultSection, point, start);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(dm->defaultSection, point, &dof);CHKERRQ(ierr);
+    *end = *start + dof;
   }
 #else
   {
     const PetscSection s = dm->defaultSection;
-    *offset = s->atlasOff[point - s->pStart];
+    *start = s->atlasOff[point - s->pStart];
+    *end   = *start + s->atlasDof[point - s->pStart];
   }
 #endif
   PetscFunctionReturn(0);
@@ -350,18 +354,22 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt p
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetLocalFieldOffset_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm,PetscInt point,PetscInt field,PetscInt *offset)
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   {
+    PetscInt       dof;
     PetscErrorCode ierr;
-    ierr = PetscSectionGetFieldOffset(dm->defaultSection,point,field,offset);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, start);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &dof);CHKERRQ(ierr);
+    *end = *start + dof;
   }
 #else
   {
     const PetscSection s = dm->defaultSection->field[field];
-    *offset = s->atlasOff[point - s->pStart];
+    *start = s->atlasOff[point - s->pStart];
+    *end   = *start + s->atlasDof[point - s->pStart];
   }
 #endif
   PetscFunctionReturn(0);

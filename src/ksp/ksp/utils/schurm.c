@@ -691,7 +691,7 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
     application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
-    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    the (0,0) block A00 in place of A00^{-1}. This rarely produces a scalable algorithm. Optionally, A00 can be lumped
     before forming inv(diag(A00)).
 
     Level: advanced

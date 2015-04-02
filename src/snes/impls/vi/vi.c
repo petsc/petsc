@@ -87,6 +87,31 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS *in
 /* --------------------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESVIMonitorResidual"
+PetscErrorCode  SNESVIMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+{
+  PetscErrorCode ierr;
+  Vec            X, F, Finactive;
+  IS             isactive;
+  PetscViewer    viewer = (PetscViewer) dummy;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
+  ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
+  ierr = SNESVIGetActiveSetIS(snes,X,F,&isactive);CHKERRQ(ierr);
+  ierr = VecDuplicate(F,&Finactive);CHKERRQ(ierr);
+  ierr = VecCopy(F,Finactive);CHKERRQ(ierr);
+  ierr = VecISSet(Finactive,isactive,0.0);CHKERRQ(ierr);
+  ierr = ISDestroy(&isactive);CHKERRQ(ierr);
+  if (!viewer) {
+    viewer = PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes));
+  }
+  ierr = VecView(Finactive,viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&Finactive);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESMonitorVI"
 PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
@@ -399,7 +424,6 @@ PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 
@@ -563,9 +587,14 @@ PetscErrorCode SNESSetFromOptions_VI(PetscOptions *PetscOptionsObject,SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES VI options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","None",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","SNESMonitorResidual",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESMonitorVI,0,0);CHKERRQ(ierr);
+  }
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-snes_vi_monitor_residual","Monitor residual all non-active variables; using zero for active constraints","SNESMonitorVIResidual",flg,&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL);CHKERRQ(ierr);
   }
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);

@@ -1462,7 +1462,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscStrcpy(str,"TS: ");CHKERRQ(ierr);
     ierr   = PetscStrcat(str,((PetscObject)ts)->type_name);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (ts->ops->view) {
@@ -3441,7 +3441,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 .  -ts_monitor_lg_error -
 .  -ts_monitor_lg_ksp_iterations -
 .  -ts_monitor_lg_snes_iterations -
--  -lg_indicate_data_points <true,false> - indicate the data points (at each time step) on the plot; default is true
+-  -lg_use_markers <true,false> - mark the data points (at each time step) on the plot; default is true
 
    Notes:
    Use TSMonitorLGCtxDestroy() to destroy.
@@ -3464,7 +3464,7 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)(*ctx)->lg,(PetscObject)win);CHKERRQ(ierr);
-  ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetUseMarkers((*ctx)->lg,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscDrawLGSetFromOptions((*ctx)->lg);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
@@ -3484,7 +3484,6 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
-    ierr = PetscDrawLGIndicateDataPoints(ctx->lg,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
@@ -3855,18 +3854,14 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
   }
   ierr = VecView(u,ictx->viewer);CHKERRQ(ierr);
   if (ictx->showtimestepandtime) {
-    PetscReal xl,yl,xr,yr,tw,w,h;
+    PetscReal xl,yl,xr,yr,h;
     char      time[32];
-    size_t    len;
 
     ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
     ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
-    ierr = PetscStrlen(time,&len);CHKERRQ(ierr);
-    ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
-    w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = yl + .95*(yr - yl);
-    ierr = PetscDrawString(draw,w,h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
+    ierr = PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   }
 
@@ -3903,9 +3898,8 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   MPI_Comm          comm;
   PetscInt          n;
   PetscMPIInt       size;
-  PetscReal         xl,yl,xr,yr,tw,w,h;
+  PetscReal         xl,yl,xr,yr,h;
   char              time[32];
-  size_t            len;
   const PetscScalar *U;
 
   PetscFunctionBegin;
@@ -3930,11 +3924,8 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   if (ictx->showtimestepandtime) {
     ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
     ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
-    ierr = PetscStrlen(time,&len);CHKERRQ(ierr);
-    ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
-    w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = yl + .95*(yr - yl);
-    ierr = PetscDrawString(draw,w,h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
+    ierr = PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
   }
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4984,13 +4975,14 @@ PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNorm2"
 /*@
-   TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between a vector and the current state
+   TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between two state vectors
 
    Collective on TS
 
    Input Arguments:
 +  ts - time stepping context
--  Y - state vector to be compared to ts->vec_sol
+.  U - state vector, usually ts->vec_sol
+-  Y - state vector to be compared to U
 
    Output Arguments:
 .  norm - weighted norm, a value of 1.0 is considered small
@@ -4999,22 +4991,23 @@ PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
 
 .seealso: TSErrorWeightedNorm(), TSErrorWeightedNormInfinity()
 @*/
-PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,N,rstart;
   const PetscScalar *u,*y;
-  Vec               U;
   PetscReal         sum,gsum;
   PetscReal         tol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
-  PetscValidPointer(norm,3);
-  U = ts->vec_sol;
-  PetscCheckSameTypeAndComm(U,1,Y,2);
-  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,3);
+  PetscValidType(U,2);
+  PetscValidType(Y,3);
+  PetscCheckSameComm(U,2,Y,3);
+  PetscValidPointer(norm,4);
+  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
@@ -5118,13 +5111,14 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNormInfinity"
 /*@
-   TSErrorWeightedNormInfinity - compute a weighted infinity-norm of the difference between a vector and the current state
+   TSErrorWeightedNormInfinity - compute a weighted infinity-norm of the difference between two state vectors
 
    Collective on TS
 
    Input Arguments:
 +  ts - time stepping context
--  Y - state vector to be compared to ts->vec_sol
+.  U - state vector, usually ts->vec_sol
+-  Y - state vector to be compared to U
 
    Output Arguments:
 .  norm - weighted norm, a value of 1.0 is considered small
@@ -5133,22 +5127,23 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 
 .seealso: TSErrorWeightedNorm(), TSErrorWeightedNorm2()
 @*/
-PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,N,rstart,k;
   const PetscScalar *u,*y;
-  Vec               U;
   PetscReal         max,gmax;
   PetscReal         tol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
-  PetscValidPointer(norm,3);
-  U = ts->vec_sol;
-  PetscCheckSameTypeAndComm(U,1,Y,2);
-  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,3);
+  PetscValidType(U,2);
+  PetscValidType(Y,3);
+  PetscCheckSameComm(U,2,Y,3);
+  PetscValidPointer(norm,4);
+  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
@@ -5276,40 +5271,39 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNorm"
 /*@
-   TSErrorWeightedNorm - compute a weighted norm of the difference between a vector and the current state
+   TSErrorWeightedNorm - compute a weighted norm of the difference between two state vectors
 
    Collective on TS
 
    Input Arguments:
 +  ts - time stepping context
--  Y - state vector to be compared to ts->vec_sol
-
-   Options Database Keys:
-.  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
+.  U - state vector, usually ts->vec_sol
+.  Y - state vector to be compared to U
+-  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
    Output Arguments:
 .  norm - weighted norm, a value of 1.0 is considered small
+
+
+   Options Database Keys:
+.  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
 
    Level: developer
 
 .seealso: TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2()
 @*/
-PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscReal *norm)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  if(ts->adapt->wnormtype == NORM_2) {
-    PetscErrorCode    ierr;
-    ierr = TSErrorWeightedNorm2(ts,Y,norm);
-  } else if(ts->adapt->wnormtype == NORM_INFINITY) {
-    PetscErrorCode    ierr;
-    ierr = TSErrorWeightedNormInfinity(ts,Y,norm);
-  }
-
+  if (wnormtype == NORM_2) {
+    ierr = TSErrorWeightedNorm2(ts,U,Y,norm);CHKERRQ(ierr);
+  } else if(wnormtype == NORM_INFINITY) {
+    ierr = TSErrorWeightedNormInfinity(ts,U,Y,norm);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetCFLTimeLocal"
