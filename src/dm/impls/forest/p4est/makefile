@@ -12,7 +12,7 @@ MANSEC   = DM
 SUBMANSEC= DMFOREST
 LOCDIR   = src/dm/impls/forest/p4est/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 
