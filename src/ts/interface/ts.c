@@ -6518,10 +6518,7 @@ PetscErrorCode  TSClone(MPI_Comm comm, TS tsin, TS *tsout)
   DM   dm;
   ierr = TSGetSNES(tsin,&snes_start);                   CHKERRQ(ierr);
   ierr = TSSetSNES(t,snes_start);                       CHKERRQ(ierr);
-  /* I should only need to do this:
-  t->snes=tsin->snes;
-  ierr = PetscObjectReference((PetscObject)tsin->snes); CHKERRQ(ierr);
-  */
+
   ierr = TSGetDM(tsin,&dm);                             CHKERRQ(ierr);
   ierr = TSSetDM(t,dm);                                 CHKERRQ(ierr);
 

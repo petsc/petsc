@@ -732,17 +732,12 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
 
-      //PetscInt cnt;
-      //PetscObjectGetReference((PetscObject)ts->snes,&cnt);
-      //printf("Ref count: %d\n",cnt);
-
-      /*I don't understand why this needs to be here*/
       SNES snes_dup=NULL;
+      /* Set the correct TS in SNES */
+      /* We'll try to bypass this by changing the method on the fly */
       ierr = TSGetSNES(ts,&snes_dup);CHKERRQ(ierr);
-      ts_start->snes=NULL;
       ierr = TSSetSNES(ts,snes_dup);CHKERRQ(ierr);
-      ierr = SNESDestroy(&snes_dup);CHKERRQ(ierr);
-      /* END */
+
       ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
     }
   }
