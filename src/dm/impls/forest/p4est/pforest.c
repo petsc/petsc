@@ -26,7 +26,7 @@
 
 #define DMInitialize_pforest            _append_pforest(DMInitialize)
 #define DMCreate_pforest                _append_pforest(DMCreate)
-#define DMDestroy_pforest               _append_pforest(DMDestroy)
+#define DMForestDestroy_pforest         _append_pforest(DMForestDestroy)
 #define DMSetUp_pforest                 _append_pforest(DMSetUp)
 #define DMView_pforest                  _append_pforest(DMView)
 #define DMView_VTK_pforest              _append_pforest(DMView_VTK)
@@ -53,6 +53,8 @@ typedef struct {
 #define __FUNCT__ _pforest_string(DMFTopologyDestroy_pforest)
 static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (!(*topo)) {
     PetscFunctionReturn(0);
@@ -63,6 +65,7 @@ static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
   }
   p4est_geometry_destroy((*topo)->geom);
   p4est_connectivity_destroy((*topo)->conn);
+  ierr = PetscFree(*topo);CHKERRQ(ierr);
   *topo = NULL;
   PetscFunctionReturn(0);
 }
