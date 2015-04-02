@@ -36,6 +36,6 @@ typedef struct {
 } DM_Forest;
 
 PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM);
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions*,DM);
 
 #endif /* _FORESTIMPL_H */

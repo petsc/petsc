@@ -541,7 +541,7 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Forest"
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsObject,DM dm)
 {
   DM_Forest                  *forest = (DM_Forest *) dm->data;
   PetscBool                  flg;
@@ -557,7 +557,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   forest->setFromOptions = PETSC_TRUE;
-  ierr = PetscOptionsHead("DMForest Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMForest Options");CHKERRQ(ierr);
   ierr = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg);CHKERRQ(ierr);
   if (flg) {
