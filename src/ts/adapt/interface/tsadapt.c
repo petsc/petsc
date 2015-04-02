@@ -127,7 +127,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
   PetscBool      match;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
@@ -137,12 +136,9 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
-  /* Reinitialize function pointers in TSAdaptOps structure */
-  checkstage = adapt->ops->checkstage;
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
-  adapt->ops->checkstage = checkstage;
-  ierr = (*r)(adapt);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
+  ierr = (*r)(adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -242,6 +238,30 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdaptReset"
+/*@
+   TSAdaptReset - Resets a TSAdapt context.
+
+   Collective on TS
+
+   Input Parameter:
+.  adapt - the TSAdapt context obtained from TSAdaptCreate()
+
+   Level: developer
+
+.seealso: TSAdaptCreate(), TSAdaptDestroy()
+@*/
+PetscErrorCode  TSAdaptReset(TSAdapt adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (adapt->ops->reset) {ierr = (*adapt->ops->reset)(adapt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptDestroy"
 PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 {
@@ -251,6 +271,9 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt,TSADAPT_CLASSID,1);
   if (--((PetscObject)(*adapt))->refct > 0) {*adapt = NULL; PetscFunctionReturn(0);}
+
+  ierr = TSAdaptReset(*adapt);CHKERRQ(ierr);
+
   if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*adapt)->monitor);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
@@ -314,7 +337,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  adapt->ops->checkstage = func;
+  adapt->checkstage = func;
   PetscFunctionReturn(0);
 }
 
@@ -620,7 +643,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
       }
     }
   }
-  if (adapt->ops->checkstage) {ierr = (*adapt->ops->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
+  if (adapt->checkstage) {ierr = (*adapt->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

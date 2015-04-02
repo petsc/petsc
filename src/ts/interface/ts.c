@@ -1983,6 +1983,7 @@ PetscErrorCode  TSReset(TS ts)
     ierr = (*ts->ops->reset)(ts);CHKERRQ(ierr);
   }
   if (ts->snes) {ierr = SNESReset(ts->snes);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptReset(ts->adapt);CHKERRQ(ierr);}
 
   ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
