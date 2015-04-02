@@ -25,6 +25,7 @@ ex2f90: ex2f90.o  chkopts
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
+	${DSYMUTIL} ex3
 	${RM} -f ex3.o
 
 #--------------------------------------------------------------------------
