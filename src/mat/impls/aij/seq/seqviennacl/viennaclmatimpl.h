@@ -16,6 +16,7 @@ typedef viennacl::compressed_compressed_matrix<PetscScalar>   ViennaCLCompressed
 
 
 struct Mat_SeqAIJViennaCL {
+  Mat_SeqAIJViennaCL() : tempvec(NULL), mat(NULL), compressed_mat(NULL) {}
   ViennaCLVector               *tempvec;
   ViennaCLAIJMatrix            *mat;  /* pointer to the matrix on the GPU */
   ViennaCLCompressedAIJMatrix  *compressed_mat; /* compressed CSR */
