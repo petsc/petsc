@@ -697,7 +697,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   const PetscInt  s    = tab->s;
   const PetscReal *At  = tab->At,*A = tab->A,*ct = tab->ct,*c = tab->c;
   PetscScalar     *w   = ark->work;
-  Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,Ydot0 = ark->Ydot0,W = ark->Work,Z = ark->Z;
+  Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,Ydot0 = ark->Ydot0,Z = ark->Z;
   PetscBool       init_guess_extrp = ark->init_guess_extrp;
   TSAdapt         adapt;
   SNES            snes;
@@ -766,11 +766,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       } else {
         ark->scoeff     = 1./At[i*s+i];
         ierr            = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
-        /* Affine part */
-        ierr = VecZeroEntries(W);CHKERRQ(ierr);
-        /*for (j=0; j<i; j++) w[j] = h*A[i*s+j];
-        ierr = VecMAXPY(W,i,w,YdotRHS);CHKERRQ(ierr);
-        ierr = VecScale(W, ark->scoeff/h);CHKERRQ(ierr);*/
 
         /* Ydot = shift*(Y-Z) */
         ierr = VecCopy(ts->vec_sol,Z);CHKERRQ(ierr);
@@ -786,7 +781,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
           /* Initial guess taken from last stage */
           ierr        = VecCopy(i>0 ? Y[i-1] : ts->vec_sol,Y[i]);CHKERRQ(ierr);
         }
-        ierr          = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
+        ierr          = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
         ierr          = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;

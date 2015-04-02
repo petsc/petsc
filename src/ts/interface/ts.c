@@ -4396,7 +4396,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Input Parameter:
 +  ts - the TS context
-.  equation_type - see TSEquationType
+-  equation_type - see TSEquationType
 
    Level: advanced
 
