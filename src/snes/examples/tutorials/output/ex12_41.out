@@ -88,6 +88,7 @@ SNES Object: 1 MPI processes
       tolerances: relative=0, absolute=0, solution=0
       total number of linear solver iterations=1
       total number of function evaluations=2
+      norm schedule FINALONLY
       SNESLineSearch Object:      (fas_levels_1_)       1 MPI processes
         type: bt
           interpolation: cubic
@@ -117,6 +118,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=0
   total number of function evaluations=1
+  norm schedule ALWAYS
   SNESLineSearch Object:   1 MPI processes
     type: basic
     maxstep=1.000000e+08, minlambda=1.000000e-12

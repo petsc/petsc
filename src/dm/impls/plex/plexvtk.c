@@ -152,7 +152,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
     }
-    if (numProcs > 1) {ierr = PetscMalloc1((maxCorners+maxCells), &remoteVertices);CHKERRQ(ierr);}
+    if (numProcs > 1) {ierr = PetscMalloc1(maxCorners+maxCells, &remoteVertices);CHKERRQ(ierr);}
     for (proc = 1; proc < numProcs; ++proc) {
       MPI_Status status;
 

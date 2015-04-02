@@ -9,7 +9,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Anderson"
-PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
+PetscErrorCode SNESSetFromOptions_Anderson(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);

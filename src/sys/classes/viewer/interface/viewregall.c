@@ -14,6 +14,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 
+PetscBool PetscViewerRegisterAllCalled;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerRegisterAll"
 /*@C
@@ -30,6 +32,9 @@ PetscErrorCode  PetscViewerRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscViewerRegisterAllCalled) PetscFunctionReturn(0);
+  PetscViewerRegisterAllCalled = PETSC_TRUE;
+
   ierr = PetscViewerRegister(PETSCVIEWERASCII,      PetscViewerCreate_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerRegister(PETSCVIEWERBINARY,     PetscViewerCreate_Binary);CHKERRQ(ierr);
   ierr = PetscViewerRegister(PETSCVIEWERSTRING,     PetscViewerCreate_String);CHKERRQ(ierr);

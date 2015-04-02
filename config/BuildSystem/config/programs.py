@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
       if os.path.exists(conftmpDir): os.rmdir(conftmpDir)
       if os.path.exists(confDir):    os.rmdir(confDir)
       try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p '+conftmpDir, log = self.framework.log)
+        (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p '+conftmpDir, log = self.log)
         if not status and os.path.isdir(conftmpDir):
           self.mkdir = self.mkdir+' -p'
           self.logPrint('Adding -p flag to '+self.mkdir+' to automatically create directories')
@@ -44,7 +44,7 @@ class Configure(config.base.Configure):
   def configureAutoreconf(self):
     '''Check for autoreconf'''
     self.autoreconf_flg = False
-    if self.getExecutable(self.framework.argDB['with-autoreconf'], getFullPath = 1,resultName = 'autoreconf',setMakeMacro = 0):
+    if self.getExecutable(self.argDB['with-autoreconf'], getFullPath = 1,resultName = 'autoreconf',setMakeMacro = 0):
       import shutil,os
       testdir = os.path.join(self.tmpDir, 'autoconfdir')
       acfile  = os.path.join(testdir,'configure.ac')
@@ -77,15 +77,15 @@ class Configure(config.base.Configure):
     for sedcmd in [self.sed+' -i',self.sed+' -i ""','perl -pi -e']:
       try:
         (out,err,status) = Configure.executeShellCommand('%s s/sed/sd/g "%s"'%(sedcmd,sed1))
-        self.framework.logPrint('Adding SEDINPLACE cmd: '+sedcmd)
+        self.logPrint('Adding SEDINPLACE cmd: '+sedcmd)
         self.addMakeMacro('SEDINPLACE',sedcmd)
         status = 1
         break
       except RuntimeError:
-        self.framework.logPrint('Rejected SEDINPLACE cmd: '+sedcmd)
+        self.logPrint('Rejected SEDINPLACE cmd: '+sedcmd)
     os.unlink(sed1)
     if not status:
-        self.framework.logPrint('No suitable SEDINPLACE found')
+        self.logPrint('No suitable SEDINPLACE found')
         self.addMakeMacro('SEDINPLACE','SEDINPLACE_NOT_FOUND')
     self.getExecutable('mv',   getFullPath = 1)
     if not hasattr(self, 'mv'): raise RuntimeError('Could not locate mv executable')

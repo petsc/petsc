@@ -26,6 +26,7 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscDrawPackageInitialized = PETSC_FALSE;
+  PetscDrawRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -56,6 +57,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   ierr = PetscClassIdRegister("Axis",&PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Line Graph",&PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Histogram",&PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Bar Grap",&PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
@@ -228,7 +230,7 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
     ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
     len  = len1 + len2;
-    ierr = PetscMalloc1((len + 1),&newtitle);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len + 1,&newtitle);CHKERRQ(ierr);
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);
@@ -282,6 +284,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->savefilenameext);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefinalfilename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);

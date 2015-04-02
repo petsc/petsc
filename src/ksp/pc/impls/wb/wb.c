@@ -1,6 +1,6 @@
 
 #include <petscdmda.h>   /*I "petscdmda.h" I*/
-#include <../src/ksp/pc/impls/mg/mgimpl.h>   /*I "petscksp.h" I*/
+#include <petsc-private/pcmgimpl.h>   /*I "petscksp.h" I*/
 #include <petscctable.h>
 
 typedef struct {
@@ -734,7 +734,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Exotic"
-PetscErrorCode PCSetFromOptions_Exotic(PC pc)
+PetscErrorCode PCSetFromOptions_Exotic(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -743,7 +743,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Exotic coarse space options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Exotic coarse space options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_exotic_type","face or wirebasket","PCExoticSetType",PCExoticTypes,(PetscEnum)ctx->type,(PetscEnum*)&mgctype,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCExoticSetType(pc,mgctype);CHKERRQ(ierr);

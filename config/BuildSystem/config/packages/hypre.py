@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['https://computation.llnl.gov/casc/hypre/download/hypre-2.9.1a.tar.gz',
-                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.9.1a.tar.gz']
+    self.download  = ['https://computation.llnl.gov/casc/hypre/download/hypre-2.10.0b.tar.gz',
+                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.10.0b.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.liblist   = [['libHYPRE.a']]
@@ -18,7 +18,7 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.languages      = framework.require('PETSc.options.languages',   self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.mpi            = framework.require('config.packages.MPI',self)
@@ -37,7 +37,7 @@ class Configure(config.package.GNUPackage):
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Error: Hypre requires C++ compiler. None specified')
     if not hasattr(self.compilers, 'FC'):
-      raise RuntimeError('Error: Hypre requires Fortran compiler. None specified (was your MPI built with Fortran support?')
+      args.append('--disable-fortran')
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
       args.append('--with-MPI-include="'+self.mpi.include[0]+'"')
@@ -78,7 +78,7 @@ class Configure(config.package.GNUPackage):
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       args.append('--enable-bigint')
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]
@@ -87,8 +87,8 @@ class Configure(config.package.GNUPackage):
 
   def consistencyChecks(self):
     config.package.GNUPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-      self.framework.log.write('Found dgels() in Lapack library as needed by hypre\n')
+      self.log.write('Found dgels() in Lapack library as needed by hypre\n')
     return

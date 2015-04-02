@@ -209,12 +209,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;
 }
 
-/* -----------------------------------------------------------------------------------------------*/
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+extern PetscFPT PetscFPTData;
+#endif
 
-extern MPI_Op PetscADMax_Op;
-extern MPI_Op PetscADMin_Op;
-PETSC_EXTERN void MPIAPI PetscADMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-PETSC_EXTERN void MPIAPI PetscADMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+/* -----------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
@@ -383,10 +382,6 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = MPI_Type_commit(&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
 #endif
-  *ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
-  *ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
@@ -442,6 +437,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
 #if defined(PETSC_USE_DEBUG)
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
+#endif
+
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  *ierr = PetscFPTCreate(10000);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
 #endif
 
 #if defined(PETSC_HAVE_CUDA)

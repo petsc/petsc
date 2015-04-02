@@ -482,8 +482,8 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
    Collective on Vec
 
    Input Parameters:
-+  vv - pointer to pointer to array of vector pointers
--  m - the number of vectors previously obtained
++  vv - pointer to pointer to array of vector pointers, if NULL no vectors are destroyed
+-  m - the number of vectors previously obtained, if zero no vectors are destroyed
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -503,6 +503,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
   if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  if (!m) PetscFunctionReturn(0);
+  if (!*vv) PetscFunctionReturn(0);
   ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv  = 0;
   PetscFunctionReturn(0);
@@ -609,11 +611,13 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
+  ierr = VecLockPush(vec);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_NATIVE && vec->ops->viewnative) {
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   }
+  ierr = VecLockPop(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -848,7 +852,6 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
 
   PetscFunctionBegin;
   PetscValidPointer(v,1);
-  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(&v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1274,7 +1277,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
-static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
+static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,Vec vec)
 {
   PetscBool      opt;
   VecType        defaultType;
@@ -1290,7 +1293,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
     else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
+  ierr = VecRegisterAll();CHKERRQ(ierr);
   ierr = PetscOptionsFList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);
@@ -1330,11 +1333,11 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
 
   ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
   /* Handle vector type options */
-  ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
+  ierr = VecSetTypeFromOptions_Private(PetscOptionsObject,vec);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {
-    ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
+    ierr = (*vec->ops->setfromoptions)(PetscOptionsObject,vec);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
@@ -1628,6 +1631,7 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
   if (x == y) PetscFunctionReturn(0);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (x->map->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", x->map->n, y->map->n);
+  VecLocked(y,2);
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {
@@ -1760,12 +1764,9 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char op
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -1773,7 +1774,6 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char op
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1853,8 +1853,8 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscOptionsVec"
-PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man[],Vec v,PetscBool *set)
+#define __FUNCT__ "PetscOptionsGetVec"
+PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,PetscBool *set)
 {
   PetscInt       i,N,rstart,rend;
   PetscErrorCode ierr;
@@ -1866,7 +1866,7 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];

@@ -142,7 +142,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFDestroy"
-/*@C
+/*@
    PetscSFDestroy - destroy star forest
 
    Collective
@@ -205,7 +205,8 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 .  sf - star forest
 
    Options Database Keys:
-.  -sf_synchronization - synchronization type used by PetscSF
++  -sf_type - implementation type, see PetscSFSetType()
+-  -sf_rank_order - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
 
    Level: intermediate
 
@@ -227,7 +228,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   ierr = PetscOptionsFList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,256,&flg);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,flg ? type : deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,NULL);CHKERRQ(ierr);
-  if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(sf);CHKERRQ(ierr);}
+  if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(PetscOptionsObject,sf);CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -225,12 +225,13 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
-  PetscInt       i,j,row,mx,my;
-  PetscReal      two = 2.0,one = 1.0,lambda;
-  PetscReal      hx,hy,hxdhy,hydhx;
-  PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,row,mx,my;
+  PetscReal         two = 2.0,one = 1.0,lambda;
+  PetscReal         hx,hy,hxdhy,hydhx;
+  PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc,*f;
+  const PetscScalar *x;
 
   mx     = user->mx;
   my     = user->my;
@@ -242,7 +243,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
@@ -261,7 +262,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
       f[row] = -uxx + -uyy + sc*lambda*PetscExpScalar(u);
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   return 0;
 }
@@ -279,11 +280,12 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 */
 PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscInt       i,j,row,mx,my,col[5];
-  PetscErrorCode ierr;
-  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  PetscReal      hx,hy,hxdhy,hydhx;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscInt          i,j,row,mx,my,col[5];
+  PetscErrorCode    ierr;
+  PetscScalar       two = 2.0,one = 1.0,lambda,v[5],sc;
+  const PetscScalar *x;
+  PetscReal         hx,hy,hxdhy,hydhx;
 
 
   mx     = user->mx;
@@ -296,7 +298,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
@@ -312,7 +314,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
       ierr = MatSetValues(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (J != B) {

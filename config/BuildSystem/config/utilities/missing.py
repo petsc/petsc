@@ -28,13 +28,29 @@ class Configure(config.base.Configure):
   def featureTestMacros(self):
     features = ''
     if self.ftm.defines.get('_POSIX_C_SOURCE_200112L'):
-      features += '#define _POSIX_C_SOURCE 200112L\n'
+      features += '''
+#if !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200112L
+#endif
+'''
     if self.ftm.defines.get('_BSD_SOURCE'):
-      features += '#define _BSD_SOURCE\n'
+      features += '''
+#if !defined(_BSD_SOURCE)
+#define _BSD_SOURCE
+#endif
+'''
     if self.ftm.defines.get('_DEFAULT_SOURCE'):
-      features += '#define _DEFAULT_SOURCE\n'
+      features += '''
+#if !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE
+#endif
+'''
     if self.ftm.defines.get('_GNU_SOURCE'):
-      features += '#define _GNU_SOURCE\n'
+      features += '''
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+'''
     return features
 
 #-------------------------------------------------------

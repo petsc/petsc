@@ -4,17 +4,19 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'a7394f847c8953e1d3bdf35ba8569134b769b4a6'
+    self.gitcommit         = '9380ae2d6a87bc1f8d8b7adab65501dd9d784161'
     self.giturls           = ['https://bitbucket.org/petsc/pkg-ml.git']
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-win.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p1.tar.gz']
     self.functions         = ['ML_Set_PrintLevel']
     self.includes          = ['ml_include.h']
     self.liblist           = [['libml.a']]
     self.license           = 'http://trilinos.sandia.gov/'
-    self.fc                = 1
+    self.fc                = 0
     self.double            = 1
     self.complex           = 0
     self.downloadonWindows = 1
+    self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is
+                                 # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
     return
 
   def setupDependencies(self, framework):
@@ -73,12 +75,12 @@ class Configure(config.package.GNUPackage):
 
   def consistencyChecks(self):
     config.package.GNUPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       # ML requires LAPACK routine dgels() ?
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
       if not self.blasLapack.checkForRoutine('dsteqr'):
         raise RuntimeError('ML requires the LAPACK routine dsteqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-      self.framework.log.write('Found dsteqr() in Lapack library as needed by ML\n')
-      self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
+      self.log.write('Found dsteqr() in Lapack library as needed by ML\n')
+      self.log.write('Found dgels() in Lapack library as needed by ML\n')
 

@@ -330,14 +330,12 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  PetscInt       nthr;
+  PetscInt       nthr = 1;
 
   PetscFunctionBegin;
   if (nthreads == PETSC_DECIDE) {
     tcomm->nworkThreads = 1;
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting number of threads",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",tcomm->nworkThreads,&nthr,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-threadcomm_nthreads",&nthr,&flg);CHKERRQ(ierr);
     if (flg) {
       if (nthr == PETSC_DECIDE) tcomm->nworkThreads = N_CORES;
       else tcomm->nworkThreads = nthr;
@@ -424,9 +422,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
 
   if (!affinities) {
     /* Check if option is present in the options database */
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting thread affinities",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray("-threadcomm_affinities","Set core affinities of threads","PetscThreadCommSetAffinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(NULL,"-threadcomm_affinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
     if (flg) {
       if (nmax != tcomm->nworkThreads) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, Core affinities set = %D",tcomm->nworkThreads,nmax);
     } else {
@@ -500,11 +496,9 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
-  if (!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting threading model",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,type,ttype,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-threadcomm_type",ttype,256,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscStrcpy(ttype,type);CHKERRQ(ierr);
   }
@@ -1216,7 +1210,7 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 /*
   PetscThreadCommWorldInitialize - Initializes the global thread communicator object
 
-  PetscThreadCommWorldInitialize() defaults to using the nonthreaded communicator.
+    Defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommWorldInitialize(void)
 {
@@ -1233,9 +1227,7 @@ PetscErrorCode PetscThreadCommWorldInitialize(void)
 
   tcomm->nkernels = 16;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting number of kernels",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-threadcomm_nkernels","number of kernels that can be launched simultaneously","",tcomm->nkernels,&tcomm->nkernels,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-threadcomm_nkernels",&tcomm->nkernels,NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(tcomm->nkernels,&PetscJobQueue->jobs);CHKERRQ(ierr);
   ierr = PetscMalloc1(tcomm->nworkThreads*tcomm->nkernels,&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
@@ -1281,7 +1273,7 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
 
-  ierr            = PetscMalloc1((tcomm->nworkThreads+1),&trstarts_out);CHKERRQ(ierr);
+  ierr            = PetscMalloc1(tcomm->nworkThreads+1,&trstarts_out);CHKERRQ(ierr);
   trstarts_out[0] = 0;
   Q               = N/tcomm->nworkThreads;
   R               = N - Q*tcomm->nworkThreads;

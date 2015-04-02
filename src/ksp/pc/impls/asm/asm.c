@@ -117,7 +117,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = ISGetLocalSize(osm->is[i],&nidx);CHKERRQ(ierr);
       ierr = ISGetIndices(osm->is[i],&idx);CHKERRQ(ierr);
       /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
-      ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+512), &s);CHKERRQ(ierr);
+      ierr = PetscMalloc1(16*(nidx+1)+512, &s);CHKERRQ(ierr);
       ierr = PetscViewerStringOpen(PETSC_COMM_SELF, s, 16*(nidx+1)+512, &sviewer);CHKERRQ(ierr);
       ierr = PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D with overlap:\n", rank, size, i);CHKERRQ(ierr);
       for (j=0; j<nidx; j++) {
@@ -133,7 +133,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = PetscFree(s);CHKERRQ(ierr);
       if (osm->is_local) {
         /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
-        ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+512), &s);CHKERRQ(ierr);
+        ierr = PetscMalloc1(16*(nidx+1)+512, &s);CHKERRQ(ierr);
         ierr = PetscViewerStringOpen(PETSC_COMM_SELF, s, 16*(nidx+1)+512, &sviewer);CHKERRQ(ierr);
         ierr = PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D without overlap:\n", rank, size, i);CHKERRQ(ierr);
         ierr = ISGetLocalSize(osm->is_local[i],&nidx);CHKERRQ(ierr);
@@ -567,7 +567,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ASM"
-static PetscErrorCode PCSetFromOptions_ASM(PC pc)
+static PetscErrorCode PCSetFromOptions_ASM(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -581,7 +581,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
     ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
     if (symset && flg) osm->type = PC_ASM_BASIC;
   }
-  ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_asm_dm_subdomains","Use DMCreateDomainDecomposition() to define subdomains","PCASMSetDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -705,6 +705,17 @@ static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
   PetscFunctionBegin;
   osm->type     = type;
   osm->type_set = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCASMGetType_ASM"
+static PetscErrorCode  PCASMGetType_ASM(PC pc,PCASMType *type)
+{
+  PC_ASM *osm = (PC_ASM*)pc->data;
+
+  PetscFunctionBegin;
+  *type = osm->type;
   PetscFunctionReturn(0);
 }
 
@@ -925,6 +936,47 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCASMGetType"
+/*@
+    PCASMGetType - Gets the type of restriction and interpolation used
+    for local problems in the additive Schwarz method.
+
+    Logically Collective on PC
+
+    Input Parameter:
+.   pc  - the preconditioner context
+
+    Output Parameter:
+.   type - variant of ASM, one of
+
+.vb
+      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_RESTRICT    - full restriction, local processor interpolation
+      PC_ASM_INTERPOLATE - full interpolation, local processor restriction
+      PC_ASM_NONE        - local processor restriction and interpolation
+.ve
+
+    Options Database Key:
+.   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+
+    Level: intermediate
+
+.keywords: PC, ASM, set, type
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
+          PCASMCreateSubdomains2D()
+@*/
+PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCASMGetType_C",(PC,PCASMType*),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCASMSetSortIndices"
 /*@
     PCASMSetSortIndices - Determines whether subdomain indices are sorted.
@@ -1085,6 +1137,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C",PCASMSetOverlap_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C",PCASMSetType_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetType_C",PCASMGetType_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",PCASMSetSortIndices_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",PCASMGetSubKSP_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1183,8 +1236,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
           }
           nnz += len;
         }
-        ierr   = PetscMalloc1((na+1),&iia);CHKERRQ(ierr);
-        ierr   = PetscMalloc1((nnz),&jja);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(na+1,&iia);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(nnz,&jja);CHKERRQ(ierr);
         nnz    = 0;
         iia[0] = 0;
         for (i=0; i<na; i++) { /* fill adjacency */
@@ -1356,8 +1409,8 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," ");
 
   *Nsub     = N*M;
-  ierr      = PetscMalloc1((*Nsub),is);CHKERRQ(ierr);
-  ierr      = PetscMalloc1((*Nsub),is_local);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(*Nsub,is);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(*Nsub,is_local);CHKERRQ(ierr);
   ystart    = 0;
   loc_outer = 0;
   for (i=0; i<N; i++) {

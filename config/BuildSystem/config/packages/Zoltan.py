@@ -12,7 +12,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.x              = framework.require('config.packages.X',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.ptscotch       = framework.require('config.packages.PTScotch',self)
@@ -21,7 +21,7 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       args.append('--with-id-type=ullong')
     args.append('--enable-mpi')
     if not hasattr(self.compilers, 'CXX'):
@@ -66,19 +66,19 @@ class Configure(config.package.GNUPackage):
       return self.installDir
 
     self.gitPreInstallCheck()
-    output1,err1,ret1  = config.base.Configure.executeShellCommand('rm -rf '+packageDir+' &&  mkdir '+packageDir, timeout=2000, log = self.framework.log)
+    output1,err1,ret1  = config.base.Configure.executeShellCommand('rm -rf '+packageDir+' &&  mkdir '+packageDir, timeout=2000, log = self.log)
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+packageDir+' && ../configure '+args, timeout=2000, log = self.framework.log)
+      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+packageDir+' && ../configure '+args, timeout=2000, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
 
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.make.make+' everything', timeout=6000, log = self.framework.log)
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.make.make+' everything', timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(self.installSudo)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.framework.log)
+      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3, conffile)

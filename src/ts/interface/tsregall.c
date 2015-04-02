@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRegisterAll"
@@ -34,6 +35,7 @@ PetscErrorCode  TSRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSRegisterAllCalled) PetscFunctionReturn(0);
   TSRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSRegister(TSEULER,    TSCreate_Euler);CHKERRQ(ierr);
@@ -51,6 +53,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSARKIMEX,  TSCreate_ARKIMEX);CHKERRQ(ierr);
   ierr = TSRegister(TSROSW,     TSCreate_RosW);CHKERRQ(ierr);
   ierr = TSRegister(TSEIMEX,    TSCreate_EIMEX);CHKERRQ(ierr);
+  ierr = TSRegister(TSMIMEX,    TSCreate_Mimex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

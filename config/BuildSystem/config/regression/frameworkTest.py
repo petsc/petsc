@@ -8,7 +8,7 @@ import unittest
 nargs.setInteractive(0)
 
 class FrameworkTest (unittest.TestCase):
-  '''Tests basic capabilities of a Configure Framework'''
+  '''Tests basic capabilities of a Conf>igure Framework'''
   def __init__(self, methodName = 'runTest'):
     for f in ['RDict.db', 'RDict.log']:
       if os.path.exists(f):

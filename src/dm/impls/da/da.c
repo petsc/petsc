@@ -954,11 +954,11 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   /* copy fill information if given */
   if (dd->dfill) {
-    ierr = PetscMalloc1((dd->dfill[dd->w]+dd->w+1),&dd2->dfill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->dfill,dd->dfill,(dd->dfill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (dd->ofill) {
-    ierr = PetscMalloc1((dd->ofill[dd->w]+dd->w+1),&dd2->ofill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */
@@ -1084,11 +1084,11 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
   /* copy fill information if given */
   if (dd->dfill) {
-    ierr = PetscMalloc1((dd->dfill[dd->w]+dd->w+1),&dd2->dfill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->dfill,dd->dfill,(dd->dfill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (dd->ofill) {
-    ierr = PetscMalloc1((dd->ofill[dd->w]+dd->w+1),&dd2->ofill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */
@@ -1112,7 +1112,8 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   if (da->coordinates) {
     DM         cdaf,cdac;
     Vec        coordsc,coordsf;
-    VecScatter inject;
+    Mat        inject;
+    VecScatter vscat;
 
     ierr = DMGetCoordinateDM(da,&cdaf);CHKERRQ(ierr);
     ierr = DMGetCoordinates(da,&coordsf);CHKERRQ(ierr);
@@ -1122,9 +1123,10 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = DMGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-    ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+    ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
   }
 
   for (i=0; i<da->bs; i++) {

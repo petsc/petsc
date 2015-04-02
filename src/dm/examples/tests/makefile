@@ -12,8 +12,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
 EXAMPLESF       =
 MANSEC          = DM
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -234,7 +234,7 @@ runex11_3:
 	   ${RM} -f ex11_3.tmp
 
 runex12:
-	-@echo "path([getenv('PETSC_DIR') '/share/petsc/matlab'],path); path([getenv('PETSC_DIR') '/' getenv('PETSC_ARCH') '/lib/petsc/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/share/petsc/matlab'],path); path([getenv('PETSC_DIR') '/' getenv('PETSC_ARCH') '/lib/petsc/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -nodesktop -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
 	   else printf "${PWD}\nPossible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 
@@ -388,7 +388,7 @@ TESTEXAMPLES_C_X	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc r
                             ex6.rm ex7.PETSc ex7.rm  ex11.PETSc runex11 runex11_2 runex11_3 ex11.rm ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 runex23_2 ex23.rm ex37.PETSc runex37 ex37.rm
 TESTEXAMPLES_FORTRAN	  =
-TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm ex42.PETSc runex42 ex42.rm
@@ -396,4 +396,4 @@ TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.P
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

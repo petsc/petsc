@@ -582,8 +582,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     }
     petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr       = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
-    ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+    ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
     string     = next->string;
     tab        = intab;
     tab       *= 2;
@@ -877,6 +876,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   viewer->ops->getsubcomm       = PetscViewerGetSubcomm_ASCII;
   viewer->ops->restoresubcomm   = PetscViewerRestoreSubcomm_ASCII;
   viewer->ops->view             = PetscViewerView_ASCII;
+  viewer->ops->read             = PetscViewerASCIIRead;
 
   /* defaults to stdout unless set with PetscViewerFileSetName() */
   vascii->fd        = PETSC_STDOUT;
@@ -994,4 +994,52 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIRead"
+/*@C
+   PetscViewerASCIIRead - Reads from am ASCII file
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  viewer - the ascii viewer
+.  data - location to write the data
+.  count - number of items of data to read
+-  datatype - type of data to read
+
+   Level: beginner
+
+   Concepts: ascii files
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
+@*/
+PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype)
+{
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
+  FILE              *fd = vascii->fd;
+  PetscInt           i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  for (i=0; i<count; i++) {
+    if (dtype == PETSC_CHAR)         fscanf(fd, "%c",  &(((char*)data)[i]));
+    else if (dtype == PETSC_STRING)  fscanf(fd, "%s",  &(((char*)data)[i]));
+#if PETSC_USE_64BIT_INDICES
+#if (PETSC_SIZEOF_LONG_LONG == 8)
+    else if (dtype == PETSC_INT)     fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
+#else
+    else if (dtype == PETSC_INT)     fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
+#endif
+#else
+    else if (dtype == PETSC_INT)     fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
+#endif
+    else if (dtype == PETSC_ENUM)    fscanf(fd, "%d",  &(((int*)data)[i]));
+    else if (dtype == PETSC_FLOAT)   fscanf(fd, "%f",  &(((float*)data)[i]));
+    else if (dtype == PETSC_DOUBLE)  fscanf(fd, "%lg", &(((double*)data)[i]));
+    else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type not supported in PetscViewerASCIIRead()", dtype);}
+  }
+  PetscFunctionReturn(0);
+}
 

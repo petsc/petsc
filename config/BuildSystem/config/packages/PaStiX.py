@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['https://gforge.inria.fr/frs/download.php/file/33841/pastix_5.2.2.12.tar.bz2',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.2.12.tar.bz2']
+    self.download     = ['https://gforge.inria.fr/frs/download.php/file/34392/pastix_5.2.2.20.tar.bz2',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.2.20.tar.bz2']
     self.liblist      = [['libpastix.a'],
                          ['libpastix.a','libpthread.a','librt.a']]
     self.functions    = ['pastix']
@@ -16,7 +16,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.scotch         = framework.require('config.packages.PTScotch',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.deps           = [self.mpi,self.blasLapack, self.scotch]
@@ -80,7 +80,7 @@ class Configure(config.package.Package):
     #                          INTEGER TYPE                           #
     ###################################################################
     g.write('\n')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       g.write('#---------------------------\n')
       g.write('VERSIONINT  = _int64\n')
       g.write('CCTYPES     = -DFORCE_INT64\n')
@@ -209,17 +209,17 @@ class Configure(config.package.Package):
 
     if self.installNeeded(os.path.join('src','config.in')):
       try:
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean', timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean', timeout=2500, log = self.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling PaStiX; this may take several minutes')
-        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make all',timeout=2500, log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make all',timeout=2500, log = self.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing PaStiX; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp -f install/*.a '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp -f install/*.a '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PaStiX: '+str(e))
       self.postInstall(output+err,os.path.join('src','config.in'))

@@ -212,7 +212,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     PetscReal      *tmp;
     PetscErrorCode ierr;
 
-    ierr = PetscMalloc1((hist->maxValues+CHUNKSIZE), &tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(hist->maxValues+CHUNKSIZE, &tmp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);

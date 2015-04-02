@@ -21,8 +21,6 @@
   PetscInt          rmax;             /* max nonzeros in any row */ \
   PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/ \
   PetscBool         ignorezeroentries; \
-  PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */ \
-  Mat               XtoY;             /* used by MatAXPY() */ \
   PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
   PetscBool         free_a;           /* free the numerical values when matrix is destroy */ \
   Mat_CompressedRow compressedrow;    /* use compressed row format */                      \
@@ -73,16 +71,6 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatMatMult;
 
-typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
-  PetscInt     nzlocal,nsends,nrecvs;
-  PetscMPIInt  *send_rank,*recv_rank;
-  PetscInt     *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
-  PetscScalar  *sbuf_a,**rbuf_a;
-  PetscSubcomm psubcomm;
-  IS           isrow,iscol;
-  Mat          *matseq;
-} Mat_Redundant;
-
 /*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format) or compressed sparse row (CSR).  The i[] and j[] arrays start at 0. For example,
@@ -132,7 +120,6 @@ typedef struct {
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt          *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
-  Mat_Redundant       *redundant;        /* used by MatGetRedundantMatrix() */
 } Mat_SeqAIJ;
 
 /*
@@ -326,6 +313,8 @@ PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage

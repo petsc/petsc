@@ -11,13 +11,13 @@
    Possible bleeds memory but cannot be helped.
 */
 PETSC_EXTERN void PETSC_STDCALL kspmonitorlgresidualnormcreate_(CHAR host PETSC_MIXED_LEN(len1),
-                    CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,PetscDrawLG *ctx,
+                    CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,PetscObject **objs,
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;
 
   FIXCHAR(host,len1,t1);
   FIXCHAR(label,len2,t2);
-  *ierr = KSPMonitorLGResidualNormCreate(t1,t2,*x,*y,*m,*n,ctx);
+  *ierr = KSPMonitorLGResidualNormCreate(t1,t2,*x,*y,*m,*n,objs);
 }
 

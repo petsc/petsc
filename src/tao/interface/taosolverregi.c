@@ -67,6 +67,7 @@ PetscErrorCode TaoRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TaoRegisterAllCalled) PetscFunctionReturn(0);
   TaoRegisterAllCalled = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
   ierr = TaoRegister(TAOLMVM,TaoCreate_LMVM);CHKERRQ(ierr);

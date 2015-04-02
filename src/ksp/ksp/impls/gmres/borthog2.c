@@ -45,7 +45,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   if (!gmres->orthogwork) {
-    ierr = PetscMalloc1((gmres->max_k + 2),&gmres->orthogwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(gmres->max_k + 2,&gmres->orthogwork);CHKERRQ(ierr);
   }
   lhh = gmres->orthogwork;
 

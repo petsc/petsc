@@ -11,18 +11,19 @@
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,idx,k1;
-  PetscInt       bs =A->rmap->bs,bs2 = a->bs2;
-  MatScalar      *aa=a->a,*v,*diag;
-  PetscScalar    *x,*xk,*xj,*b,*xk_tmp,*t;
+  Mat_SeqSBAIJ      *a   =(Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  PetscInt          mbs  =a->mbs,*ai=a->i,*aj=a->j;
+  PetscErrorCode    ierr;
+  const PetscInt    *r;
+  PetscInt          nz,*vj,k,idx,k1;
+  PetscInt          bs =A->rmap->bs,bs2 = a->bs2;
+  const MatScalar   *aa=a->a,*v,*diag;
+  PetscScalar       *x,*xk,*xj,*xk_tmp,*t;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -71,7 +72,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 
   ierr = PetscFree(xk_tmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz -(bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -97,13 +98,13 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_N_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscInt bs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscInt bs,PetscScalar *x)
 {
-  PetscErrorCode ierr;
-  PetscInt       nz,*vj,k;
-  PetscInt       bs2 = bs*bs;
-  MatScalar      *v,*diag;
-  PetscScalar    *xk,*xj,*xk_tmp;
+  PetscErrorCode  ierr;
+  PetscInt        nz,k;
+  const PetscInt  *vj,bs2 = bs*bs;
+  const MatScalar *v,*diag;
+  PetscScalar     *xk,*xj,*xk_tmp;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(bs,&xk_tmp);CHKERRQ(ierr);
@@ -130,12 +131,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(PetscInt *ai,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscInt bs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscInt bs,PetscScalar *x)
 {
-  PetscInt    nz,*vj,k;
-  PetscInt    bs2 = bs*bs;
-  MatScalar   *v;
-  PetscScalar *xk,*xj;
+  PetscInt        nz,k;
+  const PetscInt  *vj,bs2 = bs*bs;
+  const MatScalar *v;
+  PetscScalar     *xk,*xj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -158,15 +159,16 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  PetscInt       bs =A->rmap->bs;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  PetscInt          bs =A->rmap->bs;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -176,7 +178,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(ai,aj,aa,mbs,bs,x);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -186,19 +188,20 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  PetscInt       bs =A->rmap->bs;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  PetscInt          bs =A->rmap->bs;
+  const MatScalar   *aa=a->a;
+  const PetscScalar *b;
+  PetscScalar       *x;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,bs*mbs*sizeof(PetscScalar));CHKERRQ(ierr); /* x <- b */
   ierr = MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(ai,aj,aa,mbs,bs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -208,19 +211,20 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  PetscInt       bs =A->rmap->bs;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  PetscInt          bs =A->rmap->bs;
+  const MatScalar   *aa=a->a;
+  const PetscScalar *b;
+  PetscScalar       *x;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,bs*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(ai,aj,aa,mbs,bs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -230,17 +234,17 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,
 #define __FUNCT__ "MatSolve_SeqSBAIJ_7_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_7_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2,bs=A->rmap->bs;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,idx;
-  MatScalar      *aa=a->a,*v,*d;
-  PetscScalar    *x,*b,x0,x1,x2,x3,x4,x5,x6,*t,*tp;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  const PetscInt    mbs  =a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2,bs=A->rmap->bs,*r,*vj;
+  PetscErrorCode    ierr;
+  PetscInt          nz,k,idx;
+  const MatScalar   *aa=a->a,*v,*d;
+  PetscScalar       *x,x0,x1,x2,x3,x4,x5,x6,*t,*tp;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -326,7 +330,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_7_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -334,11 +338,12 @@ PetscErrorCode MatSolve_SeqSBAIJ_7_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_7_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v,*d;
-  PetscScalar *xp,x0,x1,x2,x3,x4,x5,x6;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v,*d;
+  PetscScalar     *xp,x0,x1,x2,x3,x4,x5,x6;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
@@ -379,11 +384,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(PetscInt *ai,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v;
-  PetscScalar *xp,x0,x1,x2,x3,x4,x5,x6;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v;
+  PetscScalar     *xp,x0,x1,x2,x3,x4,x5,x6;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -417,14 +423,15 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -434,7 +441,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -444,18 +451,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,7*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -465,18 +473,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,7*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -486,17 +495,17 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,
 #define __FUNCT__ "MatSolve_SeqSBAIJ_6_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_6_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,idx;
-  MatScalar      *aa=a->a,*v,*d;
-  PetscScalar    *x,*b,x0,x1,x2,x3,x4,x5,*t,*tp;
+  Mat_SeqSBAIJ      *a   =(Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  const PetscInt    mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2,*r,*vj;
+  PetscErrorCode    ierr;
+  PetscInt          nz,k,idx;
+  const MatScalar   *aa=a->a,*v,*d;
+  PetscScalar       *x,x0,x1,x2,x3,x4,x5,*t,*tp;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -577,7 +586,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_6_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -585,11 +594,12 @@ PetscErrorCode MatSolve_SeqSBAIJ_6_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_6_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v,*d;
-  PetscScalar *xp,x0,x1,x2,x3,x4,x5;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v,*d;
+  PetscScalar     *xp,x0,x1,x2,x3,x4,x5;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
@@ -627,11 +637,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(PetscInt *ai,PetscInt 
 }
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v;
-  PetscScalar *xp,x0,x1,x2,x3,x4,x5;
-  PetscInt    nz,*vj,k;
+  const MatScalar   *v;
+  PetscScalar       *xp,x0,x1,x2,x3,x4,x5;
+  PetscInt          nz,k;
+  const PetscInt    *vj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -665,14 +676,15 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -682,7 +694,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -692,18 +704,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,6*mbs*sizeof(PetscScalar));CHKERRQ(ierr); /* x <- b */
   ierr = MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -713,18 +726,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,6*mbs*sizeof(PetscScalar));CHKERRQ(ierr); /* x <- b */
   ierr = MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz - mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -734,17 +748,18 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,
 #define __FUNCT__ "MatSolve_SeqSBAIJ_5_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_5_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2 = a->bs2;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,idx;
-  MatScalar      *aa=a->a,*v,*diag;
-  PetscScalar    *x,*b,x0,x1,x2,x3,x4,*t,*tp;
+  Mat_SeqSBAIJ      *a=(Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  const PetscInt    mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2 = a->bs2;
+  PetscErrorCode    ierr;
+  const PetscInt    *r,*vj;
+  PetscInt          nz,k,idx;
+  const MatScalar   *aa=a->a,*v,*diag;
+  PetscScalar       *x,x0,x1,x2,x3,x4,*t,*tp;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -821,7 +836,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_5_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -829,11 +844,12 @@ PetscErrorCode MatSolve_SeqSBAIJ_5_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_5_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v,*diag;
-  PetscScalar *xp,x0,x1,x2,x3,x4;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v,*diag;
+  PetscScalar     *xp,x0,x1,x2,x3,x4;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
@@ -870,11 +886,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(PetscInt *ai,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v;
-  PetscScalar *xp,x0,x1,x2,x3,x4;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v;
+  PetscScalar     *xp,x0,x1,x2,x3,x4;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -906,14 +923,15 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2 = a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2 = a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -923,7 +941,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -933,18 +951,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,5*mbs*sizeof(PetscScalar));CHKERRQ(ierr); /* x <- b */
   ierr = MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -954,18 +973,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,5*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -975,17 +995,18 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,
 #define __FUNCT__ "MatSolve_SeqSBAIJ_4_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_4_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,idx;
-  MatScalar      *aa=a->a,*v,*diag;
-  PetscScalar    *x,*b,x0,x1,x2,x3,*t,*tp;
+  Mat_SeqSBAIJ      *a   =(Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  const PetscInt    mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscErrorCode    ierr;
+  const PetscInt    *r,*vj;
+  PetscInt          nz,k,idx;
+  const MatScalar   *aa=a->a,*v,*diag;
+  PetscScalar       *x,x0,x1,x2,x3,*t,*tp;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -1057,7 +1078,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_4_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1065,11 +1086,12 @@ PetscErrorCode MatSolve_SeqSBAIJ_4_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_4_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v,*diag;
-  PetscScalar *xp,x0,x1,x2,x3;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v,*diag;
+  PetscScalar     *xp,x0,x1,x2,x3;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
@@ -1104,11 +1126,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(PetscInt *ai,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v;
-  PetscScalar *xp,x0,x1,x2,x3;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v;
+  PetscScalar     *xp,x0,x1,x2,x3;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -1139,14 +1162,15 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -1155,7 +1179,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1165,18 +1189,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,4*mbs*sizeof(PetscScalar));CHKERRQ(ierr); /* x <- b */
   ierr = MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1186,18 +1211,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,4*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1207,17 +1233,19 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,
 #define __FUNCT__ "MatSolve_SeqSBAIJ_3_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,idx;
-  MatScalar      *aa=a->a,*v,*diag;
-  PetscScalar    *x,*b,x0,x1,x2,*t,*tp;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  const PetscInt    mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscErrorCode    ierr;
+  const PetscInt    *r;
+  PetscInt          nz,k,idx;
+  const PetscInt    *vj;
+  const MatScalar   *aa=a->a,*v,*diag;
+  PetscScalar       *x,x0,x1,x2,*t,*tp;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -1284,7 +1312,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1292,11 +1320,12 @@ PetscErrorCode MatSolve_SeqSBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_3_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v,*diag;
-  PetscScalar *xp,x0,x1,x2;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v,*diag;
+  PetscScalar     *xp,x0,x1,x2;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
@@ -1329,11 +1358,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(PetscInt *ai,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v;
-  PetscScalar *xp,x0,x1,x2;
-  PetscInt    nz,*vj,k;
+  const MatScalar *v;
+  PetscScalar     *xp,x0,x1,x2;
+  PetscInt        nz,k;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -1363,14 +1393,15 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -1380,7 +1411,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1390,18 +1421,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,3*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1411,18 +1443,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,3*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1432,17 +1465,18 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,
 #define __FUNCT__ "MatSolve_SeqSBAIJ_2_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_2_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
-  IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  PetscErrorCode ierr;
-  const PetscInt *r;
-  PetscInt       nz,*vj,k,k2,idx;
-  MatScalar      *aa=a->a,*v,*diag;
-  PetscScalar    *x,*b,x0,x1,*t;
+  Mat_SeqSBAIJ      *a   =(Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  const PetscInt    mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscErrorCode    ierr;
+  const PetscInt    *r,*vj;
+  PetscInt          nz,k,k2,idx;
+  const MatScalar   *aa=a->a,*v,*diag;
+  PetscScalar       *x,x0,x1,*t;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -1490,7 +1524,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1498,12 +1532,13 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_2_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v,*diag;
-  PetscScalar x0,x1;
-  PetscInt    nz,*vj,k,k2;
-
+  const MatScalar *v,*diag;
+  PetscScalar     x0,x1;
+  PetscInt        nz,k,k2;
+  const PetscInt  *vj;
+  
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
     v  = aa + 4*ai[k];
@@ -1529,11 +1564,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(PetscInt *ai,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar   *v;
-  PetscScalar x0,x1;
-  PetscInt    nz,*vj,k,k2;
+  const MatScalar *v;
+  PetscScalar     x0,x1;
+  PetscInt        nz,k,k2;
+  const PetscInt  *vj;
 
   PetscFunctionBegin;
   for (k=mbs-1; k>=0; k--) {
@@ -1561,14 +1597,15 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(PetscInt *ai,PetscInt
 #define __FUNCT__ "MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T * D * y = b by forward substitution */
@@ -1578,7 +1615,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   /* solve U*x = y by back substitution */
   ierr = MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1588,18 +1625,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,2*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1609,18 +1647,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
-  MatScalar      *aa=a->a;
-  PetscScalar    *x,*b;
-  PetscErrorCode ierr;
+  Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  const MatScalar   *aa=a->a;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,2*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz - mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1676,16 +1715,17 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ    *a   = (Mat_SeqSBAIJ*)A->data;
-  IS              isrow=a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
-  const MatScalar *aa=a->a,*v;
-  PetscScalar     *x,*b,xk,*t;
-  PetscInt        nz,k;
+  Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscScalar       *x,xk,*t;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr);
@@ -1711,7 +1751,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
   }
 
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*a->nz - 3*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1721,18 +1761,19 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ    *a   = (Mat_SeqSBAIJ*)A->data;
-  IS              isrow=a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
-  const MatScalar *aa=a->a,*v;
-  PetscReal       diagk;
-  PetscScalar     *x,*b,xk;
-  PetscInt        nz,k;
+  Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x,xk;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve U^T*D^(1/2)*x = perm(b) by forward substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr);
 
@@ -1749,7 +1790,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
     x[k] = xk*PetscSqrtReal(diagk);
   }
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1759,18 +1800,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ    *a   = (Mat_SeqSBAIJ*)A->data;
-  IS              isrow=a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
-  const MatScalar *aa=a->a,*v;
-  PetscReal       diagk;
-  PetscScalar     *x,*b,xk;
-  PetscInt        nz,k;
+  Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x,xk;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve U^T*D^(1/2)*x = perm(b) by forward substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr);
 
@@ -1787,7 +1829,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
     x[k] = xk*PetscSqrtReal(diagk);
   }
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1797,18 +1839,19 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ    *a   = (Mat_SeqSBAIJ*)A->data;
-  IS              isrow=a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
-  const MatScalar *aa=a->a,*v;
-  PetscReal       diagk;
-  PetscScalar     *x,*b,*t;
-  PetscInt        nz,k;
+  Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x,*t;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve D^(1/2)*U*perm(x) = b by back substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr);
@@ -1824,7 +1867,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
     x[rp[k]] = t[k];
   }
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1834,18 +1877,19 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ    *a   = (Mat_SeqSBAIJ*)A->data;
-  IS              isrow=a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
-  const MatScalar *aa=a->a,*v;
-  PetscReal       diagk;
-  PetscScalar     *x,*b,*t;
-  PetscInt        nz,k;
+  Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
+  IS                isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x,*t;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve D^(1/2)*U*perm(x) = b by back substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr);
@@ -1861,7 +1905,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
     x[rp[k]] = t[k];
   }
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1878,19 +1922,20 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
   if (A->rmap->bs == 1) {
     ierr = MatSolve_SeqSBAIJ_1(A,bb->v,xx->v);CHKERRQ(ierr);
   } else {
-    IS              isrow=a->row;
-    const PetscInt  *vj,mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
-    const MatScalar *aa=a->a,*v;
-    PetscScalar     *x,*b,*t;
-    PetscInt        nz,k,n,i,j;
+    IS                isrow=a->row;
+    const PetscInt    *vj,mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
+    const MatScalar   *aa=a->a,*v;
+    PetscScalar       *x,*t;
+    const PetscScalar *b;
+    PetscInt          nz,k,n,i,j;
+
     if (bb->n > a->solves_work_n) {
       ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
       ierr = PetscMalloc1(bb->n*A->rmap->N,&a->solves_work);CHKERRQ(ierr);
-
       a->solves_work_n = bb->n;
     }
     n    = bb->n;
-    ierr = VecGetArray(bb->v,&b);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(bb->v,&b);CHKERRQ(ierr);
     ierr = VecGetArray(xx->v,&x);CHKERRQ(ierr);
     t    = a->solves_work;
 
@@ -1924,7 +1969,7 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
     }
 
     ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-    ierr = VecRestoreArray(bb->v,&b);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(bb->v,&b);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx->v,&x);CHKERRQ(ierr);
     ierr = PetscLogFlops(bb->n*(4.0*a->nz - 3.0*mbs));CHKERRQ(ierr);
   }
@@ -1942,19 +1987,20 @@ PetscErrorCode MatSolves_SeqSBAIJ_1_inplace(Mat A,Vecs bb,Vecs xx)
   if (A->rmap->bs == 1) {
     ierr = MatSolve_SeqSBAIJ_1_inplace(A,bb->v,xx->v);CHKERRQ(ierr);
   } else {
-    IS              isrow=a->row;
-    const PetscInt  *vj,mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
-    const MatScalar *aa=a->a,*v;
-    PetscScalar     *x,*b,*t;
-    PetscInt        nz,k,n,i;
+    IS                isrow=a->row;
+    const PetscInt    *vj,mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
+    const MatScalar   *aa=a->a,*v;
+    PetscScalar       *x,*t;
+    const PetscScalar *b;
+    PetscInt          nz,k,n,i;
+
     if (bb->n > a->solves_work_n) {
       ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
       ierr = PetscMalloc1(bb->n*A->rmap->N,&a->solves_work);CHKERRQ(ierr);
-
       a->solves_work_n = bb->n;
     }
     n    = bb->n;
-    ierr = VecGetArray(bb->v,&b);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(bb->v,&b);CHKERRQ(ierr);
     ierr = VecGetArray(xx->v,&x);CHKERRQ(ierr);
     t    = a->solves_work;
 
@@ -1988,7 +2034,7 @@ PetscErrorCode MatSolves_SeqSBAIJ_1_inplace(Mat A,Vecs bb,Vecs xx)
     }
 
     ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
-    ierr = VecRestoreArray(bb->v,&b);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(bb->v,&b);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx->v,&x);CHKERRQ(ierr);
     ierr = PetscLogFlops(bb->n*(4.0*a->nz - 3.0*mbs));CHKERRQ(ierr);
   }
@@ -2042,15 +2088,16 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
-  MatScalar      *aa=a->a,*v;
-  PetscScalar    *x,*b,xk;
-  PetscInt       nz,*vj,k;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscScalar       *x,xk;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* solve U^T*D*y = b by forward substitution */
@@ -2076,7 +2123,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
     x[k] = xk;
   }
 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*a->nz - 3*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2086,17 +2133,18 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode  ierr;
-  PetscInt        mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag = a->diag;
-  const MatScalar *aa=a->a,*v;
-  PetscReal       diagk;
-  PetscScalar     *x,*b;
-  PetscInt        nz,*vj,k;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag = a->diag,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve U^T*D^(1/2)*x = b by forward substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   for (k=0; k<mbs; k++) {
@@ -2108,7 +2156,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     if (PetscImaginaryPart(aa[adiag[k]]) || diagk < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",PetscRealPart(aa[adiag[k]]),PetscImaginaryPart(aa[adiag[k]]));
     x[k] *= PetscSqrtReal(diagk);
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2118,17 +2166,18 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
 PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
-  MatScalar      *aa=a->a,*v;
-  PetscReal      diagk;
-  PetscScalar    *x,*b;
-  PetscInt       nz,*vj,k;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve U^T*D^(1/2)*x = b by forward substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   for (k=0; k<mbs; k++) {
@@ -2140,7 +2189,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,V
     if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",PetscRealPart(aa[ai[k]]),PetscImaginaryPart(aa[ai[k]]));
     x[k] *= PetscSqrtReal(diagk);
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2150,17 +2199,18 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,V
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag = a->diag;
-  MatScalar      *aa=a->a,*v;
-  PetscReal      diagk;
-  PetscScalar    *x,*b;
-  PetscInt       nz,*vj,k;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag = a->diag,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve D^(1/2)*U*x = b by back substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   for (k=mbs-1; k>=0; k--) {
@@ -2172,7 +2222,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz   = ai[k+1] - ai[k] - 1;
     while (nz--) x[k] += (*v++) * x[*vj++];
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2182,17 +2232,18 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
-  MatScalar      *aa=a->a,*v;
-  PetscReal      diagk;
-  PetscScalar    *x,*b;
-  PetscInt       nz,*vj,k;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj;
+  const MatScalar   *aa=a->a,*v;
+  PetscReal         diagk;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  PetscInt          nz,k;
 
   PetscFunctionBegin;
   /* solve D^(1/2)*U*x = b by back substitution */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   for (k=mbs-1; k>=0; k--) {
@@ -2204,7 +2255,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,
     nz   = ai[k+1] - ai[k] - 1;
     while (nz--) x[k] += (*v++) * x[*vj++];
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2245,7 +2296,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   ierr  = PetscMalloc1(umax,&lev);CHKERRQ(ierr);
   umax += mbs + 1;
   shift = mbs + 1;
-  ierr  = PetscMalloc1((mbs+1),&iu);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(mbs+1,&iu);CHKERRQ(ierr);
   ierr  = PetscMalloc1(umax,&ju);CHKERRQ(ierr);
   iu[0] = mbs + 1;
   juidx = mbs + 1;
@@ -2372,7 +2423,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   b->free_ij      = PETSC_TRUE;
   /* the next line frees the default space generated by the Create() */
   ierr    = PetscFree3(b->a,b->j,b->i);CHKERRQ(ierr);
-  ierr    = PetscMalloc((iu[mbs]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
+  ierr    = PetscMalloc1((iu[mbs]+1)*bs2,&b->a);CHKERRQ(ierr);
   b->j    = ju;
   b->i    = iu;
   b->diag = 0;
@@ -2385,7 +2436,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr    = PetscMalloc1((bs*mbs+bs),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(bs*mbs+bs,&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate idnew, solve_work, new a, new j */
   ierr     = PetscLogObjectMemory((PetscObject)B,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
@@ -2438,8 +2489,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   if (!perm_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
   a->permute = PETSC_FALSE;
 
-  ierr  = PetscMalloc1((am+1),&ui);CHKERRQ(ierr);
-  ierr  = PetscMalloc1((am+1),&udiag);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(am+1,&ui);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(am+1,&udiag);CHKERRQ(ierr);
   ui[0] = 0;
 
   /* ICC(0) without matrix ordering: simply rearrange column indices */
@@ -2450,7 +2501,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       ui[i+1]  = ui[i] + ncols;
       udiag[i] = ui[i+1] - 1; /* points to the last entry of U(i,:) */
     }
-    ierr = PetscMalloc1((ui[am]+1),&uj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ui[am]+1,&uj);CHKERRQ(ierr);
     cols = uj;
     for (i=0; i<am; i++) {
       aj    = a->j + ai[i] + 1; /* 1st entry of U(i,:) without diagonal */
@@ -2554,7 +2605,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
     ierr = PetscFree4(uj_ptr,uj_lvl_ptr,il,jl);CHKERRQ(ierr);
 
     /* destroy list of free space and other temporary array(s) */
-    ierr = PetscMalloc1((ui[am]+1),&uj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ui[am]+1,&uj);CHKERRQ(ierr);
     ierr = PetscFreeSpaceContiguous_Cholesky(&free_space,uj,am,ui,udiag);CHKERRQ(ierr); /* store matrix factor  */
     ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
@@ -2571,7 +2622,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   b->free_a       = PETSC_TRUE;
   b->free_ij      = free_ij;
 
-  ierr = PetscMalloc1((ui[am]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[am]+1,&b->a);CHKERRQ(ierr);
 
   b->j         = uj;
   b->i         = ui;
@@ -2587,7 +2638,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
 
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
-  ierr = PetscMalloc1((am+1),&b->solve_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(am+1,&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)fact,ui[am]*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
 
   b->maxnz = b->nz = ui[am];
@@ -2662,7 +2713,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
     /* initialization */
-    ierr  = PetscMalloc1((am+1),&ui);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(am+1,&ui);CHKERRQ(ierr);
     ui[0] = 0;
 
     /* jl: linked list for storing indices of the pivot rows
@@ -2755,7 +2806,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
     ierr = PetscFree4(uj_ptr,uj_lvl_ptr,il,jl);CHKERRQ(ierr);
 
     /* destroy list of free space and other temporary array(s) */
-    ierr = PetscMalloc1((ui[am]+1),&uj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ui[am]+1,&uj);CHKERRQ(ierr);
     ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
     ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
@@ -2777,7 +2828,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   b->free_a       = PETSC_TRUE;
   b->free_ij      = free_ij;
 
-  ierr = PetscMalloc1((ui[am]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[am]+1,&b->a);CHKERRQ(ierr);
 
   b->j             = uj;
   b->i             = ui;
@@ -2790,7 +2841,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr    = PetscMalloc1((am+1),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(am+1,&b->solve_work);CHKERRQ(ierr);
 
   b->maxnz = b->nz = ui[am];
 

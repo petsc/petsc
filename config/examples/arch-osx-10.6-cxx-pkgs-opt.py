@@ -28,6 +28,7 @@ configure_options = [
   '--download-chaco=1',
   '--download-spai=1',
   '--download-moab=1',
+  '--download-saws',
   ]
 
 if __name__ == '__main__':

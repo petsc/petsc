@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ctx.netforce    = PETSC_FALSE;
   ierr            = PetscOptionsGetBool(NULL,"-netforce",&ctx.netforce,NULL);CHKERRQ(ierr);
   ctx.energy      = 1;
-  ierr            = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic+double well, 4=logarithmic+double obstacle)","",ctx.energy,&ctx.energy,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol         = 1.0e-8;
   ierr            = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta       = .001;
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsGetReal(NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsGetReal(NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
   ctx.truncation  = 1;
-  ierr            = PetscOptionsInt("-truncation","order of log truncation (1=cubic, 2=quadratic)","",ctx.truncation,&ctx.truncation,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,"-truncation",&ctx.truncation,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr);
@@ -260,7 +260,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
@@ -326,7 +326,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -370,7 +370,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat A,Mat B,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localX,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -416,7 +416,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat A,Mat B,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -525,7 +525,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   hx   = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localU,&u);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
@@ -755,7 +755,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     }
     x += cnt*hx;
   }
-  ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localU,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = PetscDrawStringSetSize(draw,.2,.2);CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);

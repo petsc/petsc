@@ -7,8 +7,8 @@ LOCDIR   = src/vec/is/sf/examples/tutorials/
 EXAMPLESC        = ex1.c
 EXAMPLESF        =
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
@@ -79,4 +79,4 @@ TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_F90	    =
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

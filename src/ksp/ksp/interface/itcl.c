@@ -307,16 +307,16 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 .   -ksp_converged_use_initial_residual_norm - see KSPConvergedDefaultSetUIRNorm()
 .   -ksp_converged_use_min_initial_residual_norm - see KSPConvergedDefaultSetUMIRNorm()
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using
-$                       convergence test (say you always want to run with 5 iterations) to
-$                       save on communication overhead
-$                    preconditioned - default for left preconditioning
-$                    unpreconditioned - see KSPSetNormType()
-$                    natural - see KSPSetNormType()
+                       convergence test (say you always want to run with 5 iterations) to
+                       save on communication overhead
+                    preconditioned - default for left preconditioning
+                    unpreconditioned - see KSPSetNormType()
+                    natural - see KSPSetNormType()
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
-$       works only for PCBCGS, PCIBCGS and and PCCG
-    -ksp_lag_norm - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
-$       the norm of the residual for convergence test WITHOUT an extra MPI_Allreduce() limiting global synchronizations.
-$       This will require 1 more iteration of the solver than usual.
+       works only for PCBCGS, PCIBCGS and and PCCG
+.   -ksp_lag_norm - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
+       the norm of the residual for convergence test WITHOUT an extra MPI_Allreduce() limiting global synchronizations.
+       This will require 1 more iteration of the solver than usual.
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
 .   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
@@ -335,7 +335,7 @@ $       This will require 1 more iteration of the solver than usual.
 
 .keywords: KSP, set, from, options, database
 
-.seealso: KSPSetUseFischerInitialGuess()
+.seealso: KSPSetUseFischerGuess()
 
 @*/
 PetscErrorCode  KSPSetFromOptions(KSP ksp)
@@ -345,7 +345,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   const char     *convtests[] = {"default","skip"};
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
-  PetscBool      flg,flag,set;
+  PetscBool      flg,flag,reuse,set;
   PetscInt       model[2]={0,0},nmax;
   KSPNormType    normtype;
   PCSide         pcside;
@@ -353,10 +353,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
+  if (!ksp->skippcsetfromoptions) {
+    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+    ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
+  }
 
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
+  ierr = KSPRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -368,6 +370,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (!((PetscObject)ksp)->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
+
+  ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+  if (flg) goto skipoptions;
 
   ierr = PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,NULL);CHKERRQ(ierr);
@@ -382,6 +387,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
     ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
   }
+  ierr = PCGetReusePreconditioner(ksp->pc,&reuse);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one ","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
+  ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
@@ -439,11 +447,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsName("-ksp_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
   }
 
-  /*
-    Prints reason for convergence or divergence of each linear solve
-  */
-  ierr = PetscOptionsBool("-ksp_converged_reason","Print reason for converged or diverged","KSPSolve",ksp->printreason,&ksp->printreason,NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsBool("-ksp_monitor_cancel","Remove any hardwired monitor routines","KSPMonitorCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   /* -----------------------------------------------------------------------*/
   /*
@@ -457,6 +460,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   */
   ierr = PetscOptionsString("-ksp_monitor","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
+#if defined(PETSC_HAVE_THREADSAFETY)
+#pragma omp critical
+#endif
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
@@ -532,20 +538,20 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   */
   ierr = PetscOptionsBool("-ksp_monitor_lg_residualnorm","Monitor graphically preconditioned residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
-    PetscDrawLG ctx;
+    PetscObject *ctx;
 
     ierr = KSPMonitorLGResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGResidualNormDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGResidualNormDestroy);CHKERRQ(ierr);
   }
   /*
     Graphically plots preconditioned and true residual norm
   */
   ierr = PetscOptionsBool("-ksp_monitor_lg_true_residualnorm","Monitor graphically true residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
-    PetscDrawLG ctx;
+    PetscObject *ctx;
 
-    ierr = KSPMonitorLGTrueResidualNormCreate(PetscObjectComm((PetscObject)ksp),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGTrueResidualNormDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorLGTrueResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGTrueResidualNormDestroy);CHKERRQ(ierr);
   }
   /*
     Graphically plots preconditioned residual norm and range of residual element values
@@ -595,8 +601,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 #endif
 
   if (ksp->ops->setfromoptions) {
-    ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
+    ierr = (*ksp->ops->setfromoptions)(PetscOptionsObject,ksp);CHKERRQ(ierr);
   }
+  skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

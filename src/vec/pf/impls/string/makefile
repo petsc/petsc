@@ -10,9 +10,9 @@ LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/pf/impls/string/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 
 #
 #  This rule is called by the function PFStringCreateFunction() and creates a dynamic

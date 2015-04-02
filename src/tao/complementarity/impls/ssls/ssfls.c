@@ -138,7 +138,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
   tao->ops->solve=TaoSolve_SSFLS;
   tao->ops->setup=TaoSetUp_SSFLS;
   tao->ops->view=TaoView_SSLS;
-  tao->ops->setfromoptions=TaoSetFromOptions_SSLS;
+  tao->ops->setfromoptions = TaoSetFromOptions_SSLS;
   tao->ops->destroy = TaoDestroy_SSFLS;
 
   ssls->delta = 1e-10;

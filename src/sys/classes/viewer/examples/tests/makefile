@@ -7,8 +7,8 @@ LOCDIR  = src/sys/classes/viewer/examples/tests/
 EXAMPLESC       = ex3.c ex4.c
 MANSEC          = Viewer
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_SYS_LIB}
@@ -39,5 +39,5 @@ runex4:
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_C_X_MPIUNI = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test
 

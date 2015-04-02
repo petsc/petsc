@@ -9,7 +9,7 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
+.keywords: Petsc, destroy, package, finalize
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)

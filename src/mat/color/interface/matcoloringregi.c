@@ -1,5 +1,6 @@
 
 #include <petscmat.h>
+#include <petsc-private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring);
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring);
@@ -32,6 +33,7 @@ PetscErrorCode  MatColoringRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatColoringRegisterAllCalled) PetscFunctionReturn(0);
   MatColoringRegisterAllCalled = PETSC_TRUE;
   ierr = MatColoringRegister(MATCOLORINGJP,MatColoringCreate_JP);CHKERRQ(ierr);
   ierr = MatColoringRegister(MATCOLORINGGREEDY,MatColoringCreate_Greedy);CHKERRQ(ierr);

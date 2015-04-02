@@ -43,17 +43,17 @@
 !  in them
 !
       module petsc_kkt_solver_module
-#include <finclude/petscdmdef.h>
+#include <petsc-finclude/petscdmdef.h>
       use petscdmdef
       type petsc_kkt_solver
-        type(DM) da
+        DM::da
 !     temp A block stuff 
         PetscInt mx,my
         PetscMPIInt rank
         PetscReal lambda
 !     Mats
-        type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
-        type(IS)  isPhi,isLambda
+        Mat::Amat,AmatLin,Bmat,CMat,Dmat
+        IS::isPhi,isLambda
       end type petsc_kkt_solver
 
       end module petsc_kkt_solver_module
@@ -63,10 +63,10 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
-          type(SNES)    snesIn
+          SNES::    snesIn
           type(petsc_kkt_solver) ctx
           PetscErrorCode ierr
         End Subroutine
@@ -74,10 +74,10 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
-          type(SNES)     snesIn
+          SNES::     snesIn
           type(petsc_kkt_solver), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
@@ -85,8 +85,8 @@
       end module petsc_kkt_solver_moduleinterfaces
 
       program main
-#include <finclude/petscdmdef.h>
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscdmdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscdm
       use petscdmda
       use petscsnes
@@ -104,11 +104,11 @@
 !     its         - iterations for convergence
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !
-      type(SNES)       mysnes
-      type(Vec)        x,r,x2,x1,x1loc,x2loc,vecArray(2)
-      type(Mat)        Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
-      type(DM)         daphi,dalam
-      type(IS)         isglobal(2)
+      SNES::       mysnes
+      Vec::        x,r,x2,x1,x1loc,x2loc,vecArray(2)
+      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
+      DM::       daphi,dalam
+      IS::        isglobal(2)
       PetscErrorCode   ierr
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
@@ -386,21 +386,21 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       use petsc_kkt_solver_moduleinterfaces
       implicit none
 !  Input/output variables:
-      type(SNES)     mysnes
-      type(Vec)      Xnest
+      SNES::     mysnes
+      Vec::      Xnest
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
       type(petsc_kkt_solver), pointer:: solver
-      type(Vec)      Xsub(2)
-      PetscInt       izero,ione,itwo
-      type(DM)       daphi,dmarray(2)
+      Vec::      Xsub(2)
+      PetscInt::  izero,ione,itwo
+      DM::  daphi,dmarray(2)
 
       izero = 0
       ione = 1
@@ -436,13 +436,13 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver,X1,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc-finclude/petscsysdef.h>
       use petscsys
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
       type (petsc_kkt_solver)         solver
-      type(Vec)      X1
+      Vec::      X1
       PetscErrorCode ierr
 
 !  Local variables:
@@ -491,20 +491,20 @@
 !  flag     - flag indicating matrix structure
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
-      type(SNES)     dummy
-      type(Vec)      X
-      type(Mat)      jac,jac_prec
+      SNES::     dummy
+      Vec::      X
+     Mat::     jac,jac_prec
       type(petsc_kkt_solver)  solver
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-      type(Vec)      Xsub(1)
-      type(Mat)      Amat
+      Vec::      Xsub(1)
+     Mat::     Amat
       PetscInt       izero,ione
 
       izero = 0
@@ -550,14 +550,14 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
-#include <finclude/petscmatdef.h>
+#include <petsc-finclude/petscmatdef.h>
       use petscmat
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
       type (petsc_kkt_solver) solver
-      type(Vec)      X1
-      type(Mat)      jac
+      Vec::      X1
+     Mat::     jac
       logical        add_nl_term
       PetscErrorCode ierr
 
@@ -580,7 +580,7 @@
       hy2inv = one/(hy*hy)
 
       call VecGetOwnershipRange(X1,low,high,ierr)
-      call VecGetArrayF90(X1,lx_v,ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr)
 
       ii = 0
       do 20 row=low,high-1
@@ -613,7 +613,7 @@
          endif
  20   continue
 
-      call VecRestoreArrayF90(X1,lx_v,ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr)
 
       return
       end subroutine FormJacobianLocal
@@ -633,18 +633,18 @@
 !  F - function vector
 !
       subroutine FormFunction(snesIn,X,F,solver,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
-      type(SNES)     snesIn
-      type(Vec)      X,F
+      SNES::     snesIn
+     Vec::      X,F
       PetscErrorCode ierr
       type (petsc_kkt_solver) solver
 
 !  Declarations for use with local arrays:
-      type(Vec)              Xsub(2),Fsub(2)
+     Vec::              Xsub(2),Fsub(2)
       PetscInt               izero,ione,itwo
 
 !  Scatter ghost points to local vector, using the 2-step process
@@ -688,13 +688,13 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
-#include <finclude/petscvecdef.h>
+#include <petsc-finclude/petscvecdef.h>
       use petscvec
       use petsc_kkt_solver_module
       implicit none
 !  Input/output variables:
       type (petsc_kkt_solver) solver
-      type(Vec)      X1,F1
+     Vec::      X1,F1
       PetscErrorCode ierr
 !  Local variables:
       PetscScalar one,sc
@@ -706,7 +706,7 @@
       sc     = solver%lambda
       ione   = 1
 
-      call VecGetArrayF90(X1,lx_v,ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr)
       call VecGetOwnershipRange(X1,low,high,ierr)
 
 !     Compute function over the locally owned part of the grid
@@ -725,7 +725,7 @@
          call VecSetValues(F1,ione,row,v,INSERT_VALUES,ierr)
  20   continue
 
-      call VecRestoreArrayF90(X1,lx_v,ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr)
 
       call VecAssemblyBegin(F1,ierr)
       call VecAssemblyEnd(F1,ierr)

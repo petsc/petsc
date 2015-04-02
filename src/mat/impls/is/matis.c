@@ -126,6 +126,7 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   PetscInt               lrows,lcols;
   PetscInt               local_rows,local_cols;
   PetscBool              isdense,issbaij,issbaij_red;
+  PetscMPIInt            nsubdomains;
   /* values insertion */
   PetscScalar            *array;
   PetscInt               *local_indices,*global_indices;
@@ -138,6 +139,15 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     - rectangular case not covered (it is not allowed by MATIS)
   */
   /* get info from mat */
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&nsubdomains);CHKERRQ(ierr);
+  if (nsubdomains == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(matis->A,MAT_COPY_VALUES,&(*M));CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(matis->A,*M,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
   /* ierr = MatGetLocalToGlobalMapping(mat,&rmapping,&cmapping);CHKERRQ(ierr); */
   ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
@@ -149,7 +159,7 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   ierr = PetscMalloc1(local_rows,&local_indices);CHKERRQ(ierr);
   for (i=0;i<local_rows;i++) local_indices[i]=i;
   /* map indices of local mat to global values */
-  ierr = PetscMalloc(PetscMax(local_cols,local_rows)*sizeof(*global_indices),&global_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(local_cols,local_rows),&global_indices);CHKERRQ(ierr);
   /* ierr = ISLocalToGlobalMappingApply(rmapping,local_rows,local_indices,global_indices);CHKERRQ(ierr); */
   ierr = ISLocalToGlobalMappingApply(matis->mapping,local_rows,local_indices,global_indices);CHKERRQ(ierr);
 
@@ -164,7 +174,6 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     PetscScalar *my_dnz,*my_onz;
     PetscInt    *dnz,*onz,*mat_ranges,*row_ownership;
     PetscInt    index_col,owner;
-    PetscMPIInt nsubdomains;
 
     /* determining new matrix type */
     ierr = MPI_Allreduce(&issbaij,&issbaij_red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
@@ -178,7 +187,6 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
       }
     }
 
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&nsubdomains);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&new_mat);CHKERRQ(ierr);
     ierr = MatSetSizes(new_mat,PETSC_DECIDE,PETSC_DECIDE,rows,cols);CHKERRQ(ierr);
     ierr = MatSetBlockSize(new_mat,bs);CHKERRQ(ierr);
@@ -408,6 +416,7 @@ PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
   ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),bs,m,n,M,N,matis->mapping,&B);CHKERRQ(ierr);
   ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&localmat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = B;

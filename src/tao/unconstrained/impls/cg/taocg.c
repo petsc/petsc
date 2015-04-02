@@ -230,14 +230,14 @@
 
  #undef __FUNCT__
  #define __FUNCT__ "TaoSetFromOptions_CG"
- static PetscErrorCode TaoSetFromOptions_CG(Tao tao)
+static PetscErrorCode TaoSetFromOptions_CG(PetscOptions *PetscOptionsObject,Tao tao)
  {
     TAO_CG         *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
-    ierr = PetscOptionsHead("Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance", "", cgP->eta,&cgP->eta,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-tao_cg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cgP->cg_type], &cgP->cg_type,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->delta_min,&cgP->delta_min,NULL);CHKERRQ(ierr);

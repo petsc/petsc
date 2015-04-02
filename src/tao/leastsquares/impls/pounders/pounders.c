@@ -106,7 +106,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution < lower bound");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"subproblem solution < lower bound\n");CHKERRQ(ierr);
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
 
@@ -114,7 +114,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution > upper bound");
+      ierr = PetscInfo(tao,"subproblem solution > upper bound\n");
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
   } else {
@@ -780,7 +780,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       mfqP->nmodelpoints = 0;
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
       if (mfqP->nmodelpoints < mfqP->n) {
-        ierr = PetscInfo(tao,"Model not valid -- model-improving");
+        ierr = PetscInfo(tao,"Model not valid -- model-improving\n");CHKERRQ(ierr);
         ierr = modelimprove(tao,mfqP,1);CHKERRQ(ierr);
       }
     }
@@ -808,7 +808,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       valid = PETSC_FALSE;
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2);CHKERRQ(ierr);
       if (mfqP->n > mfqP->nmodelpoints) {
-        ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
+        ierr = PetscInfo(tao,"Model not valid -- adding geometry points\n");CHKERRQ(ierr);
         ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints);CHKERRQ(ierr);
       }
     }
@@ -892,7 +892,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
     mfqP->last_nmodelpoints = mfqP->nmodelpoints;
     if (same && mfqP->delta == deltaold) {
-      PetscInfo(tao,"Identical model used in successive iterations");
+      ierr = PetscInfo(tao,"Identical model used in successive iterations\n");CHKERRQ(ierr);
       reason = TAO_CONVERGED_STEPTOL;
       tao->reason = TAO_CONVERGED_STEPTOL;
     }
@@ -921,8 +921,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   mfqP->npmax = PetscMin((mfqP->n+1)*(mfqP->n+2)/2,mfqP->npmax);
   mfqP->npmax = PetscMax(mfqP->npmax, mfqP->n+2);
 
-  ierr = PetscMalloc1((tao->max_funcs+10),&mfqP->Xhist);CHKERRQ(ierr);
-  ierr = PetscMalloc1((tao->max_funcs+10),&mfqP->Fhist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Xhist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Fhist);CHKERRQ(ierr);
   for (i=0;i<mfqP->n +1;i++) {
     ierr = VecDuplicate(tao->solution,&mfqP->Xhist[i]);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->sep_objective,&mfqP->Fhist[i]);CHKERRQ(ierr);
@@ -930,15 +930,15 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   ierr = VecDuplicate(tao->solution,&mfqP->workxvec);CHKERRQ(ierr);
   mfqP->nHist = 0;
 
-  ierr = PetscMalloc1((tao->max_funcs+10),&mfqP->Fres);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Fres);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->npmax*mfqP->m,&mfqP->RES);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work2);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work3);CHKERRQ(ierr);
   ierr = PetscMalloc1(PetscMax(mfqP->m,mfqP->n+1),&mfqP->mwork);CHKERRQ(ierr);
-  ierr = PetscMalloc1((mfqP->npmax - mfqP->n - 1),&mfqP->omega);CHKERRQ(ierr);
-  ierr = PetscMalloc1((mfqP->n * (mfqP->n+1) / 2),&mfqP->beta);CHKERRQ(ierr);
-  ierr = PetscMalloc1((mfqP->n + 1) ,&mfqP->alpha);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mfqP->npmax - mfqP->n - 1,&mfqP->omega);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mfqP->n * (mfqP->n+1) / 2,&mfqP->beta);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mfqP->n + 1 ,&mfqP->alpha);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(mfqP->n*mfqP->n*mfqP->m,&mfqP->H);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->npmax*mfqP->npmax,&mfqP->Q);CHKERRQ(ierr);
@@ -1098,13 +1098,13 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_POUNDERS"
-static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao)
+static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("POUNDERS method for least-squares optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"POUNDERS method for least-squares optimization");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,NULL);CHKERRQ(ierr);
   mfqP->delta = mfqP->delta0;
   mfqP->npmax = PETSC_DEFAULT;

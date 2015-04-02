@@ -173,7 +173,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NASM"
-PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
+PetscErrorCode SNESSetFromOptions_NASM(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode    ierr;
   PCASMType         asmtype;
@@ -181,7 +181,7 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   SNES_NASM         *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Nonlinear Additive Schwartz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Additive Schwartz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESNASMSetType(snes,asmtype);CHKERRQ(ierr);}
   flg    = PETSC_FALSE;
@@ -661,6 +661,17 @@ PetscErrorCode SNESNASMGetDamping_NASM(SNES snes,PetscReal *dmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
+/*
+  Input Parameters:
++ snes - The solver
+. B - The RHS vector
+- X - The initial guess
+
+  Output Parameters:
+. Y - The solution update
+
+  TODO: All scatters should be packed into one
+*/
 PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
@@ -710,6 +721,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     } else Bl = NULL;
     ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    /* Could scatter directly from X */
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = VecCopy(Xl,Yl);CHKERRQ(ierr);

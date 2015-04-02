@@ -30,7 +30,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinfo_(CHAR text PETSC_MIXED_LEN(len1),Petsc
 
   FIXCHAR(text,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscInfo(NULL,tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(text,c1);
+  *ierr = PetscInfo(NULL,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }

@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((n+1),&col);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&col);CHKERRQ(ierr);
   for (i=0; i<n+1; i++) fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 

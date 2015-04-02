@@ -1220,7 +1220,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, numComp, numPoints, dim, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, numComp, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1231,6 +1231,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
@@ -1239,7 +1240,9 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   for (c = cStart; c < cEnd; ++c) {
     PetscFECellGeom geom;
 
-    ierr = DMDAComputeCellGeometryFEM(dm, c, q, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+    ierr          = DMDAComputeCellGeometryFEM(dm, c, q, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+    geom.dim      = dim;
+    geom.dimEmbed = dimEmbed;
     for (f = 0, v = 0; f < numFields; ++f) {
       void * const ctx = ctxs ? ctxs[f] : NULL;
 

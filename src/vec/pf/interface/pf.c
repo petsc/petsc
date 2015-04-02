@@ -453,7 +453,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
     ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
   }
   if (pf->ops->setfromoptions) {
-    ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
+    ierr = (*pf->ops->setfromoptions)(PetscOptionsObject,pf);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

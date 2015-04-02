@@ -144,10 +144,6 @@ PETSC_EXTERN PetscErrorCode VecMDot(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecMTDot(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecGetSubVector(Vec,IS,Vec*);
 PETSC_EXTERN PetscErrorCode VecRestoreSubVector(Vec,IS,Vec*);
-PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecGetLocalVectorWrite(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorWrite(Vec,Vec*);
 
 /*E
     NormType - determines what type of norm to compute
@@ -317,11 +313,9 @@ PETSC_EXTERN PetscErrorCode VecSetValuesBlocked(Vec,PetscInt,const PetscInt[],co
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList VecList;
-PETSC_EXTERN PetscBool         VecRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
-PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
@@ -343,6 +337,15 @@ PETSC_EXTERN PetscErrorCode VecGetArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscIn
 PETSC_EXTERN PetscErrorCode VecRestoreArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
 PETSC_EXTERN PetscErrorCode VecGetArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode VecRestoreArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
+
+PETSC_EXTERN PetscErrorCode VecGetArray4dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray4dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+PETSC_EXTERN PetscErrorCode VecGetArray3dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray3dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
+PETSC_EXTERN PetscErrorCode VecGetArray2dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray2dRead(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
+PETSC_EXTERN PetscErrorCode VecGetArray1dRead(Vec,PetscInt,PetscInt,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode VecRestoreArray1dRead(Vec,PetscInt,PetscInt,PetscScalar *[]);
 
 PETSC_EXTERN PetscErrorCode VecPlaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecResetArray(Vec);
@@ -416,10 +419,49 @@ PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayRead(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec*);
+PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
+/*
+   Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
+*/
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(y,yv);CHKERRQ(ierr);
+  if (x != y) {
+    ierr = VecGetArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
+  } else {
+    *xv = *yv;
+  }
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArray(y,yv);CHKERRQ(ierr);
+  if (x != y) {
+    ierr = VecRestoreArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_USE_DEBUG)
+PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecLockPush(Vec);
+PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
+#define VecLocked(x,arg) do {PetscInt _st; PetscErrorCode __ierr = VecLockGet(x,&_st); CHKERRQ(__ierr); if (_st > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is locked read only, argument # %d",arg);} while (0)
+#else
+#define VecLockGet(x,arg)     *(arg) = 0
+#define VecLockPush(x)        0
+#define VecLockPop(x)         0
+#define VecLocked(x,arg)
+#endif
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
 
@@ -502,6 +544,8 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMod
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArray(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArray(Vec,PetscScalar**);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -521,7 +565,7 @@ PETSC_EXTERN PetscErrorCode VecNestSetSubVec(Vec,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode VecNestGetSize(Vec,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode PetscOptionsVec(const char[],const char[],const char[],Vec,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetVec(const char[],const char[],Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode VecChop(Vec,PetscReal);
 
 PETSC_EXTERN PetscErrorCode VecGetLayout(Vec,PetscLayout*);
@@ -530,6 +574,7 @@ PETSC_EXTERN PetscErrorCode VecSetLayout(Vec,PetscLayout);
 PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
 PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
+PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal []);
 
 #endif
 

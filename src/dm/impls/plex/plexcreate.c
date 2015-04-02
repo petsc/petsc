@@ -275,6 +275,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = VecSetBlockSize(coordinates, 2);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -439,12 +440,12 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 #define __FUNCT__ "DMPlexCreateCubeMesh_Internal"
 static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY, DMBoundaryType bdZ)
 {
-  PetscInt       markerTop      = 1;
-  PetscInt       markerBottom   = 1;
-  PetscInt       markerFront    = 1;
-  PetscInt       markerBack     = 1;
-  PetscInt       markerRight    = 1;
-  PetscInt       markerLeft     = 1;
+  PetscInt       markerTop      = 1, faceMarkerTop      = 1;
+  PetscInt       markerBottom   = 1, faceMarkerBottom   = 1;
+  PetscInt       markerFront    = 1, faceMarkerFront    = 1;
+  PetscInt       markerBack     = 1, faceMarkerBack     = 1;
+  PetscInt       markerRight    = 1, faceMarkerRight    = 1;
+  PetscInt       markerLeft     = 1, faceMarkerLeft     = 1;
   PetscInt       dim;
   PetscBool      markerSeparate = PETSC_FALSE;
   PetscMPIInt    rank;
@@ -453,27 +454,33 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    faceMarkerTop    = 3;
+    faceMarkerBottom = 1;
+    faceMarkerRight  = 2;
+    faceMarkerLeft   = 4;
+    break;
+  case 3:
+    faceMarkerBottom = 1;
+    faceMarkerTop    = 2;
+    faceMarkerFront  = 3;
+    faceMarkerBack   = 4;
+    faceMarkerRight  = 5;
+    faceMarkerLeft   = 6;
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
+    break;
+  }
   ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
-    switch (dim) {
-    case 2:
-      markerTop    = 3;
-      markerBottom = 1;
-      markerRight  = 2;
-      markerLeft   = 4;
-      break;
-    case 3:
-      markerBottom = 1;
-      markerTop    = 2;
-      markerFront  = 3;
-      markerBack   = 4;
-      markerRight  = 5;
-      markerLeft   = 6;
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
-      break;
-    }
+    markerBottom = faceMarkerBottom;
+    markerTop    = faceMarkerTop;
+    markerFront  = faceMarkerFront;
+    markerBack   = faceMarkerBack;
+    markerRight  = faceMarkerRight;
+    markerLeft   = faceMarkerLeft;
   }
   {
     const PetscInt numXEdges    = !rank ? edges[0]   : 0;
@@ -558,9 +565,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (fx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerRight);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerRight);CHKERRQ(ierr);
               }
               else if (fx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerLeft);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerLeft);CHKERRQ(ierr);
               }
             }
@@ -587,9 +596,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (fy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerBack);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerBack);CHKERRQ(ierr);
               }
               else if (fy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerFront);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerFront);CHKERRQ(ierr);
               }
             }
@@ -620,9 +631,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (fz == numZVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerTop);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerTop);CHKERRQ(ierr);
               }
               else if (fz == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerBottom);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerBottom);CHKERRQ(ierr);
               }
             }
@@ -680,6 +693,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
               if (vx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerRight);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
                 if (ey == numYEdges-1) {
@@ -687,6 +701,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 }
               }
               else if (vx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
                 if (ey == numYEdges-1) {
@@ -731,6 +746,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
               if (vy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerTop);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
                 if (ex == numXEdges-1) {
@@ -738,6 +754,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 }
               }
               else if (vy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
                 if (ex == numXEdges-1) {
@@ -782,6 +799,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
     ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
     ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -967,7 +985,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
 
 /* External function declarations here */
 extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
-extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx);
+extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 extern PetscErrorCode DMCreateDefaultSection_Plex(DM dm);
 extern PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
@@ -996,6 +1014,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   DM               coordDM;
   Vec              coords;
   const PetscReal *maxCell, *L;
+  const DMBoundaryType *bd;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1005,8 +1024,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinateDM(dm, coordDM);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
-  ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
-  if (L) {ierr = DMSetPeriodicity(dmNew, maxCell, L);CHKERRQ(ierr);}
+  ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
+  if (L) {ierr = DMSetPeriodicity(dmNew, maxCell, L, bd);CHKERRQ(ierr);}
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
@@ -1048,7 +1067,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_NonRefinement_Plex"
-PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
+PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMBoundary     b;
@@ -1084,14 +1103,16 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* Handle viewing */
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", mesh->printFEM, &mesh->printFEM, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", mesh->printTol, &mesh->printTol, NULL);CHKERRQ(ierr);
+  /* Projection behavior */
+  ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(DM dm)
+PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscInt       refine = 0, r;
   PetscBool      isHierarchy;
@@ -1099,7 +1120,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMPlex Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
   /* Handle DMPlex refinement */
   ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
@@ -1119,7 +1140,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
     }
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
-      ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
       ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
@@ -1127,14 +1148,14 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
     for (r = 0; r < refine; ++r) {
       DM refinedMesh;
 
-      ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
       ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
       ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1305,6 +1326,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->useCone             = PETSC_FALSE;
   mesh->useClosure          = PETSC_TRUE;
   mesh->useAnchors          = PETSC_FALSE;
+
+  mesh->maxProjectionHeight = 0;
 
   mesh->printSetValues = PETSC_FALSE;
   mesh->printFEM       = 0;
@@ -1603,8 +1626,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extGmsh   = ".msh";
   const char    *extCGNS   = ".cgns";
   const char    *extExodus = ".exo";
+  const char    *extFluent = ".cas";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus;
+  PetscBool      isGmsh, isCGNS, isExodus, isFluent;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -1617,19 +1641,15 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh,   4, &isGmsh);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,   5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent, 4, &isFluent);CHKERRQ(ierr);
   if (isGmsh) {
-    PetscViewer viewer;
-
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-    ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
     ierr = DMPlexCreateCGNSFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isExodus) {
     ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+  } else if (isFluent) {
+    ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscFunctionReturn(0);
 }

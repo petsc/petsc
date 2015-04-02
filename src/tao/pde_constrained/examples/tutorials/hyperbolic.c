@@ -1,5 +1,4 @@
 #include <petsctao.h>
-#include "../src/tao/pde_constrained/impls/lcl/lcl.h"
 
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
@@ -73,7 +72,6 @@ typedef struct {
   PC       prec;
   PetscInt block_index;
 
-  TAO_LCL *lcl;
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 } AppCtx;
@@ -130,6 +128,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 32;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.nt = 16;
   ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL);CHKERRQ(ierr);
@@ -185,7 +184,6 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOLCL);CHKERRQ(ierr);
-  user.lcl = (TAO_LCL*)(tao->data);
 
   /* Set up initial vectors and matrices */
   ierr = HyperbolicInitialize(&user);CHKERRQ(ierr);
@@ -209,6 +207,7 @@ int main(int argc, char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
@@ -556,17 +555,16 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   AppCtx         *user;
-  PetscReal      tau;
   PetscInt       its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
 
   if (Y == user->ytrue) {
+    /* First solve is done using true solution to set up problem */
     ierr = KSPSetTolerances(user->solver,1e-4,1e-20,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  } else if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSetTolerances(user->solver,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_yi(Y,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
@@ -596,16 +594,11 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   AppCtx         *user;
-  PetscReal      tau;
   PetscInt       its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
 
-  if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  }
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_yi(Y,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);
@@ -1203,7 +1196,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = VecCopy(user->ur,user->u); /*  Reset u=ur */
 
   /* Initial guess y0 for state given u0 */
-  user->lcl->solve_type = LCL_FORWARD1;
   ierr = StateMatInvMult(user->Js,user->q,user->y);CHKERRQ(ierr);
 
   /* Data discretization */

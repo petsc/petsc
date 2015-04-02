@@ -227,7 +227,7 @@ int main(int argc,char *argv[])
 
 #if WITH_PTHREADS
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nworkThreads);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nworkThreads+1),&trstarts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nworkThreads+1,&trstarts);CHKERRQ(ierr);
   PetscInt  Q,R,nloc;
   PetscBool S;
   Q           = (N+OFFSET)/nworkThreads;

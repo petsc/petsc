@@ -24,6 +24,7 @@ configure_options = [
   '--download-netcdf=1',
   '--download-hdf5=1',
   '--download-moab=1',
+  '--download-saws',
   ]
 
 if __name__ == '__main__':

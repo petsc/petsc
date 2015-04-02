@@ -116,8 +116,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   eigtol        = chaco->eigtol;          /* tolerance on eigenvectors */
   seed          = 123636512;              /* for random graph mutations */
 
-  ierr = PetscMalloc1((mat->rmap->N),&assignment);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(int)*start[nvtxs],&adjacency);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc1(start[nvtxs],&adjacency);CHKERRQ(ierr);
   for (i=0; i<start[nvtxs]; i++) adjacency[i] = (adj->j)[i] + 1; /* 1-based indexing */
 
   /* redirect output to buffer */
@@ -152,7 +152,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
-  ierr = PetscMalloc1((mat->rmap->N),&parttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&parttab);CHKERRQ(ierr);
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
 
   /* creation of the index set */
@@ -683,7 +683,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Chaco"
-PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Chaco(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
   PetscInt              i;
@@ -695,7 +695,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
   MPChacoEigenType      eigen;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Chaco partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Chaco partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,(PetscEnum)chaco->global_method,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningChacoSetGlobal(part,global);CHKERRQ(ierr); }
   ierr = PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,(PetscEnum)chaco->local_method,(PetscEnum*)&local,&flag);CHKERRQ(ierr);

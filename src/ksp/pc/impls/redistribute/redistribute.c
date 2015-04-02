@@ -83,7 +83,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
-    ierr = PetscMalloc1((rend - rstart - cnt),&drows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend - rstart - cnt,&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
     cnt = 0; dcnt = 0;
@@ -275,7 +275,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redistribute"
-static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
+static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red = (PC_Redistribute*)pc->data;

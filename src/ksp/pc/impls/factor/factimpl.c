@@ -136,12 +136,23 @@ PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetAllowDiagonalFill_Factor"
-PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC pc)
+PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC pc,PetscBool flg)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  dir->info.diagonal_fill = 1;
+  dir->info.diagonal_fill = (PetscReal) flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetAllowDiagonalFill_Factor"
+PetscErrorCode  PCFactorGetAllowDiagonalFill_Factor(PC pc,PetscBool *flg)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *flg = dir->info.diagonal_fill ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -216,7 +227,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Factor"
-PetscErrorCode  PCSetFromOptions_Factor(PC pc)
+PetscErrorCode  PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_Factor         *factor = (PC_Factor*)pc->data;
   PetscErrorCode    ierr;
@@ -224,12 +235,13 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   char              tname[256], solvertype[64];
   PetscFunctionList ordlist;
   PetscEnum         etmp;
+  PetscBool         inplace;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set && flg) {
-    ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
+  ierr = PCFactorGetUseInPlace(pc,&inplace);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",inplace,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PCFactorSetUseInPlace(pc,flg);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,NULL);CHKERRQ(ierr);
 

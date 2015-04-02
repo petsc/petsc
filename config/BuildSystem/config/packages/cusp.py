@@ -4,8 +4,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
+    self.download        = 'bogus'
+    self.gitcommit       = '6ef9eca83df5b8774321cda07148023ae7458deb'
+    self.giturls         = ['https://github.com/cusplibrary/cusplibrary.git']
     self.includes        = ['cusp/version.h']
     self.includedir      = ['','include']
+    self.libdir          = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.CUSPVersion     = '0400' # Minimal cusp version is 0.4 
@@ -17,6 +21,26 @@ class Configure(config.package.Package):
     self.cuda = framework.require('config.packages.cuda', self)
     self.deps   = [self.cuda]
     return
+
+  def Install(self):
+    import shutil
+    import os
+    self.log.write('boostDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    srcdir = os.path.join(self.packageDir,'cusp')
+    destdir = os.path.join(self.installDir,'include','cusp')
+    if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error copying Boost files from '+os.path.join(self.packageDir, 'Boost')+' to '+packageDir)
+    else:
+      try:
+        if os.path.isdir(destdir): shutil.rmtree(destdir)
+        shutil.copytree(srcdir,destdir)
+      except RuntimeError,e:
+        raise RuntimeError('Error installing Boost include files: '+str(e))
+    return self.installDir
 
   def getSearchDirectories(self):
     import os

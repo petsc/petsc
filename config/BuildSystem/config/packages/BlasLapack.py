@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.missingRoutines   = []
     self.separateBlas      = 1
     self.defaultPrecision  = 'double'
+    self.alternativedownload = 'f2cblaslapack'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -117,23 +118,23 @@ class Configure(config.package.Package):
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
       if foundLapack:
         self.mangling = self.compilers.fortranMangling
-      self.framework.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
+      self.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
     else:
-      self.framework.logPrint('Checking for no name mangling on BLAS/LAPACK')
+      self.logPrint('Checking for no name mangling on BLAS/LAPACK')
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
       if foundBlas:
         foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
       if foundBlas and foundLapack:
-        self.framework.logPrint('Found no name mangling on BLAS/LAPACK')
+        self.logPrint('Found no name mangling on BLAS/LAPACK')
         self.mangling = 'unchanged'
         self.f2c = 1
       else:
-        self.framework.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
+        self.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
         foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot_')
         if foundBlas:
           foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
         if foundBlas and foundLapack:
-          self.framework.logPrint('Found underscore name mangling on BLAS/LAPACK')
+          self.logPrint('Found underscore name mangling on BLAS/LAPACK')
           self.mangling = 'underscore'
           self.f2c = 1
     return (foundBlas, foundLapack)
@@ -153,49 +154,63 @@ class Configure(config.package.Package):
       libDir = self.fblaslapack.libDir
       yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), 1)
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
-    if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
+    if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
-    if not 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
+    if not 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
       raise RuntimeError('If you use the --with-lapack-lib=<lib> you must also use --with-blas-lib=<lib> option')
-    if 'with-blas-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
+    if 'with-blas-lib' in self.argDB and 'with-blas-lapack-dir' in self.argDB:
       raise RuntimeError('You cannot set both the library containing BLAS with --with-blas-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
-    if 'with-blas-lapack-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
+    if 'with-blas-lapack-lib' in self.argDB and 'with-blas-lapack-dir' in self.argDB:
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     # Try specified BLASLAPACK library
-    if 'with-blas-lapack-lib' in self.framework.argDB:
-      yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack-lib'], 1)
-      raise RuntimeError('You set a value for --with-blas-lapack-lib=<lib>, but '+str(self.framework.argDB['with-blas-lapack-lib'])+' cannot be used\n')
+    if 'with-blas-lapack-lib' in self.argDB:
+      yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blas-lapack-lib'], 1)
+      raise RuntimeError('You set a value for --with-blas-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lapack-lib'])+' cannot be used\n')
     # Try specified BLAS and LAPACK libraries
-    if 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
-      yield ('User specified BLAS and LAPACK libraries', self.framework.argDB['with-blas-lib'], self.framework.argDB['with-lapack-lib'], 1)
-      raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.framework.argDB['with-blas-lib'])+' and '+str(self.framework.argDB['with-lapack-lib'])+' cannot be used\n')
+    if 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
+      yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'], 1)
+      raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
     # Try specified installation root
-    if 'with-blas-lapack-dir' in self.framework.argDB:
-      dir = self.framework.argDB['with-blas-lapack-dir']
+    if 'with-blas-lapack-dir' in self.argDB:
+      dir = self.argDB['with-blas-lapack-dir']
       # error if package-dir is in externalpackages
       if os.path.realpath(dir).find(os.path.realpath(self.externalPackagesDir)) >=0:
         fakeExternalPackagesDir = dir.replace(os.path.realpath(dir).replace(os.path.realpath(self.externalPackagesDir),''),'')
-        raise RuntimeError('Bad option: '+'--with-blas-lapack-dir='+self.framework.argDB['with-blas-lapack-dir']+'\n'+
+        raise RuntimeError('Bad option: '+'--with-blas-lapack-dir='+self.argDB['with-blas-lapack-dir']+'\n'+
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
-      self.framework.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
-      self.framework.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
+      self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
+      self.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
 
       # Look for Multi-Threaded MKL for MKL_Pardiso
-      if self.framework.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.framework.argDB or 'with-mkl_pardiso-lib' in self.framework.argDB:
+      if self.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.argDB or 'with-mkl_pardiso-lib' in self.argDB:
         self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for Pardiso')
         for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
                        os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
           if not os.path.exists(os.path.join(dir,libdir)):
-            self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+            self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
             yield ('User specified MKL-Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
             yield ('User specified MKL-Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
             yield ('User specified MKL-Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
             yield ('User specified MKL-Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+        return
+
+      # Look for Multi-Threaded MKL for MKL_CPardiso
+      if self.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.argDB or 'with-mkl_cpardiso-lib' in self.argDB:
+        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for CPardiso')
+        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
+                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+          if not os.path.exists(os.path.join(dir,libdir)):
+            self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
+          else:
+            yield ('User specified MKL-CPardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
         return
 
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
@@ -209,12 +224,12 @@ class Configure(config.package.Package):
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
-          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+          self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
       for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
-          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+          self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
       # Older Linux MKL checks
@@ -265,7 +280,7 @@ class Configure(config.package.Package):
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blas-lapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'), 1)
-      raise RuntimeError('You set a value for --with-blas-lapack-dir=<dir>, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
+      raise RuntimeError('You set a value for --with-blas-lapack-dir=<dir>, but '+self.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a', 1)
     yield ('Another IRIX Mathematics library', None, 'libscs.a', 1)
@@ -304,7 +319,7 @@ class Configure(config.package.Package):
     for MKL_Version in [os.path.join('MKL','9.0'),os.path.join('MKL','8.1.1'),os.path.join('MKL','8.1'),os.path.join('MKL','8.0.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
       mklpath = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
       if not os.path.exists(mklpath):
-        self.framework.logPrint('MLK Path not found.. skipping: '+mklpath)
+        self.logPrint('MKL Path not found.. skipping: '+mklpath)
       else:
         mkldir = os.path.join(mklpath, 'ia32', 'lib')
         yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'), 1)
@@ -316,18 +331,22 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
+
+    if hasattr(self.compilers, 'FC'):
+      self.alternativedownload = 'fblaslapack'
+
     self.functionalBlasLapack = []
     self.foundBlas   = 0
     self.foundLapack = 0
     for (name, blasLibrary, lapackLibrary, self.useCompatibilityLibs) in self.generateGuesses():
-      self.framework.log.write('================================================================================\n')
-      self.framework.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
+      self.log.write('================================================================================\n')
+      self.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
       (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
       if foundBlas:   self.foundBlas   = 1
       if foundLapack: self.foundLapack = 1
       if foundBlas and foundLapack:
         self.functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
-        if not self.framework.argDB['with-alternatives']:
+        if not self.argDB['with-alternatives']:
           break
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
@@ -399,6 +418,12 @@ class Configure(config.package.Package):
     else:
       return prefix+baseName
 
+  def mangleBlasNoPrefix(self, baseName):
+    if self.f2c and self.mangling == 'underscore':
+      return baseName+'_'
+    else:
+      return baseName
+
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
@@ -441,6 +466,59 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
     return
 
+  def runTimeTest(self,name,includes,body,lib = None):
+    '''Either runs a test or adds it to the batch of runtime tests'''
+    if name in self.argDB: return self.argDB[name]
+    if self.argDB['with-batch']:
+      self.framework.addBatchInclude(includes)
+      self.framework.addBatchBody(body)
+      if lib: self.framework.addBatchLib(lib)
+      return None
+    else:
+      result = None
+      self.pushLanguage('C')
+      filename = 'runtimetestoutput'
+      body = '''FILE *output = fopen("'''+filename+'''","w");\n'''+body
+      if lib:
+        if not isinstance(lib, list): lib = [lib]
+        oldLibs  = self.compilers.LIBS
+        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+      if self.checkRun(includes, body) and os.path.exists(filename):
+        f    = file(filename)
+        out  = f.read()
+        f.close()
+        os.remove(filename)
+        result = out.split("=")[1].split("'")[0]
+      self.popLanguage()
+      if lib:
+        self.compilers.LIBS = oldLibs
+      return result
+
+  def checksdotreturnsdouble(self):
+    '''Determines if BLAS sdot routine returns a float or a double'''
+    self.log.write('Checking if sdot() returns a float or a double\n')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(int*,float*,int *,float*,int*);\n
+                  float x1[1] = {3.0};\n
+                  int one1 = 1;\n
+                  float sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''(&one1,x1,&one1,x1,&one1);\n
+                  fprintf(output, "  '--known-sdot-returns-double=%d',\\n",(sdotresult != 9.0));\n'''
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
+    if result:
+      result = int(result)
+      if result: self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+    self.log.write('Checking if snrm() returns a float or a double\n')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(int*,float*,int*);\n
+                  float x2[1] = {3.0};\n
+                  int one2 = 1;\n
+                  float normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''(&one2,x2,&one2);\n
+                  fprintf(output, "  '--known-snrm2-returns-double=%d',\\n",(normresult != 3.0));\n'''
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
+    if result:
+      result = int(result)
+      if result: self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.check64BitBLASIndices)
@@ -449,7 +527,7 @@ class Configure(config.package.Package):
     self.executeTest(self.checkMKL)
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
-    if self.framework.argDB['with-shared-libraries']:
+    if self.argDB['with-shared-libraries']:
       symbol = 'dgeev'
       if self.f2c:
         if self.mangling == 'underscore': symbol = 'dgeev_'
@@ -457,5 +535,6 @@ class Configure(config.package.Package):
         symbol = self.compilers.mangleFortranFunction(symbol)
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot be used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
+    self.executeTest(self.checksdotreturnsdouble)
     return
 

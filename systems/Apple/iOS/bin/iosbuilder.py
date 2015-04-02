@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 #
-#   Builds a iOS static library of PETSc
+#   Builds a iOS Framework of PETSc
 #
-#   Before using remove /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
-#      Xcode will use those instead of the MPIuni one we point to
-#
-#   export PETSC_ARCH=arch-ios-simular
+#   export PETSC_ARCH=arch-ios-simulator
 #
 #   ./systems/Apple/iOS/bin/arch-ios.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
 #      this sets up the appropriate configuration file
@@ -40,7 +37,7 @@ class PETScMaker(script.Script):
  def setupModules(self):
    self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
-   self.setCompilers  = self.framework.require('config.setCompilers',         None)   
+   self.setCompilers  = self.framework.require('config.setCompilers',         None)
    self.arch          = self.framework.require('PETSc.options.arch',        None)
    self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
    self.languages     = self.framework.require('PETSc.options.languages',   None)
@@ -54,7 +51,7 @@ class PETScMaker(script.Script):
    self.libraries     = self.framework.require('config.libraries',            None)
    self.scalarType    = self.framework.require('PETSc.options.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.options.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.options.libraryOptions', None)      
+   self.libraryOptions= self.framework.require('PETSc.options.libraryOptions', None)
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 
@@ -287,7 +284,7 @@ class PETScMaker(script.Script):
        raise RuntimeError('Error opening xcode project '+str(e))
 
 
-   sdk         = ' -sdk iphonesimulator8.0 '
+   sdk         = ' -sdk iphonesimulator '
    destination = 'iphonesimulator'
    debug       = 'Debug'
    debugdir    = 'Debug-'+destination

@@ -64,6 +64,7 @@ typedef struct {
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
+  PetscBool     testPartition;     /* Use a fixed partitioning for testing */
   /* Problem definition */
   BCType        bcType;
   void       (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx);
@@ -223,6 +224,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate     = PETSC_FALSE;
   options->simplex         = PETSC_TRUE;
   options->refinementLimit = 0.0;
+  options->testPartition   = PETSC_FALSE;
   options->bcType          = DIRICHLET;
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
@@ -240,6 +242,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex62.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex62.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex62.c",bcTypes,2,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
 
@@ -302,6 +305,48 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (refinedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
+    }
+    /* Setup test partitioning */
+    if (user->testPartition) {
+      PetscInt         triSizes_n2[2]       = {4, 4};
+      PetscInt         triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
+      PetscInt         triSizes_n3[3]       = {2, 3, 3};
+      PetscInt         triPoints_n3[8]      = {3, 5, 1, 6, 7, 0, 2, 4};
+      PetscInt         triSizes_n5[5]       = {1, 2, 2, 1, 2};
+      PetscInt         triPoints_n5[8]      = {3, 5, 6, 4, 7, 0, 1, 2};
+      PetscInt         triSizes_ref_n2[2]   = {8, 8};
+      PetscInt         triPoints_ref_n2[16] = {1, 5, 6, 7, 10, 11, 14, 15, 0, 2, 3, 4, 8, 9, 12, 13};
+      PetscInt         triSizes_ref_n3[3]   = {5, 6, 5};
+      PetscInt         triPoints_ref_n3[16] = {1, 7, 10, 14, 15, 2, 6, 8, 11, 12, 13, 0, 3, 4, 5, 9};
+      PetscInt         triSizes_ref_n5[5]   = {3, 4, 3, 3, 3};
+      PetscInt         triPoints_ref_n5[16] = {1, 7, 10, 2, 11, 13, 14, 5, 6, 15, 0, 8, 9, 3, 4, 12};
+      const PetscInt  *sizes = NULL;
+      const PetscInt  *points = NULL;
+      PetscPartitioner part;
+      PetscInt         cEnd;
+      PetscMPIInt      rank, numProcs;
+
+      ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &cEnd);CHKERRQ(ierr);
+      if (!rank) {
+        if (dim == 2 && user->simplex && numProcs == 2 && cEnd == 8) {
+           sizes = triSizes_n2; points = triPoints_n2;
+        } else if (dim == 2 && user->simplex && numProcs == 3 && cEnd == 8) {
+          sizes = triSizes_n3; points = triPoints_n3;
+        } else if (dim == 2 && user->simplex && numProcs == 5 && cEnd == 8) {
+          sizes = triSizes_n5; points = triPoints_n5;
+        } else if (dim == 2 && user->simplex && numProcs == 2 && cEnd == 16) {
+           sizes = triSizes_ref_n2; points = triPoints_ref_n2;
+        } else if (dim == 2 && user->simplex && numProcs == 3 && cEnd == 16) {
+          sizes = triSizes_ref_n3; points = triPoints_ref_n3;
+        } else if (dim == 2 && user->simplex && numProcs == 5 && cEnd == 16) {
+          sizes = triSizes_ref_n5; points = triPoints_ref_n5;
+        } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
+      }
+      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -372,7 +417,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);

@@ -91,6 +91,9 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   if args.testnum is not None:
     if args.testnum[0] == '[':
       validTestnum = args.testnum[1:-1].split(',')
+    elif args.testnum[0] == '@':
+      import re
+      validTestnum = [str(num) if key is None else key for num,key in enumerate(map(lambda p: p.get('num', None), params)) if re.match(args.testnum[1:], str(num) if key is None else key)]
     else:
       validTestnum = [args.testnum]
     numtests = len(validTestnum)
@@ -105,6 +108,8 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
         maker.logPrint('Test %s requires packages %s\n' % (testnum, param['requires']), debugSection='screen', forceScroll=True)
         continue
     if 'num' in param: testnum = param['num']
+    if 'numProcs' in args:
+      param['numProcs'] = args.numProcs
     if not args.testnum is None and not testnum in validTestnum: continue
     if 'setup' in param:
       print(param['setup'])
@@ -318,6 +323,7 @@ if __name__ == '__main__':
   parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
   parser_check.add_argument('--testnum', help='The test to execute')
   parser_check.add_argument('--replace', action='store_true', default=False, help='Replace stored output with test output')
+  parser_check.add_argument('--numProcs', help='The number of processes to use')
   parser_check.set_defaults(func=check)
   parser_regression = subparsers.add_parser('regression', help='Execute regression tests')
   parser_regression.add_argument('dirs', nargs='*', help='Directories for regression tests')

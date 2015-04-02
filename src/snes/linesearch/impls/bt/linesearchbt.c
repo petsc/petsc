@@ -447,14 +447,14 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetFromOptions_BT"
-static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
+static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptions *PetscOptionsObject,SNESLineSearch linesearch)
 {
 
   PetscErrorCode    ierr;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNESLineSearch BT options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNESLineSearch BT options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -474,7 +474,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
 +  -snes_linesearch_alpha<1e-4> - slope descent parameter
 .  -snes_linesearch_damping<1.0> - initial step length
 .  -snes_linesearch_maxstep <length> - if the length the initial step is larger than this then the
-$                                       step is scaled back to be of this length at the beginning of the line search
+                                       step is scaled back to be of this length at the beginning of the line search
 .  -snes_linesearch_max_it<40> - maximum number of shrinking step
 .  -snes_linesearch_minlambda<1e-12> - minimum step length allowed
 -  -snes_linesearch_order<cubic,quadratic> - order of the approximation

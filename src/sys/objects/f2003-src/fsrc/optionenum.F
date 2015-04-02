@@ -1,5 +1,5 @@
 
-#include "finclude/petscsysdef.h"
+#include "petsc-finclude/petscsysdef.h"
 
       Subroutine PetscOptionsGetEnum(pre,name,FArray,opt,set,ierr)
       use,intrinsic :: iso_c_binding

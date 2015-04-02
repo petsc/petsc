@@ -48,7 +48,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   if (n*n != N) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
   if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc1((rend-rstart),&color);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rend-rstart,&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
@@ -573,7 +573,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   }
 
   if (part->ops->setfromoptions) {
-    ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
+    ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

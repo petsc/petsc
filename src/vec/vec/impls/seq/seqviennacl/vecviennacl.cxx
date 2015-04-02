@@ -95,8 +95,8 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetFromOptions_ViennaCL"
-PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscObject obj)
+#define __FUNCT__ "PetscObjectViennaCLSetFromOptions"
+PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
 {
   PetscErrorCode       ierr;
   PetscBool            flg;
@@ -178,7 +178,7 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
-      ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)v);CHKERRQ(ierr);
+      ierr = PetscObjectViennaCLSetFromOptions((PetscObject)v);CHKERRQ(ierr);
       v->spptr                            = new Vec_ViennaCL;
       ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
 

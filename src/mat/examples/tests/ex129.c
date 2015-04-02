@@ -245,7 +245,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
 
-  ierr       = PetscMalloc1((2*dof*dof+1),&v);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(2*dof*dof+1,&v);CHKERRQ(ierr);
   v_neighbor = v + dof*dof;
   ierr       = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3         = 0;

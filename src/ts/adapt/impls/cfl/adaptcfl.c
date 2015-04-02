@@ -57,13 +57,13 @@ static PetscErrorCode TSAdaptDestroy_CFL(TSAdapt adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetFromOptions_CFL"
-static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
+static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_CFL    *cfl = (TSAdapt_CFL*)adapt->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("CFL adaptive controller options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"CFL adaptive controller options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
   if (!cfl->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"step rejection not implemented yet");

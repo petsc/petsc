@@ -97,7 +97,7 @@ end_1:
   } else if (jac->n < 0 && jac->n_local < 0) { /* no blocks given */
     jac->n         = size;
     jac->n_local   = 1;
-    ierr           = PetscMalloc(sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+    ierr           = PetscMalloc1(1,&jac->l_lens);CHKERRQ(ierr);
     jac->l_lens[0] = M;
   } else { /* jac->n > 0 && jac->n_local > 0 */
     if (!jac->l_lens) {
@@ -159,7 +159,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BJacobi"
 
-static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
+static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -167,7 +167,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Block Jacobi options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Block Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
         }
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       } else if (jac->psubcomm && !jac->psubcomm->color) {
-        ierr = PetscViewerASCIIGetStdout(mpjac->psubcomm->comm,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIGetStdout(PetscSubcommChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -254,7 +254,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     ierr   = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscSNPrintf(str,25,"Number blocks %D",jac->n);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     /* warning the communicator on viewer is different then on ksp in parallel */
@@ -661,11 +661,15 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalVectorRead(x, &bjac->x);CHKERRQ(ierr);
-  ierr = VecGetLocalVector(y, &bjac->y);CHKERRQ(ierr);
+  ierr = VecGetLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
+  ierr = VecGetLocalVector(y, bjac->y);CHKERRQ(ierr);
+ /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
+     matrix may change even if the outter KSP/PC has not updated the preconditioner, this will trigger a rebuild
+     of the inner preconditioner automatically unless we pass down the outter preconditioners reuse flag.*/
+  ierr = KSPSetReusePreconditioner(jac->ksp[0],pc->reusepreconditioner);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreLocalVectorRead(x, &bjac->x);CHKERRQ(ierr);
-  ierr = VecRestoreLocalVector(y, &bjac->y);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVector(y, bjac->y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -676,7 +680,8 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
+  PetscScalar            *y_array;
+  const PetscScalar      *x_array;
   PC                     subpc;
 
   PetscFunctionBegin;
@@ -686,7 +691,7 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
@@ -696,7 +701,7 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = PCApplySymmetricLeft(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -708,7 +713,8 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
+  PetscScalar            *y_array;
+  const PetscScalar      *x_array;
   PC                     subpc;
 
   PetscFunctionBegin;
@@ -718,7 +724,7 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
@@ -729,7 +735,7 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = KSPGetPC(jac->ksp[0],&subpc);CHKERRQ(ierr);
   ierr = PCApplySymmetricRight(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -741,7 +747,8 @@ PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
+  PetscScalar            *y_array;
+  const PetscScalar      *x_array;
 
   PetscFunctionBegin;
   /*
@@ -750,14 +757,14 @@ PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -796,7 +803,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Singleblock;
       pc->ops->setuponblocks       = PCSetUpOnBlocks_BJacobi_Singleblock;
 
-      ierr        = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
+      ierr        = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
       jac->ksp[0] = ksp;
 
       ierr      = PetscNewLog(pc,&bjac);CHKERRQ(ierr);
@@ -920,10 +927,11 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PetscErrorCode        ierr;
   PetscInt              i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  PetscScalar           *xin,*yin;
+  PetscScalar           *yin;
+  const PetscScalar     *xin;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yin);CHKERRQ(ierr);
   for (i=0; i<n_local; i++) {
     /*
@@ -941,7 +949,7 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
     ierr = VecResetArray(bjac->y[i]);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -957,10 +965,11 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PetscErrorCode        ierr;
   PetscInt              i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  PetscScalar           *xin,*yin;
+  PetscScalar           *yin;
+  const PetscScalar     *xin;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yin);CHKERRQ(ierr);
   for (i=0; i<n_local; i++) {
     /*
@@ -978,7 +987,7 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
     ierr = VecResetArray(bjac->y[i]);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1163,11 +1172,12 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
   PetscErrorCode       ierr;
-  PetscScalar          *xarray,*yarray;
+  PetscScalar          *yarray;
+  const PetscScalar    *xarray;
 
   PetscFunctionBegin;
   /* place x's and y's local arrays into xsub and ysub */
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
   ierr = VecPlaceArray(mpjac->xsub,xarray);CHKERRQ(ierr);
   ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
@@ -1179,7 +1189,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
 
   ierr = VecResetArray(mpjac->xsub);CHKERRQ(ierr);
   ierr = VecResetArray(mpjac->ysub);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1215,14 +1225,14 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
     }
     mpjac->psubcomm = jac->psubcomm;
-    subcomm         = mpjac->psubcomm->comm;
+    subcomm         = PetscSubcommChild(mpjac->psubcomm);
 
     /* Get matrix blocks of pmat */
     if (!pc->pmat->ops->getmultiprocblock) SETERRQ(PetscObjectComm((PetscObject)pc->pmat),PETSC_ERR_SUP,"No support for the requested operation");
     ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
-    ierr = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
     ierr = KSPCreate(subcomm,&jac->ksp[0]);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0],(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->ksp[0]);CHKERRQ(ierr);
@@ -1259,7 +1269,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
     pc->ops->apply   = PCApply_BJacobi_Multiproc;
   } else { /* pc->setupcalled */
-    subcomm = mpjac->psubcomm->comm;
+    subcomm = PetscSubcommChild(mpjac->psubcomm);
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
       if (mpjac->submats) {ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}

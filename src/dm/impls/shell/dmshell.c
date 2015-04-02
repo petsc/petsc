@@ -197,7 +197,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
   if (!shell->A) {
     if (shell->Xglobal) {
       PetscInt m,M;
-      ierr = PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation");CHKERRQ(ierr);
+      ierr = PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation\n");CHKERRQ(ierr);
       ierr = VecGetSize(shell->Xglobal,&M);CHKERRQ(ierr);
       ierr = VecGetLocalSize(shell->Xglobal,&m);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)dm),&shell->A);CHKERRQ(ierr);
@@ -612,6 +612,146 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMShellSetCoarsen"
+/*@C
+   DMShellSetCoarsen - Set the routine used to coarsen the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  coarsen - the routine that coarsens the DM
+
+   Level: advanced
+
+.seealso: DMShellSetRefine(), DMCoarsen()
+@*/
+PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->coarsen = coarsen;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetRefine"
+/*@C
+   DMShellSetRefine - Set the routine used to refine the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  refine - the routine that refines the DM
+
+   Level: advanced
+
+.seealso: DMShellSetCoarsen(), DMRefine()
+@*/
+PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->refine = refine;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateInterpolation"
+/*@C
+   DMShellSetCreateInterpolation - Set the routine used to create the interpolation operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  interp - the routine to create the interpolation
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,DM,Mat*,Vec*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createinterpolation = interp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateInjection"
+/*@C
+   DMShellSetCreateInjection - Set the routine used to create the injection operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  inject - the routine to create the injection
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInterpolation(), DMCreateInjection()
+@*/
+PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,Mat*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->getinjection = inject;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateFieldDecomposition"
+/*@C
+   DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  decomp - the routine to create the decomposition
+
+   Level: advanced
+
+.seealso: DMCreateFieldDecomposition()
+@*/
+PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp)(DM,PetscInt*,char***, IS**,DM**))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createfielddecomposition = decomp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Shell"
 static PetscErrorCode DMDestroy_Shell(DM dm)
 {
@@ -624,6 +764,7 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&shell->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&shell->ltog);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->ltol);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);

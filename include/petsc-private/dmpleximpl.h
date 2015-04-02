@@ -4,12 +4,27 @@
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscbt.h>
+#include <petscsf.h>
 #include <petsc-private/dmimpl.h>
+#include <petsc-private/isimpl.h>     /* for inline access to atlasOff */
 #include <../src/sys/utils/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM;
 
+PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
+
+typedef enum {REFINER_NOOP = 0,
+              REFINER_SIMPLEX_1D,
+              REFINER_SIMPLEX_2D,
+              REFINER_HYBRID_SIMPLEX_2D,
+              REFINER_HEX_2D,
+              REFINER_HYBRID_HEX_2D,
+              REFINER_SIMPLEX_3D,
+              REFINER_HYBRID_SIMPLEX_3D,
+              REFINER_HEX_3D,
+              REFINER_HYBRID_HEX_3D} CellRefiner;
 
 typedef struct _PetscPartitionerOps *PetscPartitionerOps;
 struct _PetscPartitionerOps {
@@ -39,6 +54,10 @@ typedef struct {
   IS           partition; /* Points in each partition */
 } PetscPartitioner_Shell;
 
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Simple;
+
 /* This is an integer map, in addition it is also a container class
    Design points:
      - Low storage is the most important design point
@@ -51,10 +70,9 @@ struct _n_DMLabel {
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt   *stratumValues;  /* Value of each stratum */
   /* Basic sorted array storage */
-  PetscBool   arrayValid;     /* The array storage is valid (no additions need to be merged in) */
-  PetscInt   *stratumOffsets; /* Offset of each stratum */
+  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt   *points;         /* Points for each stratum, always sorted */
+  PetscInt  **points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
   PetscHashI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */
@@ -68,6 +86,28 @@ struct _n_PlexLabel {
   struct _n_PlexLabel *next;
 };
 typedef struct _n_PlexLabel *PlexLabel;
+
+/* Utility struct to store the contents of a Gmsh file in memory */
+typedef struct {
+  PetscInt dim;      /* Entity dimension */
+  PetscInt id;       /* Element number */
+  PetscInt numNodes; /* Size of node array */
+  int *nodes;        /* Node array */
+  PetscInt numTags;  /* Size of tag array */
+  int *tags;         /* Tag array */
+} GmshElement;
+
+
+/* Utility struct to store the contents of a Fluent file in memory */
+typedef struct {
+  int   index;    /* Type of section */
+  int   zoneID;
+  int   first;
+  int   last;
+  int   type;
+  int   nd;       /* Either ND or element-type */
+  void *data;
+} FluentSection;
 
 struct _n_Boundary {
   const char *name;
@@ -136,6 +176,9 @@ typedef struct {
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
   PetscBool            useAnchors;        /* Replace constrained points with their anchors in adjacency lists */
 
+  /* Projection */
+  PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
+
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
@@ -177,9 +220,10 @@ PETSC_EXTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
 PETSC_EXTERN PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *, PetscInt *, int *, PetscInt *, int[], int[]);
+PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer, PetscBool, PetscBool, GmshElement *);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
@@ -284,5 +328,113 @@ PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const Petsc
 #define __FUNCT__ "DMPlex_NormD_Internal"
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLocalOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    ierr = PetscSectionGetOffset(dm->defaultSection,point,offset);CHKERRQ(ierr);
+  }
+#else
+  {
+    const PetscSection s = dm->defaultSection;
+    *offset = s->atlasOff[point - s->pStart];
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLocalFieldOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm,PetscInt point,PetscInt field,PetscInt *offset)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    ierr = PetscSectionGetFieldOffset(dm->defaultSection,point,field,offset);CHKERRQ(ierr);
+  }
+#else
+  {
+    const PetscSection s = dm->defaultSection->field[field];
+    *offset = s->atlasOff[point - s->pStart];
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetGlobalOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    PetscInt       dof,cdof;
+    ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);
+    *end = *start + dof-cdof;
+  }
+#else
+  {
+    const PetscSection s    = dm->defaultGlobalSection;
+    const PetscInt     dof  = s->atlasDof[point - s->pStart];
+    const PetscInt     cdof = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
+    *start = s->atlasOff[point - s->pStart];
+    *end   = *start + dof-cdof;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetGlobalFieldOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt       loff, lfoff, fdof, fcdof, ffcdof, f;
+    PetscErrorCode ierr;
+
+    ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(dm->defaultSection, point, &loff);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, &lfoff);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &fdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, field, &fcdof);CHKERRQ(ierr);
+    *start += lfoff - loff;
+    for (f = 0; f < field; ++f) {
+      ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, f, &ffcdof);CHKERRQ(ierr);
+      *start -= ffcdof;
+    }
+    *end = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
+  }
+#else
+  {
+    const PetscSection s     = dm->defaultSection;
+    const PetscSection fs    = dm->defaultSection->field[field];
+    const PetscSection gs    = dm->defaultGlobalSection;
+    const PetscInt     loff  = s->atlasOff[point - s->pStart];
+    const PetscInt     lfoff = fs->atlasOff[point - s->pStart];
+    const PetscInt     fdof  = fs->atlasDof[point - s->pStart];
+    const PetscInt     fcdof = fs->bc ? fs->bc->atlasDof[point - fs->bc->pStart] : 0;
+    PetscInt           ffcdof = 0, f;
+
+    for (f = 0; f < field; ++f) {
+      const PetscSection ffs = dm->defaultSection->field[f];
+      ffcdof += ffs->bc ? ffs->bc->atlasDof[point - ffs->bc->pStart] : 0;
+    }
+    *start = gs->atlasOff[point - s->pStart] + lfoff - loff - ffcdof;
+    *end = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
 
 #endif /* _PLEXIMPL_H */

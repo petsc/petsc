@@ -703,6 +703,20 @@ the natural grid indexing. This is done with the routines
    ... use the array indexing it with 1 or 2 or 3 dimensions \\
    ... depending on the dimension of the DMDA\\
   DMDAVecRestoreArray(DM da,Vec l,void *array);
+  DMDAVecGetArrayRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
+\end{tabbing}
+\begin{tabbing}
+  DMDAVecGetArrayDOF(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
+  DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
 \end{tabbing}
 where {\tt array} is a multidimensional C array with the same dimension as
 {\tt da}. The vector l can be either a global vector or a local vector.
@@ -1225,8 +1239,8 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
-\end{tabbing}
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
+\end{tabbing} \findex{MAT_NEW_NONZERO_LOCATIONS}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
@@ -2333,7 +2347,7 @@ The user can retain the default value of any of these parameters by
 specifying PETSC\_DEFAULT as the
 corresponding tolerance; the
 defaults are \trl{rtol}=$10^{-5}$, \trl{atol}=$10^{-50}$,
-\trl{dtol}=$10^{5}$, and \trl{maxits}=$10^5$.
+\trl{dtol}=$10^{5}$, and \trl{maxits}=$10^4$.
 These parameters can also be set from the options database with the
 commands \trl{-ksp_rtol} \trl{<rtol>}, \trl{-ksp_atol} \trl{<atol>}, \trl{-ksp_divtol} \trl{<dtol>},
 \findex{-ksp_rtol} \findex{-ksp_atol} \findex{-ksp_divtol}
@@ -2534,7 +2548,7 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
-Algebraic Multigrid                    & PCGAMG         & gamg\\
+Algebraic Multigrid                  & PCGAMG         & gamg\\
 Linear solver                        & PCKSP         & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
@@ -2565,8 +2579,8 @@ Some of the options for ILU preconditioner are
   PCFactorSetReuseOrdering(PC pc,PetscBool  flag);\\
   PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCFactorSetReuseFill(PC pc,PetscBool  flag);\\
-  PCFactorSetUseInPlace(PC pc); \\
-  PCFactorSetAllowDiagonalFill(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg); \\
+  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 \end{tabbing}
 
 When repeatedly solving linear systems with the same KSP
@@ -2662,7 +2676,7 @@ By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations
 for conventional SSOR. The option
 \trl{-pc_eisenstat_no_diagonal_scaling})
-(or the routine PCEisenstatNoDiagonalScaling())
+(or the routine PCEisenstatSetNoDiagonalScaling())
 turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
 the option \trl{-pc_eisenstat_omega <omega>} (or the routine
 PCEisenstatSetOmega(PC pc,double omega))
@@ -2678,7 +2692,7 @@ The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
 command  \sindex{in-place solvers}
 \begin{tabbing}
-  PCFactorSetUseInPlace(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg);
 \end{tabbing}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
@@ -2825,14 +2839,59 @@ PCASMSetLocalSubdomains(); the routine PCASMSetOverlap()
 merely allows PETSc to extend that overlap further if desired.
 
 %----------------------------------------------------------------------
-\subsection{Algebraic Multigrid Preconditioners}
+\subsection{Algebraic Multigrid (AMG) Preconditioners}
 
-PETSc provides a framework and tools for developing algebraic multigrid (AMG) methods.
-Developers can write a preconditioner (PC) class and an application can select this PC as a command line argument or explicitly in the code.
-PETSc provides interfaces to two external AMG packages have been imported into PETSc as external, downloaded packages: {\it hypre} and {\it ML}.
-These packages are monolithic in that they implement one class of algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed aggregation for {\it ML}.
-The PETSc AMG framework provides one basic aggregation AMG method (\trl{-pc_gamg_type agg}) and the popular variant smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1}).
-Smoothed aggregation is recommended for symmetric positive definite systems;  unsmoothed aggregation can be useful for unsymmetric problems.
+PETSc provides a native algebraic multigrid preconditioner PCGAMG -- {\it ``gamg''} -- and interfaces to two
+external AMG packages: {\it hypre} and {\it ML}.
+
+PETSc provides a (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  PCSetType(pc,PCGAMG) and PCGAMGSetType(pc,PCGAMGAgg).
+There are also less developed implementations of a classical AMG method (\trl{-pc_gamg_type classical})  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo}).
+
+GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths(pc,1)).
+Smoothed aggregation is recommended for symmetric positive definite
+systems;  unsmoothed aggregation can be useful for asymmetric
+problems and problems where highest eigen estimates are problematic. Try \trl{-pc_gamg_agg_nsmooths 0}  if poor convergence rates are observed using the smoothed version.
+AMG methods requires knowledge of the number of degrees of
+freedom per vertex, the default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately with MatSetBlockSize(mat,bs).
+Smoothed aggregation relies an explicit representation of the (near) null space of the operator.
+One can provide this with MatSetNearNullSpace().
+For elasticity, where rotational rigid body modes define the near null space you can call PCSetCoordinates() instead of MatSetNearNullSpace() and it will set the near null space for you.
+
+Other options for GAMG include PCGAMGSetProcEqLim(),
+PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(),
+PCGAMGRegister(), PCGAMGSetReuseInterpolation(),
+PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(),
+PCGAMGSetThreshold(), and PCGAMGGetType().
+
+
+{\bf Trouble shooting algebraic multigrid methods:}  If GAMG, ML, or hypre does not perform well the
+first thing to try is the other methods.
+You can also try  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}.
+AMG methods are sensitive to coarsening rates and methods; for GAMG use
+\trl{-pc_gamg_threshold} $x$ to regulate coarsening rates (PCGAMGSetThreshold()).
+A high threshold (eg, $x=0.08$) will result in an expensive but potentially
+powerful preconditioner; a low threshold (eg, $x=0.0$) will result in
+faster coarsening, fewer levels, cheaper solves, and generally worse
+convergence rates.
+\trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
+this is not obvious) and is recommended if poor convergence rates are
+observed, at least until the source of the problem is discovered.
+
+Finally, there are several sources of poor performance of
+AMG solvers and often special purpose methods must be developed to
+achieve the full potential of multigrid.
+To name just a few sources of performance degradation that
+may not be fixed with parameters or bug fixes in PETSc currently: non-elliptic
+operators, curl/curl operators, highly stretched grids or highly anisotropic problems,
+large jumps in material coefficients with complex geometry (AMG is
+particularly well suited to jumps in coefficients but it is not a
+perfect solution), highly incompressible elasticity, not to mention
+ill-posed problems, and many others.
+
+PETSc's AMG solver is constructed as a framework for developers to
+easily add AMG capabilities, like a new AMG algorithm or a new matrix
+triple product, etc. Contact us directly if you are interested in extending/improving PETSc's algebraic multigrid solvers.
+
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
@@ -3036,11 +3095,24 @@ call
   PCMGGetCoarseSolve(PC pc,KSP *ksp);
 \end{tabbing}
 and set the appropriate options in \trl{ksp}. Similarly, the
-smoothers are set by calling
+smoothers are setcontrolled by first calling
 \begin{tabbing}
   PCMGGetSmoother(PC pc,int level,KSP *ksp);
 \end{tabbing}
-and setting the various options in \trl{ksp.}
+and then setting the various options in the \trl{ksp.} For example,
+\begin{tabbing}
+  PCMGGetSmoother(pc,1,\&ksp);
+  KSPSetOperators(ksp,A1,A1);
+\end{tabbing}
+sets the matrix that defines the smoother on level 1 of the multigrid. While
+\begin{tabbing}
+  PCMGGetSmoother(pc,1,\&ksp);
+  KSPGetPC(ksp,\&pc);
+  PCSetType(pc,PCSOR);
+\end{tabbing}
+sets SOR as the smoother to use on level 1.
+
+
 To use a different pre- and postsmoother, one should call the following
 routines instead.
 \begin{tabbing}
@@ -3435,9 +3507,10 @@ The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options \trl{-pc_factor_shift_nonzero <dampingfactor>}
-\findex{-pc_factor_shift_nonzero} or \trl{-pc_factor_shift_nonzero <dampingfactor>} \findex{-pc_factor_sshift_nonzero} to
-prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
+You can run with the additional options \trl{-pc_factor_shift_type <shifttype>}
+\findex{-pc_factor_shift_type} or 
+\trl{-pc_factor_shift_type NONZERO}  \trl{-pc_factor_shift_amount  <dampingfactor>} \findex{-pc_factor_shift_amount} to
+prevent the zero pivot. A good choice for the \trl{dampingfactor} is 1.e-10.
 \sindex{damping}
 
 % ---------------------------------------------------------------
@@ -4864,6 +4937,132 @@ sets the number of vectors in the Krylov subpspace used by GMRES.
 This may be set in the options
 database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
+% ---------------------------------------------------------------
+\cleardoublepage
+\chapter{Performing sensitivity analysis in PETSc}
+\label{chapter_sa}
+The TS library provides a framework based on discrete adjoint models
+for sensitivity analysis for ODEs and DAEs.  The ODE/DAE solution
+process (henceforth called the forward run) can be obtained by using
+either explicit or implicit solvers in TS, depending on the problem
+propeties. Currently supported method types are TSRK (Runge-Kutta) explicit
+methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
+
+Consider the ODE/DAE
+\[
+    F(t,y,\dot{y},p) = 0, \quad y(t_0)=y_0(p) \quad t_0 \le t \le t_F
+\]
+and the cost function(s)
+\[
+   \Psi_i(y_0,p) = \Phi_i(y_F,p) + \int_{t_0}^{t_F} r_i(y(t),p,t)dt \quad i=1,...,numcost.
+\]
+The TSAdjoint routines of PETSc provide
+\[
+ \frac{\partial \Psi_i}{\partial y_0} = \lambda_i
+\]
+and
+\[
+ \frac{\partial \Psi_i}{\partial p} = \mu_i + \lambda_i (\frac{\partial y_0}{\partial p}).
+\]
+
+To perform the discrete adjoint sensitivity analysis one first sets up the TS object for a regular forward run but with one extra function call
+\begin{tabbing}
+TSSetSaveTrajectory(TS ts),
+\end{tabbing}
+then calls TSSolve() in the usual manner.
+
+ One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
+\begin{tabbing}
+TSAdjointSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
+\end{tabbing}
+
+If $F()$ is a function of $p$ one needs to also provide the Jacobian $F_p$ with 
+\begin{tabbing}
+TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+\end{tabbing}
+The arguments for the function \trl{fp()} 
+are the timestep context, current time, $y$, and the (optional) user-provided context. 
+
+If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
+\begin{tabbing}
+TSAdjointSetCostIntegrand(\=TS ts,PetscInt numcost,\\
+                          \>PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),\\
+                          \>PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
+                          \>PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+\end{tabbing}
+where $\mathrm{drdyf}= dr /dy$, $\mathrm{drdpf} = dr /dp$. 
+Lastly one starts the backward run by calling
+\begin{tabbing}
+TSAdjointSolve(TS ts).
+\end{tabbing}
+
+To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}.
+The problem is to study dynamic security of power system when there are credible contingencies such as short-circuits or loss of generators, transmission lines, or loads. 
+The dynamic security constraints are incorporated as equality constraints in the form of discretized differential equations and inequality constraints for bounds on the trajectory. 
+The governing ODE system is
+\begin{eqnarray*}
+    \phi' &= &\omega_B (\omega - \omega_S)  \\
+    2H/\omega_S \, \omega' & =& p_m - p_{max} sin(\phi) -D (\omega - \omega_S), \quad t_0 \leq t \leq t_F,  
+\end{eqnarray*}
+where $\phi$ is the phase angle and $\omega$ is the frequency. 
+
+The initial conditions at time $t_0$ are 
+%
+\begin{eqnarray*}
+\phi(t_0) &=& \arcsin \left( p_m / p_{max} \right), \\
+w(t_0) & =& 1.
+\end{eqnarray*}
+%
+$p_{max}$ is a positive number when the system operates normally. At an event such as fault incidence/removal, $p_{max}$ will change to $0$ temporarily and back to the original value after the fault is fixed. 
+The objective is to maximize $p_m$ subject to the above ODE constraints and $\phi<\phi_S$ during all times. 
+To accommodate the inequality constraint, we want to compute the sensitivity of the cost function
+%
+\[
+\Psi(p_m,\phi) = -p_m + c \int_{t_0}^{t_F} \left( \max(0, \phi - \phi_S ) \right)^2 dt
+\]
+%
+with respect to the parameter $p_m$. $numcost$ is $1$ since it is a scalar function. 
+
+For ODE solution, PETSc requires user-provided functions to evaluate the system $F(t,y,\dot{y},p)$ (set by TSSetIFunction() )
+and its corresponding Jacobian $F_y + (shift) F_{\dot y}$ (set by TSSetIJacobian()).  
+Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here. 
+For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using TSAdjointSetRHSJacobian(),
+and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using TSAdjointSetCostIntegrand(). 
+
+In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$. 
+After TSAdjointSolve(), the sensitivity of the cost function w.r.t. to initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly. 
+And the sensitivity of the cost function w.r.t. to the parameter $p_m$ can be computed (by users) as 
+%
+\[
+\frac{\mathrm{d} \Psi}{\mathrm{d} p_m} = \mu(t_0) + \lambda(t_0)  \frac{\mathrm{d} \left[ \phi(t_0) \; \omega(t_0) \right]^T}{\mathrm{d} p_m}  .
+\]
+
+For explicit methods where one does not need to provide the the
+Jacobian $F_u$ for the forward solve one still does need it for the
+backward solve and thus must call
+\begin{tabbing}
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
+                  \>        void*),void *fP);
+\end{tabbing}
+
+
+Examples
+include:
+\begin{itemize}
+\item a discrete adjoint sensitivity using explicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16adj.c},
+\item a discrete adjoint sensitivity using implicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c},
+\item an optimization using the discrete adjoint models of ERK
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for stiff DAEs
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}.
+\end{itemize}
+\vspace{.2cm}
+
  \chapter{Solving Steady-State Problems with Pseudo-Timestepping}
 
 \vspace{.2cm}
@@ -5146,7 +5345,7 @@ This code is not currently supported due to lack of interest and usage. If you r
 
 PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
 You can build with or without MPI, but cannot run on more than one process
-There is currently no MPI in the API, the MPI_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
+There is currently no MPI in the API, the MPI\_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
 Add \trl{${PETSC_DIR}/share/petsc/matlab/classes} to your MATLAB path.
 
 In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
@@ -5192,10 +5391,10 @@ Section \ref{sec_fortran_exceptions}.
 \label{sec_fortran_includes}
 
 The Fortran include files for PETSc are located in the directory
-\trl{${PETSC_DIR}/include/finclude} and should be used via statements
+\trl{${PETSC_DIR}/include/petsc-finclude} and should be used via statements
 such as the following:
 \begin{tabbing}
-    \#include "finclude/includefile.h"
+    \#include "petsc-finclude/includefile.h"
 \end{tabbing}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
@@ -5217,8 +5416,8 @@ makefile.)
 For some of the Fortran 90 functionality of PETSc and type checking
 of PETSc function calls you can use
 \begin{tabbing}
-    \#include "finclude/includefile.h
-    \#include "finclude/includefile.h90"
+    \#include "petsc-finclude/includefile.h
+    \#include "petsc-finclude/includefile.h90"
 \end{tabbing}
 See the manual page UsingFortran for how you can use PETSc Fortran
 module files in your code.
@@ -5468,7 +5667,7 @@ use the routines VecGetArrayF90(), VecRestoreArrayF90()
 VecDuplicateVecsF90(), and VecDestroyVecsF90(), one must
 use the Fortran90 vector include file,
 \begin{tabbing}
-    \#include "finclude/petscvec.h90"
+    \#include "petsc-finclude/petscvec.h90"
 \end{tabbing}
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
@@ -6511,8 +6710,7 @@ For example,
    alias -kspt -ksp\_type\\
    alias -sd -start\_in\_debugger
 \end{tabbing}
-Comments can be placed in the .petscrc file by using one of the
-following symbols in the first column of a line: \trl{#, %}, or \trl{!}.
+Comments can be placed in the .petscrc file by using \trl{#} in the first column of a line.
 
 \subsection{User-Defined PetscOptions}
 
@@ -7197,17 +7395,19 @@ to pause \trl{n} seconds at each PetscDrawPause(). A time of \trl{-1}
 indicates that the application should pause until receiving mouse
 input from the user.
 
-Text can be drawn with either of the two
+Text can be drawn with 
 commands \sindex{text, drawing}
 \begin{tabbing}
-  PetscDrawString(PetscDraw win,double x,double y,int color,char *text);\\
-  PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
+  PetscDrawString(PetscDraw win,PetscReal x,PetscReal y,int color,char *text);\\
+  PetscDrawStringVertical(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
+  PetscDrawStringCentered(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
+  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h);
 \end{tabbing}
 The user can set the text font size or determine it with the
 commands
 \begin{tabbing}
-  PetscDrawStringSetSize(PetscDraw win,double width,double height);\\
-  PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
+  PetscDrawStringSetSize(PetscDraw win,PetscReal width,PetscReal height);\\
+  PetscDrawStringGetSize(PetscDraw win,PetscReal *width,PetscReal *height);
 \end{tabbing}
 
 \subsection{Line Graphs}
@@ -7224,13 +7424,13 @@ The argument \trl{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the
 command
 \begin{tabbing}
-  PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
+  PetscDrawLGAddPoint(PetscDrawLG ctx,PetscReal *x,PetscReal *y);
 \end{tabbing}
 The arguments \trl{x} and \trl{y} are arrays containing the next
 point value for each curve.
 Several points for each curve may be added with
 \begin{tabbing}
-  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
+  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,PetscReal **x,PetscReal **y);
 \end{tabbing}
 
 The line graph is drawn (or redrawn) with the command
@@ -7251,7 +7451,7 @@ The line graph automatically determines the range of values to
 display on the two axes.  The user can change these defaults with the
 command
 \begin{tabbing}
-  PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
+  PetscDrawLGSetLimits(PetscDrawLG ctx,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax);
 \end{tabbing}
 
 It is also possible to change the display of the axes and to label
@@ -7398,8 +7598,8 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraries.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include  \$\trl{{PETSC_DIR}/conf/variables}
-   include \$\trl{{PETSC_DIR}/conf/rules}
+   include  \$\trl{{PETSC_DIR}/lib/petsc-conf/variables}
+   include \$\trl{{PETSC_DIR}/lib/petsc-conf/rules}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -7420,8 +7620,8 @@ within the makefile.
    FPPFLAGS   =
    CLEANFILES = ex2
 
-   include ${PETSC_DIR}/conf/variables
-   include ${PETSC_DIR}/conf/rules
+   include ${PETSC_DIR}/lib/petsc-conf/variables
+   include ${PETSC_DIR}/lib/petsc-conf/rules
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -7443,7 +7643,7 @@ include variables instead of base. That is, use something like
    CFLAGS   = ${PETSC_CC_INCLUDES}
    FFLAGS   = ${PETSC_FC_INCLUDES}
 
-   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/lib/petsc-conf/variables
 
    ex2: ex2.o
            mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
@@ -7453,7 +7653,7 @@ include variables instead of base. That is, use something like
 \label{fig_make1var}
 \end{figure}
 The variables \trl{${PETSC_CC_INCLUDES}}, \trl{${PETSC_FC_INCLUDES}}
-and \trl{${PETSC_LIB}} are defined by the included conf/variables file.
+and \trl{${PETSC_LIB}} are defined by the included petsc-conf/variables file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
 you can use the commands (run in the PETSc root directory) to get the information
@@ -7486,8 +7686,8 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/conf/variables
-   include ${PETSC_DIR}/conf/rules
+   include ${PETSC_DIR}/lib/petsc-conf/variables
+   include ${PETSC_DIR}/lib/petsc-conf/rules
 
    ex1: ex1.o
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -7520,7 +7720,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/conf/test
+   include ${PETSC_DIR}/lib/petsc-conf/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -7570,8 +7770,8 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \${PETSC\_DIR}/conf/variables
-   include \${PETSC\_DIR}/conf/rules
+   include \${PETSC\_DIR}/lib/petsc-conf/variables
+   include \${PETSC\_DIR}/lib/petsc-conf/rules
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
@@ -8076,7 +8276,7 @@ element method,
 Now a PETSc local vector can be created manually using this layout,
 \begin{tabbing}
   PetscSectionGetStorageSize(s, \&n);\\
-  VecSetSizes(localVec, n, PETSC_DETERMINE);\\
+  VecSetSizes(localVec, n, PETSC\_DETERMINE);\\
   VecSetFromOptions(localVec);
 \end{tabbing}
 however it is usually easier to use the DM directly, which also provides global vectors,

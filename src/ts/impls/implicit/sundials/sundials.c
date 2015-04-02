@@ -290,6 +290,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscBool      pcnone;
 
   PetscFunctionBegin;
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for exact final time option 'MATCHSTEP' when using Sundials");
+
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&glosize);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
@@ -387,7 +389,7 @@ const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSS
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Sundials"
-PetscErrorCode TSSetFromOptions_Sundials(TS ts)
+PetscErrorCode TSSetFromOptions_Sundials(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
@@ -396,7 +398,7 @@ PetscErrorCode TSSetFromOptions_Sundials(TS ts)
   PC             pc;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SUNDIALS ODE solver options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = TSSundialsSetType(ts,(TSSundialsLmmType)indx);CHKERRQ(ierr);
@@ -968,8 +970,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   /* set PCNONE as default pctype */
   ierr = TSSundialsGetPC_Sundials(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-
-  if (ts->exact_final_time != TS_EXACTFINALTIME_STEPOVER) ts->exact_final_time = TS_EXACTFINALTIME_STEPOVER;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",TSSundialsSetType_Sundials);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",TSSundialsSetMaxl_Sundials);CHKERRQ(ierr);

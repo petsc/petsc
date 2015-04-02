@@ -23,7 +23,6 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
 
   ierr = PetscMemzero(c,nmax*sizeof(PetscReal));CHKERRQ(ierr);
   if (!n) {
-    *r = 0.0;
     PetscFunctionReturn(0);
   }
   d = cgP->d; e = cgP->e; ee = cgP->ee;

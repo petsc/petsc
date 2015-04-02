@@ -185,7 +185,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
   PetscFunctionBegin;
   if (s) {
     ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((1+len),&tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+len,&tmp);CHKERRQ(ierr);
     ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
   }
   *t = tmp;
@@ -222,7 +222,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 
   PetscFunctionBegin;
   while (list[n++]) ;
-  ierr = PetscMalloc1((n+1),t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,t);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscStrallocpy(list[i],(*t)+i);CHKERRQ(ierr);
   }
@@ -259,6 +259,75 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
   while ((*list)[n]) {
     ierr = PetscFree((*list)[n]);CHKERRQ(ierr);
     n++;
+  }
+  ierr = PetscFree(*list);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscStrNArrayallocpy"
+/*@C
+   PetscStrNArrayallocpy - Allocates space to hold a copy of an array of strings then copies the strings
+
+   Not Collective
+
+   Input Parameters:
++  n - the number of string entries
+-  s - pointer to array of strings
+
+   Output Parameter:
+.  t - the copied array string
+
+   Level: intermediate
+
+   Note:
+      Not for use in Fortran
+
+  Concepts: string copy
+
+.seealso: PetscStrallocpy() PetscStrArrayDestroy()
+
+@*/
+PetscErrorCode  PetscStrNArrayallocpy(PetscInt n,const char *const *list,char ***t)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(n,t);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = PetscStrallocpy(list[i],(*t)+i);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscStrNArrayDestroy"
+/*@C
+   PetscStrNArrayDestroy - Frees array of strings created with PetscStrArrayallocpy().
+
+   Not Collective
+
+   Output Parameters:
++   n - number of string entries
+-   list - array of strings
+
+   Level: intermediate
+
+   Notes: Not for use in Fortran
+
+.seealso: PetscStrArrayallocpy()
+
+@*/
+PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!*list) PetscFunctionReturn(0);
+  for (i=0; i<n; i++){
+    ierr = PetscFree((*list)[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(*list);CHKERRQ(ierr);
   PetscFunctionReturn(0);

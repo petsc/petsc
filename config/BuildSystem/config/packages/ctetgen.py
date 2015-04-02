@@ -4,9 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = '622d9a06ef18638e7521f2a870d62f5c28f182e1'
+    self.gitcommit         = '0616e704bcc37b1df8705f614c63bf8e9e51ee80'
     self.giturls           = ['https://bitbucket.org/petsc/ctetgen.git']
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.2.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.3.tar.gz']
     self.functions         = []
     self.includes          = []
     return
@@ -34,12 +34,12 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Compiling Ctetgen; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib',timeout=1000, log = self.framework.log)
-      self.framework.log.write(output+err)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib',timeout=1000, log = self.log)
+      self.log.write(output+err)
       self.logPrintBox('Installing Ctetgen; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-ctetgen',timeout=1000, log = self.framework.log)
-      self.framework.log.write(output+err)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-ctetgen',timeout=1000, log = self.log)
+      self.log.write(output+err)
     except RuntimeError, e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))
 

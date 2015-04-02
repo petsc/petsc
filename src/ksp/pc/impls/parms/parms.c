@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 
   ierr  = MatGetSize(pmat,&n,NULL);CHKERRQ(ierr);
-  ierr  = PetscMalloc1((npro+1),&mapptr);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(npro+1,&mapptr);CHKERRQ(ierr);
   ierr  = PetscMalloc1(n,&maptmp);CHKERRQ(ierr);
   ierr  = MatGetOwnershipRanges(pmat,&mapptr0);CHKERRQ(ierr);
   low   = mapptr0[rank];
@@ -90,7 +90,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatCreate(&parms->A,parms->map);
 
   /* setup and copy csr data structure for pARMS */
-  ierr   = PetscMalloc1((lsize+1),&ia);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(lsize+1,&ia);CHKERRQ(ierr);
   ia[0]  = 1;
   ierr   = MatGetInfo(pmat,MAT_LOCAL,&matinfo);CHKERRQ(ierr);
   length = matinfo.nz_used;
@@ -276,7 +276,7 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_PARMS"
-static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
+static PetscErrorCode PCSetFromOptions_PARMS(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_PARMS          *parms = (PC_PARMS*)pc->data;
   PetscBool         flag;
@@ -285,7 +285,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PARMS Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PARMS Options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_parms_global","Global preconditioner","PCPARMSSetGlobal",PCPARMSGlobalTypes,(PetscEnum)parms->global,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
   if (flag) {ierr = PCPARMSSetGlobal(pc,global);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-pc_parms_local","Local preconditioner","PCPARMSSetLocal",PCPARMSLocalTypes,(PetscEnum)parms->local,(PetscEnum*)&local,&flag);CHKERRQ(ierr);

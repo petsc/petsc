@@ -190,7 +190,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NGS"
-PetscErrorCode SNESSetFromOptions_NGS(SNES snes)
+PetscErrorCode SNESSetFromOptions_NGS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NGS       *gs = (SNES_NGS*)snes->data;
   PetscErrorCode ierr;
@@ -199,16 +199,16 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes)
   PetscBool      flg,flg1,flg2,flg3;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES GS options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES GS options");CHKERRQ(ierr);
   /* GS Options */
   ierr = PetscOptionsInt("-snes_ngs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESNGSSetSweeps(snes,sweeps);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-snes_ngs_atol","Number of sweeps of GS to apply","SNESComputeGS",gs->abstol,&atol,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ngs_rtol","Number of sweeps of GS to apply","SNESComputeGS",gs->rtol,&rtol,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ngs_stol","Number of sweeps of GS to apply","SNESComputeGS",gs->stol,&stol,&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_ngs_max_it","Number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_atol","Absolute residual tolerance for GS iteration","SNESComputeGS",gs->abstol,&atol,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_rtol","Relative residual tolerance for GS iteration","SNESComputeGS",gs->rtol,&rtol,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_stol","Absolute update tolerance for GS iteration","SNESComputeGS",gs->stol,&stol,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngs_max_it","Maximum number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3);CHKERRQ(ierr);
   if (flg || flg1 || flg2 || flg3) {
     ierr = SNESNGSSetTolerances(snes,atol,rtol,stol,max_its);CHKERRQ(ierr);
   }
@@ -286,7 +286,6 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   } else {
     ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
   }
 
   /* Call general purpose update function */
@@ -308,14 +307,14 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
       }
+      /* Monitor convergence */
+      ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+      snes->iter = i+1;
+      snes->norm = fnorm;
+      ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+      ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
+      ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     }
-    /* Monitor convergence */
-    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
-    snes->iter = i+1;
-    snes->norm = fnorm;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
     if (normschedule == SNES_NORM_ALWAYS) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);

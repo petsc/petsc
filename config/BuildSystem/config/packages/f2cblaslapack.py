@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q1.tar.gz']
     self.double           = 0
     self.downloadonWindows= 1
+    self.skippackagewithoptions = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -59,18 +60,18 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling F2CBLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+make_target, timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+make_target, timeout=2500, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
       self.logPrintBox('Installing F2CBLASLAPACK')
       self.installDirProvider.printSudoPasswordMessage()
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'cp -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=3000, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'cp -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=3000, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
 
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, 'lib','petsc-conf',self.name), timeout=30, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error copying configure file')
     return self.installDir

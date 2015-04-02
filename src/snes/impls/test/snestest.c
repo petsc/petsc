@@ -143,13 +143,13 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Test"
-static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
+static PetscErrorCode SNESSetFromOptions_Test(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_Test      *ls = (SNES_Test*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Hand-coded Jacobian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

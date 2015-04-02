@@ -111,24 +111,25 @@ int main(int argc, char **argv)
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  PetscErrorCode ierr;
-  AppCtx *user = (AppCtx*)ptr;
-  PetscScalar *x,*f;
-  PetscInt i,mx;
-  PetscReal hx,eps;
+  PetscErrorCode    ierr;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscScalar       *f;
+  const PetscScalar *x;
+  PetscInt          i,mx;
+  PetscReal         hx,eps;
 
   PetscFunctionBegin;
   mx = user->mx;
   eps = user->param;
   hx = (user->xright-user->xleft)/(mx-1);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = 2.*eps*(x[1]-x[0])/(hx*hx); /*boundary*/
   for(i=1;i<mx-1;i++) {
     f[i]= eps*(x[i+1]-2.*x[i]+x[i-1])/(hx*hx);
   }
   f[mx-1] = 2.*eps*(x[mx-2]- x[mx-1])/(hx*hx); /*boundary*/
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -138,22 +139,24 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "FormIFunction"
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
-  PetscErrorCode ierr;
-  AppCtx *user = (AppCtx*)ptr;
-  PetscScalar *x,*xdot,*f;
-  PetscInt i,mx;
+  PetscErrorCode    ierr;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscScalar       *f;
+  const PetscScalar *x,*xdot;
+  PetscInt          i,mx;
 
   PetscFunctionBegin;
   mx = user->mx;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   for(i=0;i<mx;i++) {
     f[i]= xdot[i] - x[i]*(1.-x[i]*x[i]);
   }
 
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -163,19 +166,20 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 #define __FUNCT__ "FormIJacobian"
 static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat J,Mat Jpre,void *ctx)
 {
-  PetscErrorCode ierr;
-  AppCtx         *user = (AppCtx *)ctx;
-  PetscScalar    *x,v;
-  PetscInt       i,col;
+  PetscErrorCode    ierr;
+  AppCtx            *user = (AppCtx *)ctx;
+  PetscScalar       v;
+  const PetscScalar *x;
+  PetscInt          i,col;
 
-  ierr = VecGetArray(U,&x);CHKERRQ(ierr);
   PetscFunctionBegin;
-
+  ierr = VecGetArrayRead(U,&x);CHKERRQ(ierr);
   for(i=0; i < user->mx; i++) {
     v = a - 1. + 3.*x[i]*x[i];
     col = i;
     ierr = MatSetValues(J,1,&i,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArrayRead(U,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

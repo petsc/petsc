@@ -174,7 +174,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA);CHKERRQ(ierr);
-    ierr = MatMult(Amat,WA,WA2);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,WA,WA2);CHKERRQ(ierr);
     ierr = PCApplySymmetricLeft(pc,WA2,ASP);CHKERRQ(ierr);
 
     /* Check for negative curvature */
@@ -271,7 +271,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecCopy(X,WA2);CHKERRQ(ierr);
   ierr = PCApplySymmetricRight(pc,WA2,X);CHKERRQ(ierr);
 
-  ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,Amat,X,WA);CHKERRQ(ierr);
   ierr = VecDotRealPart(B,X,&btx);CHKERRQ(ierr);
   ierr = VecDotRealPart(X,WA,&xtax);CHKERRQ(ierr);
 
@@ -340,7 +340,7 @@ static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_QCG"
-PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_QCG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscReal      delta;
@@ -348,7 +348,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP QCG Options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

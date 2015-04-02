@@ -519,13 +519,13 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BQPIP"
-static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bqpip_predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);

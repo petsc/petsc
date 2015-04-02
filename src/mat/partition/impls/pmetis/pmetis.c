@@ -203,13 +203,13 @@ PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis"
-PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode ierr;
   PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Set ParMeTiS partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);

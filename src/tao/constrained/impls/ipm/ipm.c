@@ -530,13 +530,13 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_IPM"
-static PetscErrorCode TaoSetFromOptions_IPM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_IPM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("IPM method for constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"IPM method for constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,NULL);CHKERRQ(ierr);
@@ -883,7 +883,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
   klocalsize = kend-kstart;
   if (!ipmP->K) {
     if (size == 1) {
-      ierr = PetscMalloc1((kend-kstart),&nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&nonzeros);CHKERRQ(ierr);
       for (i=0;i<bigsize;i++) {
         if (i<r1) {
           ierr = MatGetRow(tao->hessian,i,&ncols,NULL,NULL);CHKERRQ(ierr);
@@ -905,8 +905,8 @@ PetscErrorCode IPMUpdateK(Tao tao)
       ierr = MatSetFromOptions(ipmP->K);CHKERRQ(ierr);
       ierr = PetscFree(nonzeros);CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc1((kend-kstart),&d_nonzeros);CHKERRQ(ierr);
-      ierr = PetscMalloc1((kend-kstart),&o_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&d_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&o_nonzeros);CHKERRQ(ierr);
       for (i=kstart;i<kend;i++) {
         if (i<r1) {
           /* TODO fix preallocation for mpi mats */

@@ -250,7 +250,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
-  ierr      = PetscMalloc1((am+2),&api);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(am+2,&api);CHKERRQ(ierr);
   ptap->api = api;
   api[0]    = 0;
 
@@ -310,7 +310,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   /* Allocate space for apj, initialize apj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((api[am]+1),&ptap->apj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(api[am]+1,&ptap->apj);CHKERRQ(ierr);
   apj  = ptap->apj;
   ierr = PetscFreeSpaceContiguous(&free_space,ptap->apj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
@@ -725,7 +725,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
-  ierr      = PetscMalloc1((am+2),&api);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(am+2,&api);CHKERRQ(ierr);
   ptap->api = api;
   api[0]    = 0;
 
@@ -786,7 +786,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   /* Allocate space for apj, initialize apj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((api[am]+1),&ptap->apj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(api[am]+1,&ptap->apj);CHKERRQ(ierr);
   apj  = ptap->apj;
   ierr = PetscFreeSpaceContiguous(&free_space,ptap->apj);CHKERRQ(ierr);
   ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
@@ -944,11 +944,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   /*--------------------------------------------------------------*/
   /* get data from symbolic products */
   coi  = merge->coi; coj = merge->coj;
-  ierr = PetscCalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
+  ierr = PetscCalloc1(coi[pon]+1,&coa);CHKERRQ(ierr);
 
   bi     = merge->bi; bj = merge->bj;
   owners = merge->rowmap->range;
-  ierr   = PetscCalloc1((bi[cm]+1),&ba);CHKERRQ(ierr);
+  ierr   = PetscCalloc1(bi[cm]+1,&ba);CHKERRQ(ierr);
 
   /* get A_loc by taking all local rows of A */
   A_loc = ptap->A_loc;
@@ -957,7 +957,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   ai    = a_loc->i;
   aj    = a_loc->j;
 
-  ierr = PetscCalloc1((A->cmap->N),&aval);CHKERRQ(ierr); /* non-scalable!!! */
+  ierr = PetscCalloc1(A->cmap->N,&aval);CHKERRQ(ierr); /* non-scalable!!! */
 
   for (i=0; i<am; i++) {
     /* 2-a) put A[i,:] to dense array aval */
@@ -1076,6 +1076,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat, MatDuplicateOption,Mat*);
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
 #undef __FUNCT__
 #define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable"
@@ -1140,7 +1141,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* then, compute symbolic Co = (p->B)^T*A */
   pon    = (p->B)->cmap->n; /* total num of rows to be sent to other processors >= (num of nonzero rows of C_seq) - pn */
-  ierr   = PetscMalloc1((pon+1),&coi);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(pon+1,&coi);CHKERRQ(ierr);
   coi[0] = 0;
 
   /* set initial free space to be fill*(nnz(p->B) + nnz(A)) */
@@ -1182,7 +1183,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
     coi[i+1] = coi[i] + nnz;
   }
 
-  ierr = PetscMalloc1((coi[pon]+1),&coj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(coi[pon]+1,&coj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
 
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]+1);
@@ -1207,7 +1208,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   len_s        = merge->len_s;
   merge->nsend = 0;
 
-  ierr = PetscMalloc1((size+2),&owners_co);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+2,&owners_co);CHKERRQ(ierr);
   ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
 
   proc = 0;
@@ -1235,7 +1236,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* post the Irecv and Isend of coj */
   ierr = PetscCommGetNewTag(comm,&tagj);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagj,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rwaits);CHKERRQ(ierr);
-  ierr = PetscMalloc1((merge->nsend+1),&swaits);CHKERRQ(ierr);
+  ierr = PetscMalloc1(merge->nsend+1,&swaits);CHKERRQ(ierr);
   for (proc=0, k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
     i    = owners_co[proc];
@@ -1256,7 +1257,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /*-------------------*/
   ierr   = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
   ierr   = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&rwaits);CHKERRQ(ierr);
-  ierr   = PetscMalloc1((len+1),&buf_s);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(len+1,&buf_s);CHKERRQ(ierr);
   buf_si = buf_s;  /* points to the beginning of k-th msg to be sent */
   for (proc=0,k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
@@ -1297,7 +1298,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* compute the local portion of C (mpi mat) */
   /*------------------------------------------*/
   /* allocate bi array and free space for accumulating nonzero column info */
-  ierr  = PetscMalloc1((pn+1),&bi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(pn+1,&bi);CHKERRQ(ierr);
   bi[0] = 0;
 
   /* set initial free space to be fill*(nnz(P) + nnz(A)) */
@@ -1356,7 +1357,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   }
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((bi[pn]+1),&bj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bi[pn]+1,&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
 
   afill_tmp = (PetscReal)bi[pn]/(pdti[pn] + poti[pon] + ai[am]+1);
@@ -1398,6 +1399,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c           = (Mat_MPIAIJ*)Cmpi->data;
@@ -1457,7 +1459,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   /*------------------------------------------*/
   /* get data from symbolic products */
   coi    = merge->coi; coj = merge->coj;
-  ierr   = PetscCalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
+  ierr   = PetscCalloc1(coi[pon]+1,&coa);CHKERRQ(ierr);
   bi     = merge->bi; bj = merge->bj;
   owners = merge->rowmap->range;
   ierr   = PetscCalloc1(bi[cm]+1,&ba);CHKERRQ(ierr);
@@ -1583,6 +1585,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat, MatDuplicateOption,Mat*);
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ();
    differ from MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable in using LLCondensedCreate_Scalable() */
 #undef __FUNCT__
@@ -1647,7 +1650,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   /* then, compute symbolic Co = (p->B)^T*A */
   pon    = (p->B)->cmap->n; /* total num of rows to be sent to other processors
                          >= (num of nonzero rows of C_seq) - pn */
-  ierr   = PetscMalloc1((pon+1),&coi);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(pon+1,&coi);CHKERRQ(ierr);
   coi[0] = 0;
 
   /* set initial free space to be fill*(nnz(p->B) + nnz(A)) */
@@ -1689,7 +1692,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     coi[i+1] = coi[i] + nnz;
   }
 
-  ierr = PetscMalloc1((coi[pon]+1),&coj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(coi[pon]+1,&coj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
 
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]+1);
@@ -1714,7 +1717,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   len_s        = merge->len_s;
   merge->nsend = 0;
 
-  ierr = PetscMalloc1((size+2),&owners_co);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+2,&owners_co);CHKERRQ(ierr);
   ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
 
   proc = 0;
@@ -1742,7 +1745,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   /* post the Irecv and Isend of coj */
   ierr = PetscCommGetNewTag(comm,&tagj);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagj,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rwaits);CHKERRQ(ierr);
-  ierr = PetscMalloc1((merge->nsend+1),&swaits);CHKERRQ(ierr);
+  ierr = PetscMalloc1(merge->nsend+1,&swaits);CHKERRQ(ierr);
   for (proc=0, k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
     i    = owners_co[proc];
@@ -1763,7 +1766,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   /*-------------------*/
   ierr   = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
   ierr   = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&rwaits);CHKERRQ(ierr);
-  ierr   = PetscMalloc1((len+1),&buf_s);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(len+1,&buf_s);CHKERRQ(ierr);
   buf_si = buf_s;  /* points to the beginning of k-th msg to be sent */
   for (proc=0,k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
@@ -1804,7 +1807,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   /* compute the local portion of C (mpi mat) */
   /*------------------------------------------*/
   /* allocate bi array and free space for accumulating nonzero column info */
-  ierr  = PetscMalloc1((pn+1),&bi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(pn+1,&bi);CHKERRQ(ierr);
   bi[0] = 0;
 
   /* set initial free space to be fill*(nnz(P) + nnz(AP)) */
@@ -1863,7 +1866,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   }
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
-  ierr      = PetscMalloc1((bi[pn]+1),&bj);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(bi[pn]+1,&bj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)bi[pn]/(pdti[pn] + poti[pon] + ai[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
@@ -1904,6 +1907,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;

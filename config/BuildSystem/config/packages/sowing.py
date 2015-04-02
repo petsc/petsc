@@ -4,10 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16g.tar.gz']
+    self.giturls           = ['https://bitbucket.org/petsc/pkg-sowing.git']
+    self.gitcommit         = '9c5b20c'
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.17-p1.tar.gz']
     self.complex           = 1
     self.double            = 0
-    self.requires32bitint  = 0
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
@@ -33,40 +34,40 @@ class Configure(config.package.GNUPackage):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.confDir]
-    if 'download-sowing-cc' in self.framework.argDB and self.framework.argDB['download-sowing-cc']:
-      args.append('CC="'+self.framework.argDB['download-sowing-cc']+'"')
-    if 'download-sowing-cxx' in self.framework.argDB and self.framework.argDB['download-sowing-cxx']:
-      args.append('CXX="'+self.framework.argDB['download-sowing-cxx']+'"')
-    if 'download-sowing-cpp' in self.framework.argDB and self.framework.argDB['download-sowing-cpp']:
-      args.append('CPP="'+self.framework.argDB['download-sowing-cpp']+'"')
-    if 'download-sowing-cxxcpp' in self.framework.argDB and self.framework.argDB['download-sowing-cxxcpp']:
-      args.append('CXXCPP="'+self.framework.argDB['download-sowing-cxxcpp']+'"')
-    if 'download-sowing-configure-options' in self.framework.argDB and self.framework.argDB['download-sowing-configure-options']:
-      args.append(self.framework.argDB['download-sowing-configure-options'])
+    if 'download-sowing-cc' in self.argDB and self.argDB['download-sowing-cc']:
+      args.append('CC="'+self.argDB['download-sowing-cc']+'"')
+    if 'download-sowing-cxx' in self.argDB and self.argDB['download-sowing-cxx']:
+      args.append('CXX="'+self.argDB['download-sowing-cxx']+'"')
+    if 'download-sowing-cpp' in self.argDB and self.argDB['download-sowing-cpp']:
+      args.append('CPP="'+self.argDB['download-sowing-cpp']+'"')
+    if 'download-sowing-cxxcpp' in self.argDB and self.argDB['download-sowing-cxxcpp']:
+      args.append('CXXCPP="'+self.argDB['download-sowing-cxxcpp']+'"')
+    if 'download-sowing-configure-options' in self.argDB and self.argDB['download-sowing-configure-options']:
+      args.append(self.argDB['download-sowing-configure-options'])
     return args
 
   def alternateConfigureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
 
   def configure(self):
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']) or \
-          (self.framework.clArgDB.has_key('download-sowing') and not self.framework.argDB['download-sowing']):
-      self.framework.logPrint("Not checking sowing on user request\n")
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']) or \
+          (self.framework.clArgDB.has_key('download-sowing') and not self.argDB['download-sowing']):
+      self.logPrint("Not checking sowing on user request\n")
       return
 
-    if self.petscclone.isClone:
-      self.framework.logPrint('PETSc clone, checking for Sowing \n')
+    if self.petscclone.isClone and hasattr(self.compilers, 'FC'):
+      self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
-      if self.framework.clArgDB.has_key('with-sowing-dir') and self.framework.argDB['with-sowing-dir']:
-        installDir = os.path.join(self.framework.argDB['with-sowing-dir'],'bin')
+      if self.framework.clArgDB.has_key('with-sowing-dir') and self.argDB['with-sowing-dir']:
+        installDir = os.path.join(self.argDB['with-sowing-dir'],'bin')
 
         self.getExecutable('bfort',    path=installDir, getFullPath = 1)
         self.getExecutable('doctext',  path=installDir, getFullPath = 1)
         self.getExecutable('mapnames', path=installDir, getFullPath = 1)
         self.getExecutable('bib2html', path=installDir, getFullPath = 1)
         if hasattr(self, 'bfort'):
-          self.framework.logPrint('Found bfort in user provided directory, not installing sowing')
+          self.logPrint('Found bfort in user provided directory, not installing sowing')
           self.found = 1
         else:
           raise RuntimeError('You passed --with-sowing-dir='+installDir+' but it does not contain sowings bfort')
@@ -77,11 +78,11 @@ class Configure(config.package.GNUPackage):
         self.getExecutable('mapnames', getFullPath = 1)
         self.getExecutable('bib2html', getFullPath = 1)
 
-        if hasattr(self, 'bfort') and not self.framework.argDB['download-sowing']:
-          self.framework.logPrint('Found bfort, not installing sowing')
+        if hasattr(self, 'bfort') and not self.argDB['download-sowing']:
+          self.logPrint('Found bfort, not installing sowing')
         else:
-          self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
-          self.framework.argDB['download-sowing'] = 1
+          self.logPrint('Bfort not found. Installing sowing for FortranStubs')
+          if (not self.argDB['download-sowing']):  self.argDB['download-sowing'] = 1
           config.package.GNUPackage.configure(self)
 
           installDir = os.path.join(self.installDir,'bin')
@@ -92,16 +93,16 @@ class Configure(config.package.GNUPackage):
 
       self.buildFortranStubs()
     else:
-      self.framework.logPrint("Not a clone of PETSc, don't need Sowing\n")
+      self.logPrint("Not a clone of PETSc or no Fortran, don't need Sowing\n")
     return
 
   def buildFortranStubs(self):
     if hasattr(self.compilers, 'FC'):
-      if self.framework.argDB['with-batch'] and not hasattr(self,'bfort'):
+      if self.argDB['with-batch'] and not hasattr(self,'bfort'):
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
       else:
-        self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
+        self.logWrite('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
           import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('bin','maint')))

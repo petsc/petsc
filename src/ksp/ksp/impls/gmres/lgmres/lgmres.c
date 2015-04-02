@@ -51,11 +51,11 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   ierr    = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
   /* need array of pointers to augvecs*/
-  ierr = PetscMalloc1((2 * aug_dim + AUG_OFFSET),&lgmres->augvecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*aug_dim + AUG_OFFSET,&lgmres->augvecs);CHKERRQ(ierr);
 
   lgmres->aug_vecs_allocated = 2 *aug_dim + AUG_OFFSET;
 
-  ierr = PetscMalloc1((2* aug_dim + AUG_OFFSET),&lgmres->augvecs_user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*aug_dim + AUG_OFFSET,&lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscMalloc1(aug_dim,&lgmres->aug_order);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*));CHKERRQ(ierr);
 
@@ -65,7 +65,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   lgmres->augwork_alloc    =  2* aug_dim + AUG_OFFSET;
 
   ierr = KSPCreateVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0],0,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1((max_k+1),&lgmres->hwork);CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_k+1,&lgmres->hwork);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k<lgmres->aug_vv_allocated; k++) {
     lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
@@ -709,7 +709,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LGMRES"
-PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_LGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       aug;
@@ -717,8 +717,8 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
   PetscBool      flg     = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("KSP LGMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP LGMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",lgmres->approx_constant,&lgmres->approx_constant,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPLGMRESSetAugDim(ksp,aug);CHKERRQ(ierr); }

@@ -3,14 +3,14 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Patch"
-PetscErrorCode DMSetFromOptions_Patch(DM dm)
+PetscErrorCode DMSetFromOptions_Patch(PetscOptions *PetscOptionsObject,DM dm)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMPatch Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPatch Options");CHKERRQ(ierr);
   /* Handle associated vectors */
   /* Handle viewing */
   ierr = PetscOptionsTail();CHKERRQ(ierr);

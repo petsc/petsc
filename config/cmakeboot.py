@@ -6,7 +6,7 @@
 # but it can also be run as a stand-alone program. The library paths and
 # flags should have been written to
 #
-#     $PETSC_DIR/$PETSC_ARCH/conf/PETScConfig.cmake
+#     $PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/PETScConfig.cmake
 #
 # by configure before running this script.
 
@@ -37,7 +37,7 @@ class PETScMaker(script.Script):
 
    if not argDB:
      argDB = RDict.RDict(None, None, 0, 0, readonly = True)
-     argDB.saveFilename = os.path.join(petscdir,petscarch,'conf','RDict.db')
+     argDB.saveFilename = os.path.join(petscdir,petscarch,'lib','petsc-conf','RDict.db')
      argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.framework = framework
@@ -61,7 +61,6 @@ class PETScMaker(script.Script):
    self.libraries     = self.framework.require('config.libraries',            None)
    self.scalarType    = self.framework.require('PETSc.options.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.options.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.options.libraryOptions', None)
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 

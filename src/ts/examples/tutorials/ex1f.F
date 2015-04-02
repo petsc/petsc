@@ -28,11 +28,11 @@
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
@@ -202,11 +202,11 @@
 !
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
       Vec              X
       PetscReal user(3)
       PetscInt  i,j,row,mx,my
@@ -250,11 +250,11 @@
 !
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
       TS       ts
       PetscReal  t
       Vec               X,F
@@ -282,7 +282,7 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      call VecGetArray(X,xx,xidx,ierr)
+      call VecGetArrayRead(X,xx,xidx,ierr)
       call VecGetArray(F,ff,fidx,ierr)
       do 10 j=1,my
         do 20 i=1,mx
@@ -304,7 +304,7 @@
  20   continue
  10   continue
 
-      call VecRestoreArray(X,xx,xidx,ierr)
+      call VecRestoreArrayRead(X,xx,xidx,ierr)
       call VecRestoreArray(F,ff,fidx,ierr)
       return
       end
@@ -313,11 +313,11 @@
 !
       subroutine FormJacobian(ts,ctime,X,JJ,B,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
       TS               ts
       Vec              X
       Mat              JJ,B
@@ -350,7 +350,7 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      call VecGetArray(X,xx,xidx,ierr)
+      call VecGetArrayRead(X,xx,xidx,ierr)
       do 10 j=1,my
         do 20 i=1,mx
 !

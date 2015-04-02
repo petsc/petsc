@@ -66,7 +66,7 @@ typedef struct {
      This method has one explicit stage and one implicit stage.
 
      References:
-     U. Ascher, S. Ruuth, R. J. Spitheri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
+     U. Ascher, S. Ruuth, R. J. Spiteri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
 
      Level: advanced
 
@@ -161,7 +161,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      References:
-     U. Ascher, S. Ruuth, R. J. Spitheri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
+     U. Ascher, S. Ruuth, R. J. Spiteri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
 
      This method is referred to as ARS(4,4,3) in http://arxiv.org/abs/1110.4375
 
@@ -952,7 +952,7 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   ierr = VecDestroyVecs(s,&ark->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&ark->YdotI);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&ark->YdotRHS);CHKERRQ(ierr);
-  if (&ark->init_guess_extrp) {
+  if (ark->init_guess_extrp) {
     ierr = VecDestroyVecs(s,&ark->Y_prev);CHKERRQ(ierr);
     ierr = VecDestroyVecs(s,&ark->YdotI_prev);CHKERRQ(ierr);
     ierr = VecDestroyVecs(s,&ark->YdotRHS_prev);CHKERRQ(ierr);
@@ -1170,14 +1170,14 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_ARKIMEX"
-static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
   char           arktype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("ARKIMEX ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"ARKIMEX ODE solver options");CHKERRQ(ierr);
   {
     ARKTableauLink link;
     PetscInt       count,choice;
@@ -1187,15 +1187,14 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
     for (link=ARKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    ierr      = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,arktype,&choice,&flg);CHKERRQ(ierr);
-    ierr      = TSARKIMEXSetType(ts,flg ? namelist[choice] : arktype);CHKERRQ(ierr);
+      ierr      = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,arktype,&choice,&flg);CHKERRQ(ierr);
+      ierr      = TSARKIMEXSetType(ts,flg ? namelist[choice] : arktype);CHKERRQ(ierr);
     ierr      = PetscFree(namelist);CHKERRQ(ierr);
     flg       = (PetscBool) !ark->imex;
     ierr      = PetscOptionsBool("-ts_arkimex_fully_implicit","Solve the problem fully implicitly","TSARKIMEXSetFullyImplicit",flg,&flg,NULL);CHKERRQ(ierr);
     ark->imex = (PetscBool) !flg;
     ark->init_guess_extrp = PETSC_FALSE;
     ierr      = PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate","Extrapolate the initial guess for the stage solution from stage values of the previous time step","",ark->init_guess_extrp,&ark->init_guess_extrp,NULL);CHKERRQ(ierr);
-    ierr      = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1412,10 +1411,13 @@ PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 
   Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
+  Consider trying TSROSW if the stiff part is linear or weakly nonlinear.
+
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3,
-           TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX1BEE,
+           TSARKIMEX2C, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEX3, TSARKIMEXL2, TSARKIMEXA2, TSARKIMEXARS122,
+           TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXARS443, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/
 #undef __FUNCT__

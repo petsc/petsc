@@ -125,13 +125,15 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  dd->p = 1;
+  dd->n = 1;
   dd->m = size;
   m     = dd->m;
 
   if (s > 0) {
     /* if not communicating data then should be ok to have nothing on some processes */
     if (M < m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
-    if ((M-1) < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
+    if ((M-1) < s && size > 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
   }
 
   /*
@@ -213,7 +215,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,dof*(IXe-IXs),dof*(IXs-Xs),1,&to);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((x+2*(sDist)),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(x+2*sDist,&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<IXs-Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/

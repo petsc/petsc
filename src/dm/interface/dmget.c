@@ -100,6 +100,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -242,6 +243,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +286,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr            = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr            = PetscNew(&link);CHKERRQ(ierr);
   ierr            = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr            = DMCreateGlobalVector(dm,&link->X);CHKERRQ(ierr);
   link->next      = dm->namedglobal;
@@ -378,7 +380,7 @@ PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr           = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr           = PetscNew(&link);CHKERRQ(ierr);
   ierr           = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr           = DMCreateLocalVector(dm,&link->X);CHKERRQ(ierr);
   link->next     = dm->namedlocal;

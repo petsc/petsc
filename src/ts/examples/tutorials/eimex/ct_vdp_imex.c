@@ -175,15 +175,16 @@ int main(int argc, char **argv)
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = x[1];
   f[1] = 0.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -192,18 +193,20 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
-  User           user = (User)ptr;
-  PetscScalar    *x,*xdot,*f;
-
+  User              user = (User)ptr;
+  PetscScalar       *f;
+  const PetscScalar *x,*xdot;
+  PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
-  VecGetArray(X,&x);
-  VecGetArray(Xdot,&xdot);
-  VecGetArray(F,&f);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0];
   f[1] = xdot[1]-((1.-x[0]*x[0])*x[1]-x[0])/user->mu;
-  VecRestoreArray(X,&x);
-  VecRestoreArray(Xdot,&xdot);
-  VecRestoreArray(F,&f);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -211,20 +214,21 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr
 #define __FUNCT__ "IJacobian"
 static PetscErrorCode IJacobian(TS  ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ptr)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ptr;
-  PetscReal      mu = user->mu;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
+  PetscErrorCode    ierr;
+  User              user = (User)ptr;
+  PetscReal         mu = user->mu;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = a;
   J[0][1] = 0;
   J[1][0] = (2.*x[0]*x[1]+1.)/mu;
   J[1][1] = a - (1. - x[0]*x[0])/mu;
   ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

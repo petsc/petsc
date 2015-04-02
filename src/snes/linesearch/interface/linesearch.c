@@ -237,7 +237,7 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetPreCheck"
 /*@C
-   SNESLineSearchSetPreCheck - Gets the pre-check function for the line search routine.
+   SNESLineSearchGetPreCheck - Gets the pre-check function for the line search routine.
 
    Input Parameters:
 .  linesearch - the SNESLineSearch context
@@ -421,6 +421,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
 +  linesearch - linesearch context
 .  X - base state for this step
 .  Y - initial correction
+-  ctx - context for this function
 
    Output Arguments:
 +  Y - correction, possibly modified
@@ -512,7 +513,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 -  fnorm - The new function norm
 
    Options Database Keys:
-+ -snes_linesearch_type - basic, bt, l2, cp, shell
++ -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell
 . -snes_linesearch_monitor - Print progress of line searches
 . -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_norms   - Turn on/off the linesearch norms
@@ -671,7 +672,7 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 .  linesearch - linesearch context
 
    Options Database Keys:
-+ -snes_linesearch_type <type> - basic, bt, l2, cp, shell
++ -snes_linesearch_type <type> - basic, bt, l2, cp, nleqerr, shell
 . -snes_linesearch_order <order> - 1, 2, 3.  Most types only support certain orders (bt supports 2 or 3)
 . -snes_linesearch_norms   - Turn on/off the linesearch norms for the basic linesearch type
 . -snes_linesearch_minlambda - The minimum step length
@@ -700,7 +701,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscBool      flg, set;
 
   PetscFunctionBegin;
-  if (!SNESLineSearchRegisterAllCalled) {ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);}
+  ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject)linesearch);CHKERRQ(ierr);
   if (((PetscObject)linesearch)->type_name) deft = ((PetscObject)linesearch)->type_name;
@@ -744,7 +745,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   ierr = PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL);CHKERRQ(ierr);
 
   if (linesearch->ops->setfromoptions) {
-    (*linesearch->ops->setfromoptions)(linesearch);CHKERRQ(ierr);
+    (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
@@ -820,6 +821,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 .  bt - Backtracking line search over the L2 norm of the function
 .  l2 - Secant line search over the L2 norm of the function
 .  cp - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
+.  nleqerr - Affine-covariant error-oriented linesearch
 -  shell - User provided SNESLineSearch implementation
 
    Level: intermediate
@@ -1639,7 +1641,7 @@ extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SN
    SNESLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
 
    Input Parameters:
-.  snes - nonlinear context obtained from SNESCreate()
+.  linesearch - the line search context, obtain with SNESGetLineSearch()
 
    Output Parameters:
 +  projectfunc - function for projecting the function to the bounds

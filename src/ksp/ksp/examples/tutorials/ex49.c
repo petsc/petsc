@@ -1,10 +1,12 @@
 static char help[] =  "   Solves the compressible plane strain elasticity equations in 2d on the unit domain using Q1 finite elements. \n\
    Material properties E (Youngs modulus) and nu (Poisson ratio) may vary as a function of space. \n\
    The model utilises boundary conditions which produce compression in the x direction. \n\
-Options: \n\
+Options: \n"
+"\
      -mx : number of elements in x-direction \n\
      -my : number of elements in y-direction \n\
-     -c_str : indicates the structure of the coefficients to use. \n\
+     -c_str : indicates the structure of the coefficients to use. \n"
+"\
           -c_str 0 => Setup for an isotropic material with constant coefficients. \n\
                          Parameters: \n\
                              -iso_E  : Youngs modulus \n\
@@ -15,7 +17,8 @@ Options: \n\
                               -step_nu0 : Poisson ratio to the left of the step \n\
                               -step_E1  : Youngs modulus to the right of the step \n\
                               -step_n1  : Poisson ratio to the right of the step \n\
-                              -step_xc  : x coordinate of the step \n\
+                              -step_xc  : x coordinate of the step \n"
+"\
           -c_str 2 => Setup for a checkerboard material with alternating properties. \n\
                       Repeats the following pattern throughout the domain. For example with 4 materials specified, we would heve \n\
                       -------------------------\n\
@@ -33,7 +36,8 @@ Options: \n\
                               -brick_nu   : a comma separated list of Poisson ratios  \n\
                               -brick_span : the number of elements in x and y each brick will span \n\
           -c_str 3 => Setup for a sponge-like material with alternating properties. \n\
-                      Repeats the following pattern throughout the domain \n\
+                      Repeats the following pattern throughout the domain \n"
+"\
                       -----------------------------\n\
                       |       [background]        |\n\
                       |          E0,nu0           |\n\
@@ -268,8 +272,8 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   proc_J = rank/cpu_x;
   proc_I = rank-cpu_x*proc_J;
 
-  ierr = PetscMalloc(sizeof(PetscInt)*cpu_x,&LX);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*cpu_y,&LY);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cpu_x,&LX);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cpu_y,&LY);CHKERRQ(ierr);
 
   ierr = DMDAGetLocalElementSize(da,&local_mx,&local_my,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&vlx);CHKERRQ(ierr);
@@ -1018,6 +1022,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
   ierr = DMSetMatType(elas_da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(elas_da,&A);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A,2);CHKERRQ(ierr);
   ierr = DMGetCoordinates(elas_da,&vel_coords);CHKERRQ(ierr);
   ierr = MatNullSpaceCreateRigidBody(vel_coords,&matnull);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,matnull);CHKERRQ(ierr);
@@ -1139,8 +1144,8 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
   /* --- */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_vals);CHKERRQ(ierr);
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1209,8 +1214,8 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
   /* --- */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_vals);CHKERRQ(ierr);
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1286,16 +1291,19 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
 
   /* define which dofs are not constrained */
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*m,&unconstrained);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&unconstrained);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&start,&end);CHKERRQ(ierr);
   ierr = VecGetArray(x,&_x);CHKERRQ(ierr);
   cnt  = 0;
-  for (i = 0; i < m; i++) {
-    PetscReal val;
+  for (i = 0; i < m; i+=2) {
+    PetscReal val1,val2;
 
-    val = PetscRealPart(_x[i]);
-    if (fabs(val) < 0.1) {
+    val1 = PetscRealPart(_x[i]);
+    val2 = PetscRealPart(_x[i+1]);
+    if (PetscAbs(val1) < 0.1 && PetscAbs(val2) < 0.1) {
       unconstrained[cnt] = start + i;
+      cnt++;
+      unconstrained[cnt] = start + i + 1;
       cnt++;
     }
   }
@@ -1303,6 +1311,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,unconstrained,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(unconstrained);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(is,2);CHKERRQ(ierr);
 
   /* define correction for dirichlet in the rhs */
   ierr = MatMult(A,x,f);CHKERRQ(ierr);

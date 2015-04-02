@@ -1,5 +1,5 @@
 #include <petsc-private/petscfvimpl.h> /*I "petscfv.h" I*/
-#include <petscdmplex.h>
+#include <petsc-private/dmpleximpl.h> /* For CellRefiner */
 #include <petscds.h>
 
 PetscClassId PETSCLIMITER_CLASSID = 0;
@@ -89,7 +89,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   ierr = PetscObjectTypeCompare((PetscObject) lim, name, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscLimiterList, name, &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
@@ -127,7 +127,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) lim)->type_name;
   PetscFunctionReturn(0);
 }
@@ -219,7 +219,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   if (!((PetscObject) lim)->type_name) defaultType = PETSCLIMITERSIN;
   else                                 defaultType = ((PetscObject) lim)->type_name;
-  if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) lim);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petsclimiter_type", "Finite volume slope limiter", "PetscLimiterSetType", PetscLimiterList, defaultType, name, 256, &flg);CHKERRQ(ierr);
@@ -1125,7 +1125,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   ierr = PetscObjectTypeCompare((PetscObject) fvm, name, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscFVList, name, &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
 
@@ -1163,7 +1163,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) fvm)->type_name;
   PetscFunctionReturn(0);
 }
@@ -1255,7 +1255,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (!((PetscObject) fvm)->type_name) defaultType = PETSCFVUPWIND;
   else                                 defaultType = ((PetscObject) fvm)->type_name;
-  if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petscfv_type", "Finite volume discretization", "PetscFVSetType", PetscFVList, defaultType, name, 256, &flg);CHKERRQ(ierr);
@@ -1324,7 +1324,10 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   ((PetscObject) (*fvm))->refct = 0;
 
   ierr = PetscLimiterDestroy(&(*fvm)->limiter);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&(*fvm)->dualSpace);CHKERRQ(ierr);
   ierr = PetscFree((*fvm)->fluxWork);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(*fvm)->quadrature);CHKERRQ(ierr);
+  ierr = PetscFVRestoreTabulation((*fvm), 0, NULL, &(*fvm)->B, &(*fvm)->D, NULL /*&(*fvm)->H*/);CHKERRQ(ierr);
 
   if ((*fvm)->ops->destroy) {ierr = (*(*fvm)->ops->destroy)(*fvm);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fvm);CHKERRQ(ierr);
@@ -1625,7 +1628,154 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(q, 2);
+  if (!fvm->quadrature) {
+    /* Create default 1-point quadrature */
+    PetscReal     *points, *weights;
+    PetscErrorCode ierr;
+
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &fvm->quadrature);CHKERRQ(ierr);
+    ierr = PetscCalloc1(fvm->dim, &points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &weights);CHKERRQ(ierr);
+    weights[0] = 1.0;
+    ierr = PetscQuadratureSetData(fvm->quadrature, fvm->dim, 1, points, weights);CHKERRQ(ierr);
+  }
   *q = fvm->quadrature;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetDualSpace"
+/*@
+  PetscFVGetDualSpace - Returns the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameter:
+. fvm - The PetscFV object
+
+  Output Parameter:
+. sp - The PetscDualSpace object
+
+  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+
+  Level: developer
+
+.seealso: PetscFVCreate()
+@*/
+PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(sp, 2);
+  if (!fvm->dualSpace) {
+    DM              K;
+    PetscQuadrature q;
+    PetscInt        dim;
+    PetscErrorCode  ierr;
+
+    ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
+    ierr = PetscFVGetQuadrature(fvm, &q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
+    ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+  }
+  *sp = fvm->dualSpace;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetDualSpace"
+/*@
+  PetscFVSetDualSpace - Sets the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameters:
++ fvm - The PetscFV object
+- sp  - The PetscDualSpace object
+
+  Level: intermediate
+
+  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+
+.seealso: PetscFVCreate()
+@*/
+PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 2);
+  ierr = PetscDualSpaceDestroy(&fvm->dualSpace);CHKERRQ(ierr);
+  fvm->dualSpace = sp;
+  ierr = PetscObjectReference((PetscObject) fvm->dualSpace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetDefaultTabulation"
+PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal **D, PetscReal **H)
+{
+  PetscInt         npoints;
+  const PetscReal *points;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  if (B) PetscValidPointer(B, 2);
+  if (D) PetscValidPointer(D, 3);
+  if (H) PetscValidPointer(H, 4);
+  ierr = PetscQuadratureGetData(fvm->quadrature, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+  if (!fvm->B) {ierr = PetscFVGetTabulation(fvm, npoints, points, &fvm->B, &fvm->D, NULL/*&fvm->H*/);CHKERRQ(ierr);}
+  if (B) *B = fvm->B;
+  if (D) *D = fvm->D;
+  if (H) *H = fvm->H;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetTabulation"
+PetscErrorCode PetscFVGetTabulation(PetscFV fvm, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
+{
+  PetscInt         pdim = 1; /* Dimension of approximation space P */
+  PetscInt         dim;      /* Spatial dimension */
+  PetscInt         comp;     /* Field components */
+  PetscInt         p, d, c, e;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(points, 3);
+  if (B) PetscValidPointer(B, 4);
+  if (D) PetscValidPointer(D, 5);
+  if (H) PetscValidPointer(H, 6);
+  ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fvm, &comp);CHKERRQ(ierr);
+  if (B) {ierr = PetscMalloc1(npoints*pdim*comp, B);CHKERRQ(ierr);}
+  if (D) {ierr = PetscMalloc1(npoints*pdim*comp*dim, D);CHKERRQ(ierr);}
+  if (H) {ierr = PetscMalloc1(npoints*pdim*comp*dim*dim, H);CHKERRQ(ierr);}
+  if (B) {for (p = 0; p < npoints; ++p) for (d = 0; d < pdim; ++d) for (c = 0; c < comp; ++c) (*B)[(p*pdim + d)*comp + c] = 1.0;}
+  if (D) {for (p = 0; p < npoints; ++p) for (d = 0; d < pdim; ++d) for (c = 0; c < comp; ++c) for (e = 0; e < dim; ++e) (*D)[((p*pdim + d)*comp + c)*dim + e] = 0.0;}
+  if (H) {for (p = 0; p < npoints; ++p) for (d = 0; d < pdim; ++d) for (c = 0; c < comp; ++c) for (e = 0; e < dim*dim; ++e) (*H)[((p*pdim + d)*comp + c)*dim*dim + e] = 0.0;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRestoreTabulation"
+PetscErrorCode PetscFVRestoreTabulation(PetscFV fvm, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  if (B && *B) {ierr = PetscFree(*B);CHKERRQ(ierr);}
+  if (D && *D) {ierr = PetscFree(*D);CHKERRQ(ierr);}
+  if (H && *H) {ierr = PetscFree(*H);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1682,6 +1832,78 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (fvm->ops->integraterhsfunction) {ierr = (*fvm->ops->integraterhsfunction)(fvm, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRefine"
+/*@
+  PetscFVRefine - Create a "refined" PetscFV object that refines the reference cell into smaller copies. This is typically used
+  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
+  sparsity). It is also used to create an interpolation between regularly refined meshes.
+
+  Input Parameter:
+. fv - The initial PetscFV
+
+  Output Parameter:
+. fvRef - The refined PetscFV
+
+  Level: developer
+
+.seealso: PetscFVType, PetscFVCreate(), PetscFVSetType()
+@*/
+PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
+{
+  PetscDualSpace   Q, Qref;
+  DM               K, Kref;
+  PetscQuadrature  q, qref;
+  CellRefiner      cellRefiner;
+  PetscReal       *v0;
+  PetscReal       *jac, *invjac;
+  PetscInt         numComp, numSubelements, s;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
+  ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceDuplicate(Q, &Qref);CHKERRQ(ierr);
+  ierr = DMRefine(K, PetscObjectComm((PetscObject) fv), &Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
+  ierr = DMDestroy(&Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
+  /* Create volume */
+  ierr = PetscFVCreate(PetscObjectComm((PetscObject) fv), fvRef);CHKERRQ(ierr);
+  ierr = PetscFVSetDualSpace(*fvRef, Qref);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fv,    &numComp);CHKERRQ(ierr);
+  ierr = PetscFVSetNumComponents(*fvRef, numComp);CHKERRQ(ierr);
+  ierr = PetscFVSetUp(*fvRef);CHKERRQ(ierr);
+  /* Create quadrature */
+  ierr = DMPlexGetCellRefiner_Internal(K, &cellRefiner);CHKERRQ(ierr);
+  ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = PetscQuadratureExpandComposite(q, numSubelements, v0, jac, &qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSimpleSetDimension(Qref, numSubelements);CHKERRQ(ierr);
+  for (s = 0; s < numSubelements; ++s) {
+    PetscQuadrature  qs;
+    const PetscReal *points, *weights;
+    PetscReal       *p, *w;
+    PetscInt         dim, npoints, np;
+
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qs);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+    np   = npoints/numSubelements;
+    ierr = PetscMalloc1(np*dim,&p);ierr = PetscMalloc1(np,&w);
+    ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(w, &weights[s*np],    np     * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(qs, dim, np, p, w);
+    ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
+  }
+  ierr = CellRefinerRestoreAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = PetscFVSetQuadrature(*fvRef, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1747,24 +1969,27 @@ PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
   neighborVol[f*2+1] contains the right geom
 */
 PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
-                                                  PetscScalar xL[], PetscScalar xR[], PetscScalar fluxL[], PetscScalar fluxR[])
+                                                  PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
   void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
   void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
-  PetscInt       dim, pdim, f, d;
+  PetscInt       dim, pdim, totDim, Nc, off, f, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &xL[f*pdim], &xR[f*pdim], flux, rctx);
+    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
     for (d = 0; d < pdim; ++d) {
-      fluxL[f*pdim+d] = flux[d] / neighborVol[f*2+0];
-      fluxR[f*pdim+d] = flux[d] / neighborVol[f*2+1];
+      fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
+      fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
     }
   }
   PetscFunctionReturn(0);
@@ -2053,24 +2278,27 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
   neighborVol[f*2+1] contains the right geom
 */
 PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
-                                                        PetscScalar xL[], PetscScalar xR[], PetscScalar fluxL[], PetscScalar fluxR[])
+                                                        PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
   void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
   void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
-  PetscInt       dim, pdim, f, d;
+  PetscInt       dim, pdim, Nc, totDim, off, f, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &xL[f*pdim], &xR[f*pdim], flux, rctx);
+    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
     for (d = 0; d < pdim; ++d) {
-      fluxL[f*pdim+d] = flux[d] / neighborVol[f*2+0];
-      fluxR[f*pdim+d] = flux[d] / neighborVol[f*2+1];
+      fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
+      fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
     }
   }
   PetscFunctionReturn(0);

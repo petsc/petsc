@@ -221,6 +221,45 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeProjection3Dto1D_Internal"
+/*
+  DMPlexComputeProjection3Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 3D
+
+  This uses the basis completion described by Frisvad,
+
+  http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html
+  DOI:10.1080/2165347X.2012.689606
+*/
+static PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+{
+  PetscReal      x    = PetscRealPart(coords[3] - coords[0]);
+  PetscReal      y    = PetscRealPart(coords[4] - coords[1]);
+  PetscReal      z    = PetscRealPart(coords[5] - coords[2]);
+  PetscReal      r    = PetscSqrtReal(x*x + y*y + z*z);
+  PetscReal      rinv = 1. / r;
+  PetscFunctionBegin;
+
+  x *= rinv; y *= rinv; z *= rinv;
+  if (x > 0.) {
+    PetscReal inv1pX   = 1./ (1. + x);
+
+    R[0] = x; R[1] = -y;              R[2] = -z;
+    R[3] = y; R[4] = 1. - y*y*inv1pX; R[5] =     -y*z*inv1pX;
+    R[6] = z; R[7] =     -y*z*inv1pX; R[8] = 1. - z*z*inv1pX;
+  }
+  else {
+    PetscReal inv1mX   = 1./ (1. - x);
+
+    R[0] = x; R[1] = z;               R[2] = y;
+    R[3] = y; R[4] =     -y*z*inv1mX; R[5] = 1. - y*y*inv1mX;
+    R[6] = z; R[7] = 1. - z*z*inv1mX; R[8] =     -y*z*inv1mX;
+  }
+  coords[0] = 0.0;
+  coords[1] = r;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeProjection3Dto2D_Internal"
 /*
   DMPlexComputeProjection3Dto2D_Internal - Rewrite coordinates to be the 2D projection of the 3D
@@ -423,7 +462,21 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   *detJ = 0.0;
-  if (numCoords == 4) {
+  if (numCoords == 6) {
+    const PetscInt dim = 3;
+    PetscReal      R[9], J0;
+
+    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    ierr = DMPlexComputeProjection3Dto1D_Internal(coords, R);CHKERRQ(ierr);
+    if (J)    {
+      J0   = 0.5*PetscRealPart(coords[1]);
+      J[0] = R[0]*J0; J[1] = R[1]; J[2] = R[2];
+      J[3] = R[3]*J0; J[4] = R[4]; J[5] = R[5];
+      J[6] = R[6]*J0; J[7] = R[7]; J[8] = R[8];
+      DMPlex_Det3D_Internal(detJ, J);
+    }
+    if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
+  } else if (numCoords == 4) {
     const PetscInt dim = 2;
     PetscReal      R[4], J0;
 
@@ -814,6 +867,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
+  PetscScalar    tmp[2];
   PetscInt       coordSize;
   PetscErrorCode ierr;
 
@@ -822,21 +876,22 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D edges right now");
+  ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp);CHKERRQ(ierr);
   if (centroid) {
-    centroid[0] = 0.5*PetscRealPart(coords[0] + coords[dim+0]);
-    centroid[1] = 0.5*PetscRealPart(coords[1] + coords[dim+1]);
+    centroid[0] = 0.5*PetscRealPart(coords[0] + tmp[0]);
+    centroid[1] = 0.5*PetscRealPart(coords[1] + tmp[1]);
   }
   if (normal) {
     PetscReal norm;
 
-    normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
-    normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
-    norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
+    normal[0]  = -PetscRealPart(coords[1] - tmp[1]);
+    normal[1]  =  PetscRealPart(coords[0] - tmp[0]);
+    norm       = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
     normal[0] /= norm;
     normal[1] /= norm;
   }
   if (vol) {
-    *vol = PetscSqrtReal(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
+    *vol = PetscSqrtReal(PetscSqr(PetscRealPart(coords[0] - tmp[0])) + PetscSqr(PetscRealPart(coords[1] - tmp[1])));
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -859,7 +914,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  dim  = coordSize/numCorners;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   if (normal) {
     if (dim > 2) {
       const PetscReal x0 = PetscRealPart(coords[dim+0] - coords[0]), x1 = PetscRealPart(coords[dim*2+0] - coords[0]);
@@ -1144,9 +1199,9 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   for (f = fStart; f < fEnd; ++f) {
     PetscFVFaceGeom *fg;
     PetscReal        area;
-    PetscInt         ghost, d;
+    PetscInt         ghost = -1, d;
 
-    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal);CHKERRQ(ierr);
@@ -1156,14 +1211,16 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       PetscFVCellGeom *cL, *cR;
       const PetscInt  *cells;
       PetscReal       *lcentroid, *rcentroid;
-      PetscReal        v[3];
+      PetscReal        l[3], r[3], v[3];
 
       ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
       lcentroid = cells[0] >= cEndInterior ? fg->centroid : cL->centroid;
       rcentroid = cells[1] >= cEndInterior ? fg->centroid : cR->centroid;
-      DMPlex_WaxpyD_Internal(dim, -1, lcentroid, rcentroid, v);
+      ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
+      ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
+      DMPlex_WaxpyD_Internal(dim, -1, l, r, v);
       if (DMPlex_DotRealD_Internal(dim, fg->normal, v) < 0) {
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
       }

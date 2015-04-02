@@ -17,12 +17,18 @@
 
     Output Parameters:
 +   J - Jacobian matrix (not altered in this routine)
-.   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
--   flag - flag indicating whether the matrix sparsity structure has changed
+-   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 
     Level: intermediate
 
-.notes: If the coloring is not provided through the context, this will first try to get the
+   Options Database Key:
++  -snes_fd_color_use_mat - use a matrix coloring from the explicit matrix nonzero pattern instead of from the DM providing the matrix
+.  -snes_fd_color - Activates SNESComputeJacobianDefaultColor() in SNESSetFromOptions()
+.  -mat_fd_coloring_err <err> - Sets <err> (square root of relative error in the function)
+.  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
+-  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
+
+    Notes: If the coloring is not provided through the context, this will first try to get the
         coloring from the DM.  If the DM type has no coloring routine, then it will try to
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
         precomputed.  This is discouraged, as MatColoringApply() is not parallel by default.

@@ -507,7 +507,10 @@ M*/
    Notes: By default PETSC_COMM_WORLD and MPI_COMM_WORLD are identical unless you wish to
           run PETSc on ONLY a subset of MPI_COMM_WORLD. In that case create your new (smaller)
           communicator, call it, say comm, and set PETSC_COMM_WORLD = comm BEFORE calling
-          PetscInitialize()
+          PetscInitialize(), but after MPI_Init() has been called. 
+
+          The value of PETSC_COMM_WORLD should never be USED/accessed before PetscInitialize()
+          is called because it may not have a valid value yet.
 
 .seealso: PETSC_COMM_SELF
 
@@ -518,6 +521,8 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
     PETSC_COMM_SELF - This is always MPI_COMM_SELF
 
    Level: beginner
+
+   Notes: Do not USE/access or set this variable before PetscInitialize() has been called.
 
 .seealso: PETSC_COMM_WORLD
 
@@ -535,7 +540,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
 /*MC
-   PetscMalloc - Allocates memory
+   PetscMalloc - Allocates memory, One should use PetscMalloc1() or PetscCalloc1() usually instead of this
 
    Synopsis:
     #include <petscsys.h>
@@ -1440,6 +1445,8 @@ PETSC_EXTERN PetscErrorCode PetscStrendswithwhich(const char[],const char *const
 PETSC_EXTERN PetscErrorCode PetscStrallocpy(const char[],char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrArrayallocpy(const char *const*,char***);
 PETSC_EXTERN PetscErrorCode PetscStrArrayDestroy(char***);
+PETSC_EXTERN PetscErrorCode PetscStrNArrayallocpy(PetscInt,const char *const*,char***);
+PETSC_EXTERN PetscErrorCode PetscStrNArrayDestroy(PetscInt,char***);
 PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 
 PETSC_EXTERN void PetscStrcmpNoError(const char[],const char[],PetscBool  *);
@@ -1488,7 +1495,7 @@ PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIIn
 
    Note: This is the base class from which all PETSc objects are derived from.
 
-.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereferenc()
+.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereference()
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
@@ -1759,14 +1766,6 @@ $     PetscBool  flag = PetscNot(a)
 */
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
-#if defined(PETSC_HAVE_VALGRIND)
-#  include <valgrind/valgrind.h>
-#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
-#else
-#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
-#endif
-
-
 /*MC
     PetscHelpPrintf - Prints help messages.
 
@@ -1817,6 +1816,10 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
+#endif
+
+#if defined(PETSC_HAVE_CLOSURES)
+PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
@@ -2223,6 +2226,22 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBLASIntCast"
+/*@C
+    PetscBLASIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscBLASInt (which may be 32 bits in size), generates an
+         error if the PetscBLASInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscInt value
+
+   Output Parameter:
+.     b - the resulting PetscBLASInt value
+
+   Level: advanced
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
   PetscFunctionBegin;
@@ -2235,6 +2254,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMPIIntCast"
+/*@C
+    PetscMPIIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
+         error if the PetscMPIInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscInt value
+
+   Output Parameter:
+.     b - the resulting PetscMPIInt value
+
+   Level: advanced
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast()
+@*/ 
 PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;
@@ -2280,23 +2315,23 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
     UsingFortran - Fortran can be used with PETSc in four distinct approaches
 
 $    1) classic Fortran 77 style
-$#include "finclude/petscXXX.h" to work with material from the XXX component of PETSc
+$#include "petsc-finclude/petscXXX.h" to work with material from the XXX component of PETSc
 $       XXX variablename
 $      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
 $      which end in F90; such as VecGetArrayF90()
 $
 $    2) classic Fortran 90 style
-$#include "finclude/petscXXX.h"
-$#include "finclude/petscXXX.h90" to work with material from the XXX component of PETSc
+$#include "petsc-finclude/petscXXX.h"
+$#include "petsc-finclude/petscXXX.h90" to work with material from the XXX component of PETSc
 $       XXX variablename
 $
 $    3) Using Fortran modules
-$#include "finclude/petscXXXdef.h"
+$#include "petsc-finclude/petscXXXdef.h"
 $         use petscXXXX
 $       XXX variablename
 $
 $    4) Use Fortran modules and Fortran data types for PETSc types
-$#include "finclude/petscXXXdef.h"
+$#include "petsc-finclude/petscXXXdef.h"
 $         use petscXXXX
 $       type(XXX) variablename
 $      To use this approach you must ./configure PETSc with the additional
@@ -2330,24 +2365,24 @@ $      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
 
     See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
 
-    Developer Notes: The finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
-     automatically include their predecessors; for example finclude/petscvecdef.h includes finclude/petscisdef.h
+    Developer Notes: The petsc-finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
+     automatically include their predecessors; for example petsc-finclude/petscvecdef.h includes petsc-finclude/petscisdef.h
 
-     The finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
-     their finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
-     finclude/petscvec.h does NOT automatically include finclude/petscis.h
+     The petsc-finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
+     their petsc-finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
+     petsc-finclude/petscvec.h does NOT automatically include petsc-finclude/petscis.h
 
-     The finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
+     The petsc-finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
      Fortran data type type(XXX) (for example type(Vec)) when PETSc is ./configure with the --with-fortran-datatypes option.
 
-     The finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
+     The petsc-finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
      the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
 
-     The finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
+     The petsc-finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
      automatically by "make allfortranstubs".
 
-     The finclude/petscXXX.h90 includes the custom finclude/ftn-custom/petscXXX.h90 and if ./configure
-     was run with --with-fortran-interfaces it also includes the finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
+     The petsc-finclude/petscXXX.h90 includes the custom petsc-finclude/ftn-custom/petscXXX.h90 and if ./configure
+     was run with --with-fortran-interfaces it also includes the petsc-finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
      include their predecessors
 
     Level: beginner
@@ -2418,9 +2453,7 @@ typedef struct _p_PetscRandom*   PetscRandom;
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList PetscRandomList;
-PETSC_EXTERN PetscBool         PetscRandomRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(PetscRandom));
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
@@ -2516,7 +2549,7 @@ typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
   PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
   PETSC_BUILDTWOSIDED_IBARRIER = 1
-  /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
+  /* Updates here must be accompanied by updates in petsc-finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);
@@ -2573,24 +2606,53 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
 PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 /*S
-   PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
+   PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
+
+   Notes: After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
+$     PetscSubcommChild() returns the associated subcommunicator on this process
+$     PetscSubcommContiguousParent() returns a parent communitor but with all child of the same subcommunicator having contiquous rank
+
+   Sample Usage:
+       PetscSubcommCreate()
+       PetscSubcommSetNumber()
+       PetscSubcommSetType(PETSC_SUBCOMM_INTERLACED);
+       ccomm = PetscSubcommChild()
+       PetscSubcommDestroy()
 
    Level: advanced
 
    Concepts: communicator, create
+
+   Notes:
+$   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the new communicator (color) they will belong to and the order within that communicator
+$   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiquous ranks in the original MPI communicator
+$   PETSC_SUBCOMM_INTERLACED - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
+
+   Examaple: Consider a communicator with six processes split into 3 subcommunicators.
+$     PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
+$     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
+
+   Developer Notes: This is used in objects such as PCREDUNDANT() to manage the subcommunicators on which the redundant computations
+      are performed.
+
+
+.seealso: PetscSubcommCreate(), PetscSubcommSetNumber(), PetscSubcommSetType(), PetscSubcommView(), PetscSubcommSetFromOptions()
+
 S*/
 typedef struct _n_PetscSubcomm* PetscSubcomm;
 
 struct _n_PetscSubcomm {
-  MPI_Comm    parent;           /* parent communicator */
-  MPI_Comm    dupparent;        /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
-  MPI_Comm    comm;             /* this communicator */
-  PetscMPIInt n;                /* num of subcommunicators under the parent communicator */
-  PetscMPIInt color;            /* color of processors belong to this communicator */
-  PetscMPIInt *subsize;         /* size of subcommunicator[color] */
+  MPI_Comm         parent;           /* parent communicator */
+  MPI_Comm         dupparent;        /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
+  MPI_Comm         child;            /* the sub-communicator */
+  PetscMPIInt      n;                /* num of subcommunicators under the parent communicator */
+  PetscMPIInt      color;            /* color of processors belong to this communicator */
+  PetscMPIInt      *subsize;         /* size of subcommunicator[color] */
   PetscSubcommType type;
 };
 
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
@@ -2619,7 +2681,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
-PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
+PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,(size_t)count,(void**)slot);}
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 #undef __FUNCT__
@@ -2647,7 +2709,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
   PetscFunctionBegin;
   if (set && *set) PetscFunctionReturn(0);
   ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
-  ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(PetscCitationsList,len,&vstring);CHKERRQ(ierr);
   ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
   if (set) *set = PETSC_TRUE;
   PetscFunctionReturn(0);

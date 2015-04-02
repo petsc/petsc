@@ -174,12 +174,12 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 /*MC
    KSPPIPECG - Pipelined conjugate gradient method.
 
-   There method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
    non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
 
    See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.

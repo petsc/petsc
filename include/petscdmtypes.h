@@ -19,7 +19,7 @@ typedef struct _p_DM* DM;
 
   Level: beginner
 
-  A boundary may be of type DM_BOUNDARY_NONE (no ghost nodes), DM_BOUNDARY_GHOST (ghost vertices/cells
+  A boundary may be of type DM_BOUNDARY_NONE (no ghost nodes), DM_BOUNDARY_GHOSTED (ghost vertices/cells
   exist but aren't filled, you can put values into them and then apply a stencil that uses those ghost locations),
   DM_BOUNDARY_MIRROR (not yet implemented for 3d), DM_BOUNDARY_PERIODIC (ghost vertices/cells filled by the opposite
   edge of the domain), or DM_BOUNDARY_TWIST (like periodic, only glued backwards like a Mobius strip).

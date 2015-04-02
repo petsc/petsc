@@ -182,19 +182,19 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
     break;
   case THREADCOMM_PROD:
     if (redctx->type == PETSC_REAL) {
-      PetscReal red_prod=0.0;
+      PetscReal red_prod=1.0;
       for (i=0; i < redctx->tcomm->nworkThreads; i++) red_prod *= ((PetscReal*)redctx->local_red)[i];
       PetscMemcpy(outdata,&red_prod,sizeof(PetscReal));
       break;
     }
     if (redctx->type == PETSC_SCALAR) {
-      PetscScalar red_prod=0.0;
+      PetscScalar red_prod=1.0;
       for (i=0; i < redctx->tcomm->nworkThreads; i++) red_prod *= ((PetscScalar*)redctx->local_red)[i];
       PetscMemcpy(outdata,&red_prod,sizeof(PetscScalar));
       break;
     }
     if (redctx->type == PETSC_INT) {
-      PetscInt red_prod=0.0;
+      PetscInt red_prod=1.0;
       for (i=0; i < redctx->tcomm->nworkThreads; i++) red_prod *= ((PetscInt*)redctx->local_red)[i];
       PetscMemcpy(outdata,&red_prod,sizeof(PetscInt));
     }

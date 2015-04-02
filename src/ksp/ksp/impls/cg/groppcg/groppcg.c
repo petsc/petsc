@@ -150,12 +150,12 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 /*MC
    KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
 
-   There method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
+   This method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
    overlapped with the preconditioner.
 
    See also KSPPIPECG, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.

@@ -87,7 +87,7 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   /* Pull f,h into b */
   ierr  = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
   bX[0] = f;  bX[1] = h;
-  ierr  = PetscMalloc(sizeof(VecScatter)*2,&vscat);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(2,&vscat);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
     ierr = VecScatterCreate(b,bis[i],bX[i],NULL,&vscat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);

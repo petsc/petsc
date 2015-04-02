@@ -4,7 +4,7 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-//typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
+/* typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType; */
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
@@ -54,6 +54,8 @@ typedef struct {
   Vec           temp_solution;
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
+  PetscBool     ksp_guess_nonzero;
+  PetscBool     rhs_change;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
   PetscBool     use_vertices;
@@ -67,6 +69,7 @@ typedef struct {
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;
+  PetscBool                  use_qr_single;
   PetscBool                  user_provided_isfordofs;
   PetscInt                   n_ISForDofs;
   PetscInt                   n_ISForDofsLocal;
@@ -80,6 +83,7 @@ typedef struct {
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
+  PetscInt                   redistribute_coarse;
   IS                         coarse_subassembling;
   IS                         coarse_subassembling_init;
   PetscBool                  use_coarse_estimates;

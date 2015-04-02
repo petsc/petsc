@@ -206,8 +206,10 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   PetscInt             dim              = 2;
   const PetscBool      createConvexHull = PETSC_FALSE;
   const PetscBool      constrained      = PETSC_FALSE;
+  const char          *labelName        = "marker";
   struct triangulateio in;
   struct triangulateio out;
+  DMLabel              label;
   PetscInt             vStart, vEnd, v, eStart, eEnd, e;
   PetscMPIInt          rank;
   PetscErrorCode       ierr;
@@ -218,6 +220,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   ierr = InitInput_Triangle(&in);CHKERRQ(ierr);
   ierr = InitOutput_Triangle(&out);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(boundary, labelName, &label);CHKERRQ(ierr);
 
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
@@ -238,7 +241,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
       for (d = 0; d < dim; ++d) {
         in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      ierr = DMPlexGetLabelValue(boundary, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
@@ -256,7 +259,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
       in.segmentlist[idx*2+0] = cone[0] - vStart;
       in.segmentlist[idx*2+1] = cone[1] - vStart;
 
-      ierr = DMPlexGetLabelValue(boundary, "marker", e, &in.segmentmarkerlist[idx]);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, e, &in.segmentmarkerlist[idx]);CHKERRQ(ierr);}
     }
   }
 #if 0 /* Do not currently support holes */
@@ -290,6 +293,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   ierr = PetscFree(in.holelist);CHKERRQ(ierr);
 
   {
+    DMLabel        glabel      = NULL;
     const PetscInt numCorners  = 3;
     const PetscInt numCells    = out.numberoftriangles;
     const PetscInt numVertices = out.numberofpoints;
@@ -297,10 +301,11 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     const double  *meshCoords = out.pointlist;
 
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexCreateLabel(*dm, labelName); ierr = DMPlexGetLabel(*dm, labelName, &glabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        ierr = DMPlexSetLabelValue(*dm, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
+        if (glabel) {ierr = DMLabelSetValue(glabel, v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);}
       }
     }
     if (interpolate) {
@@ -312,7 +317,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
 
           ierr = DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          ierr = DMPlexSetLabelValue(*dm, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          if (glabel) {ierr = DMLabelSetValue(glabel, edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
@@ -331,9 +336,11 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
 PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm             comm;
-  PetscInt             dim  = 2;
+  PetscInt             dim       = 2;
+  const char          *labelName = "marker";
   struct triangulateio in;
   struct triangulateio out;
+  DMLabel              label;
   PetscInt             vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt          rank;
   PetscErrorCode       ierr;
@@ -346,6 +353,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, labelName, &label);CHKERRQ(ierr);
 
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
@@ -366,7 +374,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
       for (d = 0; d < dim; ++d) {
         in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      ierr = DMPlexGetLabelValue(dm, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
@@ -420,6 +428,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
   ierr = PetscFree(in.trianglelist);CHKERRQ(ierr);
 
   {
+    DMLabel        rlabel      = NULL;
     const PetscInt numCorners  = 3;
     const PetscInt numCells    = out.numberoftriangles;
     const PetscInt numVertices = out.numberofpoints;
@@ -428,10 +437,11 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexCreateLabel(*dmRefined, labelName); ierr = DMPlexGetLabel(*dmRefined, labelName, &rlabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        ierr = DMPlexSetLabelValue(*dmRefined, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
+        if (rlabel) {ierr = DMLabelSetValue(rlabel, v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);}
       }
     }
     if (interpolate) {
@@ -445,7 +455,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 
           ierr = DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          ierr = DMPlexSetLabelValue(*dmRefined, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          if (rlabel) {ierr = DMLabelSetValue(rlabel, edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
@@ -467,17 +477,22 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
-  const PetscInt dim  = 3;
+  DM_Plex       *mesh      = (DM_Plex *) boundary->data;
+  const PetscInt dim       = 3;
+  const char    *labelName = "marker";
   ::tetgenio     in;
   ::tetgenio     out;
+  DMLabel        label;
   PetscInt       vStart, vEnd, v, fStart, fEnd, f;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr              = PetscObjectGetComm((PetscObject)boundary,&comm);CHKERRQ(ierr);
-  ierr              = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr              = DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)boundary,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(boundary, labelName, &label);CHKERRQ(ierr);
+
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
     PetscSection coordSection;
@@ -496,7 +511,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
-      ierr = DMPlexGetLabelValue(boundary, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
@@ -528,7 +543,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
         const PetscInt vIdx = points[v] - vStart;
         poly->vertexlist[v] = vIdx;
       }
-      ierr = DMPlexGetLabelValue(boundary, "marker", f, &in.facetmarkerlist[idx]);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, f, &in.facetmarkerlist[idx]);CHKERRQ(ierr);}
       ierr = DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
@@ -541,6 +556,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
     else                  {::tetrahedralize(args, &in, &out);}
   }
   {
+    DMLabel        glabel      = NULL;
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
@@ -549,10 +565,11 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 
     ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexCreateLabel(*dm, labelName); ierr = DMPlexGetLabel(*dm, labelName, &glabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        ierr = DMPlexSetLabelValue(*dm, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
+        if (glabel) {ierr = DMLabelSetValue(glabel, v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);}
       }
     }
     if (interpolate) {
@@ -566,7 +583,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 
           ierr = DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          ierr = DMPlexSetLabelValue(*dm, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          if (glabel) {ierr = DMLabelSetValue(glabel, edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
@@ -578,7 +595,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 
           ierr = DMPlexGetJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          ierr = DMPlexSetLabelValue(*dm, "marker", faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);
+          if (glabel) {ierr = DMLabelSetValue(glabel, faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
@@ -593,9 +610,11 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
-  const PetscInt dim  = 3;
+  const PetscInt dim       = 3;
+  const char    *labelName = "marker";
   ::tetgenio     in;
   ::tetgenio     out;
+  DMLabel        label;
   PetscInt       vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -606,6 +625,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, labelName, &label);CHKERRQ(ierr);
 
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
@@ -625,7 +645,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
-      ierr = DMPlexGetLabelValue(dm, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
@@ -661,6 +681,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
   in.tetrahedronvolumelist = NULL;
 
   {
+    DMLabel        rlabel      = NULL;
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
@@ -671,10 +692,11 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 
     ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexCreateLabel(*dmRefined, labelName); ierr = DMPlexGetLabel(*dmRefined, labelName, &rlabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        ierr = DMPlexSetLabelValue(*dmRefined, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
+        if (rlabel) {ierr = DMLabelSetValue(rlabel, v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);}
       }
     }
     if (interpolate) {
@@ -688,7 +710,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 
           ierr = DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          ierr = DMPlexSetLabelValue(*dmRefined, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          if (rlabel) {ierr = DMLabelSetValue(rlabel, edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
@@ -700,7 +722,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 
           ierr = DMPlexGetJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          ierr = DMPlexSetLabelValue(*dmRefined, "marker", faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);
+          if (rlabel) {ierr = DMLabelSetValue(rlabel, faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
@@ -719,8 +741,10 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
-  const PetscInt dim  = 3;
+  const PetscInt dim       = 3;
+  const char    *labelName = "marker";
   PLC           *in, *out;
+  DMLabel        label;
   PetscInt       verbose = 0, vStart, vEnd, v, fStart, fEnd, f;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -730,6 +754,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
   ierr = PetscOptionsGetInt(((PetscObject) boundary)->prefix, "-ctetgen_verbose", &verbose, NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(boundary, labelName, &label);CHKERRQ(ierr);
   ierr = PLCCreate(&in);CHKERRQ(ierr);
   ierr = PLCCreate(&out);CHKERRQ(ierr);
 
@@ -746,13 +771,13 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
-      PetscInt       off, d, m;
+      PetscInt       off, d, m = -1;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
         in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      ierr = DMPlexGetLabelValue(boundary, "marker", v, &m);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, v, &m);CHKERRQ(ierr);}
 
       in->pointmarkerlist[idx] = (int) m;
     }
@@ -766,7 +791,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     ierr = PetscMalloc1(in->numberoffacets,   &in->facetmarkerlist);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt idx     = f - fStart;
-      PetscInt      *points = NULL, numPoints, p, numVertices = 0, v, m;
+      PetscInt      *points = NULL, numPoints, p, numVertices = 0, v, m = -1;
       polygon       *poly;
 
       in->facetlist[idx].numberofpolygons = 1;
@@ -789,9 +814,9 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
         const PetscInt vIdx = points[v] - vStart;
         poly->vertexlist[v] = vIdx;
       }
-      ierr                     = DMPlexGetLabelValue(boundary, "marker", f, &m);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, f, &m);CHKERRQ(ierr);}
       in->facetmarkerlist[idx] = (int) m;
-      ierr                     = DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
   if (!rank) {
@@ -809,6 +834,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     ierr        = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
   }
   {
+    DMLabel        glabel      = NULL;
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
@@ -817,10 +843,11 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 
     ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexCreateLabel(*dm, labelName); ierr = DMPlexGetLabel(*dm, labelName, &glabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out->pointmarkerlist[v]) {
-        ierr = DMPlexSetLabelValue(*dm, "marker", v+numCells, out->pointmarkerlist[v]);CHKERRQ(ierr);
+        if (glabel) {ierr = DMLabelSetValue(glabel, v+numCells, out->pointmarkerlist[v]);CHKERRQ(ierr);}
       }
     }
     if (interpolate) {
@@ -834,7 +861,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 
           ierr = DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          ierr = DMPlexSetLabelValue(*dm, "marker", edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);
+          if (glabel) {ierr = DMLabelSetValue(glabel, edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
@@ -846,7 +873,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 
           ierr = DMPlexGetFullJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          ierr = DMPlexSetLabelValue(*dm, "marker", faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);
+          if (glabel) {ierr = DMLabelSetValue(glabel, faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
@@ -864,8 +891,10 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
-  const PetscInt dim  = 3;
+  const PetscInt dim       = 3;
+  const char    *labelName = "marker";
   PLC           *in, *out;
+  DMLabel        label;
   PetscInt       verbose = 0, vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -877,6 +906,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, labelName, &label);CHKERRQ(ierr);
   ierr = PLCCreate(&in);CHKERRQ(ierr);
   ierr = PLCCreate(&out);CHKERRQ(ierr);
 
@@ -893,13 +923,13 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
-      PetscInt       off, d, m;
+      PetscInt       off, d, m = -1;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
         in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       }
-      ierr = DMPlexGetLabelValue(dm, "marker", v, &m);CHKERRQ(ierr);
+      if (label) {ierr = DMLabelGetValue(label, v, &m);CHKERRQ(ierr);}
 
       in->pointmarkerlist[idx] = (int) m;
     }
@@ -943,6 +973,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     ierr = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
   }
   {
+    DMLabel        rlabel      = NULL;
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
@@ -952,10 +983,11 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 
     ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexCreateLabel(*dmRefined, labelName); ierr = DMPlexGetLabel(*dmRefined, labelName, &rlabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out->pointmarkerlist[v]) {
-        ierr = DMPlexSetLabelValue(*dmRefined, "marker", v+numCells, out->pointmarkerlist[v]);CHKERRQ(ierr);
+        if (rlabel) {ierr = DMLabelSetValue(rlabel, v+numCells, out->pointmarkerlist[v]);CHKERRQ(ierr);}
       }
     }
     if (interpolate) {
@@ -969,7 +1001,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 
           ierr = DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          ierr = DMPlexSetLabelValue(*dmRefined, "marker", edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);
+          if (rlabel) {ierr = DMLabelSetValue(rlabel, edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
@@ -981,7 +1013,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 
           ierr = DMPlexGetFullJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          ierr = DMPlexSetLabelValue(*dmRefined, "marker", faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);
+          if (rlabel) {ierr = DMLabelSetValue(rlabel, faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
@@ -1101,7 +1133,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       double  *maxVolumes;
       PetscInt c;
 
-      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
@@ -1116,7 +1148,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscReal *maxVolumes;
       PetscInt   c;
 
-      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
@@ -1127,7 +1159,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       double  *maxVolumes;
       PetscInt c;
 
-      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
@@ -1159,6 +1191,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
 
     ierr = DMPlexGetCellRefiner_Internal(cdm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
+    ierr = DMPlexCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
     ierr = DMPlexSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
     cdm  = dmRefined[r];
   }

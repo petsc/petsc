@@ -68,7 +68,7 @@ PETSC_EXTERN PetscFunctionList TaoList;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
-    include/finclude/petsctao.h
+    include/petsc-finclude/petsctao.h
 */
 typedef enum {/* converged */
   TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */
@@ -96,7 +96,6 @@ PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,Tao*);
 PETSC_EXTERN PetscErrorCode TaoSetFromOptions(Tao);
-PETSC_EXTERN PetscErrorCode TaoSetFiniteDifferencesOptions(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetUp(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetType(Tao, const TaoType);
 PETSC_EXTERN PetscErrorCode TaoGetType(Tao, const TaoType *);
@@ -111,7 +110,6 @@ PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,const char prefix[],
 PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoRegister(const char [],PetscErrorCode (*)(Tao));
-PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TaoRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TaoGetConvergedReason(Tao,TaoConvergedReason*);

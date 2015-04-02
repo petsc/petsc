@@ -120,21 +120,21 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(network->plex,0,&network->eStart,&network->eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(network->plex,1,&network->vStart,&network->vEnd);CHKERRQ(ierr);
-  
+
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&network->DofSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DataSection,network->pStart,network->pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscMalloc1((network->pEnd-network->pStart),&network->header);CHKERRQ(ierr);
+  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
     ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
     network->header[i].offset[ndata] = 0;
   }
-  ierr = PetscMalloc1((network->pEnd-network->pStart),&network->cvalue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->cvalue);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -734,6 +734,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
   DM_Network     *network = (DM_Network*) dm->data;
 
   PetscFunctionBegin;
+  if (--network->refct > 0) PetscFunctionReturn(0);
   ierr = DMDestroy(&network->plex);CHKERRQ(ierr);
   network->edges = NULL;
   ierr = PetscSectionDestroy(&network->DataSection);CHKERRQ(ierr);

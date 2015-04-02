@@ -70,7 +70,7 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   cells->sey    = sey;
   cells->sez    = sez;
 
-  ierr = PetscMalloc(sizeof(GaussPointCoefficients)*mx*my*mz,&cells->gpc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mx*my*mz,&cells->gpc);CHKERRQ(ierr);
 
   *C = cells;
   PetscFunctionReturn(0);
@@ -1446,7 +1446,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    </Piece>\n");
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  </StructuredGrid>\n");
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*N,&buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&buffer);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&l_FIELD);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da, FIELD,INSERT_VALUES,l_FIELD);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,FIELD,INSERT_VALUES,l_FIELD);CHKERRQ(ierr);
@@ -1513,9 +1513,9 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
 
   /* generate start,end list */
-  ierr = PetscMalloc(sizeof(PetscInt)*(pM+1),&olx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pN+1),&oly);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pP+1),&olz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pM+1,&olx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pN+1,&oly);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pP+1,&olz);CHKERRQ(ierr);
   sum  = 0;
   for (i=0; i<pM; i++) {
     olx[i] = sum;
@@ -1535,12 +1535,12 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   }
   olz[pP] = sum;
 
-  ierr = PetscMalloc(sizeof(PetscInt)*(pM),&osx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pN),&osy);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pP),&osz);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pM),&oex);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pN),&oey);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pP),&oez);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pM,&osx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pN,&osy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pP,&osz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pM,&oex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pN,&oey);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pP,&oez);CHKERRQ(ierr);
   for (i=0; i<pM; i++) {
     osx[i] = olx[i] - stencil;
     oex[i] = olx[i] + lx[i] + stencil;
@@ -1714,9 +1714,9 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   nlevels = 1;
   PetscOptionsGetInt(NULL,"-levels",&nlevels,0);
 
-  ierr = PetscMalloc(sizeof(DM)*nlevels,&da_list);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&da_list);CHKERRQ(ierr);
   for (k=0; k<nlevels; k++) da_list[k] = NULL;
-  ierr = PetscMalloc(sizeof(DM)*nlevels,&daclist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&daclist);CHKERRQ(ierr);
   for (k=0; k<nlevels; k++) daclist[k] = NULL;
 
   /* finest grid is nlevels - 1 */

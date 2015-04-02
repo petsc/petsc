@@ -16,7 +16,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
     ierr   = DMDAGetGhostCorners(dm,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     da->ne = 1*(xe - xs - 1);
-    ierr   = PetscMalloc1((1 + 2*da->ne),&da->e);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(1 + 2*da->ne,&da->e);CHKERRQ(ierr);
     for (i=xs; i<xe-1; i++) {
       da->e[cnt++] = (i-Xs);
       da->e[cnt++] = (i-Xs+1);
@@ -49,7 +49,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye    += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1);
-    ierr   = PetscMalloc1((1 + nn*da->ne),&da->e);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
         cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs);
@@ -98,7 +98,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
     ye    += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     ze    += zs; Ze += Zs; if (zs != Zs) zs -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1)*(ze - zs - 1);
-    ierr   = PetscMalloc1((1 + nn*da->ne),&da->e);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
     for (k=zs; k<ze-1; k++) {
       for (j=ys; j<ye-1; j++) {
         for (i=xs; i<xe-1; i++) {

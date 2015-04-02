@@ -812,7 +812,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
     const PetscInt last = (s->bc->pEnd-s->bc->pStart) - 1;
 
     ierr = PetscSectionSetUp(s->bc);CHKERRQ(ierr);
-    ierr = PetscMalloc1((s->bc->atlasOff[last] + s->bc->atlasDof[last]), &s->bcIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(s->bc->atlasOff[last] + s->bc->atlasDof[last], &s->bcIndices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1125,6 +1125,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   if (s->perm) {ierr = ISRestoreIndices(s->perm, &pind);CHKERRQ(ierr);}
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
+    if (nroots == pEnd-pStart) tmpOff = &(*gsection)->atlasOff[-pStart];
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
     if (nroots > pEnd - pStart) {
@@ -1909,68 +1910,6 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
   PetscFunctionReturn(0);
 }
 
-/*
-  I need extract and merge routines for section based on fields. This should be trivial except for updating the
-  constraint indices.
-
-  Then I need a new interface for DMCreateDecomposition that takes groups of fields and returns a real DMPlex
-  that shares the mesh parts, and has the extracted section
-*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFConvertPartition"
-PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection, IS partition, ISLocalToGlobalMapping *renumbering, PetscSF *sf)
-{
-  MPI_Comm       comm;
-  PetscSF        sfPoints;
-  PetscInt       *partSizes,*partOffsets,p,i,numParts,numMyPoints,numPoints,count;
-  const PetscInt *partArray;
-  PetscSFNode    *sendPoints;
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)sfPart,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-
-  /* Get the number of parts and sizes that I have to distribute */
-  ierr = PetscSFGetGraph(sfPart,NULL,&numParts,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numParts,&partSizes,numParts,&partOffsets);CHKERRQ(ierr);
-  for (p=0,numPoints=0; p<numParts; p++) {
-    ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
-    numPoints += partSizes[p];
-  }
-  numMyPoints = 0;
-  ierr = PetscSFFetchAndOpBegin(sfPart,MPIU_INT,&numMyPoints,partSizes,partOffsets,MPIU_SUM);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpEnd(sfPart,MPIU_INT,&numMyPoints,partSizes,partOffsets,MPIU_SUM);CHKERRQ(ierr);
-  /* I will receive numMyPoints. I will send a total of numPoints, to be placed on remote procs at partOffsets */
-
-  /* Create SF mapping locations (addressed through partition, as indexed leaves) to new owners (roots) */
-  ierr = PetscMalloc1(numPoints,&sendPoints);CHKERRQ(ierr);
-  for (p=0,count=0; p<numParts; p++) {
-    for (i=0; i<partSizes[p]; i++) {
-      sendPoints[count].rank = p;
-      sendPoints[count].index = partOffsets[p]+i;
-      count++;
-    }
-  }
-  if (count != numPoints) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count %D should equal numPoints=%D",count,numPoints);
-  ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
-  ierr = ISGetIndices(partition,&partArray);CHKERRQ(ierr);
-  ierr = PetscSFCreate(comm,&sfPoints);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfPoints);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfPoints,numMyPoints,numPoints,partArray,PETSC_USE_POINTER,sendPoints,PETSC_OWN_POINTER);CHKERRQ(ierr);
-
-  /* Invert SF so that the new owners are leaves and the locations indexed through partition are the roots */
-  ierr = PetscSFCreateInverseSF(sfPoints,sf);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfPoints);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(partition,&partArray);CHKERRQ(ierr);
-
-  /* Create the new local-to-global mapping */
-  ierr = ISLocalToGlobalMappingCreateSF(*sf,0,renumbering);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFDistributeSection"
 /*@C
@@ -2032,7 +1971,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart]);CHKERRQ(ierr);
   }
   if (remoteOffsets) {
-    ierr = PetscMalloc1((lpEnd - lpStart), remoteOffsets);CHKERRQ(ierr);
+    ierr = PetscMalloc1(lpEnd - lpStart, remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   }
@@ -2062,7 +2001,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
-  ierr = PetscCalloc1((lpEnd - lpStart), remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscCalloc1(lpEnd - lpStart, remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);

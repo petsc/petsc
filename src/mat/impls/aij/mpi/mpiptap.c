@@ -160,7 +160,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
-  ierr   = PetscMalloc1((am+1),&api);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(am+1,&api);CHKERRQ(ierr);
   api[0] = 0;
 
   /* create and initialize a linked list */
@@ -211,7 +211,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Allocate space for apj, initialize apj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr      = PetscMalloc1((api[am]+1),&apj);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(api[am]+1,&apj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,apj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1);
   if (afill_tmp > afill) afill = afill_tmp;
@@ -227,7 +227,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* then, compute symbolic Co = (p->B)^T*AP */
   pon    = (p->B)->cmap->n; /* total num of rows to be sent to other processors
                          >= (num of nonzero rows of C_seq) - pn */
-  ierr   = PetscMalloc1((pon+1),&coi);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(pon+1,&coi);CHKERRQ(ierr);
   coi[0] = 0;
 
   /* set initial free space to be fill*(nnz(p->B) + nnz(AP)) */
@@ -262,7 +262,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     coi[i+1] = coi[i] + nnz;
   }
-  ierr      = PetscMalloc1((coi[pon]+1),&coj);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(coi[pon]+1,&coj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
@@ -286,7 +286,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   len_s        = merge->len_s;
   merge->nsend = 0;
 
-  ierr = PetscMalloc1((size+2),&owners_co);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+2,&owners_co);CHKERRQ(ierr);
 
   proc = 0;
   for (i=0; i<pon; i++) {
@@ -313,7 +313,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* post the Irecv and Isend of coj */
   ierr = PetscCommGetNewTag(comm,&tagj);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagj,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rwaits);CHKERRQ(ierr);
-  ierr = PetscMalloc1((merge->nsend+1),&swaits);CHKERRQ(ierr);
+  ierr = PetscMalloc1(merge->nsend+1,&swaits);CHKERRQ(ierr);
   for (proc=0, k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
     i    = owners_co[proc];
@@ -332,7 +332,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /*-------------------*/
   ierr   = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
   ierr   = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&rwaits);CHKERRQ(ierr);
-  ierr   = PetscMalloc1((len+1),&buf_s);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(len+1,&buf_s);CHKERRQ(ierr);
   buf_si = buf_s;  /* points to the beginning of k-th msg to be sent */
   for (proc=0,k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
@@ -379,7 +379,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
 
   /* allocate pti array and free space for accumulating nonzero column info */
-  ierr   = PetscMalloc1((pn+1),&pti);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(pn+1,&pti);CHKERRQ(ierr);
   pti[0] = 0;
 
   /* set initial free space to be fill*(nnz(P) + nnz(AP)) */
@@ -438,7 +438,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
-  ierr      = PetscMalloc1((pti[pn]+1),&ptj);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(pti[pn]+1,&ptj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,ptj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)pti[pn]/(pi_loc[pm] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;

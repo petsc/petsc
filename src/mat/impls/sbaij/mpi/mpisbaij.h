@@ -21,4 +21,12 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode MatLoad_MPISBAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat,Vec,Vec);
+
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat);
+PETSC_INTERN PetscErrorCode MatDisAssemble_MPISBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat,PetscInt,IS[],PetscInt);
+PETSC_INTERN PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat,Vec,PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSOR_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+
 #endif

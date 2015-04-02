@@ -25,7 +25,7 @@ def check_for_option_mistakes(opts):
     name = opt.split('=')[0]
     if name.find('_') >= 0:
       exception = False
-      for exc in ['mkl_pardiso', 'superlu_dist', 'superlu_mt', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t']:
+      for exc in ['mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'superlu_mt', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t']:
         if name.find(exc) >= 0:
           exception = True
       if not exception:
@@ -38,7 +38,7 @@ def check_for_option_mistakes(opts):
 
 def check_for_option_changed(opts):
 # Document changes in command line options here.
-  optMap = [('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack')]
+  optMap = [('with-64bit-indices','with-64-bit-indices'),('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack')]
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:
@@ -63,6 +63,73 @@ def check_petsc_arch(opts):
         useName = 'PETSC_ARCH='+petsc_arch
         opts.append(useName)
   return 0
+
+def chkenable():
+  #Replace all 'enable-'/'disable-' with 'with-'=0/1/tail
+  #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
+  #Would it mean --with-fc= or --with-fortran-interfaces=?
+  for l in range(0,len(sys.argv)):
+    name = sys.argv[l]
+    if name.find('enable-fortran') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-fortran','with-fortran-interfaces')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('enable-fortran','with-fortran-interfaces')+'='+tail
+      continue
+    if name.find('disable-fortran') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-fortran','with-fortran-interfaces')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('disable-fortran','with-fortran-interfaces')+'='+tail
+      continue
+
+
+    if name.find('enable-') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-','with-')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('enable-','with-')+'='+tail
+    if name.find('disable-') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('disable-','with-')+'='+tail
+    if name.find('without-') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('without-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('without-','with-')+'='+tail
+
+def chksynonyms():
+  #replace common configure options with ones that PETSc BuildSystem recognizes
+  for l in range(0,len(sys.argv)):
+    name = sys.argv[l]
+
+
+    if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('with-debug','with-debugging')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('with-debug','with-debugging')+'='+tail
+
+    if name.find('with-shared=') >= 0 or name.endswith('with-shared'):
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('with-shared','with-shared-libraries')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('with-shared','with-shared-libraries')+'='+tail
+
+
+
 
 def chkwinf90():
   for arg in sys.argv:
@@ -112,11 +179,19 @@ def chkusingwindowspython():
   return 0
 
 def chkcygwinpython():
-  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform == 'cygwin' :
-    sys.argv.append('--useThreads=0')
-    extraLogs.append('''\
+  if sys.platform == 'cygwin' :
+    import platform
+    import re
+    r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
+    m=r.match(platform.release())
+    major=int(m.group(1))
+    minor=int(m.group(2))
+    subminor=int(m.group(3))
+    if ((major < 1) or (major == 1 and minor < 7) or (major == 1 and minor == 7 and subminor < 34)):
+      sys.argv.append('--useThreads=0')
+      extraLogs.append('''\
 ===============================================================================
-** Cygwin-python detected. Threads do not work correctly. ***
+** Cygwin version is older than 1.7.34. Python threads do not work correctly. ***
 ** Disabling thread usage for this run of ./configure *******
 ===============================================================================''')
   return 0
@@ -147,7 +222,7 @@ def check_broken_configure_log_links():
   return
 
 def move_configure_log(framework):
-  '''Move configure.log to PETSC_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
+  '''Move configure.log to PETSC_ARCH/lib/petsc-conf - and update configure.log.bkp in both locations appropriately'''
   global petsc_arch
 
   if hasattr(framework,'arch'): petsc_arch = framework.arch
@@ -159,22 +234,24 @@ def move_configure_log(framework):
     import os
 
     # Just in case - confdir is not created
-    conf_dir = os.path.join(petsc_arch,'conf')
+    lib_dir = os.path.join(petsc_arch,'lib')
+    conf_dir = os.path.join(petsc_arch,'lib','petsc-conf')
     if not os.path.isdir(petsc_arch): os.mkdir(petsc_arch)
+    if not os.path.isdir(lib_dir): os.mkdir(lib_dir)
     if not os.path.isdir(conf_dir): os.mkdir(conf_dir)
 
     curr_bkp  = curr_file + '.bkp'
     new_file  = os.path.join(conf_dir,curr_file)
     new_bkp   = new_file + '.bkp'
 
-    # Keep backup in $PETSC_ARCH/conf location
+    # Keep backup in $PETSC_ARCH/lib/petsc-conf location
     if os.path.isfile(new_bkp): os.remove(new_bkp)
     if os.path.isfile(new_file): os.rename(new_file,new_bkp)
     if os.path.isfile(curr_file):
       shutil.copyfile(curr_file,new_file)
       os.remove(curr_file)
     if os.path.isfile(new_file): os.symlink(new_file,curr_file)
-    # If the old bkp is using the same PETSC_ARCH/conf - then update bkp link
+    # If the old bkp is using the same PETSC_ARCH/lib/petsc-conf - then update bkp link
     if os.path.realpath(curr_bkp) == os.path.realpath(new_file):
       if os.path.isfile(curr_bkp): os.remove(curr_bkp)
       if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
@@ -190,7 +267,7 @@ def print_final_timestamp(framework):
 def petsc_configure(configure_options):
   try:
     petscdir = os.environ['PETSC_DIR']
-    sys.path.append(os.path.join(petscdir,'bin'))
+    sys.path.append(os.path.join(petscdir,'bin','petsc-pythonscripts'))
     import petscnagupgrade
     file     = os.path.join(petscdir,'.nagged')
     if not petscnagupgrade.naggedtoday(file):
@@ -218,30 +295,10 @@ def petsc_configure(configure_options):
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
 
+  #rename '--enable-' to '--with-'
+  chkenable()
   # support a few standard configure option types
-  for l in range(0,len(sys.argv)):
-    name = sys.argv[l]
-    if name.find('enable-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-','with-')+'=1'
-      else:
-        head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('enable-','with-')+'='+tail
-    if name.find('disable-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-','with-')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('disable-','with-')+'='+tail
-    if name.find('without-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('without-','with-')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('without-','with-')+'='+tail
-
+  chksynonyms()
   # Check for broken cygwin
   chkbrokencygwin()
   # Disable threads on RHL9

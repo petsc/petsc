@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.functions = []
     self.includes  = ['valgrind/valgrind.h']
-    self.liblist   = ['']
     self.needsMath = 0
     self.required  = 1
     return
@@ -18,7 +17,7 @@ class Configure(config.package.Package):
 
   def setup(self):
     config.package.Package.setup(self)
-    if 'with-'+self.package+'-lib' in self.framework.argDB:
+    if 'with-'+self.package+'-lib' in self.argDB:
       raise RuntimeError('It is incorrect to specify library for valgrind, please remove --with-valgrind-lib')
     return
 
@@ -32,7 +31,7 @@ class Configure(config.package.Package):
     '''By default we look for valgrind, but do not stop if it is not found'''
     self.consistencyChecks()
     found = 0
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if self.cxx:
         self.libraries.pushLanguage('C++')
       else:

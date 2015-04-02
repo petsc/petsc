@@ -129,7 +129,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
     /* compute local coordinate arrays */
     nxi  = ratio + 1;
-    ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -410,8 +410,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     /* compute local coordinate arrays */
     nxi  = ratioi + 1;
     neta = ratioj + 1;
-    ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscScalar)*neta,&eta);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
+    ierr = PetscMalloc1(neta,&eta);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -921,9 +921,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     nxi   = ratioi + 1;
     neta  = ratioj + 1;
     nzeta = ratiok + 1;
-    ierr  = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
-    ierr  = PetscMalloc(sizeof(PetscScalar)*neta,&eta);CHKERRQ(ierr);
-    ierr  = PetscMalloc(sizeof(PetscScalar)*nzeta,&zeta);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(neta,&eta);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nzeta,&zeta);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     for (lj=0; lj<neta; lj++) eta[lj] = -1.0 + (PetscScalar)lj*(2.0/(PetscScalar)(neta-1));
     for (lk=0; lk<nzeta; lk++) zeta[lk] = -1.0 + (PetscScalar)lk*(2.0/(PetscScalar)(nzeta-1));
@@ -1280,17 +1280,18 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_DA"
-PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
+PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 {
   PetscErrorCode  ierr;
   PetscInt        dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType  bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType stc,stf;
+  VecScatter      inject = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
   PetscValidHeaderSpecific(daf,DM_CLASSID,2);
-  PetscValidPointer(inject,3);
+  PetscValidPointer(mat,3);
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
@@ -1304,12 +1305,14 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dimc == 1) {
-    ierr = DMCreateInjection_DA_1D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_1D(dac,daf,&inject);CHKERRQ(ierr);
   } else if (dimc == 2) {
-    ierr = DMCreateInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_2D(dac,daf,&inject);CHKERRQ(ierr);
   } else if (dimc == 3) {
-    ierr = DMCreateInjection_DA_3D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_3D(dac,daf,&inject);CHKERRQ(ierr);
   }
+  ierr = MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

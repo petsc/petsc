@@ -1,5 +1,6 @@
 
 #include <petscpf.h>          /*I   "petscpf.h"   I*/
+#include <../src/vec/pf/pfimpl.h>
 
 PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF,void*);
 PETSC_EXTERN PetscErrorCode PFCreate_String(PF,void*);
@@ -27,6 +28,7 @@ PetscErrorCode  PFRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PFRegisterAllCalled) PetscFunctionReturn(0);
   PFRegisterAllCalled = PETSC_TRUE;
 
   ierr = PFRegister(PFCONSTANT,         PFCreate_Constant);CHKERRQ(ierr);

@@ -5,6 +5,7 @@
 */
 
 #include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc-private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetF"
@@ -345,8 +346,7 @@ PetscErrorCode  MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)
 .  coloring - the coloring context
 
    Options Database Keys:
-+  -mat_fd_coloring_err <err> - Sets <err> (square root
-           of relative error in the function)
++  -mat_fd_coloring_err <err> - Sets <err> (square root of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_type - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_fd_coloring_view - Activates basic viewing

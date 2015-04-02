@@ -35,7 +35,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ltol);CHKERRQ(ierr);
   if (dim == 1) {
     left = dd->xs - dd->Xs;
-    ierr = PetscMalloc1((dd->xe-dd->xs),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->xe-dd->xs,&idx);CHKERRQ(ierr);
     for (j=0; j<dd->xe-dd->xs; j++) idx[j] = left + j;
   } else if (dim == 2) {
     left  = dd->xs - dd->Xs; down  = dd->ys - dd->Ys; up    = down + dd->ye-dd->ys;

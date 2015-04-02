@@ -19,6 +19,7 @@
 #include <petscdmsliced.h>
 
 #include <petscdt.h>
+#include <petscds.h>
 
 #include <petsccharacteristic.h>
 

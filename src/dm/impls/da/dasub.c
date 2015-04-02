@@ -47,7 +47,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   ierr = DMGetCoordinateDM(da,&dacoors);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dacoors,coors,&c);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dacoors,coors,&c);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       d = PetscSqrtReal(PetscRealPart( (c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y) ));
@@ -73,7 +73,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   root--;
   ierr = MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   ierr = MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(dacoors,coors,&c);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dacoors,coors,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

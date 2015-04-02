@@ -22,6 +22,7 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscViewerPackageInitialized = PETSC_FALSE;
+  PetscViewerRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -266,8 +267,15 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
 @*/
 PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (viewer->setupcalled) PetscFunctionReturn(0);
+  if (viewer->ops->setup) {
+    ierr = (*viewer->ops->setup)(viewer);CHKERRQ(ierr);
+  }
+  viewer->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -302,7 +310,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscBool         iascii;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool         isams;
+  PetscBool         issaws;
 #endif
 
   PetscFunctionBegin;
@@ -316,7 +324,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -332,7 +340,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     if (!((PetscObject)v)->amsmem) {
       ierr = PetscObjectViewSAWs((PetscObject)v,viewer);CHKERRQ(ierr);
       if (v->ops->view) {
@@ -340,6 +348,53 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
       }
     }
 #endif
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRead"
+/*@C
+   PetscViewerRead - Reads data from a PetscViewer
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  viewer   - The viewer
+.  data     - Location to write the data
+.  count    - Number of items of data to read
+-  datatype - Type of data to read
+
+   Level: beginner
+
+   Concepts: binary files, ascii files
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer
+@*/
+PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (dtype == PETSC_STRING) {
+    PetscInt c, i = 0;
+    char *s = (char *)data;
+    for (c = 0; c < count; c++) {
+      /* Skip leading whitespaces */
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i]), 1, PETSC_CHAR);CHKERRQ(ierr);}
+      while (s[i]=='\n' || s[i]=='\t' || s[i]==' ' || s[i]=='\0');
+      i++;
+      /* Read strings one char at a time */
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i++]), 1, PETSC_CHAR);CHKERRQ(ierr);}
+      while (s[i-1]!='\n' && s[i-1]!='\t' && s[i-1]!=' ' && s[i-1]!='\0');
+      /* Terminate final string */
+      if (c == count-1) s[i-1] = '\0';
+    }
+  } else {
+    ierr = (*viewer->ops->read)(viewer, data, count, dtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

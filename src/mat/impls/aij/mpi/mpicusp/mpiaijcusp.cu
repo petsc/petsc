@@ -136,28 +136,30 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
-PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
 {
   MatCUSPStorageFormat format;
   PetscErrorCode       ierr;
   PetscBool            flg;
+  Mat_MPIAIJ           *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSP       *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("MPIAIJCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusp_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusp gpu matrices for SpMV",
-                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspStruct->diagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_DIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusp_mult_offdiag_storage_format","sets storage format of the off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
-                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspStruct->offdiagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_OFFDIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of the diagonal and off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
-                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspStruct->diagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
     }

@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.cudaArch      = ''
     self.CUDAVersion   = '4200' # Minimal cuda version is 4.2
-    self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)%100)
+    self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
     return
 
   def __str__(self):
@@ -44,17 +44,11 @@ class Configure(config.package.Package):
       nvccDir = os.path.dirname(self.systemNvcc)
       cudaDir = os.path.split(nvccDir)[0]
       yield cudaDir
-    yield ''
-    yield os.path.join('/Developer','NVIDIA','CUDA-5.5')
-    yield os.path.join('/usr','local','cuda')
-    self.libdir           = os.path.join('lib','Win32')
-    self.altlibdir        = os.path.join('lib','x64')
-    yield(os.path.join('/cygdrive','c','Program Files','NVIDIA GPU Computing Toolkit','CUDA','v4.0'))
     return
 
   def checkSizeofVoidP(self):
     '''Checks if the CUDA compiler agrees with the C compiler on what size of void * should be'''
-    self.framework.log.write('Checking if sizeof(void*) in CUDA is the same as with regular compiler\n')
+    self.log.write('Checking if sizeof(void*) in CUDA is the same as with regular compiler\n')
     typeName = 'void*'
     filename = 'conftestval'
     includes = '''
@@ -95,11 +89,11 @@ class Configure(config.package.Package):
     else:
       self.setCompilers.pushLanguage('CUDA')
 #Not setting -arch if with-cuda-arch is not specified uses nvcc default architecture
-      if 'with-cuda-arch' in self.framework.argDB:
-        if not self.framework.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'compute_21', 'compute_30', 'compute_35', 'compute_50', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50']:
+      if 'with-cuda-arch' in self.argDB:
+        if not self.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'compute_21', 'compute_30', 'compute_35', 'compute_50', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50']:
           raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_20\'')
         else:
-          self.cudaArch = '-arch='+ self.framework.argDB['with-cuda-arch']
+          self.cudaArch = '-arch='+ self.argDB['with-cuda-arch']
       else :
         # default to sm_20 because cuda 6.5 emits deprecation warning for
         # earlier architectures

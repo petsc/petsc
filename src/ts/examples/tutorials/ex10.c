@@ -180,22 +180,22 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   PetscErrorCode ierr;
   DMDALocalInfo  info;
   PetscInt       i;
-  RDNode         *x,*xdot,*f;
+  const RDNode   *x,*xdot,*f;
   MPI_Comm       comm;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject)rd->da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,F,&f);CHKERRQ(ierr);
   for (i=info.xs; i<info.xs+info.xm; i++) {
     ierr = PetscSynchronizedPrintf(comm,"x[%D] (%10.2G,%10.2G) (%10.2G,%10.2G) (%10.2G,%10.2G)\n",i,PetscRealPart(x[i].E),PetscRealPart(x[i].T),
                                    PetscRealPart(xdot[i].E),PetscRealPart(xdot[i].T), PetscRealPart(f[i].E),PetscRealPart(f[i].T));CHKERRQ(ierr);
   }
-  ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,F,&f);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -804,7 +804,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   Vec            Y;
-  RDNode         *x;
+  const RDNode   *x;
   PetscScalar    *y;
   PetscInt       i,m,M;
   const PetscInt *lx;
@@ -827,10 +827,10 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 
   /* Compute the radiation temperature from the solution at each node */
   ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(X,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   for (i=0; i<m; i++) y[i] = RDRadiationTemperature(rd,x[i].E);
-  ierr = VecRestoreArray(X,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
 
   ierr = VecView(Y,viewer);CHKERRQ(ierr);
@@ -890,7 +890,14 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     PetscInt    i;
     PetscReal   hx = 1.;
     PetscScalar a0;
-    RDNode      n0[3] = {{1.,1.},{5.,3.},{4.,2.}},n1[3],d[3],fd[3];
+    RDNode      n0[3],n1[3],d[3],fd[3];
+
+    n0[0].E = 1.;
+    n0[0].T = 1.;
+    n0[1].E = 5.;
+    n0[1].T = 3.;
+    n0[2].E = 4.;
+    n0[2].T = 2.;
     a0 = RDDiffusion(rd,hx,n0,1,d);
     for (i=0; i<3; i++) {
       ierr    = PetscMemcpy(n1,n0,sizeof(n0));CHKERRQ(ierr); n1[i].E += epsilon;

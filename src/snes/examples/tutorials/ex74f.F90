@@ -40,8 +40,8 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !
-#include "finclude/petscdef.h"
-#include "finclude/petsc.h"
+#include "petsc-finclude/petscdef.h"
+#include "petsc-finclude/petsc.h"
 
 #include "ex74fcomd.h"
 #include "ex74ftube.h"
@@ -1198,7 +1198,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Input/output variables:
       SNES             snes
@@ -1287,7 +1287,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Input/output variables:
       SNES             snes
@@ -1347,7 +1347,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Input/output variables:
       Vec      x
@@ -1403,7 +1403,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Input/output variables:
       SNES             snes
@@ -1469,7 +1469,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 #include "ex74fcomd.h"
 #include "ex74ftube.h"
@@ -1674,7 +1674,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Input/output variables:
       Vec      x
@@ -1723,7 +1723,7 @@
 !
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Input/output variables:
       Vec      x
@@ -1778,7 +1778,7 @@
 
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 #include "ex74fcomd.h"
 !
@@ -1883,7 +1883,7 @@
 
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 #include "ex74fcomd.h"
 !
@@ -1929,7 +1929,7 @@
 
       implicit none
 
-#include "finclude/petsc.h"
+#include "petsc-finclude/petsc.h"
 
 !  Common blocks:
 #include "ex74fcomd.h"

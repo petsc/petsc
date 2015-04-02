@@ -161,6 +161,10 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+#define KSPMonitorDefault KSPMonitorDefaultUnsafe
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDefault"
 /*@C
@@ -198,6 +202,17 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+#undef KSPMonitorDefault
+PetscErrorCode KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode ierr;
+#pragma omp critical
+  ierr = KSPMonitorDefaultUnsafe(ksp,n,rnorm,dummy);
+  return ierr;
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorTrueResidualNorm"
@@ -908,6 +923,9 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 
    The vectors are new vectors that are not owned by the KSP, they should be destroyed with calls to VecDestroyVecs() when no longer needed.
 
+   Developers Note: First tries to duplicate the rhs and solution vectors of the KSP, if they do not exist tries to get them from the matrix, if
+                    that does not exist tries to get them from the DM (if it is provided).
+
    Level: advanced
 
 .seealso:   MatCreateVecs(), VecDestroyVecs()
@@ -916,30 +934,37 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Vec **left)
 {
   PetscErrorCode ierr;
-  Vec            vecr,vecl;
+  Vec            vecr = NULL,vecl = NULL;
+  PetscBool      matset,pmatset;
+  Mat            mat = NULL;
 
   PetscFunctionBegin;
   if (rightn) {
     if (!right) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
-      ierr = 0;
-      if (ksp->dm) {
-        ierr = DMGetGlobalVector(ksp->dm,&vecr); /* don't check for errors -- if any errors, pass down to next block */
+      if (ksp->pc) {
+        ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        if (matset) {
+          ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
+        } else if (pmatset) {
+          ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
+        }
       }
-      if (!ksp->dm || ierr) {
-        Mat mat;
-        if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-        ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
+      if (!vecr) {
+        if (ksp->dm) {
+          ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
+        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
       }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
-      if (ksp->dm) {
-        ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
-      } else {
+      if (mat) {
         ierr = VecDestroy(&vecr);CHKERRQ(ierr);
+      } else if (ksp->dm) {
+        ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       }
     }
   }
@@ -947,23 +972,28 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     if (!left) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
-      ierr = 0;
-      if (ksp->dm) {
-        ierr = DMGetGlobalVector(ksp->dm,&vecl); /* don't check for errors -- if any errors, pass down to next block */
+      if (ksp->pc) {
+        ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        if (matset) {
+          ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+        } else if (pmatset) {
+          ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+        }
       }
-      if (!ksp->dm || ierr) {
-        Mat mat;
-        if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-        ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
+      if (!vecl) {
+        if (ksp->dm) {
+          ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
+        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
       }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {
-      if (ksp->dm) {
-        ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
-      } else {
+      if (mat) {
         ierr = VecDestroy(&vecl);CHKERRQ(ierr);
+      } else if (ksp->dm) {
+        ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       }
     }
   }

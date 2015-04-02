@@ -13,10 +13,10 @@ rm -rf ${PETSC_ARCH}
 ./systems/Apple/iOS/bin/iosbuilder.py
 ./systems/Apple/iOS/bin/makeframework simulator
 
-#export LOC=$PETSC_DIR
-#make alldoc
-#make allman
-#./systems/Apple/iOS/bin/makedocs
+export LOC=$PETSC_DIR
+make alldoc
+make allman
+./systems/Apple/iOS/bin/makedocs
 
 ./systems/Apple/iOS/bin/makedmg
 

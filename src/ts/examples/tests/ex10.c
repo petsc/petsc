@@ -9,7 +9,7 @@ static char help[] = "Simple wrapper object to solve DAE of the form:\n\
 typedef struct _p_TSDAESimple *TSDAESimple;
 struct _p_TSDAESimple {
   MPI_Comm       comm;
-  PetscErrorCode (*setfromoptions)(TSDAESimple);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,TSDAESimple);
   PetscErrorCode (*solve)(TSDAESimple,Vec);
   PetscErrorCode (*destroy)(TSDAESimple);
   Vec            U,V;
@@ -91,7 +91,7 @@ PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*tsdae->setfromoptions)(tsdae);CHKERRQ(ierr);
+  ierr = (*tsdae->setfromoptions)(PetscOptionsObject,tsdae);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSDAESimpleSetFromOptions_Reduced"
-PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae)
+PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptions *PetscOptionsObject,TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
@@ -196,7 +196,7 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   Vec                 tsrhs;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(TSDAESimple_Reduced),&red);CHKERRQ(ierr);
+  ierr = PetscNew(&red);CHKERRQ(ierr);
   tsdae->data = red;
 
   tsdae->setfromoptions = TSDAESimpleSetFromOptions_Reduced;
@@ -304,7 +304,7 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSDAESimpleSetFromOptions_Full"
-PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae)
+PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptions *PetscOptionsObject,TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
@@ -343,7 +343,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   IS               is;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(TSDAESimple_Full),&full);CHKERRQ(ierr);
+  ierr = PetscNew(&full);CHKERRQ(ierr);
   tsdae->data = full;
 
   tsdae->setfromoptions = TSDAESimpleSetFromOptions_Full;

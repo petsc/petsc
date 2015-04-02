@@ -425,6 +425,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  PetscInt       m,n,mv,nv;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -432,13 +433,22 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
+  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);CHKERRQ(ierr);
+  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);CHKERRQ(ierr);
+  VecLocked(y,3);
+
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->apply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -480,9 +490,11 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applysymmetricleft) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -524,9 +536,11 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applysymmetricright) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -569,9 +583,11 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applytranspose) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -875,7 +891,7 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
   ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr            = PetscInfo(pc,"Setting up PC for first time");CHKERRQ(ierr);
+    ierr            = PetscInfo(pc,"Setting up PC for first time\n");CHKERRQ(ierr);
     pc->flag        = DIFFERENT_NONZERO_PATTERN;
   } else if (matstate == pc->matstate) {
     ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
@@ -1118,13 +1134,38 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
 
-.seealso: PCGetOperators(), MatZeroEntries()
+    Level: intermediate
+
+.seealso: PCGetOperators(), MatZeroEntries(), PCGetReusePreconditioner(), KSPSetReusePreconditioner()
  @*/
 PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   pc->reusepreconditioner = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetReusePreconditioner"
+/*@
+   PCGetReusePreconditioner - Determines if the PC reuses the current preconditioner even if the operator in the preconditioner has changed.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+.seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
+ @*/
+PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *flag = pc->reusepreconditioner;
   PetscFunctionReturn(0);
 }
 
@@ -1578,7 +1619,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool         isams;
+  PetscBool         issaws;
 #endif
 
   PetscFunctionBegin;
@@ -1594,7 +1635,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
 
   if (iascii) {
@@ -1662,7 +1703,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscSNPrintf(str,25,"PC: %s",((PetscObject)pc)->type_name);CHKERRQ(ierr);
     }
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (pc->ops->view) {
@@ -1670,7 +1711,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
 
     ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
@@ -1717,6 +1758,34 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBool(pc,flg,2);
   pc->nonzero_guess = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetInitialGuessNonzero"
+/*@
+   PCGetInitialGuessNonzero - Determines if the iterative solver assumes that the
+   initial guess is nonzero; otherwise PC assumes the initial guess
+   is to be zero (and thus zeros it out before solving).
+
+   Logically Collective on PC
+
+   Input Parameter:
+.   pc - iterative context obtained from PCCreate()
+
+   Output Parameter:
+.  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
+
+   Level: Developer
+
+.keywords: PC, set, initial guess, nonzero
+
+.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll(), PCSetInitialGuessNonzero()
+@*/
+PetscErrorCode  PCGetInitialGuessNonzero(PC pc,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  *flg = pc->nonzero_guess;
   PetscFunctionReturn(0);
 }
 
@@ -1809,7 +1878,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc1((m+1),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);

@@ -15,7 +15,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.deps           = [self.blasLapack]
     return
@@ -45,7 +45,7 @@ class Configure(config.package.Package):
       g.write('CDEFS   = -DUpCase')
     else:
       g.write('CDEFS   = -DNoChange')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       g.write(' -D_LONGINT')
     g.write('\n')
     # not sure what this is for
@@ -56,11 +56,11 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing superlu_mt; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make all LAAUX="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+' cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make all LAAUX="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+' cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_MT: '+str(e))
       self.postInstall(output+err,'make.inc')
@@ -68,14 +68,14 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if not self.blasLapack.checkForRoutine('slamch'):
         raise RuntimeError('SuperLU_MT requires the BLAS routine slamch()')
-      self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
+      self.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
       if not self.blasLapack.checkForRoutine('dlamch'):
         raise RuntimeError('SuperLU_MT requires the BLAS routine dlamch()')
-      self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
+      self.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
       if not self.blasLapack.checkForRoutine('xerbla'):
         raise RuntimeError('SuperLU_MT requires the BLAS routine xerbla()')
-      self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
+      self.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return

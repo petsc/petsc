@@ -287,14 +287,14 @@ PetscErrorCode PCAINVCUSPUseScaling(PC pc, PetscBool scaled)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_AINVCUSP"
-static PetscErrorCode PCSetFromOptions_AINVCUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool      flag  = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("AINVCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"AINVCUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_ainvcusp_droptol","drop tolerance for AINVCUSP preconditioner","PCAINVCUSPSetDropTolerance",ainv->droptolerance,&ainv->droptolerance,&flag);
   if (flag) {
     ainv->nonzeros = -1;

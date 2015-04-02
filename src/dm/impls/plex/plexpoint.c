@@ -1,51 +1,4 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/isimpl.h>     /* for inline access to atlasOff */
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetLocalOffset_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscErrorCode ierr;
-    ierr = PetscSectionGetOffset(dm->defaultSection,point,offset);CHKERRQ(ierr);
-  }
-#else
-  {
-    PetscSection s = dm->defaultSection;
-    *offset = s->atlasOff[point - s->pStart];
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetGlobalOffset_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscErrorCode ierr;
-    PetscInt       dof,cdof;
-    ierr = PetscSectionGetOffset(dm->defaultGlobalSection,point,offset);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(dm->defaultGlobalSection,point,&dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection,point,&cdof);CHKERRQ(ierr);
-    if (dof-cdof <= 0) *offset = -1; /* Indicates no data */
-  }
-#else
-  {
-    PetscSection s = dm->defaultGlobalSection;
-    PetscInt     dof,cdof;
-    *offset = s->atlasOff[point - s->pStart];
-    dof     = s->atlasDof[point - s->pStart];
-    cdof    = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
-    if (dof-cdof <= 0) *offset = -1;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetPointLocal"
@@ -161,6 +114,74 @@ PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexPointLocalFieldRead"
+/*@
+   DMPlexPointLocalFieldRead - return read access to a field on a point in local array
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM defining topological space
+.  point - topological point
+.  field - field number
+-  array - array to index into
+
+   Output Arguments:
+.  ptr - address of read reference to point data, type generic so user can place in structure
+
+   Level: intermediate
+
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+@*/
+PetscErrorCode DMPlexPointLocalFieldRead(DM dm,PetscInt point,PetscInt field,const PetscScalar *array,const void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidScalarPointer(array,3);
+  PetscValidPointer(ptr,4);
+  ierr                      = DMPlexGetLocalFieldOffset_Private(dm,point,field,&start);CHKERRQ(ierr);
+  *(const PetscScalar**)ptr = array + start;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPointLocalFieldRef"
+/*@
+   DMPlexPointLocalFieldRef - return read/write access to a field on a point in local array
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM defining topological space
+.  point - topological point
+.  field - field number
+-  array - array to index into
+
+   Output Arguments:
+.  ptr - address of reference to point data, type generic so user can place in structure
+
+   Level: intermediate
+
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+@*/
+PetscErrorCode DMPlexPointLocalFieldRef(DM dm,PetscInt point,PetscInt field,PetscScalar *array,void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidScalarPointer(array,3);
+  PetscValidPointer(ptr,4);
+  ierr                = DMPlexGetLocalFieldOffset_Private(dm,point,field,&start);CHKERRQ(ierr);
+  *(PetscScalar**)ptr = array + start;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetPointGlobal"
 /*@
    DMPlexGetPointGlobal - get location of point data in global Vec
@@ -221,15 +242,15 @@ $  x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 @*/
 PetscErrorCode DMPlexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *array,const void *ptr)
 {
+  PetscInt       start, end;
   PetscErrorCode ierr;
-  PetscInt       start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidScalarPointer(array,3);
-  PetscValidPointer(ptr,4);
-  ierr                      = DMPlexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
-  *(const PetscScalar**)ptr = (start >= 0) ? array + start - dm->map->rstart : NULL;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidScalarPointer(array, 3);
+  PetscValidPointer(ptr, 4);
+  ierr = DMPlexGetGlobalOffset_Private(dm, point, &start, &end);CHKERRQ(ierr);
+  *(const PetscScalar**) ptr = (start < end) ? array + start - dm->map->rstart : NULL;
   PetscFunctionReturn(0);
 }
 
@@ -261,14 +282,82 @@ $  ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 @*/
 PetscErrorCode DMPlexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
 {
+  PetscInt       start, end;
   PetscErrorCode ierr;
-  PetscInt       start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidScalarPointer(array,3);
-  PetscValidPointer(ptr,4);
-  ierr                = DMPlexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
-  *(PetscScalar**)ptr = (start >= 0) ? array + start - dm->map->rstart : NULL;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidScalarPointer(array, 3);
+  PetscValidPointer(ptr, 4);
+  ierr = DMPlexGetGlobalOffset_Private(dm, point, &start, &end);CHKERRQ(ierr);
+  *(PetscScalar**) ptr = (start < end) ? array + start - dm->map->rstart : NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPointGlobalFieldRead"
+/*@
+   DMPlexPointGlobalFieldRead - return read access to a field on a point in global array
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM defining topological space
+.  point - topological point
+.  field - field number
+-  array - array to index into
+
+   Output Arguments:
+.  ptr - address of read reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
+
+   Level: intermediate
+
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRead(), DMPlexPointGlobalRef()
+@*/
+PetscErrorCode DMPlexPointGlobalFieldRead(DM dm,PetscInt point,PetscInt field,const PetscScalar *array,const void *ptr)
+{
+  PetscInt       start, end;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidScalarPointer(array, 3);
+  PetscValidPointer(ptr, 4);
+  ierr = DMPlexGetGlobalFieldOffset_Private(dm, point, field, &start, &end);CHKERRQ(ierr);
+  *(const PetscScalar**) ptr = (start < end) ? array + start - dm->map->rstart : NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPointGlobalFieldRef"
+/*@
+   DMPlexPointGlobalFieldRef - return read/write access to a field on a point in global array
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM defining topological space
+.  point - topological point
+.  field - field number
+-  array - array to index into
+
+   Output Arguments:
+.  ptr - address of reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
+
+   Level: intermediate
+
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRef(), DMPlexPointGlobalRead()
+@*/
+PetscErrorCode DMPlexPointGlobalFieldRef(DM dm,PetscInt point,PetscInt field,PetscScalar *array,void *ptr)
+{
+  PetscInt       start, end;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidScalarPointer(array, 3);
+  PetscValidPointer(ptr, 4);
+  ierr = DMPlexGetGlobalFieldOffset_Private(dm, point, field, &start, &end);CHKERRQ(ierr);
+  *(PetscScalar**) ptr = (start < end) ? array + start - dm->map->rstart : NULL;
   PetscFunctionReturn(0);
 }

@@ -206,13 +206,15 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char 
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(draw,2,&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(drawlg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(drawlg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence of Residual Norm","Iteration","Residual Norm");CHKERRQ(ierr);
   ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(2,objs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(3,objs);CHKERRQ(ierr);
   (*objs)[1] = (PetscObject)drawlg;
+  (*objs)[2] = (PetscObject)draw;
   PetscFunctionReturn(0);
 }
 
@@ -268,12 +270,11 @@ PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 @*/
 PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
 {
-  PetscDraw      draw;
   PetscErrorCode ierr;
   PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[1];
+  PetscDraw      draw = (PetscDraw) (*objs)[2];
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
   ierr = PetscFree(*objs);CHKERRQ(ierr);
@@ -572,6 +573,63 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitorDefaultField"
+/*@C
+  SNESMonitorDefaultField - Monitors progress of the SNES solvers, separated into fields.
+
+  Collective on SNES
+
+  Input Parameters:
++ snes   - the SNES context
+. its    - iteration number
+. fgnorm - 2-norm of residual
+- ctx    - the PetscViewer
+
+  Notes:
+  This routine uses the DM attached to the residual vector
+
+  Level: intermediate
+
+.keywords: SNES, nonlinear, field, monitor, norm
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorDefaultShort()
+@*/
+PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, void *ctx)
+{
+  PetscViewer    viewer = ctx ? (PetscViewer) ctx : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject) snes));
+  Vec            r;
+  DM             dm;
+  PetscReal      res[256];
+  PetscInt       tablevel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
+  ierr = VecGetDM(r, &dm);CHKERRQ(ierr);
+  if (!dm) {ierr = SNESMonitorDefault(snes, its, fgnorm, ctx);CHKERRQ(ierr);}
+  else {
+    PetscSection s, gs;
+    PetscInt     Nf, f;
+
+    ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
+    if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, ctx);CHKERRQ(ierr);}
+    ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+    if (Nf > 256) SETERRQ1(PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
+    ierr = PetscSectionVecNorm(s, gs, r, NORM_2, res);CHKERRQ(ierr);
+    ierr = PetscObjectGetTabLevel((PetscObject) snes, &tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (f) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "%14.12e", res[f]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "] \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */

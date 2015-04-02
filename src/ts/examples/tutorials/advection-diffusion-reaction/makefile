@@ -10,8 +10,8 @@ EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -60,11 +60,6 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 > ex3_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_1.tmp
-runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;	  \
-	   ${DIFF} output/ex3_1.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_2.tmp
-
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
@@ -145,11 +140,11 @@ runex10_4:
 	   ${RM} -f ex10_4.tmp
 
 
-TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm \
+TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_13		  =
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

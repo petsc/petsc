@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.includes  = ['triangle.h']
     self.liblist   = [['libtriangle.a']]
     self.needsMath = 1
+    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     return
 
   def setupDependencies(self, framework):
@@ -28,7 +29,6 @@ class Configure(config.package.Package):
     installmakeinc = os.path.join(self.installDir, 'make.inc')
 
     g = open(makeinc,'w')
-    ##g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
@@ -109,15 +109,15 @@ triangle_shared:
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling Triangle; this may take several minutes')
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make libtriangle.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make libtriangle.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       self.logPrintBox('Installing Triangle; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage()
-      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)
+      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
     return self.installDir
 

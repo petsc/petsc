@@ -3,33 +3,33 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_DA"
-PetscErrorCode  DMSetFromOptions_DA(DM da)
+PetscErrorCode  DMSetFromOptions_DA(PetscOptions *PetscOptionsObject,DM da)
 {
   PetscErrorCode ierr;
-  DM_DA          *dd         = (DM_DA*)da->data;
-  PetscInt       refine      = 0,dim = da->dim,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
-  PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
+  DM_DA          *dd    = (DM_DA*)da->data;
+  PetscInt       refine = 0,dim = da->dim,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
+  PetscBool      bM     = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   if (dd->M < 0) {
-    dd->M       = -dd->M;
-    bM          = PETSC_TRUE;
-    negativeMNP = PETSC_TRUE;
+    dd->M           = -dd->M;
+    bM              = PETSC_TRUE;
+    dd->negativeMNP = PETSC_TRUE;
   }
-  if (dim > 1 && dd->N < 0) {
-    dd->N       = -dd->N;
-    bN          = PETSC_TRUE;
-    negativeMNP = PETSC_TRUE;
+  if (da->dim > 1 && dd->N < 0) {
+    dd->N           = -dd->N;
+    bN              = PETSC_TRUE;
+    dd->negativeMNP = PETSC_TRUE;
   }
-  if (dim > 2 && dd->P < 0) {
-    dd->P       = -dd->P;
-    bP          = PETSC_TRUE;
-    negativeMNP = PETSC_TRUE;
+  if (da->dim > 2 && dd->P < 0) {
+    dd->P           = -dd->P;
+    bP              = PETSC_TRUE;
+    dd->negativeMNP = PETSC_TRUE;
   }
 
-  ierr = PetscOptionsHead("DMDA Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMDA Options");CHKERRQ(ierr);
   if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);}
   if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);}
   if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}
@@ -77,7 +77,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     if (da->levelup - da->leveldown >= 1) dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
   }
 
-  if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL);CHKERRQ(ierr);}
+  if (dd->negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
@@ -127,7 +127,7 @@ extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
-extern PetscErrorCode  DMCreateInjection_DA(DM,DM,VecScatter*);
+extern PetscErrorCode  DMCreateInjection_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMCreateAggregates_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
@@ -381,6 +381,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->gtol         = NULL;
   dd->ltol         = NULL;
   dd->ao           = NULL;
+  PetscStrallocpy(AOBASIC,(char**)&dd->aotype);
   dd->base         = -1;
   dd->bx           = DM_BOUNDARY_NONE;
   dd->by           = DM_BOUNDARY_NONE;

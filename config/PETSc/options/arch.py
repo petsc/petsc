@@ -31,6 +31,7 @@ class Configure(config.base.Configure):
       self.logPrintBox('''\
 Warning: PETSC_ARCH from environment does not match command-line or name of script.
 Warning: Using from command-line or name of script: %s, ignoring environment: %s''' % (str(self.framework.argDB['PETSC_ARCH']), str(os.environ['PETSC_ARCH'])))
+      os.environ['PETSC_ARCH'] = self.framework.argDB['PETSC_ARCH']
     if 'with-petsc-arch' in self.framework.argDB:
       self.arch = self.framework.argDB['with-petsc-arch']
     elif 'PETSC_ARCH' in self.framework.argDB:

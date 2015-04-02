@@ -118,7 +118,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
     ierr = PetscLogEventEnd(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
   } else if (tao->ops->computeobjectiveandgradient) {
-    ierr = PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine\n");CHKERRQ(ierr);
     ierr = VecDuplicate(X,&temp);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(Tao_ObjGradientEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user objective/gradient evaluation routine");

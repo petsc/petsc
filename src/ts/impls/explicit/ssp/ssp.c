@@ -413,7 +413,7 @@ PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_SSP"
-static PetscErrorCode TSSetFromOptions_SSP(TS ts)
+static PetscErrorCode TSSetFromOptions_SSP(PetscOptions *PetscOptionsObject,TS ts)
 {
   char           tname[256] = TSSSPRKS2;
   TS_SSP         *ssp       = (TS_SSP*)ts->data;
@@ -421,7 +421,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SSP ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SSP ODE solver options");CHKERRQ(ierr);
   {
     ierr = PetscOptionsFList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
     if (flg) {

@@ -36,7 +36,7 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
                   commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
 
    Options Database Keys:
-.   see KSPSolve()
+.   -ksp_type preonly
 
    Level: beginner
 

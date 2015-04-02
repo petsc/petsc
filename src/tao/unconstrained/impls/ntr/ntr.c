@@ -130,23 +130,17 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   switch(tr->ksp_type) {
   case NTR_KSP_NASH:
     ierr = KSPSetType(tao->ksp, KSPNASH);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   case NTR_KSP_STCG:
     ierr = KSPSetType(tao->ksp, KSPSTCG);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   default:
     ierr = KSPSetType(tao->ksp, KSPGLTR);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
   }
 
@@ -155,24 +149,18 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   switch(tr->pc_type) {
   case NTR_PC_NONE:
     ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     break;
 
   case NTR_PC_AHESS:
     ierr = PCSetType(pc, PCJACOBI);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
-    ierr = PCJacobiSetUseAbs(pc);CHKERRQ(ierr);
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
     break;
 
   case NTR_PC_BFGS:
     ierr = PCSetType(pc, PCSHELL);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
     ierr = PCShellSetContext(pc, tr->M);CHKERRQ(ierr);
     ierr = PCShellSetApply(pc, MatLMVMSolveShell);CHKERRQ(ierr);
@@ -670,13 +658,13 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTR"
-static PetscErrorCode TaoSetFromOptions_NTR(Tao tao)
+static PetscErrorCode TaoSetFromOptions_NTR(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Newton trust region method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Newton trust region method for unconstrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_ksp_type", "ksp type", "", NTR_KSP, NTR_KSP_TYPES, NTR_KSP[tr->ksp_type], &tr->ksp_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_pc_type", "pc type", "", NTR_PC, NTR_PC_TYPES, NTR_PC[tr->pc_type], &tr->pc_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[tr->bfgs_scale_type], &tr->bfgs_scale_type,NULL);CHKERRQ(ierr);

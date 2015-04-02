@@ -7,7 +7,6 @@ class Configure(config.package.GNUPackage):
     self.download          = ['http://ftp.gnu.org/gnu/make/make-3.82.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-3.82.tar.gz']
     self.complex           = 1
     self.double            = 0
-    self.requires32bitint  = 0
     self.downloadonWindows = 1
     self.useddirectly      = 0
 
@@ -21,19 +20,19 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
-    help.addArgument('Make', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
-    help.addArgument('Make', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
-    help.addArgument('Make', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
+    help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
+    help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
+    help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     return
 
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.confDir]
-    if 'download-make-cc' in self.framework.argDB and self.framework.argDB['download-make-cc']:
-      args.append('CC="'+self.framework.argDB['download-make-cc']+'"')
-    if 'download-make-configure-options' in self.framework.argDB and self.framework.argDB['download-make-configure-options']:
-      args.append(self.framework.argDB['download-make-configure-options'])
+    if 'download-make-cc' in self.argDB and self.argDB['download-make-cc']:
+      args.append('CC="'+self.argDB['download-make-cc']+'"')
+    if 'download-make-configure-options' in self.argDB and self.argDB['download-make-configure-options']:
+      args.append(self.argDB['download-make-configure-options'])
     return args
 
   def Install(self):
@@ -52,7 +51,7 @@ class Configure(config.package.GNUPackage):
     self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.framework.log)
+      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
@@ -67,8 +66,8 @@ log)
   def configureMake(self):
     '''Check for user specified make - or gmake, make'''
     if self.framework.clArgDB.has_key('with-make'):
-      if not self.getExecutable(self.framework.argDB['with-make'],getFullPath = 1,resultName = 'make'):
-        raise RuntimeError('Error! User provided make not found :'+self.framework.argDB['with-make'])
+      if not self.getExecutable(self.argDB['with-make'],getFullPath = 1,resultName = 'make'):
+        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make'])
       self.found = 1
       return
     if not self.getExecutable('gmake', getFullPath = 1,resultName = 'make') and not self.getExecutable('make', getFullPath = 1,resultName = 'make'):
@@ -87,7 +86,7 @@ log)
     try:
       import re
       # set self.haveGNUMake only if using gnumake version > 3.80 [as older version break with gmakefile]
-      (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.framework.log)
+      (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.log)
       gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
       if not status and gver:
         major = int(gver.group(1))
@@ -95,7 +94,7 @@ log)
         if ((major > 3) or (major == 3 and minor > 80)):
           self.haveGNUMake = 1
     except RuntimeError, e:
-      self.framework.log.write('GNUMake check failed: '+str(e)+'\n')
+      self.log.write('GNUMake check failed: '+str(e)+'\n')
 
     # Setup make flags
     if self.haveGNUMake:
@@ -119,9 +118,9 @@ log)
 
   def configureMakeNP(self):
     '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
-    make_np = self.framework.argDB.get('with-make-np')
+    make_np = self.argDB.get('with-make-np')
     if make_np is not None:
-      self.framework.logPrint('using user-provided make_np = %d' % make_np)
+      self.logPrint('using user-provided make_np = %d' % make_np)
     else:
       def compute_make_np(i):
         f16 = .80
@@ -139,17 +138,17 @@ log)
         import multiprocessing # python-2.6 feature
         cores = multiprocessing.cpu_count()
         make_np = compute_make_np(cores)
-        self.framework.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
+        self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
       except (ImportError), e:
         make_np = 2
-        self.framework.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+        self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
     self.make_jnp = self.make + ' -j ' + str(self.make_np)
     return
 
   def configure(self):
-    if (self.framework.argDB['download-make']):
+    if (self.argDB['download-make']):
       config.package.GNUPackage.configure(self)
       self.getExecutable('make', path=os.path.join(self.installDir,'bin'), getFullPath = 1)
     else:

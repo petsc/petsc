@@ -640,7 +640,7 @@ static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
 
   PetscFunctionBegin;
   SendMessage(windraw->hWnd,WM_DESTROY,0,0);
-  PetscFree(windraw);
+  PetscFree(draw->data);
   PetscFunctionReturn(0);
 }
 

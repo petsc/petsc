@@ -539,7 +539,7 @@ static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left)
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (right) {
     /* allocate R */
-    ierr = PetscMalloc(sizeof(Vec) * bA->nc, &R);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bA->nc, &R);CHKERRQ(ierr);
     /* Create the right vectors */
     for (j=0; j<bA->nc; j++) {
       for (i=0; i<bA->nr; i++) {
@@ -563,7 +563,7 @@ static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left)
 
   if (left) {
     /* allocate L */
-    ierr = PetscMalloc(sizeof(Vec) * bA->nr, &L);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bA->nr, &L);CHKERRQ(ierr);
     /* Create the left vectors */
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
@@ -1034,9 +1034,9 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
   s->nc = nc;
 
   /* Create space for submatrices */
-  ierr = PetscMalloc(sizeof(Mat*)*nr,&s->m);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&s->m);CHKERRQ(ierr);
   for (i=0; i<nr; i++) {
-    ierr = PetscMalloc(sizeof(Mat)*nc,&s->m[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nc,&s->m[i]);CHKERRQ(ierr);
   }
   for (i=0; i<nr; i++) {
     for (j=0; j<nc; j++) {
@@ -1049,8 +1049,8 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
 
   ierr = MatSetUp_NestIS_Private(A,nr,is_row,nc,is_col);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*nr,&s->row_len);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nc,&s->col_len);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&s->row_len);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nc,&s->col_len);CHKERRQ(ierr);
   for (i=0; i<nr; i++) s->row_len[i]=-1;
   for (j=0; j<nc; j++) s->col_len[j]=-1;
 
@@ -1102,7 +1102,7 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
   if (nc < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Number of columns cannot be negative");
   if (nc && is_col) {
     PetscValidPointer(is_col,5);
-    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
+    for (i=0; i<nc; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
   }
   if (nr*nc) PetscValidPointer(a,6);
   ierr = PetscUseMethod(A,"MatNestSetSubMats_C",(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]),(A,nr,is_row,nc,is_col,a));CHKERRQ(ierr);
@@ -1212,8 +1212,8 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   Mat            sub = NULL;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(IS)*nr,&vs->isglobal.row);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(IS)*nc,&vs->isglobal.col);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&vs->isglobal.row);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nc,&vs->isglobal.col);CHKERRQ(ierr);
   if (is_row) { /* valid IS is passed in */
     /* refs on is[] are incremeneted */
     for (i=0; i<vs->nr; i++) {

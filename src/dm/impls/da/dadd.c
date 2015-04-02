@@ -45,7 +45,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   ierr = DMDAGetOffset(da,&ox,&oy,&oz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
   nindices = (upper->i - lower->i)*(upper->j - lower->j)*(upper->k - lower->k)*dof;
-  ierr = PetscMalloc(sizeof(PetscInt)*nindices,&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nindices,&indices);CHKERRQ(ierr);
   /* start at index 0 on processor 0 */
   mr = 0;
   nr = 0;

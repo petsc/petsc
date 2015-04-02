@@ -30,6 +30,7 @@ SNES Object: 2 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=11
   total number of function evaluations=4
+  norm schedule ALWAYS
   total number of grid sequence refinements=2
   SNESLineSearch Object:   2 MPI processes
     type: bt
@@ -99,8 +100,8 @@ SNES Object: 2 MPI processes
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: chebyshev
           Chebyshev: eigenvalue estimates:  min = 0.129662, max = 1.42628
-          Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:          (mg_levels_1_est_)           2 MPI processes
+          Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
+          KSP Object:          (mg_levels_1_esteig_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -109,15 +110,6 @@ SNES Object: 2 MPI processes
             left preconditioning
             using nonzero initial guess
             using NONE norm type for convergence test
-          PC Object:          (mg_levels_1_)           2 MPI processes
-            type: sor
-              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-            linear system matrix = precond matrix:
-            Mat Object:             2 MPI processes
-              type: mpiaij
-              rows=49, cols=49
-              total: nonzeros=217, allocated nonzeros=217
-              total number of mallocs used during MatSetValues calls =0
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
@@ -137,8 +129,8 @@ SNES Object: 2 MPI processes
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
           Chebyshev: eigenvalue estimates:  min = 0.127654, max = 1.4042
-          Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:          (mg_levels_2_est_)           2 MPI processes
+          Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
+          KSP Object:          (mg_levels_2_esteig_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -147,15 +139,6 @@ SNES Object: 2 MPI processes
             left preconditioning
             using nonzero initial guess
             using NONE norm type for convergence test
-          PC Object:          (mg_levels_2_)           2 MPI processes
-            type: sor
-              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-            linear system matrix = precond matrix:
-            Mat Object:             2 MPI processes
-              type: mpiaij
-              rows=169, cols=169
-              total: nonzeros=793, allocated nonzeros=793
-              total number of mallocs used during MatSetValues calls =0
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning

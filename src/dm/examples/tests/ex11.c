@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
 
   /* Set values into global vectors */
-  ierr = DMDAVecGetArrayDOF(dac,coors,&xy);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOFRead(dac,coors,&xy);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,global,&aglobal);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,0,&m,&n,0);CHKERRQ(ierr);
   for (k=0; k<dof; k++) {
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
     }
   }
   ierr = DMDAVecRestoreArrayDOF(da,global,&aglobal);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayDOF(dac,coors,&xy);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOFRead(dac,coors,&xy);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 

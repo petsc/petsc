@@ -46,10 +46,10 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
 
   PetscFunctionBegin;
   ierr = DMGetCoordinates(da,&xcoord);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,xcoord,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,xcoord,&x);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscInt),&app->sw);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&app->sw);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
@@ -60,11 +60,11 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
     if (x[i] <= 0.1) u[i] = 0.;
     else if (x[i] > 0.1 && x[i] < 0.25) u[i] = (x[i] - 0.1)/0.15;
     else u[i] = 1.0;
-    
+
     app->sw[i-xs] = 1;
   }
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,xcoord,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,xcoord,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -72,22 +72,22 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
 #define __FUNCT__ "EventFunction"
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
-  AppCtx         *app=(AppCtx*)ctx;
-  PetscErrorCode ierr;
-  PetscScalar    *u;
-  PetscInt       i,lsize;
+  AppCtx            *app=(AppCtx*)ctx;
+  PetscErrorCode    ierr;
+  const PetscScalar *u;
+  PetscInt          i,lsize;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   for(i=0; i < lsize;i++) fvalue[i] = u[i] - app->uc;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PostEventFunction"
-PetscErrorCode PostEventFunction(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,void* ctx)
+PetscErrorCode PostEventFunction(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
   PetscInt       i,idx;
@@ -107,13 +107,14 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents_zero,PetscInt events_zer
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
-  AppCtx         *app=(AppCtx*)ctx;
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f;
-  DM             da;
-  PetscInt       M,xs,xm,i;
-  PetscReal      h,h2;
-  Vec            Ulocal;
+  AppCtx            *app=(AppCtx*)ctx;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u,*udot;
+  DM                da;
+  PetscInt          M,xs,xm,i;
+  PetscReal         h,h2;
+  Vec               Ulocal;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
@@ -126,8 +127,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,Ulocal);CHKERRQ(ierr);
 
   h = 1.0/(M-1); h2 = h*h;
-  ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Ulocal,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Ulocal,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   for(i=xs; i<xs+xm;i++) {
@@ -139,9 +140,9 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
       f[i] = (u[i+1] - 2*u[i] + u[i-1])/h2 + app->sw[i-xs]*(-app->A*u[i]) - udot[i];
     }
   }
-      
-  ierr = DMDAVecRestoreArray(da,Udot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Ulocal,&u);CHKERRQ(ierr);
+
+  ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Ulocal,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Ulocal);CHKERRQ(ierr);
 
@@ -253,8 +254,8 @@ int main(int argc,char **argv)
   PetscInt *direction;
   PetscBool *terminate;
   PetscInt  i;
-  ierr = PetscMalloc(lsize*sizeof(PetscInt),&direction);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscBool),&terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&direction);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&terminate);CHKERRQ(ierr);
   for (i=0; i < lsize; i++) {
     direction[i] = -1;
     terminate[i] = PETSC_FALSE;

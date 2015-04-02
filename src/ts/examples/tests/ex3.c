@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(appctx.Amat);CHKERRQ(ierr);
   ierr = MatSetUp(appctx.Amat);CHKERRQ(ierr);
   /* set space grid points - interio points only! */
-  ierr = PetscMalloc1((nz+1),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz+1,&z);CHKERRQ(ierr);
   for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1));
   appctx.z = z;
   femA(&appctx,nz,z);
@@ -547,16 +547,17 @@ PetscErrorCode rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, Pets
 
 PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  PetscErrorCode ierr;
-  AppCtx         *obj = (AppCtx*)ctx;
-  PetscScalar    *soln_ptr,soln[num_z];
-  PetscInt       i,nz=obj->nz;
-  PetscReal      time;
+  PetscErrorCode    ierr;
+  AppCtx            *obj = (AppCtx*)ctx;
+  PetscScalar       soln[num_z];
+  const PetscScalar *soln_ptr;
+  PetscInt          i,nz=obj->nz;
+  PetscReal         time;
 
   /* get the previous solution to compute updated system */
-  ierr = VecGetArray(globalin,&soln_ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(globalin,&soln_ptr);CHKERRQ(ierr);
   for (i=0; i < num_z-2; i++) soln[i] = soln_ptr[i];
-  ierr = VecRestoreArray(globalin,&soln_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(globalin,&soln_ptr);CHKERRQ(ierr);
   soln[num_z-1] = 0.0;
   soln[num_z-2] = 0.0;
 

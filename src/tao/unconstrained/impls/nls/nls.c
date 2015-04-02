@@ -187,24 +187,18 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   switch(nlsP->pc_type) {
   case NLS_PC_NONE:
     ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     break;
 
   case NLS_PC_AHESS:
     ierr = PCSetType(pc, PCJACOBI);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
-    ierr = PCJacobiSetUseAbs(pc);CHKERRQ(ierr);
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
     break;
 
   case NLS_PC_BFGS:
     ierr = PCSetType(pc, PCSHELL);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
     ierr = PCShellSetContext(pc, nlsP->M);CHKERRQ(ierr);
     ierr = PCShellSetApply(pc, MatLMVMSolveShell);CHKERRQ(ierr);
@@ -950,13 +944,13 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NLS"
-static PetscErrorCode TaoSetFromOptions_NLS(Tao tao)
+static PetscErrorCode TaoSetFromOptions_NLS(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Newton line search method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Newton line search method for unconstrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_ksp_type", "ksp type", "", NLS_KSP, NLS_KSP_TYPES, NLS_KSP[nlsP->ksp_type], &nlsP->ksp_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_pc_type", "pc type", "", NLS_PC, NLS_PC_TYPES, NLS_PC[nlsP->pc_type], &nlsP->pc_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[nlsP->bfgs_scale_type], &nlsP->bfgs_scale_type, 0);CHKERRQ(ierr);

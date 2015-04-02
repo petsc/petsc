@@ -375,9 +375,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   {
-    if (!TaoRegisterAllCalled) {
-      ierr = TaoRegisterAll();CHKERRQ(ierr);
-    }
+    ierr = TaoRegisterAll();CHKERRQ(ierr);
     if (((PetscObject)tao)->type_name) {
       default_type = ((PetscObject)tao)->type_name;
     }
@@ -475,7 +473,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     ierr = PetscOptionsEnum("-tao_subset_type","subset type", "", TaoSubSetTypes,(PetscEnum)tao->subset_type, (PetscEnum*)&tao->subset_type, 0);CHKERRQ(ierr);
 
     if (tao->ops->setfromoptions) {
-      ierr = (*tao->ops->setfromoptions)(tao);CHKERRQ(ierr);
+      ierr = (*tao->ops->setfromoptions)(PetscOptionsObject,tao);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -710,14 +708,14 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (fatol != PETSC_DEFAULT) {
     if (fatol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->fatol = PetscMax(0,fatol);
     }
   }
   if (frtol != PETSC_DEFAULT) {
     if (frtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->frtol = PetscMax(0,frtol);
     }
@@ -725,7 +723,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (gatol != PETSC_DEFAULT) {
     if (gatol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gatol = PetscMax(0,gatol);
     }
@@ -733,7 +731,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (grtol != PETSC_DEFAULT) {
     if (grtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->grtol = PetscMax(0,grtol);
     }
@@ -741,7 +739,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (gttol != PETSC_DEFAULT) {
     if (gttol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gttol = PetscMax(0,gttol);
     }
@@ -779,7 +777,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   if (catol != PETSC_DEFAULT) {
     if (catol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->catol = PetscMax(0,catol);
     }
@@ -787,7 +785,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   if (crtol != PETSC_DEFAULT) {
     if (crtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->crtol = PetscMax(0,crtol);
     }
@@ -2212,7 +2210,6 @@ PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
 
    Output Parameter:
 .  reason - one of
-
 $  TAO_CONVERGED_FATOL (1)           f(X)-f(X*) <= fatol
 $  TAO_CONVERGED_FRTOL (2)           |f(X) - f(X*)|/|f(X)| < frtol
 $  TAO_CONVERGED_GATOL (3)           ||g(X)|| < gatol
@@ -2221,15 +2218,13 @@ $  TAO_CONVERGED_GTTOL (5)           ||g(X)|| / ||g(X0)|| < gttol
 $  TAO_CONVERGED_STEPTOL (6)         step size small
 $  TAO_CONVERGED_MINF (7)            F < F_min
 $  TAO_CONVERGED_USER (8)            User defined
-
 $  TAO_DIVERGED_MAXITS (-2)          its > maxits
 $  TAO_DIVERGED_NAN (-4)             Numerical problems
 $  TAO_DIVERGED_MAXFCN (-5)          fevals > max_funcsals
 $  TAO_DIVERGED_LS_FAILURE (-6)      line search failure
 $  TAO_DIVERGED_TR_REDUCTION (-7)    trust region failure
 $  TAO_DIVERGED_USER(-8)             (user defined)
-
-$  TAO_CONTINUE_ITERATING (0)
+ $  TAO_CONTINUE_ITERATING (0)
 
    where
 +  X - current solution

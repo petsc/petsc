@@ -123,10 +123,10 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
 
 PetscErrorCode StokesWriteSolution(Stokes *s)
 {
-  PetscMPIInt    size;
-  PetscInt       n,i,j;
-  PetscScalar    *array;
-  PetscErrorCode ierr;
+  PetscMPIInt       size;
+  PetscInt          n,i,j;
+  const PetscScalar *array;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   /* write data (*warning* only works sequential) */
@@ -134,7 +134,7 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
   /*ierr = PetscPrintf(PETSC_COMM_WORLD," number of processors = %D\n",size);CHKERRQ(ierr);*/
   if (size == 1) {
     PetscViewer viewer;
-    ierr = VecGetArray(s->x, &array);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(s->x, &array);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "solution.dat", &viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "# x, y, u, v, p\n");CHKERRQ(ierr);
     for (j = 0; j < s->ny; j++) {
@@ -143,7 +143,7 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
         ierr = PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", (double)(i*s->hx+s->hx/2),(double)(j*s->hy+s->hy/2), (double)PetscRealPart(array[n]), (double)PetscRealPart(array[n+s->nx*s->ny]),(double)PetscRealPart(array[n+2*s->nx*s->ny]));CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(s->x, &array);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(s->x, &array);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -635,7 +635,7 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
 
 PetscErrorCode StokesCalcError(Stokes *s)
 {
-  PetscScalar    scale = PetscSqrtScalar(s->nx*s->ny);
+  PetscScalar    scale = PetscSqrtReal((double)s->nx*s->ny);
   PetscReal      val;
   Vec            y0, y1;
   PetscErrorCode ierr;

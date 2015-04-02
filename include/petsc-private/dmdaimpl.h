@@ -32,6 +32,7 @@ typedef struct {
   PetscInt              nonxm,nonym,nonzm;     /* the nonoverlapping sizes in the case of a subdomain da */
 
   AO                    ao;                    /* application ordering context */
+  AOType                aotype;                /* type of application ordering */
 
   char                  **fieldname;           /* names of individual components in vectors */
   char                  **coordinatename;      /* names of coordinate directions, for example, x, y, z */
@@ -50,6 +51,8 @@ typedef struct {
 
   PetscInt              refine_x,refine_y,refine_z;    /* ratio used in refining */
   PetscInt              coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
+
+  PetscBool             negativeMNP; /* used in DMSetFromOptions_DA() to check if the initial values provided in code can be changed with options database */
 
 #define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
   void                  *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];

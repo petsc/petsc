@@ -92,8 +92,7 @@ int main(int argc,char **args)
   /* Set operators. */
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
-                          PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc); CHKERRQ(ierr);
@@ -107,7 +106,7 @@ int main(int argc,char **args)
      must use runtime option '-mat_mumps_icntl_13 1' (turn off scaLAPACK for
      matrix inertia), currently there is no better way of setting this in program
   */
-  ierr = PetscOptionsInsertString("-mat_mumps_icntl_13 1");CHKERRQ(ierr); 
+  ierr = PetscOptionsInsertString("-mat_mumps_icntl_13 1");CHKERRQ(ierr);
 #else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Configure with MUMPS if you want to run this example in parallel");

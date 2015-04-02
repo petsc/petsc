@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
-    self.liblist           = []
     return
 
   def setupDependencies(self, framework):
@@ -14,7 +13,7 @@ class Configure(config.package.Package):
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.petscconfigure  = framework.require('PETSc.Configure',self)
+    self.installdir      = framework.require('PETSc.options.installDir',self)
     return
 
   def Install(self):
@@ -37,21 +36,21 @@ class Configure(config.package.Package):
                        ['@echo "*** Building mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
            python setup.py clean --all && \\\n\
-           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/conf/mpi4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/mpi4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     self.addMakeRule('mpi4pyinstall','', \
                        ['@echo "*** Installing mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/conf/mpi4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/mpi4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use mpi4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
     if self.framework.argDB['prefix']:
       self.addMakeRule('mpi4py-build','mpi4pybuild')
@@ -63,7 +62,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
     if not self.sharedLibraries.useShared:
         raise RuntimeError('mpi4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
 

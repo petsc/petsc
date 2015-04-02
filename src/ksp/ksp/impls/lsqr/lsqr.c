@@ -156,11 +156,9 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
-    if (beta == 0.0) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      break;
+    if (beta > 0.0) {
+      ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
     }
-    ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr);
 
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
@@ -176,7 +174,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       alpha = PetscSqrtReal(alpha);
       ierr  = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
-    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
+    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr); /* alpha*V1 = Amat^T*U1 - beta*V */
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
@@ -341,7 +339,7 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *d
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LSQR"
-PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_LSQR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -350,7 +348,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
   ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
   ierr = PetscOptionsString("-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {

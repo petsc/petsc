@@ -24,8 +24,7 @@ PetscFunctionList PetscDrawList = 0;
 +  indraw - the PetscDraw context
 -  viewer - visualization context
 
-   Options Database Keys:
-.  -draw_view - print the ksp data structure at the end of a PetscDrawSetFromOptions() call
+   See PetscDrawSetFromOptions() for options database keys
 
    Note:
    The available visualization contexts include
@@ -49,7 +48,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscBool      isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -61,7 +60,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)indraw,viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (isdraw) {
     PetscDraw draw;
@@ -72,11 +71,11 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscStrcpy(str,"PetscDraw: ");CHKERRQ(ierr);
     ierr   = PetscStrcat(str,((PetscObject)indraw)->type_name);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
 
     ierr = PetscObjectName((PetscObject)indraw);CHKERRQ(ierr);
@@ -175,8 +174,9 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 -  type      - for example, PETSC_DRAW_X
 
    Options Database Command:
-.  -draw_type  <type> - Sets the type; use -help for a list
-    of available methods (for instance, x)
+.  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
+
+   See PetscDrawSetFromOptions for additional options database keys
 
    Level: intermediate
 
@@ -224,17 +224,11 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 #endif
   if (flg) type = PETSC_DRAW_NULL;
 
-  if (draw->data) {
-    /* destroy the old private PetscDraw context */
-    ierr               = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
-    draw->ops->destroy = NULL;
-    draw->data         = 0;
-  }
-
   ierr =  PetscFunctionListFind(PetscDrawList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
+  if (draw->ops->destroy) {ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);}
+  ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
   ierr       = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
-  draw->data = 0;
   ierr       = (*r)(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -319,6 +313,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
 .   -nox_warning - when X windows support is not installed this prevents the warning message from being printed
 .   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
+.   -draw_marker_type - <x,point>
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
 .   -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
 .   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
@@ -399,6 +394,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flg);CHKERRQ(ierr);
   if (flg) draw->pause = dpause;
 
+  ierr = PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL);CHKERRQ(ierr);
+
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
 
@@ -416,12 +413,15 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
    Input Parameter:
 +  draw      - the graphics context
-.  filename  - name of the file, if NULL uses name of draw object
+.  filename  - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type, if NULL use .Gif image type
 -  movie - produce a movie of all the images
 
    Options Database Command:
-+  -draw_save  <filename>
--  -draw_save_movie
++  -draw_save  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .Gif)
+.  -draw_save_movie
+.  -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
+.  -draw_save_on_flush - saves an image on each flush in addition to each clear
+-  -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename_%d
 
    Level: intermediate
 
@@ -430,6 +430,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
    Notes: You should call this BEFORE calling PetscDrawClear() and creating your image.
 
    Requires that PETSc be configured with the option --with-afterimage to save the images and ffmpeg must be in your path to make the movie
+
+   The .ext formats that are supported depend on what formats AfterImage was configured with; on the Apple Mac both .Gif and .Jpeg are supported.
 
    If X windows generates an error message about X_CreateWindow() failing then Afterimage was installed without X windows. Reinstall Afterimage using the
    ./configure flags --x-includes=/pathtoXincludes --x-libraries=/pathtoXlibraries   For example under Mac OS X Mountain Lion --x-includes=/opt/X11/include -x-libraries=/opt/X11/lib
@@ -440,19 +442,36 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char *filename,PetscBool movie)
 {
   PetscErrorCode ierr;
+  char           *ext;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscFree(draw->savefilename);CHKERRQ(ierr);
 
+  /* determine extension of filename */
+  if (filename && filename[0]) {
+    ierr = PetscStrchr(filename,'.',&ext);CHKERRQ(ierr);
+    if (!ext) SETERRQ1(PetscObjectComm((PetscObject)draw),PETSC_ERR_ARG_INCOMP,"Filename %s should end with graphics extension (for example .Gif)",filename);
+  } else {
+    ext = (char *)".Gif";
+  }
+  if (ext == filename) filename = NULL;
+  ierr = PetscStrallocpy(ext,&draw->savefilenameext);CHKERRQ(ierr);
+
   draw->savefilemovie = movie;
   if (filename && filename[0]) {
-    ierr = PetscStrallocpy(filename,&draw->savefilename);CHKERRQ(ierr);
+    size_t  l1,l2;
+    ierr = PetscStrlen(filename,&l1);CHKERRQ(ierr);
+    ierr = PetscStrlen(ext,&l2);CHKERRQ(ierr);
+    ierr = PetscMalloc1(l1-l2+1,&draw->savefilename);CHKERRQ(ierr);
+    ierr = PetscStrncpy(draw->savefilename,filename,l1-l2+1);CHKERRQ(ierr);
   } else {
     const char *name;
+
     ierr = PetscObjectGetName((PetscObject)draw,&name);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name,&draw->savefilename);CHKERRQ(ierr);
   }
+  ierr = PetscInfo2(NULL,"Will save images to file %s%s\n",draw->savefilename,draw->savefilenameext);CHKERRQ(ierr);
   if (draw->ops->setsave) {
     ierr = (*draw->ops->setsave)(draw,draw->savefilename);CHKERRQ(ierr);
   }

@@ -1,0 +1,112 @@
+mu 1, steps 0, ftime 0.5
+mu 1, steps 7, ftime 0.5
+mu 1.000000, steps 75, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.103106;-0.382918], Cost function f=0.009261
+iter =   0, Function value: 0.00926095,  Residual: 0.176577 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007318;-0.374970], Cost function f=0.000005
+iter =   1, Function value: 4.90882e-06,  Residual: 0.000990815 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007204;-0.375179], Cost function f=0.000004
+iter =   2, Function value: 3.98377e-06,  Residual: 0.000890455 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007245;-0.375382], Cost function f=0.000003
+iter =   3, Function value: 3.23383e-06,  Residual: 0.000801105 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007185;-0.375554], Cost function f=0.000003
+iter =   4, Function value: 2.62555e-06,  Residual: 0.000721174 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007198;-0.375717], Cost function f=0.000002
+iter =   5, Function value: 2.132e-06,  Residual: 0.00064947 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007164;-0.375858], Cost function f=0.000002
+iter =   6, Function value: 1.73142e-06,  Residual: 0.000585038 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007164;-0.375989], Cost function f=0.000001
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007165;-0.376511], Cost function f=0.000000
+iter =   7, Function value: 4.47142e-07,  Residual: 0.000314148 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007062;-0.376567], Cost function f=0.000000
+iter =   8, Function value: 3.62156e-07,  Residual: 0.000276182 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007122;-0.376632], Cost function f=0.000000
+iter =   9, Function value: 2.93736e-07,  Residual: 0.000245283 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007072;-0.376681], Cost function f=0.000000
+iter =  10, Function value: 2.38438e-07,  Residual: 0.00021919 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007098;-0.376732], Cost function f=0.000000
+iter =  11, Function value: 1.93643e-07,  Residual: 0.000196592 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007073;-0.376773], Cost function f=0.000000
+iter =  12, Function value: 1.57308e-07,  Residual: 0.000176701 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007084;-0.376813], Cost function f=0.000000
+iter =  13, Function value: 1.27813e-07,  Residual: 0.000159021 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007071;-0.376847], Cost function f=0.000000
+iter =  14, Function value: 1.0386e-07,  Residual: 0.000143213 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007074;-0.376880], Cost function f=0.000000
+iter =  15, Function value: 8.44014e-08,  Residual: 0.000129031 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007067;-0.376908], Cost function f=0.000000
+iter =  16, Function value: 6.85916e-08,  Residual: 0.000116281 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007068;-0.376934], Cost function f=0.000000
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007070;-0.377038], Cost function f=0.000000
+iter =  17, Function value: 1.78534e-08,  Residual: 6.39357e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007046;-0.377048], Cost function f=0.000000
+iter =  18, Function value: 1.44482e-08,  Residual: 5.57742e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007061;-0.377062], Cost function f=0.000000
+iter =  19, Function value: 1.17142e-08,  Residual: 4.92951e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007049;-0.377071], Cost function f=0.000000
+iter =  20, Function value: 9.50778e-09,  Residual: 4.39245e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007055;-0.377081], Cost function f=0.000000
+iter =  21, Function value: 7.7217e-09,  Residual: 3.9331e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007050;-0.377090], Cost function f=0.000000
+iter =  22, Function value: 6.27337e-09,  Residual: 3.53194e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007052;-0.377098], Cost function f=0.000000
+iter =  23, Function value: 5.09774e-09,  Residual: 3.17703e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007049;-0.377104], Cost function f=0.000000
+iter =  24, Function value: 4.14292e-09,  Residual: 2.86055e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007050;-0.377111], Cost function f=0.000000
+iter =  25, Function value: 3.36718e-09,  Residual: 2.57704e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007049;-0.377117], Cost function f=0.000000
+iter =  26, Function value: 2.7368e-09,  Residual: 2.32237e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007049;-0.377122], Cost function f=0.000000
+iter =  27, Function value: 2.2245e-09,  Residual: 2.09325e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007048;-0.377126], Cost function f=0.000000
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007044;-0.377145], Cost function f=0.000000
+iter =  28, Function value: 5.78425e-10,  Residual: 1.13426e-05 
+mu 1.000000, steps 68, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.007048;-0.377147], Cost function f=0.000000
+iter =  29, Function value: 4.68544e-10,  Residual: 9.9553e-06 
+Tao Object: 1 MPI processes
+  type: cg
+      CG Type: prp
+      Gradient steps: 0
+      Reset steps: 0
+  TaoLineSearch Object:   1 MPI processes
+    type: more-thuente
+  convergence tolerances: fatol=1e-10,   frtol=1e-10
+  convergence tolerances: gatol=1e-10,   steptol=0,   gttol=0
+  Residual in Function/Gradient:=9.9553e-06
+  Objective value=4.68544e-10
+  total number of iterations=29,                          (max: 2000)
+  total number of function/gradient evaluations=33,      (max: 4000)
+  Solution converged:   estimated f(x)-f(X*) <= fatol

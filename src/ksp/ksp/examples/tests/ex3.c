@@ -4,6 +4,8 @@ matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
+/* Addendum: piggy-backing on this example to test KSPChebyshev methods */
+
 #include <petscksp.h>
 
 #undef __FUNCT__
@@ -39,9 +41,11 @@ int main(int argc,char **args)
   PetscInt       idx[4],count,*rows;
   Vec            u,ustar,b;
   KSP            ksp;
+  PetscBool      viewkspest = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-ksp_est_view",&viewkspest,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
@@ -132,6 +136,13 @@ int main(int argc,char **args)
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
+  if (viewkspest) {
+    KSP kspest;
+
+    ierr = KSPChebyshevEstEigGetKSP(ksp,&kspest);CHKERRQ(ierr);
+    if (kspest) {ierr = KSPView(kspest,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  }
+
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
@@ -145,7 +156,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)norm*h,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
   }
 
   /* Free work space */

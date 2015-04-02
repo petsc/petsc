@@ -119,7 +119,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
       }
     }
   }
-  ierr = PetscMalloc1((dd.xm_l*dd.ym_l*dd.zm_l+1),&xadj_temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd.xm_l*dd.ym_l*dd.zm_l+1,&xadj_temp);CHKERRQ(ierr);
   ierr = PetscMalloc1(count_adj,&adjncy_temp);CHKERRQ(ierr);
 
   /* now fill CSR data structure */
@@ -329,6 +329,7 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   } else {
     ierr = DMDACreate1d(dd.gcomm,bx,dd.xm,1,1,NULL,&da);CHKERRQ(ierr);
   }
+  ierr = DMDASetAOType(da,AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);
@@ -383,7 +384,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
     ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
   }
 
-  i = PetscPowScalar(3.0*(dd.p+1.0),dd.dim);
+  i = PetscPowRealInt(3.0*(dd.p+1.0),dd.dim);
 
   ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
@@ -473,7 +474,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 
   PetscFunctionBeginUser;
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
-  ierr = PetscMalloc1((p+1),&glldata->zGL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&glldata->zGL);CHKERRQ(ierr);
   ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(*glldata->zGL));CHKERRQ(ierr);
 
   glldata->zGL[0]=-1.0;
@@ -481,7 +482,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   if (p > 1) {
     if (p == 2) glldata->zGL[1]=0.0;
     else {
-      ierr = PetscMalloc1((p-1),&M);CHKERRQ(ierr);
+      ierr = PetscMalloc1(p-1,&M);CHKERRQ(ierr);
       for (i=0; i<p-1; i++) {
         si  = (PetscReal)(i+1.0);
         M[i]=0.5*PetscSqrtReal(si*(si+2.0)/((si+0.5)*(si+1.5)));
@@ -496,7 +497,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Weights for 1D quadrature */
-  ierr = PetscMalloc1((p+1),&glldata->rhoGL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&glldata->rhoGL);CHKERRQ(ierr);
 
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
@@ -514,7 +515,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Auxiliary mat for laplacian */
-  ierr = PetscMalloc1((p+1),&glldata->A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&glldata->A);CHKERRQ(ierr);
   ierr = PetscMalloc1((p+1)*(p+1),&glldata->A[0]);CHKERRQ(ierr);
   for (i=1; i<p+1; i++) glldata->A[i]=glldata->A[i-1]+p+1;
 
@@ -555,7 +556,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
       z1=z2;
     }
     Lpj             = z2;
-    glldata->A[j][0]=4.0*PetscPowScalar(-1.0,p)/(p*(p+1.0)*Lpj*(1.0+glldata->zGL[j])*(1.0+glldata->zGL[j]));
+    glldata->A[j][0]=4.0*PetscPowRealInt(-1.0,p)/(p*(p+1.0)*Lpj*(1.0+glldata->zGL[j])*(1.0+glldata->zGL[j]));
     glldata->A[0][j]=glldata->A[j][0];
   }
   for (j=0; j<p; j++) {
@@ -810,7 +811,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   KSP            temp_ksp;
   PC             pc;
   IS             dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
-  PetscInt       localsize,*xadj,*adjncy;
+  PetscInt       localsize,*xadj=NULL,*adjncy=NULL;
   MatNullSpace   near_null_space;
 
   PetscFunctionBeginUser;
@@ -1045,10 +1046,10 @@ int main(int argc,char **args)
   ierr = VecAXPY(bddc_solution,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(bddc_solution,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"---------------------BDDC stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8d \n",ndofs);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8d \n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",mineig,maxeig);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   /* assemble fetidp rhs on the space of Lagrange multipliers */
   ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL);CHKERRQ(ierr);
@@ -1071,10 +1072,10 @@ int main(int argc,char **args)
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = VecGetSize(fetidp_solution,&ndofs);
   ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8d \n",ndofs);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8d \n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",mineig,maxeig);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   /* Free workspace */
   ierr = VecDestroy(&exact_solution);CHKERRQ(ierr);

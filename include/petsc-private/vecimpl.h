@@ -12,6 +12,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
 
+PETSC_EXTERN PetscBool VecRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
 
 /* ----------------------------------------------------------------------------*/
 
@@ -64,7 +66,7 @@ struct _VecOps {
   PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode);
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-  PetscErrorCode (*setfromoptions)(Vec);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
@@ -87,10 +89,10 @@ struct _VecOps {
   PetscErrorCode (*stridesubsetscatter)(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
   PetscErrorCode (*viewnative)(Vec,PetscViewer);
   PetscErrorCode (*loadnative)(Vec,PetscViewer);
-  PetscErrorCode (*getlocalvector)(Vec,Vec*);
-  PetscErrorCode (*restorelocalvector)(Vec,Vec*);
-  PetscErrorCode (*getlocalvectorread)(Vec,Vec*);
-  PetscErrorCode (*restorelocalvectorread)(Vec,Vec*);
+  PetscErrorCode (*getlocalvector)(Vec,Vec);
+  PetscErrorCode (*restorelocalvector)(Vec,Vec);
+  PetscErrorCode (*getlocalvectorread)(Vec,Vec);
+  PetscErrorCode (*restorelocalvectorread)(Vec,Vec);
 };
 
 /*
@@ -134,6 +136,7 @@ struct _p_Vec {
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscInt               lock;   /* vector is locked to read only */
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* if we're using CUSP, then this is the special pointer to the array on the GPU */
@@ -361,6 +364,8 @@ PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 #endif
 
+PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
+PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

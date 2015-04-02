@@ -17,7 +17,7 @@
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
      at src/sys/error/err.c any changes here must also be made there
-     These are also define in include/finclude/petscerror.h any CHANGES here
+     These are also define in include/petsc-finclude/petscerror.h any CHANGES here
      must be also made there.
 
 */
@@ -64,7 +64,8 @@
 
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
-#define PETSC_ERR_MAX_VALUE        92  /* this is always the one more than the largest error code */
+#define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
+#define PETSC_ERR_MAX_VALUE        93  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
@@ -333,7 +334,7 @@ M*/
 
   PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated
 
-  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandling()
+  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
 
 .seealso: PetscError(), SETERRXX()
 E*/
@@ -370,7 +371,7 @@ PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 
    Options Database Keys:
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the  (default) stderr
--    -error_output_none to turn off all printing of error messages (does not change the way the error is handled.)
+-    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
 
    Notes: Use
 $     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the

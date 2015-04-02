@@ -87,8 +87,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	bus = (VERTEXDATA)(arr+offsetd);
 	/* Handle reference bus constrained dofs */
 	if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
-	  farr[offset] = 0.0;
-	  farr[offset+1] = 0.0;
+	  farr[offset] = xarr[offset] - bus->va*PETSC_PI/180.0;
+	  farr[offset+1] = xarr[offset+1] - bus->vm;
 	  break;
 	}
 
@@ -97,7 +97,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 
 	  /* Shunt injections */
 	  farr[offset] += Vm*Vm*bus->gl/Sbase;
-	  farr[offset+1] += -Vm*Vm*bus->bl/Sbase;
+	  if(bus->ide != PV_BUS) farr[offset+1] += -Vm*Vm*bus->bl/Sbase;
 	}
 	PetscInt nconnedges;
 	const PetscInt *connedges;
@@ -161,7 +161,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
       }
     }
     if (bus->ide == PV_BUS) {
-      farr[offset+1] = 0.0;
+      farr[offset+1] = xarr[offset+1] - bus->vm;
     }
   }
   ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
@@ -235,12 +235,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	  Vm = xarr[offset+1];
 	  
 	  /* Shunt injections */
-	  row[0] = goffset; row[1] = goffset+1;
-	  col[0] = goffset; col[1] = goffset+1; col[2] = goffset; col[3] = goffset+1;
-	  values[0] = 2*Vm*bus->gl/Sbase;
-	  values[1] = values[2] = 0.0;
-	  values[3] = -2*Vm*bus->bl/Sbase;
-	  ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+          row[0] = goffset; row[1] = goffset+1;
+          col[0] = goffset; col[1] = goffset+1;
+          values[0] = values[1] = values[2] = values[3] = 0.0;
+          if(bus->ide != PV_BUS) {
+            values[1] = 2*Vm*bus->gl/Sbase;
+            values[3] = -2*Vm*bus->bl/Sbase;
+          }
+          ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
 
 	PetscInt nconnedges;
@@ -292,17 +294,18 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	  bust = (VERTEXDATA)(arr+offsettd);
 
 	  if (vfrom == v) {
-	    /*    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft));  */
-	    row[0]  = goffsetfrom;
-	    col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
-	    values[0] =  Vmf*Vmt*(Gft*-sin(thetaft) + Bft*cos(thetaft)); /* df_dthetaf */    
-	    values[1] =  2*Gff*Vmf + Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmf */
-	    values[2] =  Vmf*Vmt*(Gft*sin(thetaft) + Bft*-cos(thetaft)); /* df_dthetat */
-	    values[3] =  Vmf*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmt */
-	    
-	    ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
-	    
-	    if (busf->ide != PV_BUS) {
+	    if (busf->ide != REF_BUS) {
+	      /*    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft));  */
+	      row[0]  = goffsetfrom;
+	      col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
+	      values[0] =  Vmf*Vmt*(Gft*-sin(thetaft) + Bft*cos(thetaft)); /* df_dthetaf */    
+	      values[1] =  2*Gff*Vmf + Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmf */
+	      values[2] =  Vmf*Vmt*(Gft*sin(thetaft) + Bft*-cos(thetaft)); /* df_dthetat */
+	      values[3] =  Vmf*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmt */
+	      
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	    if (busf->ide != PV_BUS && busf->ide != REF_BUS) {
 	      row[0] = goffsetfrom+1;
 	      col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
 	      /*    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*cos(thetaft) + Gft*sin(thetaft)); */
@@ -314,17 +317,18 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	  } else {
-	    row[0] = goffsetto;
-	    col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
-	    /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); */
-	    values[0] =  Vmt*Vmf*(Gtf*-sin(thetatf) + Btf*cos(thetaft)); /* df_dthetat */
-	    values[1] =  2*Gtt*Vmt + Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmt */
-	    values[2] =  Vmt*Vmf*(Gtf*sin(thetatf) + Btf*-cos(thetatf)); /* df_dthetaf */
-	    values[3] =  Vmt*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmf */
-	    
-	    ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
-	    
-	    if (bust->ide != PV_BUS) {
+	    if(bust->ide != REF_BUS) {
+	      row[0] = goffsetto;
+	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
+	      /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); */
+	      values[0] =  Vmt*Vmf*(Gtf*-sin(thetatf) + Btf*cos(thetaft)); /* df_dthetat */
+	      values[1] =  2*Gtt*Vmt + Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmt */
+	      values[2] =  Vmt*Vmf*(Gtf*sin(thetatf) + Btf*-cos(thetatf)); /* df_dthetaf */
+	      values[3] =  Vmt*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmf */
+	      
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	    if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
 	      row[0] = goffsetto+1;
 	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
 	      /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*cos(thetatf) + Gtf*sin(thetatf)); */
@@ -505,7 +509,7 @@ int main(int argc,char ** argv)
   if (size > 1) {
     DM distnetworkdm;
     /* Network partitioning and distribution of data */
-    ierr = DMNetworkDistribute(networkdm,"chaco",0,&distnetworkdm);CHKERRQ(ierr);
+    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
     networkdm = distnetworkdm;
   }

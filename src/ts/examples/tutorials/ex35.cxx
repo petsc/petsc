@@ -63,10 +63,10 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     ierr = PetscOptionsReal("-A","Reaction rate","ex35.cxx",user->A,&user->A,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-B","Reaction rate","ex35.cxx",user->B,&user->B,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","Diffusion coefficient","ex35.cxx",user->alpha,&user->alpha,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.u,&user->leftbc.u,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","ex35.cxx",user->rightbc.u,&user->rightbc.u,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.v,&user->leftbc.v,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsScalar("-uleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.u,&user->leftbc.u,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsScalar("-uright","Dirichlet boundary condition","ex35.cxx",user->rightbc.u,&user->rightbc.u,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsScalar("-vleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.v,&user->leftbc.v,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsScalar("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-n","Number of 1-D elements","ex35.cxx",user->n,&user->n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ndt","Number of time steps","ex35.cxx",user->ntsteps,&user->ntsteps,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","ex35.cxx",user->ftype,&user->ftype,NULL);CHKERRQ(ierr);
@@ -559,7 +559,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
 
     if (elem_on_boundary) {
       if (gdof[0] == 0) {
-        const double vals[4] = { hx * (x[idl].u - user->leftbc.u),
+        const PetscScalar vals[4] = { hx * (x[idl].u - user->leftbc.u),
                                  hx * (x[idl].v - user->leftbc.v),
                                  hx/2 * xdot[idr].u + user->alpha * ( x[idr].u - x[idl].u ) / hx,
                                  hx/2 * xdot[idr].v + user->alpha * ( x[idr].v - x[idl].v ) / hx};
@@ -567,7 +567,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
         ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
       }
       else {
-        const double vals[4] = { hx/2 * xdot[idl].u + user->alpha * ( x[idl].u - x[idr].u ) / hx,
+        const PetscScalar vals[4] = { hx/2 * xdot[idl].u + user->alpha * ( x[idl].u - x[idr].u ) / hx,
                                  hx/2 * xdot[idl].v + user->alpha * ( x[idl].v - x[idr].v ) / hx,
                                  hx * (x[idr].u - user->rightbc.u),
                                  hx * (x[idr].v - user->rightbc.v) };
@@ -576,7 +576,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
       }
     }
     else {
-      const double vals[4] = { hx/2 * xdot[idl].u + user->alpha * (x[idl].u - x[idr].u)/ hx,
+      const PetscScalar vals[4] = { hx/2 * xdot[idl].u + user->alpha * (x[idl].u - x[idr].u)/ hx,
                                hx/2 * xdot[idl].v + user->alpha * (x[idl].v - x[idr].v)/ hx,
                                hx/2 * xdot[idr].u + user->alpha * (x[idr].u - x[idl].u)/ hx,
                                hx/2 * xdot[idr].v + user->alpha * (x[idr].v - x[idl].v)/ hx };

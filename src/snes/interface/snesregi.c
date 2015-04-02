@@ -57,6 +57,7 @@ PetscErrorCode  SNESRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (SNESRegisterAllCalled) PetscFunctionReturn(0);
   SNESRegisterAllCalled = PETSC_TRUE;
 
   ierr = SNESRegister(SNESNEWTONLS,     SNESCreate_NEWTONLS);CHKERRQ(ierr);

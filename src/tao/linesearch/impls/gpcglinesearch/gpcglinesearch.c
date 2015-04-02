@@ -80,7 +80,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 
   ierr = VecDot(g,s,&gdx);CHKERRQ(ierr);
    if (gdx > 0) {
-     ierr = PetscInfo1(ls,"Line search error: search direction is not descent direction. dot(g,s) = %g",(double)gdx);CHKERRQ(ierr);
+     ierr = PetscInfo1(ls,"Line search error: search direction is not descent direction. dot(g,s) = %g\n",(double)gdx);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
     PetscFunctionReturn(0);
   }

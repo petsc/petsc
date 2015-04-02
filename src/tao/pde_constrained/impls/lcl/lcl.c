@@ -64,13 +64,13 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LCL"
-static PetscErrorCode TaoSetFromOptions_LCL(Tao tao)
+static PetscErrorCode TaoSetFromOptions_LCL(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lcl_eps1","epsilon 1 tolerance","",lclP->eps1,&lclP->eps1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     adec = lclP->eps1 * r2;
 
     if (rWU < adec) {
-      ierr = PetscInfo(tao,"Newton direction not descent for constraint, feasibility phase required");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Newton direction not descent for constraint, feasibility phase required\n");CHKERRQ(ierr);
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent for constraint: %g -- using steepest descent\n",(double)descent);CHKERRQ(ierr);
       }
@@ -348,7 +348,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
       }
-      ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %g\n",(double)aldescent);CHKERRQ(ierr);
       lclP->rho =  (rGL_U - adec)/rWU;
       if (lclP->rho > lclP->rhomax) {
         lclP->rho = lclP->rhomax;
@@ -357,7 +357,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
       }
-      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g",(double)lclP->rho);
+      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g\n",(double)lclP->rho);
     }
 
     ierr = LCLComputeAugmentedLagrangianAndGradient(tao->linesearch,tao->solution,&lclP->aug,lclP->GAugL,tao);CHKERRQ(ierr);

@@ -109,7 +109,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscBool      iascii,isbinary,isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -122,7 +122,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
@@ -178,14 +178,14 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (!flg) {
       ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
       ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
-      ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+      ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
       bottom = y;
     }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
     const char  *name;
 
@@ -207,8 +207,10 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   } else if (ksp->ops->view) {
     ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
   }
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+  if (!ksp->skippcsetfromoptions) {
+    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+    ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+  }
   if (isdraw) {
     PetscDraw draw;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -231,12 +233,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 Implicitly sets KSPConvergedSkip as KSP convergence test.
-$                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
-$                 of the preconditioned residual
-$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide())
-$                 preconditioning..
+$                 of the preconditioned residual P^{-1}(b - A x)
+$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 
@@ -244,9 +243,12 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
    Notes:
-   For some methods (such as GMRES) the normtype is determined by if left or right preconditioning has been set with KSPSetPCSide().
+   Not all combinations of preconditioner side (see KSPSetPCSide()) and norm type are supported by all Krylov methods.
+   If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
+   is supported, PETSc will generate an error.
 
-   Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+   Developer Notes:
+   Supported combinations of norm and preconditioner side are set using KSPSetSupportedNorm().
 
 
    Level: advanced

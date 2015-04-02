@@ -37,7 +37,7 @@ class Configure(config.base.Configure):
       return
 
     # /proc is used on Linux systems
-    if self.argDB['with-proc-filesystem'] and not self.framework.argDB['with-batch']:
+    if self.argDB['with-proc-filesystem'] and not self.argDB['with-batch']:
       if os.path.isfile(os.path.join('/proc',str(os.getpid()),'statm')):
         self.addDefine('USE_PROC_FOR_SIZE', 1)
         try:
@@ -46,13 +46,13 @@ class Configure(config.base.Configure):
           # make sure we can access the rss field
           if not l[1].isdigit():
             raise RuntimeError("/proc stat file has wrong format rss not integer:"+l[1])
-          self.framework.logPrint("Using /proc for PetscMemoryGetCurrentUsage()")
+          self.logPrint("Using /proc for PetscMemoryGetCurrentUsage()")
           return
         except:
           pass
 
     # getrusage() is still used on BSD systems
-    if self.functions.haveFunction('getrusage') and not self.framework.argDB['with-batch']:
+    if self.functions.haveFunction('getrusage') and not self.argDB['with-batch']:
       if self.functions.haveFunction('getpagesize'):
         (output,status) = self.outputRun('''#include <stdio.h>\n#include <ctype.h>\n#include <sys/times.h>\n#include <sys/types.h>\n
             #include <sys/stat.h>\n#include <sys/resource.h>\n#include <stdlib.h>''','''#define ARRAYSIZE 10000000
@@ -108,12 +108,12 @@ class Configure(config.base.Configure):
             self.addDefine('USE_PAGES_FOR_SIZE',1)
         elif status == 0:
           self.delDefine('HAVE_GETRUSAGE')
-          self.framework.logPrint("getrusage() does not work (returns 0)")
+          self.logPrint("getrusage() does not work (returns 0)")
         else:
           self.delDefine('HAVE_GETRUSAGE')
-          self.framework.logPrint("Unable to determine how to use getrusage() memory information")
-        self.framework.logPrint("output from getrusage()")
-        self.framework.logPrint(output)
+          self.logPrint("Unable to determine how to use getrusage() memory information")
+        self.logPrint("output from getrusage()")
+        self.logPrint(output)
         return
 
       # do not provide a way to get resident set size

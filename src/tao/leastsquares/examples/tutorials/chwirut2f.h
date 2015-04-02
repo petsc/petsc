@@ -3,8 +3,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  TAO include files in the directories $TAO_DIR/include/finclude and
-!  $PETSC_DIR/include/finclude.  This convention enables use of the CPP
+!  TAO include files in the directories $TAO_DIR/include/petsc-finclude and
+!  $PETSC_DIR/include/petsc-finclude.  This convention enables use of the CPP
 !  preprocessor, which allows the use of the #include statements that
 !  define TAO objects and variables.
 !
@@ -24,9 +24,9 @@
 !     petsc.h      - basic PETSc routines
 
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petsctao.h"
+#include "petsc-finclude/petscsys.h"
+#include "petsc-finclude/petscvec.h"
+#include "petsc-finclude/petsctao.h"
 
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the

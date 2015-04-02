@@ -14,7 +14,3 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = []
     return
-
-  def getSearchDirectories(self):
-    yield ''
-    return

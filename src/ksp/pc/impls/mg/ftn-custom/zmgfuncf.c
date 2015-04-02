@@ -1,6 +1,6 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscpc.h>
-#include <../src/ksp/pc/impls/mg/mgimpl.h>
+#include <petsc-private/pcmgimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pcmgsetresidual_           PCMGSETRESIDUAL

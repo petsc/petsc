@@ -164,8 +164,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
@@ -209,8 +209,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);

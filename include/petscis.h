@@ -6,22 +6,12 @@
 #define __PETSCIS_H
 #include <petscsys.h>
 #include <petscsftypes.h>
+#include <petscistypes.h>
 
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;
 
 PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
-
-/*S
-     IS - Abstract PETSc object that allows indexing.
-
-   Level: beginner
-
-  Concepts: indexing, stride
-
-.seealso:  ISCreateGeneral(), ISCreateBlock(), ISCreateStride(), ISGetIndices(), ISDestroy()
-S*/
-typedef struct _p_IS* IS;
 
 /*J
     ISType - String with the name of a PETSc index set type
@@ -37,11 +27,9 @@ typedef const char* ISType;
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList ISList;
-PETSC_EXTERN PetscBool         ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISSetType(IS, ISType);
 PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
 PETSC_EXTERN PetscErrorCode ISRegister(const char[],PetscErrorCode (*)(IS));
-PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 PETSC_EXTERN PetscErrorCode ISCreate(MPI_Comm,IS*);
 
 /*
@@ -108,25 +96,6 @@ PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
-/*S
-   ISLocalToGlobalMapping - mappings from an arbitrary
-      local ordering from 0 to n-1 to a global PETSc ordering
-      used by a vector or matrix.
-
-   Level: intermediate
-
-   Note: mapping from Local to Global is scalable; but Global
-  to Local may not be if the range of global values represented locally
-  is very large.
-
-   Note: the ISLocalToGlobalMapping is actually a private object; it is included
-  here for the inline function ISLocalToGlobalMappingApply() to allow it to be inlined since
-  it is used so often.
-
-.seealso:  ISLocalToGlobalMappingCreate()
-S*/
-typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
-
 /*E
     ISGlobalToLocalMappingType - Indicates if missing global indices are
 
@@ -187,33 +156,7 @@ PETSC_EXTERN const char *const ISColoringTypes[];
 typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 
-/*S
-     ISColoring - sets of IS's that define a coloring
-              of the underlying indices
-
-   Level: intermediate
-
-    Notes:
-        One should not access the *is records below directly because they may not yet
-    have been created. One should use ISColoringGetIS() to make sure they are
-    created when needed.
-
-    Developer Note: this is not a PetscObject
-
-.seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
-S*/
-struct _n_ISColoring {
-  PetscInt        refct;
-  PetscInt        n;                /* number of colors */
-  IS              *is;              /* for each color indicates columns */
-  MPI_Comm        comm;
-  ISColoringValue *colors;          /* for each column indicates color */
-  PetscInt        N;                /* number of columns */
-  ISColoringType  ctype;
-};
-typedef struct _n_ISColoring* ISColoring;
-
-PETSC_EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],ISColoring*);
+PETSC_EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],PetscCopyMode,ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringDestroy(ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringView(ISColoring,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISColoringViewFromOptions(ISColoring,const char[],const char[]);
@@ -232,15 +175,7 @@ PETSC_EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,
 PETSC_EXTERN PetscErrorCode ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 PETSC_EXTERN PetscErrorCode ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
-/*S
-     PetscLayout - defines layout of vectors and matrices across processes (which rows are owned by which processes)
 
-   Level: developer
-
-
-.seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
-S*/
-typedef struct _n_PetscLayout* PetscLayout;
 struct _n_PetscLayout{
   MPI_Comm               comm;
   PetscInt               n,N;         /* local, global vector size */
@@ -254,22 +189,6 @@ struct _n_PetscLayout{
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
   PetscInt               *trstarts;   /* local start for each thread */
 };
-
-PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
-PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetSize(PetscLayout,PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutFindOwner"
@@ -350,23 +269,24 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
+PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
+
 PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 
-/*S
-  PetscSection - Mapping from integers in a designated range to contiguous sets of integers.
-
-  In contrast to IS, which maps from integers to single integers, the range of a PetscSection is in the space of
-  contiguous sets of integers. These ranges are frequently interpreted as domains of other array-like objects,
-  especially other PetscSections, Vecs, and ISs. The domain is set with PetscSectionSetChart() and does not need to
-  start at 0. For each point in the domain of a PetscSection, the output set is represented through an offset and a
-  count, which are set using PetscSectionSetOffset() and PetscSectionSetDof() respectively. Lookup is typically using
-  accessors or routines like VecGetValuesSection().
-
-  Level: developer
-
-.seealso:  PetscSectionCreate(), PetscSectionDestroy()
-S*/
-typedef struct _p_PetscSection *PetscSection;
 PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionCopy(PetscSection, PetscSection);

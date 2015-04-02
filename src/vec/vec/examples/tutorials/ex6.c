@@ -2,7 +2,7 @@
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
 /*
-    This uses the low level PetscBinarWrite() and PetscBinaryRead() to access a binary file. It will not work in parallel! 
+    This uses the low level PetscBinaryWrite() and PetscBinaryRead() to access a binary file. It will not work in parallel!
 
     We HIGHLY recommend using instead VecView() and VecLoad() to read and write Vectors in binary format (which also work in parallel). Then you can use
     share/petsc/matlab/PetscBinaryRead() and share/petsc/matlab/PetscBinaryWrite() to read (or write) the vector into MATLAB.

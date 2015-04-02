@@ -285,7 +285,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
       ierr = PetscSectionSetDof(unionSection, p - pRefStart + (pEnd - pStart), 1);CHKERRQ(ierr);
     }
   }
-  ierr = PetscMalloc1((pEnd - pStart) + (pRefEnd - pRefStart),&permvals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd - pStart + pRefEnd - pRefStart,&permvals);CHKERRQ(ierr);
   offset = 0;
   /* stratify points in the union by topological dimension */
   for (d = 0; d <= dim; d++) {

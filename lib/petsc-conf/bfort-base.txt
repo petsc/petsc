@@ -1,0 +1,14 @@
+# Basic types in C and their Fortran equivalents
+native int integer
+native char character
+native double double precision
+native float real
+native short integer*2
+native long
+native size_t
+native complex complex
+native dcomplex double precision complex
+# The default bfort definitions includes petsc.
+# For this version, to exclude the petsc definitions,
+# comment out this include
+include bfort-petsc.txt

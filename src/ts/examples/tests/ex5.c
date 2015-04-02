@@ -661,7 +661,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   ierr = DMGlobalToLocalEnd(da,Xglobal,INSERT_VALUES,localT);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,localT,&X);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localT,&X);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&Frhs);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
@@ -725,7 +725,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,localT,&X);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localT,&X);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&Frhs);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -735,21 +735,21 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *array;
-  MonitorCtx     *user  = (MonitorCtx*)ctx;
-  PetscViewer    viewer = user->drawviewer;
-  PetscMPIInt    rank;
-  PetscReal      norm;
+  PetscErrorCode    ierr;
+  const PetscScalar *array;
+  MonitorCtx        *user  = (MonitorCtx*)ctx;
+  PetscViewer       viewer = user->drawviewer;
+  PetscMPIInt       rank;
+  PetscReal         norm;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
   if (step%user->interval == 0) {
-    ierr = VecGetArray(T,&array);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(T,&array);CHKERRQ(ierr);
     if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);
-    ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(T,&array);CHKERRQ(ierr);
   }
 
   if (user->drawcontours) {

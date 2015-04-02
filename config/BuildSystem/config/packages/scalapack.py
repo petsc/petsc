@@ -6,9 +6,10 @@ class Configure(config.package.Package):
     self.download         = ['http://www.netlib.org/scalapack/scalapack-2.0.2.tgz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack-2.0.2.tgz']
     self.includes         = []
-    self.liblist          = [[],['libscalapack.a']]
+    self.liblist          = [['libscalapack.a']]
     self.functions        = ['pssytrd']
     self.functionsFortran = 1
+    self.fc               = 1
     self.useddirectly     = 0 # PETSc does not use ScaLAPACK, it is only used by MUMPS
     self.downloadonWindows= 1
     return
@@ -16,15 +17,22 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.mpi             = framework.require('config.packages.MPI',self)
+    self.mpi        = framework.require('config.packages.MPI',self)
     self.deps       = [self.mpi, self.blasLapack]
     return
 
+  # this code should be removed and a proper dependency on flibs should be somehow added to setupDependencies()
+  def generateLibList(self,dir):
+    '''scalapack can require -lgfortran when using f2cblaslapack'''
+    alllibs = config.package.Package.generateLibList(self,dir)
+    for a in alllibs[:]:
+      b=a[:]
+      b.extend(self.compilers.flibs)
+      alllibs.append(b)
+    return alllibs
+
   def Install(self):
     import os
-    if not hasattr(self.setCompilers, 'FC'):
-      raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
-
     g = open(os.path.join(self.packageDir,'SLmake.inc'),'w')
     g.write('SCALAPACKLIB = '+'libscalapack.'+self.setCompilers.AR_LIB_SUFFIX+' \n')
     g.write('LIBS         = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
@@ -58,31 +66,15 @@ class Configure(config.package.Package):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make cleanlib', timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make cleanlib', timeout=2500, log = self.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling and installing Scalapack; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         libDir = os.path.join(self.installDir, self.libdir)
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')
     return self.installDir
-
-  def checkLib(self, lib, func, mangle, otherLibs = []):
-    oldLibs = self.compilers.LIBS
-    found = self.libraries.check(lib,func, otherLibs = otherLibs+self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
-    self.compilers.LIBS = oldLibs
-    if found:
-      self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
-    return found
-
-  def consistencyChecks(self):
-    config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
-      # SCALAPACK requires ALL of BLAS/LAPACK
-      if self.blasLapack.f2c:
-        raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f2cblaslapack\nUse --download-fblaslapack option instead.')
-    return

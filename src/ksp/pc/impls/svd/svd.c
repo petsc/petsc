@@ -51,7 +51,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     Mat          redmat;
-    ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
+    ierr = MatCreateRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
     ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
     ierr = MatDestroy(&redmat);CHKERRQ(ierr);
   } else {
@@ -326,14 +326,14 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SVD"
-static PetscErrorCode PCSetFromOptions_SVD(PC pc)
+static PetscErrorCode PCSetFromOptions_SVD(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscBool      flg,set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SVD options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SVD options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
@@ -370,6 +370,10 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
   Options Database:
 -  -pc_svd_zero_sing <rtol> Singular values smaller than this are treated as zero
 +  -pc_svd_monitor  Print information on the extreme singular values of the operator
+
+  Developer Note: This implementation automatically creates a redundant copy of the
+   matrix on each process and uses a sequential SVD solve. Why does it do this instead
+   of using the composable PCREDUNDANT object?
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/

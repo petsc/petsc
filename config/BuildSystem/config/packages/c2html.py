@@ -7,7 +7,6 @@ class Configure(config.package.GNUPackage):
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
     self.complex           = 1
     self.double            = 0
-    self.requires32bitint  = 0
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0
@@ -16,27 +15,27 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
-    help.addArgument('C2html', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
-    help.addArgument('C2html', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
-    help.addArgument('C2html', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'C2html executable to look for'))
+    help.addArgument('C2HTML', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
+    help.addArgument('C2HTML', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
+    help.addArgument('C2HTML', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'C2html executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.confDir]
-    if 'download-c2html-cc' in self.framework.argDB and self.framework.argDB['download-c2html-cc']:
-      args.append('CC="'+self.framework.argDB['download-c2html-cc']+'"')
-    if 'download-c2html-configure-options' in self.framework.argDB and self.framework.argDB['download-c2html-configure-options']:
-      args.append(self.framework.argDB['download-c2html-configure-options'])
+    if 'download-c2html-cc' in self.argDB and self.argDB['download-c2html-cc']:
+      args.append('CC="'+self.argDB['download-c2html-cc']+'"')
+    if 'download-c2html-configure-options' in self.argDB and self.argDB['download-c2html-configure-options']:
+      args.append(self.argDB['download-c2html-configure-options'])
     return args
 
   def locateC2html(self):
-    if 'with-c2html-exec' in self.framework.argDB:
-      self.framework.log.write('Looking for specified C2html executable '+self.framework.argDB['with-c2html-exec']+'\n')
-      self.getExecutable(self.framework.argDB['with-c2html-exec'], getFullPath=1, resultName='c2html')
+    if 'with-c2html-exec' in self.argDB:
+      self.log.write('Looking for specified C2html executable '+self.argDB['with-c2html-exec']+'\n')
+      self.getExecutable(self.argDB['with-c2html-exec'], getFullPath=1, resultName='c2html')
     else:
-      self.framework.log.write('Looking for default C2html executable\n')
+      self.log.write('Looking for default C2html executable\n')
       self.getExecutable('c2html', getFullPath=1, resultName='c2html')
     return
 
@@ -50,13 +49,13 @@ class Configure(config.package.GNUPackage):
 
   def configure(self):
     '''Locate c2html and download it if requested'''
-    if self.framework.argDB['download-c2html']:
-      self.framework.log.write('Building c2html\n')
+    if self.argDB['download-c2html']:
+      self.log.write('Building c2html\n')
       config.package.GNUPackage.configure(self)
       self.getExecutable('c2html',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
-    elif (not self.framework.argDB['with-c2html']  == 0 and not self.framework.argDB['with-c2html']  == 'no') or 'with-c2html-exec' in self.framework.argDB:
+    elif (not self.argDB['with-c2html']  == 0 and not self.argDB['with-c2html']  == 'no') or 'with-c2html-exec' in self.argDB:
       self.executeTest(self.locateC2html)
     else:
-      self.framework.log.write('Not checking for C2html\n')
+      self.log.write('Not checking for C2html\n')
     if hasattr(self, 'c2html'): self.found = 1
     return

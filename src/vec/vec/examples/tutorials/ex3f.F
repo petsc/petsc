@@ -21,9 +21,9 @@
 !     petscvec.h    - vectors
 !  Include petscviewer.h so that we can use the PETSc viewers.
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscviewer.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscviewer.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

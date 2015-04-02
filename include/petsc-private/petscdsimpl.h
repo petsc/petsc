@@ -4,6 +4,9 @@
 #include <petscds.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool      PetscDSRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscDSRegisterAll(void);
+
 typedef struct _PetscDSOps *PetscDSOps;
 struct _PetscDSOps {
   PetscErrorCode (*setfromoptions)(PetscDS);
@@ -21,6 +24,8 @@ struct _p_PetscDS {
   void        *data;      /* Implementation object */
   PetscBool    setup;     /* Flag for setup */
   PetscInt     Nf;        /* The number of solution fields */
+  PetscBool   *implicit;  /* Flag for implicit or explicit solve */
+  PetscBool   *adjacency; /* Flag for variable influence */
   PetscObject *disc;      /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscObject *discBd;    /* The boundary discretization for each solution field (PetscFE, PetscFV, etc.) */
   PointFunc   *obj;       /* Scalar integral (like an objective function) */

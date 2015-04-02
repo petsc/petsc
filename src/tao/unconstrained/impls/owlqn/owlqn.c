@@ -292,13 +292,13 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_OWLQN"
-static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao)
+static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Orthant-Wise Limited-memory method for Quasi-Newton unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Orthant-Wise Limited-memory method for Quasi-Newton unconstrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight","", 100,&lmP->lambda,NULL); CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);

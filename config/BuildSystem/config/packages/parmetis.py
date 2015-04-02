@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.2-p5.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.3-p1.tar.gz']
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
@@ -14,7 +14,7 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis', self)
     self.deps            = [self.mpi, self.metis]
@@ -29,7 +29,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       args.append('-DMETIS_USE_LONGINDEX=1')
     if self.scalartypes.precision == 'double':
       args.append('-DMETIS_USE_DOUBLEPRECISION=1')

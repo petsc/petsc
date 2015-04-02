@@ -566,6 +566,37 @@ PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscLogEventGetPerfInfo"
+/*@C
+  PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
+
+  Input Parameters:
++ stage - The stage number or PETSC_DETERMINE for the current stage
+- event - The event number
+
+  Output Parameters:
+. info - This structure is filled with the performance information
+
+  Level: Intermediate
+
+.seealso: PetscLogEventGetFlops()
+@*/
+PetscErrorCode PetscLogEventGetPerfInfo(int stage, PetscLogEvent event, PetscEventPerfInfo *info)
+{
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog = NULL;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(info, 3);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (stage < 0) {ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);}
+  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  *info = eventLog->eventInfo[event];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogEventGetFlops"
 PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
 {

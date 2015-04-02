@@ -32,7 +32,7 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   ierr = PetscLogEventBegin(MAT_Getsymtranspose,A,0,0,0);CHKERRQ(ierr);
 
   /* Allocate space for symbolic transpose info and work array */
-  ierr = PetscCalloc1((an+1),&ati);CHKERRQ(ierr);
+  ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
   ierr = PetscMalloc1(ai[am],&atj);CHKERRQ(ierr);
   ierr = PetscMalloc1(an,&atfill);CHKERRQ(ierr);
 
@@ -85,10 +85,10 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   ierr = PetscLogEventBegin(MAT_Getsymtransreduced,A,0,0,0);CHKERRQ(ierr);
 
   /* Allocate space for symbolic transpose info and work array */
-  ierr = PetscCalloc1((an+1),&ati);CHKERRQ(ierr);
+  ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
   anzj = ai[rend] - ai[rstart];
-  ierr = PetscMalloc1((anzj+1),&atj);CHKERRQ(ierr);
-  ierr = PetscMalloc1((an+1),&atfill);CHKERRQ(ierr);
+  ierr = PetscMalloc1(anzj+1,&atj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(an+1,&atfill);CHKERRQ(ierr);
 
   /* Walk through aj and count ## of non-zeros in each row of A^T. */
   /* Note: offset by 1 for fast conversion into csr format. */
@@ -139,7 +139,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
 
   if (reuse == MAT_INITIAL_MATRIX || *B == A) {
     /* Allocate space for symbolic transpose info and work array */
-    ierr = PetscCalloc1((an+1),&ati);CHKERRQ(ierr);
+    ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
     ierr = PetscMalloc1(ai[am],&atj);CHKERRQ(ierr);
     ierr = PetscMalloc1(ai[am],&ata);CHKERRQ(ierr);
     /* Walk through aj and count ## of non-zeros in each row of A^T. */

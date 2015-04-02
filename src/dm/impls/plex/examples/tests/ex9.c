@@ -261,10 +261,8 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = PetscLogGetStageLog(&stageLog);
-  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
-  numRuns   = (cEnd-cStart) * user->iterations;
-  eventInfo = eventLog->eventInfo[event];
+  ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
+  numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {
@@ -305,10 +303,8 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = PetscLogGetStageLog(&stageLog);
-  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
-  numRuns   = (cEnd-cStart) * user->iterations;
-  eventInfo = eventLog->eventInfo[event];
+  ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
+  numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {
@@ -364,10 +360,8 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   ierr = DMRestoreLocalVector(dm, &v);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = PetscLogGetStageLog(&stageLog);
-  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
-  numRuns   = (cEnd-cStart) * user->iterations;
-  eventInfo = eventLog->eventInfo[event];
+  ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
+  numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {

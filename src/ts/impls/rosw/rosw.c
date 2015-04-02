@@ -1406,14 +1406,14 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RosW"
-static PetscErrorCode TSSetFromOptions_RosW(TS ts)
+static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
   char           rostype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("RosW ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"RosW ODE solver options");CHKERRQ(ierr);
   {
     RosWTableauLink link;
     PetscInt        count,choice;
@@ -1652,6 +1652,8 @@ PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)
   Notes:
   This method currently only works with autonomous ODE and DAE.
 
+  Consider trying TSARKIMEX if the stiff part is strongly nonlinear.
+
   Developer notes:
   Rosenbrock-W methods are typically specified for autonomous ODE
 
@@ -1673,7 +1675,7 @@ $  y_i = gamma_ij k_j
 
   The k_j can be recovered because Gamma is invertible. Let C be the lower triangular part of Gamma^{-1} and define
 
-$  A = Alpha Gamma^{-1}, bt^T = b^T Gamma^{-i}
+$  A = Alpha Gamma^{-1}, bt^T = b^T Gamma^{-1}
 
   to rewrite the method as
 
@@ -1698,7 +1700,7 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister(), TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3,
+.seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister(), TSROSWTHETA1, TSROSWTHETA2, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3,
            TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWGRK4T, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
 M*/
 #undef __FUNCT__

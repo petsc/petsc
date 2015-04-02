@@ -1,6 +1,11 @@
 
 #include <petscdm.h>     /*I  "petscdm.h"  I*/
 #include <petscdmplex.h> /*I  "petscdmplex.h"  I*/
+#include <petsc-private/dmimpl.h>
+#include <petsc-private/dmpleximpl.h>
+#include <petsc-private/petscfeimpl.h>
+#include <petsc-private/petscfvimpl.h>
+#include <petsc-private/petscdsimpl.h>
 PETSC_EXTERN PetscErrorCode DMCreate_DA(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM);
@@ -38,6 +43,7 @@ PetscErrorCode  DMRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (DMRegisterAllCalled) PetscFunctionReturn(0);
   DMRegisterAllCalled = PETSC_TRUE;
 
   ierr = DMRegister(DMDA,         DMCreate_DA);CHKERRQ(ierr);
@@ -62,6 +68,7 @@ PetscErrorCode  DMRegisterAll()
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerRegisterAll"
@@ -83,11 +90,13 @@ PetscErrorCode PetscPartitionerRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscPartitionerRegisterAllCalled) PetscFunctionReturn(0);
   PetscPartitionerRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscPartitionerRegister(PETSCPARTITIONERCHACO,    PetscPartitionerCreate_Chaco);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
+  ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>     /*I  "petscfe.h"  I*/
@@ -115,6 +124,7 @@ PetscErrorCode PetscSpaceRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscSpaceRegisterAllCalled) PetscFunctionReturn(0);
   PetscSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial);CHKERRQ(ierr);
@@ -145,6 +155,7 @@ PetscErrorCode PetscDualSpaceRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscDualSpaceRegisterAllCalled) PetscFunctionReturn(0);
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
@@ -179,6 +190,7 @@ PetscErrorCode PetscFERegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscFERegisterAllCalled) PetscFunctionReturn(0);
   PetscFERegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscFERegister(PETSCFEBASIC,     PetscFECreate_Basic);CHKERRQ(ierr);
@@ -220,6 +232,7 @@ PetscErrorCode PetscLimiterRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscLimiterRegisterAllCalled) PetscFunctionReturn(0);
   PetscLimiterRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscLimiterRegister(PETSCLIMITERSIN,       PetscLimiterCreate_Sin);CHKERRQ(ierr);
@@ -256,6 +269,7 @@ PetscErrorCode PetscFVRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscFVRegisterAllCalled) PetscFunctionReturn(0);
   PetscFVRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscFVRegister(PETSCFVUPWIND,       PetscFVCreate_Upwind);CHKERRQ(ierr);
@@ -286,6 +300,7 @@ PetscErrorCode PetscDSRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscDSRegisterAllCalled) PetscFunctionReturn(0);
   PetscDSRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscDSRegister(PETSCDSBASIC, PetscDSCreate_Basic);CHKERRQ(ierr);

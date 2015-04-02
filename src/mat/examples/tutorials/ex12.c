@@ -34,7 +34,7 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
   for (i=0; i<n; i++) indices[i] = i;
 
   /* determine number of nonzeros per row in the new matrix */
-  ierr = PetscMalloc1((n+1),&cnt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&cnt);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     cnt[i] = aij->i[i+1] - aij->i[i] + (vv[i] != 0.0);
   }

@@ -65,7 +65,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, None, 'Specify the C compiler options'))
     help.addArgument('Compilers', '-CC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the C linker flags'))
 
-    help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
+    help.addArgument('Compilers', '-CXXCPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
     help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, None, 'Specify the C++ preprocessor options'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
@@ -104,6 +104,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-sharedLibraryFlags=<string>',     nargs.Arg(None, [], 'Specify the shared library flags'))
     help.addArgument('Compilers', '-dynamicLibraryFlags=<string>',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
+    help.addArgument('Compilers', '-with-environment-variables=<bool>',nargs.ArgBool(None, 0, 'Use compiler variables found in environment'))
     return
 
   def setupDependencies(self, framework):
@@ -397,10 +398,10 @@ class Configure(config.base.Configure):
 
   def checkVendor(self):
     '''Determine the compiler vendor'''
-    self.vendor = self.framework.argDB['with-vendor-compilers']
-    if self.framework.argDB['with-vendor-compilers'] == 'no' or self.framework.argDB['with-vendor-compilers'] == 'false':
+    self.vendor = self.argDB['with-vendor-compilers']
+    if self.argDB['with-vendor-compilers'] == 'no' or self.argDB['with-vendor-compilers'] == 'false':
       self.vendor = None
-    if self.framework.argDB['with-vendor-compilers'] == '1' or self.framework.argDB['with-vendor-compilers'] == 'yes' or self.framework.argDB['with-vendor-compilers'] == 'true':
+    if self.argDB['with-vendor-compilers'] == '1' or self.argDB['with-vendor-compilers'] == 'yes' or self.argDB['with-vendor-compilers'] == 'true':
       self.vendor = ''
     self.logPrint('Compiler vendor is "'+str(self.vendor)+'"')
     return
@@ -412,12 +413,12 @@ class Configure(config.base.Configure):
       for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
         if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
         else: setattr(self, flagsArg, '')
-        self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
+        self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
     for flagsArg in ['CPPFLAGS', 'CUDAPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
-      self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
+      self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
       self.LIBS = self.argDB['LIBS']
     else:
@@ -448,7 +449,7 @@ class Configure(config.base.Configure):
       self.LIBS = oldlibs
       raise RuntimeError(msg)
     self.LIBS = oldlibs
-    if not self.framework.argDB['with-batch']:
+    if not self.argDB['with-batch']:
       if not self.checkRun():
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
         if self.isIntel(self.getCompiler()):
@@ -463,32 +464,32 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     if hasattr(self, 'CC'):
       yield self.CC
-    elif self.framework.argDB.has_key('with-cc'):
-      if self.isWindows(self.framework.argDB['with-cc']):
-        yield 'win32fe '+self.framework.argDB['with-cc']
+    elif self.argDB.has_key('with-cc'):
+      if self.isWindows(self.argDB['with-cc']):
+        yield 'win32fe '+self.argDB['with-cc']
       else:
-        yield self.framework.argDB['with-cc']
-      raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work.'+'\n'+self.mesg)
-    elif self.framework.argDB.has_key('CC'):
-      if self.isWindows(self.framework.argDB['CC']):
-        yield 'win32fe '+self.framework.argDB['CC']
+        yield self.argDB['with-cc']
+      raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' does not work.'+'\n'+self.mesg)
+    elif self.argDB.has_key('CC'):
+      if self.isWindows(self.argDB['CC']):
+        yield 'win32fe '+self.argDB['CC']
       else:
-        yield self.framework.argDB['CC']
-      raise RuntimeError('C compiler you provided with -CC='+self.framework.argDB['CC']+' does not work.'+'\n'+self.mesg)
+        yield self.argDB['CC']
+      raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicc')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcc')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('MPI compiler wrappers in '+self.framework.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicc') and self.argDB['with-gnu-compilers']:
           yield 'mpicc'
-        if Configure.isGNU('hcc') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('hcc') and self.argDB['with-gnu-compilers']:
           yield 'hcc'
         if not Configure.isGNU('mpicc') and (not self.vendor is None):
           yield 'mpicc'
@@ -500,7 +501,7 @@ class Configure(config.base.Configure):
           yield 'mpxlc'
         self.usedMPICompilers = 0
       vendor = self.vendor
-      if (not vendor) and self.framework.argDB['with-gnu-compilers']:
+      if (not vendor) and self.argDB['with-gnu-compilers']:
         yield 'gcc'
         if Configure.isGNU('cc'):
           yield 'cc'
@@ -525,7 +526,7 @@ class Configure(config.base.Configure):
           if not Configure.isGNU('cc'):
             yield 'cc'
       # duplicate code
-      if self.framework.argDB['with-gnu-compilers']:
+      if self.argDB['with-gnu-compilers']:
         yield 'gcc'
         if Configure.isGNU('cc'):
           yield 'cc'
@@ -533,7 +534,7 @@ class Configure(config.base.Configure):
 
   def checkCCompiler(self):
     '''Locate a functional C compiler'''
-    if 'with-cc' in self.framework.argDB and self.framework.argDB['with-cc'] == '0':
+    if 'with-cc' in self.argDB and self.argDB['with-cc'] == '0':
       raise RuntimeError('A functional C compiler is necessary for configure, cannot use --with-cc=0')
     self.mesg = ''
     for compiler in self.generateCCompilerGuesses():
@@ -546,7 +547,7 @@ class Configure(config.base.Configure):
         self.mesg = str(e)
         self.logPrint('Error testing C compiler: '+str(e))
         if os.path.basename(self.CC) == 'mpicc':
-          self.framework.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         self.delMakeMacro('CC')
         del self.CC
     if not hasattr(self, 'CC'):
@@ -555,14 +556,13 @@ class Configure(config.base.Configure):
 
   def generateCPreprocessorGuesses(self):
     '''Determines the C preprocessor from CPP, then --with-cpp, then the C compiler'''
-    if 'with-cpp' in self.framework.argDB:
-      yield self.framework.argDB['with-cpp']
-    elif 'CPP' in self.framework.argDB:
-      yield self.framework.argDB['CPP']
+    if 'with-cpp' in self.argDB:
+      yield self.argDB['with-cpp']
+    elif 'CPP' in self.argDB:
+      yield self.argDB['CPP']
     else:
       yield self.CC+' -E'
       yield self.CC+' --use cpp32'
-      yield 'gcc -E'
     return
 
   def checkCPreprocessor(self):
@@ -581,19 +581,20 @@ class Configure(config.base.Configure):
     return
 
   def generateCUDACompilerGuesses(self):
+    import os
     '''Determine the CUDA compiler using CUDAC, then --with-cudac, then vendors
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
       yield self.CUDAC
-    elif self.framework.argDB.has_key('with-cudac'):
-      yield self.framework.argDB['with-cudac']
-      raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.framework.argDB['with-cudac']+' does not work.'+'\n'+self.mesg)
-    elif self.framework.argDB.has_key('CUDAC'):
-      yield self.framework.argDB['CUDAC']
-      raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.framework.argDB['CUDAC']+' does not work.'+'\n'+self.mesg)
-    elif self.framework.argDB.has_key('with-cuda-dir'):
+    elif self.argDB.has_key('with-cudac'):
+      yield self.argDB['with-cudac']
+      raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.argDB['with-cudac']+' does not work.'+'\n'+self.mesg)
+    elif self.argDB.has_key('CUDAC'):
+      yield self.argDB['CUDAC']
+      raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.argDB['CUDAC']+' does not work.'+'\n'+self.mesg)
+    elif self.argDB.has_key('with-cuda-dir'):
       import os
-      nvccPath = os.path.join(self.framework.argDB['with-cuda-dir'], 'bin','nvcc')
+      nvccPath = os.path.join(self.argDB['with-cuda-dir'], 'bin','nvcc')
       yield nvccPath
     else:
       vendor = self.vendor
@@ -601,13 +602,15 @@ class Configure(config.base.Configure):
         if vendor == 'nvidia' or not vendor:
           yield 'nvcc'
       yield 'nvcc'
+      yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
+      yield os.path.join('/usr','local','cuda','bin','nvcc')
     return
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    if 'with-cudac' in self.framework.argDB and self.framework.argDB['with-cudac'] == '0':
-      if 'CUDAC' in self.framework.argDB:
-        del self.framework.argDB['CUDAC']
+    if not self.framework.clArgDB.has_key('with-cuda') or self.argDB['with-cuda'] == '0':
+      if 'CUDAC' in self.argDB:
+        del self.argDB['CUDAC']
       return
     self.mesg = ''
     for compiler in self.generateCUDACompilerGuesses():
@@ -634,10 +637,10 @@ class Configure(config.base.Configure):
 
   def generateCUDAPreprocessorGuesses(self):
     '''Determines the CUDA preprocessor from --with-cudacpp, then CUDAPP, then the CUDA compiler'''
-    if 'with-cudacpp' in self.framework.argDB:
-      yield self.framework.argDB['with-cudacpp']
-    elif 'CUDAPP' in self.framework.argDB:
-      yield self.framework.argDB['CUDAPP']
+    if 'with-cudacpp' in self.argDB:
+      yield self.argDB['with-cudacpp']
+    elif 'CUDAPP' in self.argDB:
+      yield self.argDB['CUDAPP']
     else:
       if hasattr(self, 'CUDAC'):
         yield self.CUDAC+' -arch=sm_20 -E'
@@ -664,45 +667,45 @@ class Configure(config.base.Configure):
 
     if hasattr(self, 'CXX'):
       yield self.CXX
-    elif self.framework.argDB.has_key('with-c++'):
+    elif self.argDB.has_key('with-c++'):
       raise RuntimeError('Keyword --with-c++ is WRONG, use --with-cxx')
-    if self.framework.argDB.has_key('with-CC'):
+    if self.argDB.has_key('with-CC'):
       raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
 
-    if self.framework.argDB.has_key('with-cxx'):
-      if self.framework.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
-      if self.isWindows(self.framework.argDB['with-cxx']):
-        yield 'win32fe '+self.framework.argDB['with-cxx']
+    if self.argDB.has_key('with-cxx'):
+      if self.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
+      if self.isWindows(self.argDB['with-cxx']):
+        yield 'win32fe '+self.argDB['with-cxx']
       else:
-        yield self.framework.argDB['with-cxx']
-      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work.'+'\n'+self.mesg)
-    elif self.framework.argDB.has_key('CXX'):
-      if self.isWindows(self.framework.argDB['CXX']):
-        yield 'win32fe '+self.framework.argDB['CXX']
+        yield self.argDB['with-cxx']
+      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' does not work.'+'\n'+self.mesg)
+    elif self.argDB.has_key('CXX'):
+      if self.isWindows(self.argDB['CXX']):
+        yield 'win32fe '+self.argDB['CXX']
       else:
-        yield self.framework.argDB['CXX']
-      raise RuntimeError('C++ compiler you provided with -CXX='+self.framework.argDB['CXX']+' does not work.'+'\n'+self.mesg)
+        yield self.argDB['CXX']
+      raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcp')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpic++')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicxx') and self.argDB['with-gnu-compilers']:
           yield 'mpicxx'
         if not Configure.isGNU('mpicxx') and (not self.vendor is None):
           yield 'mpicxx'
-        if Configure.isGNU('mpiCC') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpiCC') and self.argDB['with-gnu-compilers']:
           yield 'mpiCC'
         if not Configure.isGNU('mpiCC') and (not self.vendor is None):
           yield 'mpiCC'
-        if Configure.isGNU('mpic++') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpic++') and self.argDB['with-gnu-compilers']:
           yield 'mpic++'
         if not Configure.isGNU('mpic++') and (not self.vendor is None):
           yield 'mpic++'
@@ -720,7 +723,7 @@ class Configure(config.base.Configure):
       elif self.CC == 'icc':
         yield 'icpc'
       vendor = self.vendor
-      if (not vendor) and self.framework.argDB['with-gnu-compilers']:
+      if (not vendor) and self.argDB['with-gnu-compilers']:
         yield 'g++'
         if Configure.isGNU('c++'):
           yield 'c++'
@@ -749,7 +752,7 @@ class Configure(config.base.Configure):
         if vendor == 'solaris':
           yield 'CC'
       #duplicate code
-      if self.framework.argDB['with-gnu-compilers']:
+      if self.argDB['with-gnu-compilers']:
         yield 'g++'
         if Configure.isGNU('c++'):
           yield 'c++'
@@ -757,9 +760,9 @@ class Configure(config.base.Configure):
 
   def checkCxxCompiler(self):
     '''Locate a functional Cxx compiler'''
-    if 'with-cxx' in self.framework.argDB and self.framework.argDB['with-cxx'] == '0':
-      if 'CXX' in self.framework.argDB:
-        del self.framework.argDB['CXX']
+    if 'with-cxx' in self.argDB and self.argDB['with-cxx'] == '0':
+      if 'CXX' in self.argDB:
+        del self.argDB['CXX']
       return
     self.mesg = ''
     for compiler in self.generateCxxCompilerGuesses():
@@ -784,14 +787,13 @@ class Configure(config.base.Configure):
 
   def generateCxxPreprocessorGuesses(self):
     '''Determines the Cxx preprocessor from CXXCPP, then --with-cxxcpp, then the Cxx compiler'''
-    if 'with-cxxcpp' in self.framework.argDB:
-      yield self.framework.argDB['with-cxxcpp']
-    elif 'CXXCPP' in self.framework.argDB:
-      yield self.framework.argDB['CXXCPP']
+    if 'with-cxxcpp' in self.argDB:
+      yield self.argDB['with-cxxcpp']
+    elif 'CXXCPP' in self.argDB:
+      yield self.argDB['CXXCPP']
     else:
       yield self.CXX+' -E'
       yield self.CXX+' --use cpp32'
-      yield 'g++ -E'
     return
 
   def checkCxxPreprocessor(self):
@@ -810,7 +812,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.CXXCPP) in ['mpicxx', 'mpiCC']:
-          self.framework.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
+          self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
         self.popLanguage()
         self.delMakeMacro('CCCPP')
         del self.CXXCPP
@@ -823,39 +825,39 @@ class Configure(config.base.Configure):
 
     if hasattr(self, 'FC'):
       yield self.FC
-    elif self.framework.argDB.has_key('with-fc'):
-      if self.isWindows(self.framework.argDB['with-fc']):
-        yield 'win32fe '+self.framework.argDB['with-fc']
+    elif self.argDB.has_key('with-fc'):
+      if self.isWindows(self.argDB['with-fc']):
+        yield 'win32fe '+self.argDB['with-fc']
       else:
-        yield self.framework.argDB['with-fc']
-      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work.'+'\n'+self.mesg)
-    elif self.framework.argDB.has_key('FC'):
-      if self.isWindows(self.framework.argDB['FC']):
-        yield 'win32fe '+self.framework.argDB['FC']
+        yield self.argDB['with-fc']
+      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' does not work.'+'\n'+self.mesg)
+    elif self.argDB.has_key('FC'):
+      if self.isWindows(self.argDB['FC']):
+        yield 'win32fe '+self.argDB['FC']
       else:
-        yield self.framework.argDB['FC']
-      yield self.framework.argDB['FC']
-      raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+' does not work.'+'\n'+self.mesg)
+        yield self.argDB['FC']
+      yield self.argDB['FC']
+      raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpf90')
-      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpf77')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf77')
       self.usedMPICompilers = 0
-      if os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
-        raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
+        raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif90') and self.argDB['with-gnu-compilers']:
           yield 'mpif90'
         if not Configure.isGNU('mpif90') and (not self.vendor is None):
           yield 'mpif90'
-        if Configure.isGNU('mpif77') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif77') and self.argDB['with-gnu-compilers']:
           yield 'mpif77'
         if not Configure.isGNU('mpif77') and (not self.vendor is None):
           yield 'mpif77'
@@ -874,7 +876,7 @@ class Configure(config.base.Configure):
       elif self.CC == 'icc':
         yield 'ifort'
       vendor = self.vendor
-      if (not vendor) and self.framework.argDB['with-gnu-compilers']:
+      if (not vendor) and self.argDB['with-gnu-compilers']:
         yield 'gfortran'
         yield 'g95'
         yield 'g77'
@@ -903,7 +905,7 @@ class Configure(config.base.Configure):
           if not Configure.isGNU('f77'):
             yield 'f77'
       #duplicate code
-      if self.framework.argDB['with-gnu-compilers']:
+      if self.argDB['with-gnu-compilers']:
         yield 'gfortran'
         yield 'g95'
         yield 'g77'
@@ -913,9 +915,9 @@ class Configure(config.base.Configure):
 
   def checkFortranCompiler(self):
     '''Locate a functional Fortran compiler'''
-    if 'with-fc' in self.framework.argDB and self.framework.argDB['with-fc'] == '0':
-      if 'FC' in self.framework.argDB:
-        del self.framework.argDB['FC']
+    if 'with-fc' in self.argDB and self.argDB['with-fc'] == '0':
+      if 'FC' in self.argDB:
+        del self.argDB['FC']
       return
     self.mesg = ''
     for compiler in self.generateFortranCompilerGuesses():
@@ -927,7 +929,7 @@ class Configure(config.base.Configure):
         self.mesg = str(e)
         self.logPrint('Error testing Fortran compiler: '+str(e))
         if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
-          self.framework.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         self.delMakeMacro('FC')
         del self.FC
     return
@@ -937,7 +939,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     if not self.checkCompile('! comment'):
       raise RuntimeError(self.getCompiler()+' cannot process fortran comments.')
-    self.framework.logPrint('Fortran comments can use ! in column 1')
+    self.logPrint('Fortran comments can use ! in column 1')
     self.popLanguage()
     return
 
@@ -971,13 +973,13 @@ class Configure(config.base.Configure):
     # Please comment each entry and provide an example line
     if status:
       valid = 0
-      self.framework.logPrint('Rejecting compiler flag '+flag+' due to nonzero status from link')
+      self.logPrint('Rejecting compiler flag '+flag+' due to nonzero status from link')
     # Lahaye F95
     if output.find('Invalid suboption') >= 0:
       valid = 0
     if self.containsInvalidFlag(output):
       valid = 0
-      self.framework.logPrint('Rejecting compiler flag '+flag+' due to \n'+output)
+      self.logPrint('Rejecting compiler flag '+flag+' due to \n'+output)
     setattr(self, flagsArg, oldFlags)
     return valid
 
@@ -985,7 +987,7 @@ class Configure(config.base.Configure):
     '''DANGEROUS: Put in the compiler flag without checking'''
     flagsArg = self.getCompilerFlagsArg(compilerOnly)
     setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
-    self.framework.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
+    self.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
     return
 
   def addCompilerFlag(self, flag, includes = '', body = '', extraflags = '', compilerOnly = 0):
@@ -999,9 +1001,9 @@ class Configure(config.base.Configure):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
     self.usePIC = 0
-    useSharedLibraries = 'with-shared-libraries' in self.framework.argDB and self.framework.argDB['with-shared-libraries']
-    if not self.framework.argDB['with-pic'] and not useSharedLibraries:
-      self.framework.logPrint("Skip checking PIC options on user request")
+    useSharedLibraries = 'with-shared-libraries' in self.argDB and self.argDB['with-shared-libraries']
+    if not self.argDB['with-pic'] and not useSharedLibraries:
+      self.logPrint("Skip checking PIC options on user request")
       return
     languages = ['C']
     if hasattr(self, 'CXX'):
@@ -1015,22 +1017,22 @@ class Configure(config.base.Configure):
       else: testFlags = ['-PIC', '-fPIC', '-KPIC','-qpic']
       for testFlag in testFlags:
         try:
-          self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
+          self.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.checkLinkerFlag(testFlag):
-            self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
+            self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
             continue
-          self.framework.logPrint('Adding '+language+' compiler flag '+testFlag)
+          self.logPrint('Adding '+language+' compiler flag '+testFlag)
           self.addCompilerFlag(testFlag, compilerOnly = 1)
           self.isPIC = 1
           break
         except RuntimeError:
-          self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
+          self.logPrint('Rejected '+language+' compiler flag '+testFlag)
       self.popLanguage()
     return
 
   def checkLargeFileIO(self):
     # check for large file support with 64bit offset
-    if not self.framework.argDB['with-large-file-io']:
+    if not self.argDB['with-large-file-io']:
       return
     languages = ['C']
     if hasattr(self, 'CXX'):
@@ -1050,8 +1052,8 @@ class Configure(config.base.Configure):
   def getArchiverFlags(self, archiver):
     prog = os.path.basename(archiver).split(' ')[0]
     flag = ''
-    if 'AR_FLAGS' in self.framework.argDB:
-      flag = self.framework.argDB['AR_FLAGS']
+    if 'AR_FLAGS' in self.argDB:
+      flag = self.argDB['AR_FLAGS']
     elif prog.endswith('ar'):
       flag = 'cr'
     elif prog == 'win32fe':
@@ -1069,23 +1071,23 @@ class Configure(config.base.Configure):
 
   def generateArchiverGuesses(self):
     defaultAr = None
-    if 'with-ar' in self.framework.argDB:
-      if self.isWindows(self.framework.argDB['with-ar']):
-        defaultAr = 'win32fe '+self.framework.argDB['with-ar']
+    if 'with-ar' in self.argDB:
+      if self.isWindows(self.argDB['with-ar']):
+        defaultAr = 'win32fe '+self.argDB['with-ar']
       else:
-        defaultAr = self.framework.argDB['with-ar']
+        defaultAr = self.argDB['with-ar']
     envAr = None
-    if 'AR' in self.framework.argDB:
-      if self.isWindows(self.framework.argDB['AR']):
-        envAr = 'win32fe '+self.framework.argDB['AR']
+    if 'AR' in self.argDB:
+      if self.isWindows(self.argDB['AR']):
+        envAr = 'win32fe '+self.argDB['AR']
       else:
-        envAr = self.framework.argDB['AR']
+        envAr = self.argDB['AR']
     defaultRanlib = None
-    if 'with-ranlib' in self.framework.argDB:
-      defaultRanlib = self.framework.argDB['with-ranlib']
+    if 'with-ranlib' in self.argDB:
+      defaultRanlib = self.argDB['with-ranlib']
     envRanlib = None
-    if 'RANLIB' in self.framework.argDB:
-      envRanlib = self.framework.argDB['RANLIB']
+    if 'RANLIB' in self.argDB:
+      envRanlib = self.argDB['RANLIB']
     if defaultAr and defaultRanlib:
       yield(defaultAr,self.getArchiverFlags(defaultAr),defaultRanlib)
       raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
@@ -1158,8 +1160,8 @@ class Configure(config.base.Configure):
         if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
           arext = 'a'
           try:
-            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+arflags+' '+arcUnix+' '+objName, checkCommand = checkArchive, log = self.framework.log)
-            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' '+arcUnix, checkCommand = checkRanlib, log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+arflags+' '+arcUnix+' '+objName, checkCommand = checkArchive, log = self.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' '+arcUnix, checkCommand = checkRanlib, log = self.log)
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
@@ -1192,24 +1194,24 @@ class Configure(config.base.Configure):
 
   def setStaticLinker(self):
     language = self.language[-1]
-    return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
+    return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.argDB))
 
   def generateSharedLinkerGuesses(self):
-    useSharedLibraries = 'with-shared-libraries' in self.framework.argDB and self.framework.argDB['with-shared-libraries']
-    if not self.framework.argDB['with-pic'] and not useSharedLibraries:
+    useSharedLibraries = 'with-shared-libraries' in self.argDB and self.argDB['with-shared-libraries']
+    if not self.argDB['with-pic'] and not useSharedLibraries:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
       self.LDFLAGS = ''
       yield (self.AR, [], self.AR_LIB_SUFFIX)
       raise RuntimeError('Archiver failed static link check')
-    if 'with-shared-ld' in self.framework.argDB:
-      yield (self.framework.argDB['with-shared-ld'], [], 'so')
-    if 'LD_SHARED' in self.framework.argDB:
-      yield (self.framework.argDB['LD_SHARED'], [], 'so')
+    if 'with-shared-ld' in self.argDB:
+      yield (self.argDB['with-shared-ld'], [], 'so')
+    if 'LD_SHARED' in self.argDB:
+      yield (self.argDB['LD_SHARED'], [], 'so')
     if Configure.isDarwin():
-      if 'with-shared-ld' in self.framework.argDB:
-        yield (self.framework.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+      if 'with-shared-ld' in self.argDB:
+        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
 #        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
@@ -1279,12 +1281,12 @@ class Configure(config.base.Configure):
     valid = 1
     if status:
       valid = 0
-      self.framework.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
+      self.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
     if self.containsInvalidFlag(output):
       valid = 0
-      self.framework.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
+      self.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
     if valid:
-      self.framework.logPrint('Valid '+self.language[-1]+' linker flag '+flag)
+      self.logPrint('Valid '+self.language[-1]+' linker flag '+flag)
     setattr(self, flagsArg, oldFlags)
     return valid
 
@@ -1336,17 +1338,17 @@ class Configure(config.base.Configure):
       if not Configure.isDarwin():
         testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
       else:
-        testFlags = []
+        testFlags = ['-Wl,-rpath,']
       # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
       if self.isSun(self.framework.getCompiler()):
         testFlags.insert(0,'-R')
       for testFlag in testFlags:
-        self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
+        self.logPrint('Trying '+language+' linker flag '+testFlag)
         if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
           break
         else:
-          self.framework.logPrint('Rejected '+language+' linker flag '+testFlag)
+          self.logPrint('Rejected '+language+' linker flag '+testFlag)
       self.popLanguage()
       setattr(self, language+'SharedLinkerFlag', flag)
     return
@@ -1378,12 +1380,12 @@ class Configure(config.base.Configure):
     self.sharedLibrary=0
 
   def generateDynamicLinkerGuesses(self):
-    if 'with-dynamic-ld' in self.framework.argDB:
-      yield (self.framework.argDB['with-dynamic-ld'], [], 'so')
+    if 'with-dynamic-ld' in self.argDB:
+      yield (self.argDB['with-dynamic-ld'], [], 'so')
     # Mac OSX
     if Configure.isDarwin():
-      if 'with-dynamic-ld' in self.framework.argDB:
-        yield (self.framework.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+      if 'with-dynamic-ld' in self.argDB:
+        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
 #        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
@@ -1515,9 +1517,9 @@ if (dlclose(handle)) {
           if (opt in self.argDB  and self.argDB[opt] != '0'):
             # check if corresponding mpi wrapper exists
             for cplr in cplrs:
-              mpicplr = os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', cplr)
+              mpicplr = os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr)
               if os.path.exists(mpicplr):
-                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the prefered compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
+                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the prefered compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
                 raise RuntimeError(msg)
     return
 
@@ -1538,13 +1540,38 @@ if (dlclose(handle)) {
     return
 
   def resetEnvCompilers(self):
-    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
-                 'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
-                 'LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+    ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
+    for envVal in ignoreEnvCompilers:
+      if envVal in os.environ:
+        if self.framework.clArgDB.has_key(envVal) or self.framework.clArgDB.has_key('with-'+envVal.lower()):
+          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
+          del os.environ[envVal]
+        elif self.argDB['with-environment-variables']:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
+        else:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
+          del os.environ[envVal]
+
+    ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
-        self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
-        del os.environ[envVal]
+        if self.framework.clArgDB.has_key(envVal):
+          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
+          del os.environ[envVal]
+        elif self.argDB['with-environment-variables']:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables******')
+        else:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
+          del os.environ[envVal]
+    return
+
+
+  def checkEnvCompilers(self):
+    if self.framework.clArgDB.has_key('with-environment-variables'):
+      envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+      for ev in envVarChecklist:
+        if ev in os.environ:
+          self.argDB[ev] = os.environ[ev]
     return
 
   def checkIntoShared(self,symbol,lib):
@@ -1561,6 +1588,7 @@ if (dlclose(handle)) {
   def configure(self):
     self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
+    self.executeTest(self.checkEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.requireMpiLdPath)
     self.executeTest(self.checkVendor)

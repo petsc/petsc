@@ -22,7 +22,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJGetAIJ"
-/*@C
+/*@
    MatMAIJGetAIJ - Get the AIJ matrix describing the blockwise action of the MAIJ matrix
 
    Not Collective, but if the MAIJ matrix is parallel, the AIJ matrix is also parallel
@@ -3009,7 +3009,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   cn = pn*ppdof;
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr  = PetscMalloc1((cn+1),&ci);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(cn+1,&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
   /* Work arrays for rows of P^T*A */
@@ -3091,12 +3091,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((ci[cn]+1),&cj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ci[cn]+1,&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree4(ptadenserow,ptasparserow,denserow,sparserow);CHKERRQ(ierr);
 
   /* Allocate space for ca */
-  ierr = PetscCalloc1((ci[cn]+1),&ca);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ci[cn]+1,&ca);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),cn,cn,ci,cj,ca,C);CHKERRQ(ierr);

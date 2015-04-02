@@ -52,9 +52,9 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing SPRNG; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make realclean && cd SRC && make && cd .. && '+self.installSudo+' cp -f lib/*.a '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f include/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make realclean && cd SRC && make && cd .. && '+self.installSudo+' cp -f lib/*.a '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f include/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPRNG: '+str(e))
       self.postInstall(output+err,os.path.join('SRC','make.PETSC'))

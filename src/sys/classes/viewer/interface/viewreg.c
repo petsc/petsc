@@ -32,7 +32,7 @@ $       ascii[:[filename][:[format][:append]]]    defaults to stdout - format ca
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
 $       draw[:drawtype}                           for example, draw:tikz  or draw:x
 $       socket[:port]                             defaults to the standard output port
-$       ams[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
+$       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
@@ -310,7 +310,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
     ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   }
   if (viewer->ops->setfromoptions) {
-    ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
+    ierr = (*viewer->ops->setfromoptions)(PetscOptionsObject,viewer);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

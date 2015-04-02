@@ -21,7 +21,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, Mat coarse_mat, MatNullSpace
   coarse_nsp_vecs = 0;
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nsp_has_cnst,&nsp_size,&nsp_vecs);CHKERRQ(ierr);
   if (coarse_mat) {
-    ierr = PetscMalloc1((nsp_size+1),&coarse_nsp_vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nsp_size+1,&coarse_nsp_vecs);CHKERRQ(ierr);
     for (i=0;i<nsp_size+1;i++) {
       ierr = MatCreateVecs(coarse_mat,&coarse_nsp_vecs[i],NULL);CHKERRQ(ierr);
     }
@@ -198,29 +198,29 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
 
   if (basis_dofs) {
      /* Create shell ctx */
-     ierr = PetscMalloc(sizeof(*shell_ctx),&shell_ctx);CHKERRQ(ierr);
+    ierr = PetscNew(&shell_ctx);CHKERRQ(ierr);
 
-     /* Create work vectors in shell context */
-     ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
-     ierr = VecSetSizes(shell_ctx->work_small_1,basis_size,basis_size);CHKERRQ(ierr);
-     ierr = VecSetType(shell_ctx->work_small_1,VECSEQ);CHKERRQ(ierr);
-     ierr = VecDuplicate(shell_ctx->work_small_1,&shell_ctx->work_small_2);CHKERRQ(ierr);
-     ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_full_1);CHKERRQ(ierr);
-     ierr = VecSetSizes(shell_ctx->work_full_1,basis_dofs,basis_dofs);CHKERRQ(ierr);
-     ierr = VecSetType(shell_ctx->work_full_1,VECSEQ);CHKERRQ(ierr);
-     ierr = VecDuplicate(shell_ctx->work_full_1,&shell_ctx->work_full_2);CHKERRQ(ierr);
+    /* Create work vectors in shell context */
+    ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
+    ierr = VecSetSizes(shell_ctx->work_small_1,basis_size,basis_size);CHKERRQ(ierr);
+    ierr = VecSetType(shell_ctx->work_small_1,VECSEQ);CHKERRQ(ierr);
+    ierr = VecDuplicate(shell_ctx->work_small_1,&shell_ctx->work_small_2);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_full_1);CHKERRQ(ierr);
+    ierr = VecSetSizes(shell_ctx->work_full_1,basis_dofs,basis_dofs);CHKERRQ(ierr);
+    ierr = VecSetType(shell_ctx->work_full_1,VECSEQ);CHKERRQ(ierr);
+    ierr = VecDuplicate(shell_ctx->work_full_1,&shell_ctx->work_full_2);CHKERRQ(ierr);
 
-     /* Allocate workspace */
-     ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->basis_mat );CHKERRQ(ierr);
-     ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->Kbasis_mat);CHKERRQ(ierr);
-     ierr = MatDenseGetArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
-     ierr = MatDenseGetArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
+    /* Allocate workspace */
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->basis_mat );CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->Kbasis_mat);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
 
-     /* Restrict local null space on selected dofs (Dirichlet or Neumann)
-        and compute matrices N and K*N */
-     ierr = VecDuplicate(shell_ctx->work_full_1,&work1);CHKERRQ(ierr);
-     ierr = VecDuplicate(shell_ctx->work_full_1,&work2);CHKERRQ(ierr);
-     ierr = VecScatterCreate(pcis->vec1_N,local_dofs,work1,(IS)0,&scatter_ctx);CHKERRQ(ierr);
+    /* Restrict local null space on selected dofs (Dirichlet or Neumann)
+       and compute matrices N and K*N */
+    ierr = VecDuplicate(shell_ctx->work_full_1,&work1);CHKERRQ(ierr);
+    ierr = VecDuplicate(shell_ctx->work_full_1,&work2);CHKERRQ(ierr);
+    ierr = VecScatterCreate(pcis->vec1_N,local_dofs,work1,(IS)0,&scatter_ctx);CHKERRQ(ierr);
   }
 
   for (k=0;k<nnsp_size;k++) {

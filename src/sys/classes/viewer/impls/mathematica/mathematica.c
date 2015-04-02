@@ -379,12 +379,12 @@ $    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mo
 $    VecView(Vec vector, PetscViewer viewer)
 
    Options Database Keys:
-$    -viewer_math_linkhost <machine> - The host machine for the kernel
-$    -viewer_math_linkname <name>    - The full link name for the connection
-$    -viewer_math_linkport <port>    - The port for the connection
-$    -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
-$    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
-$    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
++    -viewer_math_linkhost <machine> - The host machine for the kernel
+.    -viewer_math_linkname <name>    - The full link name for the connection
+.    -viewer_math_linkport <port>    - The port for the connection
+.    -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
+.    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
+-    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
 .keywords: PetscViewer, Mathematica, open
 

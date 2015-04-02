@@ -15,15 +15,15 @@
   PetscInt    bs2;                      /*  square of block size */                                  \
   PetscInt    mbs,nbs;               /* rows/bs, columns/bs */                                       \
   PetscScalar *mult_work;            /* work array for matrix vector product*/                       \
+  PetscScalar *sor_workt;            /* work array for SOR */                                        \
   PetscScalar *sor_work;             /* work array for SOR */                                        \
   MatScalar   *saved_values;                                                                    \
                                                                                                      \
-  Mat sbaijMat;                      /* mat in sbaij format */                                       \
+  Mat         sbaijMat;                      /* mat in sbaij format */                                       \
                                                                                                      \
                                                                                                      \
-  MatScalar *idiag;                  /* inverse of block diagonal  */                                \
-  PetscBool idiagvalid              /* if above has correct/current values */
-
+  MatScalar     *idiag;            /* inverse of block diagonal  */                                \
+  PetscBool     idiagvalid         /* if above has correct/current values */ 
 
 typedef struct {
   SEQAIJHEADER(MatScalar);
@@ -74,15 +74,21 @@ PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatForwardSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatForwardSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
@@ -222,6 +228,19 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool);
 
 PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ_private(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscInt*,PetscScalar*);
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat,Mat,PetscInt*);
+
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+
+/* used by mpibaij.c */
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatDisAssemble_MPIBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],PetscScalar []);
+PETSC_INTERN PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
+PETSC_INTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
+PETSC_INTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
+PETSC_INTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
 
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2

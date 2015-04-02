@@ -38,7 +38,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   /* form array of columns we need */
-  ierr = PetscMalloc1((ec+1),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
   while (tpos) {
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc1((ec+1),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
   ec   = 0;
   for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
@@ -168,7 +168,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  ierr = PetscMalloc1((m+1),&nz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
@@ -225,7 +225,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
     }
   }
   if (nt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D n %D",nt,n);
-  ierr = PetscMalloc1((n+1),&auglyrmapd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&auglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
       auglyrmapd[(r_rmapd[i]-1)-cstart] = i;
@@ -249,7 +249,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   }
   if (nt > no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nt+1),&auglyrmapo);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nt+1,&auglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapo[i]) {
       auglyrmapo[(r_rmapo[i]-1)] = i;

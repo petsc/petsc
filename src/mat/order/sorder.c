@@ -203,7 +203,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
     /* Remap row index set to global space */
     ierr = ISGetIndices(lrowperm,&lidx);CHKERRQ(ierr);
-    ierr = PetscMalloc1((rend-rstart),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend-rstart,&idx);CHKERRQ(ierr);
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lrowperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lrowperm);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
     /* Remap column index set to global space */
     ierr = ISGetIndices(lcolperm,&lidx);CHKERRQ(ierr);
-    ierr = PetscMalloc1((rend-rstart),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend-rstart,&idx);CHKERRQ(ierr);
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lcolperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lcolperm);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
+  ierr = MatOrderingRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(MatOrderingList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 

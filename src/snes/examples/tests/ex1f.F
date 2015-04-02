@@ -53,14 +53,14 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscis.h>
-#include <finclude/petscdraw.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscdraw.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -263,10 +263,10 @@
      &     'Solution',300,0,300,300,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
       call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
      &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -305,10 +305,10 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec           X
@@ -421,9 +421,9 @@
       subroutine FormFunction(snes,X,F,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES              snes
@@ -448,7 +448,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayRead(X,lx_v,lx_i,ierr)
       call VecGetArray(F,lf_v,lf_i,ierr)
 
 !  Compute function
@@ -457,7 +457,7 @@
 
 !  Restore vectors
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
       call PetscLogFlops(11.0d0*mx*my,ierr)
@@ -554,11 +554,11 @@
       subroutine FormJacobian(snes,X,jac,jac_prec,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES          snes
@@ -578,7 +578,7 @@
 
 !  Get a pointer to vector data
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayRead(X,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries
 
@@ -586,7 +586,7 @@
 
 !  Restore vector
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
 
 !  Assemble matrix
 
@@ -616,11 +616,11 @@
       subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Common blocks:
       PetscReal    lambda

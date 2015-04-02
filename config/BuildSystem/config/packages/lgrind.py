@@ -18,17 +18,17 @@ class Configure(config.package.Package):
     import os
     try:
       self.framework.pushLanguage('C')
-      output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+' && make clean && make CC=\''+self.framework.getCompiler()+'\'',timeout=2500,log = self.framework.log)
+      output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+' && make clean && make CC=\''+self.framework.getCompiler()+'\'',timeout=2500,log = self.log)
       self.framework.popLanguage()
     except RuntimeError, e:
       self.framework.popLanguage()
-      if self.framework.argDB['with-batch']:
+      if self.argDB['with-batch']:
         self.logPrintBox('Batch build that could not generate lgrind, you may not be able to build all documentation')
         return
       raise RuntimeError('Error running make on lgrind: '+str(e))
-    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'source','lgrind')+' '+os.path.join(self.confDir,'bin'), timeout=25, log = self.framework.log)
-    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'lgrind.sty')+' '+os.path.join(self.confDir,'share'), timeout=25, log = self.framework.log)
-    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'lgrindef')+' '+os.path.join(self.confDir,'share'), timeout=25, log = self.framework.log)
+    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'source','lgrind')+' '+os.path.join(self.confDir,'bin'), timeout=25, log = self.log)
+    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'lgrind.sty')+' '+os.path.join(self.confDir,'share'), timeout=25, log = self.log)
+    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'lgrindef')+' '+os.path.join(self.confDir,'share'), timeout=25, log = self.log)
     return self.confDir
 
   def configure(self):
@@ -37,11 +37,11 @@ class Configure(config.package.Package):
     if self.petscclone.isClone:
       self.getExecutable('lgrind', getFullPath = 1)
 
-      if hasattr(self, 'lgrind') and not self.framework.argDB['download-lgrind']:
-        self.framework.logPrint('Found lgrind, will not install lgrind')
-      elif self.framework.argDB['download-lgrind']:
+      if hasattr(self, 'lgrind') and not self.argDB['download-lgrind']:
+        self.logPrint('Found lgrind, will not install lgrind')
+      elif self.argDB['download-lgrind']:
         config.package.Package.configure(self)
         self.getExecutable('lgrind',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
     else:
-      self.framework.logPrint("Not a clone of PETSc, don't need Lgrind\n")
+      self.logPrint("Not a clone of PETSc, don't need Lgrind\n")
     return

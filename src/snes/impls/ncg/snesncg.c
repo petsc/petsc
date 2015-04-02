@@ -65,7 +65,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NCG"
-static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
+static PetscErrorCode SNESSetFromOptions_NCG(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NCG       *ncg = (SNES_NCG*)snes->data;
   PetscErrorCode ierr;
@@ -74,7 +74,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
   SNESNCGType    ncgtype=ncg->type;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES NCG options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES NCG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL);CHKERRQ(ierr);
   if (debug) {
     ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
