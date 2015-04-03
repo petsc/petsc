@@ -64,8 +64,9 @@ PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, Pet
   }
 
   if (!binary && dtype == PETSC_INT) {
-    char cbuf[256];
-    int ibuf, snum, n = 1;
+    PetscInt n = 1;
+    char     cbuf[256];
+    int      ibuf, snum;
     /* Parse hexadecimal ascii integers */
     for (i = 0; i < count; i++) {
       ierr = PetscViewerRead(viewer, cbuf, &n, PETSC_STRING);CHKERRQ(ierr);
