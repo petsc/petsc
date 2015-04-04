@@ -21,7 +21,7 @@ int main(int argc,char **args)
   ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
-      v = 0. -1.0I;
+      v = 0.0 - 1.0*PETSC_i;
       if (i>j && i-j<2)   {ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);}
     }
   }
