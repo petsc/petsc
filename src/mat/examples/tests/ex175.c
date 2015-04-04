@@ -1,5 +1,5 @@
 
-static char help[] = "Tests  use of MatZeroRows() for uniprocessor matrices.\n\n";
+static char help[] = "Tests MatCreateHermitianTranspose().\n\n";
 
 #include <petscmat.h>
 
