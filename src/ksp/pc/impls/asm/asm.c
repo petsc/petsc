@@ -849,7 +849,8 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
-    PC communicator must call this routine.
+    PC communicator must call this routine. If MatIncreaseOverlap is used,
+    use option -mat_increase_overlap when the problem size large.
 
     Logically Collective on PC
 
