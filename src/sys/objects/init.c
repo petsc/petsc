@@ -322,7 +322,9 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   }
 
+#if defined(PETSC_USE_LOG)
   ierr = PetscOptionsHasName(NULL,"-objects_dump",&PetscObjectsLog);CHKERRQ(ierr);
+#endif
 
   /*
       Set the display variable for graphics
