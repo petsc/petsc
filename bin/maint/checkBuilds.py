@@ -139,7 +139,7 @@ class BuildChecker(script.Script):
     'sgiMipsPro': [r'^cc-[0-9]* (cc|CC|f77): (?P<type>REMARK|WARNING|ERROR) File = (?P<filename>.*), Line = (?P<line>[0-9]*)'],
     ## WorkShop Compilers 5.0 98/12/15 C++ 5.0
     ##   "dl.c", line 259: Warning (Anachronism): Cannot cast from void* to int(*)(const char*).
-    'solaris': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+): (?P<type>Warning|Error)( \((?P<subtype>\w+)\):)?'],
+    'solaris': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+): (?P<type>[Ww]arning|[Ee]rror)( \((?P<subtype>\w+)\):)?'],
     ## Win32fe, Petsc front end for Windows compilers
     ##   Warning: win32fe Include Path Not Found: /home/balay/petsc-test
     'win32fe': [r'(?P<type>Warning|Error): (?P<filename>win32fe)']
