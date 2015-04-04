@@ -6718,7 +6718,8 @@ PetscErrorCode  MatDestroySeqNonzeroStructure(Mat *mat)
 /*@
    MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
    replaces the index sets by larger ones that represent submatrices with
-   additional overlap.
+   additional overlap. Use option -mat_increase_overlap_k when the problem
+    size is large.
 
    Collective on Mat
 
