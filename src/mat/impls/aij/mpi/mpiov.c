@@ -24,15 +24,15 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_K(Mat,PetscInt,IS*,Petsc
 PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
-  PetscBool      mat_overlap_k,set;
+  PetscBool      mat_increase_overlap_k,set;
   PetscInt       i;
 
   PetscFunctionBegin;
   if (ov < 0) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
-  ierr = PetscOptionsGetBool(NULL,"-mat_overlap_k",&mat_overlap_k,&set);CHKERRQ(ierr);
-  if(!set) mat_overlap_k = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-mat_increase_overlap_k",&mat_increase_overlap_k,&set);CHKERRQ(ierr);
+  if(!set) mat_increase_overlap_k = PETSC_FALSE;
   for (i=0; i<ov; ++i) {
-    if(mat_overlap_k){
+    if(mat_increase_overlap_k){
       ierr = MatIncreaseOverlap_MPIAIJ_Once_K(C,imax,is);CHKERRQ(ierr);
     }else{
       ierr = MatIncreaseOverlap_MPIAIJ_Once(C,imax,is);CHKERRQ(ierr);
