@@ -3,37 +3,37 @@
 
 typedef struct {
   Mat A;
-} Mat_Transpose;
+} Mat_HT;
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMult_Transpose"
-PetscErrorCode MatMult_Transpose(Mat N,Vec x,Vec y)
+#define __FUNCT__ "MatMult_HT"
+PetscErrorCode MatMult_HT(Mat N,Vec x,Vec y)
 {
-  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  Mat_HT         *Na = (Mat_HT*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultTranspose(Na->A,x,y);CHKERRQ(ierr);
+  ierr = MatMultHermitianTranspose(Na->A,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_Transpose"
-PetscErrorCode MatMultAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
+#define __FUNCT__ "MatMultAdd_HT"
+PetscErrorCode MatMultAdd_HT(Mat N,Vec v1,Vec v2,Vec v3)
 {
-  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  Mat_HT         *Na = (Mat_HT*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultTransposeAdd(Na->A,v1,v2,v3);CHKERRQ(ierr);
+  ierr = MatMultHermitianTransposeAdd(Na->A,v1,v2,v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_Transpose"
-PetscErrorCode MatMultTranspose_Transpose(Mat N,Vec x,Vec y)
+#define __FUNCT__ "MatMultHermitianTranspose_HT"
+PetscErrorCode MatMultHermitianTranspose_HT(Mat N,Vec x,Vec y)
 {
-  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  Mat_HT         *Na = (Mat_HT*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -42,10 +42,10 @@ PetscErrorCode MatMultTranspose_Transpose(Mat N,Vec x,Vec y)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_Transpose"
-PetscErrorCode MatMultTransposeAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
+#define __FUNCT__ "MatMultHermitianTransposeAdd_HT"
+PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N,Vec v1,Vec v2,Vec v3)
 {
-  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  Mat_HT         *Na = (Mat_HT*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -54,10 +54,10 @@ PetscErrorCode MatMultTransposeAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Transpose"
-PetscErrorCode MatDestroy_Transpose(Mat N)
+#define __FUNCT__ "MatDestroy_HT"
+PetscErrorCode MatDestroy_HT(Mat N)
 {
-  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  Mat_HT         *Na = (Mat_HT*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -67,27 +67,26 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_Transpose"
-PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
+#define __FUNCT__ "MatDuplicate_HT"
+PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat* m)
 {
-  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  Mat_HT         *Na = (Mat_HT*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (op == MAT_COPY_VALUES) {
-    ierr = MatTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
+    ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
   } else if (op == MAT_DO_NOT_COPY_VALUES) {
     ierr = MatDuplicate(Na->A,MAT_DO_NOT_COPY_VALUES,m);CHKERRQ(ierr);
-    ierr = MatTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
+    ierr = MatHermitianTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_SUP,"MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
-#define __FUNCT__ "MatCreateTranspose"
+#define __FUNCT__ "MatCreateHermitianTranspose"
 /*@
-      MatCreateTranspose - Creates a new matrix object that behaves like A'
+      MatCreateHermitianTranspose - Creates a new matrix object that behaves like A'*
 
    Collective on Mat
 
@@ -95,22 +94,22 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
 .   A  - the (possibly rectangular) matrix
 
    Output Parameter:
-.   N - the matrix that represents A'
+.   N - the matrix that represents A'*
 
    Level: intermediate
 
-   Notes: The transpose A' is NOT actually formed! Rather the new matrix
-          object performs the matrix-vector product by using the MatMultTranspose() on
+   Notes: The hermitian transpose A' is NOT actually formed! Rather the new matrix
+          object performs the matrix-vector product by using the MatMultHermitianTranspose() on
           the original matrix
 
-.seealso: MatCreateNormal(), MatMult(), MatMultTranspose(), MatCreate()
+.seealso: MatCreateNormal(), MatMult(), MatMultHermitianTranspose(), MatCreate()
 
 @*/
-PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
+PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;
-  Mat_Transpose  *Na;
+  Mat_HT         *Na;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -125,16 +124,15 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;
 
-  (*N)->ops->destroy          = MatDestroy_Transpose;
-  (*N)->ops->mult             = MatMult_Transpose;
-  (*N)->ops->multadd          = MatMultAdd_Transpose;
-  (*N)->ops->multtranspose    = MatMultTranspose_Transpose;
-  (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose;
-  (*N)->ops->duplicate        = MatDuplicate_Transpose;
-  (*N)->assembled             = PETSC_TRUE;
+  (*N)->ops->destroy                    = MatDestroy_HT;
+  (*N)->ops->mult                       = MatMult_HT;
+  (*N)->ops->multadd                    = MatMultAdd_HT;
+  (*N)->ops->multhermitiantranspose     = MatMultHermitianTranspose_HT;
+  (*N)->ops->multhermitiantransposeadd  = MatMultHermitianTransposeAdd_HT;
+  (*N)->ops->duplicate                  = MatDuplicate_HT;
+  (*N)->assembled                       = PETSC_TRUE;
 
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
