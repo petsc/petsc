@@ -423,7 +423,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   if (a->inode.size) {
     B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   }
-  ierr = Mat_CheckInode_FactorLU(B);CHKERRQ(ierr);
+  ierr = MatSeqAIJCheckInode_FactorLU(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -764,7 +764,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   (C)->ops->solve          = MatSolve_SeqAIJ_inplace;
   (C)->ops->solvetranspose = MatSolveTranspose_SeqAIJ_inplace;
 
-  ierr = Mat_CheckInode(C,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSeqAIJCheckInode(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1691,7 +1691,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
   fact->info.fill_ratio_given  = info->fill;
   fact->info.fill_ratio_needed = 1.0;
   fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ;
-  ierr = Mat_CheckInode_FactorLU(fact);CHKERRQ(ierr);
+  ierr = MatSeqAIJCheckInode_FactorLU(fact);CHKERRQ(ierr);
 
   b       = (Mat_SeqAIJ*)(fact)->data;
   b->row  = isrow;
@@ -1877,7 +1877,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   if (a->inode.size) {
     (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   }
-  ierr = Mat_CheckInode_FactorLU(fact);CHKERRQ(ierr);
+  ierr = MatSeqAIJCheckInode_FactorLU(fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2668,6 +2668,21 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIBAIJ(Mat A,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_MPIBAIJ"
+PetscErrorCode MatShift_MPIBAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_MPIBAIJ    *maij = (Mat_MPIBAIJ*)Y->data;
+  Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ*)maij->A->data,*bij = (Mat_SeqBAIJ*)maij->B->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz && !bij->nz) {
+    ierr = MatMPIBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL,0,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
@@ -2716,7 +2731,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatCopy_MPIBAIJ,
                                 /*44*/ 0,
                                        MatScale_MPIBAIJ,
-                                       0,
+                                       MatShift_MPIBAIJ,
                                        0,
                                        MatZeroRowsColumns_MPIBAIJ,
                                 /*49*/ 0,

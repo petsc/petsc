@@ -2317,7 +2317,7 @@ endofwhile:;
     }
   }
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
-  ierr = Mat_CheckInode(C,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSeqAIJCheckInode(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4074,8 +4074,8 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
     do not need to recompute the inodes
 */
 #undef __FUNCT__
-#define __FUNCT__ "Mat_CheckInode"
-PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
+#define __FUNCT__ "MatSeqAIJCheckInode"
+PetscErrorCode MatSeqAIJCheckInode(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -4085,8 +4085,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
 
   PetscFunctionBegin;
   if (!a->inode.use) PetscFunctionReturn(0);
-  if (a->inode.checked && samestructure) PetscFunctionReturn(0);
-
+  if (a->inode.checked && A->nonzerostate == a->inode.mat_nonzerostate) PetscFunctionReturn(0);
 
   m = A->rmap->n;
   if (a->inode.size) ns = a->inode.size;
@@ -4150,7 +4149,8 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
     a->inode.size       = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
   }
-  a->inode.checked = PETSC_TRUE;
+  a->inode.checked          = PETSC_TRUE;
+  a->inode.mat_nonzerostate = A->nonzerostate;
   PetscFunctionReturn(0);
 }
 
@@ -4171,7 +4171,7 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
     ierr                = PetscMalloc1(m+1,&c->inode.size);CHKERRQ(ierr);
     c->inode.node_count = a->inode.node_count;
     ierr                = PetscMemcpy(c->inode.size,a->inode.size,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    /* note the table of functions below should match that in Mat_CheckInode() */
+    /* note the table of functions below should match that in MatSeqAIJCheckInode() */
     if (!B->factortype) {
       B->ops->mult              = MatMult_SeqAIJ_Inode;
       B->ops->sor               = MatSOR_SeqAIJ_Inode;
@@ -4212,16 +4212,16 @@ PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt 
   PetscFunctionReturn(0);
 }
 /*
-   Mat_CheckInode_FactorLU - Check Inode for factored seqaij matrix.
-   Modified from Mat_CheckInode().
+   MatSeqAIJCheckInode_FactorLU - Check Inode for factored seqaij matrix.
+   Modified from MatSeqAIJCheckInode().
 
    Input Parameters:
 .  Mat A - ILU or LU matrix factor
 
 */
 #undef __FUNCT__
-#define __FUNCT__ "Mat_CheckInode_FactorLU"
-PetscErrorCode Mat_CheckInode_FactorLU(Mat A)
+#define __FUNCT__ "MatSeqAIJCheckInode_FactorLU"
+PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;

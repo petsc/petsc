@@ -347,7 +347,8 @@ typedef enum {MAT_OPTION_MIN = -5,
               MAT_OPTION_MAX = 19} MatOption;
 
 PETSC_EXTERN const char *MatOptions[];
-PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );
+PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
+PETSC_EXTERN PetscErrorCode MatGetOption(Mat,MatOption,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatGetType(Mat,MatType*);
 
 PETSC_EXTERN PetscErrorCode MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);

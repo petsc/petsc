@@ -80,16 +80,17 @@ typedef struct {
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
-  MatScalar *bdiag,*ibdiag,*ssor_work;        /* diagonal blocks of matrix used for MatSOR_SeqAIJ_Inode() */
-  PetscInt  bdiagsize;                         /* length of bdiag and ibdiag */
-  PetscBool ibdiagvalid;                       /* do ibdiag[] and bdiag[] contain the most recent values */
+  MatScalar        *bdiag,*ibdiag,*ssor_work;        /* diagonal blocks of matrix used for MatSOR_SeqAIJ_Inode() */
+  PetscInt         bdiagsize;                         /* length of bdiag and ibdiag */
+  PetscBool        ibdiagvalid;                       /* do ibdiag[] and bdiag[] contain the most recent values */
 
-  PetscBool use;
-  PetscInt  node_count;                     /* number of inodes */
-  PetscInt  *size;                          /* size of each inode */
-  PetscInt  limit;                          /* inode limit */
-  PetscInt  max_limit;                      /* maximum supported inode limit */
-  PetscBool checked;                        /* if inodes have been checked for */
+  PetscBool        use;
+  PetscInt         node_count;                     /* number of inodes */
+  PetscInt         *size;                          /* size of each inode */
+  PetscInt         limit;                          /* inode limit */
+  PetscInt         max_limit;                      /* maximum supported inode limit */
+  PetscBool        checked;                        /* if inodes have been checked for */
+  PetscObjectState mat_nonzerostate;               /* non-zero state when inodes were checked for */
 } Mat_SeqAIJ_Inode;
 
 PETSC_INTERN PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
@@ -297,8 +298,8 @@ PETSC_INTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat);
-PETSC_INTERN PetscErrorCode Mat_CheckInode(Mat,PetscBool);
-PETSC_INTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat);
+PETSC_INTERN PetscErrorCode MatSeqAIJCheckInode(Mat);
+PETSC_INTERN PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 

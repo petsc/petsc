@@ -1722,6 +1722,22 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_MPISBAIJ"
+PetscErrorCode MatShift_MPISBAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_MPISBAIJ    *maij = (Mat_MPISBAIJ*)Y->data;
+  Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ*)maij->A->data,*bij = (Mat_SeqSBAIJ*)maij->B->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz && !bij->nz) {
+    ierr = MatMPISBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL,0,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatGetRow_MPISBAIJ,
@@ -1769,7 +1785,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatCopy_MPISBAIJ,
                                /* 44*/ 0,
                                        MatScale_MPISBAIJ,
-                                       0,
+                                       MatShift_MPISBAIJ,
                                        0,
                                        0,
                                /* 49*/ 0,
