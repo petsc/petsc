@@ -4945,7 +4945,7 @@ The TS library provides a framework based on discrete adjoint models
 for sensitivity analysis for ODEs and DAEs.  The ODE/DAE solution
 process (henceforth called the forward run) can be obtained by using
 either explicit or implicit solvers in TS, depending on the problem
-propeties. Currently supported method types are TSRK (Runge-Kutta) explicit
+properties. Currently supported method types are TSRK (Runge-Kutta) explicit
 methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
 
 Consider the ODE/DAE
@@ -4971,7 +4971,7 @@ TSSetSaveTrajectory(TS ts),
 \end{tabbing}
 then calls TSSolve() in the usual manner.
 
- One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
+One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
 \begin{tabbing}
 TSAdjointSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 \end{tabbing}
@@ -4991,10 +4991,19 @@ TSAdjointSetCostIntegrand(\=TS ts,PetscInt numcost,\\
                           \>PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 \end{tabbing}
 where $\mathrm{drdyf}= dr /dy$, $\mathrm{drdpf} = dr /dp$. 
+
 Lastly one starts the backward run by calling
 \begin{tabbing}
 TSAdjointSolve(TS ts).
 \end{tabbing}
+
+One can get the value of the integral term by calling 
+\begin{tabbing}
+TSAdjointGetCostIntegral(TS ts,Vec *q). 
+\end{tabbing}
+If TSAdjointSetCostGradients() and TSAdjointSetCostGradients() are called before TSSolve(), the integral term will be evaluated in the forward run. 
+Otherwise, the computation will take place in the backward run (inside TSAdjointSolve()). 
+Note that this allows the evaluation of the integral term in the cost function without having to run the adjoint solvers.  
 
 To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}.
 The problem is to study dynamic security of power system when there are credible contingencies such as short-circuits or loss of generators, transmission lines, or loads. 

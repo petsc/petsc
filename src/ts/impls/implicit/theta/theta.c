@@ -217,7 +217,6 @@ static PetscErrorCode TSStep_Theta(TS ts)
       goto reject_step;
     }
 
-    /* This is only used in the context of TSAdjoint. Evaluate cost integral if there is any */
     if (ts->vec_costintegral) {
       /* Evolve ts->vec_costintegral to compute integrals */
       if (th->endpoint) {
@@ -271,7 +270,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
   /* Build RHS */
-  if (ts->vec_costintegral) { /* Cost function has an integral  term */
+  if (ts->vec_costintegral) { /* Cost function has an integral term */
     if (th->endpoint) {
       ierr = TSAdjointComputeDRDYFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdy);CHKERRQ(ierr);
     }else {
