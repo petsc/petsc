@@ -7,7 +7,7 @@ LOCDIR          = src/vec/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
                 ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c \
-                ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex45.c ex46.c
+                ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex45.c ex46.c ex47.
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
@@ -209,6 +209,11 @@ ex45: ex45.o  chkopts
 ex46: ex46.o  chkopts
 	-${CLINKER} -o ex46 ex46.o ${PETSC_VEC_LIB}
 	${RM} -f ex46.o
+
+ex47: ex47.o  chkopts
+	-${CLINKER} -o ex47 ex47.o ${PETSC_VEC_LIB}
+	${RM} -f ex47.o
+
 
 #--------------------------------------------------------------------------
 runex1:
@@ -480,6 +485,10 @@ runex46_mpiio:
 	   else printf "${PWD}\nPossible problem with with ex46_mpiio, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
 
+runex47:
+	-@${MPIEXEC} -n 4 ./ex47
+	-@${MPIEXEC} -n 4 ./ex47  -viewer_hdf5_base_dimension2
+
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
@@ -500,5 +509,6 @@ TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc r
                               ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm
 TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm \
                               ex4.PETSc runex4_cusp runex4_cusp2 ex4.rm 
+TESTEXAMPLES_HDF5         = ex47.PETSc runex47 ex47.rm
 
 include ${PETSC_DIR}/lib/petsc-conf/test
