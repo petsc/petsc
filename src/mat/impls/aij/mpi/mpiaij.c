@@ -2893,10 +2893,10 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   MPI_Comm       comm;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
-  PetscInt       i,nz,j,rstart,rend,mmax,maxnz = 0,grows,gcols;
+  PetscInt       i,nz,j,rstart,rend,mmax,maxnz = 0;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens = NULL,*procsnz = NULL,*offlens = NULL,jj,*mycols,*smycols;
-  PetscInt       cend,cstart,n,*rowners,sizesset=1;
+  PetscInt       cend,cstart,n,*rowners;
   int            fd;
   PetscInt       bs = newMat->rmap->bs;
 
@@ -2917,20 +2917,12 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (bs < 0) bs = 1;
 
-  if (newMat->rmap->n < 0 && newMat->rmap->N < 0 && newMat->cmap->n < 0 && newMat->cmap->N < 0) sizesset = 0;
-
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M    = header[1]; N = header[2];
-  /* If global rows/cols are set to PETSC_DECIDE, set it to the sizes given in the file */
-  if (sizesset && newMat->rmap->N < 0) newMat->rmap->N = M;
-  if (sizesset && newMat->cmap->N < 0) newMat->cmap->N = N;
 
   /* If global sizes are set, check if they are consistent with that given in the file */
-  if (sizesset) {
-    ierr = MatGetSize(newMat,&grows,&gcols);CHKERRQ(ierr);
-  }
-  if (sizesset && newMat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newMat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (newMat->rmap->N >= 0 && newMat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows:Matrix in file has (%D) and input matrix has (%D)",newMat->rmap->N,M);
+  if (newMat->cmap->N >=0 && newMat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols:Matrix in file has (%D) and input matrix has (%D)",newMat->cmap->N,N);
 
   /* determine ownership of all (block) rows */
   if (M%bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows (%d) and block size (%d)",M,bs);
@@ -3034,9 +3026,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
-  if (!sizesset) {
-    ierr = MatSetSizes(newMat,m,n,M,N);CHKERRQ(ierr);
-  }
+  ierr = MatSetSizes(newMat,m,n,M,N);CHKERRQ(ierr);
 
   if (bs > 1) {ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);}
 
