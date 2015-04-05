@@ -920,6 +920,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_USE_LOG)
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+extern PetscBool   PetscObjectsLog;
 #endif
 
 #undef __FUNCT__
@@ -1179,17 +1180,19 @@ PetscErrorCode  PetscFinalize(void)
   /*
        List all objects the user may have forgot to free
   */
-  ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    MPI_Comm local_comm;
-    char     string[64];
+  if (PetscObjectsLog) {
+    ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      MPI_Comm local_comm;
+      char     string[64];
 
-    ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
-    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
+      ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+    }
   }
 #endif
 
