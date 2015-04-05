@@ -6534,7 +6534,7 @@ PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInf
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted (on this processor, may be zero)
-.  irow, icol - index sets of rows and columns to extract (must be sorted)
+.  irow, icol - index sets of rows and columns to extract
 -  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -6545,8 +6545,10 @@ PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInf
    (from both sequential and parallel matrices). Use MatGetSubMatrix()
    to extract a parallel submatrix.
 
-   Currently both row and column indices must be sorted to guarantee
-   correctness with all matrix types.
+   Some matrix types place restrictions on the row and column
+   indices, such as that they be sorted or that they be equal to each other.
+
+   The index sets may not have duplicate entries.
 
    When extracting submatrices from a parallel matrix, each processor can
    form a different submatrix by setting the rows and columns of its
@@ -7502,7 +7504,10 @@ M*/
     Notes:
     The submatrix will be able to be multiplied with vectors using the same layout as iscol.
 
-    The rows in isrow will be sorted into the same order as the original matrix on each process.
+    Some matrix types place restrictions on the row and column indices, such
+    as that they be sorted or that they be equal to each other.
+
+    The index sets may not have duplicate entries.
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls

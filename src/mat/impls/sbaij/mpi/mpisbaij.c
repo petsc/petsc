@@ -1709,9 +1709,15 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscBool      flg;
+  PetscBool      flg,sorted;
 
   PetscFunctionBegin;
+  for (i = 0; i < n; i++) {
+    ierr = ISSorted(irow[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Row index set %d not sorted",i);
+    ierr = ISSorted(icol[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Column index set %d not sorted",i);
+  }
   ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);

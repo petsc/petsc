@@ -86,11 +86,9 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   PetscInt       *aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
-  PetscBool      flag,sorted;
+  PetscBool      flag;
 
   PetscFunctionBegin;
-  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
@@ -143,6 +141,21 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
       }
     }
   }
+  /* sort */
+  {
+    MatScalar *work;
+
+    ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
+    for (i=0; i<nrows; i++) {
+      PetscInt ilen;
+      mat_i = c->i[i];
+      mat_j = c->j + mat_i;
+      mat_a = c->a + mat_i*bs2;
+      ilen  = c->ilen[i];
+      ierr  = PetscSortIntWithDataArray(ilen,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
 
   /* Free work space */
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
@@ -177,19 +190,25 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
-  count = 0;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
-    if (vary[i]==bs) iary[count++] = i;
+  }
+  count = 0;
+  for (i=0; i<nrows; i++) {
+    PetscInt j = irow[i] / bs;
+    if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
 
   ierr = PetscMemzero(vary,(a->mbs)*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
-  count = 0;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
-    if (vary[i]==bs) iary[count++] = i;
+  }
+  count = 0;
+  for (i=0; i<ncols; i++) {
+    PetscInt j = icol[i] / bs;
+    if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);

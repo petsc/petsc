@@ -1214,10 +1214,34 @@ runex42:
 	   ${RM} -f ex42_1.tmp ex42_12.tmp
 runex42_2:
 	-@${MPIEXEC} -n 1  ./ex42 -f ${DATAFILESPATH}/matrices/arco1 \
-	   -nd 5 -ov 2 > ex42_2.tmp 2>&1; \
+	   -nd 8 -ov 2 > ex42_2.tmp 2>&1; \
 	   if (${DIFF} output/ex42_2.out ex42_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex42_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex42_2.tmp
+runex42_unsorted_seq:
+	-@${MPIEXEC} -n 1  ./ex42 -f ${DATAFILESPATH}/matrices/arco1 \
+	   -nd 8 -test_unsorted > ex42_unsorted_seq.tmp 2>&1; \
+	   if (${DIFF} output/ex42_unsorted_seq.out ex42_unsorted_seq.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex42_unsorted_seq, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex42_unsorted_seq.tmp
+runex42_unsorted_mpi:
+	-@${MPIEXEC} -n 3  ./ex42 -f ${DATAFILESPATH}/matrices/arco1 \
+	   -nd 8 -test_unsorted > ex42_unsorted_mpi.tmp 2>&1; \
+	   if (${DIFF} output/ex42_unsorted_mpi.out ex42_unsorted_mpi.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex42_unsorted_mpi, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex42_unsorted_mpi.tmp
+runex42_unsorted_baij_seq:
+	-@${MPIEXEC} -n 1  ./ex42 -f ${DATAFILESPATH}/matrices/cfd.1.10 \
+	   -nd 8 -mat_type baij -test_unsorted > ex42_unsorted_baij_seq.tmp 2>&1; \
+	   if (${DIFF} output/ex42_unsorted_baij_seq.out ex42_unsorted_baij_seq.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex42_unsorted_baij_seq, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex42_unsorted_baij_seq.tmp
+runex42_unsorted_baij_mpi:
+	-@${MPIEXEC} -n 3  ./ex42 -f ${DATAFILESPATH}/matrices/cfd.1.10 \
+	   -nd 8 -mat_type baij -test_unsorted > ex42_unsorted_baij_mpi.tmp 2>&1; \
+	   if (${DIFF} output/ex42_unsorted_baij_mpi.out ex42_unsorted_baij_mpi.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex42_unsorted_baij_mpi, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex42_unsorted_baij_mpi.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex47:
@@ -2325,7 +2349,7 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm e
 TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm  ex99.PETSc ex99.rm \
                                  ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm ex42.PETSc runex42 \
-                                 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
+                                 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
                                  runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
