@@ -6480,9 +6480,6 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
   Collective on MPI_Comm
 
   Input Parameter:
-. comm - The communicator
-
-  Input Parameter:
 . tsin    - The input TS
 
   Output Parameter:
@@ -6491,14 +6488,14 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
   Notes:
   This function is used to create a clone of a TS object. It is used in ARKIMEX for initializing the slope for first stage explicit methods. It will likely be replaced in the future with a mechanism of switching methods on the fly. 
 
-  When using TSDestroy() on a clone the user has to first reset the correct TS reference in the embedded SNES object: e.g.: by running SNES snes_dup=NULL; ierr = TSGetSNES(ts,&snes_dup);CHKERRQ(ierr); ierr = TSSetSNES(ts,snes_dup);CHKERRQ(ierr);
+  When using TSDestroy() on a clone the user has to first reset the correct TS reference in the embedded SNES object: e.g.: by running SNES snes_dup=NULL; TSGetSNES(ts,&snes_dup); ierr = TSSetSNES(ts,snes_dup);
 
   Level: developer
 
 .keywords: TS, clone
 .seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
-PetscErrorCode  TSClone(MPI_Comm comm, TS tsin, TS *tsout)
+PetscErrorCode  TSClone(TS tsin, TS *tsout)
 {
   TS             t;
   PetscErrorCode ierr;
@@ -6507,7 +6504,7 @@ PetscErrorCode  TSClone(MPI_Comm comm, TS tsin, TS *tsout)
   PetscValidPointer(tsin,1);
   *tsout = NULL;
 
-  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
 
   /* General TS description */
   t->numbermonitors    = 0;

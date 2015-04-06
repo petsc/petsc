@@ -4817,9 +4817,15 @@ The user provides three pieces of information, the APIs for which have been desc
 \item Jacobian $F_u + (shift) F_{\dot u}$ using TSSetIJacobian().
 \end{itemize}
 
-If the problem is defined only implicitly through TSSetIFunction() or
-a DAE is being solved then the user needs to set TSSetEquationType() to
-TS\_EQ\_IMPLICIT or higher. An IMEX problem representation can be made
+The user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher if the problem is implicit; e.g.,
+$F(t,u,\dot u) = M \dot u - f(t,u)$, where M is not the identity matrix: 
+\begin{itemize}
+\item the problem is an implicit ODE (defined implicitly through TSSetIFunction())
+or
+\item a DAE is being solved.
+\end{itemize}
+An IMEX problem representation can be made
 implicit by setting TSARKIMEXSetFullyImplicit().
 
 Some use-case examples for TSARKIMEX are listed in Table \ref{tab:DE:forms} and a
