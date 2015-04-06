@@ -2182,7 +2182,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "I don't think this makes sense for complex numbers");
 #else
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
-#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
@@ -2194,6 +2193,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
     for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
   }
   PetscFunctionReturn(0);
+#endif
 }
 
 #if 0

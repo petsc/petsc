@@ -1064,7 +1064,6 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void 
     }
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
