@@ -2929,12 +2929,12 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
   if (isbinary) {
-    PetscInt classid, num = 1, len = 256;
+    PetscInt classid;
     char     type[256];
 
-    ierr = PetscViewerBinaryRead(viewer,&classid,&num,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
     if (classid != DM_FILE_CLASSID) SETERRQ1(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not DM next in file, classid found %d",(int)classid);
-    ierr = PetscViewerBinaryRead(viewer,type,&len,PETSC_CHAR);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
     ierr = DMSetType(newdm, type);CHKERRQ(ierr);
     if (newdm->ops->load) {ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);}
   } else if (ishdf5) {

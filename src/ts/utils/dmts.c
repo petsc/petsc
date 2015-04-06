@@ -20,19 +20,18 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
 #define __FUNCT__ "DMTSLoad"
 PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
 {
-  PetscInt       num = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,&num,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionview,&num,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionload,&num,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionview,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionload,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
   if (kdm->ops->ifunctionload) {
     ierr = (*kdm->ops->ifunctionload)(&kdm->ifunctionctx,viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,&num,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianview,&num,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianload,&num,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianview,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianload,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
   if (kdm->ops->ijacobianload) {
     ierr = (*kdm->ops->ijacobianload)(&kdm->ijacobianctx,viewer);CHKERRQ(ierr);
   }

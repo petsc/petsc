@@ -1004,11 +1004,11 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
    Input Parameters:
 +  viewer - the ascii viewer
 .  data - location to write the data
-.  count - number of items of data to read
+.  num - number of items of data to read
 -  datatype - type of data to read
 
    Output Parameters:
-.  count - number of items of data actually read
+.  count - number of items of data actually read, or NULL
 
    Level: beginner
 
@@ -1018,7 +1018,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt *count,PetscDataType dtype)
+PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,PetscInt *count,PetscDataType dtype)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = vascii->fd;
@@ -1027,7 +1027,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt *coun
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  for (i=0; i<*count; i++) {
+  for (i=0; i<num; i++) {
     if (dtype == PETSC_CHAR)         ret = fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
 #if PETSC_USE_64BIT_INDICES
@@ -1046,7 +1046,8 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt *coun
     if (!ret) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Conversion error for data type %d", (int) dtype);
     else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */
   }
-  *count = i;
+  if (count) *count = i;
+  else if (ret < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %D < %D items", i, num);
   PetscFunctionReturn(0);
 }
 

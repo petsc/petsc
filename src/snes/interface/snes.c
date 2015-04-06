@@ -155,7 +155,7 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
-  PetscInt       classid, num = 1, len = 256;
+  PetscInt       classid;
   char           type[256];
   KSP            ksp;
   DM             dm;
@@ -167,9 +167,9 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,&num,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (classid != SNES_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Not SNES next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,&len,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = SNESSetType(snes, type);CHKERRQ(ierr);
   if (snes->ops->load) {
     ierr = (*snes->ops->load)(snes,viewer);CHKERRQ(ierr);

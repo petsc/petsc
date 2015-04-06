@@ -605,7 +605,6 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   PetscInt          type,rows,vecrows,tr[2];
   DM_DA             *dd = (DM_DA*)da->data;
   PetscBool         skipheader;
-  PetscInt          num = 2;
 
   PetscFunctionBegin;
   ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
@@ -613,7 +612,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   if (!write) {
     /* Read vector header. */
     if (!skipheader) {
-      ierr = PetscViewerBinaryRead(viewer,tr,&num,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
       type = tr[0];
       rows = tr[1];
       if (type != VEC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
