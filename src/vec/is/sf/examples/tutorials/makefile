@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR   = src/vec/is/sf/examples/tutorials/
-EXAMPLESC        = ex1.c
+EXAMPLESC        = ex1.c ex2.c
 EXAMPLESF        =
 
 include ${PETSC_DIR}/lib/petsc-conf/variables
@@ -14,6 +14,9 @@ ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
 
+ex2: ex2.o chkopts
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_VEC_LIB}
+	${RM} -f ex2.o
 #------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 4 ./ex1 -test_bcast -sf_type window > ex1_1.tmp 2>&1; \
@@ -72,7 +75,18 @@ runex1_7_basic:
 	   ${DIFF} output/ex1_7_basic.out ex1_7.tmp || printf "${PWD}\nPossible problem with ex1_7_basic, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_7.tmp
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1_basic runex1_2_basic runex1_3_basic runex1_4_basic runex1_5_basic runex1_6_basic runex1_7_basic ex1.rm
+runex2_basic:
+        -@{MPIEXEC} -n 2 ./ex2 -sf_type basic > ex2.tmp 2>&1; \
+          ${DIFF} output/ex2_basic.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_basic, diffs above\n=========================================\n"; \
+          ${RM} -f ex2.tmp
+
+runex2_window:
+        -@{MPIEXEC} -n 2 ./ex2 -sf_type window > ex2.tmp 2>&1; \
+          ${DIFF} output/ex2_window.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_window, diffs above\n=========================================\n"; \
+          ${RM} -f ex2.tmp
+
+TESTEXAMPLES_C		    = ex1.PETSc runex1_basic runex1_2_basic runex1_3_basic runex1_4_basic runex1_5_basic runex1_6_basic runex1_7_basic ex1.rm \
+                                ex2.PETSc runex2_basic runex2_window ex2.rm
 TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =
