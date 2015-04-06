@@ -354,13 +354,13 @@ Thanks,
         newline = False
         warning = allwarnings[i]
         if i == 0 or not warning[0] == allwarnings[i-1][0]:
-          buf +="\n---\n\nwarnings attributed to commit %s\n" % warning[0]
+          buf +="\n----\n\nwarnings attributed to commit %s\n" % warning[0]
           newcommit = True
         if newcommit or not warning[1] == allwarnings[i-1][1]:
           buf +="\n  %s\n" % warning[1]
         for message in warning[2]:
           buf +="    %s\n" % message
-      buf += '\n'
+      buf += '\n----\nTo opt-out from receiving these messages - send a request to petsc-dev@mcs.anl.gov.\n'
 
       #The followng chars appear to cause grief to sendmail - so replace them
       buf = buf.replace("‘","'").replace("’","'")
@@ -369,14 +369,18 @@ Thanks,
       import smtplib
       from email.mime.text import MIMEText
 
+      checkbuilds = 'PETSc checkBuilds <petsc-checkbuilds@mcs.anl.gov>'
+      dev = 'petsc-dev <petsc-dev@mcs.anl.gov>'
       today = self.argDB['blameMailDate']
-      FROM = 'checkBuilds <petsc-dev@mcs.anl.gov>'
-      TO   =  [author,'bsmith@mcs.anl.gov','balay@mcs.anl.gov']
+      FROM = checkbuilds
+      TO = [author,checkbuilds]
+      REPLY_TO = [dev,checkbuilds]
 
       msg = MIMEText(buf)
       msg['From'] = FROM
       msg['To'] = ','.join(TO)
-      msg['Subject'] = "Subject: PETSc nightly blame digest, %s\n\n" % today
+      msg['Reply-To'] = ','.join(REPLY_TO)
+      msg['Subject'] = "PETSc blame digest (%s) %s\n\n" % (self.argDB['buildBranch'], today)
 
       if self.argDB['blameMailPost']:
         server = smtplib.SMTP('localhost')
@@ -385,7 +389,7 @@ Thanks,
 
       # create log of e-mails sent in PETSC_DIR
       justaddress = re.search(r'<(?P<address>.*)>',author).group('address')
-      mailname = '-'.join(['blame',today,justaddress])
+      mailname = '-'.join(['blame',self.argDB['buildBranch'],today,justaddress])
       mail = open(mailname,"w")
       mail.write(msg.as_string())
       mail.close()
