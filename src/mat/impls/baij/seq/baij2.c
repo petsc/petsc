@@ -2275,35 +2275,37 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       if (!usecprow) xb += 5;
     }
     break;
-  default: {      /* block sizes larger than 5 by 5 are handled by BLAS */
-    PetscInt          ncols,k;
-    PetscScalar       *work,*workt;
-    const PetscScalar *xtmp;
-
+  default: /* block sizes larger than 5 by 5 are handled by BLAS */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
-    if (!a->mult_work) {
-      k    = PetscMax(A->rmap->n,A->cmap->n);
-      ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
-    }
-    work = a->mult_work;
-    xtmp = x;
-    for (i=0; i<mbs; i++) {
-      n     = ii[1] - ii[0]; ii++;
-      ncols = n*bs;
-      ierr  = PetscMemzero(work,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
-      if (usecprow) xtmp = x + bs*ridx[i];
-      PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
-      /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
-      v += n*bs2;
-      if (!usecprow) xtmp += bs;
-      workt = work;
-      for (j=0; j<n; j++) {
-        zb = z + bs*(*idx++);
-        for (k=0; k<bs; k++) zb[k] += workt[k] ;
-        workt += bs;
+#if 0
+    {
+      PetscInt          ncols,k;
+      PetscScalar       *work,*workt;
+      const PetscScalar *xtmp;
+      if (!a->mult_work) {
+        k    = PetscMax(A->rmap->n,A->cmap->n);
+        ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
+      }
+      work = a->mult_work;
+      xtmp = x;
+      for (i=0; i<mbs; i++) {
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        ierr  = PetscMemzero(work,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
+        if (usecprow) xtmp = x + bs*ridx[i];
+        PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
+        /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
+        v += n*bs2;
+        if (!usecprow) xtmp += bs;
+        workt = work;
+        for (j=0; j<n; j++) {
+          zb = z + bs*(*idx++);
+          for (k=0; k<bs; k++) zb[k] += workt[k] ;
+          workt += bs;
+        }
       }
     }
-    }
+#endif
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
