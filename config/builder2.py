@@ -108,7 +108,7 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
         maker.logPrint('Test %s requires packages %s\n' % (testnum, param['requires']), debugSection='screen', forceScroll=True)
         continue
     if 'num' in param: testnum = param['num']
-    if 'numProcs' in args:
+    if 'numProcs' in args and not args.numProcs is None:
       param['numProcs'] = args.numProcs
     if not args.testnum is None and not testnum in validTestnum: continue
     if 'setup' in param:
