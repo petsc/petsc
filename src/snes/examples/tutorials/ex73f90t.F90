@@ -64,7 +64,6 @@
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
 #include <petsc-finclude/petscsnesdef.h>
-        use petscsnes
         use petsc_kkt_solver_module
           SNES::    snesIn
           type(petsc_kkt_solver) ctx
@@ -75,7 +74,6 @@
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
 #include <petsc-finclude/petscsnesdef.h>
-        use petscsnes
         use petsc_kkt_solver_module
           SNES::     snesIn
           type(petsc_kkt_solver), pointer :: ctx
