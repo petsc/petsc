@@ -89,12 +89,11 @@ PetscErrorCode IFunctionView(AppCtx *ctx,PetscViewer v)
 #define __FUNCT__ "IFunctionLoad"
 PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
 {
-  PetscInt       n = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(AppCtx),ctx);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(v,&(*ctx)->k,&n,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(v,&(*ctx)->k,1,NULL,PETSC_SCALAR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
