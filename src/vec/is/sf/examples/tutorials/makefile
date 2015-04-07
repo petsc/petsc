@@ -76,12 +76,12 @@ runex1_7_basic:
 	   ${RM} -f ex1_7.tmp
 
 runex2_basic:
-        -@{MPIEXEC} -n 2 ./ex2 -sf_type basic > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex2 -sf_type basic > ex2.tmp 2>&1; \
           ${DIFF} output/ex2_basic.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_basic, diffs above\n=========================================\n"; \
           ${RM} -f ex2.tmp
 
 runex2_window:
-        -@{MPIEXEC} -n 2 ./ex2 -sf_type window > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex2 -sf_type window > ex2.tmp 2>&1; \
           ${DIFF} output/ex2_window.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_window, diffs above\n=========================================\n"; \
           ${RM} -f ex2.tmp
 
