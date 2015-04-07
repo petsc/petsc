@@ -3,6 +3,8 @@
 
 typedef struct {
   Mat Top;
+  PetscBool rowisblock;
+  PetscBool colisblock;
   PetscErrorCode (*SetValues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*SetValuesBlocked)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 } Mat_LocalRef;
@@ -81,8 +83,19 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A,PetscInt nrow,cons
 
   PetscFunctionBegin;
   IndexSpaceGet(buf,nrow,ncol,irowm,icolm);
-  ierr = ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+  /* If the row IS defining this submatrix was an ISBLOCK, then the unblocked LGMapApply is the right one to use.  If
+   * instead it was (say) an ISSTRIDE with a block size > 1, then we need to use LGMapApplyBlock */
+  if (lr->rowisblock) {
+    ierr = ISLocalToGlobalMappingApply(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+  } else {
+    ierr = ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+  }
+  /* As above, but for the column IS. */
+  if (lr->colisblock) {
+    ierr = ISLocalToGlobalMappingApply(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+  } else {
+    ierr = ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+  }
   ierr = (*lr->SetValues)(lr->Top,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   IndexSpaceRestore(buf,nrow,ncol,irowm,icolm);
   PetscFunctionReturn(0);
@@ -250,6 +263,10 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
     } else {
       ierr = ISL2GCompose(iscol,A->cmap->mapping,&cltog);CHKERRQ(ierr);
     }
+    /* Remember if the ISes we used to pull out the submatrix are of type ISBLOCK.  Will be used later in
+     * MatSetValuesLocal_LocalRef_Scalar. */
+    ierr = PetscObjectTypeCompare((PetscObject)isrow,ISBLOCK,&lr->rowisblock);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)iscol,ISBLOCK,&lr->colisblock);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(B,rltog,cltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&cltog);CHKERRQ(ierr);
