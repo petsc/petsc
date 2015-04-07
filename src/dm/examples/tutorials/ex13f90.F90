@@ -1,21 +1,23 @@
 program main
-  !
-  ! This example intends to show how DMDA is used to solve a PDE on a decomposed
-  ! domain. The equation we are solving is not a PDE, but a toy example: van der
-  ! Pol's 2-variable ODE duplicated onto a 3D grid:
-  ! dx/dt = y
-  ! dy/dt = mu(1-x**2)y - x
-  !
-  ! So we are solving the same equation on all grid points, with no spatial 
-  ! dependencies. Still we tell PETSc to communicate (stencil width >0) so we
-  ! have communication between different parts of the domain. 
-  !
-  ! The example is structured so that one can replace the RHS function and
-  ! the forw_euler routine with a suitable RHS and a suitable time-integration
-  ! scheme and make little or no modifications to the DMDA parts. In particular,
-  ! the "inner" parts of the RHS and time-integration do not "know about" the
-  ! decomposed domain.
-  !
+!
+! This example intends to show how DMDA is used to solve a PDE on a decomposed
+! domain. The equation we are solving is not a PDE, but a toy example: van der
+! Pol's 2-variable ODE duplicated onto a 3D grid:
+! dx/dt = y
+! dy/dt = mu(1-x**2)y - x
+!
+! So we are solving the same equation on all grid points, with no spatial 
+! dependencies. Still we tell PETSc to communicate (stencil width >0) so we
+! have communication between different parts of the domain. 
+!
+! The example is structured so that one can replace the RHS function and
+! the forw_euler routine with a suitable RHS and a suitable time-integration
+! scheme and make little or no modifications to the DMDA parts. In particular,
+! the "inner" parts of the RHS and time-integration do not "know about" the
+! decomposed domain.
+!
+!  See:     http://dx.doi.org/10.6084/m9.figshare.1368581
+!
   use ex13f90aux
   implicit none
 #include <petsc-finclude/petscsys.h>
