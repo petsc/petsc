@@ -161,7 +161,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (!rank || binary) {
-    PetscInt n = 1;
     /* Gmsh elements can be of any dimension/co-dimension, so we need to traverse the
        file contents multiple times to figure out the true number of cells and facets
        in the given mesh. To make this more efficient we read the file contents only
