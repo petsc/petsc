@@ -215,6 +215,10 @@ ex41: ex41.o chkopts
 	-${CLINKER} -o ex41 ex41.o ${PETSC_TS_LIB}
 	${RM} ex41.o
 
+ex42: ex42.o chkopts
+	-${CLINKER} -o ex42 ex42.o ${PETSC_TS_LIB}
+	${RM} ex42.o
+
 ex35: ex35.o chkopts
 	-${CLINKER} -o ex35 ex35.o ${PETSC_TS_LIB}
 	${RM} ex35.o
@@ -571,6 +575,11 @@ runex35_2:
 	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 > ex35_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
+
+runex42:
+	-@${MPIEXEC} -n 1 ./ex42 > ex42.tmp 2>&1;	  \
+	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
+	   ${RM} -f ex42.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
