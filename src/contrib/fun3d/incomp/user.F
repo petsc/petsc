@@ -681,7 +681,7 @@
       coef_loc(2) = cdloc
       coef_loc(3) = cmloc
       call MPI_ALLREDUCE(coef_loc,coef_glo,icount,                       &
-     &                   MPIU_SCALAR, MPI_SUM,                           &
+     &                   MPIU_SCALAR, MPIU_SUM,                           &
      &                   MPI_COMM_WORLD,ierr)
 !     call MPI_ALLREDUCE(cdloc,cdglo,icount,
 !    &                   MPIU_REAL_PRECISION, MPI_SUM,

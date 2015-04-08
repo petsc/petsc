@@ -1392,7 +1392,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Petsc
   }
   ierr  = PetscFree5(funcVal,coords,v0,J,invJ);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }
@@ -1505,7 +1505,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [
   }
   ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }

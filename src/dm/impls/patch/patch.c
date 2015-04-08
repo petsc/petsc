@@ -265,8 +265,8 @@ PetscErrorCode DMPatchSolve(DM dm)
         /* Scatter Rzoom_restricted -> Rcoarse_restricted */
         if (XZ)  {ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);}
         ierr = VecGetArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPIU_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPIU_SUM);CHKERRQ(ierr);
         ierr = VecRestoreArray(XC, &xcarray);CHKERRQ(ierr);
         if (XZ)  {ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);}
         if (dmz) {ierr = DMRestoreGlobalVector(dmz, &XZ);CHKERRQ(ierr);}

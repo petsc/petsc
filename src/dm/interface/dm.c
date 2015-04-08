@@ -1903,7 +1903,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   if (sf && !isInsert) {
     ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   } else if (s && isInsert) {
@@ -1996,7 +1996,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
     ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   } else if (s && isInsert) {

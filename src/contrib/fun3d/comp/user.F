@@ -1073,7 +1073,7 @@
 !     write(*,*) 'I am in L2NORM just before Reduce op'
 !     write(*,*) 'Local res. norm on processor ',irank,' is ',sqrt(sum)
       call MPI_ALLREDUCE(sum,sumglo,icount,
-     >                   MPIU_SCALAR, MPI_SUM,
+     >                   MPIU_SCALAR, MPIU_SUM,
      >                   MPI_COMM_WORLD,ierr)
 !     write(*,*) 'In L2NORM - residual norm is', sqrt(sumglo)
       rms(ntt) = sqrt(sumglo/t1)
@@ -1472,7 +1472,7 @@
       coef_loc(7) = cmy_loc
       coef_loc(8) = cmz_loc
       call MPI_ALLREDUCE(coef_loc,coef_glo,icount,
-     >                   MPIU_SCALAR, MPI_SUM,
+     >                   MPIU_SCALAR, MPIU_SUM,
      >                   MPI_COMM_WORLD,ierr)
 !     call MPI_ALLREDUCE(cd_loc,cd_glo,icount,
 !    >                   MPI_DOUBLE_PRECISION, MPI_SUM,

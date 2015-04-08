@@ -57,9 +57,8 @@ PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weight
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
-  if (!isSeq && !isMPI) {
-    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
-  }
+  if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+
   /* get the inner matrix structure */
   oG = NULL;
   oi = NULL;
@@ -167,9 +166,8 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
   n=e-s;
   ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
-  if (!isSeq && !isMPI) {
-    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
-  }
+  if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+
   /* get the inner matrix structure */
   oG = NULL;
   oi = NULL;
@@ -313,9 +311,8 @@ PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,cons
   maskbase = 0;
   ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
-  if (!isSeq && !isMPI) {
-    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
-  }
+  if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+
   /* get the inner matrix structure */
   oG = NULL;
   oi = NULL;
@@ -490,7 +487,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
     ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     nadded_total=0;
     ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-    if (nadded_total == nadded_total_old) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");}
+    if (nadded_total == nadded_total_old) SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");
     nadded_total_old = nadded_total;
     round++;
   }

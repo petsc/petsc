@@ -1239,7 +1239,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  ierr = MPI_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   ierr = DMPlexSetMinRadius(dm, gminradius);CHKERRQ(ierr);
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {
