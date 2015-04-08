@@ -10,10 +10,12 @@ int main(int argc, char **argv)
 {
   PetscInt    ierr;
   PetscSF     sf;
-  Vec         A;
-  Vec         B;
+  Vec         A,Aout;
+  Vec         B,Bout;
   PetscScalar *bufA;
+  PetscScalar *bufAout;
   PetscScalar *bufB;
+  PetscScalar *bufBout;
   PetscMPIInt rank, size;
   PetscInt    nroots, nleaves;
   PetscInt    i;
@@ -59,25 +61,36 @@ int main(int argc, char **argv)
   ierr = VecSetUp(A);CHKERRQ(ierr);
 
   ierr = VecDuplicate(A,&B);CHKERRQ(ierr);
-
+  ierr = VecDuplicate(A,&Aout);CHKERRQ(ierr);
+  ierr = VecDuplicate(A,&Bout);CHKERRQ(ierr);
   ierr = VecGetArray(A,&bufA);CHKERRQ(ierr);
   ierr = VecGetArray(B,&bufB);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
     bufA[i] = (PetscScalar)rank;
     bufB[i] = (PetscScalar)(rank) + 10.0;
   }
-  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufA);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufB);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufA);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufB);CHKERRQ(ierr);
-
   ierr = VecRestoreArray(A,&bufA);CHKERRQ(ierr);
   ierr = VecRestoreArray(B,&bufB);CHKERRQ(ierr);
 
-  ierr = VecView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(B,(const PetscScalar**)&bufB);CHKERRQ(ierr);
+  ierr = VecGetArray(Aout,&bufAout);CHKERRQ(ierr);
+  ierr = VecGetArray(Bout,&bufBout);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(B,(const PetscScalar**)&bufB);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Aout,&bufAout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Bout,&bufBout);CHKERRQ(ierr);
+
+  ierr = VecView(Aout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(Bout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&Aout);CHKERRQ(ierr);
+  ierr = VecDestroy(&Bout);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
   PetscFinalize();
