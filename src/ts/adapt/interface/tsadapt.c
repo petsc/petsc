@@ -195,7 +195,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt, type);CHKERRQ(ierr);
   if (adapt->ops->load) {
     ierr = (*adapt->ops->load)(adapt,viewer);CHKERRQ(ierr);

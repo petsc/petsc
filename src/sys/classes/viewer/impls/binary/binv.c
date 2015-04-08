@@ -840,7 +840,7 @@ PetscErrorCode PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileMo
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryWriteReadMPIIO"
-static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool write)
+static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *data,PetscInt num,PetscInt *count,PetscDataType dtype,PetscBool write)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -850,7 +850,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
   MPI_Aint           ul,dsize;
 
   PetscFunctionBegin;
-  ierr = PetscMPIIntCast(count,&cnt);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(num,&cnt);CHKERRQ(ierr);
   ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);
   ierr = MPI_File_set_view(vbinary->mfdes,vbinary->moff,mdtype,mdtype,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
   if (write) {
@@ -861,6 +861,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
   ierr = MPI_Type_get_extent(mdtype,&ul,&dsize);CHKERRQ(ierr);
 
   vbinary->moff += dsize*cnt;
+  if (count) *count = num;
   PetscFunctionReturn(0);
 }
 #endif
@@ -875,8 +876,11 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
    Input Parameters:
 +  viewer - the binary viewer
 .  data - location of the data to be written
-.  count - number of items of data to read
+.  num - number of items of data to read
 -  dtype - type of data to read
+
+   Output Parameters:
+.  count - number of items of data actually read, or NULL
 
    Level: beginner
 
@@ -886,7 +890,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype)
+PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,PetscInt *count,PetscDataType dtype)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
@@ -894,10 +898,10 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt coun
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->usempiio) {
-    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,num,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
   } else {
 #endif
-    ierr = PetscBinarySynchronizedRead(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,num,dtype);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif
@@ -937,7 +941,7 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt cou
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->usempiio) {
-    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,dtype,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,NULL,dtype,PETSC_TRUE);CHKERRQ(ierr);
   } else {
 #endif
     ierr = PetscBinarySynchronizedWrite(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
@@ -1023,14 +1027,14 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data)
 
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   /* count number of strings */
-  ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&n,1,NULL,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&sizes);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,sizes,n,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,sizes,n,NULL,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<n; i++) N += sizes[i];
   ierr = PetscMalloc((n+1)*sizeof(char*) + N*sizeof(char),data);CHKERRQ(ierr);
   (*data)[0] = (char*)((*data) + n + 1);
   for (i=1; i<n; i++) (*data)[i] = (*data)[i-1] + sizes[i-1];
-  ierr = PetscViewerBinaryRead(viewer,(*data)[0],N,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,(*data)[0],N,NULL,PETSC_CHAR);CHKERRQ(ierr);
 
   (*data)[n] = 0;
 

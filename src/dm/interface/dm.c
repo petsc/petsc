@@ -1064,7 +1064,6 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void 
     }
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -2932,9 +2931,9 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
     PetscInt classid;
     char     type[256];
 
-    ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
     if (classid != DM_FILE_CLASSID) SETERRQ1(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not DM next in file, classid found %d",(int)classid);
-    ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
     ierr = DMSetType(newdm, type);CHKERRQ(ierr);
     if (newdm->ops->load) {ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);}
   } else if (ishdf5) {
