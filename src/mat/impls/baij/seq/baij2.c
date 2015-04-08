@@ -2167,11 +2167,11 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar       *zb,*z,x1,x2,x3,x4,x5;
+  PetscScalar       *z,x1,x2,x3,x4,x5;
   const PetscScalar *x,*xb = NULL;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,rval,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscInt          mbs,i,rval,bs=A->rmap->bs,j,n;
   const PetscInt    *idx,*ii,*ib,*ridx = NULL;
   Mat_CompressedRow cprow = a->compressedrow;
   PetscBool         usecprow = cprow.use;
@@ -2279,8 +2279,8 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
 #if 0
     {
-      PetscInt          ncols,k;
-      PetscScalar       *work,*workt;
+      PetscInt          ncols,k,bs2=a->bs2;
+      PetscScalar       *work,*workt,zb;
       const PetscScalar *xtmp;
       if (!a->mult_work) {
         k    = PetscMax(A->rmap->n,A->cmap->n);

@@ -35,16 +35,17 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  const PetscInt mbs=a->mbs,*rip,*riip;
-  PetscInt       *ai,*aj,*r;
-  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,i;
-  IS             iperm;  /* inverse of perm */
+  const PetscInt mbs=a->mbs;
 
   PetscFunctionBegin;
   if (!mbs) PetscFunctionReturn(0);
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
 #if 0
+  PetscErrorCode ierr;
+  const PetscInt *rip,*riip;
+  PetscInt       *ai,*aj,*r;
+  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,i;
+  IS             iperm;  /* inverse of perm */
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
