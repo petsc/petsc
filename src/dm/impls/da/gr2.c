@@ -614,7 +614,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   if (!write) {
     /* Read vector header. */
     if (!skipheader) {
-      ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
       type = tr[0];
       rows = tr[1];
       if (type != VEC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");

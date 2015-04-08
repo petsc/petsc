@@ -23,8 +23,8 @@ PetscErrorCode DMSNESLoad(DMSNES kdm,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

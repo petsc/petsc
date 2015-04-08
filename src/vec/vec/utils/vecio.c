@@ -22,7 +22,7 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   /* Read vector header */
-  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
   type = tr[0];
   if (type != VEC_FILE_CLASSID) {
     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
