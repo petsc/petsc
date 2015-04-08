@@ -44,6 +44,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   PetscFunctionBegin;
   if (!mbs) PetscFunctionReturn(0);
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
+#if 0
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
@@ -146,6 +147,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = PetscFree(nzr);CHKERRQ(ierr);
   ierr = PetscFree(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#endif
 }
 
 
