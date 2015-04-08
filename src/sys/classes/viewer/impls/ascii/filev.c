@@ -1023,7 +1023,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = vascii->fd;
   PetscInt           i;
-  int                ret;
+  int                ret = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
