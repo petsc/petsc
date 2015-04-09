@@ -4973,7 +4973,7 @@ then calls TSSolve() in the usual manner.
 
 One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
 \begin{tabbing}
-TSAdjointSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
+TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 \end{tabbing}
 
 If $F()$ is a function of $p$ one needs to also provide the Jacobian $F_p$ with 
@@ -4985,7 +4985,7 @@ are the timestep context, current time, $y$, and the (optional) user-provided co
 
 If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
 \begin{tabbing}
-TSAdjointSetCostIntegrand(\=TS ts,PetscInt numcost,\\
+TSSetCostIntegrand(\=TS ts,PetscInt numcost,\\
                           \>PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),\\
                           \>PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
                           \>PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
@@ -4999,9 +4999,9 @@ TSAdjointSolve(TS ts).
 
 One can get the value of the integral term by calling 
 \begin{tabbing}
-TSAdjointGetCostIntegral(TS ts,Vec *q). 
+TSGetCostIntegral(TS ts,Vec *q). 
 \end{tabbing}
-If TSAdjointSetCostGradients() and TSAdjointSetCostGradients() are called before TSSolve(), the integral term will be evaluated in the forward run. 
+If TSSetCostGradients() and TSSetCostIntegrand() are called before TSSolve(), the integral term will be evaluated in the forward run. 
 Otherwise, the computation will take place in the backward run (inside TSAdjointSolve()). 
 Note that this allows the evaluation of the integral term in the cost function without having to run the adjoint solvers.  
 
@@ -5036,7 +5036,7 @@ For ODE solution, PETSc requires user-provided functions to evaluate the system 
 and its corresponding Jacobian $F_y + (shift) F_{\dot y}$ (set by TSSetIJacobian()).  
 Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here. 
 For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using TSAdjointSetRHSJacobian(),
-and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using TSAdjointSetCostIntegrand(). 
+and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using TSSetCostIntegrand(). 
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$. 
 After TSAdjointSolve(), the sensitivity of the cost function w.r.t. to initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly. 
