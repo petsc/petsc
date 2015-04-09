@@ -9898,8 +9898,8 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
 #undef __FUNCT__
 #define __FUNCT__ "MatGetNonzeroState"
 /*@
-      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the 
-        matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the 
+      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the
+        matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the
         same, otherwise it will be larger
 
      Not Collective
@@ -9910,7 +9910,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
   Output Parameter:
 .    state - the current state
 
-  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between 
+  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between
          different matrices
 
   Level: intermediate

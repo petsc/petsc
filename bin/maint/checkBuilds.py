@@ -174,13 +174,13 @@ class BuildChecker(script.Script):
     return relpath
 
   def addLineBlameDict(self,line,filename,ln,petscdir,commit,arch,logfile):
-    ''' hack to avoid C++ instantiation sequences '''
-    if re.search(r'instantiated from here',line):
-      return
-    if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):
-      return
-    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):
-      return
+    # avoid solaris compiler errors
+    if re.search(r'warning: loop not entered at top',line): return
+    if re.search(r'warning: statement not reached',line): return
+    # avoid C++ instantiation sequences
+    if re.search(r'instantiated from here',line):      return
+    if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):  return
+    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):  return
     message = line.rstrip()
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
