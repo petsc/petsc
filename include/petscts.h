@@ -346,8 +346,8 @@ PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSSetFunctionDomainError(TS, PetscErrorCode (*)(TS,PetscReal,PetscInt,Vec*,PetscBool*));
-PETSC_EXTERN PetscErrorCode TSFunctionDomainError(TS,PetscReal,PetscInt,Vec*,PetscBool*);
+PETSC_EXTERN PetscErrorCode TSSetFunctionDomainError(TS, PetscErrorCode (*)(TS,PetscReal,Vec,PetscBool*));
+PETSC_EXTERN PetscErrorCode TSFunctionDomainError(TS,PetscReal,Vec,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 PETSC_EXTERN PetscErrorCode TSPseudoTimeStepDefault(TS,PetscReal*,void*);

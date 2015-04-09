@@ -21,7 +21,7 @@ static PetscErrorCode TSStep_Euler(TS ts)
   ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
   ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
-  ierr = TSFunctionDomainError(ts,ts->ptime,0,&sol,&accept);CHKERRQ(ierr);
+  ierr = TSFunctionDomainError(ts,ts->ptime,sol,&accept);CHKERRQ(ierr);
   if(!accept) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
     PetscFunctionReturn(0);

@@ -637,7 +637,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,PetscInt stage,
       new_dt = dt*adapt->scale_solve_failed;
     }
   } else {
-    ierr = TSFunctionDomainError(ts,t,stage,Y,accept);CHKERRQ(ierr);
+    ierr = TSFunctionDomainError(ts,t,Y[stage],accept);CHKERRQ(ierr);
     if(*accept && adapt->checkstage) {
       ierr = (*adapt->checkstage)(adapt,ts,accept);CHKERRQ(ierr);
     }

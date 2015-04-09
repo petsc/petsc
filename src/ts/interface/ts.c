@@ -6479,7 +6479,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
 .seealso: TSAdaptCheckStage(), TSFunctionDomainError()
 @*/
 
-PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscInt,Vec*,PetscBool*))
+PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscReal,Vec,PetscBool*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -6495,8 +6495,7 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscRe
     Input Parameters:
     ts - the TS context
     stagetime - time of the simulation
-    stageindex - stage of the computation
-    Y - array of state vectors. Y[stage] is the current vector.
+    Y - state vector to check.
 
     Output Parameter:
     accept - Set to PETSC_FALSE if the current state vector is valid.
@@ -6505,7 +6504,7 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscRe
     This function should be used to ensure the state is in a valid part of the space.
     For example, one can ensure here all values are positive.
 @*/
-PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,PetscInt stageindex,Vec* Y,PetscBool* accept)
+PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* accept)
 {
   PetscErrorCode ierr;
 
@@ -6514,7 +6513,7 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,PetscInt stageind
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   *accept = PETSC_TRUE;
   if (ts->functiondomainerror) {
-    PetscStackCallStandard((*ts->functiondomainerror),(ts,stagetime,stageindex,Y,accept));
+    PetscStackCallStandard((*ts->functiondomainerror),(ts,stagetime,Y,accept));
   }
   PetscFunctionReturn(0);
 }

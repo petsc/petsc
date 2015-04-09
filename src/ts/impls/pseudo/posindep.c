@@ -131,7 +131,7 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
   PetscFunctionBegin;
 
   *flag = PETSC_TRUE;
-  ierr = TSFunctionDomainError(ts,ts->ptime,0,&update,flag);CHKERRQ(ierr);
+  ierr = TSFunctionDomainError(ts,ts->ptime,update,flag);CHKERRQ(ierr);
   if(*flag && pseudo->verify) {
     ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
   }

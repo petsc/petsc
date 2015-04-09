@@ -147,7 +147,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
 #undef __FUNCT__
 
 #define __FUNCT__ "DomainErrorFunction"
-PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, PetscInt stage, Vec* Y, PetscBool *accept)
+PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
 {
     AppCtx *user;
     PetscReal dt;
@@ -158,16 +158,16 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, PetscInt stage, Vec* Y, P
     ierr = TSGetApplicationContext(ts, &user); CHKERRQ(ierr);
     nb_cells = user->nb_cells;
 
-    ierr = VecGetArrayRead(Y[stage], &x); CHKERRQ(ierr);
+    ierr = VecGetArrayRead(Y, &x); CHKERRQ(ierr);
     for(i = 0 ; i < 2*nb_cells ; ++i) {
         if(x[i] < 0) {
             ierr = TSGetTimeStep(ts, &dt); CHKERRQ(ierr);
-            ierr = PetscInfo1(Y[stage], " ** Domain Error at time %5.5g\n", (double)t); CHKERRQ(ierr);
+            ierr = PetscInfo1(Y, " ** Domain Error at time %5.5g\n", (double)t); CHKERRQ(ierr);
             *accept = PETSC_FALSE;
             break;
         }
     }
-    ierr = VecRestoreArrayRead(Y[stage], &x); CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(Y, &x); CHKERRQ(ierr);
 
     PetscFunctionReturn(0);
 }

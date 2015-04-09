@@ -80,7 +80,7 @@ struct _p_TS {
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
-  PetscErrorCode (*functiondomainerror)(TS,PetscReal,PetscInt,Vec*,PetscBool*);
+  PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
   IS is_diff; /* Index set containing indices corresponding to differential equations in DAE */
 
