@@ -206,6 +206,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   } else {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIMAIJ);CHKERRQ(ierr);
   }
+  A->preallocated  = PETSC_TRUE;
+  A->assembled     = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
