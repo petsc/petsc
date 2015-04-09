@@ -306,7 +306,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
     }
-    if (!ts->costintegraldone) {
+    if (!ts->costintegralfwd) {
       /* Evolve ts->vec_costintegral to compute integrals */
       ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
@@ -349,7 +349,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
     }
-    if (!ts->costintegraldone) {
+    if (!ts->costintegralfwd) {
       /* Evolve ts->vec_costintegral to compute integrals */
       ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costintegral,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);

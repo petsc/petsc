@@ -3310,7 +3310,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
-  if (ts->vec_costintegral) ts->costintegraldone=PETSC_TRUE;
+  if (ts->vec_costintegral) ts->costintegralfwd=PETSC_TRUE;
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   }
