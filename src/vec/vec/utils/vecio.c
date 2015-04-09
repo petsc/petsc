@@ -249,7 +249,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   const char     *vecname;
   PetscErrorCode ierr;
-  PetscBool      dim2;
+  PetscBool      dim2 = PETSC_FALSE;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -262,7 +262,6 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5GetBaseDimension2(viewer,&dim2);CHKERRQ(ierr);
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
@@ -276,7 +275,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   dim = 0;
   if (timestep >= 0) ++dim;
   ++dim;
-  if (bs > 1 || dim2) ++dim;
+  if (bs > 1) ++dim;
 #if defined(PETSC_USE_COMPLEX)
   ++dim;
 #endif
@@ -287,14 +286,33 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   bsInd = rdim-1;
 #endif
   lenInd = timestep >= 0 ? 1 : 0;
+  
   if (rdim != dim) {
-    if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
+    /* In this case the input dataset have one extra, unexpected dimension. */
+    if (rdim == dim+1)
+    {
+      /* In this case the block size is unset */
+      if (bs == -1)
+      {
+        ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
+        bs = dims[bsInd];
+      }
+    
+      /* In this case the block size unity */
+      else if (bs == 1 && dims[bsInd] == 1) dim2 = PETSC_TRUE;
+      
+      /* Special error message for the case where bs does not match the input file */
+      else if (bs != dims[bsInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %d, not %d as expected",dims[bsInd],bs);
+      
+      /* All other cases is errors */
+      else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with bs = %d",rdim,dim,bs);
+    }
+    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected",rdim,dim);
   } else if (bs > 1 && bs != (PetscInt) dims[bsInd]) {
     ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
     bs = dims[bsInd];
   }
-
+  
   /* Set Vec sizes,blocksize,and type if not already set */
   if ((xin)->map->n < 0 && (xin)->map->N < 0) {
     ierr = VecSetSizes(xin, PETSC_DECIDE, dims[lenInd]*bs);CHKERRQ(ierr);
