@@ -1353,7 +1353,7 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 
 .keywords: SNES, nonlinear, set, reset, number, linear, iterations
 
-.seealso:  SNESGetNumberFunctionEvals(), SNESGetNumberLinearSolveIterations(), SNESGetNPC()
+.seealso:  SNESGetNumberFunctionEvals(), SNESGetLinearSolveIterations(), SNESGetNPC()
 @*/
 PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
 {

@@ -102,6 +102,7 @@ PETSC_EXTERN PetscErrorCode KSPGetRhs(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetSolution(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPGetTotalIterations(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPSetNullSpace(KSP,MatNullSpace);
 PETSC_EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
 PETSC_EXTERN PetscErrorCode KSPCreateVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);

@@ -90,6 +90,8 @@ int main(int argc,char **argv)
   Vec            r               = NULL;
   PetscBool      matlab_function = PETSC_FALSE;
 #endif
+  KSP            ksp;
+  PetscInt       lits,slits;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -158,6 +160,10 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
+  ierr = SNESGetLinearSolveIterations(snes,&slits);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetTotalIterations(ksp,&lits);CHKERRQ(ierr);
+  if (lits != slits) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
