@@ -4273,7 +4273,7 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   if (newMat->rmap->n < 0 && newMat->rmap->N < 0 && newMat->cmap->n < 0 && newMat->cmap->N < 0) {
     ierr = MatSetSizes(newMat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   } else {
-    /* if sizes and type are already set, check if the vector global sizes are correct */
+    /* if sizes and type are already set, check if the matrix  global sizes are correct */
     ierr = MatGetSize(newMat,&rows,&cols);CHKERRQ(ierr);
     if (rows < 0 && cols < 0) { /* user might provide local size instead of global size */
       ierr = MatGetLocalSize(newMat,&rows,&cols);CHKERRQ(ierr);
