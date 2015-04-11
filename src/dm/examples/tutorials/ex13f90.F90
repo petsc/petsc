@@ -16,7 +16,9 @@ program main
 ! the "inner" parts of the RHS and time-integration do not "know about" the
 ! decomposed domain.
 !
-!  See:     http://dx.doi.org/10.6084/m9.figshare.1368581
+!     See:     http://dx.doi.org/10.6084/m9.figshare.1368581
+!
+!     Contributed by Åsmund Ervik (asmunder at pvv.org)
 !
   use ex13f90aux
   implicit none
