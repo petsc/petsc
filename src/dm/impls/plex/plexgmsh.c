@@ -104,6 +104,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = MPI_Comm_size(comm, &num_proc);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscViewerGetType(viewer, &vtype);CHKERRQ(ierr);
   ierr = PetscStrcmp(vtype, PETSCVIEWERBINARY, &binary);CHKERRQ(ierr);
   if (!rank || binary) {
@@ -268,6 +269,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     }
     ierr = PetscFree(gmsh_elem);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
