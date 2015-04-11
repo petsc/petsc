@@ -1,5 +1,5 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <petscsf.h>
 
 PetscFunctionList PCGAMGClassicalProlongatorList    = NULL;

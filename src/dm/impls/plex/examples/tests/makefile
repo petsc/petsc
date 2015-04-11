@@ -8,8 +8,8 @@ EXAMPLESC       = ex1.c ex3.c
 EXAMPLESF       = ex1f90.F ex2f90.F
 MANSEC          = DM
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
@@ -128,4 +128,4 @@ TESTEXAMPLES_TRIANGLE = ex3.PETSc runex3_constraints runex3_nonconforming_simple
 TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 runex3_nonconforming_simplex_3 ex3.rm
 TESTEXAMPLES_FORTRAN  = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

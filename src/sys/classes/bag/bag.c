@@ -1,5 +1,5 @@
 
-#include <petsc-private/bagimpl.h>     /*I  "petscbag.h"   I*/
+#include <petsc/private/bagimpl.h>     /*I  "petscbag.h"   I*/
 #include <petscviewer.h>
 
 #undef __FUNCT__

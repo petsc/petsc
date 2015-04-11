@@ -7,7 +7,7 @@
 
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscmat.h> /* so that MAT_FILE_CLASSID is defined */
 #include <petscviewerhdf5.h>
 

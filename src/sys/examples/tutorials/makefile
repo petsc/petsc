@@ -2,7 +2,7 @@
 ALL:
 
 CFLAGS	        =
-FFLAGS	        = -I${PETSC_DIR}/include/petsc-finclude
+FFLAGS	        = -I${PETSC_DIR}/include/petsc/finclude
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
@@ -11,8 +11,8 @@ EXAMPLESF       = ex3f.F ex4f.F ex4f90.F90 ex5f90.F90 ex8f90.F90 ex10f90.F90
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -177,5 +177,5 @@ TESTEXAMPLES_F90	      = ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_F2003        = ex5f90.PETSc runex5f90 ex5f90.rm  ex8f90.PETSc runex8f90 ex8f90.rm
 TESTEXAMPLES_YAML         = ex9.PETSc runex9_1 runex9_2 ex9.rm ex10f90.PETSc runex10f90_1 runex10f90_2 ex10f90.rm
 TESTEXAMPLES_CHOMBO       = ex12.PETSc runex12 ex12.rm
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 

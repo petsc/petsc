@@ -3,8 +3,8 @@
    Plots vectors obtained with DMDACreate2d()
 */
 
-#include <petsc-private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
+#include <petsc/private/vecimpl.h>
 #include <petscdraw.h>
 #include <petscviewerhdf5.h>
 

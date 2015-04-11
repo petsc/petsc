@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>
+#include <petsc/private/dmpleximpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 typedef struct {

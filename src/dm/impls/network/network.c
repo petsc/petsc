@@ -1,4 +1,4 @@
-#include <petsc-private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
+#include <petsc/private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 

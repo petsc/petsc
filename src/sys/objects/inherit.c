@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
-#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)

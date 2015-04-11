@@ -1,5 +1,5 @@
-#include <petsc-private/petscfvimpl.h> /*I "petscfv.h" I*/
-#include <petsc-private/dmpleximpl.h> /* For CellRefiner */
+#include <petsc/private/petscfvimpl.h> /*I "petscfv.h" I*/
+#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscds.h>
 
 PetscClassId PETSCLIMITER_CLASSID = 0;

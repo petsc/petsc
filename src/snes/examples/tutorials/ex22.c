@@ -7,7 +7,7 @@ static const char help[] = "Solves PDE optimization problem using full-space met
 #include <petscdmcomposite.h>
 #include <petscpf.h>
 #include <petscsnes.h>
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 
 /*
 

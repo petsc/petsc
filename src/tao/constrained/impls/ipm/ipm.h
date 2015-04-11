@@ -1,6 +1,6 @@
 #ifndef __TAO_IPM_H
 #define __TAO_IPM_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 /*
  Context for Interior-Point Method

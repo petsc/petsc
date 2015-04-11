@@ -36,17 +36,17 @@ class Configure(config.package.Package):
                        ['@echo "*** Building mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
            python setup.py clean --all && \\\n\
-           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     self.addMakeRule('mpi4pyinstall','', \
                        ['@echo "*** Installing mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\

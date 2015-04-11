@@ -15,8 +15,8 @@ DOCS		 =
 DIRS		 = 
 CLEANFILES       = chwirut1 chwirut2 chwirut1f chwirut2f
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 chwirut1: chwirut1.o chkopts
 	-${CLINKER} -o chwirut1 chwirut1.o ${PETSC_TAO_LIB}
@@ -62,6 +62,6 @@ TESTEXAMPLES_FORTRAN       = chwirut1f.PETSc runchwirut1f chwirut1f.rm \
 TESTEXAMPLES_FORTRAN_MPIUNI= chwirut1f.PETSc runchwirut1f chwirut1f.rm 
 
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 

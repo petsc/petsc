@@ -3512,7 +3512,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
 }
 
 /* temporary hack into ksp private data structure */
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpCoarseSolver"

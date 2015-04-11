@@ -2,7 +2,7 @@
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include <petsc-private/kspimpl.h>      /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>      /*I "petscksp.h" I*/
 
 /* Logging support */
 PetscClassId  KSP_CLASSID;

@@ -1,8 +1,8 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
-#include <petsc-private/petscfeimpl.h>
-#include <petsc-private/petscfvimpl.h>
+#include <petsc/private/petscfeimpl.h>
+#include <petsc/private/petscfvimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetScale"

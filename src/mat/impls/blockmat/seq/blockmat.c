@@ -3,7 +3,7 @@
    This provides a matrix that consists of Mats
 */
 
-#include <petsc-private/matimpl.h>              /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>              /*I "petscmat.h" I*/
 #include <../src/mat/impls/baij/seq/baij.h>    /* use the common AIJ data-structure */
 
 typedef struct {

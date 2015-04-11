@@ -1,6 +1,6 @@
 #include <../src/tao/bound/impls/tron/tron.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 

@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);

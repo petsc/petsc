@@ -2,7 +2,7 @@
 #define _matcliqueimpl_h
 
 #include <clique.hpp>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 #if defined(PETSC_USE_COMPLEX)
 typedef cliq::Complex<PetscReal> PetscCliqScalar;

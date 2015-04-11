@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/dmdaimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdagetownershipranges_        DMDAGETOWNERSHIPRANGES

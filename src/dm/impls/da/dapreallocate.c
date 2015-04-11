@@ -1,5 +1,5 @@
-#include <petsc-private/dmdaimpl.h>   /*I      "petscdmda.h"   I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/dmdaimpl.h>   /*I      "petscdmda.h"   I*/
+#include <petsc/private/isimpl.h>
 #include <petscsf.h>
 
 #undef __FUNCT__

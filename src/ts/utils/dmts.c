@@ -1,5 +1,5 @@
-#include <petsc-private/tsimpl.h>     /*I "petscts.h" I*/
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/dmimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSDestroy"

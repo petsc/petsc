@@ -50,7 +50,7 @@
 
 #ifndef __TAO_SSLS_H
 #define __TAO_SSLS_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 typedef struct {
   Vec ff;       /* fischer function */

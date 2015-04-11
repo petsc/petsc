@@ -34,9 +34,9 @@ We will have three objects:
  - Dual Space, P'+K: This looks like a set of functionals that can act on members of P, each n is defined by a Q
  - FEM: This keeps {P, P', Q}
 */
-#include <petsc-private/petscfeimpl.h> /*I "petscfe.h" I*/
-#include <petsc-private/dtimpl.h>
-#include <petsc-private/dmpleximpl.h> /* For CellRefiner */
+#include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
+#include <petsc/private/dtimpl.h>
+#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscdmshell.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>

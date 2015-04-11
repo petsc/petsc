@@ -6,7 +6,7 @@
 #define __VDRAW_H
 
 #include <petscdraw.h>
-#include <petsc-private/viewerimpl.h>
+#include <petsc/private/viewerimpl.h>
 typedef struct {
   PetscInt      draw_max;
   PetscInt      draw_base;

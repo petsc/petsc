@@ -5,8 +5,8 @@
 */
 #include <../src/mat/impls/baij/seq/baij.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
-#include <petsc-private/kernels/blockinvert.h>
-#include <petsc-private/kernels/blockmatmult.h>
+#include <petsc/private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockmatmult.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"

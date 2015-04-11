@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>      /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 const char *const TSConvergedReasons_Shifted[] = {
   "DIVERGED_STEP_REJECTED",

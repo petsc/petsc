@@ -20,11 +20,11 @@ program main
 !
   use ex13f90aux
   implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscvec.h90>
-#include <petsc-finclude/petscdmda.h90>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscdmda.h90>
   PetscErrorCode   ierr
   PetscMPIInt      rank,size
   MPI_Comm         comm

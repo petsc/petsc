@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_KSPONLY"

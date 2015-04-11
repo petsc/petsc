@@ -7,7 +7,7 @@
   Udot = F(t,U)
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static TSRKType  TSRKDefault = TSRK3BS;

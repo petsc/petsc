@@ -53,13 +53,13 @@ class Configure(config.base.Configure):
     dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
     if not os.path.exists(dir):
       os.makedirs(dir)
-    for i in ['include','lib','bin',os.path.join('lib','petsc-conf')]:
+    for i in ['include','lib','bin',os.path.join('lib','petsc','conf')]:
       newdir = os.path.join(dir,i)
       if not os.path.exists(newdir):
         os.makedirs(newdir)
     if os.path.isfile(self.framework.argDB.saveFilename):
       os.remove(self.framework.argDB.saveFilename)
-    confdir = os.path.join(dir,'lib','petsc-conf')
+    confdir = os.path.join(dir,'lib','petsc','conf')
     self.framework.argDB.saveFilename = os.path.abspath(os.path.join(confdir, 'RDict.db'))
     self.framework.logPrint('Changed persistence directory to '+confdir)
     return
@@ -72,7 +72,7 @@ class Configure(config.base.Configure):
     return
 
   def saveReconfigure(self):
-    self.reconfigure_file = os.path.join(self.dir,'lib','petsc-conf','reconfigure-'+self.arch.arch+'.py')
+    self.reconfigure_file = os.path.join(self.dir,'lib','petsc','conf','reconfigure-'+self.arch.arch+'.py')
     self.save_reconfigure_file = None
     if self.framework.argDB['with-clean'] and os.path.exists(self.reconfigure_file):
       self.save_reconfigure_file = '.save.reconfigure-'+self.arch.arch+'.py'

@@ -1,6 +1,6 @@
 #include <petsctao.h> /*I "petsctao.h" I*/
-#include <petsc-private/taoimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/taoimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 #undef __FUNCT__

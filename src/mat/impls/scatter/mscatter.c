@@ -3,8 +3,8 @@
    This provides a matrix that applies a VecScatter to a vector.
 */
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h>
 
 typedef struct {
   VecScatter scatter;
