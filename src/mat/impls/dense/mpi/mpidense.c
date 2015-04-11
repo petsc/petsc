@@ -1523,7 +1523,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
   }
   ierr = MatDenseGetArray(newmat,&array);CHKERRQ(ierr);
 
-  ierr = MPI_Reduce(&m,&mMax,1,MPIU_INT,MPI_SUM,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&m,&mMax,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc1(mMax*N,&vals);CHKERRQ(ierr);
 
