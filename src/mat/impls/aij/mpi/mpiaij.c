@@ -77,7 +77,7 @@ PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
     cnt++;
 ok1:;
   }
-  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)M));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)M));CHKERRQ(ierr);
   if (!n0rows) PetscFunctionReturn(0);
   ierr = PetscMalloc1(M->rmap->n-cnt,&rows);CHKERRQ(ierr);
   cnt  = 0;

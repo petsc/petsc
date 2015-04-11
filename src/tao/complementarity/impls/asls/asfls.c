@@ -265,7 +265,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     ierr = VecNorm(asls->w, NORM_2, &normd);CHKERRQ(ierr);
     ierr = VecDot(asls->w, asls->dpsi, &innerd);CHKERRQ(ierr);
 
-    if (innerd >= -asls->delta*pow(normd, asls->rho)) {
+    if (innerd >= -asls->delta*PetscPowReal(normd, asls->rho)) {
       ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
       ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", iter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
@@ -278,8 +278,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     /* We now have a correct descent direction.  Apply a linesearch to
        find the new iterate. */
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0);CHKERRQ(ierr);
-    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &psi,
-                      asls->dpsi, tao->stepdirection, &t, &ls_reason);CHKERRQ(ierr);
+    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &psi,asls->dpsi, tao->stepdirection, &t, &ls_reason);CHKERRQ(ierr);
     ierr = VecNorm(asls->dpsi, NORM_2, &ndpsi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
