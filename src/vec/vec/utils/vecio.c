@@ -109,7 +109,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(vec, &N);CHKERRQ(ierr);
-  if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", rows, N);
+  if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", rows, N);
 
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
@@ -302,10 +302,10 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
       else if (bs == 1 && dims[bsInd] == 1) dim2 = PETSC_TRUE;
       
       /* Special error message for the case where bs does not match the input file */
-      else if (bs != dims[bsInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %d, not %d as expected",dims[bsInd],bs);
+      else if (bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",(PetscInt)dims[bsInd],bs);
       
       /* All other cases is errors */
-      else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with bs = %d",rdim,dim,bs);
+      else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with bs = %D",rdim,dim,bs);
     }
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected",rdim,dim);
   } else if (bs > 1 && bs != (PetscInt) dims[bsInd]) {
@@ -319,7 +319,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
-  if (N/bs != (PetscInt) dims[lenInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (PetscInt) dims[lenInd], N/bs);
+  if (N/bs != (PetscInt) dims[lenInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", (PetscInt) dims[lenInd], N/bs);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
