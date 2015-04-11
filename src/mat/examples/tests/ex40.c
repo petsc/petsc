@@ -38,8 +38,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  /*ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = MatGetLayouts(A,&rmap,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read the matrix again as a sequential matrix */
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(B,fd);CHKERRQ(ierr);
-  /*ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Create the IS corresponding to subdomains */

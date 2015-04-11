@@ -13,10 +13,10 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat,PetscInt,PetscInt**,
 extern PetscErrorCode MatGetRow_MPIAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 extern PetscErrorCode MatRestoreRow_MPIAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_K(Mat,PetscInt,IS*);
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_K(Mat,PetscInt,IS*);
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_K(Mat,PetscInt,PetscMPIInt,PetscMPIInt *,PetscInt *, PetscInt *,PetscInt **,PetscInt **);
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_K(Mat,PetscInt,IS*,PetscInt,PetscInt *);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat,PetscInt,IS*);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat,PetscInt,IS*);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat,PetscInt,PetscMPIInt,PetscMPIInt *,PetscInt *, PetscInt *,PetscInt **,PetscInt **);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat,PetscInt,IS*,PetscInt,PetscInt *);
 
 
 #undef __FUNCT__
@@ -24,27 +24,35 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_K(Mat,PetscInt,IS*,Petsc
 PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
-  PetscBool      mat_increase_overlap_k,set;
   PetscInt       i;
 
   PetscFunctionBegin;
   if (ov < 0) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
-  ierr = PetscOptionsGetBool(NULL,"-mat_increase_overlap_k",&mat_increase_overlap_k,&set);CHKERRQ(ierr);
-  if(!set) mat_increase_overlap_k = PETSC_FALSE;
   for (i=0; i<ov; ++i) {
-    if(mat_increase_overlap_k){
-      ierr = MatIncreaseOverlap_MPIAIJ_Once_K(C,imax,is);CHKERRQ(ierr);
-    }else{
-      ierr = MatIncreaseOverlap_MPIAIJ_Once(C,imax,is);CHKERRQ(ierr);
-    }
+    ierr = MatIncreaseOverlap_MPIAIJ_Once(C,imax,is);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Scalable"
+PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat C,PetscInt imax,IS is[],PetscInt ov)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (ov < 0) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  for (i=0; i<ov; ++i) {
+    ierr = MatIncreaseOverlap_MPIAIJ_Once_Scalable(C,imax,is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once_K"
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_K(Mat mat,PetscInt nidx,IS is[])
+#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once_Scalable"
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt nidx,IS is[])
 {
   PetscErrorCode   ierr;
   MPI_Comm         comm;
@@ -104,7 +112,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_K(Mat mat,PetscInt nidx,IS 
   if(!reducednrrows){
 	ierr = PetscFree3(toranks,tosizes,tosizes_temp);CHKERRQ(ierr);
 	ierr = PetscFree3(remoterows,rrow_ranks,rrow_isids);CHKERRQ(ierr);
-	ierr = MatIncreaseOverlap_MPIAIJ_Local_K(mat,nidx,is);CHKERRQ(ierr);
+	ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
   }
   nto = 0;
@@ -155,7 +163,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_K(Mat mat,PetscInt nidx,IS 
   ierr = PetscSFBcastEnd(sf,MPIU_INT,todata,fromdata);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   /*deal with remote data */
-  ierr = MatIncreaseOverlap_MPIAIJ_Send_K(mat,nidx,nfrom,fromranks,fromsizes,fromdata,&sbsizes,&sbdata);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap_MPIAIJ_Send_Scalable(mat,nidx,nfrom,fromranks,fromsizes,fromdata,&sbsizes,&sbdata);CHKERRQ(ierr);
   ierr = PetscFree2(todata,fromdata);CHKERRQ(ierr);
   ierr = PetscFree(fromsizes);CHKERRQ(ierr);
   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nfrom,fromranks,sbsizes,&nto,&toranks,&tosizes);CHKERRQ(ierr);
@@ -178,12 +186,12 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_K(Mat mat,PetscInt nidx,IS 
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   /*overlap communication and computation*/
   ierr = PetscSFBcastBegin(sf,MPIU_INT,sbdata,todata);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap_MPIAIJ_Local_K(mat,nidx,is);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,sbdata,todata);CHKERRQ(ierr);
   /*ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFree2(sbdata,sbsizes);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap_MPIAIJ_Receive_K(mat,nidx,is,nrecvrows,todata);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap_MPIAIJ_Receive_Scalable(mat,nidx,is,nrecvrows,todata);CHKERRQ(ierr);
   ierr = PetscFree(toranks);CHKERRQ(ierr);
   ierr = PetscFree(tosizes);CHKERRQ(ierr);
   ierr = PetscFree(todata);CHKERRQ(ierr);
@@ -191,8 +199,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_K(Mat mat,PetscInt nidx,IS 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Receive_K"
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_K(Mat mat,PetscInt nidx, IS is[], PetscInt nrecvs, PetscInt *recvdata)
+#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Receive_Scalable"
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscInt nidx, IS is[], PetscInt nrecvs, PetscInt *recvdata)
 {
   PetscInt         *isz,isz_i,i,j,is_id, data_size;
   PetscInt          col,lsize,max_lsize,*indices_temp, *indices_i;
@@ -239,8 +247,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_K(Mat mat,PetscInt nidx,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Send_K"
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_K(Mat mat,PetscInt nidx, PetscMPIInt nfrom,PetscMPIInt *fromranks,PetscInt *fromsizes, PetscInt *fromrows, PetscInt **sbrowsizes, PetscInt **sbrows)
+#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Send_Scalable"
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt nidx, PetscMPIInt nfrom,PetscMPIInt *fromranks,PetscInt *fromsizes, PetscInt *fromrows, PetscInt **sbrowsizes, PetscInt **sbrows)
 {
   PetscLayout       rmap,cmap;
   PetscInt          i,j,k,l,*rows_i,*rows_data_ptr,**rows_data,max_fszs,rows_pos,*rows_pos_i;
@@ -368,8 +376,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_K(Mat mat,PetscInt nidx, Pe
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Local_K"
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_K(Mat mat,PetscInt nidx, IS is[])
+#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Local_Scalable"
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt nidx, IS is[])
 {
   const PetscInt   *gcols,*ai,*aj,*bi,*bj, *indices;
   PetscInt          tnz,an,bn,i,j,row,start,end,rstart,cstart,col,k,*indices_temp;
