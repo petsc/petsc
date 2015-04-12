@@ -65,18 +65,18 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 
   /* Preallocate additional work vectors */
   ierr = KSPAllocateVectors_FCG(ksp,fcg->nprealloc,fcg->nprealloc);CHKERRQ(ierr);
- /*
- If user requested computations of eigenvalues then allocate work
- work space needed
- */
- if (ksp->calc_sings) {
-  /* get space to store tridiagonal matrix for Lanczos */
-  ierr = PetscMalloc4(maxit,&fcg->e,maxit,&fcg->d,maxit,&fcg->ee,maxit,&fcg->dd);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+  /*
+  If user requested computations of eigenvalues then allocate work
+  work space needed
+  */
+  if (ksp->calc_sings) {
+    /* get space to store tridiagonal matrix for Lanczos */
+    ierr = PetscMalloc4(maxit,&fcg->e,maxit,&fcg->d,maxit,&fcg->ee,maxit,&fcg->dd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
 
-  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
-  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
- }
+    ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
+    ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -149,7 +149,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
   if(ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE){
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
   }
-  
+
   i = 0;
   do {
     ksp->its = i+1;
@@ -251,7 +251,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
         e[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))/alphaold;
         d[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))*e[i] + 1.0/alpha;
       } else {
-      d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
+        d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
       }
     }
     ++i;
