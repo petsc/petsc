@@ -1,6 +1,6 @@
 
-#include <petsc-private/pcimpl.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
 
 static const char *const PCSides_Shifted[]    = {"DEFAULT","LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
 const char *const *const PCSides              = PCSides_Shifted + 1;

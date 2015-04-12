@@ -1,4 +1,4 @@
-#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 typedef struct _FortranCallbackLink *FortranCallbackLink;
 struct _FortranCallbackLink {

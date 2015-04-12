@@ -2,7 +2,7 @@
 /*
    Defines a block Jacobi preconditioner.
 */
-#include <petsc-private/pcimpl.h>              /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>              /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h>
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
@@ -1194,7 +1194,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)

@@ -1,4 +1,4 @@
-#include <petsc-private/pcimpl.h>               /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>               /*I "petscpc.h" I*/
 
 typedef struct {
   PetscReal  lambda; /* damping parameter */

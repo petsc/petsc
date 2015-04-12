@@ -11,8 +11,8 @@
 !
       program main
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscis.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
 
       PetscErrorCode ierr
       PetscInt    i,n,index(1),first,step,val

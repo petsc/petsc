@@ -11,7 +11,7 @@ F*/
 #include <petscds.h>
 #include <petscts.h>
 
-#include <petsc-private/dmpleximpl.h> /* For DotD */
+#include <petsc/private/dmpleximpl.h> /* For DotD */
 
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 

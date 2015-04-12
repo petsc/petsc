@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/matimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matcreatefft_ MATCREATEFFT

@@ -6,7 +6,7 @@
 #if !defined(__GMRES)
 #define __GMRES
 
-#include <petsc-private/kspimpl.h>        /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>        /*I "petscksp.h" I*/
 
 #define KSPGMRESHEADER                                                  \
   /* Hessenberg matrix and orthogonalization information. */            \

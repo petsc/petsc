@@ -2,7 +2,7 @@
 #if !defined(__TCPTHREADIMPLH)
 #define __TCPTHREADIMPLH
 
-#include <petsc-private/threadcommimpl.h>
+#include <petsc/private/threadcommimpl.h>
 
 #if defined(PETSC_HAVE_PTHREAD_H)
 #include <pthread.h>

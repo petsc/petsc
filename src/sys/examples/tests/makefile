@@ -10,8 +10,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -196,4 +196,4 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.r
 TESTEXAMPLES_13		       = ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
                                  ex14.PETSc ex14.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

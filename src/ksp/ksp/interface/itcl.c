@@ -3,7 +3,7 @@
     Code for setting KSP options from the options database.
 */
 
-#include <petsc-private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 
 extern PetscBool KSPRegisterAllCalled;
 

@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h> /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 

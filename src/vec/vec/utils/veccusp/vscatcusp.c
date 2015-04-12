@@ -1,5 +1,5 @@
-#include <petsc-private/isimpl.h>
-#include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
+#include <petsc/private/isimpl.h>
+#include <petsc/private/vecimpl.h>             /*I "petscvec.h" I*/
 
 PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt,PetscInt*,PetscInt,PetscInt*,PetscCUSPIndices*);
 

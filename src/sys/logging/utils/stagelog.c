@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
 PetscStageLog petsc_stageLog = 0;
 

@@ -1,7 +1,7 @@
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
-#include <petsc-private/pcmgimpl.h>
+#include <petsc/private/pcmgimpl.h>
 
 extern PetscErrorCode PCMGMCycle_Private(PC,PC_MG_Levels**,PCRichardsonConvergedReason*);
 

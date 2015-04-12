@@ -36,7 +36,7 @@
 !  problem-specific data in several common blocks.
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/petsc-finclude.  This
+!  PETSc include files in the directory petsc/include/petsc/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !

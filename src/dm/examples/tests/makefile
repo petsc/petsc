@@ -12,8 +12,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
 EXAMPLESF       =
 MANSEC          = DM
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -414,4 +414,4 @@ TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.P
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

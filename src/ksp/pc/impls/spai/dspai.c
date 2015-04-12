@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 /*
      MatDumpSPAI - Dumps a PETSc matrix to a file in an ASCII format

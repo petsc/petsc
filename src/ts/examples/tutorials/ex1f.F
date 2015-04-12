@@ -28,11 +28,11 @@
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscts.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscts.h>
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
@@ -202,11 +202,11 @@
 !
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscts.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscts.h>
       Vec              X
       PetscReal user(3)
       PetscInt  i,j,row,mx,my
@@ -250,11 +250,11 @@
 !
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscts.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscts.h>
       TS       ts
       PetscReal  t
       Vec               X,F
@@ -313,11 +313,11 @@
 !
       subroutine FormJacobian(ts,ctime,X,JJ,B,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscts.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscts.h>
       TS               ts
       Vec              X
       Mat              JJ,B

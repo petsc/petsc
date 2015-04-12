@@ -34,7 +34,7 @@ Computing, 31 (2010), pp. 4452-4477.
 .seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
 
  M*/
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static const PetscInt TSEIMEXDefault = 3;

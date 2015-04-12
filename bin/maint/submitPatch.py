@@ -275,7 +275,7 @@ class Patch (object):
   def updateWeb(self):
     '''Update the patches web page'''
     if not self.argDB['updateWeb']: return
-    self.writeLogLine('Cannot update web until after merge with petsc-private')
+    self.writeLogLine('Cannot update web until after merge with petsc/private')
     return
 
   def submit(self):

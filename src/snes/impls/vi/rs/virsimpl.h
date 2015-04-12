@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 /*
    Private context for reduced space active set newton method with line search for solving

@@ -3,7 +3,7 @@
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
 PetscFunctionList MatOrderingList              = 0;

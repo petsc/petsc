@@ -1,5 +1,5 @@
 
-#include <petsc-private/threadcommimpl.h>     /*I    "petscthreadcomm.h"  I*/
+#include <petsc/private/threadcommimpl.h>     /*I    "petscthreadcomm.h"  I*/
 
 PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm);
 #if defined(PETSC_HAVE_PTHREADCLASSES)

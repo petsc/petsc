@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdmshell.h>
 #include <petscdmda.h>
 #include <petscviewer.h>
@@ -4039,7 +4039,7 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
 /*@

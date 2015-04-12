@@ -18,7 +18,7 @@
 
 #include <../src/mat/impls/maij/maij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJGetAIJ"

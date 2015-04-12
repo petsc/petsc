@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode PCGetReusePreconditioner(PC,PetscBool*);
 
    Level: advanced
 
-   Notes: this must match petsc-finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
+   Notes: this must match petsc/finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
 
 .seealso: PCApplyRichardson()
 E*/

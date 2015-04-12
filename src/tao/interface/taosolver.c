@@ -1,6 +1,6 @@
 #define TAO_DLL
 
-#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 PetscBool TaoRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList TaoList = NULL;
