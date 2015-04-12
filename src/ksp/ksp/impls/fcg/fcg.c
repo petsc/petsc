@@ -209,9 +209,6 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     ierr = VecAXPY(X,alpha,Pcurr);CHKERRQ(ierr);                 /*  x <- x + alpha * pi  */
     ierr = VecAXPY(R,-alpha,Ccurr);CHKERRQ(ierr);                /*  r <- r - alpha * wi  */
 
-    if (eigs && i > 0) {
-    }
-
     /* Compute norm for convergence check */
     switch (ksp->normtype) {
       case KSP_NORM_PRECONDITIONED:
