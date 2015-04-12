@@ -578,17 +578,14 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   PetscMPIInt    rank;
   MPI_Datatype   mtype;
   char           *fname;
-  PetscBool      functionload = PETSC_FALSE;
-  void           *ptmp        = NULL;
+  void           *ptmp = NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
-    functionload = PETSC_TRUE;
     n            = 64;
     type         = PETSC_CHAR;
     ptmp         = p;
-    /* warning memory leak */
-    fname        = (char*)malloc(64*sizeof(char));
+    fname        = (char*)malloc(n*sizeof(char));
     p            = (void*)fname;
   }
 
@@ -599,12 +596,13 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
   ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
 
-  if (functionload) {
+  if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,fname,(void**)ptmp);CHKERRQ(ierr);
 #else
     *(void**)ptmp = NULL;
 #endif
+    free(fname);
   }
   PetscFunctionReturn(0);
 }
