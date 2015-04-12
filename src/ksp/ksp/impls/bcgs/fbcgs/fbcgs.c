@@ -17,7 +17,7 @@ static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 }
 
 /* Only need a few hacks from KSPSolve_BCGS */
-#include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
+#include <petsc/private/pcimpl.h>            /*I "petscksp.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FBCGS"
 static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)

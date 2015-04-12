@@ -1,6 +1,6 @@
 #ifndef __TAO_GPCG_H
 #define __TAO_GPCG_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 #include <petsctaolinesearch.h>
 
 typedef struct{

@@ -1,6 +1,6 @@
 
 #include <petscsys.h>
-#include <petsc-private/viewerimpl.h>
+#include <petsc/private/viewerimpl.h>
 
 struct _n_PetscViewers {
   MPI_Comm    comm;

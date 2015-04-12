@@ -10,10 +10,10 @@
   This method is designed to be linearly implicit on F and can use an approximate and lagged Jacobian.
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 static TSRosWType TSRosWDefault = TSROSWRA34PW2;
 static PetscBool  TSRosWRegisterAllCalled;

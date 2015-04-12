@@ -9,8 +9,8 @@ EXAMPLESF       = ex11f90.F ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -150,4 +150,4 @@ TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm ex65dm.PETS
 TESTEXAMPLES_13		  =
 TESTEXAMPLES_HDF5         = ex10.PETSc runex10 ex10.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

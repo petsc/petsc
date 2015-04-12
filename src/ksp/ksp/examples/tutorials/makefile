@@ -16,8 +16,8 @@ MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -1288,4 +1288,4 @@ TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
 TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

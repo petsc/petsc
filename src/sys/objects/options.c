@@ -10,7 +10,7 @@
    options database until it has already processed the input.
 */
 
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MALLOC_H)

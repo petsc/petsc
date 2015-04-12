@@ -2,7 +2,7 @@
 /*
     Defines the multigrid preconditioner interface.
 */
-#include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -531,8 +531,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
     Calls setup for the KSP on each level

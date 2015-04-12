@@ -2,7 +2,7 @@
 /*
       Defines a SNES that can consist of a collection of SNESes
 */
-#include <petsc-private/snesimpl.h> /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petscblaslapack.h>
 
 const char *const        SNESCompositeTypes[]   = {"ADDITIVE","MULTIPLICATIVE","ADDITIVEOPTIMAL","SNESCompositeType","SNES_COMPOSITE",0};

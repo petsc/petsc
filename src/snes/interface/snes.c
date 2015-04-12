@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
@@ -4697,7 +4697,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 }
 
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetDM"
 /*@

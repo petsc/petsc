@@ -1,5 +1,5 @@
 
-#include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
 #include <petscviewer.h>
 
 const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};

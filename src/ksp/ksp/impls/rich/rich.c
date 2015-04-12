@@ -2,7 +2,7 @@
 /*
             This implements Richardson Iteration.
 */
-#include <petsc-private/kspimpl.h>              /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>              /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>
 
 #undef __FUNCT__

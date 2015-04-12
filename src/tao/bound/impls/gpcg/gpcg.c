@@ -1,4 +1,4 @@
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <../src/tao/bound/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
 
 

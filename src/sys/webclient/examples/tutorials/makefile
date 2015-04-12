@@ -10,9 +10,9 @@ LIBBASE	  = libpetscsys
 DIRS	  =
 LOCDIR	  = src/sys/webclient/examples/tutorials
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 urlshorten: urlshorten.o  chkopts
 	${CLINKER} -o urlshorten urlshorten.o ${PETSC_SYS_LIB}

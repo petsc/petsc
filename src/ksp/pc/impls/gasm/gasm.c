@@ -8,7 +8,7 @@
        n    - actual number of local subdomains on this processor (set in PCGASMSetSubdomains() or calculated in PCGASMSetTotalSubdomains())
        nmax - maximum number of local subdomains per processor    (calculated in PCGASMSetTotalSubdomains() or in PCSetUp_GASM())
 */
-#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdm.h>
 
 typedef struct {

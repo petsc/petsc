@@ -7,8 +7,8 @@
 
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
-#include <petsc-private/petscimpl.h>
-#include <petsc-private/dtimpl.h>
+#include <petsc/private/petscimpl.h>
+#include <petsc/private/dtimpl.h>
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>

@@ -1,5 +1,5 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/matorderimpl.h> /*I      "petscmat.h"      I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateOrderingClosure_Static"

@@ -11,6 +11,6 @@ DIRS     = lgmres fgmres dgmres pgmres
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gmres/
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  */
+#include <petsc/private/viewerimpl.h>   /*I  "petscsys.h"  */
 #include <petscviewersaws.h>
 
 #undef __FUNCT__

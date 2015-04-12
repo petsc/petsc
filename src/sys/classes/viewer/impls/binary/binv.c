@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>    /*I   "petscviewer.h"   I*/
+#include <petsc/private/viewerimpl.h>    /*I   "petscviewer.h"   I*/
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>

@@ -1,6 +1,6 @@
 #include <petscdmda.h>          /*I "petscdmda.h" I*/
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {

@@ -2,7 +2,7 @@
         Provides an interface to the Tufo-Fischer parallel direct solver
 */
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/ksp/pc/impls/tfs/tfs.h>
 

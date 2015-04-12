@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 /*MC
     SNESObjectiveFunction - functional form used to convey the objective function to the nonlinear solver

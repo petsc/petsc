@@ -1,8 +1,8 @@
-#include <petsc-private/dmpleximpl.h>   /*I "petscdmplex.h" I*/
-#include <petsc-private/snesimpl.h>     /*I "petscsnes.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I "petscdmplex.h" I*/
+#include <petsc/private/snesimpl.h>     /*I "petscsnes.h"   I*/
 #include <petscds.h>
-#include <petsc-private/petscimpl.h>
-#include <petsc-private/petscfeimpl.h>
+#include <petsc/private/petscimpl.h>
+#include <petsc/private/petscfeimpl.h>
 
 /************************** Interpolation *******************************/
 
@@ -341,7 +341,7 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "QuadJacobian_Private"
 PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)

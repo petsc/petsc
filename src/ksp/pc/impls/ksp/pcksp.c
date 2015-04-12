@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/pcimpl.h>
 #include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct {

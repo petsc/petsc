@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
 const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
@@ -473,7 +473,7 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementComputeExplicitOperator"

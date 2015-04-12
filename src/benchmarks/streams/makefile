@@ -11,9 +11,9 @@ EXAMPLESF     =
 TESTS         = BasicVersion OpenMPVersion
 MANSEC        = Sys
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 BasicVersion: BasicVersion.o  chkopts
 	-@${CLINKER} -o BasicVersion BasicVersion.o ${PETSC_LIB}

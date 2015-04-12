@@ -1,5 +1,5 @@
 #include <petscmat.h>
-#include <petsc-private/matorderimpl.h>
+#include <petsc/private/matorderimpl.h>
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 

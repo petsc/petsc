@@ -2,7 +2,7 @@
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
       subroutine GenerateErr(line,ierr)
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscErrorCode  ierr
       integer line
 
@@ -12,7 +12,7 @@
       end
 
       subroutine MyErrHandler(comm,line,fun,file,n,p,mess,ctx,ierr)
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       integer line,n,p
       PetscInt ctx
       PetscErrorCode ierr
@@ -24,7 +24,7 @@
       end
 
       program main
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscErrorCode ierr
       external       MyErrHandler
 

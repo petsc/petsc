@@ -9,6 +9,6 @@ LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/bcgs/fbcgs/
 MANSEC   = KSP
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

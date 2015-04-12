@@ -5,7 +5,7 @@
 
 #if !defined(__SNES_LS_H)
 #define __SNES_LS_H
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 typedef struct {
   PetscInt dummy;
