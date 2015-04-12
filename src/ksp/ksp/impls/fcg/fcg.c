@@ -4,8 +4,9 @@
 */
 
 #include <../src/ksp/ksp/impls/fcg/fcgimpl.h>       /*I  "petscksp.h"  I*/
-extern PetscErrorCode KSPComputeExtremeSingularValues_FCG(KSP,PetscReal*,PetscReal*);
-extern PetscErrorCode KSPComputeEigenvalues_FCG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
+extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
+extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
+
 const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCGTrunctionTypes","KSP_FCG_TRUNC_TYPE_",0};
 
 #define KSPFCG_DEFAULT_MMAX 30          /* maximum number of search directions to keep */
@@ -73,8 +74,8 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
   ierr = PetscMalloc4(maxit,&fcg->e,maxit,&fcg->d,maxit,&fcg->ee,maxit,&fcg->dd);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
 
-  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_FCG;
-  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_FCG;
+  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
+  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
  }
   PetscFunctionReturn(0);
 }
@@ -260,6 +261,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     ++i;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (eigs) fcg->ned = ksp->its-1;
   PetscFunctionReturn(0);
 }
 

@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fcg.c fcgeig.c
+SOURCEC  = fcg.c
 SOURCEF  =
 SOURCEH  = fcgimpl.h
 LIBBASE  = libpetscksp
