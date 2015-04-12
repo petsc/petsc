@@ -138,6 +138,7 @@ PETSC_EXTERN PetscErrorCode SNESGetLagJacobian(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetLagPreconditionerPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetLagJacobianPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetGridSequence(SNES,PetscInt);
+PETSC_EXTERN PetscErrorCode SNESGetGridSequence(SNES,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveIterations(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES,PetscInt*);
