@@ -91,10 +91,10 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
   PetscReal      dp=0.0;
   Vec            B,R,Z,X,Pcurr,Ccurr;
   Mat            Amat,Pmat;
+  PetscInt       eigs = ksp->calc_sings; /* Variables for eigen estimation - START*/
+  PetscInt       stored_max_it = ksp->max_it;
+  PetscScalar    alphaold = 0,betaold = 1.0,*e = 0,*d = 0;/* Variables for eigen estimation  - FINISH */
 
-  PetscInt eigs          = ksp->calc_sings;
-  PetscInt stored_max_it = ksp->max_it;
-  PetscScalar alphaold = 0,betaold = 1.0,*e = 0,*d = 0;
   PetscFunctionBegin;
 
 #define VecXDot(x,y,a) (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
@@ -246,17 +246,13 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     ierr = VecScale(Ccurr,1.0/dpi);CHKERRQ(ierr);              /*   w <- ci/dpi   */
 
     if (eigs) {
-	  if (i > 0)	{
+	  if (i > 0) {
         if (ksp->max_it != stored_max_it) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
         e[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))/alphaold;
-		//PetscPrintf(PETSC_COMM_WORLD,"e:%d --> %f\t%f\t%f\t%f\n",i,alphaold,betaold,beta,e[i]);
 		d[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))*e[i] + 1.0/alpha;
+	  }	else {
+	    d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
 	  }
-	else	  
-	{
-		d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
-	}
-     //PetscPrintf(PETSC_COMM_WORLD,"d:%d --> %f\t%f\t%f\t%f\n",i,alpha,betaold,beta,d[i]);
     }
     ++i;
   } while (i<ksp->max_it);
@@ -288,7 +284,7 @@ PetscErrorCode KSPDestroy_FCG(KSP ksp)
   ierr = PetscFree5(fcg->Pvecs,fcg->Cvecs,fcg->pPvecs,fcg->pCvecs,fcg->chunksizes);CHKERRQ(ierr);
   /* free space used for singular value calculations */
   if (ksp->calc_sings) {
-   ierr = PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd);CHKERRQ(ierr);
+    ierr = PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd);CHKERRQ(ierr);
   }
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
