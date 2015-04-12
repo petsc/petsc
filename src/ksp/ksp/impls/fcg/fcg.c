@@ -248,14 +248,14 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
 	  if (i > 0)	{
         if (ksp->max_it != stored_max_it) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
         e[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))/alphaold;
-		PetscPrintf(PETSC_COMM_WORLD,"e:%d --> %f\t%f\t%f\t%f\n",i,alphaold,betaold,beta,e[i]);
+		//PetscPrintf(PETSC_COMM_WORLD,"e:%d --> %f\t%f\t%f\t%f\n",i,alphaold,betaold,beta,e[i]);
 		d[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))*e[i] + 1.0/alpha;
 	  }
 	else	  
 	{
 		d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
 	}
-     PetscPrintf(PETSC_COMM_WORLD,"d:%d --> %f\t%f\t%f\t%f\n",i,alpha,betaold,beta,d[i]);
+     //PetscPrintf(PETSC_COMM_WORLD,"d:%d --> %f\t%f\t%f\t%f\n",i,alpha,betaold,beta,d[i]);
     }
     ++i;
   } while (i<ksp->max_it);
