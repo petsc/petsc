@@ -419,10 +419,14 @@ class Configure(config.package.Package):
       return prefix+baseName
 
   def mangleBlasNoPrefix(self, baseName):
-    if self.f2c and self.mangling == 'underscore':
-      return baseName+'_'
+    if self.f2c:
+      if self.mangling == 'underscore':
+        return baseName+'_'
+      else:
+        return baseName
     else:
-      return baseName
+      return self.compilers.mangleFortranFunction(baseName)
+
 
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
