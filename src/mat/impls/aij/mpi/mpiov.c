@@ -75,7 +75,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /*retrieve IS data*/
   ierr = PetscCalloc2(nidx,&indices,nidx,&length);CHKERRQ(ierr);
   /*get length and indices*/
-  for(i=0,tlength=0; i<nidx; i++){
+  for (i=0,tlength=0; i<nidx; i++){
     ierr = ISGetLocalSize(is[i],&length[i]);CHKERRQ(ierr);
     tlength += length[i];
     ierr = ISGetIndices(is[i],&indices[i]);CHKERRQ(ierr);
@@ -84,17 +84,17 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscCalloc3(tlength,&remoterows,tlength,&rrow_ranks,tlength,&rrow_isids);CHKERRQ(ierr);
   ierr = PetscCalloc3(size,&toranks,2*size,&tosizes,size,&tosizes_temp);CHKERRQ(ierr);
   nrrows = 0;
-  for(i=0; i<nidx; i++){
-	length_i     = length[i];
-	indices_i    = indices[i];
-    for(j=0; j<length_i; j++){
+  for (i=0; i<nidx; i++){
+    length_i     = length[i];
+    indices_i    = indices[i];
+    for (j=0; j<length_i; j++){
       owner = -1;
       ierr = PetscLayoutFindOwner(rmap,indices_i[j],&owner);CHKERRQ(ierr);
       /*remote processors*/
-      if(owner != rank){
-    	tosizes_temp[owner]++; /*number of rows to owner*/
-    	rrow_ranks[nrrows]  = owner; /*processor */
-    	rrow_isids[nrrows]   = i; /*is id*/
+      if (owner != rank){
+        tosizes_temp[owner]++; /*number of rows to owner*/
+        rrow_ranks[nrrows]  = owner; /*processor */
+        rrow_isids[nrrows]   = i; /*is id*/
         remoterows[nrrows++] = indices_i[j]; /* row */
       }
     }
@@ -109,38 +109,38 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /*we do not have any messages
    * It usually corresponds to overlap 1
    * */
-  if(!reducednrrows){
-	ierr = PetscFree3(toranks,tosizes,tosizes_temp);CHKERRQ(ierr);
-	ierr = PetscFree3(remoterows,rrow_ranks,rrow_isids);CHKERRQ(ierr);
-	ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+  if (!reducednrrows){
+    ierr = PetscFree3(toranks,tosizes,tosizes_temp);CHKERRQ(ierr);
+    ierr = PetscFree3(remoterows,rrow_ranks,rrow_isids);CHKERRQ(ierr);
+    ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   nto = 0;
   /*send sizes and ranks*/
-  for(i=0; i<size; i++){
-   if(tosizes_temp[i]){
-    tosizes[nto*2]  = tosizes_temp[i]*2; /* size */
-    tosizes_temp[i] = nto; /* a map from processor to index */
-	toranks[nto++]  = i; /* processor */
+  for (i=0; i<size; i++){
+   if (tosizes_temp[i]){
+     tosizes[nto*2]  = tosizes_temp[i]*2; /* size */
+     tosizes_temp[i] = nto; /* a map from processor to index */
+     toranks[nto++]  = i; /* processor */
    }
   }
   ierr = PetscCalloc1(nto+1,&toffsets);CHKERRQ(ierr);
-  for(i=0; i<nto; i++){
-	toffsets[i+1]  = toffsets[i]+tosizes[2*i]; /*offsets*/
-	tosizes[2*i+1] = toffsets[i]; /*offsets to send*/
+  for (i=0; i<nto; i++){
+    toffsets[i+1]  = toffsets[i]+tosizes[2*i]; /*offsets*/
+    tosizes[2*i+1] = toffsets[i]; /*offsets to send*/
   }
   /*send information to other processors*/
   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
   /*build a star forest */
   nrecvrows = 0;
-  for(i=0; i<nfrom; i++) nrecvrows += fromsizes[2*i];
+  for (i=0; i<nfrom; i++) nrecvrows += fromsizes[2*i];
   ierr = PetscMalloc(nrecvrows*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
   nrecvrows = 0;
-  for(i=0; i<nfrom; i++){
-	for(j=0; j<fromsizes[2*i]; j++){
-	  remote[nrecvrows].rank    = fromranks[i];
+  for (i=0; i<nfrom; i++){
+    for (j=0; j<fromsizes[2*i]; j++){
+      remote[nrecvrows].rank    = fromranks[i];
       remote[nrecvrows++].index = fromsizes[2*i+1]+j;
-	}
+    }
   }
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,nrecvrows,nrecvrows,PETSC_NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
@@ -150,11 +150,11 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /*ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   /*message pair <no of is, row> */
   ierr = PetscCalloc2(2*nrrows,&todata,nrecvrows,&fromdata);CHKERRQ(ierr);
-  for(i=0; i<nrrows; i++){
-	owner = rrow_ranks[i]; /* processor */
-	j     = tosizes_temp[owner]; /* index */
-	todata[toffsets[j]++] = rrow_isids[i];
-	todata[toffsets[j]++] = remoterows[i];
+  for (i=0; i<nrrows; i++){
+    owner = rrow_ranks[i]; /* processor */
+    j     = tosizes_temp[owner]; /* index */
+    todata[toffsets[j]++] = rrow_isids[i];
+    todata[toffsets[j]++] = remoterows[i];
   }
   ierr = PetscFree3(toranks,tosizes,tosizes_temp);CHKERRQ(ierr);
   ierr = PetscFree3(remoterows,rrow_ranks,rrow_isids);CHKERRQ(ierr);
@@ -169,15 +169,15 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nfrom,fromranks,sbsizes,&nto,&toranks,&tosizes);CHKERRQ(ierr);
   ierr = PetscFree(fromranks);CHKERRQ(ierr);
   nrecvrows = 0;
-  for(i=0; i<nto; i++) nrecvrows += tosizes[2*i];
+  for (i=0; i<nto; i++) nrecvrows += tosizes[2*i];
   ierr = PetscCalloc1(nrecvrows,&todata);CHKERRQ(ierr);
   ierr = PetscMalloc(nrecvrows*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
   nrecvrows = 0;
-  for(i=0; i<nto; i++){
-  	for(j=0; j<tosizes[2*i]; j++){
-  	  remote[nrecvrows].rank    = toranks[i];
+  for (i=0; i<nto; i++){
+    for (j=0; j<tosizes[2*i]; j++){
+      remote[nrecvrows].rank    = toranks[i];
       remote[nrecvrows++].index = tosizes[2*i+1]+j;
-  	}
+    }
   }
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,nrecvrows,nrecvrows,PETSC_NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
@@ -210,36 +210,36 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscIn
   PetscFunctionBegin;
   max_lsize = 0;
   ierr = PetscMalloc(nidx*sizeof(PetscInt),&isz);CHKERRQ(ierr);
-  for(i=0; i<nidx; i++){
-   ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
-   max_lsize = lsize>max_lsize ? lsize:max_lsize;
-   isz[i]    = lsize;
+  for (i=0; i<nidx; i++){
+    ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
+    max_lsize = lsize>max_lsize ? lsize:max_lsize;
+    isz[i]    = lsize;
   }
   ierr = PetscMalloc((max_lsize+nrecvs)*nidx*sizeof(PetscInt),&indices_temp);CHKERRQ(ierr);
-  for(i=0; i<nidx; i++){
+  for (i=0; i<nidx; i++){
     ierr = ISGetIndices(is[i],&indices_i_temp);CHKERRQ(ierr);
-	ierr = PetscMemcpy(indices_temp+i*(max_lsize+nrecvs),indices_i_temp, sizeof(PetscInt)*isz[i]);CHKERRQ(ierr);
-	ierr = ISRestoreIndices(is[i],&indices_i_temp);CHKERRQ(ierr);
-	ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
+    ierr = PetscMemcpy(indices_temp+i*(max_lsize+nrecvs),indices_i_temp, sizeof(PetscInt)*isz[i]);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is[i],&indices_i_temp);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
   }
   /*retrieve information */
-  for(i=0; i<nrecvs; ){
-	is_id      = recvdata[i++];
-	data_size  = recvdata[i++];
-	indices_i  = indices_temp+(max_lsize+nrecvs)*is_id;
-	isz_i      = isz[is_id];
-    for(j=0; j< data_size; j++){
+  for (i=0; i<nrecvs; ){
+    is_id      = recvdata[i++];
+    data_size  = recvdata[i++];
+    indices_i  = indices_temp+(max_lsize+nrecvs)*is_id;
+    isz_i      = isz[is_id];
+    for (j=0; j< data_size; j++){
       col = recvdata[i++];
       indices_i[isz_i++] = col;
     }
     isz[is_id] = isz_i;
   }
   /*remove duplicate entities*/
-  for(i=0; i<nidx; i++){
-   indices_i  = indices_temp+(max_lsize+nrecvs)*i;
-   isz_i      = isz[i];
-   ierr = PetscSortRemoveDupsInt(&isz_i,indices_i);CHKERRQ(ierr);
-   ierr = ISCreateGeneral(PETSC_COMM_SELF,isz_i,indices_i,PETSC_COPY_VALUES,&is[i]);CHKERRQ(ierr);
+  for (i=0; i<nidx; i++){
+    indices_i  = indices_temp+(max_lsize+nrecvs)*i;
+    isz_i      = isz[i];
+    ierr = PetscSortRemoveDupsInt(&isz_i,indices_i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz_i,indices_i,PETSC_COPY_VALUES,&is[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(isz);CHKERRQ(ierr);
   ierr = PetscFree(indices_temp);CHKERRQ(ierr);
@@ -267,9 +267,9 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   ierr = MatMPIAIJGetSeqAIJ(mat,&amat,&bmat,&gcols);CHKERRQ(ierr);
   /* Even if the mat is symmetric, we still assume it is not symmetric*/
   ierr = MatGetRowIJ(amat,0,PETSC_FALSE,PETSC_FALSE,&an,&ai,&aj,&done);CHKERRQ(ierr);
-  if(!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
   ierr = MatGetRowIJ(bmat,0,PETSC_FALSE,PETSC_FALSE,&bn,&bi,&bj,&done);CHKERRQ(ierr);
-  if(!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
   /*total number of nonzero values */
   tnz  = ai[an]+bi[bn];
   ierr = MatGetLayouts(mat,&rmap,&cmap);CHKERRQ(ierr);
@@ -277,40 +277,36 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   ierr = PetscLayoutGetRange(cmap,&cstart,PETSC_NULL);CHKERRQ(ierr);
   /*longest message */
   max_fszs = 0;
-  for(i=0; i<nfrom; i++) max_fszs = fromsizes[2*i]>max_fszs ? fromsizes[2*i]:max_fszs;
+  for (i=0; i<nfrom; i++) max_fszs = fromsizes[2*i]>max_fszs ? fromsizes[2*i]:max_fszs;
   /*better way to estimate number of nonzero in the mat???*/
   ierr = PetscCalloc5(max_fszs*nidx,&rows_data_ptr,nidx,&rows_data,nidx,&rows_pos_i,nfrom*nidx,&indv_counts,tnz,&indices_tmp);CHKERRQ(ierr);
-  for(i=0; i<nidx; i++) rows_data[i] = rows_data_ptr+max_fszs*i;
+  for (i=0; i<nidx; i++) rows_data[i] = rows_data_ptr+max_fszs*i;
   rows_pos  = 0;
   totalrows = 0;
-  for(i=0; i<nfrom; i++){
-	ierr = PetscMemzero(rows_pos_i,sizeof(PetscInt)*nidx);CHKERRQ(ierr);
-	/*group data*/
-    for(j=0; j<fromsizes[2*i]; j+=2){
+  for (i=0; i<nfrom; i++){
+    ierr = PetscMemzero(rows_pos_i,sizeof(PetscInt)*nidx);CHKERRQ(ierr);
+    /*group data*/
+    for (j=0; j<fromsizes[2*i]; j+=2){
       is_id                       = fromrows[rows_pos++];/*no of is*/
       rows_i                      = rows_data[is_id];
       rows_i[rows_pos_i[is_id]++] = fromrows[rows_pos++];/* row */
     }
     /*estimate a space to avoid multiple allocations  */
-    for(j=0; j<nidx; j++){
+    for (j=0; j<nidx; j++){
       indvc_ij = 0;
       rows_i   = rows_data[j];
-      for(l=0; l<rows_pos_i[j]; l++){
+      for (l=0; l<rows_pos_i[j]; l++){
         row    = rows_i[l]-rstart;
         start  = ai[row];
         end    = ai[row+1];
-        for(k=start; k<end; k++){ /* Amat */
+        for (k=start; k<end; k++){ /* Amat */
           col = aj[k] + cstart;
-          /*ierr = PetscLayoutFindOwner(rmap,col,&owner);CHKERRQ(ierr);
-          if(owner != fromranks[i])*/
           indices_tmp[indvc_ij++] = col;/*do not count the rows from the original rank*/
         }
         start = bi[row];
         end   = bi[row+1];
-        for(k=start; k<end; k++) { /* Bmat */
+        for (k=start; k<end; k++) { /* Bmat */
           col = gcols[bj[k]];
-          /*ierr = PetscLayoutFindOwner(rmap,col,&owner);CHKERRQ(ierr);
-          if(owner != fromranks[i]) */
           indices_tmp[indvc_ij++] = col;
         }
       }
@@ -324,32 +320,32 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   totalrows = 0;
   rows_pos  = 0;
   /* use this code again */
-  for(i=0;i<nfrom;i++){
-  	ierr = PetscMemzero(rows_pos_i,sizeof(PetscInt)*nidx);CHKERRQ(ierr);
-    for(j=0; j<fromsizes[2*i]; j+=2){
+  for (i=0;i<nfrom;i++){
+    ierr = PetscMemzero(rows_pos_i,sizeof(PetscInt)*nidx);CHKERRQ(ierr);
+    for (j=0; j<fromsizes[2*i]; j+=2){
       is_id                       = fromrows[rows_pos++];
       rows_i                      = rows_data[is_id];
       rows_i[rows_pos_i[is_id]++] = fromrows[rows_pos++];
     }
     /* add data  */
-    for(j=0; j<nidx; j++){
-      if(!indv_counts[i*nidx+j]) continue;
+    for (j=0; j<nidx; j++){
+      if (!indv_counts[i*nidx+j]) continue;
       indvc_ij = 0;
       sbdata[totalrows++] = j;
       sbdata[totalrows++] = indv_counts[i*nidx+j];
       sbsizes[2*i]       += 2;
       rows_i              = rows_data[j];
-      for(l=0; l<rows_pos_i[j]; l++){
+      for (l=0; l<rows_pos_i[j]; l++){
         row   = rows_i[l]-rstart;
         start = ai[row];
         end   = ai[row+1];
-        for(k=start; k<end; k++){ /* Amat */
+        for (k=start; k<end; k++){ /* Amat */
           col = aj[k] + cstart;
           indices_tmp[indvc_ij++] = col;
         }
         start = bi[row];
         end   = bi[row+1];
-        for(k=start; k<end; k++) { /* Bmat */
+        for (k=start; k<end; k++) { /* Bmat */
           col = gcols[bj[k]];
           indices_tmp[indvc_ij++] = col;
         }
@@ -362,13 +358,13 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   }
   /* offsets */
   ierr = PetscCalloc1(nfrom+1,&offsets);CHKERRQ(ierr);
-  for(i=0; i<nfrom; i++){
-	offsets[i+1]   = offsets[i] + sbsizes[2*i];
-	sbsizes[2*i+1] = offsets[i];
+  for (i=0; i<nfrom; i++){
+    offsets[i+1]   = offsets[i] + sbsizes[2*i];
+    sbsizes[2*i+1] = offsets[i];
   }
   ierr = PetscFree(offsets);CHKERRQ(ierr);
-  if(sbrowsizes) *sbrowsizes = sbsizes;
-  if(sbrows) *sbrows = sbdata;
+  if (sbrowsizes) *sbrowsizes = sbsizes;
+  if (sbrows) *sbrows = sbdata;
   ierr = PetscFree5(rows_data_ptr,rows_data,rows_pos_i,indv_counts,indices_tmp);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(amat,0,PETSC_FALSE,PETSC_FALSE,&an,&ai,&aj,&done);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(bmat,0,PETSC_FALSE,PETSC_FALSE,&bn,&bi,&bj,&done);CHKERRQ(ierr);
@@ -383,7 +379,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   PetscInt          tnz,an,bn,i,j,row,start,end,rstart,cstart,col,k,*indices_temp;
   PetscInt          lsize,lsize_tmp,owner;
   PetscMPIInt       rank;
-  Mat   	        amat,bmat;
+  Mat                   amat,bmat;
   PetscBool         done;
   PetscLayout       cmap,rmap;
   MPI_Comm          comm;
@@ -394,9 +390,9 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatMPIAIJGetSeqAIJ(mat,&amat,&bmat,&gcols);CHKERRQ(ierr);
   ierr = MatGetRowIJ(amat,0,PETSC_FALSE,PETSC_FALSE,&an,&ai,&aj,&done);CHKERRQ(ierr);
-  if(!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
   ierr = MatGetRowIJ(bmat,0,PETSC_FALSE,PETSC_FALSE,&bn,&bi,&bj,&done);CHKERRQ(ierr);
-  if(!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
   /*is it a safe way to compute number of nonzero values ?*/
   tnz  = ai[an]+bi[bn];
   ierr = MatGetLayouts(mat,&rmap,&cmap);CHKERRQ(ierr);
@@ -406,29 +402,29 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
    * where global size of matrix is used
    * */
   ierr = PetscMalloc(sizeof(PetscInt)*tnz,&indices_temp);CHKERRQ(ierr);
-  for(i=0; i<nidx; i++) {
-	ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
-	ierr = ISGetIndices(is[i],&indices);CHKERRQ(ierr);
-	lsize_tmp = 0;
-    for(j=0; j<lsize; j++) {
-       owner = -1;
-       row   = indices[j];
-       ierr = PetscLayoutFindOwner(rmap,row,&owner);CHKERRQ(ierr);
-       if(owner != rank) continue;
-       /*local number*/
-       row  -= rstart;
-       start = ai[row];
-       end   = ai[row+1];
-       for(k=start; k<end; k++) { /* Amat */
-         col = aj[k] + cstart;
-         indices_temp[lsize_tmp++] = col;
-       }
-       start = bi[row];
-       end   = bi[row+1];
-       for(k=start; k<end; k++) { /* Bmat */
-         col = gcols[bj[k]];
-         indices_temp[lsize_tmp++] = col;
-       }
+  for (i=0; i<nidx; i++) {
+    ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
+    ierr = ISGetIndices(is[i],&indices);CHKERRQ(ierr);
+    lsize_tmp = 0;
+    for (j=0; j<lsize; j++) {
+      owner = -1;
+      row   = indices[j];
+      ierr = PetscLayoutFindOwner(rmap,row,&owner);CHKERRQ(ierr);
+      if (owner != rank) continue;
+      /*local number*/
+      row  -= rstart;
+      start = ai[row];
+      end   = ai[row+1];
+      for (k=start; k<end; k++) { /* Amat */
+        col = aj[k] + cstart;
+        indices_temp[lsize_tmp++] = col;
+      }
+      start = bi[row];
+      end   = bi[row+1];
+      for (k=start; k<end; k++) { /* Bmat */
+        col = gcols[bj[k]];
+        indices_temp[lsize_tmp++] = col;
+      }
     }
    ierr = ISRestoreIndices(is[i],&indices);CHKERRQ(ierr);
    ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
