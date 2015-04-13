@@ -367,7 +367,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     const char *fnametmp;
 #endif
     m     = 64;
-    fname = malloc(m*sizeof(char));
+    fname = (char*)malloc(m*sizeof(char));
     if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
