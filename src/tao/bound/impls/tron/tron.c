@@ -104,7 +104,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
-  PetscInt                     iter=0,its;
+  PetscInt                     its;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
@@ -132,7 +132,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   }
 
   tron->stepsize=tao->trust;
-  ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
   while (reason==TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       actred=0;
       ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-      ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
       if (!reason) {
         reason = TAO_CONVERGED_STEPTOL;
         ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
@@ -252,8 +252,8 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
-    iter++;
-    ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
 
   PetscFunctionReturn(0);

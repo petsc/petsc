@@ -183,7 +183,7 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
 static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
   TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
-  PetscInt                     iter=0,phase2_iter,nlocal,its;
+  PetscInt                     phase2_iter,nlocal,its;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step=1.0,f, descent, aldescent;
@@ -252,7 +252,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
 
   /* Monitor convergence */
-  ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
     tao->ksp_its=0;
@@ -390,7 +390,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     /* Check convergence */
     ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
     ierr = VecNorm(tao->constraints, NORM_2, &cnorm);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING){
       break;
     }
@@ -447,7 +447,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = VecAXPY(lclP->g1,-1.0,lclP->GAugL_V);CHKERRQ(ierr);
 
       /* Compute the limited-memory quasi-newton direction */
-      if (iter > 0) {
+      if (tao->niter > 0) {
         ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
         ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
         if (descent <= 0) {
@@ -567,8 +567,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     ierr = VecNorm(tao->constraints, NORM_2, &cnorm);CHKERRQ(ierr);
 
     /* Monitor convergence */
-    iter++;
-    ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);

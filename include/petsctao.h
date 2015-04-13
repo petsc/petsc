@@ -179,6 +179,11 @@ PETSC_EXTERN PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoGetMaximumIterations(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoGetIterationNumber(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetIterationNumber(Tao, PetscInt);
+PETSC_EXTERN PetscErrorCode TaoGetTotalIterationNumber(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetTotalIterationNumber(Tao, PetscInt);
+
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
