@@ -554,6 +554,10 @@ cdef class Vec(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecSet(self.vec, sval) )
 
+    def isset(self, IS idx not None, alpha):
+        cdef PetscScalar aval = asScalar(alpha)
+        CHKERR( VecISSet(self.vec, idx.iset, aval) )
+
     def scale(self, alpha):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecScale(self.vec, sval) )

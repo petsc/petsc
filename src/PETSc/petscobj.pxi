@@ -28,6 +28,10 @@ cdef extern from * nogil:
     int PetscObjectCompose(PetscObject,char[],PetscObject)
     int PetscObjectQuery(PetscObject,char[],PetscObject*)
 
+    int PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt)
+    int PetscObjectGetTabLevel(PetscObject,PetscInt*)
+    int PetscObjectSetTabLevel(PetscObject,PetscInt)
+
 # --------------------------------------------------------------------
 
 cdef inline int PetscINCREF(PetscObject *obj) nogil:
