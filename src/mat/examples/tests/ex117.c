@@ -1,5 +1,5 @@
 
-static char help[] = "Tests Cholesky factorization and Matview() for a SBAIJ matrix, (bs=2).\n";
+static char help[] = "Tests Cholesky factorization for a SBAIJ matrix, (bs=2).\n";
 /*
   This code is modified from the code contributed by JUNWANG@uwm.edu on Apr 13, 2007
 */
@@ -13,15 +13,19 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   Mat            mat,fact,B;
   PetscInt       ind1[2],ind2[2];
-  PetscScalar    temp[2*2];
+  PetscScalar    temp[4];
   PetscInt       nnz[3];
   IS             perm,colp;
   MatFactorInfo  info;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,0,help);
-  nnz[0]=2;nnz[1]=1;nnz[2]=1;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
+  nnz[0]=2;nnz[1]=1;nnz[2]=1;
   ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat);CHKERRQ(ierr);
+  
   ind1[0]=0;ind1[1]=1;
   temp[0]=3;temp[1]=2;temp[2]=0;temp[3]=3;
   ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
@@ -63,12 +67,9 @@ int main(int argc,char **args)
   ierr = ISDestroy(&colp);CHKERRQ(ierr);
 
   info.fill=1.0;
-
   ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(fact,mat,perm,&info);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(fact,mat,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Chol factor: \n");
-  ierr = MatView(fact, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
