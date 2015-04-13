@@ -170,8 +170,6 @@ class BaseTestDA(object):
     def testCreateInjection(self):
         da = self.da
         if da.dim == 1: return
-        if (da.dim == 3 and
-            PETSc.Sys.getVersion() < (3, 2)): return
         rda = da.refine()
         scatter = da.createInjection(rda)
 
@@ -364,9 +362,8 @@ for dim in DIM:
                         self.assertEqual(newda.boundary_type,
                                          boundary)
                         if dim == 1:
-                            if PETSc.Sys.getVersion() > (3,0,0):
-                                self.assertEqual(newda.stencil,
-                                                 (stencil, width))
+                            self.assertEqual(newda.stencil,
+                                             (stencil, width))
                         newda.destroy()
                         da.destroy()
                     setattr(TestDADuplicate,
@@ -378,10 +375,6 @@ del counter, dim, dof, boundary, stencil, width
 
 # --------------------------------------------------------------------
 
-if PETSc.Sys.getVersion() <= (3,0,0):
-    del BaseTestDA.testRefineHierarchy
-    del BaseTestDA.testCoarsenHierarchy
-
 if PETSc.COMM_WORLD.getSize() > 1:
     del TestDA_1D_W0
     del TestDA_2D_W0, TestDA_2D_W0_N2
@@ -391,3 +384,5 @@ if PETSc.COMM_WORLD.getSize() > 1:
 
 if __name__ == '__main__':
     unittest.main()
+
+# --------------------------------------------------------------------

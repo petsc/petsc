@@ -269,11 +269,5 @@ class TestPCPYTHON4(TestPCPYTHON3):
 
 # --------------------------------------------------------------------
 
-PETSC_VERSION = PETSc.Sys.getVersion()
-if PETSC_VERSION < (3, 2, 0):
-    del TestPCPYTHON.testResetAndApply
-    
-# --------------------------------------------------------------------
-
 if __name__ == '__main__':
     unittest.main()

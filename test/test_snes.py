@@ -365,11 +365,5 @@ class TestSNESTR(BaseTestSNES, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-PETSC_VERSION = PETSc.Sys.getVersion()
-if PETSC_VERSION < (3, 2, 0):
-    del BaseTestSNES.testResetAndSolve
-
-# --------------------------------------------------------------------
-
 if __name__ == '__main__':
     unittest.main()

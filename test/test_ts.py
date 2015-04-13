@@ -259,23 +259,6 @@ class TestTSAlpha(BaseTestTSNonlinearRHS, BaseTestTSNonlinearI,
 
 # --------------------------------------------------------------------
 
-PETSC_VERSION = PETSc.Sys.getVersion()
-
-if PETSC_VERSION < (3, 3, 0):
-    TestTSCN.testFDColorI = lambda *args: None
-    TestTSCN.testFDColorRHS = lambda *args: None
-if PETSC_VERSION < (3, 2, 0):
-    del BaseTestTSNonlinearRHS.testResetAndSolveRHS
-    del BaseTestTSNonlinearI.testResetAndSolveI
-    del TestTSCN
-    del TestTSAlpha
-    TestTSBeuler.testSolveI = lambda *args: None
-    TestTSBeuler.testFDColorI = lambda *args: None
-if PETSC_VERSION < (3, 1, 0):
-    del BaseTestTSNonlinearI.testSolveI
-    del BaseTestTSNonlinearI.testFDColorI
-    del TestTSTheta
-
 if __name__ == '__main__':
     unittest.main()
 

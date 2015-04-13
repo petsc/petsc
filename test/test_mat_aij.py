@@ -182,9 +182,6 @@ class BaseTestMatAnyAIJ(object):
         B.destroy()
 
     def testInvertBlockDiagonal(self):
-        if PETSc.Sys.getVersion() < (3,3,0):
-            if ('mpiaij' in self.A.type and
-                self.BSIZE and self.BSIZE > 1): return
         try:
             _ = len(self.BSIZE)
             return

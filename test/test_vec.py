@@ -277,8 +277,7 @@ class TestVecWithArray(unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-if PETSc.Sys.getVersion() < (3,3,0):
-    del TestVecWithArray.testSetMPIGhost
-
 if __name__ == '__main__':
     unittest.main()
+
+# --------------------------------------------------------------------

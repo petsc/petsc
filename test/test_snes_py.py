@@ -97,10 +97,6 @@ class TestSNESPython(BaseTestSNES, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-PETSC_VERSION = PETSc.Sys.getVersion()
-if PETSC_VERSION < (3, 2, 0):
-    del TestSNESPython
-
 if __name__ == '__main__':
     unittest.main()
 

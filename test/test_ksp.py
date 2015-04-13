@@ -212,10 +212,6 @@ class TestKSPFGMRES(BaseTestKSP, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-PETSC_VERSION = PETSc.Sys.getVersion()
-if PETSC_VERSION < (3, 2, 0):
-    del BaseTestKSP.testResetAndSolve
-
 if PETSc.ScalarType().dtype.char in 'FDG':
     del TestKSPSTCG
 
