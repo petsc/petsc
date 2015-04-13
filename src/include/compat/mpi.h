@@ -1,5 +1,5 @@
-#ifndef _COMPAT_MPI_H
-#define _COMPAT_MPI_H
+#ifndef PETSC4PY_COMPAT_MPI_H
+#define PETSC4PY_COMPAT_MPI_H
 
 #if defined(OPEN_MPI)
 
@@ -131,4 +131,4 @@ static PetscErrorCode PetscInitialize_OpenMPI(int *argc,char ***args,
 
 #endif /* OPEN_MPI */
 
-#endif /* _COMPAT_MPI_H */
+#endif/*PETSC4PY_COMPAT_MPI_H*/

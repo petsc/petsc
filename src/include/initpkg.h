@@ -1,22 +1,5 @@
 /* ------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_LT(3,4,0)
-#define PetscSysInitializePackage()    PetscSysInitializePackage(0)
-#define PetscViewerInitializePackage() PetscViewerInitializePackage(0)
-#define PetscRandomInitializePackage() PetscRandomInitializePackage(0)
-#define ISInitializePackage()          ISInitializePackage(0) || \
-                                       PetscClassIdRegister("Section",&PETSC_SECTION_CLASSID)
-#define VecInitializePackage()         VecInitializePackage(0)
-#define PFInitializePackage()          PFInitializePackage(0)
-#define MatInitializePackage()         MatInitializePackage(0)
-#define PCInitializePackage()          PCInitializePackage(0)
-#define KSPInitializePackage()         KSPInitializePackage(0)
-#define SNESInitializePackage()        SNESInitializePackage(0)
-#define TSInitializePackage()          TSInitializePackage(0)
-#define AOInitializePackage()          AOInitializePackage(0)
-#define DMInitializePackage()          DMInitializePackage(0)
-#endif
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscInitializePackageAll"
 static PetscErrorCode PetscInitializePackageAll(void)

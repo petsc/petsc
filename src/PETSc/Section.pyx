@@ -3,8 +3,7 @@
 cdef class Section(Object):
 
     def __cinit__(self):
-        if PETSC_VERSION_GT(3,3,0):
-            self.obj = <PetscObject*> &self.sec
+        self.obj = <PetscObject*> &self.sec
         self.sec  = NULL
 
     def __dealloc__(self):

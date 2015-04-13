@@ -238,18 +238,6 @@ cdef int PetscPythonErrorHandler(
     else:
         return PetscTBEH(comm, line, cfun, cfile, n, p, mess, ctx)
 
-cdef int PetscPythonErrorHandler_OLD(
-    MPI_Comm       comm,
-    int            line,
-    const_char    *cfun,
-    const_char    *cfile,
-    const_char    *cdir,
-    int            n,
-    PetscErrorType p,
-    const_char    *mess,
-    void          *ctx) nogil:
-    return PetscPythonErrorHandler(comm,line,cfun,cfile,n,p,mess,ctx)
-
 # --------------------------------------------------------------------
 
 cdef extern from "stdlib.h" nogil:
@@ -346,8 +334,6 @@ cdef int initialize(object args, object comm) except -1:
     # install Python error handler
     cdef PetscErrorHandlerFunction handler = NULL
     handler = <PetscErrorHandlerFunction>PetscPythonErrorHandler
-    if PETSC_VERSION_LT(3,5,0):
-        handler = <PetscErrorHandlerFunction>PetscPythonErrorHandler_OLD
     CHKERR( PetscPushErrorHandler(handler, NULL) )
     # register finalization function
     if Py_AtExit(finalize) < 0:

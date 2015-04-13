@@ -142,9 +142,6 @@ cdef class Sys:
         if errhandler == "python":
             handler = <PetscErrorHandlerFunction> \
                       PetscPythonErrorHandler
-            if PETSC_VERSION_LT(3,5,0):
-                handler = <PetscErrorHandlerFunction> \
-                          PetscPythonErrorHandler_OLD
         elif errhandler == "debugger":
             handler = PetscAttachDebuggerErrorHandler
         elif errhandler == "emacs":

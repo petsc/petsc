@@ -5,33 +5,9 @@
 #include "petsc/private/snesimpl.h"
 #include "petsc/private/tsimpl.h"
 
-#if PETSC_VERSION_LT(3,5,0)
-typedef PetscObject Tao;
-#endif
-
-#if PETSC_VERSION_LT(3,4,0)
-#define PetscObjectComposeFunction(o,n,f) \
-        PetscObjectComposeFunction(o,n,"",(PetscVoidFunction)(f))
-#define MatRegister(s,f)  MatRegister(s,0,0,f)
-#define PCRegister(s,f)   PCRegister(s,0,0,f)
-#define KSPRegister(s,f)  KSPRegister(s,0,0,f)
-#define SNESRegister(s,f) SNESRegister(s,0,0,f)
-#define TSRegister(s,f)   TSRegister(s,0,0,f)
-#endif
-
 EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
-
-#if PETSC_VERSION_LT(3,4,0)
-#define KSPBuildSolutionDefault KSPDefaultBuildSolution
-#define KSPBuildResidualDefault KSPDefaultBuildResidual
-#endif
-
-#if PETSC_VERSION_LT(3,5,0)
-#define KSPConvergedSkip  KSPSkipConverged
-#define SNESConvergedSkip SNESSkipConverged
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogHistory"
@@ -41,11 +17,7 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-#if PETSC_VERSION_LT(3,4,0)
-  ierr=0;KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
-#else
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -57,11 +29,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
     PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-#if PETSC_VERSION_LT(3,4,0)
-  ierr=0;SNESLogConvHistory(snes,rnorm,lits);CHKERRQ(ierr);
-#else
   ierr = SNESLogConvergenceHistory(snes,rnorm,lits);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -122,13 +90,8 @@ PetscErrorCode SNESConverged(SNES snes,
 #define PETSC_ERR_PYTHON ((PetscErrorCode)(-1))
 #endif
 
-#if PETSC_VERSION_LT(3,5,0)
 #define PetscERROR(comm,FUNCT,n,t,msg,arg) \
-  PetscError(comm,__LINE__,FUNCT,__FILE__,__SDIR__,n,t,msg,arg)
-#else
-#define PetscERROR(comm,FUNCT,n,t,msg,arg) \
-  PetscError(comm,__LINE__,FUNCT,__FILE__,n,t,msg,arg)
-#endif
+        PetscError(comm,__LINE__,FUNCT,__FILE__,n,t,msg,arg)
 
 #if PY_MAJOR_VERSION < 3
 PyMODINIT_FUNC initlibpetsc4py(void);

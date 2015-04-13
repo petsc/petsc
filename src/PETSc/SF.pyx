@@ -11,8 +11,7 @@ cdef class SF(Object):
     Type = SFType
 
     def __cinit__(self):
-        if PETSC_VERSION_GT(3,3,0):
-            self.obj = <PetscObject*> &self.sf
+        self.obj = <PetscObject*> &self.sf
         self.sf  = NULL
 
     def __dealloc__(self):
