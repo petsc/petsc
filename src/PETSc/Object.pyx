@@ -168,6 +168,22 @@ cdef class Object:
     def stateIncrease(self):
         PetscINCSTATE(self.obj)
 
+    # --- tab level ---
+
+    def incrementTabLevel(self, tab, Object parent=None):
+        cdef PetscInt ctab = asInt(tab)
+        cdef PetscObject cobj = <PetscObject> NULL if parent is None else parent.obj[0]
+        CHKERR( PetscObjectIncrementTabLevel(self.obj[0], cobj, ctab) )
+
+    def setTabLevel(self, level):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PetscObjectSetTabLevel(self.obj[0], clevel) )
+
+    def getTabLevel(self):
+        cdef PetscInt clevel = 0
+        CHKERR( PetscObjectGetTabLevel(self.obj[0], &clevel) )
+        return toInt(clevel)
+
     # --- properties ---
 
     property type:
