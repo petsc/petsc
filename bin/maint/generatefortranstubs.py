@@ -176,7 +176,7 @@ def processDir(arg,dirname,names):
     if name in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']:
       rmnames.append(name)
     # skip for ./configure generated $PETSC_ARCH directories
-    if os.path.isdir(os.path.join(dirname,name,'lib','petsc-conf')) or os.path.isdir(os.path.join(dirname,name,'conf')):
+    if os.path.isdir(os.path.join(dirname,name,'lib','petsc')) or os.path.isdir(os.path.join(dirname,name,'lib','petsc-conf')) or os.path.isdir(os.path.join(dirname,name,'conf')):
       rmnames.append(name)
     # skip include/finclude directory
     if name == 'finclude':
