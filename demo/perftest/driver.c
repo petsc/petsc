@@ -3,8 +3,8 @@
 EXTERN_C_BEGIN
 extern void formInitial(int*,int*,int*,double*,
                         double*,double*);
-extern void formFunction(int*,int*,int*,double*,
-                         double*,double*,double*,double*);
+extern void formFunction(const int*,const int*,const int*,const double*,
+                         const double*,const double[],const double[],double[]);
 EXTERN_C_END
 
 typedef struct AppCtx {
@@ -33,21 +33,21 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx)
 {
-  PetscScalar    *x;
-  PetscScalar    *xdot;
+  const PetscScalar *x;
+  const PetscScalar    *xdot;
   PetscScalar    *f;
   AppCtx         *app = (AppCtx*) ctx;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   /**/
   formFunction(&app->nx,&app->ny,&app->nz,app->h,
                &t,x,xdot,f);
   /**/
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -96,13 +96,13 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   *wt = 1e300;
   while (loops-- > 0) {
     ierr = FormInitial(0.0,x,app);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
 #if PETSC_VERSION_LE(3,3,0)
     ierr = TSSolve(ts,x,PETSC_NULL);CHKERRQ(ierr);
 #else
     ierr = TSSolve(ts,x);CHKERRQ(ierr);
 #endif
-    ierr = PetscGetTime(&t2);CHKERRQ(ierr);
+    ierr = PetscTime(&t2);CHKERRQ(ierr);
     *wt = PetscMin(*wt,t2-t1);
   }
 

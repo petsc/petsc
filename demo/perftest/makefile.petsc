@@ -17,8 +17,8 @@ ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF}
 	-${CLINKER} -o $@ ${PETSC_TS_LIB} ${OBJSC} ${OBJSF}
 	-${RM} ${OBJSC} ${OBJSF}
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 OBJSC=${SOURCEC:.c=.o}
 OBJSF=${SOURCEF:.f90=.o}
