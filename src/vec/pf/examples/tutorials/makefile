@@ -8,8 +8,8 @@ EXAMPLESC	 =
 EXAMPLESF	 =
 MANSEC           = Vec
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o   ${PETSC_DM_LIB}
@@ -24,4 +24,4 @@ TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_F90	    =
 TESTEXAMPLES_13		    =
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

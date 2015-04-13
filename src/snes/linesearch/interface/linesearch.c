@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h> /*I "petscsnes.h" I*/
+#include <petsc/private/linesearchimpl.h> /*I "petscsnes.h" I*/
 
 PetscBool         SNESLineSearchRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESLineSearchList              = NULL;

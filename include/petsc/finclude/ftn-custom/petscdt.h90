@@ -1,0 +1,83 @@
+
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscdtdef.h90"
+#endif
+
+#include "petsc/finclude/ftn-custom/petscdthide.h90"
+
+      Interface
+        Subroutine PetscQuadratureGetData(q,dim,np,p,w,ierr)
+          USE_PETSCQUADRATURE_HIDE
+          PetscInt     dim, np
+          PetscReal, pointer :: p(:)
+          PetscReal, pointer :: w(:)
+          PetscErrorCode ierr
+          PETSCQUADRATURE_HIDE q
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscQuadratureRestoreData(q,dim,np,p,w,ierr)
+          USE_PETSCQUADRATURE_HIDE
+          PetscInt     dim, np
+          PetscReal, pointer :: p(:)
+          PetscReal, pointer :: w(:)
+          PetscErrorCode ierr
+          PETSCQUADRATURE_HIDE q
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscQuadratureSetData(q,dim,np,p,w,ierr)
+          USE_PETSCQUADRATURE_HIDE
+          PetscInt     dim, np
+          PetscReal, pointer :: p(:)
+          PetscReal, pointer :: w(:)
+          PetscErrorCode ierr
+          PETSCQUADRATURE_HIDE q
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscDSGetTabulation(prob,f,b,bDer,ierr)
+          USE_PETSCDS_HIDE
+          PetscInt     f
+          PetscReal, pointer :: b(:)
+          PetscReal, pointer :: bDer(:)
+          PetscErrorCode ierr
+          PETSCDS_HIDE prob
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscDSRestoreTabulation(prob,f,b,bDer,ierr)
+          USE_PETSCDS_HIDE
+          PetscInt     f
+          PetscReal, pointer :: b(:)
+          PetscReal, pointer :: bDer(:)
+          PetscErrorCode ierr
+          PETSCDS_HIDE prob
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscDSGetBdTabulation(prob,f,b,bDer,ierr)
+          USE_PETSCDS_HIDE
+          PetscInt     f
+          PetscReal, pointer :: b(:)
+          PetscReal, pointer :: bDer(:)
+          PetscErrorCode ierr
+          PETSCDS_HIDE prob
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscDSRestoreBdTabulation(prob,f,b,bDer,ierr)
+          USE_PETSCDS_HIDE
+          PetscInt     f
+          PetscReal, pointer :: b(:)
+          PetscReal, pointer :: bDer(:)
+          PetscErrorCode ierr
+          PETSCDS_HIDE prob
+        End Subroutine
+      End Interface

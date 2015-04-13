@@ -1,6 +1,6 @@
       program DMPlexTestField
       implicit none
-#include "petsc-finclude/petsc.h90"
+#include "petsc/finclude/petsc.h90"
       DM :: dm
       DMLabel :: label
       Vec :: u

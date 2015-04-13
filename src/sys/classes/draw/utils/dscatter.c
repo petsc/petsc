@@ -6,7 +6,7 @@
 */
 
 #include <petscdraw.h>         /*I "petscdraw.h" I*/
-#include <petsc-private/petscimpl.h>         /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
 
 PetscClassId PETSC_DRAWSP_CLASSID = 0;
 

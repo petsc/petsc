@@ -18,7 +18,7 @@
 
 #include <../src/mat/impls/maij/maij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJGetAIJ"
@@ -206,6 +206,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   } else {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIMAIJ);CHKERRQ(ierr);
   }
+  A->preallocated  = PETSC_TRUE;
+  A->assembled     = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

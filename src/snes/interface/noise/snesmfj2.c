@@ -1,7 +1,7 @@
 
-#include <petsc-private/snesimpl.h>   /*I  "petscsnes.h"   I*/
+#include <petsc/private/snesimpl.h>   /*I  "petscsnes.h"   I*/
 /* matimpl.h is needed only for logging of matrix operation */
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 extern PetscErrorCode SNESDiffParameterCreate_More(SNES,Vec,void**);
 extern PetscErrorCode SNESDiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);

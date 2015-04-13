@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 
 typedef struct {
   Mat A;
@@ -67,6 +67,24 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_Transpose"
+PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
+{
+  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (op == MAT_COPY_VALUES) {
+    ierr = MatTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
+  } else if (op == MAT_DO_NOT_COPY_VALUES) {
+    ierr = MatDuplicate(Na->A,MAT_DO_NOT_COPY_VALUES,m);CHKERRQ(ierr);
+    ierr = MatTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_SUP,"MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateTranspose"
 /*@
       MatCreateTranspose - Creates a new matrix object that behaves like A'
@@ -112,6 +130,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->multadd          = MatMultAdd_Transpose;
   (*N)->ops->multtranspose    = MatMultTranspose_Transpose;
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose;
+  (*N)->ops->duplicate        = MatDuplicate_Transpose;
   (*N)->assembled             = PETSC_TRUE;
 
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);

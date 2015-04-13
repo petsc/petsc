@@ -3,10 +3,10 @@
 !
       program main
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscis.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscviewer.h>
 
       Mat      A,B
       PetscErrorCode  ierr

@@ -884,7 +884,10 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
     ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
     if (M != grows ||  N != gcols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,grows,gcols);
   }
-  ierr = MatSeqDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  a = (Mat_SeqDense*)newmat->data;
+  if (!a->user_alloc) {
+    ierr = MatSeqDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  }
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
     a = (Mat_SeqDense*)newmat->data;
@@ -2061,7 +2064,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatCopy_SeqDense,
                                 /* 44*/ MatGetRowMax_SeqDense,
                                         MatScale_SeqDense,
-                                        0,
+                                        MatShift_Basic,
                                         0,
                                         0,
                                 /* 49*/ MatSetRandom_SeqDense,

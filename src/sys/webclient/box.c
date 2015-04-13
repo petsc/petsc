@@ -321,7 +321,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     fclose(fd);
     body[blen + rd] = 0;
     ierr = PetscStrcat(body,"\r\n\r\n"
-                            "--foo_bar_baz\r\n");
+                            "--foo_bar_baz\r\n");CHKERRQ(ierr);
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
     ierr = PetscHTTPSConnect("www.boxapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
     ierr = PetscHTTPSRequest("POST","www.boxapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);

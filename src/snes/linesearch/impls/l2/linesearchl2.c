@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h>
+#include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
 #undef __FUNCT__

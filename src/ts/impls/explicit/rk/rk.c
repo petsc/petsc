@@ -7,7 +7,7 @@
   Udot = F(t,U)
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static TSRKType  TSRKDefault = TSRK3BS;
@@ -518,9 +518,9 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     rk->stage_time = t + h*(1.0-c[i]);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);
+      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);CHKERRQ(ierr);
       for (j=i+1; j<s; j++) {
-        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);
+        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);CHKERRQ(ierr);
       }
     }
     /* Stage values of lambda */

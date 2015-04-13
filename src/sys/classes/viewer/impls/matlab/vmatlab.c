@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>
+#include <petsc/private/viewerimpl.h>
 #include <mat.h>
 
 /*MC

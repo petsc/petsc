@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcmgimpl.h>       /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>       /*I "petscksp.h" I*/
 
 /* ---------------------------------------------------------------------------*/
 #undef __FUNCT__

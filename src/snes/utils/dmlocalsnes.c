@@ -1,5 +1,5 @@
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 typedef struct {
   PetscErrorCode (*residuallocal)(DM,Vec,Vec,void*);

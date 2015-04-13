@@ -6,7 +6,7 @@
 
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
 PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>

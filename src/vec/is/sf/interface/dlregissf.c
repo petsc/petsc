@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h>
+#include <petsc/private/sfimpl.h>
 
 PetscClassId PETSCSF_CLASSID;
 

@@ -7,7 +7,7 @@
 
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscmat.h> /* so that MAT_FILE_CLASSID is defined */
 #include <petscviewerhdf5.h>
 
@@ -22,7 +22,7 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   /* Read vector header */
-  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
   type = tr[0];
   if (type != VEC_FILE_CLASSID) {
     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
@@ -249,6 +249,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   const char     *vecname;
   PetscErrorCode ierr;
+  PetscBool      dim2;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -261,6 +262,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetBaseDimension2(viewer,&dim2);CHKERRQ(ierr);
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
@@ -274,7 +276,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   dim = 0;
   if (timestep >= 0) ++dim;
   ++dim;
-  if (bs >= 1) ++dim;
+  if (bs > 1 || dim2) ++dim;
 #if defined(PETSC_USE_COMPLEX)
   ++dim;
 #endif
@@ -288,7 +290,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   if (rdim != dim) {
     if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
-  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) {
+  } else if (bs > 1 && bs != (PetscInt) dims[bsInd]) {
     ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
     bs = dims[bsInd];
   }
@@ -310,7 +312,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1) {
+  if (bs > 1 || dim2) {
     count[dim] = bs;
     ++dim;
   }
@@ -329,7 +331,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1) {
+  if (bs > 1 || dim2) {
     offset[dim] = 0;
     ++dim;
   }

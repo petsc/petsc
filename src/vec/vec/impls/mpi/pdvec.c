@@ -651,10 +651,12 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   const PetscScalar *x;
   const char        *vecname;
   PetscErrorCode    ierr;
+  PetscBool         dim2;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetBaseDimension2(viewer,&dim2);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset.
    *
@@ -679,7 +681,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
-  if (bs >= 1) {
+  if (bs > 1 || dim2) {
     dims[dim]      = bs;
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
@@ -728,7 +730,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(xin->map->n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1) {
+  if (bs >= 1 || dim2) {
     count[dim] = bs;
     ++dim;
   }
@@ -752,7 +754,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1) {
+  if (bs >= 1 || dim2) {
     offset[dim] = 0;
     ++dim;
   }

@@ -78,7 +78,7 @@
      }
 
      /*  Search direction for improving point */
-     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
+     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
      ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
      ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
      if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
@@ -103,7 +103,7 @@
        ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
-       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
+       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
        ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
        ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
@@ -118,7 +118,7 @@
          ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
          ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
-         ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
+         ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
          ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
          ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
          if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {

@@ -13,7 +13,7 @@
 #define __MFFD_H__
 
 #include <petscmat.h>         /*I  "petscmat.h"   I*/
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 /*
     Table of functions that manage the computation and understanding

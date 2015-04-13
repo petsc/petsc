@@ -1242,7 +1242,7 @@ static struct _MatOps MatOps_Values = {
        MatCopy_Elemental,
 /*44*/ 0,
        MatScale_Elemental,
-       0,
+       MatShift_Basic,
        0,
        0,
 /*49*/ 0,

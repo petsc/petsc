@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/taoimpl.h>
 
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

@@ -1,4 +1,4 @@
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 

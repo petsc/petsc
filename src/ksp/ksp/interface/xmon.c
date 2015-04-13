@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>              /*I  "petscksp.h"   I*/
+#include <petsc/private/kspimpl.h>              /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
 #undef __FUNCT__

@@ -5,7 +5,7 @@
 
 #ifndef __TAO_LMVM_H
 #define __TAO_LMVM_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 typedef struct {
   Mat M;

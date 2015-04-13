@@ -1,5 +1,5 @@
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /* bs = 15 for PFLOTRAN. Block operations are done by accessing all the columns   of the block at once */
 

@@ -10,7 +10,7 @@
    options database until it has already processed the input.
 */
 
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MALLOC_H)
@@ -256,7 +256,6 @@ PetscErrorCode  PetscOptionsStringToBool(const char value[], PetscBool  *a)
   ierr = PetscStrcasecmp(value,"off",&isfalse);CHKERRQ(ierr);
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
   SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

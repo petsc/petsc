@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/matimpl.h>
 
 /* Declare these pointer types instead of void* for clarity, but do not include petscts.h so that this code does have an actual reverse dependency. */
 typedef struct _p_TS *TS;

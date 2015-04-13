@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESSetModifyPC"

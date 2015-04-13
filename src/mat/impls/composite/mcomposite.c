@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
@@ -299,7 +299,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                /* 44*/ 0,
                                        MatScale_Composite,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                /* 49*/ 0,

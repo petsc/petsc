@@ -1,9 +1,9 @@
 
-#include <petsc-private/dmdaimpl.h>
-#include <petsc-private/dmpleximpl.h>
-#include <petsc-private/petscdsimpl.h>
-#include <petsc-private/petscfeimpl.h>
-#include <petsc-private/petscfvimpl.h>
+#include <petsc/private/dmdaimpl.h>
+#include <petsc/private/dmpleximpl.h>
+#include <petsc/private/petscdsimpl.h>
+#include <petsc/private/petscfeimpl.h>
+#include <petsc/private/petscfvimpl.h>
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__

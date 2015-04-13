@@ -1,4 +1,4 @@
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/morethuente/morethuente.h>
 
 /*
@@ -23,7 +23,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
     ierr = PetscObjectDereference((PetscObject)mt->x);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&mt->work);CHKERRQ(ierr);
-  ierr = PetscFree(ls->data);
+  ierr = PetscFree(ls->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -120,7 +120,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ls->stepmax = PetscMin(bstepmax,1.0e15);
   }
 
-  ierr = VecDot(g,s,&dginit);
+  ierr = VecDot(g,s,&dginit);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(dginit)) {
     ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",(double)dginit);CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_INFORNAN;

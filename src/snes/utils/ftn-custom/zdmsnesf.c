@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/snesimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmsnessetjacobian_      DMSNESSETJACOBIAN
 #define dmsnessetfunction_      DMSNESSETFUNCTION

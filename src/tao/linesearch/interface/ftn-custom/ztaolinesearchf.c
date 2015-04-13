@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define taolinesearchsetobjectiveroutine_            TAOLINESEARCHSETOBJECTIVEROUTINE

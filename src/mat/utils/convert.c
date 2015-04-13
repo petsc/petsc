@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Basic"

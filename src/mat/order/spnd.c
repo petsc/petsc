@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <petsc-private/matorderimpl.h>
+#include <petsc/private/matorderimpl.h>
 
 /*
     MatGetOrdering_ND - Find the nested dissection ordering of a given matrix.

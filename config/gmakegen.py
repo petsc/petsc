@@ -55,7 +55,7 @@ class Petsc(object):
             petsc_dir = os.environ.get('PETSC_DIR')
             if petsc_dir is None:
                 try:
-                    petsc_dir = parse_makefile(os.path.join('lib','petsc-conf', 'petscvariables')).get('PETSC_DIR')
+                    petsc_dir = parse_makefile(os.path.join('lib','petsc','conf', 'petscvariables')).get('PETSC_DIR')
                 finally:
                     if petsc_dir is None:
                         raise RuntimeError('Could not determine PETSC_DIR, please set in environment')
@@ -63,14 +63,14 @@ class Petsc(object):
             petsc_arch = os.environ.get('PETSC_ARCH')
             if petsc_arch is None:
                 try:
-                    petsc_arch = parse_makefile(os.path.join(petsc_dir, 'lib','petsc-conf', 'petscvariables')).get('PETSC_ARCH')
+                    petsc_arch = parse_makefile(os.path.join(petsc_dir, 'lib','petsc','conf', 'petscvariables')).get('PETSC_ARCH')
                 finally:
                     if petsc_arch is None:
                         raise RuntimeError('Could not determine PETSC_ARCH, please set in environment')
         self.petsc_dir = petsc_dir
         self.petsc_arch = petsc_arch
         self.read_conf()
-        logging.basicConfig(filename=self.arch_path('lib','petsc-conf', 'gmake.log'), level=logging.DEBUG)
+        logging.basicConfig(filename=self.arch_path('lib','petsc','conf', 'gmake.log'), level=logging.DEBUG)
         self.log = logging.getLogger('gmakegen')
         self.mistakes = Mistakes(debuglogger(self.log), verbose=verbose)
         self.gendeps = []
@@ -87,7 +87,7 @@ class Petsc(object):
                 key = define[:space]
                 val = define[space+1:]
                 self.conf[key] = val
-        self.conf.update(parse_makefile(self.arch_path('lib','petsc-conf', 'petscvariables')))
+        self.conf.update(parse_makefile(self.arch_path('lib','petsc','conf', 'petscvariables')))
         self.have_fortran = int(self.conf.get('PETSC_HAVE_FORTRAN', '0'))
 
     def inconf(self, key, val):
@@ -170,7 +170,7 @@ class Petsc(object):
         self.mistakes.summary()
 
 def WriteGnuMake(petsc):
-    arch_files = petsc.arch_path('lib','petsc-conf', 'files')
+    arch_files = petsc.arch_path('lib','petsc','conf', 'files')
     fd = open(arch_files, 'w')
     gendeps = petsc.gen_gnumake(fd)
     fd.write('\n')
@@ -185,8 +185,8 @@ def WriteGnuMake(petsc):
 
 def WriteNinja(petsc):
     conf = dict()
-    parse_makefile(os.path.join(petsc.petsc_dir, 'lib', 'petsc-conf', 'variables'), conf)
-    parse_makefile(petsc.arch_path('lib','petsc-conf', 'petscvariables'), conf)
+    parse_makefile(os.path.join(petsc.petsc_dir, 'lib', 'petsc','conf', 'variables'), conf)
+    parse_makefile(petsc.arch_path('lib','petsc','conf', 'petscvariables'), conf)
     build_ninja = petsc.arch_path('build.ninja')
     fd = open(build_ninja, 'w')
     fd.write('objdir = obj-ninja\n')
@@ -231,8 +231,8 @@ def WriteNinja(petsc):
     fd.write('\n')
     fd.write('build %s : GEN_NINJA | %s %s %s %s\n' % (build_ninja,
                                                        os.path.abspath(__file__),
-                                                       os.path.join(petsc.petsc_dir, 'lib','petsc-conf', 'variables'),
-                                                       petsc.arch_path('lib','petsc-conf', 'petscvariables'),
+                                                       os.path.join(petsc.petsc_dir, 'lib','petsc','conf', 'variables'),
+                                                       petsc.arch_path('lib','petsc','conf', 'petscvariables'),
                                                        ' '.join(os.path.join(petsc.petsc_dir, dep) for dep in petsc.gendeps)))
 
 def main(petsc_dir=None, petsc_arch=None, output=None, verbose=False):

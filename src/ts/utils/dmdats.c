@@ -1,6 +1,6 @@
 #include <petscdmda.h>          /*I "petscdmda.h" I*/
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/tsimpl.h>   /*I "petscts.h" I*/
 #include <petscdraw.h>
 
 /* This structure holds the user-provided DMDA callbacks */

@@ -58,7 +58,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
     ierr = VecScatterDestroy(&lclP->state_scatter);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&lclP->design_scatter);CHKERRQ(ierr);
   }
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +342,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
        Check r'GL_U - rho*r'WU <= adec
     */
 
-    ierr = VecDot(lclP->r,lclP->GL_U,&rGL_U);
+    ierr = VecDot(lclP->r,lclP->GL_U,&rGL_U);CHKERRQ(ierr);
     aldescent =  rGL_U - lclP->rho*rWU;
     if (aldescent > -adec) {
       if (lclP->verbose) {
@@ -357,7 +357,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
       }
-      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g\n",(double)lclP->rho);
+      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
     }
 
     ierr = LCLComputeAugmentedLagrangianAndGradient(tao->linesearch,tao->solution,&lclP->aug,lclP->GAugL,tao);CHKERRQ(ierr);
@@ -541,7 +541,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* Update the quasi-newton approximation */
       if (phase2_iter >= 0){
-        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);
+        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);CHKERRQ(ierr);
       }
       ierr = MatLMVMUpdate(lclP->R,lclP->V,lclP->g2);CHKERRQ(ierr);
       /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with Matlab code */
@@ -681,7 +681,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   ierr = LCLGather(lclP,lclP->GL_U,lclP->GL_V,lclP->GL);CHKERRQ(ierr);
 
   f[0] = lclP->lgn;
-  ierr = VecCopy(lclP->GL,G);
+  ierr = VecCopy(lclP->GL,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2,14 +2,14 @@
 
         module petsctsdef
         use petscsnesdef
-#include <petsc-finclude/petscts.h>
-#include <petsc-finclude/ftn-custom/petsctsdef.h90>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/ftn-custom/petsctsdef.h90>
         end module
 
         module petscts
         use petsctsdef
         use petscsnes
-#include <petsc-finclude/petscts.h90>
+#include <petsc/finclude/petscts.h90>
         end module
 
 
