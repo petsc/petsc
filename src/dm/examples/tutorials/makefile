@@ -142,8 +142,8 @@ runex15_3:
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm
-TESTEXAMPLES_FORTRAN	  = ex13f90.PETSc runex13f90 ex13f90.rm
-TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm
+TESTEXAMPLES_FORTRAN	  =
+TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm ex65dm.PETSc ex65dm.rm
