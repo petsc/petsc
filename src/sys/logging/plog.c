@@ -23,6 +23,7 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 {
+  if (!p) return 0;
   p->mem += m;
   return 0;
 }

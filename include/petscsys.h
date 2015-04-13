@@ -1103,7 +1103,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNewLog(o,b) (PetscNew((b)) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(**(b))) : 0))
+#define PetscNewLog(o,b) (PetscNew((b)) || PetscLogObjectMemory((PetscObject)o,sizeof(**(b))))
 
 /*MC
    PetscFree - Frees memory
@@ -1924,7 +1924,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 #else
   PetscFunctionBegin;
 #endif
-  if (a != b) {
+  if (a != b && n > 0) {
 #if defined(PETSC_USE_DEBUG)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl)  SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
               or make sure your copy regions and lengths are correct. \n\
