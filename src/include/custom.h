@@ -4,14 +4,14 @@
 #undef  __FUNCT__
 #define __FUNCT__ "<petsc4py.PETSc>"
 
-#include "petsc-private/vecimpl.h"
-#include "petsc-private/matimpl.h"
-#include "petsc-private/kspimpl.h"
-#include "petsc-private/pcimpl.h"
-#include "petsc-private/snesimpl.h"
-#include "petsc-private/tsimpl.h"
-#include "petsc-private/taoimpl.h"
-#include "petsc-private/sfimpl.h"
+#include "petsc/private/vecimpl.h"
+#include "petsc/private/matimpl.h"
+#include "petsc/private/kspimpl.h"
+#include "petsc/private/pcimpl.h"
+#include "petsc/private/snesimpl.h"
+#include "petsc/private/tsimpl.h"
+#include "petsc/private/taoimpl.h"
+#include "petsc/private/sfimpl.h"
 
 /* ---------------------------------------------------------------- */
 

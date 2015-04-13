@@ -1,9 +1,9 @@
-#include "petsc-private/vecimpl.h"
-#include "petsc-private/matimpl.h"
-#include "petsc-private/pcimpl.h"
-#include "petsc-private/kspimpl.h"
-#include "petsc-private/snesimpl.h"
-#include "petsc-private/tsimpl.h"
+#include "petsc/private/vecimpl.h"
+#include "petsc/private/matimpl.h"
+#include "petsc/private/pcimpl.h"
+#include "petsc/private/kspimpl.h"
+#include "petsc/private/snesimpl.h"
+#include "petsc/private/tsimpl.h"
 
 #if PETSC_VERSION_LT(3,5,0)
 typedef PetscObject Tao;
