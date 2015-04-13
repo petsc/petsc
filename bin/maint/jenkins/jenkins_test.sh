@@ -10,7 +10,7 @@ if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
  fi
 fi
 export PATH=$PATH:/usr/local/bin
-
+if [ ${named_test} != "none" ]; then
    if [[ ${slave_label} == "macos" ]]; then
       if [[ ! ${named_test} =~ osx.* ]]; then
          echo "Configuration requested does not match architecture. ignoring"
@@ -23,7 +23,7 @@ export PATH=$PATH:/usr/local/bin
         exit 0
       fi
    fi
-
+fi
 make test
 if [[ ${testall} == "true" ]]; then
   make alltests
