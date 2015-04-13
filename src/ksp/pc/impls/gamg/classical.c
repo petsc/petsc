@@ -1023,7 +1023,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   PC_GAMG_Classical *pc_gamg_classical;
 
   PetscFunctionBegin;
-  ierr = PCGAMGClassicalInitializePackage();
+  ierr = PCGAMGClassicalInitializePackage();CHKERRQ(ierr);
   if (pc_gamg->subctx) {
     /* call base class */
     ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);

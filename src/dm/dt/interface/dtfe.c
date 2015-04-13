@@ -3260,7 +3260,7 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
     PetscQuadrature f;
     PetscInt        q, k;
 
-    ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+    ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
     ierr = PetscMalloc1(f->numPoints*pdim,&Bf);CHKERRQ(ierr);
     ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
@@ -5203,7 +5203,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       PetscQuadrature f;
       PetscInt        d, e;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
       /* Apply transform to first point, and check that point is inside subcell */
       for (d = 0; d < dim; ++d) {
         subpoint[d] = -1.0;
@@ -5229,7 +5229,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       PetscQuadrature f;
       PetscInt        q, k;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);CHKERRQ(ierr);
       ierr = PetscMalloc1(f->numPoints*spdim,&Bf);CHKERRQ(ierr);
       ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
       for (k = 0; k < spdim; ++k) {

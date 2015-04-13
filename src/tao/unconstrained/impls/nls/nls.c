@@ -370,7 +370,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
     /* Shift the Hessian matrix */
     if (pert > 0) {
-      ierr = MatShift(tao->hessian, pert);
+      ierr = MatShift(tao->hessian, pert);CHKERRQ(ierr);
       if (tao->hessian != tao->hessian_pre) {
         ierr = MatShift(tao->hessian_pre, pert);CHKERRQ(ierr);
       }
@@ -754,9 +754,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           /*  Get predicted reduction */
 
           if (NLS_KSP_STCG == nlsP->ksp_type) {
-            ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);
+            ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else if (NLS_KSP_NASH == nlsP->ksp_type)  {
-            ierr = KSPNASHGetObjFcn(tao->ksp,&prered);
+            ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else {
             ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           }
@@ -813,9 +813,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         if (stepType == NLS_NEWTON) {
 
           if (NLS_KSP_STCG == nlsP->ksp_type) {
-              ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);
+              ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else if (NLS_KSP_NASH == nlsP->ksp_type)  {
-              ierr = KSPNASHGetObjFcn(tao->ksp,&prered);
+              ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else {
               ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           }

@@ -1485,7 +1485,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
       ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
       if (dep != dim-1) continue;
       ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, cgeom[f].v0, cgeom[f].J, cgeom[f].invJ, &cgeom[f].detJ);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellGeometryFVM(dm, point, NULL, NULL, cgeom[f].n);
+      ierr = DMPlexComputeCellGeometryFVM(dm, point, NULL, NULL, cgeom[f].n);CHKERRQ(ierr);
       if (cgeom[f].detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", cgeom[f].detJ, point);
       ierr = DMPlexVecGetClosure(dm, section, locX, point, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimBd; ++i) u[f*totDimBd+i] = x[i];
@@ -2077,7 +2077,7 @@ PetscErrorCode DMPlexComputeJacobianFEM_Internal(DM dm, Vec X, Vec X_t, Mat Jac,
       ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
       if (dep != dim-1) continue;
       ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, cgeom[f].v0, cgeom[f].J, cgeom[f].invJ, &cgeom[f].detJ);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellGeometryFVM(dm, point, NULL, NULL, cgeom[f].n);
+      ierr = DMPlexComputeCellGeometryFVM(dm, point, NULL, NULL, cgeom[f].n);CHKERRQ(ierr);
       if (cgeom[f].detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", cgeom[f].detJ, point);
       ierr = DMPlexVecGetClosure(dm, section, X, point, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimBd; ++i) u[f*totDimBd+i] = x[i];

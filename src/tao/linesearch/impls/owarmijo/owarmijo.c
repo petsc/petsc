@@ -238,7 +238,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     ierr = VecAXPY(armP->work,ls->step,s);CHKERRQ(ierr);
 
     partgdx=0.0;
-    ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);
+    ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
 
     /* Check the condition of gdx */

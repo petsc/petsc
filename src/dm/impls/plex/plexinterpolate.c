@@ -190,7 +190,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         key.l = 0;
       } else {
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
-        ierr = PetscSortInt(faceSize, (PetscInt *) &key);
+        ierr = PetscSortInt(faceSize, (PetscInt *) &key);CHKERRQ(ierr);
       }
       ierr = PetscHashIJKLPut(faceTable, key, &missing, &iter);CHKERRQ(ierr);
       if (missing) {ierr = PetscHashIJKLSet(faceTable, iter, face++);CHKERRQ(ierr);}
@@ -259,7 +259,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         key.l = 0;
       } else {
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
-        ierr = PetscSortInt(faceSize, (PetscInt *) &key);
+        ierr = PetscSortInt(faceSize, (PetscInt *) &key);CHKERRQ(ierr);
       }
       ierr = PetscHashIJKLPut(faceTable, key, &missing, &iter);CHKERRQ(ierr);
       if (missing) {

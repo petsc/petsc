@@ -316,7 +316,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = ISDestroy(&IS_l2g_lambda);CHKERRQ(ierr);
 
   /* Create local part of B_delta */
-  ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_delta);
+  ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_delta);CHKERRQ(ierr);
   ierr = MatSetSizes(fetidpmat_ctx->B_delta,n_local_lambda,pcis->n_B,n_local_lambda,pcis->n_B);CHKERRQ(ierr);
   ierr = MatSetType(fetidpmat_ctx->B_delta,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(fetidpmat_ctx->B_delta,1,NULL);CHKERRQ(ierr);
@@ -329,7 +329,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = MatAssemblyEnd  (fetidpmat_ctx->B_delta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (fully_redundant) {
-    ierr = MatCreate(PETSC_COMM_SELF,&ScalingMat);
+    ierr = MatCreate(PETSC_COMM_SELF,&ScalingMat);CHKERRQ(ierr);
     ierr = MatSetSizes(ScalingMat,n_local_lambda,n_local_lambda,n_local_lambda,n_local_lambda);CHKERRQ(ierr);
     ierr = MatSetType(ScalingMat,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(ScalingMat,1,NULL);CHKERRQ(ierr);
@@ -341,7 +341,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = MatMatMult(ScalingMat,fetidpmat_ctx->B_delta,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&fetidpmat_ctx->B_Ddelta);CHKERRQ(ierr);
     ierr = MatDestroy(&ScalingMat);CHKERRQ(ierr);
   } else {
-    ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_Ddelta);
+    ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_Ddelta);CHKERRQ(ierr);
     ierr = MatSetSizes(fetidpmat_ctx->B_Ddelta,n_local_lambda,pcis->n_B,n_local_lambda,pcis->n_B);CHKERRQ(ierr);
     ierr = MatSetType(fetidpmat_ctx->B_Ddelta,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(fetidpmat_ctx->B_Ddelta,1,NULL);CHKERRQ(ierr);
@@ -620,7 +620,7 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(fetipc,(void**)&pc_ctx);
+  ierr = PCShellGetContext(fetipc,(void**)&pc_ctx);CHKERRQ(ierr);
   pcis = (PC_IS*)pc_ctx->pc->data;
   /* Application of B_Ddelta^T */
   ierr = VecScatterBegin(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -646,7 +646,7 @@ PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(fetipc,(void**)&pc_ctx);
+  ierr = PCShellGetContext(fetipc,(void**)&pc_ctx);CHKERRQ(ierr);
   pcis = (PC_IS*)pc_ctx->pc->data;
   /* Application of B_Ddelta^T */
   ierr = VecScatterBegin(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);

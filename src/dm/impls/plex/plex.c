@@ -4360,7 +4360,7 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
           /* we take the orientation of ap into account in the order that we constructed the indices above: the newly added points have no orientation */
           newPoints[2*(newP + q)]     = a;
           newPoints[2*(newP + q) + 1] = 0;
-          ierr = PetscSectionGetOffset(section, a, &aOff);
+          ierr = PetscSectionGetOffset(section, a, &aOff);CHKERRQ(ierr);
           ierr = indicesPointFields_private(section, a, aOff, fAnchorEnd, PETSC_TRUE, 0, newIndices);CHKERRQ(ierr);
         }
         newP += bDof;
@@ -4399,7 +4399,7 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
 
           newPoints[2*(newP + q)]     = a;
           newPoints[2*(newP + q) + 1] = 0;
-          ierr = PetscSectionGetOffset(section, a, &aOff);
+          ierr = PetscSectionGetOffset(section, a, &aOff);CHKERRQ(ierr);
           ierr = indicesPoint_private(section, a, aOff, &bAnchorEnd, PETSC_TRUE, 0, newIndices);CHKERRQ(ierr);
         }
         newP += bDof;
@@ -5165,7 +5165,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
     ierr = DMPlexCreateNumbering_Private(dm, pStart, pEnd, shift, &gsize, dm->sf, &nums[d]);CHKERRQ(ierr);
     shift += gsize;
   }
-  ierr = ISConcatenate(PetscObjectComm((PetscObject) dm), depth+1, nums, globalPointNumbers);
+  ierr = ISConcatenate(PetscObjectComm((PetscObject) dm), depth+1, nums, globalPointNumbers);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {ierr = ISDestroy(&nums[d]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -5301,21 +5301,18 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
         if (support[s] == p) break;
       }
       if ((s >= supportSize) || (dup && (support[s+1] != p))) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);CHKERRQ(ierr);
         for (s = 0; s < coneSize; ++s) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);CHKERRQ(ierr);
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", cone[c]);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", cone[c]);CHKERRQ(ierr);
         for (s = 0; s < supportSize; ++s) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);CHKERRQ(ierr);
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        if (dup) {
-          SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not repeatedly found in support of repeated cone point %d", p, cone[c]);
-        } else {
-          SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
-        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+        if (dup) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not repeatedly found in support of repeated cone point %d", p, cone[c]);
+        else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
       }
     }
     ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
@@ -5327,16 +5324,16 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
         if (cone[c] == p) break;
       }
       if (c >= coneSize) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", p);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", p);CHKERRQ(ierr);
         for (c = 0; c < supportSize; ++c) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[c]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[c]);CHKERRQ(ierr);
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", support[s]);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", support[s]);CHKERRQ(ierr);
         for (c = 0; c < coneSize; ++c) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[c]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[c]);CHKERRQ(ierr);
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
         SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in cone of support point %d", p, support[s]);
       }
     }
@@ -5909,7 +5906,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
   ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,cMat);CHKERRQ(ierr);
   ierr = MatSetSizes(*cMat,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(*cMat,MATSEQAIJ);
+  ierr = MatSetType(*cMat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(aSec,&pStart,&pEnd);CHKERRQ(ierr);
@@ -6021,7 +6018,7 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
     ierr = DMPlexCreateConstraintSection_Anchors(dm,section,&cSec);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintMatrix_Anchors(dm,section,cSec,&cMat);CHKERRQ(ierr);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-    ierr = PetscDSGetNumFields(ds,&nf);
+    ierr = PetscDSGetNumFields(ds,&nf);CHKERRQ(ierr);
     if (nf && plex->computeanchormatrix) {ierr = (*plex->computeanchormatrix)(dm,section,cSec,cMat);CHKERRQ(ierr);}
     ierr = DMSetDefaultConstraints(dm,cSec,cMat);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&cSec);CHKERRQ(ierr);

@@ -1064,7 +1064,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
 
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr);
-        ierr = VecScale(Y[i],h);
+        ierr = VecScale(Y[i],h);CHKERRQ(ierr);
         ts->ksp_its += 1;
       }
       ierr = TSPostStage(ts,ros->stage_time,i,Y);CHKERRQ(ierr);

@@ -367,9 +367,9 @@ PetscErrorCode DMPlexOrient(DM dm)
 
         for (p = 0, off = 0; p < numProcs; ++p) {
           for (c = 0; c < Nc[p]; ++c) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "Proc %d Comp %d:\n", p, c);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "Proc %d Comp %d:\n", p, c);CHKERRQ(ierr);
             for (n = 0; n < N[Noff[p]+c]; ++n, ++off) {
-              ierr = PetscPrintf(PETSC_COMM_SELF, "  edge (%d, %d) (%d):\n", adj[off].rank, adj[off].index, val[off]);
+              ierr = PetscPrintf(PETSC_COMM_SELF, "  edge (%d, %d) (%d):\n", adj[off].rank, adj[off].index, val[off]);CHKERRQ(ierr);
             }
           }
         }
@@ -448,7 +448,7 @@ PetscErrorCode DMPlexOrient(DM dm)
         ierr = PetscMalloc1(Noff[numProcs], &flips);CHKERRQ(ierr);
         for (p = 0; p < Noff[numProcs]; ++p) {
           flips[p] = PetscBTLookup(flippedProcs, p) ? PETSC_TRUE : PETSC_FALSE;
-          if (flg && flips[p]) {ierr = PetscPrintf(comm, "Flipping Proc+Comp %d:\n", p);}
+          if (flg && flips[p]) {ierr = PetscPrintf(comm, "Flipping Proc+Comp %d:\n", p);CHKERRQ(ierr);}
         }
         for (p = 0; p < numProcs; ++p) {
           displs[p+1] = displs[p] + Nc[p];

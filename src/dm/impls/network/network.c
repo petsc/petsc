@@ -486,13 +486,13 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
     ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
     /* Copy header */
     header = &network->header[p];
-    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));
+    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     /* Copy data */
     cvalue = &network->cvalue[p];
     ncomp = header->ndata;
     for (i = 0; i < ncomp; i++) {
       offset = offsetp + network->dataheadersize + header->offset[i];
-      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));
+      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -263,10 +263,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   /* Clean up intermediate storage */
   if (!rank || binary) {
     for (c = 0; c < numCells; ++c) {
-      ierr = PetscFree(gmsh_elem[c].nodes);
-      ierr = PetscFree(gmsh_elem[c].tags);
+      ierr = PetscFree(gmsh_elem[c].nodes);CHKERRQ(ierr);
+      ierr = PetscFree(gmsh_elem[c].tags);CHKERRQ(ierr);
     }
-    ierr = PetscFree(gmsh_elem);
+    ierr = PetscFree(gmsh_elem);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

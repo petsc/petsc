@@ -94,7 +94,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
   /* Shift for Fortran numbering */
   for (c = 0; c < numCells; ++c) --cperm[c];
   /* Construct closure */
-  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);
+  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);CHKERRQ(ierr);
   ierr = PetscFree3(cperm,mask,xls);CHKERRQ(ierr);
   ierr = PetscFree(clperm);CHKERRQ(ierr);
   /* Invert permutation */

@@ -144,7 +144,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   for(i=1;i<ns;i++){
     for(j=i;j<ns;j++){
       alpha = -(PetscReal)ext->N[j]/ext->N[j-i];
-      ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],T[Map(j-1,i-1,ns)]);/* T[j][i]=alpha*T[j][i-1]+T[j-1][i-1] */
+      ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],T[Map(j-1,i-1,ns)]);/* T[j][i]=alpha*T[j][i-1]+T[j-1][i-1] */CHKERRQ(ierr);
       alpha = 1.0/(1.0 + alpha);
       ierr  = VecScale(T[Map(j,i,ns)],alpha);CHKERRQ(ierr);
     }
@@ -175,7 +175,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
 	    /*extrapolation for the newly added stage*/
 	    for(i=1;i<ext->nstages;i++){
 	      alpha = -(PetscReal)ext->N[ext->nstages-1]/ext->N[ext->nstages-1-i];
-	      ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/*T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1]*/
+	      ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/*T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1]*/CHKERRQ(ierr);
 	      alpha = 1.0/(1.0 + alpha);
 	      ierr  = VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha);CHKERRQ(ierr);
 	    }
