@@ -399,7 +399,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
     *reason=TAOLINESEARCH_FAILED_INFORNAN;
   }
 
-  ierr = PetscObjectReference((PetscObject)x);
+  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
   ierr = VecDestroy(&ls->start_x);CHKERRQ(ierr);
   ls->start_x = x;
 
@@ -530,7 +530,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   if (flg) {
     ierr = TaoLineSearchSetType(ls,type);CHKERRQ(ierr);
   } else if (!((PetscObject)ls)->type_name) {
-    ierr = TaoLineSearchSetType(ls,default_type);
+    ierr = TaoLineSearchSetType(ls,default_type);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsInt("-tao_ls_max_funcs","max function evals in line search","",ls->max_funcs,&ls->max_funcs,NULL);CHKERRQ(ierr);

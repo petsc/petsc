@@ -25,7 +25,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->H_sub);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

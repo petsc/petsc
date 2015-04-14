@@ -489,7 +489,6 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           }
         }
         ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
-        free(string);
         ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
         if (!first) {
           goto destroy;
@@ -531,6 +530,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
 destroy:
+        free(string);
         ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
       }
       err = fclose(fd);

@@ -26,7 +26,7 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   ierr = SNESGetFunction(npc,&W,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)npc,SNESNASM,&match);CHKERRQ(ierr);
   if (!match) {
-    ierr = PetscObjectGetComm((PetscObject)snes,&comm);
+    ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
     SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"MatMultASPIN requires that the nonlinear preconditioner be Nonlinear additive Schwarz");
   }
   ierr = SNESNASMGetSubdomains(npc,&n,&subsnes,NULL,&oscatter,NULL);CHKERRQ(ierr);

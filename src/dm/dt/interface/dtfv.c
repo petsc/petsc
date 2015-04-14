@@ -1893,10 +1893,11 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
     ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qs);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
     np   = npoints/numSubelements;
-    ierr = PetscMalloc1(np*dim,&p);ierr = PetscMalloc1(np,&w);
+    ierr = PetscMalloc1(np*dim,&p);CHKERRQ(ierr);
+    ierr = PetscMalloc1(np,&w);CHKERRQ(ierr);
     ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(w, &weights[s*np],    np     * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscQuadratureSetData(qs, dim, np, p, w);
+    ierr = PetscQuadratureSetData(qs, dim, np, p, w);CHKERRQ(ierr);
     ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
   }

@@ -37,10 +37,10 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   if (draw->markertype == PETSC_DRAW_MARKER_CROSS){
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       PetscInt i,j,k;
-      ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);
+      ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
       for (k=-2; k<=2; k++) {
-        ierr = (*draw->ops->pointpixel)(draw,i+k,j+k,cl);
-        ierr = (*draw->ops->pointpixel)(draw,i+k,j-k,cl);
+        ierr = (*draw->ops->pointpixel)(draw,i+k,j+k,cl);CHKERRQ(ierr);
+        ierr = (*draw->ops->pointpixel)(draw,i+k,j-k,cl);CHKERRQ(ierr);
       }
     } else if (draw->ops->string) {
        ierr = (*draw->ops->string)(draw,xl,yl,cl,"x");CHKERRQ(ierr);
@@ -48,10 +48,10 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   } else if (draw->markertype == PETSC_DRAW_MARKER_PLUS){
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       PetscInt i,j,k;
-      ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);
+      ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
       for (k=-2; k<=2; k++) {
-        ierr = (*draw->ops->pointpixel)(draw,i,j+k,cl);
-        ierr = (*draw->ops->pointpixel)(draw,i+k,j,cl);
+        ierr = (*draw->ops->pointpixel)(draw,i,j+k,cl);CHKERRQ(ierr);
+        ierr = (*draw->ops->pointpixel)(draw,i+k,j,cl);CHKERRQ(ierr);
       }
     } else if (draw->ops->string) {
        ierr = (*draw->ops->string)(draw,xl,yl,cl,"+");CHKERRQ(ierr);
@@ -59,12 +59,12 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   } else if (draw->markertype == PETSC_DRAW_MARKER_CIRCLE){
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       PetscInt i,j,k;
-      ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);
+      ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
       for (k=-1; k<=1; k++) {
-        ierr = (*draw->ops->pointpixel)(draw,i+2,j+k,cl);
-        ierr = (*draw->ops->pointpixel)(draw,i-2,j+k,cl);
-        ierr = (*draw->ops->pointpixel)(draw,i+k,j+2,cl);
-        ierr = (*draw->ops->pointpixel)(draw,i+k,j-2,cl);
+        ierr = (*draw->ops->pointpixel)(draw,i+2,j+k,cl);CHKERRQ(ierr);
+        ierr = (*draw->ops->pointpixel)(draw,i-2,j+k,cl);CHKERRQ(ierr);
+        ierr = (*draw->ops->pointpixel)(draw,i+k,j+2,cl);CHKERRQ(ierr);
+        ierr = (*draw->ops->pointpixel)(draw,i+k,j-2,cl);CHKERRQ(ierr);
       }
     } else if (draw->ops->string) {
        ierr = (*draw->ops->string)(draw,xl,yl,cl,"+");CHKERRQ(ierr);

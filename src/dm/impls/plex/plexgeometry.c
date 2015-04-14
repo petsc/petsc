@@ -206,7 +206,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 /*
   DMPlexComputeProjection2Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 2D
 */
-static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], PetscReal R[])
 {
   const PetscReal x = PetscRealPart(coords[2] - coords[0]);
   const PetscReal y = PetscRealPart(coords[3] - coords[1]);
@@ -230,7 +230,7 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
   http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html
   DOI:10.1080/2165347X.2012.689606
 */
-static PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], PetscReal R[])
 {
   PetscReal      x    = PetscRealPart(coords[3] - coords[0]);
   PetscReal      y    = PetscRealPart(coords[4] - coords[1]);
@@ -264,7 +264,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[
 /*
   DMPlexComputeProjection3Dto2D_Internal - Rewrite coordinates to be the 2D projection of the 3D
 */
-static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
+PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
 {
   PetscReal      x1[3],  x2[3], n[3], norm;
   PetscReal      x1p[3], x2p[3], xnp[3];

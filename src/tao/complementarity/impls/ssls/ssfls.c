@@ -86,7 +86,7 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     innerd = -innerd;
 
-    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&psi,ssls->dpsi,tao->stepdirection,&t,&ls_reason);CHKERRQ(ierr);
     ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
   }
@@ -146,7 +146,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   /* Linesearch objective and objectivegradient routines are  set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
 

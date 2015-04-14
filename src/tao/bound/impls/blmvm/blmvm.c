@@ -99,7 +99,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
       /* This may be incorrect; linesearch has values fo stepmax and stepmin
          that should be reset. */
-      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
@@ -133,7 +133,7 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   /* Existence of tao->solution checked in TaoSetup() */
   ierr = VecDuplicate(tao->solution,&blmP->Xold);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&blmP->Gold);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);
+  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);CHKERRQ(ierr);
 
   if (!tao->stepdirection) {
     ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);

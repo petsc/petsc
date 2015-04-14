@@ -177,7 +177,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   /* Project the gradient and calculate the norm */
   ierr = VecCopy(tao->gradient,gpcg->G_New);CHKERRQ(ierr);
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,gpcg->PG);CHKERRQ(ierr);
-  ierr = VecNorm(gpcg->PG,NORM_2,&gpcg->gnorm);
+  ierr = VecNorm(gpcg->PG,NORM_2,&gpcg->gnorm);CHKERRQ(ierr);
   tao->step=1.0;
   gpcg->f = f;
 

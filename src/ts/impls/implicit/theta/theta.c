@@ -249,7 +249,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   PetscFunctionBegin;
  
   th->status = TS_STEP_INCOMPLETE;
-  ierr = SNESGetKSP(ts->snes,&ksp);
+  ierr = SNESGetKSP(ts->snes,&ksp);CHKERRQ(ierr);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
   th->stage_time = ts->ptime + (th->endpoint ? ts->time_step : (1.-th->Theta)*ts->time_step); /* time_step is negative*/
 

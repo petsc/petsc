@@ -123,7 +123,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
   Y = snes->vec_sol_update;
   if (!jac->Xorig) {ierr = VecDuplicate(X,&jac->Xorig);CHKERRQ(ierr);}
   Xorig = jac->Xorig;
-  ierr = VecCopy(X,Xorig);
+  ierr = VecCopy(X,Xorig);CHKERRQ(ierr);
   if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
   if (snes->normschedule == SNES_NORM_ALWAYS) {
     ierr = SNESSetInitialFunction(next->snes,F);CHKERRQ(ierr);
