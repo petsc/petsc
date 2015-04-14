@@ -435,6 +435,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, Pet
     const PetscSection fs    = dm->defaultSection->field[field];
     const PetscSection gs    = dm->defaultGlobalSection;
     const PetscInt     loff  = s->atlasOff[point - s->pStart];
+    const PetscInt     goff  = gs->atlasOff[point - s->pStart];
     const PetscInt     lfoff = fs->atlasOff[point - s->pStart];
     const PetscInt     fdof  = fs->atlasDof[point - s->pStart];
     const PetscInt     fcdof = fs->bc ? fs->bc->atlasDof[point - fs->bc->pStart] : 0;
@@ -444,7 +445,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, Pet
       const PetscSection ffs = dm->defaultSection->field[f];
       ffcdof += ffs->bc ? ffs->bc->atlasDof[point - ffs->bc->pStart] : 0;
     }
-    *start = gs->atlasOff[point - s->pStart] + (*start < 0 ? loff-lfoff + ffcdof : lfoff-loff - ffcdof);
+    *start = goff + (goff < 0 ? loff-lfoff + ffcdof : lfoff-loff - ffcdof);
     *end   = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
   }
 #endif
