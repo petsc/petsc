@@ -781,10 +781,9 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   DM             da;
   PetscErrorCode ierr;
-  hsize_t        dim;
-  hsize_t        count[5];
-  hsize_t        offset[5];
-  PetscInt       cnt = 0, dimension;
+  hsize_t        dim,rdim;
+  hsize_t        dims[6]={0},count[6]={0},offset[6]={0};
+  PetscInt       dimension,timestep,dofInd;
   PetscScalar    *x;
   const char     *vecname;
   hid_t          filespace; /* file dataspace identifier */
@@ -794,7 +793,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hid_t          file_id,group;
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   DM_DA          *dd;
-  PetscBool      dim2;
+  PetscBool      dim2 = PETSC_FALSE;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -805,44 +804,84 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
-  ierr = PetscViewerHDF5GetBaseDimension2(viewer,&dim2);CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);  
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
   ierr = DMGetDimension(da, &dimension);CHKERRQ(ierr);
 
-  /* Create the dataspace for the dataset */
-  ierr = PetscHDF5IntCast(dimension + ((dd->w == 1 || dim2) ? 0 : 1),&dim);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  dim++;
-#endif
-
-  /* Create the dataset with default properties and close filespace */
-  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+  /* Open dataset */
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
   PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, vecname, H5P_DEFAULT));
 #else
   PetscStackCallHDF5Return(dset_id,H5Dopen,(group, vecname));
-#endif
-  PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
+#endif  
 
-  /* Each process defines a dataset and reads it from the hyperslab in the file */
-  cnt = 0;
-  if (dimension == 3) {ierr = PetscHDF5IntCast(dd->zs,offset + cnt++);CHKERRQ(ierr);}
-  if (dimension > 1)  {ierr = PetscHDF5IntCast(dd->ys,offset + cnt++);CHKERRQ(ierr);}
-  ierr = PetscHDF5IntCast(dd->xs/dd->w,offset + cnt++);CHKERRQ(ierr);
-  if (dd->w > 1 || dim2) offset[cnt++] = 0;
+  /* Retrieve the dataspace for the dataset */
+  PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
+  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
+
+  /* Expected dimension for holding the dof's */
 #if defined(PETSC_USE_COMPLEX)
-  offset[cnt++] = 0;
+  dofInd = rdim-2;
+#else
+  dofInd = rdim-1;
 #endif
-  cnt = 0;
-  if (dimension == 3) {ierr = PetscHDF5IntCast(dd->ze - dd->zs,count + cnt++);CHKERRQ(ierr);}
-  if (dimension > 1)  {ierr = PetscHDF5IntCast(dd->ye - dd->ys,count + cnt++);CHKERRQ(ierr);}
-  ierr = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w,count + cnt++);CHKERRQ(ierr);
-  if (dd->w > 1 || dim2) {ierr = PetscHDF5IntCast(dd->w,count + cnt++);CHKERRQ(ierr);}
+
+  /* The expected number of dimensions, assuming basedimension2 = false */
+  dim = dimension;
+  if (dd->w > 1) ++dim;
+  if (timestep >= 0) ++dim;
 #if defined(PETSC_USE_COMPLEX)
-  count[cnt++] = 2;
+  ++dim;
 #endif
+
+  /* In this case the input dataset have one extra, unexpected dimension. */
+  if (rdim == dim+1) {
+    /* In this case the block size unity */
+    if (dd->w == 1 && dims[dofInd] == 1) dim2 = PETSC_TRUE;
+
+    /* Special error message for the case where dof does not match the input file */
+    else if (dd->w != (PetscInt) dims[dofInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Number of dofs in file is %D, not %D as expected",(PetscInt)dims[dofInd],dd->w);
+
+  /* Other cases where rdim != dim cannot be handled currently */
+  } else if (rdim != dim) {
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
+  }
+
+  /* Set up the hyperslab size */
+  dim = 0;
+  if (timestep >= 0) {
+    offset[dim] = timestep;
+    count[dim] = 1;
+    ++dim;
+  }
+  if (dimension == 3) {
+    ierr = PetscHDF5IntCast(dd->zs,offset + dim);CHKERRQ(ierr);
+    ierr = PetscHDF5IntCast(dd->ze - dd->zs,count + dim);CHKERRQ(ierr);
+    ++dim;
+  }
+  if (dimension > 1) {
+    ierr = PetscHDF5IntCast(dd->ys,offset + dim);CHKERRQ(ierr);
+    ierr = PetscHDF5IntCast(dd->ye - dd->ys,count + dim);CHKERRQ(ierr);
+    ++dim;
+  }
+  ierr = PetscHDF5IntCast(dd->xs/dd->w,offset + dim);CHKERRQ(ierr);
+  ierr = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w,count + dim);CHKERRQ(ierr);
+  ++dim;
+  if (dd->w > 1 || dim2) {
+    offset[dim] = 0;
+    ierr = PetscHDF5IntCast(dd->w,count + dim);CHKERRQ(ierr);
+    ++dim;
+  }
+#if defined(PETSC_USE_COMPLEX)
+  offset[dim] = 0;
+  count[dim] = 2;
+  ++dim;
+#endif
+
+  /* Create the memory and filespace */
   PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
 
@@ -851,7 +890,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   PetscStackCallHDF5(H5Pset_dxpl_mpio,(plist_id, H5FD_MPIO_COLLECTIVE));
 #endif
-  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
+  /* To read dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
   ierr   = VecGetArray(xin, &x);CHKERRQ(ierr);
   PetscStackCallHDF5(H5Dread,(dset_id, scalartype, memspace, filespace, plist_id, x));
