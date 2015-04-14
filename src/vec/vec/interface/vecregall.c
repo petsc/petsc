@@ -1,6 +1,6 @@
 
 #include <petscvec.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec);

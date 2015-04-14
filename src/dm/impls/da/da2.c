@@ -1,5 +1,5 @@
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 #include <petscdraw.h>
 
 #undef __FUNCT__
@@ -103,7 +103,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
         base++;
       }
     }
-    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {

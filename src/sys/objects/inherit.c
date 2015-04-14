@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
-#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
@@ -101,7 +101,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   PetscFunctionBegin;
   PetscValidHeader(h,1);
   ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
-  ierr = PetscComposedQuantitiesDestroy(h);
+  ierr = PetscComposedQuantitiesDestroy(h);CHKERRQ(ierr);
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);

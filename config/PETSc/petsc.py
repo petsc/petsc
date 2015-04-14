@@ -71,7 +71,7 @@ class Configure(config.base.Configure):
     for (name, (petscDir, petscArch)) in self.getLocations():
       petscPythonDir = os.path.join(petscDir, 'config')
       sys.path.append(petscPythonDir)
-      confPath = os.path.join(petscDir, petscArch,'lib','petsc-conf')
+      confPath = os.path.join(petscDir, petscArch,'lib','petsc','conf')
       petscConf = framework.loadFramework(confPath)
       if petscConf:
         self.logPrint('Loaded PETSc-AS configuration ('+name+') from '+confPath)

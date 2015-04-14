@@ -26,26 +26,26 @@ echo " node [color=red]" >> $dotfilename
 
 
 #
-### Part 1: Extract files from include/petsc-private/ and put them in subgraph ###
+### Part 1: Extract files from include/petsc/private/ and put them in subgraph ###
 #
 
 echo "  subgraph cluster_private {" >> $dotfilename
-echo "    label = \"petsc-private\"; rank=\"10\"" >> $dotfilename
+echo "    label = \"petsc/private\"; rank=\"10\"" >> $dotfilename
 
 # Set labels
-for f in `ls include/petsc-private/*.h`
+for f in `ls include/petsc/private/*.h`
 do
-  f2=${f#include/petsc-private/} 
+  f2=${f#include/petsc/private/} 
   echo "    ${f2%.h} [label=\"$f2\",color=black];" >> $dotfilename
 done
 
 # Set connections
 echo "    " >> $dotfilename
 echo "    //Connections:" >> $dotfilename
-for f in `ls include/petsc-private/*.h`
+for f in `ls include/petsc/private/*.h`
 do
-  f2=${f#include/petsc-private/} 
-  lines=`grep "^#include *[<\"]petsc-private/" $f | sed "s,#include,," | sed "s,<petsc-private/,," | sed "s,\"petsc-private/,,"`
+  f2=${f#include/petsc/private/} 
+  lines=`grep "^#include *[<\"]petsc/private/" $f | sed "s,#include,," | sed "s,<petsc/private/,," | sed "s,\"petsc/private/,,"`
   for line in `echo $lines`
   do
     line2=${line%.h>}
@@ -72,12 +72,12 @@ done
 
 # Set connections
 echo "  " >> $dotfilename
-echo "  //Connections to petsc-private:" >> $dotfilename
+echo "  //Connections to petsc/private:" >> $dotfilename
 for f in `ls include/*.h`
 do
   f2=${f#include/}
   f3=${f2/%.hh/2}
-  lines=`grep "^#include *[<\"]petsc-private/" $f | sed "s,#include,," | sed "s,<petsc-private/,," | sed "s,\"petsc-private/,,"`
+  lines=`grep "^#include *[<\"]petsc/private/" $f | sed "s,#include,," | sed "s,<petsc/private/,," | sed "s,\"petsc/private/,,"`
   for line in `echo $lines`
   do
     line2=${line%.h>}

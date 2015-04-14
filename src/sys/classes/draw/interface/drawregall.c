@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw);
 #if defined(PETSC_HAVE_X)

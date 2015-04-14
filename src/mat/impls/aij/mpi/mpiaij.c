@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/vecimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscblaslapack.h>
 #include <petscsf.h>
 
@@ -5189,7 +5189,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 /*
     Special version for direct calls from Fortran
 */
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ

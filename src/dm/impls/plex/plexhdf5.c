@@ -1,6 +1,6 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/isimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/isimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);

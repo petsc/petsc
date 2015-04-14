@@ -5,10 +5,10 @@
 module Base_module
   implicit none
   private
-#include "petsc-finclude/petscsys.h"
-#include "petsc-finclude/petscvec.h"
-#include "petsc-finclude/petscvec.h90"
-#include "petsc-finclude/petscsnes.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscvec.h90"
+#include "petsc/finclude/petscsnes.h"
   type, public :: base_type
     PetscInt :: A  ! junk
     PetscReal :: I ! junk
@@ -29,10 +29,10 @@ module Extended_module
   use Base_module
   implicit none
   private
-#include "petsc-finclude/petscsys.h"
-#include "petsc-finclude/petscvec.h"
-#include "petsc-finclude/petscvec.h90"
-#include "petsc-finclude/petscsnes.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscvec.h90"
+#include "petsc/finclude/petscsnes.h"
   type, public, extends(base_type) :: extended_type
     PetscInt :: B  ! junk
     PetscReal :: J ! junk
@@ -73,15 +73,15 @@ program ex18f90
 
   implicit none
 
-#include "petsc-finclude/petscsys.h"
-#include "petsc-finclude/petscmat.h"
-#include "petsc-finclude/petscmat.h90"
-#include "petsc-finclude/petscvec.h"
-#include "petsc-finclude/petscvec.h90"
-#include "petsc-finclude/petscis.h"
-#include "petsc-finclude/petscis.h90"
-#include "petsc-finclude/petscviewer.h"
-#include "petsc-finclude/petscsnes.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscmat.h90"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscvec.h90"
+#include "petsc/finclude/petscis.h"
+#include "petsc/finclude/petscis.h90"
+#include "petsc/finclude/petscviewer.h"
+#include "petsc/finclude/petscsnes.h"
 
 ! ifort on windows requires this interface definition
 interface

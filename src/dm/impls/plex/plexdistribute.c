@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetAdjacencyUseCone"
@@ -420,7 +420,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
 
     ierr = PetscSectionGetDof(rootRankSection, p, &ndof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(rootRankSection, p, &noff);CHKERRQ(ierr);
-    for (n = 0; n < ndof; ++n) {ierr = PetscBTSet(neighbors, nranks[noff+n]);}
+    for (n = 0; n < ndof; ++n) {ierr = PetscBTSet(neighbors, nranks[noff+n]);CHKERRQ(ierr);}
   }
   ierr = ISRestoreIndices(rootRanks, &nranks);CHKERRQ(ierr);
   /* Compute leaf-to-neighbor process connectivity */
@@ -431,7 +431,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
 
     ierr = PetscSectionGetDof(leafRankSection, p, &ndof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(leafRankSection, p, &noff);CHKERRQ(ierr);
-    for (n = 0; n < ndof; ++n) {ierr = PetscBTSet(neighbors, nranks[noff+n]);}
+    for (n = 0; n < ndof; ++n) {ierr = PetscBTSet(neighbors, nranks[noff+n]);CHKERRQ(ierr);}
   }
   ierr = ISRestoreIndices(leafRanks, &nranks);CHKERRQ(ierr);
   /* Compute leaf-to-root process connectivity */
@@ -1425,7 +1425,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
     ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyBlock(ltogOriginal, conesSize, cones, cones);CHKERRQ(ierr);
     ierr = ISDestroy(&isOriginal);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);
+    ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);CHKERRQ(ierr);
   } else {
     /* One-to-all distribution pattern: We can derive LToG from SF */
     ierr = ISLocalToGlobalMappingCreateSF(sf, 0, &ltogMigration);CHKERRQ(ierr);
@@ -1441,7 +1441,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = DMPlexDistributeLabels(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupHybrid(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupTree(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&ltogMigration);
+  ierr = ISLocalToGlobalMappingDestroy(&ltogMigration);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Migrate, dm, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1534,7 +1534,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   }
   ierr = DMLabelCreate("Point migration", &lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, lblPartition, sfProcess, lblMigration);CHKERRQ(ierr);
-  ierr = DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration);
+  ierr = DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration);CHKERRQ(ierr);
   /* Stratify the SF in case we are migrating an already parallel plex */
   ierr = DMPlexStratifyMigrationSF(dm, sfMigration, &sfStratified);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);

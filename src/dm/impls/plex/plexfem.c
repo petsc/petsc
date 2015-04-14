@@ -1,8 +1,8 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
-#include <petsc-private/petscfeimpl.h>
-#include <petsc-private/petscfvimpl.h>
+#include <petsc/private/petscfeimpl.h>
+#include <petsc/private/petscfvimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetScale"
@@ -280,7 +280,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
         PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
@@ -401,7 +401,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
 
         if (h) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP, "Projection height > 0 not supported for finite volume");
         ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
         PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);

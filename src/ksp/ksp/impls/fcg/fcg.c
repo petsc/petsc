@@ -155,7 +155,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     ksp->its = i+1;
 
     /*  If needbe, allocate a new chunk of vectors in P and C */
-    ierr = KSPAllocateVectors_FCG(ksp,i+1,fcg->vecb);
+    ierr = KSPAllocateVectors_FCG(ksp,i+1,fcg->vecb);CHKERRQ(ierr);
 
     /* Note that we wrap around and start clobbering old vectors */
     idx = i % (fcg->mmax+1);

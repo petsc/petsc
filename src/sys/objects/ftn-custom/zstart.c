@@ -11,7 +11,7 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>

@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_VIEWER_CLASSID;
 

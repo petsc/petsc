@@ -1,5 +1,5 @@
 
-#include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
 
 PetscFunctionList ISList              = NULL;
 PetscBool         ISRegisterAllCalled = PETSC_FALSE;

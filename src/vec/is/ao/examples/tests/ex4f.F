@@ -3,8 +3,8 @@
 !
       program main
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscao.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscao.h>
 
       PetscErrorCode ierr
       AO             ao

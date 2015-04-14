@@ -1,5 +1,5 @@
 
-#include <petsc-private/bagimpl.h>     /*I  "petscbag.h"   I*/
+#include <petsc/private/bagimpl.h>     /*I  "petscbag.h"   I*/
 #include <petscviewer.h>
 
 #undef __FUNCT__
@@ -614,7 +614,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
   ierr = PetscStrcpy(helpname,bag->bagname);CHKERRQ(ierr);
   ierr = PetscStrcat(helpname," ");CHKERRQ(ierr);
   ierr = PetscStrcat(helpname,bag->baghelp);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,0);
+  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,0);CHKERRQ(ierr);
   while (nitem) {
     name[0] = '-';
     name[1] = 0;

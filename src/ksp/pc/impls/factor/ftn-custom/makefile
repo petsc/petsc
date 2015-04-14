@@ -10,6 +10,6 @@ DIRS     =
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/pc/impls/factor/ftn-custom/
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

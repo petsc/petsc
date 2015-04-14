@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>
+#include <petsc/private/tsimpl.h>
 
 static PetscBool TSPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__

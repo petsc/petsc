@@ -1,7 +1,7 @@
 
 #if !defined(__PETSCF90_H)
 #define __PETSCF90_H
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 /* PGI compilers pass in f90 pointers as 2 arguments */
 #if defined(PETSC_HAVE_F90_2PTR_ARG)

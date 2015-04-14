@@ -3,7 +3,7 @@
   Contains the data structure for plotting a bargraph in a window with an axis.
 */
 #include <petscdraw.h>         /*I "petscdraw.h" I*/
-#include <petsc-private/petscimpl.h>         /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
 #include <petscviewer.h>         /*I "petscviewer.h" I*/
 #include <../src/sys/classes/draw/utils/axisimpl.h>   /* so we can directly modify axis xticks */
 

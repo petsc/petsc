@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files)
  */
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
 #undef __FUNCT__
@@ -1095,7 +1095,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetDM"
 /*@

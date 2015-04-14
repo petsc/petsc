@@ -1,4 +1,4 @@
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares

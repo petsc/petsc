@@ -47,7 +47,7 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
   }
   ierr = PetscFree(nm->indices);CHKERRQ(ierr);
   ierr = PetscFree(nm->f_values);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   tao->data = 0;
   PetscFunctionReturn(0);
 }
@@ -140,9 +140,9 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   ierr = NelderMeadSort(nm);CHKERRQ(ierr);
   ierr = VecSet(Xbar,0.0);CHKERRQ(ierr);
   for (i=0;i<nm->N;i++) {
-    ierr = VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]);
+    ierr = VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]);CHKERRQ(ierr);
   }
-  ierr = VecScale(Xbar,nm->oneOverN);
+  ierr = VecScale(Xbar,nm->oneOverN);CHKERRQ(ierr);
   reason = TAO_CONTINUE_ITERATING;
   while (1) {
     shrink = 0;
@@ -196,14 +196,14 @@ PetscErrorCode TaoSolve_NM(Tao tao)
       ierr = PetscInfo(0,"Shrink\n");CHKERRQ(ierr);
 
       for (i=1;i<nm->N+1;i++) {
-        ierr = VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]);
+        ierr = VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
         ierr = TaoComputeObjective(tao,nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]);CHKERRQ(ierr);
       }
       ierr = VecAXPBY(Xbar,1.5*nm->oneOverN,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
 
       /*  Add last vector's fraction of average */
       ierr = VecAXPY(Xbar,nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-      ierr = NelderMeadSort(nm);
+      ierr = NelderMeadSort(nm);CHKERRQ(ierr);
       /*  Subtract new last vector from average */
       ierr = VecAXPY(Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
     }
@@ -298,7 +298,7 @@ PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, Pe
   ierr = VecCopy(Xmu,nm->simplex[index]);CHKERRQ(ierr);
   nm->f_values[index] = f;
 
-  ierr = NelderMeadSort(nm);
+  ierr = NelderMeadSort(nm);CHKERRQ(ierr);
 
   /*  Subtract last vector from average */
   ierr = VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);

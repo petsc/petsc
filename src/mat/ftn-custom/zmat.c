@@ -1,5 +1,5 @@
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscmat.h>
 
 

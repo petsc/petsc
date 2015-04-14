@@ -3,7 +3,7 @@
     Routines to project vectors out of null spaces.
 */
 
-#include <petsc-private/matimpl.h>      /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
 
 PetscClassId MAT_NULLSPACE_CLASSID;
 

@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdmshell.h>
 #include <petscdmda.h>
 #include <petscviewer.h>
@@ -3085,7 +3085,7 @@ PetscErrorCode  TSStep(TS ts)
                                 "  type        = {Preprint},\n"
                                 "  number      = {ANL/MCS-P5061-0114},\n"
                                 "  institution = {Argonne National Laboratory},\n"
-                                "  year        = {2014}\n}\n",&cite);
+                                "  year        = {2014}\n}\n",&cite);CHKERRQ(ierr);
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
@@ -4039,7 +4039,7 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
 /*@

@@ -34,9 +34,9 @@ We will have three objects:
  - Dual Space, P'+K: This looks like a set of functionals that can act on members of P, each n is defined by a Q
  - FEM: This keeps {P, P', Q}
 */
-#include <petsc-private/petscfeimpl.h> /*I "petscfe.h" I*/
-#include <petsc-private/dtimpl.h>
-#include <petsc-private/dmpleximpl.h> /* For CellRefiner */
+#include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
+#include <petsc/private/dtimpl.h>
+#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscdmshell.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
@@ -3260,7 +3260,7 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
     PetscQuadrature f;
     PetscInt        q, k;
 
-    ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+    ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
     ierr = PetscMalloc1(f->numPoints*pdim,&Bf);CHKERRQ(ierr);
     ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
@@ -5203,7 +5203,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       PetscQuadrature f;
       PetscInt        d, e;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
       /* Apply transform to first point, and check that point is inside subcell */
       for (d = 0; d < dim; ++d) {
         subpoint[d] = -1.0;
@@ -5229,7 +5229,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       PetscQuadrature f;
       PetscInt        q, k;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);CHKERRQ(ierr);
       ierr = PetscMalloc1(f->numPoints*spdim,&Bf);CHKERRQ(ierr);
       ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
       for (k = 0; k < spdim; ++k) {

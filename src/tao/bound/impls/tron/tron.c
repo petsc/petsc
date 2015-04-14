@@ -1,6 +1,6 @@
 #include <../src/tao/bound/impls/tron/tron.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 
@@ -25,7 +25,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->H_sub);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

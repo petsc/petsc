@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h> /*I  "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSEventMonitorInitialize"
@@ -193,7 +193,7 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
   for(i=0; i < MAXEVENTRECORDERS; i++) {
-    ierr = PetscFree((*event)->recorder.eventidx[i]);
+    ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(*event);CHKERRQ(ierr);
   *event = NULL;

@@ -827,7 +827,7 @@
 !
 !=====================================================================72
       subroutine ETOH(nvertices, qvec)
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       integer ierr
@@ -993,7 +993,7 @@
 !  I have eliminated dq - D. K. Kaushik (1/23/97)
 !=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1138,7 +1138,7 @@
      &                 amut,
      &                 sface_bit,vface_bit,
      &                 clift, cdrag, cmom,irank,nvertices)
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb

@@ -1,7 +1,7 @@
 #if !defined(__KSP_FCG_H)
 #define __KSP_FCG_H
 
-#include <petsc-private/kspimpl.h>        /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>        /*I "petscksp.h" I*/
 
 typedef struct {
   KSPCGType    type;        /* type of system (symmetric of Hermitian) */

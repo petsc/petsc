@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 static SNESMSType SNESMSDefault = SNESMSM62;
 static PetscBool  SNESMSRegisterAllCalled;

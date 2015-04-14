@@ -1,4 +1,4 @@
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif

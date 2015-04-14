@@ -8,8 +8,8 @@ EXAMPLESC       = ex3.cxx
 EXAMPLESF       =
 MANSEC          = AO
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_VEC_LIB}
@@ -44,4 +44,4 @@ TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_C3		  =
 TESTEXAMPLES_CXX_DATAFILESPATH = ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 ex3.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

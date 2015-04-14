@@ -1,4 +1,4 @@
-#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 typedef struct {
   PetscBool  check_gradient;

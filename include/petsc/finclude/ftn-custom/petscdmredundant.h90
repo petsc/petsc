@@ -1,0 +1,6 @@
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscdmdef.h90"
+#endif
+#include "petsc/finclude/ftn-custom/petscvechide.h90"
+#include "petsc/finclude/ftn-custom/petscdmhide.h90"
+

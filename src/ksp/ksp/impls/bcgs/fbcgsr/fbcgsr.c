@@ -7,7 +7,7 @@
       (2) The convergence occasionally is much faster than that of FBiCGStab.
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FBCGSR"
@@ -20,7 +20,7 @@ PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
+#include <petsc/private/pcimpl.h>            /*I "petscksp.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FBCGSR"
 PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)

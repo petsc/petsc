@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
+#include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 #include <petscctable.h>
 
 /* Logging support */
