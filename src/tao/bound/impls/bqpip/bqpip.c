@@ -224,11 +224,10 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   ierr = QPIPComputeResidual(qp,tao);CHKERRQ(ierr);
 
   /* Enter main loop */
-  while (1){
+  while (PETSC_TRUE){
 
     /* Check Stopping Condition      */
-    ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),
-                            qp->pinfeas, step, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas, step, &reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
     tao->ksp_its=0;
 

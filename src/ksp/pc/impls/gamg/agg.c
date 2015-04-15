@@ -3,7 +3,7 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #include <petscblaslapack.h>
 
@@ -947,6 +947,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   nloc = n/bs;
 
   if (pc_gamg->firstCoarsen && pc_gamg_agg->square_graph) { /* we don't want to square coarse grids */
+    ierr = PetscInfo(a_pc,"Square Graph (fine grid only)\n");CHKERRQ(ierr);
     /* ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2); */
     ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
   } else Gmat2 = Gmat1;
@@ -1075,7 +1076,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
   if (ii==0) {
-    ierr = PetscInfo(pc,"no selected points on coarse grid\n");CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"No selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
     PetscFunctionReturn(0);
@@ -1246,7 +1247,7 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
 
       ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
-      ierr = PetscInfo3(pc,"\t\t\t smooth P0: max eigen=%e min=%e PC=%s\n",emax,emin,PCJACOBI);CHKERRQ(ierr);
+      ierr = PetscInfo3(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",emax,emin,PCJACOBI);CHKERRQ(ierr);
       ierr = VecDestroy(&xx);CHKERRQ(ierr);
       ierr = VecDestroy(&bb);CHKERRQ(ierr);
       ierr = KSPDestroy(&eksp);CHKERRQ(ierr);

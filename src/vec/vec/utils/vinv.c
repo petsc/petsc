@@ -1690,7 +1690,6 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
 #else
   *n = displs[size];
   ierr = PetscSortRemoveDupsReal(n, (PetscReal *) vals);CHKERRQ(ierr);
-#endif
   if (e) {
     PetscValidPointer(e,3);
     ierr = PetscMalloc1(*n, e);CHKERRQ(ierr);
@@ -1701,6 +1700,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   ierr = PetscFree2(vals,displs);CHKERRQ(ierr);
   ierr = PetscFree2(tmp,N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#endif
 }
 
 

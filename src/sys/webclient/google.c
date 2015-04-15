@@ -157,7 +157,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
     ierr = PetscPushJSONValue(body,"description","a file",len);CHKERRQ(ierr);
     ierr = PetscStrcat(body,"}\r\n\r\n"
                             "--foo_bar_baz\r\n"
-                            "Content-Type: text/html\r\n\r\n");
+                            "Content-Type: text/html\r\n\r\n");CHKERRQ(ierr);
     ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
     fd = fopen (filename, "r");
     if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
@@ -166,7 +166,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
     fclose(fd);
     body[blen + rd] = 0;
     ierr = PetscStrcat(body,"\r\n\r\n"
-                            "--foo_bar_baz\r\n");
+                            "--foo_bar_baz\r\n");CHKERRQ(ierr);
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
     ierr = PetscHTTPSConnect("www.googleapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
     ierr = PetscHTTPSRequest("POST","www.googleapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);

@@ -1,8 +1,8 @@
 !
 !
       program main
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscdraw.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdraw.h>
 !
 !  This example demonstrates basic use of the Fortran interface for
 !  PetscDraw routines.

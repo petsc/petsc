@@ -5,12 +5,12 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c
-EXAMPLESF       = ex11f90.F
+EXAMPLESF       = ex11f90.F ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -64,6 +64,10 @@ ex12: ex12.o   chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_DM_LIB}
 	${RM} -f ex12.o
 
+ex13f90: ex13f90aux.o ex13f90.o chkopts
+	-${FLINKER} -o ex13f90 ex13f90.o ex13f90aux.o ${PETSC_DM_LIB}
+	${RM} -f ex13f90.o ex13f90aux.o ex13f90aux ex13f90aux.mod
+
 ex14: ex14.o   chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_DM_LIB}
 	${RM} -f ex14.o
@@ -106,12 +110,18 @@ runex3_3:
 	   ${RM} -f ex3_3.tmp
 runex10:
 	-@${MPIEXEC} -n 4 ./ex10
+	-@${MPIEXEC} -n 4 ./ex10 -viewer_hdf5_base_dimension2
 
 runex11f90:
 	-@${MPIEXEC} -n 1 ./ex11f90  > ex11f90.tmp 2>&1;   \
 	   if (${DIFF} output/ex11f90.out ex11f90.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex11f90, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex11f90.tmp
+runex13f90:
+	-@${MPIEXEC} -n 4 ./ex13f90  > ex13f90.tmp 2>&1;   \
+	   if (${DIFF} output/ex13f90.out ex13f90.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex13f90, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex13f90.tmp
 runex15:
 	-@${MPIEXEC} -n 1 ./ex15 > ex15.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_1.out ex15.tmp) then true; \
@@ -129,16 +139,15 @@ runex15_3:
 	   ${RM} -f ex15.tmp
 
 
-TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm \
-                          ex51.PETSc ex51.rm \
-                          ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
+TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
+                            ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_FORTRAN	  =
-TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm
-TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm ex65dm.PETSc ex65dm.rm
 TESTEXAMPLES_13		  =
 TESTEXAMPLES_HDF5         = ex10.PETSc runex10 ex10.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

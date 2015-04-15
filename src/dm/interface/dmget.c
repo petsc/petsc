@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h> /*I "petscdm.h" I*/
+#include <petsc/private/dmimpl.h> /*I "petscdm.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetLocalVector"

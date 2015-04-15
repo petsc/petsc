@@ -3,7 +3,7 @@
     Creates hypre ijmatrix from PETSc matrix
 */
 #include <petscsys.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscdmda.h>                /*I "petscdmda.h" I*/
 #include <../src/dm/impls/da/hypre/mhyp.h>
 

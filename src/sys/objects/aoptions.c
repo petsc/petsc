@@ -6,7 +6,7 @@
 
 */
 
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 
 #define ManSection(str) ((str) ? (str) : "None")
@@ -702,6 +702,74 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptions *PetscOptionsObject,const 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsEnumArray_Private"
+/*@C
+   PetscOptionsEnumArray - Gets an array of enum values for a particular
+   option in the database.
+
+   Logically Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - the option one is seeking
+.  text - short string describing option
+.  man - manual page for option
+-  n - maximum number of values
+
+   Output Parameter:
++  value - location to copy values
+.  n - actual number of values found
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Notes:
+   The array must be passed as a comma separated list.
+
+   There must be no intervening spaces between the values.
+
+   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Concepts: options database^array of enums
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
+          PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsRealArray()
+@*/
+PetscErrorCode  PetscOptionsEnumArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],const char *const *list,PetscEnum value[],PetscInt *n,PetscBool  *set)
+{
+  PetscInt       i,nlist = 0;
+  PetscOption    amsopt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (list[nlist++]) if (nlist > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+  if (nlist < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  nlist -= 3; /* drop enum name, prefix, and null termination */
+  if (0 && !PetscOptionsObject->count) { /* XXX Requires additional support */
+    PetscEnum *vals;
+    ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,text,man,OPTION_INT_ARRAY/*XXX OPTION_ENUM_ARRAY*/,&amsopt);CHKERRQ(ierr);
+    ierr = PetscStrNArrayallocpy(nlist,list,(char***)&amsopt->list);CHKERRQ(ierr);
+    amsopt->nlist = nlist;
+    ierr = PetscMalloc1(*n,(PetscEnum**)&amsopt->data);CHKERRQ(ierr);
+    amsopt->arraylength = *n;
+    vals = (PetscEnum*)amsopt->data;
+    for (i=0; i<*n; i++) vals[i] = value[i];
+  }
+  ierr = PetscOptionsGetEnumArray(PetscOptionsObject->prefix,opt,list,value,n,set);CHKERRQ(ierr);
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,list[value[0]]);CHKERRQ(ierr);
+    for (i=1; i<*n; i++) {ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,",%s",list[value[i]]);CHKERRQ(ierr);}
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,">: %s (choose from)",text);CHKERRQ(ierr);
+    for (i=0; i<nlist; i++) {ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm," %s",list[i]);CHKERRQ(ierr);}
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm," (%s)\n",ManSection(man));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsInt_Private"
@@ -1074,7 +1142,7 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptions *PetscOptionsObject,const
     ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
-    ierr = PetscStrNArrayallocpy(ntext,list,(char***)&amsopt->list);CHKERRQ(ierr);    
+    ierr = PetscStrNArrayallocpy(ntext,list,(char***)&amsopt->list);CHKERRQ(ierr);
     amsopt->nlist = ntext;
   }
   ierr = PetscOptionsGetEList(PetscOptionsObject->prefix,opt,list,ntext,value,set);CHKERRQ(ierr);

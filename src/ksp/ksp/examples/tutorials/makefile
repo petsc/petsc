@@ -16,8 +16,8 @@ MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -355,11 +355,6 @@ runex2_5:
 	   if (${DIFF} output/ex2_2.out ex2_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_5.tmp
-runex2_7:
-	-@${MPIEXEC} -n 1 ./ex2 -pc_type ilu -pc_factor_drop_tolerance 0.01,0.0,2 > ex2_7.tmp 2>&1; \
-	   if (${DIFF} output/ex2_7.out ex2_7.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex2_7, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex2_7.tmp
 runex2_bjacobi:
 	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
 	   if (${DIFF} output/ex2_bjacobi.out ex2.tmp) then true; \
@@ -1288,4 +1283,4 @@ TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
 TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

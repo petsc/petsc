@@ -1,5 +1,27 @@
 
-#include <petsc-private/matimpl.h>       /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>       /*I "petscmat.h"  I*/
+
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_Basic"
+PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,start,end;
+  PetscScalar    alpha = a;
+  PetscBool      prevoption;
+
+  PetscFunctionBegin;
+  ierr = MatGetOption(Y,MAT_NO_OFF_PROC_ENTRIES,&prevoption);CHKERRQ(ierr);
+  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
+  for (i=start; i<end; i++) {
+    ierr = MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,prevoption);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate"
@@ -110,8 +132,8 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   if (N > 0) PetscValidLogicalCollectiveInt(A,N,5);
   if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
-  if ((A->rmap->n >= 0 || A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
-  if ((A->cmap->n >= 0 || A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
+  if ((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
+  if ((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
   A->rmap->n = m;
   A->cmap->n = n;
   A->rmap->N = M;

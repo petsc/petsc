@@ -3,8 +3,8 @@
    This provides a matrix that applies a VecScatter to a vector.
 */
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h>
 
 typedef struct {
   VecScatter scatter;
@@ -160,7 +160,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                /* 44*/ 0,
                                        0,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                /* 49*/ 0,

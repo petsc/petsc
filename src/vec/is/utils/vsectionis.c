@@ -2,7 +2,7 @@
    This file contains routines for basic section object implementation.
 */
 
-#include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
 #include <petscsf.h>
 #include <petscviewer.h>
 

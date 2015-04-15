@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>
@@ -26,9 +26,9 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetcellfields_(DM *dm, PetscInt *cStart, P
   PetscScalar *u, *u_t, *a;
   PetscInt     numCells = *cEnd - *cStart, totDim, totDimAux = 0;
 
-  CHKFORTRANNULLOBJECT(locX_t);
-  CHKFORTRANNULLOBJECT(locA);
-  *ierr = DMPlexGetCellFields(*dm, *cStart, *cEnd, *locX, locX_t ? *locX_t : NULL, locA ? *locA : NULL, &u, &u_t, &a);if (*ierr) return;
+  CHKFORTRANNULLOBJECTDEREFERENCE(locX_t);
+  CHKFORTRANNULLOBJECTDEREFERENCE(locA);
+  *ierr = DMPlexGetCellFields(*dm, *cStart, *cEnd, *locX, *locX_t, *locA, &u, &u_t, &a);if (*ierr) return;
   *ierr = DMGetDS(*dm, &prob);if (*ierr) return;
   *ierr = PetscDSGetTotalDimension(prob, &totDim);if (*ierr) return;
   if (locA) {
@@ -63,9 +63,9 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetfacefields_(DM *dm, PetscInt *fStart, P
   PetscScalar *uL, *uR;
   PetscInt     numFaces = *fEnd - *fStart, totDim;
 
-  CHKFORTRANNULLOBJECT(locX_t);
-  CHKFORTRANNULLOBJECT(locGrad);
-  *ierr = DMPlexGetFaceFields(*dm, *fStart, *fEnd, *locX, locX_t ? *locX_t : NULL, *faceGeometry, *cellGeometry, locGrad ? *locGrad : NULL, &uL, &uR);if (*ierr) return;
+  CHKFORTRANNULLOBJECTDEREFERENCE(locX_t);
+  CHKFORTRANNULLOBJECTDEREFERENCE(locGrad);
+  *ierr = DMPlexGetFaceFields(*dm, *fStart, *fEnd, *locX, *locX_t, *faceGeometry, *cellGeometry, *locGrad, &uL, &uR);if (*ierr) return;
   *ierr = DMGetDS(*dm, &prob);if (*ierr) return;
   *ierr = PetscDSGetTotalDimension(prob, &totDim);if (*ierr) return;
   *ierr = F90Array1dCreate((void*) uL, PETSC_SCALAR, 1, numFaces*totDim, uLPtr PETSC_F90_2PTR_PARAM(uLPtrd));if (*ierr) return;

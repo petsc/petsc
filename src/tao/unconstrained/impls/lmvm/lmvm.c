@@ -226,7 +226,6 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptions *PetscOptionsObject,Ta
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-  PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/

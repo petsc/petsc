@@ -1,5 +1,5 @@
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/kspimpl.h> /*I "petscksp.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__

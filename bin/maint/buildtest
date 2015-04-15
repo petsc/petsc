@@ -86,7 +86,7 @@ tar rf buildoutput.tar build.log
 #
 # Run examples
 #
-grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/petscvariables > /dev/null
+grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables > /dev/null
 if ( $? ) then
   set TESTMODE='testexamples'
 else

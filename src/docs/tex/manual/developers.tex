@@ -170,7 +170,7 @@ Within the PETSc source code, we adhere to the following guidelines
 so that the code is uniform and easily maintainable:
 
 \begin{itemize}
-\item Public PETSc includes, \trl{petsc*.h}, cannot include private PETSc \trl{petsc-private/*impl.h} includes.
+\item Public PETSc includes, \trl{petsc*.h}, cannot include private PETSc \trl{petsc/private/*impl.h} includes.
 \item Public and private PETSc includes, cannot include include files in the PETSc source tree.
 \item All PETSc function bodies are indented two characters.
 \item Each additional level of loops, if statements, etc. is indented
@@ -626,7 +626,7 @@ Each class has
 \item Its own, application public, include file \trl{include/petsc<class>.h}
 \item Its own directory, \trl{src/<class>}
 \item A data structure defined in  the file
-      \trl{include/petsc-private/<class>impl.h}.
+      \trl{include/petsc/private/<class>impl.h}.
       This data structure is shared by all the different PETSc implementations of the
       class. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
@@ -669,7 +669,7 @@ without altering or recompiling the application code.
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/petscimpl.h.html}{include/petsc-private/petscimpl.h}
+defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/petscimpl.h.html}{include/petsc/private/petscimpl.h}
 
 \begin{tabbing}
 \\
@@ -972,13 +972,13 @@ vs \_p\_Vec.
 
 \subsection{Preconditioners: PC}
 
-The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/pcimpl.h.html}{include/petsc-private/pcimpl.h} include file.
+The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/pcimpl.h.html}{include/petsc/private/pcimpl.h} include file.
 A carefully commented implementation of a PC object can be found in
 \href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/pc/impls/jacobi/jacobi.c.html}{src/ksp/pc/impls/jacobi/jacobi.c}.
 
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/kspimpl.h.html}{include/petsc-private/kspimpl.h} include file.
+The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/kspimpl.h.html}{include/petsc/private/kspimpl.h} include file.
 A carefully commented implementation of a KSP object can be found in
 \href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/ksp/impls/cg/cg.c.html}{src/ksp/ksp/impls/cg/cg.c}.
 

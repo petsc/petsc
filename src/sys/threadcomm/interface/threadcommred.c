@@ -1,5 +1,5 @@
 /* This file contains code for threaded reductions */
-#include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
+#include <petsc/private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadReductionBegin"

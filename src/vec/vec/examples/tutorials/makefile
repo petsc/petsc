@@ -9,8 +9,8 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex15.c ex16.c  ex18.c ex19.c ex42.c ex42a.c ex21.c
 EXAMPLESF	 = ex1f.F ex1f90.F ex2f.F ex3f.F ex4f.F ex4f90.F ex7f.F ex9f.F ex11f.F ex14f.F ex20f90.F90 ex21f90.F
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
@@ -324,4 +324,4 @@ TESTEXAMPLES_FORTRAN_MPIUNI = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f
 TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex20f90.PETSc runex20f90 ex20f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_THREADCOMM     = ex1.PETSc runex1_pthread runex1_openmp ex1.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

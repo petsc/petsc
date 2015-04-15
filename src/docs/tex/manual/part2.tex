@@ -5391,10 +5391,10 @@ Section \ref{sec_fortran_exceptions}.
 \label{sec_fortran_includes}
 
 The Fortran include files for PETSc are located in the directory
-\trl{${PETSC_DIR}/include/petsc-finclude} and should be used via statements
+\trl{${PETSC_DIR}/include/petsc/finclude} and should be used via statements
 such as the following:
 \begin{tabbing}
-    \#include "petsc-finclude/includefile.h"
+    \#include "petsc/finclude/includefile.h"
 \end{tabbing}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
@@ -5416,8 +5416,8 @@ makefile.)
 For some of the Fortran 90 functionality of PETSc and type checking
 of PETSc function calls you can use
 \begin{tabbing}
-    \#include "petsc-finclude/includefile.h
-    \#include "petsc-finclude/includefile.h90"
+    \#include "petsc/finclude/includefile.h
+    \#include "petsc/finclude/includefile.h90"
 \end{tabbing}
 See the manual page UsingFortran for how you can use PETSc Fortran
 module files in your code.
@@ -5667,7 +5667,7 @@ use the routines VecGetArrayF90(), VecRestoreArrayF90()
 VecDuplicateVecsF90(), and VecDestroyVecsF90(), one must
 use the Fortran90 vector include file,
 \begin{tabbing}
-    \#include "petsc-finclude/petscvec.h90"
+    \#include "petsc/finclude/petscvec.h90"
 \end{tabbing}
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
@@ -7598,8 +7598,8 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraries.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include  \$\trl{{PETSC_DIR}/lib/petsc-conf/variables}
-   include \$\trl{{PETSC_DIR}/lib/petsc-conf/rules}
+   include  \$\trl{{PETSC_DIR}/lib/petsc/conf/variables}
+   include \$\trl{{PETSC_DIR}/lib/petsc/conf/rules}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -7620,8 +7620,8 @@ within the makefile.
    FPPFLAGS   =
    CLEANFILES = ex2
 
-   include ${PETSC_DIR}/lib/petsc-conf/variables
-   include ${PETSC_DIR}/lib/petsc-conf/rules
+   include ${PETSC_DIR}/lib/petsc/conf/variables
+   include ${PETSC_DIR}/lib/petsc/conf/rules
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -7643,7 +7643,7 @@ include variables instead of base. That is, use something like
    CFLAGS   = ${PETSC_CC_INCLUDES}
    FFLAGS   = ${PETSC_FC_INCLUDES}
 
-   include ${PETSC_DIR}/lib/petsc-conf/variables
+   include ${PETSC_DIR}/lib/petsc/conf/variables
 
    ex2: ex2.o
            mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
@@ -7653,7 +7653,7 @@ include variables instead of base. That is, use something like
 \label{fig_make1var}
 \end{figure}
 The variables \trl{${PETSC_CC_INCLUDES}}, \trl{${PETSC_FC_INCLUDES}}
-and \trl{${PETSC_LIB}} are defined by the included petsc-conf/variables file.
+and \trl{${PETSC_LIB}} are defined by the included petsc/conf/variables file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
 you can use the commands (run in the PETSc root directory) to get the information
@@ -7686,8 +7686,8 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/lib/petsc-conf/variables
-   include ${PETSC_DIR}/lib/petsc-conf/rules
+   include ${PETSC_DIR}/lib/petsc/conf/variables
+   include ${PETSC_DIR}/lib/petsc/conf/rules
 
    ex1: ex1.o
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -7720,7 +7720,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/lib/petsc-conf/test
+   include ${PETSC_DIR}/lib/petsc/conf/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -7770,8 +7770,8 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \${PETSC\_DIR}/lib/petsc-conf/variables
-   include \${PETSC\_DIR}/lib/petsc-conf/rules
+   include \${PETSC\_DIR}/lib/petsc/conf/variables
+   include \${PETSC\_DIR}/lib/petsc/conf/rules
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}

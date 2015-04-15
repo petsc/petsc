@@ -1,4 +1,4 @@
-#include <petsc-private/tsimpl.h> /*I "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 typedef struct {
   PetscBool always_accept;
@@ -27,7 +27,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
 
   safety = basic->safety;
-  ierr   = TSErrorWeightedNorm(ts,Y,&enorm);CHKERRQ(ierr);
+  ierr   = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
@@ -56,14 +56,25 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy_Basic"
-static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
+#define __FUNCT__ "TSAdaptReset_Basic"
+static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDestroy(&basic->Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptDestroy_Basic"
+static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSAdaptReset_Basic(adapt);CHKERRQ(ierr);
   ierr = PetscFree(adapt->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

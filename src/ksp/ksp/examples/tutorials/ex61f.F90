@@ -70,7 +70,7 @@
 
       integer, dimension(MAXTHREADS) :: ibeg,iend
 
-#include <petsc-finclude/petsc.h90>
+#include <petsc/finclude/petsc.h90>
 
 !$    integer, external :: omp_get_num_threads
 

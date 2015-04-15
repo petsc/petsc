@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
+#include <petsc/private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch);

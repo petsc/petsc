@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
@@ -167,9 +167,9 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (classid != SNES_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Not SNES next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = SNESSetType(snes, type);CHKERRQ(ierr);
   if (snes->ops->load) {
     ierr = (*snes->ops->load)(snes,viewer);CHKERRQ(ierr);
@@ -4697,7 +4697,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 }
 
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetDM"
 /*@

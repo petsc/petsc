@@ -1,5 +1,5 @@
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
-#include <petsc-private/dmimpl.h>     /*I "petscdm.h" I*/
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/dmimpl.h>     /*I "petscdm.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESDestroy"
@@ -23,8 +23,8 @@ PetscErrorCode DMSNESLoad(DMSNES kdm,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

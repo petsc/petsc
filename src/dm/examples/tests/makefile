@@ -12,8 +12,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
 EXAMPLESF       =
 MANSEC          = DM
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -215,6 +215,24 @@ runex4_2:
 runex6:
 	-@${MPIEXEC} -n 6 ./ex6 -testorder -nox
 
+runex7:
+	-@${MPIEXEC} -n 8 ./ex7 -dof 3 -stencil_width 2 -M 50 -N 50 -periodic > ex7_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7_1.tmp
+
+runex7_2:
+	-@${MPIEXEC} -n 8 ./ex7 -dof 3 -stencil_width 2 -M 50 -N 50 -periodic -grid2d > ex7_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex7_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7_1.tmp
+
+runex7_3:
+	-@${MPIEXEC} -n 8 ./ex7 -dof 3 -stencil_width 2 -M 50 -N 50 -periodic -grid3d > ex7_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex7_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7_1.tmp
+
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -dof 2  | grep -v -i Object > ex11_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -396,4 +414,4 @@ TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.P
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

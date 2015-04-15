@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h>     /*I  "petscsf.h"  I*/
+#include <petsc/private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);

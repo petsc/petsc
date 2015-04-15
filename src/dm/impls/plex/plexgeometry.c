@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexLocatePoint_Simplex_2D_Internal"
@@ -206,7 +206,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 /*
   DMPlexComputeProjection2Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 2D
 */
-static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], PetscReal R[])
 {
   const PetscReal x = PetscRealPart(coords[2] - coords[0]);
   const PetscReal y = PetscRealPart(coords[3] - coords[1]);
@@ -230,7 +230,7 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
   http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html
   DOI:10.1080/2165347X.2012.689606
 */
-static PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], PetscReal R[])
 {
   PetscReal      x    = PetscRealPart(coords[3] - coords[0]);
   PetscReal      y    = PetscRealPart(coords[4] - coords[1]);
@@ -264,7 +264,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[
 /*
   DMPlexComputeProjection3Dto2D_Internal - Rewrite coordinates to be the 2D projection of the 3D
 */
-static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
+PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
 {
   PetscReal      x1[3],  x2[3], n[3], norm;
   PetscReal      x1p[3], x2p[3], xnp[3];
@@ -1125,7 +1125,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
   cEnd = cMax < 0 ? cEnd : cMax;
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
   /* TODO This needs to be multiplied by Nq for non-affine */
-  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, sizeof(PetscFECellGeom)/sizeof(PetscScalar));CHKERRQ(ierr);}
+  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFECellGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
@@ -1170,7 +1170,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, sizeof(PetscFVCellGeom)/sizeof(PetscScalar));CHKERRQ(ierr);}
+  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVCellGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
@@ -1188,7 +1188,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionFace);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
-  for (f = fStart; f < fEnd; ++f) {ierr = PetscSectionSetDof(sectionFace, f, sizeof(PetscFVFaceGeom)/sizeof(PetscScalar));CHKERRQ(ierr);}
+  for (f = fStart; f < fEnd; ++f) {ierr = PetscSectionSetDof(sectionFace, f, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVFaceGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmFace, sectionFace);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionFace);CHKERRQ(ierr);
@@ -1239,7 +1239,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  ierr = MPI_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   ierr = DMPlexSetMinRadius(dm, gminradius);CHKERRQ(ierr);
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {

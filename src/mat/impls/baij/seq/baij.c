@@ -5,8 +5,8 @@
 */
 #include <../src/mat/impls/baij/seq/baij.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
-#include <petsc-private/kernels/blockinvert.h>
-#include <petsc-private/kernels/blockmatmult.h>
+#include <petsc/private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockmatmult.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
@@ -2593,6 +2593,21 @@ PetscErrorCode MatRestoreColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_SeqBAIJ"
+PetscErrorCode MatShift_SeqBAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ     *aij = (Mat_SeqBAIJ*)Y->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz) {
+    ierr = MatSeqBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        MatGetRow_SeqBAIJ,
@@ -2640,7 +2655,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        MatCopy_SeqBAIJ,
                                /* 44*/ 0,
                                        MatScale_SeqBAIJ,
-                                       0,
+                                       MatShift_SeqBAIJ,
                                        0,
                                        MatZeroRowsColumns_SeqBAIJ,
                                /* 49*/ 0,

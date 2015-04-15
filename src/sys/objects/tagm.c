@@ -2,8 +2,8 @@
 /*
       Some PETSc utilites
 */
-#include <petsc-private/petscimpl.h>             /*I    "petscsys.h"   I*/
-#include <petsc-private/threadcommimpl.h>
+#include <petsc/private/petscimpl.h>             /*I    "petscsys.h"   I*/
+#include <petsc/private/threadcommimpl.h>
 /* ---------------------------------------------------------------- */
 /*
    A simple way to manage tags inside a communicator.

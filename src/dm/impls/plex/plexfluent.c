@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateFluentFromFile"
@@ -41,7 +41,7 @@ PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, c
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  do {ierr = PetscViewerRead(viewer, &(buffer[i++]), 1, PETSC_CHAR);CHKERRQ(ierr);}
+  do {ierr = PetscViewerRead(viewer, &(buffer[i++]), 1, NULL, PETSC_CHAR);CHKERRQ(ierr);}
   while (buffer[i-1] != '\0' && buffer[i-1] != delim);
   buffer[i] = '\0';
   PetscFunctionReturn(0);
@@ -64,11 +64,11 @@ PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, Pet
   }
 
   if (!binary && dtype == PETSC_INT) {
-    char cbuf[256];
-    int ibuf, snum;
+    char     cbuf[256];
+    int      ibuf, snum;
     /* Parse hexadecimal ascii integers */
     for (i = 0; i < count; i++) {
-      ierr = PetscViewerRead(viewer, cbuf, 1, PETSC_STRING);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, cbuf, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
       snum = sscanf(cbuf, "%x", &ibuf);
       if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       ((PetscInt*)data)[i] = (PetscInt)ibuf;
@@ -91,7 +91,7 @@ PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, Pet
     for (i = 0; i < count; i++) ((PetscScalar*)data)[i] = (PetscScalar)(fbuf[i]);
     ierr = PetscFree(fbuf);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIRead(viewer, data, count, dtype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIRead(viewer, data, count, NULL, dtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -203,7 +203,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
     PetscInt depth = 1;
     do {
       /* Match parentheses when parsing unknown sections */
-      do {ierr = PetscViewerRead(viewer, &(buffer[0]), 1, PETSC_CHAR);CHKERRQ(ierr);}
+      do {ierr = PetscViewerRead(viewer, &(buffer[0]), 1, NULL, PETSC_CHAR);CHKERRQ(ierr);}
       while (buffer[0] != '(' && buffer[0] != ')');
       if (buffer[0] == '(') depth++;
       if (buffer[0] == ')') depth--;

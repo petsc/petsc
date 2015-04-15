@@ -9,7 +9,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscbt.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
 
@@ -357,10 +357,12 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 
   PetscFunctionBegin;
   try {
-    if (!viennaclcontainer->tempvec)        delete viennaclcontainer->tempvec;
-    if (!viennaclcontainer->mat)            delete viennaclcontainer->mat;
-    if (!viennaclcontainer->compressed_mat) delete viennaclcontainer->compressed_mat;
-    delete viennaclcontainer;
+    if (viennaclcontainer) {
+      delete viennaclcontainer->tempvec;
+      delete viennaclcontainer->mat;
+      delete viennaclcontainer->compressed_mat;
+      delete viennaclcontainer;
+    }
     A->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;
   } catch(std::exception const & ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());

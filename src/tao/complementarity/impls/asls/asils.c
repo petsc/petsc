@@ -199,8 +199,8 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
-    ierr = TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);
-    ierr = TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);
+    ierr = TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(asls->r1,asls->r1,asls->r2);CHKERRQ(ierr);
     ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
     ierr = VecISAXPY(tao->stepdirection, asls->fixed,1.0,asls->r1);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
     /* Calculate the reduced direction.  (Really negative of Newton
        direction.  Therefore, rest of the code uses -d.) */
-    ierr = KSPReset(tao->ksp);
+    ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);

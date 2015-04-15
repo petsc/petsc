@@ -35,7 +35,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-#include <petsc-private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
+#include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 
 PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
 PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }

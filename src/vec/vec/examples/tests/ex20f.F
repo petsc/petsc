@@ -1,9 +1,9 @@
 !
       program main
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscviewer.h>
 
 !
 !      This example demonstrates writing an array to a file in binary

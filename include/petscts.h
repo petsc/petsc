@@ -54,7 +54,7 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
    Level: beginner
 
-   Developer Notes: this must match petsc-finclude/petscts.h
+   Developer Notes: this must match petsc/finclude/petscts.h
 
    Supported types are:
      TS_EQ_UNSPECIFIED (default)
@@ -85,7 +85,7 @@ PETSC_EXTERN const char *const*TSEquationTypes;
 
    Level: beginner
 
-   Developer Notes: this must match petsc-finclude/petscts.h
+   Developer Notes: this must match petsc/finclude/petscts.h
 
    Each reason has its own manual page.
 
@@ -167,7 +167,7 @@ M*/
 
    Level: beginner
 
-   Developer Notes: this must match petsc-finclude/petscts.h
+   Developer Notes: this must match petsc/finclude/petscts.h
 
 $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
@@ -341,9 +341,9 @@ PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetDifferentialEquationsIS(TS,IS);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
 
@@ -517,6 +517,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptions*,TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);

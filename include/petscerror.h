@@ -17,7 +17,7 @@
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
      at src/sys/error/err.c any changes here must also be made there
-     These are also define in include/petsc-finclude/petscerror.h any CHANGES here
+     These are also define in include/petsc/finclude/petscerror.h any CHANGES here
      must be also made there.
 
 */
@@ -340,6 +340,11 @@ M*/
 E*/
 typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} PetscErrorType;
 
+#if defined(__clang_analyzer__)
+__attribute__((analyzer_noreturn))
+#endif
+PETSC_EXTERN PetscErrorCode PetscError(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...);
+
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfInitialize(void);
 PETSC_EXTERN PetscErrorCode PetscErrorMessage(int,const char*[],char **);
 PETSC_EXTERN PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
@@ -349,7 +354,6 @@ PETSC_EXTERN PetscErrorCode PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,c
 PETSC_EXTERN PetscErrorCode PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 PETSC_EXTERN PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 PETSC_EXTERN PetscErrorCode PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-PETSC_EXTERN PetscErrorCode PetscError(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...);
 PETSC_EXTERN PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
 PETSC_EXTERN PetscErrorCode PetscPopErrorHandler(void);
 PETSC_EXTERN PetscErrorCode PetscSignalHandlerDefault(int,void*);
@@ -649,7 +653,7 @@ M*/
 
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-#include <petsc-private/petscfptimpl.h>
+#include <petsc/private/petscfptimpl.h>
 /*
    Registers the current function into the global function pointer to function name table
 

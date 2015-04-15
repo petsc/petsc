@@ -8,8 +8,8 @@ EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex15.
 EXAMPLESF       =
 MANSEC          = Mat
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB}
@@ -135,5 +135,5 @@ TESTEXAMPLES_PARAMETIS      = ex11.PETSc runex11 ex11.rm ex15.PETSc runex15 ex15
 TESTEXAMPLES_PTSCOTCH       = ex15.PETSc runex15_2 ex15.rm
 
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 

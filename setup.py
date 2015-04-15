@@ -63,7 +63,7 @@ def bootstrap():
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
-    sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc-conf'))
+    sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc','conf'))
     # Generate package __init__.py file
     from distutils.dir_util import mkpath
     pkgdir = os.path.join('config', 'pypi')

@@ -1,7 +1,7 @@
 #if !defined(_VTKVIMPL_H)
 #define _VTKVIMPL_H
 
-#include <petsc-private/viewerimpl.h>    /*I   "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 
 typedef struct _n_PetscViewerVTKObjectLink *PetscViewerVTKObjectLink;
 struct _n_PetscViewerVTKObjectLink {
