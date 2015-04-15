@@ -19,6 +19,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsGetString(const char[],const char[],char
 PETSC_EXTERN PetscErrorCode PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetEList(const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetEnum(const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetEnumArray(const char[],const char[],const char*const*,PetscEnum*,PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsValidKey(const char[],PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetAlias(const char[],const char[]);
@@ -253,6 +254,7 @@ M*/
 #define PetscOptionsIntArray(a,b,c,d,e,f) PetscOptionsIntArray_Private(PetscOptionsObject,a,b,c,d,e,f)
 #define PetscOptionsStringArray(a,b,c,d,e,f) PetscOptionsStringArray_Private(PetscOptionsObject,a,b,c,d,e,f)
 #define PetscOptionsBoolArray(a,b,c,d,e,f) PetscOptionsBoolArray_Private(PetscOptionsObject,a,b,c,d,e,f)
+#define PetscOptionsEnumArray(a,b,c,d,e,f,g) PetscOptionsEnumArray_Private(PetscOptionsObject,a,b,c,d,e,f,g)
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptions *,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool *);
@@ -272,6 +274,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsScalarArray_Private(PetscOptions *,const
 PETSC_EXTERN PetscErrorCode PetscOptionsIntArray_Private(PetscOptions *,const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsStringArray_Private(PetscOptions *,const char[],const char[],const char[],char*[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray_Private(PetscOptions *,const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptions *,const char[],const char[],const char[],const char *const*,PetscEnum[],PetscInt*,PetscBool *);
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(void);
