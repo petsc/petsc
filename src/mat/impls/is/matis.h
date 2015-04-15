@@ -3,7 +3,7 @@
 #define __is_h
 
 #include <petscsf.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 typedef struct {
   Mat                    A;             /* the local Neumann matrix */

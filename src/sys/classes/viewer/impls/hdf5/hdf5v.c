@@ -1,4 +1,4 @@
-#include <petsc-private/viewerimpl.h>    /*I   "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 
 typedef struct GroupList {
@@ -12,7 +12,22 @@ typedef struct {
   hid_t         file_id;
   PetscInt      timestep;
   GroupList     *groups;
+  PetscBool     basedimension2;  /* save vectors and DMDA vectors with a dimension of at least 2 even if the bs/dof is 1 */
 } PetscViewer_HDF5;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerSetFromOptions_HDF5"
+static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptions *PetscOptionsObject,PetscViewer v)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)v->data;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"HDF5 PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_hdf5_base_dimension2","1d Vectors get 2 dimensions in HDF5","PetscViewerHDF5SetBaseDimension2",hdf5->basedimension2,&hdf5->basedimension2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileClose_HDF5"
@@ -58,6 +73,83 @@ PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode ty
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   hdf5->btype = type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetBaseDimension2_HDF5"
+PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscBool flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  hdf5->basedimension2 = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetBaseDimension2"
+/*@C
+     PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+       dimension of 2.
+
+    Logically Collective on PetscViewer
+
+  Input Parameters:
++  viewer - the PetscViewer; if it is not hdf5 then this command is ignored
+-  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
+
+  Options Database:
+.  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+
+
+  Notes: Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+         of one when the dimension is lower. Others think the option is crazy.
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+
+@*/
+PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTryMethod(viewer,"PetscViewerHDF5SetBaseDimension2_C",(PetscViewer,PetscBool),(viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5GetBaseDimension2"
+/*@C
+     PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+       dimension of 2.
+
+    Logically Collective on PetscViewer
+
+  Input Parameter:
+.  viewer - the PetscViewer, must be of type HDF5
+
+  Output Parameter:
+.  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
+
+  Notes: Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+         of one when the dimension is lower. Others think the option is crazy.
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+
+@*/
+PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer,PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *flg = hdf5->basedimension2;
   PetscFunctionReturn(0);
 }
 
@@ -108,16 +200,18 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   PetscFunctionBegin;
   ierr = PetscNewLog(v,&hdf5);CHKERRQ(ierr);
 
-  v->data         = (void*) hdf5;
-  v->ops->destroy = PetscViewerDestroy_HDF5;
-  v->ops->flush   = 0;
-  hdf5->btype     = (PetscFileMode) -1;
-  hdf5->filename  = 0;
-  hdf5->timestep  = -1;
-  hdf5->groups    = NULL;
+  v->data                = (void*) hdf5;
+  v->ops->destroy        = PetscViewerDestroy_HDF5;
+  v->ops->setfromoptions = PetscViewerSetFromOptions_HDF5;
+  v->ops->flush          = 0;
+  hdf5->btype            = (PetscFileMode) -1;
+  hdf5->filename         = 0;
+  hdf5->timestep         = -1;
+  hdf5->groups           = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -139,6 +233,9 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Output Parameter:
 .  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
 
+  Options Database:
+.  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+
    Level: beginner
 
    Note:
@@ -147,7 +244,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Concepts: HDF5 files
    Concepts: PetscViewerHDF5^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(), PetscViewerHDF5GetBaseDimension2()
           VecView(), MatView(), VecLoad(), MatLoad(),
           PetscFileMode, PetscViewer
 @*/

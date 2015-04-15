@@ -3,11 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
-    self.download = ['http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz']
+    self.download = ['http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz',
+                     'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuiteSparse-4.4.3.tar.gz']
     self.liblist  = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
-                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','-lrt'],
+                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
                      ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
-                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a','-lrt']]
+                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a','librt.a']]
     self.functions = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve']
     self.includes  = ['umfpack.h','cholmod.h','klu.h']
     self.needsMath = 1
@@ -21,7 +22,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    if self.framework.argDB['download-suitesparse-gpu']:
+    if self.argDB['download-suitesparse-gpu']:
       self.cuda       = framework.require('config.packages.cuda',self)
       self.deps       = [self.blasLapack,self.cuda]
     else:
@@ -30,7 +31,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    self.framework.log.write('SuiteSparseDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    self.log.write('SuiteSparseDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     if not self.make.haveGNUMake:
       raise RuntimeError('SuiteSparse buildtools require GNUMake. Use --with-make=gmake or --download-make')
 
@@ -38,11 +39,7 @@ class Configure(config.package.Package):
     g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    if self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'long long i=LONG_MAX;\n\nif (i);\n'):
-      long_max = 'LONG_MAX'
-    else:
-      long_max = '9223372036854775807LL'
-    g.write('CF       = '+self.setCompilers.getCompilerFlags()+''' -DSuiteSparse_long="long long" -DSuiteSparse_long_max=''' + long_max + ''' -DSuiteSparse_long_id='"%lld"'\n''')
+    g.write('CF           = '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.write('MAKE         ='+self.make.make+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
@@ -60,10 +57,10 @@ class Configure(config.package.Package):
     else:
       flg = '-DBLAS_NO_UNDERSCORE'
     g.write('UMFPACK_CONFIG    = '+flg+'\n')
-    if self.framework.argDB['download-suitesparse-gpu']:
+    if self.argDB['download-suitesparse-gpu']:
       if self.defaultIndexSize == 32:
         raise RuntimeError('SuiteSparse only uses GPUs with --with-64-bit-indices')
-      if not self.framework.clArgDB.has_key('with-cuda') or not self.framework.argDB['with-cuda']:
+      if not self.framework.clArgDB.has_key('with-cuda') or not self.argDB['with-cuda']:
         raise RuntimeError('Run with --with-cuda to use allow SuiteSparse to compile using CUDA')
       # code taken from cuda.py
       self.pushLanguage('CUDA')
@@ -99,17 +96,17 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling and installing SuiteSparse; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         # SuiteSparse install does not create missing directories, hence we need to create them first 
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+self.make.make+' && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+self.make.make+' && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError, e:
@@ -117,3 +114,8 @@ class Configure(config.package.Package):
       self.postInstall(output+err, mkfile)
     return self.installDir
 
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package] and self.defaultIndexSize == 64 and self.types.sizes['known-sizeof-void-p'] == 4:
+      raise RuntimeError('SuiteSparse does not support 64bit indices in 32bit (pointer) mode.')
+    return

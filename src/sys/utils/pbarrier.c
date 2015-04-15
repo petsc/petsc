@@ -1,5 +1,5 @@
 
-#include <petsc-private/petscimpl.h>              /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>              /*I "petscsys.h" I*/
 
 /* Logging support */
 PetscLogEvent PETSC_Barrier=0;

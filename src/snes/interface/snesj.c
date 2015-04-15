@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>    /*I  "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>    /*I  "petscsnes.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobianDefault"
@@ -76,9 +76,9 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
   ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg && !value) use_wp = PETSC_FALSE;
 
   if (use_wp) {
@@ -92,7 +92,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
     ierr = VecCopy(x1,x2);CHKERRQ(ierr);
     if (i>= start && i<end) {
       ierr = VecGetArrayRead(x1,&xx);CHKERRQ(ierr);
-      if (use_wp) dx = 1.0 + unorm;
+      if (use_wp) dx = PetscSqrtReal(1.0 + unorm);
       else        dx = xx[i-start];
       ierr = VecRestoreArrayRead(x1,&xx);CHKERRQ(ierr);
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;

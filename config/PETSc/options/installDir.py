@@ -21,7 +21,8 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch = framework.require('PETSc.options.arch', self)
+    self.petscdir = framework.require('PETSc.options.petscdir', self)
+    self.arch     = framework.require('PETSc.options.arch', self)
     return
 
   def printSudoPasswordMessage(self,needsudo = 1):
@@ -44,21 +45,21 @@ class Configure(config.base.Configure):
         self.installSudoMessage = 'You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs'
         self.installSudo = 'sudo '
     else:
-      self.dir = os.path.abspath(os.path.join(self.arch.arch))
-    self.confDir = os.path.abspath(os.path.join(self.arch.arch))
+      self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
+    self.confDir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
 
   def configureInstallDir(self):
     '''Makes  installDir subdirectories if it does not exist for both prefix install location and PETSc work install location'''
-    dir = os.path.abspath(os.path.join(self.arch.arch))
+    dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
     if not os.path.exists(dir):
       os.makedirs(dir)
-    for i in ['include','lib','bin',os.path.join('lib','petsc-conf')]:
+    for i in ['include','lib','bin',os.path.join('lib','petsc','conf')]:
       newdir = os.path.join(dir,i)
       if not os.path.exists(newdir):
         os.makedirs(newdir)
     if os.path.isfile(self.framework.argDB.saveFilename):
       os.remove(self.framework.argDB.saveFilename)
-    confdir = os.path.join(dir,'lib','petsc-conf')
+    confdir = os.path.join(dir,'lib','petsc','conf')
     self.framework.argDB.saveFilename = os.path.abspath(os.path.join(confdir, 'RDict.db'))
     self.framework.logPrint('Changed persistence directory to '+confdir)
     return
@@ -71,7 +72,7 @@ class Configure(config.base.Configure):
     return
 
   def saveReconfigure(self):
-    self.reconfigure_file = os.path.join(self.dir,'lib','petsc-conf','reconfigure-'+self.arch.arch+'.py')
+    self.reconfigure_file = os.path.join(self.dir,'lib','petsc','conf','reconfigure-'+self.arch.arch+'.py')
     self.save_reconfigure_file = None
     if self.framework.argDB['with-clean'] and os.path.exists(self.reconfigure_file):
       self.save_reconfigure_file = '.save.reconfigure-'+self.arch.arch+'.py'

@@ -43,7 +43,7 @@ struct _n_User {
   PetscReal ftime,x_ob[2];
   Mat       A;             /* Jacobian matrix */
   Mat       Jacp;          /* JacobianP matrix */
-  Vec       x,lambda[2],lambdap[2];        /* adjoint variables */
+  Vec       x,lambda[2],mup[2];        /* adjoint variables */
 };
 
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
@@ -234,8 +234,8 @@ int main(int argc,char **argv)
 
   ierr = MatCreateVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.Jacp,&user.lambdap[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.mup[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.mup[1],NULL);CHKERRQ(ierr);
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
@@ -295,8 +295,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[1]);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.lambdap[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.lambdap[1]);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.mup[1]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
@@ -379,20 +379,20 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
 
-  ierr = VecGetArray(user->lambdap[0],&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(user->mup[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user->lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->mup[0],&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(user->mup[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetGradients(ts,1,user->lambda,user->lambdap);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->mup[1],&x_ptr);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,user->lambda,user->mup);CHKERRQ(ierr);
 
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
   ierr = TSAdjointSetRHSJacobian(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
-  ierr = VecCopy(user->lambdap[0],G);
+  ierr = VecCopy(user->mup[0],G);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

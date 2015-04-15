@@ -62,10 +62,10 @@ class Configure(config.base.Configure):
     '''Get a configure object which will return default options for each compiler'''
     options = None
     try:
-      mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['CompilerOptions'])
+      mod     = __import__(self.argDB['optionsModule'], locals(), globals(), ['CompilerOptions'])
       options = mod.CompilerOptions(self.framework)
     except ImportError:
-      self.framework.logPrint('ERROR: Failed to load user options module '+str(self.framework.argDB['optionsModule']))
+      self.logPrint('ERROR: Failed to load user options module '+str(self.argDB['optionsModule']))
     return options
 
   def configureCompilerFlags(self):
@@ -93,14 +93,14 @@ class Configure(config.base.Configure):
       try:
         self.rejected[language] = []
         for bopt in bopts:
-          if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
+          if not bopt == '' and self.getOptionalFlagsName(language) in self.argDB:
             # treat user supplied options as single option - as it could include options separated by spaces '-tp k8-64'
-            flags = [self.framework.argDB[self.getOptionalFlagsName(language)]]
+            flags = [self.argDB[self.getOptionalFlagsName(language)]]
           elif not bopt == '' and self.hasOptFlags(getattr(self.setCompilers,flagsName)):
             self.logPrint('Optimization options found in '+flagsName+ '. Skipping setting defaults')
             flags = []
-          elif bopt == '' and flagsName in self.framework.argDB:
-            self.logPrint('Ignoring default options which were overridden using --'+flagsName+ ' ' + self.framework.argDB[flagsName])
+          elif bopt == '' and flagsName in self.argDB:
+            self.logPrint('Ignoring default options which were overridden using --'+flagsName+ ' ' + self.argDB[flagsName])
             flags = []
           else:
             flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
@@ -108,10 +108,10 @@ class Configure(config.base.Configure):
             if isinstance(testFlag,tuple):
               testFlag = ' '.join(testFlag)
             try:
-              self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
+              self.logPrint('Trying '+language+' compiler flag '+testFlag)
               self.setCompilers.addCompilerFlag(testFlag)
             except RuntimeError:
-              self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
+              self.logPrint('Rejected '+language+' compiler flag '+testFlag)
               self.rejected[language].append(testFlag)
       except RuntimeError:
         pass

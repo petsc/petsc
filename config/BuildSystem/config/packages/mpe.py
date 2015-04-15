@@ -6,8 +6,7 @@ class Configure(config.package.GNUPackage):
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpe/mpe2.tar.gz']
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
-    #self.liblist   = [['libmpe_f2cmpi.a','liblmpe.a','libmpe.a']] # log mpi events aswell? provide another configure opton? how?
-    self.liblist   = [[],['libmpe.a']]
+    self.liblist   = [['libmpe.a']]
     return
 
   def setupDependencies(self, framework):

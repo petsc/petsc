@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h>
 
 static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal,PetscReal*,PetscReal*);
@@ -174,7 +174,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA);CHKERRQ(ierr);
-    ierr = MatMult(Amat,WA,WA2);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,WA,WA2);CHKERRQ(ierr);
     ierr = PCApplySymmetricLeft(pc,WA2,ASP);CHKERRQ(ierr);
 
     /* Check for negative curvature */
@@ -271,7 +271,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecCopy(X,WA2);CHKERRQ(ierr);
   ierr = PCApplySymmetricRight(pc,WA2,X);CHKERRQ(ierr);
 
-  ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,Amat,X,WA);CHKERRQ(ierr);
   ierr = VecDotRealPart(B,X,&btx);CHKERRQ(ierr);
   ierr = VecDotRealPart(X,WA,&xtax);CHKERRQ(ierr);
 

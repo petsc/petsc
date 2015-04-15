@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.giturls         = ['https://github.com/cusplibrary/cusplibrary.git']
     self.includes        = ['cusp/version.h']
     self.includedir      = ['','include']
+    self.libdir          = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.CUSPVersion     = '0400' # Minimal cusp version is 0.4 
@@ -24,13 +25,13 @@ class Configure(config.package.Package):
   def Install(self):
     import shutil
     import os
-    self.framework.log.write('boostDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    self.log.write('boostDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     srcdir = os.path.join(self.packageDir,'cusp')
     destdir = os.path.join(self.installDir,'include','cusp')
     if self.installSudo:
       self.installDirProvider.printSudoPasswordMessage()
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error copying Boost files from '+os.path.join(self.packageDir, 'Boost')+' to '+packageDir)
     else:

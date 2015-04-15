@@ -1,8 +1,12 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscmat.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matgetrowmin_                    MATGETROWMIN
+#define matgetrowminabs_                 MATGETROWMINABS
+#define matgetrowmax_                    MATGETROWMAX
+#define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
@@ -46,7 +50,11 @@
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matdestroymatrices_              matdestroymatrices_
+#define matgetrowmin_                    matgetrowmin
+#define matgetrowminabs_                 matgetrowminabs
+#define matgetrowmax_                    matgetrowmax
+#define matgetrowmaxabs_                 matgetrowmaxabs
+#define matdestroymatrices_              matdestroymatrices
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matcreatevecs_                   matcreatevecs
@@ -89,6 +97,29 @@
 #define matnullspacesetfunction_         matnullspacesetfunction
 #define matfindnonzerorows_              matfindnonzerorows
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmin_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMin(*mat,*v,idx);
+}
+PETSC_EXTERN void PETSC_STDCALL  matgetrowminabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMinAbs(*mat,*v,idx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmax_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMax(*mat,*v,idx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmaxabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMaxAbs(*mat,*v,idx);
+}
 
 static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
 {

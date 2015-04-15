@@ -1,7 +1,7 @@
 #if !defined(_SNESNGMRES_H)
 #define _SNESNGMRES_H
 
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 /*  Data structure for the Nonlinear GMRES method.  */
 typedef struct {

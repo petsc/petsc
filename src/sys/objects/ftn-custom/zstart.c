@@ -11,7 +11,7 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
@@ -208,6 +208,10 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   return 0;
 }
+
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+extern PetscFPT PetscFPTData;
+#endif
 
 /* -----------------------------------------------------------------------------------------------*/
 
@@ -433,6 +437,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
 #if defined(PETSC_USE_DEBUG)
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
+#endif
+
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  *ierr = PetscFPTCreate(10000);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
 #endif
 
 #if defined(PETSC_HAVE_CUDA)

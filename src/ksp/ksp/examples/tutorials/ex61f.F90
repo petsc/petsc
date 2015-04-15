@@ -1,4 +1,13 @@
-
+!
+!        Demonstrates having each OpenMP thread manage its own PETSc objects and solves
+!           - each thread is ONLY allowed to access objects that IT created
+!                  that is, threads cannot shared objects
+!
+!        Run with "export OMP_NUM_THREADS=16 ./ex61f"
+!           to use 16 independent threads
+!
+!        ./configure --with-threadsafety --with-log=0 --with-openmp
+!
          module omp_module
          implicit none
          contains
@@ -56,12 +65,12 @@
 !     ----------------------------
 
       integer, parameter :: NCASES=100
-      integer, parameter :: MAXTHREADS=16
+      integer, parameter :: MAXTHREADS=64
       real(8), parameter :: tol = 1.0d-6
 
       integer, dimension(MAXTHREADS) :: ibeg,iend
 
-#include <petsc-finclude/petsc.h90>
+#include <petsc/finclude/petsc.h90>
 
 !$    integer, external :: omp_get_num_threads
 

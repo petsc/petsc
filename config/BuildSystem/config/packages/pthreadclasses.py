@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.functions         = 0
     self.includes          = 0
-    self.liblist           = 0
     return
 
   def setupDependencies(self, framework):

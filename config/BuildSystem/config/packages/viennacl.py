@@ -22,14 +22,14 @@ class Configure(config.package.Package):
   def Install(self):
     import shutil
     import os
-    self.framework.log.write('ViennaCLDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    self.log.write('ViennaCLDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     #includeDir = self.packageDir
     srcdir     = os.path.join(self.packageDir, 'viennacl')
     destdir    = os.path.join(self.installDir, 'include', 'viennacl')
     if self.installSudo:
       self.installDirProvider.printSudoPasswordMessage()
       try:
-        output,err,ret  = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error copying ViennaCL include files from '+os.path.join(self.packageDir, 'ViennaCL')+' to '+packageDir)
     else:
@@ -39,8 +39,4 @@ class Configure(config.package.Package):
       except RuntimeError,e:
         raise RuntimeError('Error installing ViennaCL include files: '+str(e))
     return self.installDir
-
-  def getSearchDirectories(self):
-    yield ''
-    return
 

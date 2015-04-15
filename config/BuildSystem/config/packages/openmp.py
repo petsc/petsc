@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.functions         = []
     self.includes          = ['omp.h']
-    self.liblist           = []
     return
 
   def setupDependencies(self, framework):

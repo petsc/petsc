@@ -1,11 +1,12 @@
 
-static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDefiniteEig() for MATELEMENTAL interface.\n\n";
+static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDefEig() for MATELEMENTAL interface.\n\n";
 /*
  Example:
    mpiexec -n <np> ./ex173 -fA <A_data> -fB <B_data> -vl <vl> -vu <vu> -orig_mat_type <type> -orig_mat_type <mat_type>
 */
  
 #include <petscmat.h>
+#include <petscmatelemental.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -23,8 +24,11 @@ int main(int argc,char **args)
   PetscInt       M,N,m;
 
   /* Below are Elemental data types, see <elemental.hpp> */
-  elem::HermitianGenDefiniteEigType eigtype;
-  elem::UpperOrLower                uplo;
+  El::Pencil       eigtype = El::AXBX;
+  El::UpperOrLower uplo    = El::UPPER;
+  El::SortType     sort    = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
+  El::HermitianEigSubset<PetscElemScalar>       subset;
+  const El::HermitianEigCtrl<PetscElemScalar>   ctrl;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -108,15 +112,15 @@ int main(int argc,char **args)
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_elemental.");
   }
 
-  /* Test MatElementalHermitianGenDefiniteEig() */
+  /* Test MatElementalHermitianGenDefEig() */
   if (!rank) printf(" Compute Ax = lambda Bx... \n");
   vl = -0.8, vu = -0.7;
   ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
- 
-  eigtype = elem::AXBX;
-  uplo    = elem::UPPER;
-  ierr = MatElementalHermitianGenDefiniteEig(eigtype,uplo,Ae,Be,&We,&Xe,vl,vu);CHKERRQ(ierr);
+  subset.rangeSubset = PETSC_TRUE; 
+  subset.lowerBound  = vl;
+  subset.upperBound  = vu;
+  ierr = MatElementalHermitianGenDefEig(eigtype,uplo,Ae,Be,&We,&Xe,sort,subset,ctrl);CHKERRQ(ierr);
   //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check || A*X - B*X*We || */

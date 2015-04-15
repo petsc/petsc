@@ -169,8 +169,8 @@ int main(int argc,char **args)
     il   =1;
   } else {   /* test sygvx()  */
     il    = 1;
-    ierr  = PetscBLASIntCast(.6*m,&iu);CHKERRQ(ierr);
-    ierr  = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);    
+    ierr  = PetscBLASIntCast((PetscInt).6*m,&iu);CHKERRQ(ierr);
+    ierr  = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);
     ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;

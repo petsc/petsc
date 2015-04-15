@@ -1005,7 +1005,7 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *us
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"
-PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,Vec *DICDP,Userctx *user)
+PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,Vec *DICDP,Userctx *user)
 {
   PetscErrorCode ierr;
   PetscScalar    *x,*y,sensip;
@@ -1013,7 +1013,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,Vec *DICDP,Userctx *user)
 
   PetscFunctionBegin;
   ierr = VecGetArray(lambda,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(lambdap,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(mu,&y);CHKERRQ(ierr);
 
   for (i=0;i<3;i++) {
     ierr   = VecDot(lambda,DICDP[i],&sensip);CHKERRQ(ierr);
@@ -1021,7 +1021,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,Vec *DICDP,Userctx *user)
     /* ierr   = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %D th parameter: %g \n",i,(double)sensip);CHKERRQ(ierr); */
      y[i] = sensip;
   }
-  ierr = VecRestoreArray(lambdap,&y);
+  ierr = VecRestoreArray(mu,&y);
   PetscFunctionReturn(0);
 }
 
@@ -1217,8 +1217,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   PetscInt       i;
   /* sensitivity context */
   PetscScalar    *x_ptr;
-  Vec            lambda[1],q,drdy[1];
-  Vec            lambdap[1],drdp[1]; 
+  Vec            lambda[1],q;
+  Vec            mu[1];
   PetscInt       steps1,steps2,steps3;
   Vec            DICDP[3];
   Vec            F_alg;
@@ -1365,21 +1365,16 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set initial conditions for the adjoint integration */
   ierr = VecZeroEntries(lambda[0]);CHKERRQ(ierr);
 
-  ierr = MatCreateVecs(ctx->Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
-  ierr = VecZeroEntries(lambdap[0]);CHKERRQ(ierr);
-  ierr = TSAdjointSetGradients(ts,1,lambda,lambdap);CHKERRQ(ierr);
-
-  ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
-  ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
-  ierr = VecZeroEntries(drdy[0]);CHKERRQ(ierr);
-  ierr = VecZeroEntries(drdp[0]);CHKERRQ(ierr);
+  ierr = MatCreateVecs(ctx->Jacp,&mu[0],NULL);CHKERRQ(ierr);
+  ierr = VecZeroEntries(mu[0]);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,     (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetSteps(ts,steps3);CHKERRQ(ierr);
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
@@ -1420,16 +1415,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
 
-  ierr = ComputeSensiP(lambda[0],lambdap[0],DICDP,ctx);CHKERRQ(ierr);
-  ierr = VecCopy(lambdap[0],G);CHKERRQ(ierr);
+  ierr = ComputeSensiP(lambda[0],mu[0],DICDP,ctx);CHKERRQ(ierr);
+  ierr = VecCopy(mu[0],G);CHKERRQ(ierr);
   ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   *f   = x_ptr[0];
-  
-  ierr = VecDestroy(&drdy[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&drdp[0]);CHKERRQ(ierr); 
-  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr); 
-  ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr); 
+
+  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
 
   ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);

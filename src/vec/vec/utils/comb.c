@@ -19,7 +19,7 @@
            insure that the user calls the routines in the correct order
 */
 
-#include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
+#include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MPIPetsc_Iallreduce"

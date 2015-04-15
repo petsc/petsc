@@ -1,5 +1,5 @@
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/tsimpl.h>   /*I "petscts.h" I*/
 
 typedef struct {
   PetscErrorCode (*ifunctionlocal)(DM,PetscReal,Vec,Vec,Vec,void*);

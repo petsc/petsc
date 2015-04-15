@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petsc-private/vecimpl.h>       /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
 #define PetscCheckSameSizeVec(x,y) \
@@ -1330,7 +1330,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
-      if (n%bs) bs = 1;
+      if (n%bs || bs == 1) bs = -1; /* Do not decide block size if we do not have to */
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state) {

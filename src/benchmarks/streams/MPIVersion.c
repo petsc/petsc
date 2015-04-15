@@ -83,6 +83,7 @@ int main(int argc,char **args)
   int          rank,size,resultlen;
   char         hostname[MPI_MAX_PROCESSOR_NAME];
   MPI_Status   status;
+  int          ierr=0;
 
   MPI_Init(&argc,&args);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -103,7 +104,7 @@ int main(int argc,char **args)
  } else {
    MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);
  }
- MPI_Barrier(MPI_COMM_WORLD);
+ ierr = MPI_Barrier(MPI_COMM_WORLD);
 
   /* --- SETUP --- determine precision and check timing --- */
 
@@ -150,30 +151,30 @@ int main(int argc,char **args)
   scalar = 3.0;
   for (k=0; k<NTIMES; k++)
   {
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = MPI_Wtime();
     /* should all these barriers be pulled outside of the time call? */
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = MPI_Wtime() - times[0][k];
 
     times[1][k] = MPI_Wtime();
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) b[j] = scalar*c[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[1][k] = MPI_Wtime() - times[1][k];
 
     times[2][k] = MPI_Wtime();
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j]+b[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[2][k] = MPI_Wtime() - times[2][k];
 
     times[3][k] = MPI_Wtime();
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[3][k] = MPI_Wtime() - times[3][k];
   }
 
@@ -183,7 +184,8 @@ int main(int argc,char **args)
     for (j=0; j<4; j++) mintime[j] = MIN(mintime[j], times[j][k]);
 
   for (j=0; j<4; j++) irate[j] = 1.0E-06 * bytes[j]/mintime[j];
-  MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  ierr = MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  if (ierr) printf("Error calling MPI\n");
 
   if (!rank) {
     printf("%s  %11.4f   Rate (MB/s) \n", label[3],rate[3]);

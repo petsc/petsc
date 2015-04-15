@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
 #undef __FUNCT__

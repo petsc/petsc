@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.downloadfilename = 'mpich'
     self.skippackagewithoptions = 1
+    self.isMPI = 1
     return
 
   def setupHelp(self, help):
@@ -19,13 +20,13 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     return
 
-  def checkDownload(self, requireDownload = 1):
+  def checkDownload(self):
     if config.setCompilers.Configure.isCygwin():
       if config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         self.download = self.download_cygwin
       else:
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
-    return config.package.Package.checkDownload(self, requireDownload)
+    return config.package.Package.checkDownload(self)
 
   def formGNUConfigureArgs(self):
     '''MPICH has many specific extra configure arguments'''

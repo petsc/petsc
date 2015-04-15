@@ -10,9 +10,3 @@ class Configure(config.package.Package):
     else:
       self.includes         = ['CL/cl.h']
     self.liblist          = [['libOpenCL.a'], ['-framework opencl'], ['libOpenCL.lib']]
-
-  def getSearchDirectories(self):
-    yield ''
-    return
-
-

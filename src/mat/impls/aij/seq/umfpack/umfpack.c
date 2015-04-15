@@ -2,42 +2,43 @@
 /*
    Provides an interface to the UMFPACK sparse solver available through SuiteSparse version 4.2.1
 
-   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
+   When build with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
-   that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
+   that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]
 
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #if defined(PETSC_USE_COMPLEX)
-#define umfpack_UMF_free_symbolic   umfpack_zl_free_symbolic
-#define umfpack_UMF_free_numeric    umfpack_zl_free_numeric
-#define umfpack_UMF_wsolve          umfpack_zl_wsolve
-#define umfpack_UMF_numeric         umfpack_zl_numeric
-#define umfpack_UMF_report_numeric  umfpack_zl_report_numeric
-#define umfpack_UMF_report_control  umfpack_zl_report_control
-#define umfpack_UMF_report_status   umfpack_zl_report_status
-#define umfpack_UMF_report_info     umfpack_zl_report_info
-#define umfpack_UMF_report_symbolic umfpack_zl_report_symbolic
-#define umfpack_UMF_qsymbolic       umfpack_zl_qsymbolic
-#define umfpack_UMF_symbolic        umfpack_zl_symbolic
-#define umfpack_UMF_defaults        umfpack_zl_defaults
+#define umfpack_UMF_free_symbolic                      umfpack_zl_free_symbolic
+#define umfpack_UMF_free_numeric                       umfpack_zl_free_numeric
+/* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
+#define umfpack_UMF_wsolve(a,b,c,d,e,f,g,h,i,j,k,l,m,n) umfpack_zl_wsolve(a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,d,e,f,g,h,i,(SuiteSparse_long*)j,k,l,(SuiteSparse_long*)m,n)
+#define umfpack_UMF_numeric(a,b,c,d,e,f,g,h)          umfpack_zl_numeric((SuiteSparse_long*)a,(SuiteSparse_long*)b,c,d,e,f,g,h)
+#define umfpack_UMF_report_numeric                    umfpack_zl_report_numeric
+#define umfpack_UMF_report_control                    umfpack_zl_report_control
+#define umfpack_UMF_report_status                     umfpack_zl_report_status
+#define umfpack_UMF_report_info                       umfpack_zl_report_info
+#define umfpack_UMF_report_symbolic                   umfpack_zl_report_symbolic
+#define umfpack_UMF_qsymbolic(a,b,c,d,e,f,g,h,i,j)    umfpack_zl_qsymbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f,(SuiteSparse_long*)g,h,i,j)
+#define umfpack_UMF_symbolic(a,b,c,d,e,f,g,h,i)       umfpack_zl_symbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f,g,h,i)
+#define umfpack_UMF_defaults                          umfpack_zl_defaults
 
 #else
-#define umfpack_UMF_free_symbolic   umfpack_dl_free_symbolic
-#define umfpack_UMF_free_numeric    umfpack_dl_free_numeric
-#define umfpack_UMF_wsolve          umfpack_dl_wsolve
-#define umfpack_UMF_numeric         umfpack_dl_numeric
-#define umfpack_UMF_report_numeric  umfpack_dl_report_numeric
-#define umfpack_UMF_report_control  umfpack_dl_report_control
-#define umfpack_UMF_report_status   umfpack_dl_report_status
-#define umfpack_UMF_report_info     umfpack_dl_report_info
-#define umfpack_UMF_report_symbolic umfpack_dl_report_symbolic
-#define umfpack_UMF_qsymbolic       umfpack_dl_qsymbolic
-#define umfpack_UMF_symbolic        umfpack_dl_symbolic
-#define umfpack_UMF_defaults        umfpack_dl_defaults
+#define umfpack_UMF_free_symbolic                  umfpack_dl_free_symbolic
+#define umfpack_UMF_free_numeric                   umfpack_dl_free_numeric
+#define umfpack_UMF_wsolve(a,b,c,d,e,f,g,h,i,j,k)  umfpack_dl_wsolve(a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,d,e,f,g,h,i,(SuiteSparse_long*)j,k)
+#define umfpack_UMF_numeric(a,b,c,d,e,f,g)         umfpack_dl_numeric((SuiteSparse_long*)a,(SuiteSparse_long*)b,c,d,e,f,g)
+#define umfpack_UMF_report_numeric                 umfpack_dl_report_numeric
+#define umfpack_UMF_report_control                 umfpack_dl_report_control
+#define umfpack_UMF_report_status                  umfpack_dl_report_status
+#define umfpack_UMF_report_info                    umfpack_dl_report_info
+#define umfpack_UMF_report_symbolic                umfpack_dl_report_symbolic
+#define umfpack_UMF_qsymbolic(a,b,c,d,e,f,g,h,i)   umfpack_dl_qsymbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,(SuiteSparse_long*)f,g,h,i)
+#define umfpack_UMF_symbolic(a,b,c,d,e,f,g,h)      umfpack_dl_symbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f,g,h)
+#define umfpack_UMF_defaults                       umfpack_dl_defaults
 #endif
 
 #else
@@ -70,11 +71,6 @@
 #define umfpack_UMF_defaults        umfpack_di_defaults
 #endif
 #endif
-
-
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
 
 EXTERN_C_BEGIN
 #include <umfpack.h>
@@ -228,7 +224,9 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
   PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n;
+#if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *av = a->a;
+#endif
   const PetscInt *ra;
   PetscInt       status;
 
@@ -355,7 +353,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   which correspond to the options database keys below.
 
   Options Database Keys:
-+ -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
++ -mat_umfpack_ordering                - CHOLMOD, AMD, GIVEN, METIS, BEST, NONE
+. -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
 . -mat_umfpack_strategy <AUTO>         - (choose one of) AUTO UNSYMMETRIC SYMMETRIC 2BY2
 . -mat_umfpack_dense_col <alpha_c>     - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
 . -mat_umfpack_dense_row <0.2>         - Control[UMFPACK_DENSE_ROW]

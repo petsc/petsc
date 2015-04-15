@@ -29,6 +29,9 @@ typedef float PetscReal;
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
 #define PetscLog10Real(a)   log10(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2(a)
+#endif
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
 #define PetscTanReal(a)     tan(a)
@@ -50,6 +53,9 @@ typedef double PetscReal;
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
 #define PetscLog10Real(a)   log10(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2(a)
+#endif
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
 #define PetscTanReal(a)     tan(a)
@@ -79,6 +85,9 @@ typedef __float128 PetscReal;
 #define PetscExpReal(a)     expq(a)
 #define PetscLogReal(a)     logq(a)
 #define PetscLog10Real(a)   log10q(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2q(a)
+#endif
 #define PetscSinReal(a)     sinq(a)
 #define PetscCosReal(a)     cosq(a)
 #define PetscTanReal(a)     tanq(a)
@@ -559,4 +568,11 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
   PetscScalar cpower = power;
   return PetscPowScalar(base,cpower);
 }
+
+#ifndef PETSC_HAVE_LOG2
+PETSC_STATIC_INLINE PetscReal PetscLog2Real(PetscReal n)
+{
+  return PetscLogReal(n)/PetscLogReal(2);
+}
+#endif
 #endif

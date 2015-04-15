@@ -51,7 +51,7 @@ struct _n_User {
   PetscReal ftime,x_ob[2];
   Mat       A;                       /* Jacobian matrix */
   Mat       Jacp;                    /* JacobianP matrix */
-  Vec       x,lambda[2],lambdap[2];  /* adjoint variables */
+  Vec       x,lambda[2],mup[2];  /* adjoint variables */
 };
 
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
@@ -246,7 +246,7 @@ int main(int argc,char **argv)
 
   /* Create sensitivity variable */
   ierr = MatCreateVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.mup[0],NULL);CHKERRQ(ierr);
 
   /*
      Optimization starts
@@ -289,7 +289,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.lambdap[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -368,13 +368,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArrayRead(user_ptr->x,&y_ptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user_ptr->lambda[0],&x_ptr);CHKERRQ(ierr);
 
-  ierr = VecGetArray(user_ptr->lambdap[0],&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(user_ptr->mup[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user_ptr->lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetGradients(ts,1,user_ptr->lambda,user_ptr->lambdap);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user_ptr->mup[0],&x_ptr);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,user_ptr->lambda,user_ptr->mup);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  ierr = VecCopy(user_ptr->lambdap[0],G);
+  ierr = VecCopy(user_ptr->mup[0],G);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

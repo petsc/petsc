@@ -114,8 +114,6 @@ typedef struct {
   PetscScalar Rfault;
   PetscReal   t0,tmax;
   PetscInt    neqs_gen,neqs_net,neqs_pgrid;
-  Mat         Sol; /* Matrix to save solution at each time step */
-  PetscInt    stepnum;
   PetscBool   alg_flg;
   PetscReal   t;
   IS          is_diff; /* indices for differential equations */
@@ -142,34 +140,6 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
   PetscFunctionBegin;
   *Fd =  Fr*PetscSinScalar(delta) - Fi*PetscCosScalar(delta);
   *Fq =  Fr*PetscCosScalar(delta) + Fi*PetscSinScalar(delta);
-  PetscFunctionReturn(0);
-}
-
-/* Saves the solution at each time to a matrix */
-#undef __FUNCT__
-#define __FUNCT__ "SaveSolution"
-PetscErrorCode SaveSolution(TS ts)
-{
-  PetscErrorCode    ierr;
-  Userctx           *user;
-  Vec               X;
-  PetscScalar       *mat;
-  const PetscScalar *x;
-  PetscInt          idx;
-  PetscReal         t;
-
-  PetscFunctionBegin;
-  ierr     = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr     = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr     = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  idx      = user->stepnum*(user->neqs_pgrid+1);
-  ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  mat[idx] = t;
-  ierr     = PetscMemcpy(mat+idx+1,x,user->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  user->stepnum++;
   PetscFunctionReturn(0);
 }
 
@@ -803,14 +773,9 @@ int main(int argc,char **argv)
   Vec            lambda[1];
   PetscInt       steps, total_steps = 0;
   PetscInt       *idx2;
-  PetscScalar    *x,*mat;
-  PetscInt       idx=user.stepnum*(user.neqs_pgrid+1);
   Vec            Xdot;
   Vec            F_alg;
   PetscInt       row_loc,col_loc;
-  Mat            A;
-  PetscScalar    *amat;
-  PetscViewer    viewer;
   PetscScalar    val;
   
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
@@ -883,10 +848,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = PreallocateJacobian(J,&user);CHKERRQ(ierr);
 
-  /* Create matrix to save solutions at each time step */
-  user.stepnum = 0;
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,1002,NULL,&user.Sol);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -907,18 +869,6 @@ int main(int argc,char **argv)
   ierr = IJacobian(ts,0.0,X,Xdot,0.0,J,J,&user);CHKERRQ(ierr);
   ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
 
-  /* Save initial solution */
-  idx = user.stepnum*(user.neqs_pgrid+1);  
-  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
-  mat[idx] = 0.0;
-
-  ierr = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  user.stepnum++;
-
   /*
     Save trajectory of solution so that TSAdjointSolve() may be used
   */
@@ -927,7 +877,6 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
 
   user.alg_flg = PETSC_FALSE;
   /* Prefault period */
@@ -966,15 +915,6 @@ int main(int argc,char **argv)
   /* Solve the algebraic equations */
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
-  /* Save fault-on solution */
-  idx      = user.stepnum*(user.neqs_pgrid+1);
-  ierr     = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
-  mat[idx] = user.tfaulton;
-  ierr     = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  user.stepnum++;
 
   /* Disturbance period */
   ierr = TSSetDuration(ts,1000,user.tfaultoff);CHKERRQ(ierr);
@@ -1003,16 +943,6 @@ int main(int argc,char **argv)
   /* Solve the algebraic equations */
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
-  /* Save tfault off solution */
-  idx      = user.stepnum*(user.neqs_pgrid+1);
-  ierr     = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
-  mat[idx] = user.tfaultoff;
-  ierr     = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  user.stepnum++;
-
   /* Post-disturbance period */
   ierr = TSSetDuration(ts,1000,user.tmax);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.tfaultoff,.01);CHKERRQ(ierr);
@@ -1033,7 +963,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 1.0;
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
@@ -1041,24 +971,10 @@ int main(int argc,char **argv)
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,NULL,&A);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(A,&amat);CHKERRQ(ierr);
-  ierr = PetscMemcpy(amat,mat,(user.stepnum*(user.neqs_pgrid+1))*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(A,&amat);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.Sol);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&user.V0);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);

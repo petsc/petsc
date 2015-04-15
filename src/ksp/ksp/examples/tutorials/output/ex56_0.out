@@ -1,31 +1,4 @@
-  0 KSP Residual norm 1299.24 
-  1 KSP Residual norm 346.772 
-  2 KSP Residual norm 88.9468 
-  3 KSP Residual norm 40.9287 
-  4 KSP Residual norm 7.48461 
-  5 KSP Residual norm 2.08415 
-  6 KSP Residual norm 1.0067 
-  7 KSP Residual norm 0.269596 
-  8 KSP Residual norm 0.0256542 
-  9 KSP Residual norm 0.0106482 
-  0 KSP Residual norm 0.0129924 
-  1 KSP Residual norm 0.00346772 
-  2 KSP Residual norm 0.000889468 
-  3 KSP Residual norm 0.000409287 
-  4 KSP Residual norm 7.48461e-05 
-  5 KSP Residual norm 2.08415e-05 
-  6 KSP Residual norm 1.0067e-05 
-  7 KSP Residual norm 2.69596e-06 
-  8 KSP Residual norm 2.56542e-07 
-  9 KSP Residual norm 1.06482e-07 
-  0 KSP Residual norm 1.29924e-07 
-  1 KSP Residual norm 3.46772e-08 
-  2 KSP Residual norm 8.89468e-09 
-  3 KSP Residual norm 4.09287e-09 
-  4 KSP Residual norm 7.485e-10 
-  5 KSP Residual norm 2.084e-10 
-  6 KSP Residual norm 1.007e-10 
-  7 KSP Residual norm 2.696e-11 
-  8 KSP Residual norm < 1.e-11
-  9 KSP Residual norm < 1.e-11
-[0]main |b-Ax|/|b|=1.645084e-04, |b|=4.969822e+00, emax=9.955140e-01
+Linear solve converged due to CONVERGED_RTOL iterations 9
+Linear solve converged due to CONVERGED_RTOL iterations 9
+Linear solve converged due to CONVERGED_RTOL iterations 9
+[0]main |b-Ax|/|b|=1.866474e-04, |b|=4.969822e+00, emax=9.937008e-01

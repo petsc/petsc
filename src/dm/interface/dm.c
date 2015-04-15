@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscsf.h>
 #include <petscds.h>
 
@@ -55,6 +55,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->defaultConstraintMat     = NULL;
   v->L                        = NULL;
   v->maxCell                  = NULL;
+  v->bdtype                   = NULL;
   v->dimEmbed                 = PETSC_DEFAULT;
   {
     PetscInt i;
@@ -120,8 +121,9 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   }
   if (dm->maxCell) {
     const PetscReal *maxCell, *L;
-    ierr = DMGetPeriodicity(dm,     &maxCell, &L);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(*newdm,  maxCell,  L);CHKERRQ(ierr);
+    const DMBoundaryType *bd;
+    ierr = DMGetPeriodicity(dm,     &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*newdm,  maxCell,  L,  bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -374,6 +376,12 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dm,prefix);CHKERRQ(ierr);
+  if (dm->sf) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)dm->sf,prefix);CHKERRQ(ierr);
+  }
+  if (dm->defaultSF) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)dm->defaultSF,prefix);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -524,8 +532,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
-  ierr = PetscFree((*dm)->maxCell);CHKERRQ(ierr);
-  ierr = PetscFree((*dm)->L);CHKERRQ(ierr);
+  ierr = PetscFree3((*dm)->L,(*dm)->maxCell,(*dm)->bdtype);CHKERRQ(ierr);
 
   ierr = PetscDSDestroy(&(*dm)->prob);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->dmBC);CHKERRQ(ierr);
@@ -596,6 +603,12 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (dm->sf) {
+    ierr = PetscSFSetFromOptions(dm->sf);CHKERRQ(ierr);
+  }
+  if (dm->defaultSF) {
+    ierr = PetscSFSetFromOptions(dm->defaultSF);CHKERRQ(ierr);
+  }
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
@@ -1051,7 +1064,6 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void 
     }
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1890,7 +1902,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   if (sf && !isInsert) {
     ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   } else if (s && isInsert) {
@@ -1983,7 +1995,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
     ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   } else if (s && isInsert) {
@@ -2094,7 +2106,7 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 .seealso DMRefine(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
+PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 {
   PetscErrorCode    ierr;
   DMCoarsenHookLink link;
@@ -2102,6 +2114,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr                      = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  if (!(*dmc)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "NULL coarse mesh produced");
   (*dmc)->ops->creatematrix = dm->ops->creatematrix;
   ierr                      = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx               = dm->ctx;
@@ -2918,9 +2931,9 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
     PetscInt classid;
     char     type[256];
 
-    ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
     if (classid != DM_FILE_CLASSID) SETERRQ1(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not DM next in file, classid found %d",(int)classid);
-    ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
     ierr = DMSetType(newdm, type);CHKERRQ(ierr);
     if (newdm->ops->load) {ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);}
   } else if (ishdf5) {
@@ -3149,6 +3162,77 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_USE_DEBUG
+#undef __FUNCT__
+#define __FUNCT__ "DMDefaultSectionCheckConsistency_Internal"
+/*
+  DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections.
+
+  Input Parameters:
++ dm - The DM
+. localSection - PetscSection describing the local data layout
+- globalSection - PetscSection describing the global data layout
+
+  Level: intermediate
+
+.seealso: DMGetDefaultSF(), DMSetDefaultSF()
+*/
+static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSection localSection, PetscSection globalSection)
+{
+  MPI_Comm        comm;
+  PetscLayout     layout;
+  const PetscInt *ranges;
+  PetscInt        pStart, pEnd, p, nroots;
+  PetscMPIInt     size, rank;
+  PetscBool       valid = PETSC_TRUE, gvalid;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(globalSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(globalSection, &nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d;
+
+    ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(localSection, p, &cdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(globalSection, p, &goff);CHKERRQ(ierr);
+    if (!gdof) continue; /* Censored point */
+    if ((gdof < 0 ? -(gdof+1) : gdof) != dof) {ierr = PetscSynchronizedPrintf(comm, "[%d]Global dof %d for point %d not equal to local dof %d\n", rank, gdof, p, dof);CHKERRQ(ierr); valid = PETSC_FALSE;}
+    if (gcdof && (gcdof != cdof)) {ierr = PetscSynchronizedPrintf(comm, "[%d]Global constraints %d for point %d not equal to local constraints %d\n", rank, gcdof, p, cdof);CHKERRQ(ierr); valid = PETSC_FALSE;}
+    if (gdof < 0) {
+      gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
+      for (d = 0; d < gsize; ++d) {
+        PetscInt offset = -(goff+1) + d, r;
+
+        ierr = PetscFindInt(offset,size+1,ranges,&r);CHKERRQ(ierr);
+        if (r < 0) r = -(r+2);
+        if ((r < 0) || (r >= size)) {ierr = PetscSynchronizedPrintf(comm, "[%d]Point %d mapped to invalid process %d (%d, %d)\n", rank, p, r, gdof, goff);CHKERRQ(ierr); valid = PETSC_FALSE;break;}
+      }
+    }
+  }
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  if (!gvalid) {
+    ierr = DMView(dm, NULL);CHKERRQ(ierr);
+    SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMGetDefaultGlobalSection"
 /*@
@@ -3214,6 +3298,9 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   dm->defaultGlobalSection = section;
+#ifdef PETSC_USE_DEBUG
+  if (section) {ierr = DMDefaultSectionCheckConsistency_Internal(dm, dm->defaultSection, section);CHKERRQ(ierr);}
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -4069,32 +4156,56 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetPeriodicity"
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L)
+/*@C
+  DMSetPeriodicity - Set the description of mesh periodicity
+
+  Input Parameters:
++ dm      - The DM object
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. L       - If we assume the mesh is a torus, this is the length of each coordinate
+- bd      - This describes the type of periodicity in each topological dimension
+
+  Level: developer
+
+.seealso: DMGetPeriodicity()
+@*/
+PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L, const DMBoundaryType **bd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (L)       *L       = dm->L;
   if (maxCell) *maxCell = dm->maxCell;
+  if (bd)      *bd      = dm->bdtype;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetPeriodicity"
-PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[])
+/*@C
+  DMSetPeriodicity - Set the description of mesh periodicity
+
+  Input Parameters:
++ dm      - The DM object
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. L       - If we assume the mesh is a torus, this is the length of each coordinate
+- bd      - This describes the type of periodicity in each topological dimension
+
+  Level: developer
+
+.seealso: DMGetPeriodicity()
+@*/
+PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
 {
-  Vec            coordinates;
   PetscInt       dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscFree(dm->L);CHKERRQ(ierr);
-  ierr = PetscFree(dm->maxCell);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dim,&dm->L);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dim,&dm->maxCell);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d];}
+  PetscValidPointer(L,3);PetscValidPointer(maxCell,2);PetscValidPointer(bd,4);
+  ierr = PetscFree3(dm->L,dm->maxCell,dm->bdtype);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
+  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
   PetscFunctionReturn(0);
 }
 

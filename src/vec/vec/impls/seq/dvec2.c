@@ -4,7 +4,7 @@
   sequential and parallel vectors.
 */
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <petsc-private/kernels/petscaxpy.h>
+#include <petsc/private/kernels/petscaxpy.h>
 #include <petscthreadcomm.h>
 
 #if defined(PETSC_THREADCOMM_ACTIVE)

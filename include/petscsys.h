@@ -1103,7 +1103,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNewLog(o,b) (PetscNew((b)) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(**(b))) : 0))
+#define PetscNewLog(o,b) (PetscNew((b)) || PetscLogObjectMemory((PetscObject)o,sizeof(**(b))))
 
 /*MC
    PetscFree - Frees memory
@@ -1924,7 +1924,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 #else
   PetscFunctionBegin;
 #endif
-  if (a != b) {
+  if (a != b && n > 0) {
 #if defined(PETSC_USE_DEBUG)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl)  SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
               or make sure your copy regions and lengths are correct. \n\
@@ -2315,23 +2315,23 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
     UsingFortran - Fortran can be used with PETSc in four distinct approaches
 
 $    1) classic Fortran 77 style
-$#include "petsc-finclude/petscXXX.h" to work with material from the XXX component of PETSc
+$#include "petsc/finclude/petscXXX.h" to work with material from the XXX component of PETSc
 $       XXX variablename
 $      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
 $      which end in F90; such as VecGetArrayF90()
 $
 $    2) classic Fortran 90 style
-$#include "petsc-finclude/petscXXX.h"
-$#include "petsc-finclude/petscXXX.h90" to work with material from the XXX component of PETSc
+$#include "petsc/finclude/petscXXX.h"
+$#include "petsc/finclude/petscXXX.h90" to work with material from the XXX component of PETSc
 $       XXX variablename
 $
 $    3) Using Fortran modules
-$#include "petsc-finclude/petscXXXdef.h"
+$#include "petsc/finclude/petscXXXdef.h"
 $         use petscXXXX
 $       XXX variablename
 $
 $    4) Use Fortran modules and Fortran data types for PETSc types
-$#include "petsc-finclude/petscXXXdef.h"
+$#include "petsc/finclude/petscXXXdef.h"
 $         use petscXXXX
 $       type(XXX) variablename
 $      To use this approach you must ./configure PETSc with the additional
@@ -2365,24 +2365,24 @@ $      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
 
     See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
 
-    Developer Notes: The petsc-finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
-     automatically include their predecessors; for example petsc-finclude/petscvecdef.h includes petsc-finclude/petscisdef.h
+    Developer Notes: The petsc/finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
+     automatically include their predecessors; for example petsc/finclude/petscvecdef.h includes petsc/finclude/petscisdef.h
 
-     The petsc-finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
-     their petsc-finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
-     petsc-finclude/petscvec.h does NOT automatically include petsc-finclude/petscis.h
+     The petsc/finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
+     their petsc/finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
+     petsc/finclude/petscvec.h does NOT automatically include petsc/finclude/petscis.h
 
-     The petsc-finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
+     The petsc/finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
      Fortran data type type(XXX) (for example type(Vec)) when PETSc is ./configure with the --with-fortran-datatypes option.
 
-     The petsc-finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
+     The petsc/finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
      the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
 
-     The petsc-finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
+     The petsc/finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
      automatically by "make allfortranstubs".
 
-     The petsc-finclude/petscXXX.h90 includes the custom petsc-finclude/ftn-custom/petscXXX.h90 and if ./configure
-     was run with --with-fortran-interfaces it also includes the petsc-finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
+     The petsc/finclude/petscXXX.h90 includes the custom petsc/finclude/ftn-custom/petscXXX.h90 and if ./configure
+     was run with --with-fortran-interfaces it also includes the petsc/finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
      include their predecessors
 
     Level: beginner
@@ -2408,6 +2408,7 @@ PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscInt,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt*,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithDataArray(PetscInt,PetscInt[],void*,size_t,void*);
 PETSC_EXTERN PetscErrorCode PetscSortReal(PetscInt,PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsReal(PetscInt*,PetscReal[]);
@@ -2549,7 +2550,7 @@ typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
   PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
   PETSC_BUILDTWOSIDED_IBARRIER = 1
-  /* Updates here must be accompanied by updates in petsc-finclude/petscsys.h and the string array in mpits.c */
+  /* Updates here must be accompanied by updates in petsc/finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);
@@ -2681,7 +2682,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
-PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
+PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,(size_t)count,(void**)slot);}
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 #undef __FUNCT__
@@ -2709,7 +2710,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
   PetscFunctionBegin;
   if (set && *set) PetscFunctionReturn(0);
   ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
-  ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(PetscCitationsList,len,&vstring);CHKERRQ(ierr);
   ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
   if (set) *set = PETSC_TRUE;
   PetscFunctionReturn(0);

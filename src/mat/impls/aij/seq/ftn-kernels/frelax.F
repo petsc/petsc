@@ -1,7 +1,7 @@
 !
 !    Fortran kernels for SOR relaxations
 !
-#include <petsc-finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
 !
       subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,            &
      &           adiag,idiag,aa,b)

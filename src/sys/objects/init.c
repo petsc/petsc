@@ -248,23 +248,32 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 #include <cublas.h>
 #endif
 
+#if defined(PETSC_USE_LOG)
+extern PetscBool   PetscObjectsLog;
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
-  PetscReal      si,logthreshold;
+  PetscReal      si;
   PetscInt       intensity;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
+#if !defined(PETSC_HAVE_THREADSAFETY)
+  PetscReal      logthreshold;
+  PetscBool      flg4 = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   /*
       Setup the memory management; support for tracing malloc() usage
   */
@@ -313,6 +322,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1) {
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   }
+#endif
+
+#if defined(PETSC_USE_LOG)
+  ierr = PetscOptionsHasName(NULL,"-objects_dump",&PetscObjectsLog);CHKERRQ(ierr);
+#endif
 
   /*
       Set the display variable for graphics

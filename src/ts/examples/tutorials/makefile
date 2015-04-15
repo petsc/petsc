@@ -5,16 +5,19 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
-                ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex16adj.c ex16opt_p.c ex16opt_ic.c ex17.c \
-                ex19.c ex20.c ex20adj.c ex20opt_p.c ex20opt_ic.c  ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
+                ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
+                ex28.c ex30.cxx ex31.c ex34.c extchem.c\
+                ex16adj.c ex16opt_p.c ex16opt_ic.c  \
+                ex20adj.c ex20opt_p.c ex20opt_ic.c  \
                 ex28.c ex30.cxx ex31.c ex40.c ex41.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -191,6 +194,18 @@ ex30: ex30.o chkopts
 ex31: ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o ${PETSC_TS_LIB}
 	${RM} ex31.o
+
+ex34: ex34.o chkopts
+	-${CLINKER} -o ex34 ex34.o ${PETSC_TS_LIB}
+	${RM} ex34.o
+
+extchem: extchem.o chkopts
+	-${CLINKER} -o extchem extchem.o ${PETSC_TS_LIB}
+	${RM} extchem.o
+
+extchemfield: extchemfield.o chkopts
+	-${CLINKER} -o extchemfield extchemfield.o ${PETSC_TS_LIB}
+	${RM} extchemfield.o
 
 ex40: ex40.o chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_TS_LIB}
@@ -494,6 +509,11 @@ runex24:                        # This is not in the nightlies because the conve
 	   ${DIFF} output/ex24_1.out ex24_1.tmp || printf "${PWD}\nPossible problem with ex24_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex24_1.tmp
 
+runextchem:
+	-@${MPIEXEC} -n 1 ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_final_time .005 > extchem_1.tmp 2>&1; \
+	   ${DIFF} output/extchem_1.out extchem_1.tmp || printf "${PWD}\nPossible problem with extchem_1, diffs above\n=========================================\n";  \
+	   ${RM} -f extchem_1.tmp
+
 runex25:
 	-@${MPIEXEC} -n 1 ./ex25 -nox -da_grid_x 20 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n";  \
@@ -579,5 +599,6 @@ TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5    = ex30.PETSc runex30_2 ex30.rm ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

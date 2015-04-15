@@ -42,56 +42,54 @@
 !  into a module or interface. This is because they can't handle declarations
 !  in them
 !
-      module petsc_kkt_solver_module
-#include <petsc-finclude/petscdmdef.h>
+      module petsc_kkt_solver
+#include <petsc/finclude/petscdmdef.h>
       use petscdmdef
-      type petsc_kkt_solver
-        type(DM) da
-!     temp A block stuff 
+      type petsc_kkt_solver_type
+        DM::da
+!     temp A block stuff
         PetscInt mx,my
         PetscMPIInt rank
         PetscReal lambda
 !     Mats
-        type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
-        type(IS)  isPhi,isLambda
-      end type petsc_kkt_solver
+        Mat::Amat,AmatLin,Bmat,CMat,Dmat
+        IS::isPhi,isLambda
+      end type petsc_kkt_solver_type
 
-      end module petsc_kkt_solver_module
+      end module petsc_kkt_solver
 
-      module petsc_kkt_solver_moduleinterfaces
-        use petsc_kkt_solver_module
+      module petsc_kkt_solver_interfaces
+        use petsc_kkt_solver
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <petsc-finclude/petscsnesdef.h>
-        use petscsnes
-        use petsc_kkt_solver_module
-          type(SNES)    snesIn
-          type(petsc_kkt_solver) ctx
+#include <petsc/finclude/petscsnesdef.h>
+        use petsc_kkt_solver
+          SNES::    snesIn
+          type(petsc_kkt_solver_type) ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESSetApplicationContext
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <petsc-finclude/petscsnesdef.h>
-        use petscsnes
-        use petsc_kkt_solver_module
-          type(SNES)     snesIn
-          type(petsc_kkt_solver), pointer :: ctx
+#include <petsc/finclude/petscsnesdef.h>
+        use petsc_kkt_solver
+          SNES::     snesIn
+          type(petsc_kkt_solver_type), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESGetApplicationContext
-      end module petsc_kkt_solver_moduleinterfaces
+      end module petsc_kkt_solver_interfaces
 
       program main
-#include <petsc-finclude/petscdmdef.h>
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscdm
       use petscdmda
       use petscsnes
-      use petsc_kkt_solver_module
-      use petsc_kkt_solver_moduleinterfaces
+      use petsc_kkt_solver
+      use petsc_kkt_solver_interfaces
       implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -104,17 +102,17 @@
 !     its         - iterations for convergence
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !
-      type(SNES)       mysnes
-      type(Vec)        x,r,x2,x1,x1loc,x2loc,vecArray(2)
-      type(Mat)        Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
-      type(DM)         daphi,dalam
-      type(IS)         isglobal(2)
+      SNES::       mysnes
+      Vec::        x,r,x2,x1,x1loc,x2loc,vecArray(2)
+      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
+      DM::       daphi,dalam
+      IS::        isglobal(2)
       PetscErrorCode   ierr
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
       PetscInt         ione,nfour,itwo,nloc,nloclam
       PetscReal lambda_max,lambda_min
-      type(petsc_kkt_solver)  solver
+      type(petsc_kkt_solver_type)  solver
       PetscScalar      bval,cval,one
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -386,21 +384,21 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
-      use petsc_kkt_solver_module
-      use petsc_kkt_solver_moduleinterfaces
+      use petsc_kkt_solver
+      use petsc_kkt_solver_interfaces
       implicit none
 !  Input/output variables:
-      type(SNES)     mysnes
-      type(Vec)      Xnest
+      SNES::     mysnes
+      Vec::      Xnest
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-      type(petsc_kkt_solver), pointer:: solver
-      type(Vec)      Xsub(2)
-      PetscInt       izero,ione,itwo
-      type(DM)       daphi,dmarray(2)
+      type(petsc_kkt_solver_type), pointer:: solver
+      Vec::      Xsub(2)
+      PetscInt::  izero,ione,itwo
+      DM::  daphi,dmarray(2)
 
       izero = 0
       ione = 1
@@ -436,13 +434,13 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver,X1,ierr)
-#include <petsc-finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
-      use petsc_kkt_solver_module
+      use petsc_kkt_solver
       implicit none
 !  Input/output variables:
-      type (petsc_kkt_solver)         solver
-      type(Vec)      X1
+      type (petsc_kkt_solver_type)         solver
+      Vec::      X1
       PetscErrorCode ierr
 
 !  Local variables:
@@ -491,20 +489,20 @@
 !  flag     - flag indicating matrix structure
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
-      use petsc_kkt_solver_module
+      use petsc_kkt_solver
       implicit none
 !  Input/output variables:
-      type(SNES)     dummy
-      type(Vec)      X
-      type(Mat)      jac,jac_prec
-      type(petsc_kkt_solver)  solver
+      SNES::     dummy
+      Vec::      X
+     Mat::     jac,jac_prec
+      type(petsc_kkt_solver_type)  solver
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-      type(Vec)      Xsub(1)
-      type(Mat)      Amat
+      Vec::      Xsub(1)
+     Mat::     Amat
       PetscInt       izero,ione
 
       izero = 0
@@ -550,14 +548,14 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
-#include <petsc-finclude/petscmatdef.h>
+#include <petsc/finclude/petscmatdef.h>
       use petscmat
-      use petsc_kkt_solver_module
+      use petsc_kkt_solver
       implicit none
 !  Input/output variables:
-      type (petsc_kkt_solver) solver
-      type(Vec)      X1
-      type(Mat)      jac
+      type (petsc_kkt_solver_type) solver
+      Vec::      X1
+     Mat::     jac
       logical        add_nl_term
       PetscErrorCode ierr
 
@@ -580,7 +578,7 @@
       hy2inv = one/(hy*hy)
 
       call VecGetOwnershipRange(X1,low,high,ierr)
-      call VecGetArrayF90(X1,lx_v,ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr)
 
       ii = 0
       do 20 row=low,high-1
@@ -613,7 +611,7 @@
          endif
  20   continue
 
-      call VecRestoreArrayF90(X1,lx_v,ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr)
 
       return
       end subroutine FormJacobianLocal
@@ -633,18 +631,18 @@
 !  F - function vector
 !
       subroutine FormFunction(snesIn,X,F,solver,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
-      use petsc_kkt_solver_module
+      use petsc_kkt_solver
       implicit none
 !  Input/output variables:
-      type(SNES)     snesIn
-      type(Vec)      X,F
+      SNES::     snesIn
+     Vec::      X,F
       PetscErrorCode ierr
-      type (petsc_kkt_solver) solver
+      type (petsc_kkt_solver_type) solver
 
 !  Declarations for use with local arrays:
-      type(Vec)              Xsub(2),Fsub(2)
+     Vec::              Xsub(2),Fsub(2)
       PetscInt               izero,ione,itwo
 
 !  Scatter ghost points to local vector, using the 2-step process
@@ -688,13 +686,13 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
-#include <petsc-finclude/petscvecdef.h>
+#include <petsc/finclude/petscvecdef.h>
       use petscvec
-      use petsc_kkt_solver_module
+      use petsc_kkt_solver
       implicit none
 !  Input/output variables:
-      type (petsc_kkt_solver) solver
-      type(Vec)      X1,F1
+      type (petsc_kkt_solver_type) solver
+     Vec::      X1,F1
       PetscErrorCode ierr
 !  Local variables:
       PetscScalar one,sc
@@ -706,7 +704,7 @@
       sc     = solver%lambda
       ione   = 1
 
-      call VecGetArrayF90(X1,lx_v,ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr)
       call VecGetOwnershipRange(X1,low,high,ierr)
 
 !     Compute function over the locally owned part of the grid
@@ -725,7 +723,7 @@
          call VecSetValues(F1,ione,row,v,INSERT_VALUES,ierr)
  20   continue
 
-      call VecRestoreArrayF90(X1,lx_v,ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr)
 
       call VecAssemblyBegin(F1,ierr)
       call VecAssemblyEnd(F1,ierr)

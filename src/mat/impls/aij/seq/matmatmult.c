@@ -8,7 +8,7 @@
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/utils/petscheap.h>
 #include <petscbt.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
 static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);

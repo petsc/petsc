@@ -15,6 +15,8 @@ class Configure(config.package.GNUPackage):
     self.double            = 1
     self.complex           = 0
     self.downloadonWindows = 1
+    self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is
+                                 # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
     return
 
   def setupDependencies(self, framework):
@@ -73,12 +75,12 @@ class Configure(config.package.GNUPackage):
 
   def consistencyChecks(self):
     config.package.GNUPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       # ML requires LAPACK routine dgels() ?
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
       if not self.blasLapack.checkForRoutine('dsteqr'):
         raise RuntimeError('ML requires the LAPACK routine dsteqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-      self.framework.log.write('Found dsteqr() in Lapack library as needed by ML\n')
-      self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
+      self.log.write('Found dsteqr() in Lapack library as needed by ML\n')
+      self.log.write('Found dgels() in Lapack library as needed by ML\n')
 

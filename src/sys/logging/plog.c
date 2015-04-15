@@ -8,7 +8,7 @@
       accessible to users. The private API is defined in logimpl.h and the utils directory.
 
 */
-#include <petsc-private/logimpl.h>        /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>        /*I    "petscsys.h"   I*/
 #include <petsctime.h>
 #include <petscviewer.h>
 #include <petscthreadcomm.h>
@@ -23,6 +23,7 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 {
+  if (!p) return 0;
   p->mem += m;
   return 0;
 }

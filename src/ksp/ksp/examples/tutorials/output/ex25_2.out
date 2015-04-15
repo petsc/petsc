@@ -159,8 +159,8 @@ PC Object: 2 MPI processes
     KSP Object:    (mg_levels_1_)     2 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.157932, max = 1.73725
-        Chebyshev: estimated using:  [0 0.1; 0 1.1]
-        KSP Object:        (mg_levels_1_est_)         2 MPI processes
+        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
+        KSP Object:        (mg_levels_1_esteig_)         2 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
@@ -169,15 +169,6 @@ PC Object: 2 MPI processes
           left preconditioning
           using nonzero initial guess
           using NONE norm type for convergence test
-        PC Object:        (mg_levels_1_)         2 MPI processes
-          type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-          linear system matrix = precond matrix:
-          Mat Object:           2 MPI processes
-            type: mpiaij
-            rows=5, cols=5
-            total: nonzeros=13, allocated nonzeros=30
-            total number of mallocs used during MatSetValues calls =0
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
@@ -197,8 +188,8 @@ PC Object: 2 MPI processes
     KSP Object:    (mg_levels_2_)     2 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.139252, max = 1.53178
-        Chebyshev: estimated using:  [0 0.1; 0 1.1]
-        KSP Object:        (mg_levels_2_est_)         2 MPI processes
+        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
+        KSP Object:        (mg_levels_2_esteig_)         2 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
@@ -207,15 +198,6 @@ PC Object: 2 MPI processes
           left preconditioning
           using nonzero initial guess
           using NONE norm type for convergence test
-        PC Object:        (mg_levels_2_)         2 MPI processes
-          type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-          linear system matrix = precond matrix:
-          Mat Object:           2 MPI processes
-            type: mpiaij
-            rows=9, cols=9
-            total: nonzeros=25, allocated nonzeros=54
-            total number of mallocs used during MatSetValues calls =0
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning

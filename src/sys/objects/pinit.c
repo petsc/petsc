@@ -2,7 +2,7 @@
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscvalgrind.h>
 #include <petscviewer.h>
 
@@ -686,11 +686,11 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use NULL_CHARACTER to not check for
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 
    Important Fortran Note:
-   In Fortran, you MUST use NULL_CHARACTER to indicate a
+   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
    null character string; you CANNOT just use NULL as
    in the C version. See Users-Manual: ch_fortran for details.
 
@@ -920,6 +920,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_USE_LOG)
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+extern PetscBool   PetscObjectsLog;
 #endif
 
 #undef __FUNCT__
@@ -1038,6 +1039,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
@@ -1046,6 +1048,7 @@ PetscErrorCode  PetscFinalize(void)
   if (flg2) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
+#endif
 
 #if defined(PETSC_USE_LOG)
   flg1 = PETSC_FALSE;
@@ -1177,17 +1180,19 @@ PetscErrorCode  PetscFinalize(void)
   /*
        List all objects the user may have forgot to free
   */
-  ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    MPI_Comm local_comm;
-    char     string[64];
+  if (PetscObjectsLog) {
+    ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      MPI_Comm local_comm;
+      char     string[64];
 
-    ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
-    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
+      ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+    }
   }
 #endif
 
@@ -1224,6 +1229,7 @@ PetscErrorCode  PetscFinalize(void)
 
   ierr = PetscInfoAllow(PETSC_FALSE,NULL);CHKERRQ(ierr);
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
@@ -1282,6 +1288,7 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr);
     }
   }
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;

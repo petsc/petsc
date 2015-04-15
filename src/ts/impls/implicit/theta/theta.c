@@ -1,7 +1,7 @@
 /*
   Code for timestepping with implicit Theta method
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscsnes.h>
 #include <petscdm.h>
 #include <petscmat.h>
@@ -249,7 +249,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   PetscFunctionBegin;
  
   th->status = TS_STEP_INCOMPLETE;
-  ierr = SNESGetKSP(ts->snes,&ksp);
+  ierr = SNESGetKSP(ts->snes,&ksp);CHKERRQ(ierr);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
   th->stage_time = ts->ptime + (th->endpoint ? ts->time_step : (1.-th->Theta)*ts->time_step); /* time_step is negative*/
 
@@ -263,7 +263,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
     }
   }
-  for (nadj=0; nadj<ts->numberadjs; nadj++) {
+  for (nadj=0; nadj<ts->numcost; nadj++) {
     ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
     ierr = VecScale(VecSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr);
     if (ts->vec_costintegral) {
@@ -281,7 +281,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   ierr = KSPSetOperators(ksp,J,Jp);CHKERRQ(ierr);
 
   /* Solve LHS X = RHS */
-  for (nadj=0; nadj<ts->numberadjs; nadj++) {
+  for (nadj=0; nadj<ts->numcost; nadj++) {
     ierr = KSPSolveTranspose(ksp,VecSensiTemp[nadj],VecDeltaLam[nadj]);CHKERRQ(ierr);
   }
 
@@ -297,7 +297,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(th->Theta-1.),ts->vec_costintegrand);CHKERRQ(ierr);
     }
-    for (nadj=0; nadj<ts->numberadjs; nadj++) {
+    for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);     
       if (ts->vec_costintegral) {
         ierr = VecAXPY(ts->vecs_sensi[nadj],-1.,ts->vecs_drdy[nadj]);CHKERRQ(ierr); 
@@ -307,22 +307,22 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     
     if (ts->vecs_sensip) { /* sensitivities wrt parameters */
       ierr = TSAdjointComputeRHSJacobian(ts,ts->ptime,ts->vec_sol,ts->Jacp);CHKERRQ(ierr);
-      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+      for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*th->Theta,VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
       ierr = TSAdjointComputeRHSJacobian(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
-      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+      for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*(1.-th->Theta),VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
       if (ts->vec_costintegral) {
         ierr = TSAdjointComputeDRDPFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdp);CHKERRQ(ierr);
-        for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        for (nadj=0; nadj<ts->numcost; nadj++) {
           ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*th->Theta,ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
         ierr = TSAdjointComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
-        for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        for (nadj=0; nadj<ts->numcost; nadj++) {
           ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*(1.-th->Theta),ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
       }
@@ -342,7 +342,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
     but ts->ptime and ts->vec_sol have the same values as th->stage_time and th->X in this case. So the code is simplified here.  
     */
-    for (nadj=0; nadj<ts->numberadjs; nadj++) {
+    for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecDeltaLam[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);     
       ierr = VecAXPY(ts->vecs_sensi[nadj],ts->time_step,VecSensiTemp[nadj]);CHKERRQ(ierr);
       if (ts->vec_costintegral) {
@@ -351,13 +351,13 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
     if (ts->vecs_sensip) {
       ierr = TSAdjointComputeRHSJacobian(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
-      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+      for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step,VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
       if (ts->vec_costintegral) {
         ierr = TSAdjointComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
-        for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        for (nadj=0; nadj<ts->numcost; nadj++) {
           ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step,ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
       }
@@ -398,9 +398,9 @@ static PetscErrorCode TSReset_Theta(TS ts)
   ierr = VecDestroy(&th->Xdot);CHKERRQ(ierr);
   ierr = VecDestroy(&th->X0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->affine);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numberadjs,&th->VecDeltaLam);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numberadjs,&th->VecDeltaMu);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numberadjs,&th->VecSensiTemp);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecDeltaMu);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -518,11 +518,11 @@ static PetscErrorCode TSAdjointSetUp_Theta(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&th->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecDeltaLam);CHKERRQ(ierr);
   if(ts->vecs_sensip) {
-    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numberadjs,&th->VecDeltaMu);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&th->VecDeltaMu);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&th->VecSensiTemp);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

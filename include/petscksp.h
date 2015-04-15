@@ -64,7 +64,6 @@ typedef const char* KSPType;
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
 #define KSPGCR        "gcr"
-#define KSPSPECEST    "specest"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId KSP_CLASSID;
@@ -143,9 +142,9 @@ PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec *);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetRandom(KSP,PetscRandom);
-PETSC_EXTERN PetscErrorCode KSPChebyshevSetNewMatrix(KSP);
+PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP,KSP*);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal[],PetscReal[],PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal[],PetscReal[]);
@@ -316,7 +315,7 @@ PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match petsc-finclude/petscksp.h
+   Notes: this must match petsc/finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
@@ -377,7 +376,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match petsc-finclude/petscksp.h
+   Developer notes: this must match petsc/finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
@@ -589,7 +588,7 @@ PETSC_EXTERN PetscErrorCode PCPostSolve(PC,KSP);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormDestroy(PetscObject**);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormDestroy(PetscObject**);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);

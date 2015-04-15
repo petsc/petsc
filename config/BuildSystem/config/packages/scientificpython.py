@@ -27,7 +27,7 @@ class Configure(config.package.Package):
     if self.installSudo:
       self.installDirProvider.printSudoPasswordMessage()
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'Scientific')+' '+packageDir, timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'Scientific')+' '+packageDir, timeout=6000, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error copying Scientific Python files from '+os.path.join(self.packageDir, 'Scientific')+' to '+packageDir)
     else:
@@ -46,19 +46,19 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     '''Find an installation ando check if it can work with PETSc'''
     import sys
-    self.framework.log.write('==================================================================================\n')
-    self.framework.log.write('Checking for a functional '+self.name+'\n')
+    self.log.write('==================================================================================\n')
+    self.log.write('Checking for a functional '+self.name+'\n')
 
     self.checkDependencies()
     for location, rootDir, lib, incDir in self.generateGuesses():
       try:
         libDir = os.path.dirname(lib[0])
-        self.framework.logPrint('Checking location '+location)
-        self.framework.logPrint('Added directory '+libDir+' to Python path')
+        self.logPrint('Checking location '+location)
+        self.logPrint('Added directory '+libDir+' to Python path')
         sys.path.insert(0, libDir)
         import Scientific.Functions.Derivatives
         self.found = 1
         return
       except ImportError, e:
-        self.framework.logPrint('ERROR: Could not import Scientific Python: '+str(e))
+        self.logPrint('ERROR: Could not import Scientific Python: '+str(e))
     raise RuntimeError('Could not find a functional '+self.name+'\n')

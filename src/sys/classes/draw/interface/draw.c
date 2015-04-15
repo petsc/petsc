@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 #include <petscviewer.h>
 
 PetscClassId PETSC_DRAW_CLASSID;
@@ -57,6 +57,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   ierr = PetscClassIdRegister("Axis",&PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Line Graph",&PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Histogram",&PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Bar Grap",&PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
@@ -283,6 +284,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->savefilenameext);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefinalfilename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);

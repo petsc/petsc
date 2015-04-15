@@ -1,6 +1,6 @@
 
 #include <petscsys.h>
-#include <petsc-private/drawimpl.h>
+#include <petsc/private/drawimpl.h>
 #include <../src/sys/classes/draw/impls/win32/win32draw.h>
 
 #define IDC_FOUR       109
@@ -640,7 +640,7 @@ static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
 
   PetscFunctionBegin;
   SendMessage(windraw->hWnd,WM_DESTROY,0,0);
-  PetscFree(windraw);
+  PetscFree(draw->data);
   PetscFunctionReturn(0);
 }
 

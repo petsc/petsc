@@ -2,7 +2,7 @@
 /*
     Defines the multigrid preconditioner interface.
 */
-#include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -475,6 +475,9 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
+    if (mg->view){
+      ierr = (*mg->view)(pc,viewer);CHKERRQ(ierr);
+    }
     for (i=0; i<levels; i++) {
       if (!i) {
         ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level -------------------------------\n",i);CHKERRQ(ierr);
@@ -528,8 +531,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
     Calls setup for the KSP on each level
@@ -543,7 +546,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mglevels[0]->levels;
   PC             cpc;
-  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat;
+  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
@@ -587,8 +590,17 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs? */
-  if (pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
+  for (i=n-1; i>0; i--) {
+    if (!(mglevels[i]->interpolate || mglevels[i]->restrct)) {
+      missinginterpolate = PETSC_TRUE;
+      continue;
+    }
+  }
+  /*
+   Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
+   Skipping for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
+  */
+  if (missinginterpolate && pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
@@ -994,6 +1006,17 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCMGSetGalerkin_MG"
+PetscErrorCode PCMGSetGalerkin_MG(PC pc,PetscBool use)
+{
+  PC_MG *mg = (PC_MG*)pc->data;
+
+  PetscFunctionBegin;
+  mg->galerkin = use ? 1 : 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetGalerkin"
 /*@
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
@@ -1006,9 +1029,12 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 -  use - PETSC_TRUE to use the Galerkin process to compute coarse-level operators
 
    Options Database Key:
-.  -pc_mg_galerkin
+.  -pc_mg_galerkin <true,false>
 
    Level: intermediate
+
+   Notes: Some codes that use PCMG such as PCGAMG use Galerkin internally while constructing the hierarchy and thus do not
+     use the PCMG construction of the coarser grids.
 
 .keywords: MG, set, Galerkin
 
@@ -1017,11 +1043,11 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 @*/
 PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 {
-  PC_MG *mg = (PC_MG*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg->galerkin = use ? 1 : 0;
+  ierr = PetscTryMethod(pc,"PCMGSetGalerkin_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1208,5 +1234,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->ops->destroy        = PCDestroy_MG;
   pc->ops->setfromoptions = PCSetFromOptions_MG;
   pc->ops->view           = PCView_MG;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",PCMGSetGalerkin_MG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

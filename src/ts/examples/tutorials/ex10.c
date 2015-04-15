@@ -890,7 +890,14 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     PetscInt    i;
     PetscReal   hx = 1.;
     PetscScalar a0;
-    RDNode      n0[3] = {{1.,1.},{5.,3.},{4.,2.}},n1[3],d[3],fd[3];
+    RDNode      n0[3],n1[3],d[3],fd[3];
+
+    n0[0].E = 1.;
+    n0[0].T = 1.;
+    n0[1].E = 5.;
+    n0[1].T = 3.;
+    n0[2].E = 4.;
+    n0[2].T = 2.;
     a0 = RDDiffusion(rd,hx,n0,1,d);
     for (i=0; i<3; i++) {
       ierr    = PetscMemcpy(n1,n0,sizeof(n0));CHKERRQ(ierr); n1[i].E += epsilon;

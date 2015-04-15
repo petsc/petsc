@@ -5,9 +5,9 @@ ALL: clean manual.pdf
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 # Build the entire manual as well as the intro part
 

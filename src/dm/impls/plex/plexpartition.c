@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 PetscClassId PETSCPARTITIONER_CLASSID = 0;
 
@@ -1236,10 +1236,10 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1340,6 +1340,28 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelClosure_Tree"
+static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point)
+{
+  PetscInt       parent, closureSize, *closure = NULL, i, pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
+  if (parent == point) PetscFunctionReturn(0);
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  for (i = 0; i < closureSize; i++) {
+    PetscInt cpoint = closure[2*i];
+
+    ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
+    ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint);CHKERRQ(ierr);
+  }
+  ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPartitionLabelClosure"
 /*@
   DMPlexPartitionLabelClosure - Add the closure of all points to the partition label
@@ -1372,7 +1394,10 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize*2; c += 2) {ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);}
+      for (c = 0; c < closureSize*2; c += 2) {
+        ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c]);CHKERRQ(ierr);
+      }
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);

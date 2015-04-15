@@ -34,9 +34,9 @@ We will have three objects:
  - Dual Space, P'+K: This looks like a set of functionals that can act on members of P, each n is defined by a Q
  - FEM: This keeps {P, P', Q}
 */
-#include <petsc-private/petscfeimpl.h> /*I "petscfe.h" I*/
-#include <petsc-private/dtimpl.h>
-#include <petsc-private/dmpleximpl.h>
+#include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
+#include <petsc/private/dtimpl.h>
+#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscdmshell.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
@@ -833,6 +833,19 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpacePolynomialSetTensor"
+/*@
+  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
++ sp     - the function space object
+- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
 PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -845,6 +858,21 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpacePolynomialGetTensor"
+/*@
+  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
+. sp     - the function space object
+
+  Output Parameters:
+. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
 PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -3213,39 +3241,44 @@ PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
 /* Construct the change of basis from prime basis to nodal basis */
 PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
-  PetscReal     *work;
+  PetscScalar   *work, *invVscalar;
   PetscBLASInt  *pivots;
-#ifndef PETSC_USE_COMPLEX
   PetscBLASInt   n, info;
-#endif
   PetscInt       pdim, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscMalloc1(pdim*pdim,&fem->invV);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscMalloc1(pdim*pdim,&invVscalar);CHKERRQ(ierr);
+#else
+  invVscalar = fem->invV;
+#endif
   for (j = 0; j < pdim; ++j) {
     PetscReal      *Bf;
     PetscQuadrature f;
     PetscInt        q, k;
 
-    ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+    ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
     ierr = PetscMalloc1(f->numPoints*pdim,&Bf);CHKERRQ(ierr);
     ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
       /* n_j \cdot \phi_k */
-      fem->invV[j*pdim+k] = 0.0;
+      invVscalar[j*pdim+k] = 0.0;
       for (q = 0; q < f->numPoints; ++q) {
-        fem->invV[j*pdim+k] += Bf[q*pdim+k]*f->weights[q];
+        invVscalar[j*pdim+k] += Bf[q*pdim+k]*f->weights[q];
       }
     }
     ierr = PetscFree(Bf);CHKERRQ(ierr);
   }
   ierr = PetscMalloc2(pdim,&pivots,pdim,&work);CHKERRQ(ierr);
-#ifndef PETSC_USE_COMPLEX
   n = pdim;
-  PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, fem->invV, &n, pivots, &info));
-  PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
+  PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, invVscalar, &n, pivots, &info));
+  PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, invVscalar, &n, pivots, work, &n, &info));
+#if defined(PETSC_USE_COMPLEX)
+  for (j = 0; j < pdim*pdim; j++) fem->invV[j] = PetscRealPart(invVscalar[j]);
+  ierr = PetscFree(invVscalar);CHKERRQ(ierr);
 #endif
   ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5144,11 +5177,10 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 K;
-  PetscReal         *work, *subpoint;
+  PetscReal         *subpoint;
   PetscBLASInt      *pivots;
-#ifndef PETSC_USE_COMPLEX
   PetscBLASInt       n, info;
-#endif
+  PetscScalar       *work, *invVscalar;
   PetscInt           dim, pdim, spdim, j, s;
   PetscErrorCode     ierr;
 
@@ -5171,7 +5203,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       PetscQuadrature f;
       PetscInt        d, e;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
       /* Apply transform to first point, and check that point is inside subcell */
       for (d = 0; d < dim; ++d) {
         subpoint[d] = -1.0;
@@ -5186,30 +5218,37 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   /* Construct the change of basis from prime basis to nodal basis for each subelement */
   ierr = PetscMalloc1(cmp->numSubelements*spdim*spdim,&fem->invV);CHKERRQ(ierr);
   ierr = PetscMalloc2(spdim,&pivots,spdim,&work);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscMalloc1(cmp->numSubelements*spdim*spdim,&invVscalar);CHKERRQ(ierr);
+#else
+  invVscalar = fem->invV;
+#endif
   for (s = 0; s < cmp->numSubelements; ++s) {
     for (j = 0; j < spdim; ++j) {
       PetscReal      *Bf;
       PetscQuadrature f;
       PetscInt        q, k;
 
-      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);CHKERRQ(ierr);
       ierr = PetscMalloc1(f->numPoints*spdim,&Bf);CHKERRQ(ierr);
       ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
       for (k = 0; k < spdim; ++k) {
         /* n_j \cdot \phi_k */
-        fem->invV[(s*spdim + j)*spdim+k] = 0.0;
+        invVscalar[(s*spdim + j)*spdim+k] = 0.0;
         for (q = 0; q < f->numPoints; ++q) {
-          fem->invV[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*f->weights[q];
+          invVscalar[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*f->weights[q];
         }
       }
       ierr = PetscFree(Bf);CHKERRQ(ierr);
     }
-#ifndef PETSC_USE_COMPLEX
     n = spdim;
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &fem->invV[s*spdim*spdim], &n, pivots, &info));
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &fem->invV[s*spdim*spdim], &n, pivots, work, &n, &info));
-#endif
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &invVscalar[s*spdim*spdim], &n, pivots, &info));
+    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &invVscalar[s*spdim*spdim], &n, pivots, work, &n, &info));
   }
+#if defined(PETSC_USE_COMPLEX)
+  for (s = 0; s <cmp->numSubelements*spdim*spdim; s++) fem->invV[s] = PetscRealPart(invVscalar[s]);
+  ierr = PetscFree(invVscalar);CHKERRQ(ierr);
+#endif
   ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5370,39 +5409,35 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFECompositeExpandQuadrature"
-PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, PetscQuadrature *qref)
+#define __FUNCT__ "PetscFECompositeGetMapping"
+/*@C
+  PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ blockSize - The number of elements in a block
+. numBlocks - The number of blocks in a batch
+. batchSize - The number of elements in a batch
+- numBatches - The number of batches in a chunk
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
+PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
-  const PetscReal   *points,    *weights;
-  PetscReal         *pointsRef, *weightsRef;
-  PetscInt           dim, order, npoints, npointsRef, c, p, d, e;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
-  PetscValidPointer(qref, 3);
-  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
-  npointsRef = npoints*cmp->numSubelements;
-  ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
-  for (c = 0; c < cmp->numSubelements; ++c) {
-    for (p = 0; p < npoints; ++p) {
-      for (d = 0; d < dim; ++d) {
-        pointsRef[(c*npoints + p)*dim+d] = cmp->v0[c*dim+d];
-        for (e = 0; e < dim; ++e) {
-          pointsRef[(c*npoints + p)*dim+d] += cmp->jac[(c*dim + d)*dim+e]*(points[p*dim+e] + 1.0);
-        }
-      }
-      /* Could also use detJ here */
-      weightsRef[c*npoints+p] = weights[p]/cmp->numSubelements;
-    }
-  }
-  ierr = PetscQuadratureSetOrder(*qref, order);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  if (numSubelements) {PetscValidPointer(numSubelements, 2); *numSubelements = cmp->numSubelements;}
+  if (v0)             {PetscValidPointer(v0, 3);             *v0             = cmp->v0;}
+  if (jac)            {PetscValidPointer(jac, 4);            *jac            = cmp->jac;}
+  if (invjac)         {PetscValidPointer(invjac, 5);         *invjac         = cmp->invjac;}
   PetscFunctionReturn(0);
 }
 
@@ -5727,7 +5762,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fi
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFERefine"
-/*@C
+/*@
   PetscFERefine - Create a "refined" PetscFE object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
   sparsity). It is also used to create an interpolation between regularly refined meshes.
@@ -5748,7 +5783,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscDualSpace   Q, Qref;
   DM               K, Kref;
   PetscQuadrature  q, qref;
-  PetscInt         numComp;
+  const PetscReal *v0, *jac;
+  PetscInt         numComp, numSubelements;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -5776,7 +5812,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscSpaceDestroy(&Pref);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   /* Create quadrature */
-  ierr = PetscFECompositeExpandQuadrature(*feRef, q, &qref);CHKERRQ(ierr);
+  ierr = PetscFECompositeGetMapping(*feRef, &numSubelements, &v0, &jac, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureExpandComposite(q, numSubelements, v0, jac, &qref);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(*feRef, qref);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
 const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
@@ -473,7 +473,7 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementComputeExplicitOperator"
@@ -691,7 +691,7 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
     application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
-    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    the (0,0) block A00 in place of A00^{-1}. This rarely produces a scalable algorithm. Optionally, A00 can be lumped
     before forming inv(diag(A00)).
 
     Level: advanced

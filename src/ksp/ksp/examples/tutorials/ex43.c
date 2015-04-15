@@ -1,30 +1,35 @@
 static char help[] = "Solves the incompressible, variable viscosity Stokes equation in 2d on the unit domain \n\
 using Q1Q1 elements, stabilized with Bochev's polynomial projection method. \n\
 The models defined utilise free slip boundary conditions on all sides. \n\
-Options: \n\
+Options: \n"
+"\
      -mx : Number of elements in the x-direction \n\
      -my : Number of elements in the y-direction \n\
      -o : Specify output filename for solution (will be petsc binary format or paraview format if the extension is .vts) \n\
      -gnuplot : Output Gauss point coordinates, coefficients and u,p solution in gnuplot format \n\
-     -c_str : Indicates the structure of the coefficients to use \n\
+     -c_str : Indicates the structure of the coefficients to use \n"
+"\
           -c_str 0 => Coefficient definition for an analytic solution with a vertical jump in viscosity at x = xc \n\
                       This problem is driven by the forcing function f(x,y) = (0, sin(nz pi y)cos(pi x) \n\
                          Parameters: \n\
                               -solcx_eta0  : Viscosity to the left of the interface \n\
                               -solcx_eta1  : Viscosity to the right of the interface \n\
                               -solcx_xc    : Location of the interface \n\
-                              -solcx_nz    : Wavenumber in the y direction \n\
+                              -solcx_nz    : Wavenumber in the y direction \n"
+"\
           -c_str 1 => Coefficient definition for a dense rectangular blob located at the center of the domain \n\
                          Parameters: \n\
                               -sinker_eta0 : Viscosity of the background fluid \n\
                               -sinker_eta1 : Viscosity of the blob \n\
                               -sinker_dx   : Width of the blob \n\
-                              -sinker_dy   : Height of the blob \n\
+                              -sinker_dy   : Height of the blob \n"
+"\
           -c_str 2 => Coefficient definition for a dense circular blob located at the center of the domain \n\
                          Parameters: \n\
                               -sinker_eta0 : Viscosity of the background fluid \n\
                               -sinker_eta1 : Viscosity of the blob \n\
-                              -sinker_r    : Radius of the blob \n\
+                              -sinker_r    : Radius of the blob \n"
+"\
           -c_str 3 => Coefficient definition for a dense circular and rectangular inclusion (located at the center of the domain) \n\
                               -sinker_eta0 : Viscosity of the background fluid \n\
                               -sinker_eta1 : Viscosity of the two inclusions \n\

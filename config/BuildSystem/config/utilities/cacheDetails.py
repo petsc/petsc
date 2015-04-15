@@ -80,9 +80,9 @@ class Configure(config.base.Configure):
     for a in self.attrs:
       arg = 'known-' + a.name
       (fname, source) = self.getconfFunction(a)
-      if arg in self.framework.argDB:
-        val = self.framework.argDB[arg]
-      elif self.framework.argDB['with-batch']:
+      if arg in self.argDB:
+        val = self.argDB[arg]
+      elif self.argDB['with-batch']:
         body = 'freopen("/dev/null","w",stderr);\n' + 'fprintf(output,"  \'--'+arg+'=%ld\',\\n",'+fname+'());'
         self.framework.addBatchInclude(source)
         self.framework.addBatchBody(body)
@@ -96,10 +96,10 @@ class Configure(config.base.Configure):
           f = open(filename)
           val = int(f.read())
           if not a.valid(val):
-            self.framework.log.write('Cannot use value returned for '+str(a.enum())+': '+str(val)+'\n')
+            self.log.write('Cannot use value returned for '+str(a.enum())+': '+str(val)+'\n')
           f.close()
         else:
-          self.framework.log.write('Could not determine '+str(a.enum())+', using default '+str(a.default)+'\n')
+          self.log.write('Could not determine '+str(a.enum())+', using default '+str(a.default)+'\n')
           val = a.default
         self.popLanguage()
       self.addDefine(a.enum(), a.sanitize(val))

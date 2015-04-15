@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -8,8 +8,10 @@
 #define vecload_                  VECLOAD
 #define vecview_                  VECVIEW
 #define vecgetarray_              VECGETARRAY
+#define vecgetarrayread_          VECGETARRAYREAD
 #define vecgetarrayaligned_       VECGETARRAYALIGNED
 #define vecrestorearray_          VECRESTOREARRAY
+#define vecrestorearrayread_      VECRESTOREARRAYREAD
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecdestroyvecs_           VECDESTROYVECS
 #define vecmax_                   VECMAX
@@ -24,6 +26,9 @@
 #define vecview_                  vecview
 #define vecgetarray_              vecgetarray
 #define vecrestorearray_          vecrestorearray
+#define vecgetarrayaligned_       vecgetarrayaligned
+#define vecgetarrayread_          vecgetarrayread
+#define vecrestorearrayread_      vecrestorearrayread
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecdestroyvecs_           vecdestroyvecs
 #define vecmax_                   vecmax

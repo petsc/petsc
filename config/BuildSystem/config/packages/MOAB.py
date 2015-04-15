@@ -50,7 +50,7 @@ class Configure(config.package.GNUPackage):
         raise RuntimeError('autoreconf required for git ' + self.PACKAGE+' not found (or broken)! Try removing :',self.packageDir)
       try:
         self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.autoreconf + ' -fi', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.autoreconf + ' -fi', timeout=200, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
     return

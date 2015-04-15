@@ -76,7 +76,7 @@ class Configure(config.base.Configure):
 
   def check(self, header):
     '''Checks for "header", and defines HAVE_"header" if found'''
-    self.framework.log.write('Checking for header: '+header+'\n')
+    self.log.write('Checking for header: '+header+'\n')
     found = 0
     if self.checkPreprocess('#include <'+header+'>\n'):
       found = 1
@@ -87,7 +87,7 @@ class Configure(config.base.Configure):
     '''Checks if a particular include file can be found along particular include paths'''
     if not isinstance(hfiles, list):
       hfiles = [hfiles]
-    self.framework.log.write('Checking for header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+    self.log.write('Checking for header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
     for hfile in hfiles:
       flagsArg = self.getPreprocessorFlagsArg()
       self.logPrint('Checking include with compiler flags var '+flagsArg+' '+str(incl+otherIncludes))
@@ -99,7 +99,7 @@ class Configure(config.base.Configure):
       #self.compilers.CPPFLAGS = oldFlags
       setattr(self.compilers, flagsArg, oldFlags)
       if not found: return 0
-    self.framework.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+    self.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
     return 1
 
   def checkStdC(self):
@@ -116,7 +116,7 @@ class Configure(config.base.Configure):
     # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
     if haveStdC and not self.outputPreprocess('#include <stdlib.h>').find('free'): haveStdC = 0
     # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
-    if haveStdC and not self.framework.argDB['with-batch']:
+    if haveStdC and not self.argDB['with-batch']:
       includes = '''
 #include <stdlib.h>
 #include <ctype.h>

@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
 #undef __FUNCT__
@@ -5618,8 +5618,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
   if (dm->maxCell) {
     const PetscReal *maxCell, *L;
-    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(rdm,  maxCell,  L);CHKERRQ(ierr);
+    const DMBoundaryType *bd;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(rdm,  maxCell,  L,  bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6845,7 +6846,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 #define __FUNCT__ "DMPlexGetCellRefiner_Internal"
 PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 {
-  PetscInt       dim, cStart, cEnd, coneSize, cMax;
+  PetscInt       dim, cStart, cEnd, coneSize, cMax, fMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6853,7 +6854,7 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   if (cEnd <= cStart) {*cellRefiner = REFINER_NOOP; PetscFunctionReturn(0);}
   ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, NULL, NULL);CHKERRQ(ierr);
   switch (dim) {
   case 1:
     switch (coneSize) {
@@ -6871,7 +6872,7 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
       else *cellRefiner = REFINER_SIMPLEX_2D;
       break;
     case 4:
-      if (cMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_2D;
+      if (cMax >= 0 && fMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_2D;
       else *cellRefiner = REFINER_HEX_2D;
       break;
     default:

@@ -1,6 +1,6 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 #include <petscbt.h>
 #include <petscblaslapack.h>
 #if defined(PETSC_THREADCOMM_ACTIVE)
@@ -86,11 +86,9 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   PetscInt       *aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
-  PetscBool      flag,sorted;
+  PetscBool      flag;
 
   PetscFunctionBegin;
-  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
@@ -143,6 +141,21 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
       }
     }
   }
+  /* sort */
+  {
+    MatScalar *work;
+
+    ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
+    for (i=0; i<nrows; i++) {
+      PetscInt ilen;
+      mat_i = c->i[i];
+      mat_j = c->j + mat_i;
+      mat_a = c->a + mat_i*bs2;
+      ilen  = c->ilen[i];
+      ierr  = PetscSortIntWithDataArray(ilen,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
 
   /* Free work space */
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
@@ -177,19 +190,25 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
-  count = 0;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
-    if (vary[i]==bs) iary[count++] = i;
+  }
+  count = 0;
+  for (i=0; i<nrows; i++) {
+    PetscInt j = irow[i] / bs;
+    if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
 
   ierr = PetscMemzero(vary,(a->mbs)*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
-  count = 0;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
-    if (vary[i]==bs) iary[count++] = i;
+  }
+  count = 0;
+  for (i=0; i<ncols; i++) {
+    PetscInt j = icol[i] / bs;
+    if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
@@ -2148,11 +2167,11 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar       *zb,*z,x1,x2,x3,x4,x5;
+  PetscScalar       *z,x1,x2,x3,x4,x5;
   const PetscScalar *x,*xb = NULL;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,rval,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscInt          mbs,i,rval,bs=A->rmap->bs,j,n;
   const PetscInt    *idx,*ii,*ib,*ridx = NULL;
   Mat_CompressedRow cprow = a->compressedrow;
   PetscBool         usecprow = cprow.use;
@@ -2256,35 +2275,37 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       if (!usecprow) xb += 5;
     }
     break;
-  default: {      /* block sizes larger than 5 by 5 are handled by BLAS */
-    PetscInt          ncols,k;
-    PetscScalar       *work,*workt;
-    const PetscScalar *xtmp;
-
+  default: /* block sizes larger than 5 by 5 are handled by BLAS */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
-    if (!a->mult_work) {
-      k    = PetscMax(A->rmap->n,A->cmap->n);
-      ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
-    }
-    work = a->mult_work;
-    xtmp = x;
-    for (i=0; i<mbs; i++) {
-      n     = ii[1] - ii[0]; ii++;
-      ncols = n*bs;
-      ierr  = PetscMemzero(work,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
-      if (usecprow) xtmp = x + bs*ridx[i];
-      PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
-      /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
-      v += n*bs2;
-      if (!usecprow) xtmp += bs;
-      workt = work;
-      for (j=0; j<n; j++) {
-        zb = z + bs*(*idx++);
-        for (k=0; k<bs; k++) zb[k] += workt[k] ;
-        workt += bs;
+#if 0
+    {
+      PetscInt          ncols,k,bs2=a->bs2;
+      PetscScalar       *work,*workt,zb;
+      const PetscScalar *xtmp;
+      if (!a->mult_work) {
+        k    = PetscMax(A->rmap->n,A->cmap->n);
+        ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
+      }
+      work = a->mult_work;
+      xtmp = x;
+      for (i=0; i<mbs; i++) {
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        ierr  = PetscMemzero(work,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
+        if (usecprow) xtmp = x + bs*ridx[i];
+        PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
+        /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
+        v += n*bs2;
+        if (!usecprow) xtmp += bs;
+        workt = work;
+        for (j=0; j<n; j++) {
+          zb = z + bs*(*idx++);
+          for (k=0; k<bs; k++) zb[k] += workt[k] ;
+          workt += bs;
+        }
       }
     }
-    }
+#endif
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);

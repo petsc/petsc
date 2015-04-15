@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputBIN"
@@ -91,7 +91,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt step,PetscR
 
   Nr   = 1;
   /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&timepre,1,NULL,PETSC_REAL);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
   for (i=0;i<Nr ;i++) {
@@ -107,7 +107,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt step,PetscR
 }
 
 /*MC
-      TSTRAJECTPRYBASIC - Stores each solution of the ODE/ADE in a file
+      TSTRAJECTORYBASIC - Stores each solution of the ODE/ADE in a file
 
   Level: intermediate
 

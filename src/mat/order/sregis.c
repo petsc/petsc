@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>     /*I       "petscmat.h"   I*/
+#include <petsc/private/matimpl.h>     /*I       "petscmat.h"   I*/
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_ND(Mat,MatOrderingType,IS*,IS*);

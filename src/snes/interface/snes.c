@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
@@ -167,9 +167,9 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (classid != SNES_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Not SNES next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = SNESSetType(snes, type);CHKERRQ(ierr);
   if (snes->ops->load) {
     ierr = (*snes->ops->load)(snes,viewer);CHKERRQ(ierr);
@@ -312,7 +312,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscStrcpy(str,"SNES: ");CHKERRQ(ierr);
     ierr   = PetscStrcat(str,((PetscObject)snes)->type_name);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (snes->ops->view) {
@@ -481,8 +481,12 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscal
     Xfine = Xfine_named;
   }
   ierr = DMGetNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
-  ierr = MatRestrict(Restrict,Xfine,Xcoarse);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(Xcoarse,Xcoarse,Rscale);CHKERRQ(ierr);
+  if (Inject) {
+    ierr = MatRestrict(Inject,Xfine,Xcoarse);CHKERRQ(ierr);
+  } else {
+    ierr = MatRestrict(Restrict,Xfine,Xcoarse);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Xcoarse,Xcoarse,Rscale);CHKERRQ(ierr);
+  }
   ierr = DMRestoreNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
   if (Xfine_named) {ierr = DMRestoreNamedGlobalVector(dmfine,"SNESVecSol",&Xfine_named);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -772,6 +776,12 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),monfilename,&monviewer);CHKERRQ(ierr);
     ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsString("-snes_monitor_field","Monitor norm of function (split into fields)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(snes,SNESMonitorDefaultField,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -1208,10 +1218,13 @@ PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
    Output Parameter:
 .  nfails - number of failed solves
 
+   Level: intermediate
+
+   Options Database Keys:
+. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
+
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
-
-   Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 
@@ -1239,6 +1252,9 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
 -  maxFails - maximum allowed linear solve failures
 
    Level: intermediate
+
+   Options Database Keys:
+. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
 
    Notes: By default this is 0; that is SNES returns on the first failed linear solve
 
@@ -4681,7 +4697,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 }
 
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetDM"
 /*@

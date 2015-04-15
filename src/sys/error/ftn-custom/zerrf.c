@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscsys.h>
 #include <petscviewer.h>
 
@@ -85,11 +85,11 @@ PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *hand
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Comm *comm,PetscErrorCode *number,int *line,PetscErrorType *p,CHAR message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *number,int *line,PetscErrorType *p,CHAR message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *ierr = PetscError(*comm,*line,0,0,*number,*p,t1);
+  *ierr = PetscError(MPI_Comm_f2c(*(comm)),*line,0,0,*number,*p,t1);
   FREECHAR(message,t1);
 }
 

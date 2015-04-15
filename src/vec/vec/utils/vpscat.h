@@ -100,9 +100,16 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   /* take care of local scatters */
   if (to->local.n) {
     if (to->local.is_copy && addv == INSERT_VALUES) {
-      ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+      if (yv != xv || from->local.copy_start !=  to->local.copy_start) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+      }
     } else {
-      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv,bs);CHKERRQ(ierr);
+      if (xv == yv && addv == INSERT_VALUES) {
+        /* only copy entries that do not share identical memory locations */
+        ierr = PETSCMAP1(Scatter)(to->local.n_nonmatching,to->local.slots_nonmatching,xv,from->local.slots_nonmatching,yv,addv,bs);CHKERRQ(ierr);
+      } else {
+        ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv,bs);CHKERRQ(ierr);
+      }
     }
   }
 #if defined(PETSC_HAVE_CUSP)

@@ -1,6 +1,6 @@
 
 #include <petscksp.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscInt    restart;
@@ -45,8 +45,8 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
       ierr = (*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx);CHKERRQ(ierr);
     }
 
-    ierr = PCApply(pc, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
-    ierr = MatMult(A, s, v);CHKERRQ(ierr);  /* v = A s */
+    ierr = KSP_PCApply(ksp, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
+    ierr = KSP_MatMult(ksp,A, s, v);CHKERRQ(ierr);  /* v = A s */
 
     ierr = VecMDot(v,k, ctx->VV, ctx->val);CHKERRQ(ierr);
     for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
@@ -102,7 +102,7 @@ PetscErrorCode KSPSolve_GCR(KSP ksp)
   r    = ctx->R;
 
   /* compute initial residual */
-  ierr = MatMult(A, x, r);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,A, x, r);CHKERRQ(ierr);
   ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr); /* r = b - A x  */
   ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
 

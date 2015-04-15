@@ -10,7 +10,7 @@
        --  Apple  CGLContextObj http://developer.apple.com/library/mac/#documentation/graphicsimaging/Reference/CGL_OpenGL/Reference/reference.html#//apple_ref/doc/uid/TP40001186
 */
 
-#include <petsc-private/drawimpl.h>  /*I  "petscsys.h" I*/
+#include <petsc/private/drawimpl.h>  /*I  "petscsys.h" I*/
 #if defined(PETSC_HAVE_OPENGLES)
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
@@ -426,7 +426,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   glutDestroyWindow(win->win);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -629,7 +629,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 
   PetscFunctionBegin;
   globalGLKViewUsed[win->view] = 0;
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }

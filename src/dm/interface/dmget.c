@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h> /*I "petscdm.h" I*/
+#include <petsc/private/dmimpl.h> /*I "petscdm.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetLocalVector"
@@ -100,6 +100,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -242,6 +243,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 

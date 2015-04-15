@@ -21,33 +21,33 @@ class Configure(config.package.GNUPackage):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Cmake will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.confDir]
-    if 'download-cmake-cc' in self.framework.argDB and self.framework.argDB['download-cmake-cc']:
-      args.append('CC="'+self.framework.argDB['download-cmake-cc']+'"')
-    if 'download-cmake-configure-options' in self.framework.argDB and self.framework.argDB['download-cmake-configure-options']:
-      args.append(self.framework.argDB['download-cmake-configure-options'])
+    if 'download-cmake-cc' in self.argDB and self.argDB['download-cmake-cc']:
+      args.append('CC="'+self.argDB['download-cmake-cc']+'"')
+    if 'download-cmake-configure-options' in self.argDB and self.argDB['download-cmake-configure-options']:
+      args.append(self.argDB['download-cmake-configure-options'])
     return args
 
   def locateCMake(self):
-    if 'with-cmake-exec' in self.framework.argDB:
-      self.framework.log.write('Looking for specified CMake executable '+self.framework.argDB['with-cmake-exec']+'\n')
-      self.getExecutable(self.framework.argDB['with-cmake-exec'], getFullPath=1, resultName='cmake')
+    if 'with-cmake-exec' in self.argDB:
+      self.log.write('Looking for specified CMake executable '+self.argDB['with-cmake-exec']+'\n')
+      self.getExecutable(self.argDB['with-cmake-exec'], getFullPath=1, resultName='cmake')
     else:
-      self.framework.log.write('Looking for default CMake executable\n')
+      self.log.write('Looking for default CMake executable\n')
       self.getExecutable('cmake', getFullPath=1, resultName='cmake')
     return
 
   def alternateConfigureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
 
   def configure(self):
     '''Locate cmake and download it if requested'''
-    if self.framework.argDB['download-cmake']:
-      self.framework.log.write('Building CMake\n')
+    if self.argDB['download-cmake']:
+      self.log.write('Building CMake\n')
       config.package.GNUPackage.configure(self)
       self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
-    elif (not self.framework.argDB['with-cmake']  == 0 and not self.framework.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.framework.argDB:
+    elif (not self.argDB['with-cmake']  == 0 and not self.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.argDB:
       self.executeTest(self.locateCMake)
     else:
-      self.framework.log.write('Not checking for CMake\n')
+      self.log.write('Not checking for CMake\n')
     if hasattr(self, 'cmake'): self.found = 1
     return

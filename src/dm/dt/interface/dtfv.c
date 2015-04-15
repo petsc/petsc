@@ -1,5 +1,5 @@
-#include <petsc-private/petscfvimpl.h> /*I "petscfv.h" I*/
-#include <petscdmplex.h>
+#include <petsc/private/petscfvimpl.h> /*I "petscfv.h" I*/
+#include <petsc/private/dmpleximpl.h> /* For CellRefiner */
 #include <petscds.h>
 
 PetscClassId PETSCLIMITER_CLASSID = 0;
@@ -1324,6 +1324,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   ((PetscObject) (*fvm))->refct = 0;
 
   ierr = PetscLimiterDestroy(&(*fvm)->limiter);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&(*fvm)->dualSpace);CHKERRQ(ierr);
   ierr = PetscFree((*fvm)->fluxWork);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fvm)->quadrature);CHKERRQ(ierr);
   ierr = PetscFVRestoreTabulation((*fvm), 0, NULL, &(*fvm)->B, &(*fvm)->D, NULL /*&(*fvm)->H*/);CHKERRQ(ierr);
@@ -1643,6 +1644,80 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscFVGetDualSpace"
+/*@
+  PetscFVGetDualSpace - Returns the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameter:
+. fvm - The PetscFV object
+
+  Output Parameter:
+. sp - The PetscDualSpace object
+
+  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+
+  Level: developer
+
+.seealso: PetscFVCreate()
+@*/
+PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(sp, 2);
+  if (!fvm->dualSpace) {
+    DM              K;
+    PetscQuadrature q;
+    PetscInt        dim;
+    PetscErrorCode  ierr;
+
+    ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
+    ierr = PetscFVGetQuadrature(fvm, &q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
+    ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+  }
+  *sp = fvm->dualSpace;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetDualSpace"
+/*@
+  PetscFVSetDualSpace - Sets the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameters:
++ fvm - The PetscFV object
+- sp  - The PetscDualSpace object
+
+  Level: intermediate
+
+  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+
+.seealso: PetscFVCreate()
+@*/
+PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 2);
+  ierr = PetscDualSpaceDestroy(&fvm->dualSpace);CHKERRQ(ierr);
+  fvm->dualSpace = sp;
+  ierr = PetscObjectReference((PetscObject) fvm->dualSpace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscFVGetDefaultTabulation"
 PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal **D, PetscReal **H)
 {
@@ -1757,6 +1832,79 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (fvm->ops->integraterhsfunction) {ierr = (*fvm->ops->integraterhsfunction)(fvm, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRefine"
+/*@
+  PetscFVRefine - Create a "refined" PetscFV object that refines the reference cell into smaller copies. This is typically used
+  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
+  sparsity). It is also used to create an interpolation between regularly refined meshes.
+
+  Input Parameter:
+. fv - The initial PetscFV
+
+  Output Parameter:
+. fvRef - The refined PetscFV
+
+  Level: developer
+
+.seealso: PetscFVType, PetscFVCreate(), PetscFVSetType()
+@*/
+PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
+{
+  PetscDualSpace   Q, Qref;
+  DM               K, Kref;
+  PetscQuadrature  q, qref;
+  CellRefiner      cellRefiner;
+  PetscReal       *v0;
+  PetscReal       *jac, *invjac;
+  PetscInt         numComp, numSubelements, s;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
+  ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceDuplicate(Q, &Qref);CHKERRQ(ierr);
+  ierr = DMRefine(K, PetscObjectComm((PetscObject) fv), &Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
+  ierr = DMDestroy(&Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
+  /* Create volume */
+  ierr = PetscFVCreate(PetscObjectComm((PetscObject) fv), fvRef);CHKERRQ(ierr);
+  ierr = PetscFVSetDualSpace(*fvRef, Qref);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fv,    &numComp);CHKERRQ(ierr);
+  ierr = PetscFVSetNumComponents(*fvRef, numComp);CHKERRQ(ierr);
+  ierr = PetscFVSetUp(*fvRef);CHKERRQ(ierr);
+  /* Create quadrature */
+  ierr = DMPlexGetCellRefiner_Internal(K, &cellRefiner);CHKERRQ(ierr);
+  ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = PetscQuadratureExpandComposite(q, numSubelements, v0, jac, &qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSimpleSetDimension(Qref, numSubelements);CHKERRQ(ierr);
+  for (s = 0; s < numSubelements; ++s) {
+    PetscQuadrature  qs;
+    const PetscReal *points, *weights;
+    PetscReal       *p, *w;
+    PetscInt         dim, npoints, np;
+
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qs);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+    np   = npoints/numSubelements;
+    ierr = PetscMalloc1(np*dim,&p);CHKERRQ(ierr);
+    ierr = PetscMalloc1(np,&w);CHKERRQ(ierr);
+    ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(w, &weights[s*np],    np     * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(qs, dim, np, p, w);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
+  }
+  ierr = CellRefinerRestoreAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = PetscFVSetQuadrature(*fvRef, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2005,7 +2153,10 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscScalar   *tmpwork;
   PetscReal      rcond;
   PetscInt       i, j, maxmn;
-  PetscBLASInt   M, N, nrhs, lda, ldb, irank, ldwork, info;
+  PetscBLASInt   M, N, lda, ldb, ldwork;
+#if !defined(PETSC_USE_COMPLEX)
+  PetscBLASInt   nrhs, irank, info;
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2024,7 +2175,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 
   ierr  = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(n,&N);CHKERRQ(ierr);
-  nrhs  = M;
   ierr  = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(maxmn,&ldb);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
@@ -2034,8 +2184,8 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   if (tmpwork && rcond) rcond = 0.0; /* Get rid of compiler warning */
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "I don't think this makes sense for complex numbers");
 #else
+  nrhs  = M;
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
-#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
@@ -2047,6 +2197,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
     for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
   }
   PetscFunctionReturn(0);
+#endif
 }
 
 #if 0

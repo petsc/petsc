@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscfprintf_              PETSCFPRINTF
@@ -42,9 +42,9 @@ PETSC_EXTERN void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fn
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscFPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file,tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(fname,c1);
+  *ierr = PetscFPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
@@ -53,9 +53,9 @@ PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIX
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(fname,c1);
+  *ierr = PetscPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
@@ -64,9 +64,9 @@ PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscSynchronizedFPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file,tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(fname,c1);
+  *ierr = PetscSynchronizedFPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
@@ -75,8 +75,8 @@ PETSC_EXTERN void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fna
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscSynchronizedPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(fname,c1);
+  *ierr = PetscSynchronizedPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 

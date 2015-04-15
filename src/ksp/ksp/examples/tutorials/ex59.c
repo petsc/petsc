@@ -384,7 +384,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
     ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
   }
 
-  i = PetscPowScalar(3.0*(dd.p+1.0),dd.dim);
+  i = PetscPowRealInt(3.0*(dd.p+1.0),dd.dim);
 
   ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
@@ -556,7 +556,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
       z1=z2;
     }
     Lpj             = z2;
-    glldata->A[j][0]=4.0*PetscPowScalar(-1.0,p)/(p*(p+1.0)*Lpj*(1.0+glldata->zGL[j])*(1.0+glldata->zGL[j]));
+    glldata->A[j][0]=4.0*PetscPowRealInt(-1.0,p)/(p*(p+1.0)*Lpj*(1.0+glldata->zGL[j])*(1.0+glldata->zGL[j]));
     glldata->A[0][j]=glldata->A[j][0];
   }
   for (j=0; j<p; j++) {
@@ -811,7 +811,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   KSP            temp_ksp;
   PC             pc;
   IS             dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
-  PetscInt       localsize,*xadj,*adjncy;
+  PetscInt       localsize,*xadj=NULL,*adjncy=NULL;
   MatNullSpace   near_null_space;
 
   PetscFunctionBeginUser;

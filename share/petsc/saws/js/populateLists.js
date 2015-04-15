@@ -50,7 +50,6 @@ function populateList(type, endtag, list)
         $(list).append("<option value=\"preonly\">preonly</option>");
         $(list).append("<option value=\"qcg\">qcg (symm, positive definite)</option>");
         $(list).append("<option value=\"richardson\">richardson</option>");
-        $(list).append("<option value=\"specest\">specest</option>");
         $(list).append("<option value=\"stcg\">stcg</option>");
         $(list).append("<option value=\"symmlq\">symmlq (symm, non-positive definite)</option>");
         $(list).append("<option value=\"tcqmr\">tcqmr</option>");

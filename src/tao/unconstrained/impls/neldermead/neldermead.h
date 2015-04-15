@@ -1,6 +1,6 @@
 #ifndef __TAO_NELDERMEAD_H
 #define __TAO_NELDERMEAD_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 
 typedef struct {

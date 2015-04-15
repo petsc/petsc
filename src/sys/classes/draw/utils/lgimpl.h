@@ -7,7 +7,7 @@
 */
 
 #include <petscdraw.h>         /*I "petscdraw.h" I*/
-#include <petsc-private/petscimpl.h>         /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
 
 struct _p_PetscDrawLG {
   PETSCHEADER(int);
@@ -18,7 +18,7 @@ struct _p_PetscDrawLG {
   PetscDrawAxis  axis;
   PetscReal      xmin,xmax,ymin,ymax,*x,*y;
   int            nopts,dim,*colors;
-  PetscBool      use_dots;
+  PetscBool      use_markers;
   char           **legend;
 };
 #define CHUNCKSIZE 100

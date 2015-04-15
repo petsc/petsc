@@ -6,7 +6,7 @@
 
 */
 
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 
 #define ManSection(str) ((str) ? (str) : "None")
@@ -578,6 +578,14 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
         sprintf(value,"%g",(double)((PetscReal*)PetscOptionsObject->next->data)[0]);
         for (j=1; j<PetscOptionsObject->next->arraylength; j++) {
           sprintf(tmp,"%g",(double)((PetscReal*)PetscOptionsObject->next->data)[j]);
+          ierr = PetscStrcat(value,",");CHKERRQ(ierr);
+          ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
+        }
+        break;
+      case OPTION_SCALAR_ARRAY:
+        sprintf(value,"%g+%gi",(double)PetscRealPart(((PetscScalar*)PetscOptionsObject->next->data)[0]),(double)PetscImaginaryPart(((PetscScalar*)PetscOptionsObject->next->data)[0]));
+        for (j=1; j<PetscOptionsObject->next->arraylength; j++) {
+          sprintf(tmp,"%g+%gi",(double)PetscRealPart(((PetscScalar*)PetscOptionsObject->next->data)[j]),(double)PetscImaginaryPart(((PetscScalar*)PetscOptionsObject->next->data)[j]));
           ierr = PetscStrcat(value,",");CHKERRQ(ierr);
           ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
         }
@@ -1323,7 +1331,7 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptions *PetscOptionsObject,const 
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsRealArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
+PetscErrorCode PetscOptionsRealArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1350,6 +1358,68 @@ PetscErrorCode  PetscOptionsRealArray_Private(PetscOptions *PetscOptionsObject,c
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsScalarArray_Private"
+/*@C
+   PetscOptionsScalarArray - Gets an array of Scalar values for a particular
+   option in the database. The values must be separated with commas with
+   no intervening spaces.
+
+   Logically Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - the option one is seeking
+.  text - short string describing option
+.  man - manual page for option
+-  nmax - maximum number of values
+
+   Output Parameter:
++  value - location to copy values
+.  nmax - actual number of values found
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Notes:
+   The user should pass in an array of doubles
+
+   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Concepts: options database^array of strings
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
+          PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode PetscOptionsScalarArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscScalar value[],PetscInt *n,PetscBool  *set)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscOption   amsopt;
+
+  PetscFunctionBegin;
+  if (!PetscOptionsObject->count) {
+    PetscScalar *vals;
+
+    ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,text,man,OPTION_SCALAR_ARRAY,&amsopt);CHKERRQ(ierr);
+    ierr = PetscMalloc((*n)*sizeof(PetscScalar),&amsopt->data);CHKERRQ(ierr);
+    vals = (PetscScalar*)amsopt->data;
+    for (i=0; i<*n; i++) vals[i] = value[i];
+    amsopt->arraylength = *n;
+  }
+  ierr = PetscOptionsGetScalarArray(PetscOptionsObject->prefix,opt,value,n,set);CHKERRQ(ierr);
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g+%gi",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,(double)PetscRealPart(value[0]),(double)PetscImaginaryPart(value[0]));CHKERRQ(ierr);
+    for (i=1; i<*n; i++) {
+      ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,",%g+%gi",(double)PetscRealPart(value[i]),(double)PetscImaginaryPart(value[i]));CHKERRQ(ierr);
+    }
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,">: %s (%s)\n",text,ManSection(man));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsIntArray_Private"

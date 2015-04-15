@@ -19,7 +19,7 @@
 */
 #define PETSC_SKIP_COMPLEX /* since spai uses I which conflicts with some complex implementations */
 
-#include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/spai/petscspai.h>
 
 /*

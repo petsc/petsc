@@ -4,9 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.3.tar.gz']
+    self.download  = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz']
     self.downloadfilename = 'openmpi'
     self.skippackagewithoptions = 1
+    self.isMPI = 1
     return
 
   def formGNUConfigureArgs(self):
@@ -26,7 +27,7 @@ class Configure(config.package.GNUPackage):
       args.append('--disable-mpi-f90')
       args.append('F77=""')
       args.append('FC=""')
-    if not self.framework.argDB['with-shared-libraries']:
+    if not self.argDB['with-shared-libraries']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
     args.append('--disable-vt')

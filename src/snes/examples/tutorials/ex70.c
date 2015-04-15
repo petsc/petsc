@@ -635,7 +635,7 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
 
 PetscErrorCode StokesCalcError(Stokes *s)
 {
-  PetscScalar    scale = PetscSqrtScalar(s->nx*s->ny);
+  PetscScalar    scale = PetscSqrtReal((double)s->nx*s->ny);
   PetscReal      val;
   Vec            y0, y1;
   PetscErrorCode ierr;

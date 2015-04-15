@@ -1,9 +1,9 @@
 
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIGetInactiveSet"
@@ -15,7 +15,7 @@
 .  snes - the SNES context
 
    Output parameter
-.  ISact - active set index set
+.  inact - inactive set index set
 
  */
 PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
@@ -342,8 +342,15 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
+  KSP                ksp;
+  PC                 pc;
 
   PetscFunctionBegin;
+  /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
@@ -600,7 +607,8 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
-    }
+   }
+   ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
     /* Update function and solution vectors */
     fnorm = gnorm;
     /* Monitor convergence */
@@ -615,6 +623,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
+  /* make sure that the VI information attached to the DM is removed if the for loop above was broken early due to some exceptional conditional */
   ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
@@ -705,7 +714,6 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 
@@ -762,18 +770,16 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
       SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
++   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner
 
    References:
-   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
+  - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
-           SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
 #undef __FUNCT__

@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
   PetscInitialize(&argc,&argv,NULL,help);
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n");
+  PetscFinalize();
+  return 0;
 #endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
@@ -90,9 +92,7 @@ int main(int argc, char *argv[])
   options[4] = 0;
 
   ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
-  status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt,
-                                    NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &isize, tpwgts, ubvec,
-                                    options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
+  status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
   ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
   ierr = PetscFree(vtxdist);CHKERRQ(ierr);

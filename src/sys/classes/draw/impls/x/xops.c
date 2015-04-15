@@ -597,7 +597,7 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   XCloseDisplay(win->disp);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   ierr = PetscFree(win->font);CHKERRQ(ierr);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

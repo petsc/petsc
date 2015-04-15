@@ -9,6 +9,44 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_SeqDense"
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat            B;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqDense   *b;
+  PetscErrorCode ierr;
+  PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->N,i;
+  MatScalar      *av=a->a;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
+
+  b  = (Mat_SeqDense*)(B->data);
+  for (i=0; i<m; i++) {
+    PetscInt j;
+    for (j=0;j<ai[1]-ai[0];j++) {
+      b->v[*aj*m+i] = *av;
+      aj++;
+      av++;
+    }
+    ai++;
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
 PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
@@ -483,7 +521,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
   A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
   A->factortype             = MAT_FACTOR_CHOLESKY;
 
-  ierr = PetscLogFlops((A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
+  ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -828,6 +866,8 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"view must have one processor");
@@ -844,7 +884,10 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
     ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
     if (M != grows ||  N != gcols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,grows,gcols);
   }
-  ierr = MatSeqDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  a = (Mat_SeqDense*)newmat->data;
+  if (!a->user_alloc) {
+    ierr = MatSeqDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  }
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
     a = (Mat_SeqDense*)newmat->data;
@@ -1298,7 +1341,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<n; j++) { (*v) *= x; v+= m;}
     }
     ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
-    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*n*m);CHKERRQ(ierr);
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
@@ -1310,7 +1353,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<m; j++) (*v++) *= x;
     }
     ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
-    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*n*m);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1351,7 +1394,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*A->cmap->n*A->rmap->n);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     *nrm = 0.0;
     for (j=0; j<A->rmap->n; j++) {
@@ -1362,7 +1405,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*A->cmap->n*A->rmap->n);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No two norm");
   PetscFunctionReturn(0);
 }
@@ -2021,7 +2064,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatCopy_SeqDense,
                                 /* 44*/ MatGetRowMax_SeqDense,
                                         MatScale_SeqDense,
-                                        0,
+                                        MatShift_Basic,
                                         0,
                                         0,
                                 /* 49*/ MatSetRandom_SeqDense,

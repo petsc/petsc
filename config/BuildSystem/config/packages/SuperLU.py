@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz']
+    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.3.tar.gz']
     self.functions    = ['set_default_options']
     self.includes     = ['slu_ddefs.h']
     self.liblist      = [['libsuperlu_4.3.a']]
@@ -58,11 +59,11 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing superlu; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make superlulib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make superlulib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output+err,'make.inc')
@@ -70,16 +71,16 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if not self.blasLapack.checkForRoutine('slamch'):
         raise RuntimeError('SuperLU requires the LAPACK routine slamch()')
-      self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
+      self.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
 
       if not self.blasLapack.checkForRoutine('dlamch'):
         raise RuntimeError('SuperLU requires the LAPACK routine dlamch()')
-      self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
+      self.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
 
       if not self.blasLapack.checkForRoutine('xerbla'):
         raise RuntimeError('SuperLU requires the BLAS routine xerbla()')
-      self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
+      self.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
     return

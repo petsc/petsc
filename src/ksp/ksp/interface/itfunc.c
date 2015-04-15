@@ -3,7 +3,7 @@
       Interface KSP routines that the user calls.
 */
 
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -292,7 +292,6 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
     break;
   case KSP_SETUP_NEWMATRIX: {   /* This should be replaced with a more general mechanism */
-    ierr = KSPChebyshevSetNewMatrix(ksp);CHKERRQ(ierr);
   } break;
   default: break;
   }
@@ -391,6 +390,10 @@ PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+#define KSPReasonViewFromOptions KSPReasonViewFromOptionsUnsafe
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPReasonViewFromOptions"
 /*@C
@@ -425,6 +428,17 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+#undef KSPReasonViewFromOptions
+PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
+{
+  PetscErrorCode ierr;
+#pragma omp critical
+  ierr = KSPReasonViewFromOptionsUnsafe(ksp);
+  return ierr;
+}
+#endif
 
 #include <petscdraw.h>
 #undef __FUNCT__

@@ -4,7 +4,7 @@
 !
       program main
 
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       PetscErrorCode ierr
 
@@ -33,9 +33,9 @@
 !
       subroutine Demo1()
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscviewer.h>
 
       Mat         A
       PetscInt   n,m
@@ -86,9 +86,9 @@
 !
       subroutine Demo2()
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscviewer.h>
 
       PetscInt   n,m
       PetscErrorCode ierr

@@ -1,14 +1,9 @@
 #if !defined(_matelemimpl_h)
 #define _matelemimpl_h
 
-#include <elemental.hpp>
-#include <petsc-private/matimpl.h>
-
-#if defined(PETSC_USE_COMPLEX)
-typedef elem::Complex<PetscReal> PetscElemScalar;
-#else
-typedef PetscScalar PetscElemScalar;
-#endif
+#include <El.hpp>
+#include <petsc/private/matimpl.h>
+#include <petscmatelemental.h>
 
 typedef struct {
   PetscInt commsize;
@@ -17,15 +12,15 @@ typedef struct {
                           We expose a blocked ordering to the user because that is what all other PETSc infrastructure uses.
                           With the blocked ordering when the number of processes do not evenly divide the vector size,
                           we still need to be able to convert from PETSc/blocked ordering to VC/VR ordering. */
-  elem::Grid                                     *grid;
-  elem::DistMatrix<PetscElemScalar>              *emat;
-  elem::Matrix<PetscElemScalar>                  *esubmat; /* Used for adding off-proc matrix entries */
-  elem::AxpyInterface<PetscElemScalar>           *interface;
-  elem::DistMatrix<PetscInt,elem::VC,elem::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
+  El::Grid                                     *grid;
+  El::DistMatrix<PetscElemScalar>              *emat;
+  El::Matrix<PetscElemScalar>                  *esubmat; /* Used for adding off-proc matrix entries */
+  El::AxpyInterface<PetscElemScalar>           *interface;
+  El::DistMatrix<PetscInt,El::VC,El::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
 } Mat_Elemental;
 
 typedef struct {
-  elem::Grid *grid;
+  El::Grid *grid;
   PetscInt   grid_refct;
 } Mat_Elemental_Grid;
 

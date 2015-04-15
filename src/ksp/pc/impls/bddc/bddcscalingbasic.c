@@ -363,7 +363,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
     deluxe_ctx->idx_simple_B = 0;
   }
   ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

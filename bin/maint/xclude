@@ -8,7 +8,7 @@ petsc-dist/.hgtags
 petsc-dist/CMakeLists.txt
 petsc-dist/externalpackages
 petsc-dist/tmp
-petsc-dist/lib/petsc-conf/petscvariables
+petsc-dist/lib/petsc/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
 petsc-dist/config/BuildSystem/.hgignore
 petsc-dist/config/BuildSystem/.hgtags

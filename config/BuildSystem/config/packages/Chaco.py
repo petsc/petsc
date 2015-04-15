@@ -19,7 +19,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    self.framework.log.write('chacoDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    self.log.write('chacoDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
     mkfile = 'make.inc'
     g = open(os.path.join(self.packageDir, mkfile), 'w')
@@ -34,7 +34,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing chaco; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && cd code && make clean && make && '+self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.installDir+' && '+self.installSudo+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' `find '+self.packageDir+'/code -name "*.o"` && cd '+self.libdir+' && '+self.installSudo+self.setCompilers.AR+' d libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' main.o && '+self.installSudo+self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX, timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && cd code && make clean && make && '+self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.installDir+' && '+self.installSudo+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' `find '+self.packageDir+'/code -name "*.o"` && cd '+self.libdir+' && '+self.installSudo+self.setCompilers.AR+' d libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' main.o && '+self.installSudo+self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX, timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
       self.postInstall(output+err, mkfile)

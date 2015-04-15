@@ -12,37 +12,37 @@ CPPFLAGS =
 FPPFLAGS =
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
-include ././${PETSC_ARCH}/lib/petsc-conf/petscvariables
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all: chk_makej
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc-conf/make.log
-	@ln -sf ${PETSC_ARCH}/lib/petsc-conf/make.log make.log
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
+	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
 	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
-	   ${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log; \
+	   ${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
 	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log \
 		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
 	 else \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log \
                 | ${GREP} -v "has no symbols"; \
 	 fi
-	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/lib/petsc-conf/make.log | tee ${PETSC_ARCH}/lib/petsc-conf/error.log > /dev/null
-	@if test -s ${PETSC_ARCH}/lib/petsc-conf/error.log; then \
-           printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log; \
-           echo "  Error during compile, check ${PETSC_ARCH}/lib/petsc-conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log; \
-           echo "  Send it and ${PETSC_ARCH}/lib/petsc-conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log;\
-           printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log;\
+	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/lib/petsc/conf/make.log | tee ${PETSC_ARCH}/lib/petsc/conf/error.log > /dev/null
+	@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then \
+           printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
+           echo "  Error during compile, check ${PETSC_ARCH}/lib/petsc/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
+           echo "  Send it and ${PETSC_ARCH}/lib/petsc/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
+           printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
 	 else \
-	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc-conf/make.log ;\
+	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
-	@echo "Finishing at: `date`" >> ${PETSC_ARCH}/lib/petsc-conf/make.log
-	@if test -s ${PETSC_ARCH}/lib/petsc-conf/error.log; then exit 1; fi
+	@echo "Finishing at: `date`" >> ${PETSC_ARCH}/lib/petsc/conf/make.log
+	@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then exit 1; fi
 
 all-gnumake:
 	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
@@ -144,14 +144,14 @@ matlabbin:
 #
 check: test
 test:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc-conf/test.log
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
 	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
           printf "=========================================\n"; \
           printf "Now to evaluate the computer systems you plan use - do:\n"; \
           printf "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams NPMAX=<number of MPI processes you intend to use>\n"; \
         fi
 testx:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc-conf/testx.log
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/testx.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
@@ -246,16 +246,16 @@ allclean:
 clean:: allclean
 
 distclean: chk_petscdir
-	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/reconfigure-${PETSC_ARCH}.py ]; then \
-	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
-          mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
+	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ]; then \
+	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
+          mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
 	@echo "*** Deleting all build files in ${PETSC_DIR}/${PETSC_ARCH} ***"
 	-${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/
 
 
 #
 reconfigure:
-	@${PYTHON} ${PETSC_ARCH}/lib/petsc-conf/reconfigure-${PETSC_ARCH}.py
+	@${PYTHON} ${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py
 #
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
@@ -288,13 +288,13 @@ alletags:
 
 # obtain gtags from http://www.gnu.org/s/global/
 allgtags:
-	-@find -E ${PETSC_DIR}/{include,src,bin} -regex '(.*makefile|.*\.(cc|hh|cpp|C|hpp|c|h|cu|m)$$)' | grep -v ftn-auto  | gtags -f -
+	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src ${PETSC_DIR}/bin -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
 allfortranstubs:
-	-@${RM} -rf include/petsc-finclude/ftn-auto/*-tmpdir
+	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
 	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf include/petsc-finclude/ftn-auto/*-tmpdir
+	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 cmakegen:

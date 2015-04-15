@@ -1,4 +1,4 @@
-#include <petsc-private/threadcommimpl.h>
+#include <petsc/private/threadcommimpl.h>
 
 static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 

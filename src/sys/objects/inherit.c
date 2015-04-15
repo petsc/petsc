@@ -2,12 +2,13 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
-#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
 PetscObject *PetscObjects      = 0;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
+PetscBool   PetscObjectsLog    = PETSC_FALSE;
 #endif
 
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
@@ -60,24 +61,26 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
 
 #if defined(PETSC_USE_LOG)
   /* Keep a record of object created */
-  PetscObjectsCounts++;
-  for (i=0; i<PetscObjectsMaxCounts; i++) {
-    if (!PetscObjects[i]) {
-      PetscObjects[i] = h;
-      PetscFunctionReturn(0);
+  if (PetscObjectsLog) {
+    PetscObjectsCounts++;
+    for (i=0; i<PetscObjectsMaxCounts; i++) {
+      if (!PetscObjects[i]) {
+        PetscObjects[i] = h;
+        PetscFunctionReturn(0);
+      }
     }
-  }
-  /* Need to increase the space for storing PETSc objects */
-  if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
-  else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
-  ierr = PetscMalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
-  ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts*sizeof(PetscObject));CHKERRQ(ierr);
-  ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
-  ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+    /* Need to increase the space for storing PETSc objects */
+    if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
+    else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
+    ierr = PetscMalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
+    ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts*sizeof(PetscObject));CHKERRQ(ierr);
+    ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
+    ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 
-  PetscObjects                        = newPetscObjects;
-  PetscObjects[PetscObjectsMaxCounts] = h;
-  PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
+    PetscObjects                        = newPetscObjects;
+    PetscObjects[PetscObjectsMaxCounts] = h;
+    PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -98,7 +101,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   PetscFunctionBegin;
   PetscValidHeader(h,1);
   ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
-  ierr = PetscComposedQuantitiesDestroy(h);
+  ierr = PetscComposedQuantitiesDestroy(h);CHKERRQ(ierr);
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
@@ -129,20 +132,20 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  {
-  PetscInt i;
-  /* Record object removal from list of all objects */
-  for (i=0; i<PetscObjectsMaxCounts; i++) {
-    if (PetscObjects[i] == h) {
-      PetscObjects[i] = 0;
-      PetscObjectsCounts--;
-      break;
+  if (PetscObjectsLog) {
+    PetscInt i;
+    /* Record object removal from list of all objects */
+    for (i=0; i<PetscObjectsMaxCounts; i++) {
+      if (PetscObjects[i] == h) {
+        PetscObjects[i] = 0;
+        PetscObjectsCounts--;
+        break;
+      }
     }
-  }
-  if (!PetscObjectsCounts) {
-    ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
-    PetscObjectsMaxCounts = 0;
-  }
+    if (!PetscObjectsCounts) {
+      ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+      PetscObjectsMaxCounts = 0;
+    }
   }
 #endif
   PetscFunctionReturn(0);

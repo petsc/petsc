@@ -4,12 +4,12 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR   = src/sys/classes/draw/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c ex11.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c ex11.c ex12.c
 EXAMPLESF       = ex4f.F ex5f.F
 MANSEC          = Draw
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -58,6 +58,10 @@ ex10: ex10.o  chkopts
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_SYS_LIB}
 	${RM} -f ex11.o
+
+ex12: ex12.o  chkopts
+	-${CLINKER} -o ex12 ex12.o  ${PETSC_SYS_LIB}
+	${RM} -f ex12.o
 #------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1
@@ -73,11 +77,14 @@ runex10:
 	-@${MPIEXEC} -n 1 ./ex10
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11
+runex12:
+	-@${MPIEXEC} -n 1 ./ex12
 
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex10.PETSc \
-                            runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 ex11.rm
+                            runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 ex11.rm \
+                            ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm
 TESTEXAMPLES_13		  = ex9.PETSc ex9.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

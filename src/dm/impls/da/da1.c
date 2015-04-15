@@ -4,7 +4,7 @@
    This file was created by Peter Mell   6/30/95
 */
 
-#include <petsc-private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
 #include <petscdraw.h>
 #undef __FUNCT__
@@ -133,7 +133,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   if (s > 0) {
     /* if not communicating data then should be ok to have nothing on some processes */
     if (M < m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
-    if ((M-1) < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
+    if ((M-1) < s && size > 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
   }
 
   /*

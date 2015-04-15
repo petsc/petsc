@@ -1137,7 +1137,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                 /* 44*/ 0,
                                         MatScale_MPIDense,
-                                        0,
+                                        MatShift_Basic,
                                         0,
                                         0,
                                 /* 49*/ MatSetRandom_MPIDense,
@@ -1569,6 +1569,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
 #define __FUNCT__ "MatLoad_MPIDense"
 PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 {
+  Mat_MPIDense   *a;
   PetscScalar    *vals,*svals;
   MPI_Comm       comm;
   MPI_Status     status;
@@ -1580,6 +1581,8 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1700,7 +1703,10 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   if (!sizesset) {
     ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   }
-  ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  a = (Mat_MPIDense*)newmat->data;
+  if (!a->A || !((Mat_SeqDense*)(a->A->data))->user_alloc) {
+    ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
+  }
   for (i=0; i<m; i++) ourlens[i] += offlens[i];
 
   if (!rank) {

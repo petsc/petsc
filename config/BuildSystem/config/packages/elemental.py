@@ -3,11 +3,12 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '60be4cf1536c2a97bbf8f32903c5dae0d47a2b04'
-    self.giturls          = ['https://github.com/elemental/Elemental']
-    self.download         = ['http://libelemental.org/pub/releases/Elemental-0.84-p5.tgz']
-    self.liblist          = [['libelemental.a','libpmrrr.a']]
-    self.includes         = ['elemental.hpp']
+    #self.gitcommit        = '5dc20f1424206f2a09b001e2585fe5c794e60dbf'
+    #self.giturls          = ['https://github.com/elemental/Elemental']
+    #self.download         = ['http://libelemental.org/pub/releases/Elemental-0.85.tgz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Elemental-0.85-p1.tar.gz']
+    self.liblist          = [['libEl.a','libpmrrr.a']]
+    self.includes         = ['El.hpp']
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0
@@ -27,12 +28,19 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args.append('-DUSE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
+    args.append('-DEL_USE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
+    args.append('-DBUILD_KISSFFT=OFF')
+    args.append('-DBUILD_METIS=OFF')
+    args.append('-DBUILD_PARMETIS=OFF')
+    args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
+    if self.setCompilers.isDarwin():
+      # shared library build doesn't work on Apple
+      args.append('-DBUILD_SHARED_LIBS=off')
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
-    if self.framework.argDB['with-64-bit-indices']:
-      args.append('-DUSE_64BIT_INTS=ON')
+    if self.argDB['with-64-bit-indices']:
+      args.append('-DEL_USE_64BIT_INTS=ON')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
@@ -46,7 +54,3 @@ class Configure(config.package.CMakePackage):
       args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       self.framework.popLanguage()
     return args
-
-
-
-

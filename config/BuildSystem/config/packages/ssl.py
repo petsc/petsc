@@ -20,17 +20,14 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = []
 
-  def getSearchDirectories(self):
-    yield ''
-
   def configureLibrary(self):
-    if 'with-ios' in self.framework.argDB and self.framework.argDB['with-ios']: 
+    if 'with-ios' in self.argDB and self.argDB['with-ios']: 
       self.found = 0
       return
     config.package.Package.configureLibrary(self)
 
   def consistencyChecks(self):
    config.package.Package.consistencyChecks(self)
-   if self.framework.argDB['with-'+self.package]:
-     if self.framework.argDB['with-ssl-certificate']:
+   if self.argDB['with-'+self.package]:
+     if self.argDB['with-ssl-certificate']:
        self.addDefine('USE_SSL_CERTIFICATE','1')

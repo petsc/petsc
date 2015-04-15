@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>    /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
@@ -449,13 +449,13 @@ static int gamg_hem_compare(const void *a, const void *b)
    Input Parameter:
    . perm - permutation
    . a_Gmat - glabal matrix of graph (data not defined)
-   . verbose -
+
    Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
 */
 #undef __FUNCT__
 #define __FUNCT__ "heavyEdgeMatchAgg"
-static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarsenData **a_locals_llist)
+static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_locals_llist)
 {
   PetscErrorCode   ierr;
   PetscBool        isMPI;
@@ -1015,7 +1015,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,Pets
         ierr = VecGetArray(ghostMaxPE, &cpcol_max_pe);CHKERRQ(ierr);
         ierr = VecRestoreArray(locMaxEdge, &lid_max_ew);CHKERRQ(ierr);
       } /* deal with deleted ghost */
-      if (verbose>2) PetscPrintf(comm,"\t[%d]%s %d.%d: %d active edges.\n",rank,__FUNCT__,iter,sub_it,nactive_edges);
+      ierr = PetscInfo3(a_Gmat,"\t %D.%D: %D active edges.\n",iter,sub_it,nactive_edges);CHKERRQ(ierr);
       if (!nactive_edges) break;
     } /* sub_it loop */
 
@@ -1136,10 +1136,10 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
     
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)mat), m, 0, 1, &perm);CHKERRQ(ierr);
-    ierr = heavyEdgeMatchAgg(perm, mat, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
+    ierr = heavyEdgeMatchAgg(perm, mat, &coarse->agg_lists);CHKERRQ(ierr);
     ierr = ISDestroy(&perm);CHKERRQ(ierr);
   } else {
-    ierr = heavyEdgeMatchAgg(coarse->perm, mat, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
+    ierr = heavyEdgeMatchAgg(coarse->perm, mat, &coarse->agg_lists);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

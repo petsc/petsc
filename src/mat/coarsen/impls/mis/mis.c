@@ -1,4 +1,4 @@
-#include <petsc-private/matimpl.h>    /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscsf.h>
@@ -16,14 +16,14 @@
    . perm - serial permutation of rows of local to process in MIS
    . Gmat - glabal matrix of graph (data not defined)
    . strict_aggs - flag for whether to keep strict (non overlapping) aggregates in 'llist';
-   . verbose -
+
    Output Parameter:
    . a_selected - IS of selected vertices, includes 'ghost' nodes at end with natural local indices
    . a_locals_llist - array of list of nodes rooted at selected nodes
 */
 #undef __FUNCT__
 #define __FUNCT__ "maxIndSetAgg"
-PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verbose,PetscCoarsenData **a_locals_llist)
+PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenData **a_locals_llist)
 {
   PetscErrorCode   ierr;
   Mat_SeqAIJ       *matA,*matB=NULL;
@@ -33,7 +33,6 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   PetscInt         *cpcol_gid,*cpcol_state,*lid_cprowID,*lid_gid,*cpcol_sel_gid,*icpcol_gid,*lid_state,*lid_parent_gid=NULL;
   PetscBool        *lid_removed;
   PetscBool        isMPI,isAIJ,isOK;
-  PetscMPIInt      mype,npe;
   const PetscInt   *perm_ix;
   const PetscInt   nloc = Gmat->rmap->n;
   PetscCoarsenData *agg_lists;
@@ -42,8 +41,6 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
 
   /* get submatrices */
   ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
@@ -122,7 +119,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
             cpid   = idx[j]; /* compressed row ID in B mat */
             gid    = cpcol_gid[cpid];
             statej = cpcol_state[cpid];
-            if (statej == MIS_NOT_DONE && gid >= Iend) { /* should be (pe>mype), use gid as pe proxy */
+            if (statej == MIS_NOT_DONE && gid >= Iend) { /* should be (pe>rank), use gid as pe proxy */
               isOK = PETSC_FALSE; /* can not delete */
               break;
             }
@@ -221,17 +218,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     } else break; /* all done */
   } /* outer parallel MIS loop */
   ierr = ISRestoreIndices(perm,&perm_ix);CHKERRQ(ierr);
-
-  if (verbose) {
-    if (verbose == 1) {
-      ierr = PetscPrintf(comm,"\t[%d]%s removed %d of %d vertices.  %d selected.\n",mype,__FUNCT__,nremoved,nloc,nselected);CHKERRQ(ierr);
-    } else {
-      ierr = MPI_Allreduce(&nremoved, &n, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-      ierr = MatGetSize(Gmat, &kk, &j);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&nselected, &j, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"\t[%d]%s removed %d of %d vertices. (%d local)  %d selected.\n",mype,__FUNCT__,n,kk,nremoved,j);CHKERRQ(ierr);
-    }
-  }
+  ierr = PetscInfo3(Gmat,"\t removed %D of %D vertices.  %D selected.\n",nremoved,nloc,nselected);CHKERRQ(ierr);
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
@@ -292,10 +279,10 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
     ierr = ISCreateStride(comm, m, 0, 1, &perm);CHKERRQ(ierr);
-    ierr = maxIndSetAgg(perm, mat, coarse->strict_aggs, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
+    ierr = maxIndSetAgg(perm, mat, coarse->strict_aggs, &coarse->agg_lists);CHKERRQ(ierr);
     ierr = ISDestroy(&perm);CHKERRQ(ierr);
   } else {
-    ierr = maxIndSetAgg(coarse->perm, mat, coarse->strict_aggs, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
+    ierr = maxIndSetAgg(coarse->perm, mat, coarse->strict_aggs,  &coarse->agg_lists);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

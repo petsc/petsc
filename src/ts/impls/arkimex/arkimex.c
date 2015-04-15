@@ -9,7 +9,7 @@
   where F represents the stiff part of the physics and G represents the non-stiff part.
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static TSARKIMEXType  TSARKIMEXDefault = TSARKIMEX3;
@@ -952,7 +952,7 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   ierr = VecDestroyVecs(s,&ark->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&ark->YdotI);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&ark->YdotRHS);CHKERRQ(ierr);
-  if (&ark->init_guess_extrp) {
+  if (ark->init_guess_extrp) {
     ierr = VecDestroyVecs(s,&ark->Y_prev);CHKERRQ(ierr);
     ierr = VecDestroyVecs(s,&ark->YdotI_prev);CHKERRQ(ierr);
     ierr = VecDestroyVecs(s,&ark->YdotRHS_prev);CHKERRQ(ierr);

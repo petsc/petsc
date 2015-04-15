@@ -1,5 +1,5 @@
 #include <petscmat.h>
-#include <petsc-private/matorderimpl.h>
+#include <petsc/private/matorderimpl.h>
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 
@@ -9,16 +9,20 @@
    SuperLU_dist uses a common flag for both Fortran mangling and BLAS/LAPACK mangling which
    corresponds to the PETSc BLAS/LAPACK mangling flag (we pass this flag to configure SuperLU_dist)
 */
+
+/* Why not incude superlu_dist inludes? */
 #  if defined(PETSC_BLASLAPACK_CAPS)
-#    define mc64id_    MC64ID
-#    define mc64ad_    MC64AD
+#    define mc64id_dist     MC64ID_DIST
+#    define mc64ad_dist     MC64AD_DIST
+
 #  elif !defined(PETSC_BLASLAPACK_UNDERSCORE)
-#    define mc64id_    mc64id
-#    define mc64ad_    mc64ad
+#    define mc64id_dist     mc64id_dist
+#    define mc64ad_dist     mc64ad_dist
+
 #  endif
 
-PETSC_EXTERN PetscInt mc64id_(PetscInt*);
-PETSC_EXTERN PetscInt mc64ad_(const PetscInt*, PetscInt*, PetscInt*, const PetscInt*, const PetscInt*n, PetscScalar*, PetscInt*,
+PETSC_EXTERN PetscInt mc64id_dist(PetscInt*);
+PETSC_EXTERN PetscInt mc64ad_dist(const PetscInt*, PetscInt*, PetscInt*, const PetscInt*, const PetscInt*n, PetscScalar*, PetscInt*,
                               PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscScalar*, PetscInt*, PetscInt*);
 #endif
 
@@ -56,14 +60,14 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
   {
     PetscInt        num, info[10], icntl[10];
 
-    ierr = mc64id_(icntl);
-    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64id_ returned %d\n",ierr);
+    ierr = mc64id_dist(icntl);
+    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64id_dist returned %d\n",ierr);
     icntl[0] = 0;              /* allow printing error messages (f2c'd code uses if non-negative, ignores value otherwise) */
     icntl[1] = -1;             /* suppress warnings */
     icntl[2] = -1;             /* ignore diagnostic output [default] */
     icntl[3] = 0;              /* perform consistency checks [default] */
-    ierr = mc64ad_(&job, &nrow, &nnz, ia, ja, a, &num, perm, &liw, iw, &ldw, dw, icntl, info);
-    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64ad_ returned %d\n",ierr);
+    ierr = mc64ad_dist(&job, &nrow, &nnz, ia, ja, a, &num, perm, &liw, iw, &ldw, dw, icntl, info);
+    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64ad_dist returned %d\n",ierr);
   }
 #else
   SETERRQ(PetscObjectComm((PetscObject) mat), PETSC_ERR_SUP, "WBM using MC64 does not support complex numbers");

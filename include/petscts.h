@@ -39,6 +39,7 @@ typedef const char* TSType;
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
 #define TSEIMEX           "eimex"
+#define TSMIMEX           "mimex"
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -53,7 +54,7 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
    Level: beginner
 
-   Developer Notes: this must match petsc-finclude/petscts.h
+   Developer Notes: this must match petsc/finclude/petscts.h
 
    Supported types are:
      TS_EQ_UNSPECIFIED (default)
@@ -84,7 +85,7 @@ PETSC_EXTERN const char *const*TSEquationTypes;
 
    Level: beginner
 
-   Developer Notes: this must match petsc-finclude/petscts.h
+   Developer Notes: this must match petsc/finclude/petscts.h
 
    Each reason has its own manual page.
 
@@ -166,7 +167,7 @@ M*/
 
    Level: beginner
 
-   Developer Notes: this must match petsc-finclude/petscts.h
+   Developer Notes: this must match petsc/finclude/petscts.h
 
 $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
@@ -223,6 +224,7 @@ typedef struct _p_TSTrajectory* TSTrajectory;
 J*/
 typedef const char* TSTrajectoryType;
 #define TSTRAJECTORYBASIC      "basic"
+#define TSTRAJECTORYSINGLEFILE "singlefile"
 
 PETSC_EXTERN PetscFunctionList TSTrajectoryList;
 PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
@@ -238,11 +240,11 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetGradients(TS,PetscInt,Vec*,Vec*);
-PETSC_EXTERN PetscErrorCode TSAdjointGetGradients(TS,PetscInt*,Vec**,Vec**);
+PETSC_EXTERN PetscErrorCode TSAdjointSetCostGradients(TS,PetscInt,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointGetCostGradients(TS,PetscInt*,Vec**,Vec**);
 
 PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
-PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointGetCostIntegral(TS,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS,PetscInt);
@@ -324,6 +326,7 @@ PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,vo
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeSolutionFunction(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeIJacobianDefaultColor(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS,PetscReal));
@@ -337,7 +340,10 @@ PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
-PETSC_EXTERN PetscErrorCode TSErrorNormWRMS(TS,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSSetDifferentialEquationsIS(TS,IS);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
 
@@ -433,16 +439,29 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const cha
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSolution(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSetVariableNames(TS,const char * const*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGGetVariableNames(TS,const char *const **);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx,const char * const *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSetDisplayVariables(TS,const char * const*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx,const char * const*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSetTransform(TS,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
+
+typedef struct _n_TSMonitorEnvelopeCtx*  TSMonitorEnvelopeCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeCtxCreate(TS,TSMonitorEnvelopeCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorEnvelope(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeGetBounds(TS,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx*);
 
 typedef struct _n_TSMonitorSPEigCtx*  TSMonitorSPEigCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorSPEigCtx *);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
-PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 
@@ -498,6 +517,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptions*,TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);

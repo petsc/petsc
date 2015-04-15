@@ -1,4 +1,4 @@
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/dmdaimpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #undef __FUNCT__

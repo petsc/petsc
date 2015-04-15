@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h> /*I  "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
 static PetscFunctionList TSAdaptList;
 static PetscBool         TSAdaptPackageInitialized;
@@ -127,7 +127,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
   PetscBool      match;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
@@ -137,12 +136,9 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
-  /* Reinitialize function pointers in TSAdaptOps structure */
-  checkstage = adapt->ops->checkstage;
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
-  adapt->ops->checkstage = checkstage;
-  ierr = (*r)(adapt);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
+  ierr = (*r)(adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +195,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt, type);CHKERRQ(ierr);
   if (adapt->ops->load) {
     ierr = (*adapt->ops->load)(adapt,viewer);CHKERRQ(ierr);
@@ -242,6 +238,30 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdaptReset"
+/*@
+   TSAdaptReset - Resets a TSAdapt context.
+
+   Collective on TS
+
+   Input Parameter:
+.  adapt - the TSAdapt context obtained from TSAdaptCreate()
+
+   Level: developer
+
+.seealso: TSAdaptCreate(), TSAdaptDestroy()
+@*/
+PetscErrorCode  TSAdaptReset(TSAdapt adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (adapt->ops->reset) {ierr = (*adapt->ops->reset)(adapt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptDestroy"
 PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 {
@@ -251,6 +271,9 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt,TSADAPT_CLASSID,1);
   if (--((PetscObject)(*adapt))->refct > 0) {*adapt = NULL; PetscFunctionReturn(0);}
+
+  ierr = TSAdaptReset(*adapt);CHKERRQ(ierr);
+
   if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*adapt)->monitor);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
@@ -314,7 +337,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  adapt->ops->checkstage = func;
+  adapt->checkstage = func;
   PetscFunctionReturn(0);
 }
 
@@ -390,6 +413,8 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptions *PetscOptionsObject,TSAdapt a
   ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
+  if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(PetscOptionsObject,adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -618,7 +643,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
       }
     }
   }
-  if (adapt->ops->checkstage) {ierr = (*adapt->ops->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
+  if (adapt->checkstage) {ierr = (*adapt->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -660,6 +685,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;
   adapt->scale_solve_failed = 0.25;
+  adapt->wnormtype          = NORM_2;
 
   *inadapt = adapt;
   PetscFunctionReturn(0);

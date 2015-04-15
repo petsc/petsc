@@ -4,20 +4,19 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.giturls           = ['git@bitbucket.org:petsc/petsc4py.git']
-    self.gitcommit         = 'cde2915'
+    self.gitcommit         = 'master'
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
     self.functions         = []
     self.includes          = []
-    self.liblist           = []
     self.skippackagewithoptions = 1
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.petscconfigure  = framework.require('PETSc.Configure',self)
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.installdir      = framework.require('PETSc.options.installDir',self)
     return
 
   def Install(self):
@@ -37,8 +36,8 @@ class Configure(config.package.Package):
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
-    if self.framework.argDB['prefix']:
-       newdir = 'PETSC_DIR='+self.framework.argDB['prefix']+' '+'PETSC_ARCH= MPICC=${PCC} '
+    if self.argDB['prefix']:
+       newdir = 'PETSC_DIR='+self.argDB['prefix']+' '+'PETSC_ARCH= MPICC=${PCC} '
     else:
        newdir = 'MPICC=${PCC} '
 
@@ -52,23 +51,23 @@ class Configure(config.package.Package):
                        ['@echo "*** Building petsc4py ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+newuser+newdir+'python setup.py clean --all && \\\n\
-           '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log 2>&1 || \\\n\
+           '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log" && \\\n\
+             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log" && \\\n\
+             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    if self.framework.argDB['prefix']:
+    if self.argDB['prefix']:
       self.addMakeRule('petsc4py-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py
       self.addMakeRule('petsc4py-install','petsc4pybuild petsc4pyinstall')
@@ -81,7 +80,7 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if not self.sharedLibraries.useShared:
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    self.checkDownload(1)
+    self.checkDownload()
     if self.setCompilers.isDarwin():
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
       # Thus see if the python library in the standard locations points to the Python version

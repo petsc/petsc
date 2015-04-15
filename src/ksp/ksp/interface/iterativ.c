@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files)
  */
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
 #undef __FUNCT__
@@ -161,6 +161,10 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+#define KSPMonitorDefault KSPMonitorDefaultUnsafe
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDefault"
 /*@C
@@ -198,6 +202,17 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+#undef KSPMonitorDefault
+PetscErrorCode KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode ierr;
+#pragma omp critical
+  ierr = KSPMonitorDefaultUnsafe(ksp,n,rnorm,dummy);
+  return ierr;
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorTrueResidualNorm"
@@ -1080,7 +1095,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetDM"
 /*@
