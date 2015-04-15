@@ -530,9 +530,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = MatSeqAIJSetPreallocation(S_Ej_inv_all,0,nnz);CHKERRQ(ierr);
     }
 
-    /* Work arrays */
-    ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&work);CHKERRQ(ierr);
-
     /* Get St^-1 */
     if (compute_Stilda) {
       PetscScalar *vals;
@@ -560,6 +557,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = MatDenseRestoreArray(S_all_inv,&vals);CHKERRQ(ierr);
     }
 
+    /* Work arrays */
+    if (sub_schurs->n_subs == 1) {
+      ierr = PetscMalloc1(max_subset_size,&dummy_idx);CHKERRQ(ierr);
+    } else {
+      ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&work);CHKERRQ(ierr);
+    }
+
     local_size = 0;
     for (i=0;i<sub_schurs->n_subs;i++) {
       Mat S_Ej;
@@ -568,10 +572,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
       /* get S_E */
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,subset_size,local_size,1,&is_E);CHKERRQ(ierr);
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work,&S_Ej);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(S_all,is_E,is_E,MAT_REUSE_MATRIX,&S_Ej);CHKERRQ(ierr);
-
+      if (sub_schurs->n_subs == 1) {
+        ierr = MatDenseGetArray(S_all,&work);CHKERRQ(ierr);
+        S_Ej = NULL;
+        is_E = NULL;
+      } else {
+        ierr = ISCreateStride(PETSC_COMM_SELF,subset_size,local_size,1,&is_E);CHKERRQ(ierr);
+        ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work,&S_Ej);CHKERRQ(ierr);
+        ierr = MatGetSubMatrix(S_all,is_E,is_E,MAT_REUSE_MATRIX,&S_Ej);CHKERRQ(ierr);
+      }
       /* insert S_E values */
       for (j=0;j<subset_size;j++) {
         dummy_idx[j]=local_size+j;
@@ -605,15 +614,29 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
         ierr = MatSetValues(S_Ej_inv_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
 
         /* get St_E^-1 */
-        ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
-        ierr = MatGetSubMatrix(S_all_inv,is_E,is_E,MAT_REUSE_MATRIX,&S_Ej);CHKERRQ(ierr);
+        if (sub_schurs->n_subs == 1) {
+          ierr = MatDenseRestoreArray(S_all,&work);CHKERRQ(ierr);
+          ierr = MatDenseGetArray(S_all_inv,&work);CHKERRQ(ierr);
+        } else {
+          ierr = MatGetSubMatrix(S_all_inv,is_E,is_E,MAT_REUSE_MATRIX,&S_Ej);CHKERRQ(ierr);
+        }
         ierr = MatSetValues(S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+        if (sub_schurs->n_subs == 1) {
+          ierr = MatDenseRestoreArray(S_all_inv,&work);CHKERRQ(ierr);
+        }
+        ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
+      } else if (sub_schurs->n_subs == 1) {
+        ierr = MatDenseRestoreArray(S_all,&work);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&S_Ej);CHKERRQ(ierr);
       ierr = ISDestroy(&is_E);CHKERRQ(ierr);
       local_size += subset_size;
     }
-    ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
+    if (sub_schurs->n_subs == 1) {
+      ierr = PetscFree(dummy_idx);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all);CHKERRQ(ierr);
