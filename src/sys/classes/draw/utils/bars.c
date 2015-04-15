@@ -49,15 +49,13 @@ struct _p_PetscDrawBar {
 PetscErrorCode  PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 {
   PetscDrawBar    h;
-  MPI_Comm       comm;
   PetscBool      isnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
-  PetscValidPointer(bar,3);
-  ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(h, _p_PetscDrawBar, int, PETSC_DRAWBAR_CLASSID,  "PetscDrawBar", "Bar Graph", "Draw", comm, PetscDrawBarDestroy, NULL);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidPointer(bar,2);
+  ierr = PetscHeaderCreate(h, PETSC_DRAWBAR_CLASSID, "PetscDrawBar", "Bar Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawBarDestroy, NULL);CHKERRQ(ierr);
 
   h->view        = NULL;
   h->destroy     = NULL;
@@ -73,7 +71,6 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
   ierr = PetscObjectTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (!isnull) {
     ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)h, (PetscObject)h->axis);CHKERRQ(ierr);
     h->axis->xticks = NULL;
   } else h->axis = NULL;
   *bar = h;

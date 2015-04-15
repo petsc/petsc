@@ -680,7 +680,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   *inadapt = NULL;
   ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(adapt,TSADAPT_CLASSID,"TSAdapt","Time stepping adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;

@@ -491,8 +491,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
   *prob  = NULL;
   ierr = PetscDSInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(p, _p_PetscDS, struct _PetscDSOps, PETSCDS_CLASSID, "PetscDS", "Discrete System", "PetscDS", comm, PetscDSDestroy, PetscDSView);CHKERRQ(ierr);
-  ierr = PetscMemzero(p->ops, sizeof(struct _PetscDSOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p, PETSCDS_CLASSID, "PetscDS", "Discrete System", "PetscDS", comm, PetscDSDestroy, PetscDSView);CHKERRQ(ierr);
 
   p->Nf    = 0;
   p->setup = PETSC_FALSE;

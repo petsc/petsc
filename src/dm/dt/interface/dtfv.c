@@ -318,8 +318,7 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
   *lim = NULL;
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(l, _p_PetscLimiter, struct _PetscLimiterOps, PETSCLIMITER_CLASSID, "PetscLimiter", "Finite Volume Slope Limiter", "PetscLimiter", comm, PetscLimiterDestroy, PetscLimiterView);CHKERRQ(ierr);
-  ierr = PetscMemzero(l->ops, sizeof(struct _PetscLimiterOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(l, PETSCLIMITER_CLASSID, "PetscLimiter", "Finite Volume Slope Limiter", "PetscLimiter", comm, PetscLimiterDestroy, PetscLimiterView);CHKERRQ(ierr);
 
   *lim = l;
   PetscFunctionReturn(0);
@@ -1361,7 +1360,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   *fvm = NULL;
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(f, _p_PetscFV, struct _PetscFVOps, PETSCFV_CLASSID, "PetscFV", "Finite Volume", "PetscFV", comm, PetscFVDestroy, PetscFVView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(f, PETSCFV_CLASSID, "PetscFV", "Finite Volume", "PetscFV", comm, PetscFVDestroy, PetscFVView);CHKERRQ(ierr);
   ierr = PetscMemzero(f->ops, sizeof(struct _PetscFVOps));CHKERRQ(ierr);
 
   ierr = PetscLimiterCreate(comm, &f->limiter);CHKERRQ(ierr);
