@@ -1172,15 +1172,13 @@ PetscErrorCode PetscEListFind(PetscInt n,const char *const *list,const char *str
 PetscErrorCode PetscEnumFind(const char *const *enumlist,const char *str,PetscEnum *value,PetscBool *found)
 {
   PetscErrorCode ierr;
-  PetscInt n,evalue;
+  PetscInt n = 0,evalue;
   PetscBool efound;
 
   PetscFunctionBegin;
-  for (n = 0; enumlist[n]; n++) {
-    if (n > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
-  }
+  while (enumlist[n++]) if (n > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
   if (n < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
-  n -= 3;                       /* drop enum name, prefix, and null termination */
+  n -= 3; /* drop enum name, prefix, and null termination */
   ierr = PetscEListFind(n,enumlist,str,&evalue,&efound);CHKERRQ(ierr);
   if (efound) *value = (PetscEnum)evalue;
   if (found) *found = efound;
