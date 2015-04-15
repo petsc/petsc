@@ -1262,11 +1262,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
     }
     if (sub_schurs->use_mumps) {
-      ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
+      if (computesubschurs) {
+        ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
+      }
       ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
+      if (computesubschurs) {
+        ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
+      }
     }
     if (pcbddc->adaptive_selection) {
       ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
