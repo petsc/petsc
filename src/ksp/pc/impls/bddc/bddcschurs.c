@@ -4,6 +4,56 @@
 
 PETSC_STATIC_INLINE PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt*,PetscInt,PetscBT,PetscInt*,PetscInt*,PetscInt*);
 static PetscErrorCode PCBDDCComputeExplicitSchur(Mat,PetscBool,MatReuse,Mat*);
+static PetscErrorCode PCBDDCMumpsInteriorDestroy(PC);
+static PetscErrorCode PCBDDCMumpsInteriorSolve(PC,Vec,Vec);
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMumpsInteriorSolve"
+static PetscErrorCode PCBDDCMumpsInteriorSolve(PC pc, Vec rhs, Vec sol)
+{
+  PCBDDCMumpsInterior ctx;
+  PetscScalar         *array,*array_mumps;
+  PetscInt            ival;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatMumpsGetIcntl(ctx->F,26,&ival);CHKERRQ(ierr);
+  ierr = MatMumpsSetIcntl(ctx->F,26,0);CHKERRQ(ierr);
+  /* copy rhs into factored matrix workspace (can it be avoided?, MatSolve_MUMPS has another copy b->x internally) */
+  ierr = VecGetArrayRead(rhs,(const PetscScalar**)&array);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->rhs,&array_mumps);CHKERRQ(ierr);
+  ierr = PetscMemcpy(array_mumps,array,ctx->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(ctx->rhs,&array_mumps);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(rhs,(const PetscScalar**)&array);CHKERRQ(ierr);
+
+  ierr = MatSolve(ctx->F,ctx->rhs,ctx->sol);CHKERRQ(ierr);
+
+  /* get back data to caller worskpace */
+  ierr = VecGetArrayRead(ctx->sol,(const PetscScalar**)&array_mumps);CHKERRQ(ierr);
+  ierr = VecGetArray(sol,&array);CHKERRQ(ierr);
+  ierr = PetscMemcpy(array,array_mumps,ctx->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(sol,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(ctx->sol,(const PetscScalar**)&array_mumps);CHKERRQ(ierr);
+  ierr = MatMumpsSetIcntl(ctx->F,26,ival);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMumpsInteriorDestroy"
+static PetscErrorCode PCBDDCMumpsInteriorDestroy(PC pc)
+{
+  PCBDDCMumpsInterior ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx->F);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->rhs);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeExplicitSchur"
@@ -474,7 +524,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     Mat         A,F;
     IS          is_A_all;
     PetscScalar *work;
-    PetscInt    *idxs_schur,n_I,*dummy_idx;
+    PetscInt    *idxs_schur,n_I,n_I_all,*dummy_idx;
 
     /* get working mat */
     ierr = ISGetLocalSize(sub_schurs->is_I_layer,&n_I);CHKERRQ(ierr);
@@ -512,6 +562,25 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 #if defined(PETSC_HAVE_MUMPS)
       ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
 #endif
+
+      /* we can reuse the interior solver if we are not using the economic version */
+      ierr = ISGetLocalSize(sub_schurs->is_I,&n_I_all);CHKERRQ(ierr);
+      if (n_I == n_I_all) {
+        PCBDDCMumpsInterior msolv_ctx;
+
+        ierr = PetscNew(&msolv_ctx);CHKERRQ(ierr);
+        msolv_ctx->n = n_I;
+        ierr = PetscObjectReference((PetscObject)F);CHKERRQ(ierr);
+        msolv_ctx->F = F;
+        ierr = MatCreateVecs(F,&msolv_ctx->sol,&msolv_ctx->rhs);CHKERRQ(ierr);
+        ierr = PCCreate(PETSC_COMM_SELF,&sub_schurs->interior_solver);CHKERRQ(ierr);
+        ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+        ierr = PCSetOperators(sub_schurs->interior_solver,A_II,A_II);CHKERRQ(ierr);
+        ierr = PCSetType(sub_schurs->interior_solver,PCSHELL);CHKERRQ(ierr);
+        ierr = PCShellSetContext(sub_schurs->interior_solver,msolv_ctx);CHKERRQ(ierr);
+        ierr = PCShellSetApply(sub_schurs->interior_solver,PCBDDCMumpsInteriorSolve);CHKERRQ(ierr);
+        ierr = PCShellSetDestroy(sub_schurs->interior_solver,PCBDDCMumpsInteriorDestroy);CHKERRQ(ierr);
+      }
       ierr = MatDestroy(&F);CHKERRQ(ierr);
     } else {
       ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&S_all);CHKERRQ(ierr);
@@ -919,6 +988,7 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   if (sub_schurs->n_subs) {
     ierr = PetscFree(sub_schurs->is_subs);CHKERRQ(ierr);
   }
+  ierr = PCDestroy(&sub_schurs->interior_solver);CHKERRQ(ierr);
   sub_schurs->n_subs = 0;
   PetscFunctionReturn(0);
 }

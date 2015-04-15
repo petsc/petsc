@@ -35,6 +35,20 @@ struct _PCBDDCGraph {
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
+/* Temporary wrap to MUMPS solver for interior variables in Schur complement mode */
+/* It assumes that interior variables are a contiguous set starting from 0 */
+struct _PCBDDCMumpsInterior {
+  /* the factored matrix obtained from MatGetFactor(...,MAT_SOLVER_MUMPS...) */
+  Mat F;
+  /* placeholders for the solution and rhs on the whole set of dofs of A */
+  Vec sol;
+  Vec rhs;
+  /* size of interior problem */
+  PetscInt n;
+};
+typedef struct _PCBDDCMumpsInterior *PCBDDCMumpsInterior;
+
+/* structure to handle Schur complements on subsets */
 struct _PCBDDCSubSchurs {
   /* local Neumann matrix */
   Mat A;
@@ -67,6 +81,8 @@ struct _PCBDDCSubSchurs {
   /* mat flags */
   PetscBool is_hermitian;
   PetscBool is_posdef;
+  /* shell PC to handle MUMPS interior solver */
+  PC interior_solver;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 

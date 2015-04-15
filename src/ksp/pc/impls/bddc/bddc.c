@@ -1256,16 +1256,21 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
   if (computesolvers) {
-    ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-    if (computesubschurs) {
-      if (computetopography) {
-        ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
-      }
+    PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
+
+    if (computesubschurs && computetopography) {
+      ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
+    }
+    if (sub_schurs->use_mumps) {
       ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
-      if (pcbddc->adaptive_selection) {
-        ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
-        computeconstraintsmatrix = PETSC_TRUE;
-      }
+      ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+    } else {
+      ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
+    }
+    if (pcbddc->adaptive_selection) {
+      ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
+      computeconstraintsmatrix = PETSC_TRUE;
     }
   }
 

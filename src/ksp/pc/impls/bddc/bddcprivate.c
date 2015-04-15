@@ -1418,6 +1418,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
 
   /* DIRICHLET PROBLEM */
   if (dirichlet) {
+    PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     if (pcbddc->issym) {
       ierr = MatSetOption(pcis->A_II,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     }
@@ -1441,6 +1442,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
+    if (sub_schurs->interior_solver) {
+      ierr = KSPSetPC(pcbddc->ksp_D,sub_schurs->interior_solver);CHKERRQ(ierr);
+    }
     /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
     if (!n_D) {
       ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
@@ -4687,6 +4691,13 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = MatRestoreRowIJ(pcbddc->local_mat,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
     }
   }
+
+  /* set Schur complement solver for interior variables (used only when MUMPS is not present) */
+  if (!sub_schurs->use_mumps) {
+    ierr = MatSchurComplementSetKSP(sub_schurs->S,pcbddc->ksp_D);CHKERRQ(ierr);
+  }
+
+  /* setup sub_schurs data */
   ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
 
   /* free adjacency */
@@ -4729,7 +4740,6 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
 
   /* Create Schur complement matrix */
   ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&S_j);CHKERRQ(ierr);
-  ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
 
   /* sub_schurs init */
   ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap);CHKERRQ(ierr);
