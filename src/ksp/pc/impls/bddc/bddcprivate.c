@@ -2340,7 +2340,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscBTCreate(pcbddc->local_primal_size,&qr_needed_idx);CHKERRQ(ierr);
   for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
     if (PetscBTLookup(change_basis,i)) {
-      if (!pcbddc->use_qr_single) {
+      if (!pcbddc->use_qr_single && !pcbddc->faster_deluxe) {
         size_of_constraint = temp_indices[i+1]-temp_indices[i];
         j = 0;
         for (k=0;k<size_of_constraint;k++) {
@@ -2753,18 +2753,24 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (pcbddc->use_deluxe_scaling) {
       PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
       if (sub_schurs->S_Ej_all) {
-        Mat S_1,S_2,tmat;
+        Mat S_new,tmat;
         IS is_all_N;
 
         ierr = ISLocalToGlobalMappingApplyIS(pcis->BtoNmap,sub_schurs->is_Ej_all,&is_all_N);CHKERRQ(ierr);
         ierr = MatGetSubMatrixUnsorted(localChangeOfBasisMatrix,is_all_N,is_all_N,&tmat);CHKERRQ(ierr);
         ierr = ISDestroy(&is_all_N);CHKERRQ(ierr);
-        ierr = MatPtAP(sub_schurs->S_Ej_all,tmat,MAT_INITIAL_MATRIX,1.0,&S_1);CHKERRQ(ierr);
+        ierr = MatPtAP(sub_schurs->S_Ej_all,tmat,MAT_INITIAL_MATRIX,1.0,&S_new);CHKERRQ(ierr);
         ierr = MatDestroy(&sub_schurs->S_Ej_all);CHKERRQ(ierr);
-        sub_schurs->S_Ej_all = S_1;
-        ierr = MatPtAP(sub_schurs->sum_S_Ej_all,tmat,MAT_INITIAL_MATRIX,1.0,&S_2);CHKERRQ(ierr);
-        ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
-        sub_schurs->sum_S_Ej_all = S_2;
+        ierr = PetscObjectReference((PetscObject)S_new);CHKERRQ(ierr);
+        sub_schurs->S_Ej_all = S_new;
+        ierr = MatDestroy(&S_new);CHKERRQ(ierr);
+        if (sub_schurs->sum_S_Ej_all) {
+          ierr = MatPtAP(sub_schurs->sum_S_Ej_all,tmat,MAT_INITIAL_MATRIX,1.0,&S_new);CHKERRQ(ierr);
+          ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject)S_new);CHKERRQ(ierr);
+          sub_schurs->sum_S_Ej_all = S_new;
+          ierr = MatDestroy(&S_new);CHKERRQ(ierr);
+        }
         ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       }
     }
@@ -4683,7 +4689,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = MatRestoreRowIJ(pcbddc->local_mat,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
     }
   }
-  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->adaptive_selection,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {

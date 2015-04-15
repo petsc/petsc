@@ -137,7 +137,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool compute_Stilda, PetscBool invert_Stildas, PetscBool use_edges, PetscBool use_faces)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool invert_Stildas, PetscBool use_edges, PetscBool use_faces)
 {
   Mat                    A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all,S_all_inv;
@@ -660,8 +660,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
 
-  /* Compute explicitly (\sum_j S_Ej)^-1 */
-  {
+  /* Compute explicitly (\sum_j S_Ej)^-1 (faster scaling during PCApply, needs extra work when doing setup) */
+  if (faster_deluxe) {
     Mat         tmpmat;
     PetscScalar *array;
     PetscInt    cum;
@@ -696,6 +696,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&array);CHKERRQ(ierr);
     ierr = MatMatMult(sub_schurs->S_Ej_all,sub_schurs->sum_S_Ej_all,MAT_INITIAL_MATRIX,1.0,&tmpmat);CHKERRQ(ierr);
     ierr = MatDestroy(&sub_schurs->S_Ej_all);CHKERRQ(ierr);
+    ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
     sub_schurs->S_Ej_all = tmpmat;
   }
 

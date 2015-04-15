@@ -75,11 +75,12 @@ struct _PCBDDCDeluxeScaling {
   /* simple scaling on selected dofs (i.e. primal vertices and nodes on interface dirichlet boundaries) */
   PetscInt        n_simple;
   PetscInt*       idx_simple_B;
-  /* sequential problems  */
+  /* handle deluxe problems  */
   VecScatter      seq_scctx;
   Vec             seq_work1;
   Vec             seq_work2;
   Mat             seq_mat;
+  KSP             seq_ksp;
 };
 typedef struct _PCBDDCDeluxeScaling *PCBDDCDeluxeScaling;
 
