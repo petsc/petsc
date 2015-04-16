@@ -30,7 +30,7 @@ Power System Modeling and Scripting - F. Milano
 
 typedef struct {
   /* Parameters for wind speed model */
-  PetscReal nsamples; /* Number of wind samples */
+  PetscInt  nsamples; /* Number of wind samples */
   PetscReal cw;   /* Scale factor for Weibull distribution */
   PetscReal kw;   /* Shape factor for Weibull distribution */
   Vec       wind_data; /* Vector to hold wind speeds */
@@ -118,7 +118,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   {
     ierr = PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-nsamples","","",user->nsamples,&user->nsamples,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
