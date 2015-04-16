@@ -94,7 +94,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   Vec            coordinates;
   PetscScalar   *coords, *coordsIn = NULL;
   PetscInt       dim = 0, coordSize, c, v, d, cell;
-  int            numVertices = 0, numCells = 0, trueNumCells = 0, snum;
+  int            i, numVertices = 0, numCells = 0, trueNumCells = 0, snum;
   PetscMPIInt    num_proc, rank;
   char           line[PETSC_MAX_PATH_LEN];
   PetscBool      match, binary, bswap = PETSC_FALSE;
@@ -142,13 +142,30 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     snum = sscanf(line, "%d", &numVertices);
     if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscMalloc1(numVertices*3, &coordsIn);CHKERRQ(ierr);
-    for (v = 0; v < numVertices; ++v) {
-      int i;
-      ierr = PetscViewerRead(viewer, &i, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (bswap) ierr = PetscByteSwap(&i, PETSC_ENUM, 1);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-      if (bswap) ierr = PetscByteSwap(&(coordsIn[v*3]), PETSC_DOUBLE, 3);CHKERRQ(ierr);
-      if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %d should be %d", i, v+1);
+    if (binary) {
+      size_t doubleSize, intSize;
+      PetscInt elementSize;
+      char *buffer;
+      PetscScalar *baseptr;
+      ierr = PetscDataTypeGetSize(PETSC_ENUM, &intSize);CHKERRQ(ierr);
+      ierr = PetscDataTypeGetSize(PETSC_DOUBLE, &doubleSize);CHKERRQ(ierr);
+      elementSize = (intSize + 3*doubleSize);
+      ierr = PetscMalloc1(elementSize*numVertices, &buffer);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, buffer, elementSize*numVertices, NULL, PETSC_CHAR);CHKERRQ(ierr);
+      if (bswap) ierr = PetscByteSwap(buffer, PETSC_CHAR, elementSize*numVertices);CHKERRQ(ierr);
+      for (v = 0; v < numVertices; ++v) {
+        baseptr = ((PetscScalar*)(buffer+v*elementSize+intSize));
+        coordsIn[v*3+0] = baseptr[0];
+        coordsIn[v*3+1] = baseptr[1];
+        coordsIn[v*3+2] = baseptr[2];
+      }
+      ierr = PetscFree(buffer);CHKERRQ(ierr);
+    } else {
+      for (v = 0; v < numVertices; ++v) {
+        ierr = PetscViewerRead(viewer, &i, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
+        ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
+        if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %d should be %d", i, v+1);
+      }
     }
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);;
     ierr = PetscStrncmp(line, "$EndNodes", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
