@@ -262,13 +262,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   /* Clean up intermediate storage */
-  if (!rank || binary) {
-    for (c = 0; c < numCells; ++c) {
-      ierr = PetscFree(gmsh_elem[c].nodes);CHKERRQ(ierr);
-      ierr = PetscFree(gmsh_elem[c].tags);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(gmsh_elem);CHKERRQ(ierr);
-  }
+  if (!rank || binary) ierr = PetscFree(gmsh_elem);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -307,7 +301,6 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCell
         ierr = PetscViewerRead(viewer, &cellType, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
         ierr = PetscViewerRead(viewer, &(elements[c].numTags), 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
       }
-      ierr = PetscMalloc1(elements[c].numTags, &(elements[c].tags));CHKERRQ(ierr);
       ierr = PetscViewerRead(viewer, elements[c].tags, elements[c].numTags, NULL, PETSC_ENUM);CHKERRQ(ierr);
       if (byteSwap) ierr = PetscByteSwap(elements[c].tags, PETSC_ENUM, elements[c].numTags);CHKERRQ(ierr);
       switch (cellType) {
@@ -338,7 +331,6 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCell
       default:
         SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
       }
-      ierr = PetscMalloc1(elements[c].numNodes, &(elements[c].nodes));CHKERRQ(ierr);
       ierr = PetscViewerRead(viewer, elements[c].nodes, elements[c].numNodes, NULL, PETSC_ENUM);CHKERRQ(ierr);
       if (byteSwap) {ierr = PetscByteSwap(elements[c].nodes, PETSC_ENUM, elements[c].numNodes);CHKERRQ(ierr);}
     }

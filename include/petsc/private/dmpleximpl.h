@@ -92,9 +92,9 @@ typedef struct {
   PetscInt dim;      /* Entity dimension */
   PetscInt id;       /* Element number */
   PetscInt numNodes; /* Size of node array */
-  int *nodes;        /* Node array */
+  int nodes[8];      /* Node array */
   PetscInt numTags;  /* Size of tag array */
-  int *tags;         /* Tag array */
+  int tags[4];       /* Tag array */
 } GmshElement;
 
 
