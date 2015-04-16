@@ -273,64 +273,65 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCell
 {
   PetscInt       c;
   GmshElement   *elements;
-  int            i, cellType, numElem, numTags;
+  int            i, cellType, dim, numNodes, numElem, numTags;
+  int            ibuf[4];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(numCells, &elements);CHKERRQ(ierr);
   for (c = 0; c < numCells;) {
+    ierr = PetscViewerRead(viewer, &ibuf, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
+    if (byteSwap) ierr = PetscByteSwap(&ibuf, PETSC_ENUM, 3);CHKERRQ(ierr);
     if (binary) {
-      /* Read element-header-binary */
-      ierr = PetscViewerRead(viewer, &cellType, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) ierr = PetscByteSwap(&cellType, PETSC_ENUM, 1);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, &numElem, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) ierr = PetscByteSwap(&numElem, PETSC_ENUM, 1);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, &numTags, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) ierr = PetscByteSwap(&numTags, PETSC_ENUM, 1);CHKERRQ(ierr);
+      cellType = ibuf[0];
+      numElem = ibuf[1];
+      numTags = ibuf[2];
     } else {
+      elements[c].id = ibuf[0];
+      cellType = ibuf[1];
+      numTags = ibuf[2];
       numElem = 1;
+    }
+    switch (cellType) {
+    case 1: /* 2-node line */
+      dim = 1;
+      numNodes = 2;
+      break;
+    case 2: /* 3-node triangle */
+      dim = 2;
+      numNodes = 3;
+      break;
+    case 3: /* 4-node quadrangle */
+      dim = 2;
+      numNodes = 4;
+      break;
+    case 4: /* 4-node tetrahedron */
+      dim  = 3;
+      numNodes = 4;
+      break;
+    case 5: /* 8-node hexahedron */
+      dim = 3;
+      numNodes = 8;
+      break;
+    case 15: /* 1-node vertex */
+      dim = 0;
+      numNodes = 1;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
     }
     for (i = 0; i < numElem; ++i, ++c) {
       /* Loop over inner binary element block */
       if (binary) {
         ierr = PetscViewerRead(viewer,  &(elements[c].id), 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
         if (byteSwap) ierr = PetscByteSwap( &(elements[c].id), PETSC_ENUM, 1);CHKERRQ(ierr);
-        elements[c].numTags = numTags;
-      } else {
-        ierr = PetscViewerRead(viewer, &(elements[c].id), 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, &cellType, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, &(elements[c].numTags), 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
       }
+      elements[c].dim = dim;
+      elements[c].numNodes = numNodes;
+      elements[c].numTags = numTags;
+
       ierr = PetscViewerRead(viewer, elements[c].tags, elements[c].numTags, NULL, PETSC_ENUM);CHKERRQ(ierr);
       if (byteSwap) ierr = PetscByteSwap(elements[c].tags, PETSC_ENUM, elements[c].numTags);CHKERRQ(ierr);
-      switch (cellType) {
-      case 1: /* 2-node line */
-        elements[c].dim = 1;
-        elements[c].numNodes = 2;
-        break;
-      case 2: /* 3-node triangle */
-        elements[c].dim = 2;
-        elements[c].numNodes = 3;
-        break;
-      case 3: /* 4-node quadrangle */
-        elements[c].dim = 2;
-        elements[c].numNodes = 4;
-        break;
-      case 4: /* 4-node tetrahedron */
-        elements[c].dim  = 3;
-        elements[c].numNodes = 4;
-        break;
-      case 5: /* 8-node hexahedron */
-        elements[c].dim = 3;
-        elements[c].numNodes = 8;
-        break;
-      case 15: /* 1-node vertex */
-        elements[c].dim = 0;
-        elements[c].numNodes = 1;
-        break;
-      default:
-        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
-      }
       ierr = PetscViewerRead(viewer, elements[c].nodes, elements[c].numNodes, NULL, PETSC_ENUM);CHKERRQ(ierr);
       if (byteSwap) {ierr = PetscByteSwap(elements[c].nodes, PETSC_ENUM, elements[c].numNodes);CHKERRQ(ierr);}
     }
