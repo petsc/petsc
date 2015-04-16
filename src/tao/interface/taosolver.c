@@ -55,7 +55,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   ierr = TaoInitializePackage();CHKERRQ(ierr);
   ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(tao,_p_Tao, struct _TaoOps, TAO_CLASSID,"Tao",0,0,comm,TaoDestroy,TaoView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(tao,TAO_CLASSID,"Tao","Optimization solver","Tao",comm,TaoDestroy,TaoView);CHKERRQ(ierr);
   tao->ops->computeobjective=0;
   tao->ops->computeobjectiveandgradient=0;
   tao->ops->computegradient=0;

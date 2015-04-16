@@ -627,8 +627,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   *part = NULL;
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(p, _p_PetscPartitioner, struct _PetscPartitionerOps, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
-  ierr = PetscMemzero(p->ops, sizeof(struct _PetscPartitionerOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
 
   *part = p;
   PetscFunctionReturn(0);

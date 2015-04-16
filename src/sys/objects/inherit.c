@@ -24,7 +24,7 @@ extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],vo
    in the default values.  Called by the macro PetscHeaderCreate().
 */
 PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,const char class_name[],const char descr[],const char mansec[],
-                                          MPI_Comm comm,PetscErrorCode (*des)(PetscObject*),PetscErrorCode (*vie)(PetscObject,PetscViewer))
+                                          MPI_Comm comm,PetscObjectDestroyFunction destroy,PetscObjectViewFunction view)
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
@@ -49,8 +49,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->qlist                 = 0;
   h->olist                 = 0;
   h->precision             = (PetscPrecision) sizeof(PetscReal);
-  h->bops->destroy         = des;
-  h->bops->view            = vie;
+  h->bops->destroy         = destroy;
+  h->bops->view            = view;
   h->bops->getcomm         = PetscObjectGetComm_Petsc;
   h->bops->compose         = PetscObjectCompose_Petsc;
   h->bops->query           = PetscObjectQuery_Petsc;
@@ -122,7 +122,6 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   /* next destroy other things */
   h->classid = PETSCFREEDHEADER;
 
-  ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscFree(h->type_name);CHKERRQ(ierr);
   ierr = PetscFree(h->name);CHKERRQ(ierr);
@@ -1011,7 +1010,7 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
   PetscFunctionBegin;
   PetscValidPointer(container,2);
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(contain,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,NULL);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);
 }
