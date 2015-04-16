@@ -288,10 +288,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 #define __FUNCT__ "DMPlexCreateGmsh_ReadElement"
 PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCells, PetscBool binary, PetscBool byteSwap, GmshElement **gmsh_elems)
 {
-  PetscInt       c;
+  PetscInt       c, p;
   GmshElement   *elements;
   int            i, cellType, dim, numNodes, numElem, numTags;
-  int            ibuf[4];
+  int            ibuf[16];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -337,20 +337,27 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCell
     default:
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
     }
-    for (i = 0; i < numElem; ++i, ++c) {
-      /* Loop over inner binary element block */
-      if (binary) {
-        ierr = PetscViewerRead(viewer,  &(elements[c].id), 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        if (byteSwap) ierr = PetscByteSwap( &(elements[c].id), PETSC_ENUM, 1);CHKERRQ(ierr);
+    if (binary) {
+      const PetscInt nint = numNodes + numTags + 1;
+      for (i = 0; i < numElem; ++i, ++c) {
+        /* Loop over inner binary element block */
+        elements[c].dim = dim;
+        elements[c].numNodes = numNodes;
+        elements[c].numTags = numTags;
+
+        ierr = PetscViewerRead(viewer, &ibuf, nint, NULL, PETSC_ENUM);CHKERRQ(ierr);
+        if (byteSwap) ierr = PetscByteSwap( &ibuf, PETSC_ENUM, nint);CHKERRQ(ierr);
+        elements[c].id = ibuf[0];
+        for (p = 0; p < numTags; p++) elements[c].tags[p] = ibuf[1 + p];
+        for (p = 0; p < numNodes; p++) elements[c].nodes[p] = ibuf[1 + numTags + p];
       }
+    } else {
       elements[c].dim = dim;
       elements[c].numNodes = numNodes;
       elements[c].numTags = numTags;
-
       ierr = PetscViewerRead(viewer, elements[c].tags, elements[c].numTags, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) ierr = PetscByteSwap(elements[c].tags, PETSC_ENUM, elements[c].numTags);CHKERRQ(ierr);
       ierr = PetscViewerRead(viewer, elements[c].nodes, elements[c].numNodes, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(elements[c].nodes, PETSC_ENUM, elements[c].numNodes);CHKERRQ(ierr);}
+      c++;
     }
   }
   *gmsh_elems = elements;
