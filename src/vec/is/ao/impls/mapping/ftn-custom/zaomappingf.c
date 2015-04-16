@@ -1,5 +1,5 @@
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscao.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -23,7 +23,7 @@ void PETSC_STDCALL aocreatemapping_(MPI_Comm *comm,PetscInt *napp,PetscInt *myap
 
 void PETSC_STDCALL aocreatemappingis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(ispetsc);
+  CHKFORTRANNULLOBJECTDEREFERENCE(ispetsc);
   *ierr = AOCreateMappingIS(*isapp,*ispetsc,aoout);
 }
 

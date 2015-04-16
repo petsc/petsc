@@ -5,7 +5,7 @@
 # sources, and encoding the rules through CMake conditionals. When CMake
 # runs, it will use the conditionals written to
 #
-#     $PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/PETScConfig.cmake
+#     $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/PETScConfig.cmake
 #
 # by BuildSystem after a successful configure.
 #
@@ -181,7 +181,7 @@ def writeRoot(f):
   f.write(r'''cmake_minimum_required (VERSION 2.6.2)
 project (PETSc C)
 
-include (${PETSC_CMAKE_ARCH}/lib/petsc-conf/PETScConfig.cmake)
+include (${PETSC_CMAKE_ARCH}/lib/petsc/conf/PETScConfig.cmake)
 
 if (PETSC_HAVE_FORTRAN)
   enable_language (Fortran)

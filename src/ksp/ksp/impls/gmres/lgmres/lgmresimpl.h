@@ -6,7 +6,7 @@
 #if !defined(__LGMRES)
 #define __LGMRES
 
-#include <petsc-private/kspimpl.h> /*includes petscksp.h */
+#include <petsc/private/kspimpl.h> /*includes petscksp.h */
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 

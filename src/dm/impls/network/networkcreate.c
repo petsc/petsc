@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
+#include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
 #include <petscdmda.h>
 
 #undef __FUNCT__

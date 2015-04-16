@@ -314,14 +314,14 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = PCApply(check_pc,work3,work1);CHKERRQ(ierr);
     ierr = VecAXPY(work1,m_one,work2);CHKERRQ(ierr);
     ierr = VecNorm(work1,NORM_INFINITY,&test_err);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d error for nullspace correction for ",PetscGlobalRank);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d error for nullspace correction for ",PetscGlobalRank);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(pcbddc->dbg_viewer,PETSC_FALSE);CHKERRQ(ierr);
     if (basis_dofs == n_I) {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Dirichlet ");
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Dirichlet ");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Neumann ");
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Neumann ");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"solver is :%1.14e\n",test_err);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"solver is :%1.14e\n",test_err);CHKERRQ(ierr);
     ierr = PetscViewerASCIISetTab(pcbddc->dbg_viewer,tabs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -329,7 +329,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = MatShift(test_mat,one);CHKERRQ(ierr);
     ierr = MatNorm(test_mat,NORM_INFINITY,&test_err);CHKERRQ(ierr);
     ierr = MatDestroy(&test_mat);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d error for nullspace matrices is :%1.14e\n",PetscGlobalRank,test_err);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d error for nullspace matrices is :%1.14e\n",PetscGlobalRank,test_err);CHKERRQ(ierr);
 
     /* Create ksp object suitable for extreme eigenvalues' estimation */
     ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
@@ -349,7 +349,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = VecNorm(work2,NORM_INFINITY,&test_err);CHKERRQ(ierr);
     ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(check_ksp,&k);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d error for adapted KSP %1.14e (it %d, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d error for adapted KSP %1.14e (it %d, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max);CHKERRQ(ierr);
     ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
     ierr = VecDestroy(&work1);CHKERRQ(ierr);
     ierr = VecDestroy(&work2);CHKERRQ(ierr);

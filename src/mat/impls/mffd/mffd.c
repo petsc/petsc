@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
 PetscFunctionList MatMFFDList              = 0;

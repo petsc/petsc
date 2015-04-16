@@ -1,8 +1,8 @@
 /*
    This file contains routines for section object operations on Vecs
 */
-#include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
-#include <petsc-private/vecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionVecView_ASCII"

@@ -8,7 +8,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
 #include <petscbt.h>
-#include <petsc-private/kernels/blocktranspose.h>
+#include <petsc/private/kernels/blocktranspose.h>
 #if defined(PETSC_THREADCOMM_ACTIVE)
 #include <petscthreadcomm.h>
 #endif
@@ -387,7 +387,7 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
 
 */
 
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJSetValuesLocalFast"
 PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
@@ -2370,13 +2370,9 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   PetscInt       *starts,*j_new,*i_new,*aj = a->j,*ai = a->i,ii,*ailen = a->ilen;
   MatScalar      *a_new,*mat_a;
   Mat            C;
-  PetscBool      stride,sorted;
+  PetscBool      stride;
 
   PetscFunctionBegin;
-  ierr = ISSorted(isrow,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
-  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
@@ -2510,6 +2506,16 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
     ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
     ierr = PetscFree(smap);CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
+    /* sort */
+    for (i = 0; i < nrows; i++) {
+      PetscInt ilen;
+
+      mat_i = c->i[i];
+      mat_j = c->j + mat_i;
+      mat_a = c->a + mat_i;
+      ilen  = c->ilen[i];
+      ierr  = PetscSortIntWithMatScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
+    }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3048,7 +3054,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 }
 
 #include <petscblaslapack.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqAIJ"
@@ -3176,6 +3182,21 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_SeqAIJ"
+PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)Y->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz) {
+    ierr = MatSeqAIJSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetRow_SeqAIJ,
@@ -3223,7 +3244,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatCopy_SeqAIJ,
                                 /* 44*/ MatGetRowMax_SeqAIJ,
                                         MatScale_SeqAIJ,
-                                        0,
+                                        MatShift_SeqAIJ,
                                         MatDiagonalSet_SeqAIJ,
                                         MatZeroRowsColumns_SeqAIJ,
                                 /* 49*/ MatSetRandom_SeqAIJ,
@@ -3799,7 +3820,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
 }
 
 #include <../src/mat/impls/dense/seq/dense.h>
-#include <petsc-private/kernels/petscaxpy.h>
+#include <petsc/private/kernels/petscaxpy.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
@@ -4566,7 +4587,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm comm,Mat inmat,P
 /*
     Special version for direct calls from Fortran
 */
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

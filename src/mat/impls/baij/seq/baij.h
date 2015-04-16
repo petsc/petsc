@@ -1,7 +1,7 @@
 
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h>
 

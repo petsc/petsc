@@ -10,7 +10,7 @@
        --  Apple  CGLContextObj http://developer.apple.com/library/mac/#documentation/graphicsimaging/Reference/CGL_OpenGL/Reference/reference.html#//apple_ref/doc/uid/TP40001186
 */
 
-#include <petsc-private/drawimpl.h>  /*I  "petscsys.h" I*/
+#include <petsc/private/drawimpl.h>  /*I  "petscsys.h" I*/
 #if defined(PETSC_HAVE_OPENGLES)
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>

@@ -222,7 +222,7 @@ def check_broken_configure_log_links():
   return
 
 def move_configure_log(framework):
-  '''Move configure.log to PETSC_ARCH/lib/petsc-conf - and update configure.log.bkp in both locations appropriately'''
+  '''Move configure.log to PETSC_ARCH/lib/petsc/conf - and update configure.log.bkp in both locations appropriately'''
   global petsc_arch
 
   if hasattr(framework,'arch'): petsc_arch = framework.arch
@@ -235,7 +235,7 @@ def move_configure_log(framework):
 
     # Just in case - confdir is not created
     lib_dir = os.path.join(petsc_arch,'lib')
-    conf_dir = os.path.join(petsc_arch,'lib','petsc-conf')
+    conf_dir = os.path.join(petsc_arch,'lib','petsc','conf')
     if not os.path.isdir(petsc_arch): os.mkdir(petsc_arch)
     if not os.path.isdir(lib_dir): os.mkdir(lib_dir)
     if not os.path.isdir(conf_dir): os.mkdir(conf_dir)
@@ -244,14 +244,14 @@ def move_configure_log(framework):
     new_file  = os.path.join(conf_dir,curr_file)
     new_bkp   = new_file + '.bkp'
 
-    # Keep backup in $PETSC_ARCH/lib/petsc-conf location
+    # Keep backup in $PETSC_ARCH/lib/petsc/conf location
     if os.path.isfile(new_bkp): os.remove(new_bkp)
     if os.path.isfile(new_file): os.rename(new_file,new_bkp)
     if os.path.isfile(curr_file):
       shutil.copyfile(curr_file,new_file)
       os.remove(curr_file)
     if os.path.isfile(new_file): os.symlink(new_file,curr_file)
-    # If the old bkp is using the same PETSC_ARCH/lib/petsc-conf - then update bkp link
+    # If the old bkp is using the same PETSC_ARCH/lib/petsc/conf - then update bkp link
     if os.path.realpath(curr_bkp) == os.path.realpath(new_file):
       if os.path.isfile(curr_bkp): os.remove(curr_bkp)
       if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
@@ -267,7 +267,7 @@ def print_final_timestamp(framework):
 def petsc_configure(configure_options):
   try:
     petscdir = os.environ['PETSC_DIR']
-    sys.path.append(os.path.join(petscdir,'bin','petsc-pythonscripts'))
+    sys.path.append(os.path.join(petscdir,'bin'))
     import petscnagupgrade
     file     = os.path.join(petscdir,'.nagged')
     if not petscnagupgrade.naggedtoday(file):

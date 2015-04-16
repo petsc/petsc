@@ -68,7 +68,7 @@ PETSC_EXTERN PetscFunctionList TaoList;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
-    include/petsc-finclude/petsctao.h
+    include/petsc/finclude/petsctao.h
 */
 typedef enum {/* converged */
   TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */

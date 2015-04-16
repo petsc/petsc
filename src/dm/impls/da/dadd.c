@@ -1,4 +1,4 @@
-#include <petsc-private/dmdaimpl.h>  /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>  /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDACreatePatchIS"

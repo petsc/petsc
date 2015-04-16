@@ -291,7 +291,7 @@ class Configure(config.package.Package):
     #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
     #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
     #  use MPI-Uni can find them.
-    self.include = [os.path.abspath(os.path.join('include', 'petsc-mpiuni'))]
+    self.include = [os.path.abspath(os.path.join('include', 'petsc','mpiuni'))]
     self.framework.packages.append(self)
     self.mpiexec = '${PETSC_DIR}/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/petsc-mpiexec.uni')

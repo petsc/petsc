@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>        /*I "petscvec.h" I*/
+#include <petsc/private/vecimpl.h>        /*I "petscvec.h" I*/
 #include <petscdraw.h>
 
 #undef __FUNCT__

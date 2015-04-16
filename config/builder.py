@@ -283,6 +283,10 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/blockcylinder-50.exo -interpolate 1', 'requires': ['exodusii']},
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/simpleblock-100.exo -interpolate 1', 'requires': ['exodusii']},
                                                                      ],
+                        'src/dm/impls/plex/examples/tutorials/ex5': [# Idempotence of saving/loading
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/Rect-tri3.exo -dm_view ::ascii_info_detail', 'requires': ['exodusii']},
+                                                                     {'numProcs': 2, 'args': '-filename %(meshes)s/Rect-tri3.exo -dm_view ::ascii_info_detail', 'requires': ['exodusii']},
+                                                                     ],
                         'src/snes/examples/tutorials/ex12':   [# 2D serial P1 test 0-4
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
@@ -1211,7 +1215,7 @@ class PETScMaker(script.Script):
    argDB = RDict.RDict(None, None, 0, 0, readonly = True)
    self.petscDir = os.environ['PETSC_DIR']
    arch  = self.findArch()
-   argDB.saveFilename = os.path.join(self.petscDir, arch, 'lib','petsc-conf', 'RDict.db')
+   argDB.saveFilename = os.path.join(self.petscDir, arch, 'lib','petsc','conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.logName = logname
@@ -1253,7 +1257,7 @@ class PETScMaker(script.Script):
    # Setup directories
    self.petscDir     = self.configInfo.petscdir.dir
    self.petscArch    = self.configInfo.arch.arch
-   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'lib','petsc-conf')
+   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'lib','petsc','conf')
    self.petscLibDir  = os.path.join(self.petscDir, self.petscArch, 'lib')
    # Setup source database
    self.sourceDBFilename = os.path.join(self.petscConfDir, 'source.db')
@@ -1884,12 +1888,12 @@ class PETScMaker(script.Script):
    oldPath = sys.path
    sys.path.append(os.path.join(self.petscDir, 'bin', 'maint'))
    from generatefortranstubs import main, processf90interfaces
-   for d in os.listdir(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto')):
-     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto', d))
+   for d in os.listdir(os.path.join(self.petscDir, 'include', 'petsc','finclude', 'ftn-auto')):
+     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'petsc','finclude', 'ftn-auto', d))
    main(self.petscDir, self.configInfo.sowing.bfort, os.getcwd(),0)
    processf90interfaces(self.petscDir,0)
-   for d in os.listdir(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto')):
-     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto', d))
+   for d in os.listdir(os.path.join(self.petscDir, 'include', 'petsc','finclude', 'ftn-auto')):
+     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'petsc','finclude', 'ftn-auto', d))
    sys.path = oldPath
    return
 

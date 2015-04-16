@@ -1,0 +1,11 @@
+!
+!
+!  Additional Viewer include file for use of PETSc with Fortran 90/HPF
+!
+
+#include "petsc/finclude/ftn-custom/petscviewer.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "petsc/finclude/ftn-auto/petscviewer.h90"
+      end interface
+#endif

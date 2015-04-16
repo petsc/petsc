@@ -38,7 +38,7 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   ctx->A=mat;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&mloc,&nloc);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = VecCreateSeq(comm,n,&ctx->VC);CHKERRQ(ierr);
   } else {
@@ -132,7 +132,7 @@ PetscErrorCode MatDiagonalSet_SMF(Mat M, Vec D,InsertMode is)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(ctx->A,D,is);
+  ierr = MatDiagonalSet(ctx->A,D,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -260,7 +260,7 @@ PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MatGetRowMax(ctx->A,D,NULL);
+  ierr = MatGetRowMax(ctx->A,D,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

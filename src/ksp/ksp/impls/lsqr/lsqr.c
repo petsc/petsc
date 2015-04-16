@@ -4,7 +4,7 @@
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 
 typedef struct {
@@ -494,7 +494,7 @@ PetscErrorCode  VecSquare(Vec v)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
   ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-  for (i = 0; i < n; i++) x[i] *= x[i];
+  for (i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
   ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

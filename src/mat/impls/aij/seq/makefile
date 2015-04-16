@@ -14,6 +14,6 @@ DIRS     = superlu umfpack essl lusol matlab csrperm crl bas ftn-kernels seqcusp
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

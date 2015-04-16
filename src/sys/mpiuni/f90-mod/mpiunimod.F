@@ -1,4 +1,4 @@
         module mpi
-#include <petsc-mpiuni/mpif.h>
+#include <petsc/mpiuni/mpif.h>
         end module
 

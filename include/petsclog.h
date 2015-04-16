@@ -298,7 +298,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
      These are used internally in the PETSc routines to keep a count of MPI messages and
    their sizes.
 
-     This does not work for MPI-Uni because our include/petsc-mpiuni/mpi.h file
+     This does not work for MPI-Uni because our include/petsc/mpiuni/mpi.h file
    uses macros to defined the MPI operations.
 
      It does not work correctly from HP-UX because it processes the

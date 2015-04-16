@@ -61,7 +61,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
         mfqP->Hres[j+mfqP->n*i] = mfqP->Hres[mfqP->n*j+i];
       }
     }
-    ierr = MatSetValues(mfqP->subH,mfqP->n,mfqP->indices,mfqP->n,mfqP->indices,mfqP->Hres,INSERT_VALUES);
+    ierr = MatSetValues(mfqP->subH,mfqP->n,mfqP->indices,mfqP->n,mfqP->indices,mfqP->Hres,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -114,7 +114,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution > upper bound\n");
+      ierr = PetscInfo(tao,"subproblem solution > upper bound\n");CHKERRQ(ierr);
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
   } else {
@@ -557,7 +557,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
                                 "numpages = {18},\n"
                                 "year = {2010},\n"
                                 "month = {Aug},\n"
-                                "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);
+                                "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);CHKERRQ(ierr);
   if (tao->XL && tao->XU) {
     /* Check x0 <= XU */
     PetscReal val;
@@ -594,6 +594,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   mfqP->Fres[0]*=mfqP->Fres[0];
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
+  ierr = TaoMonitor(tao, iter++, minnorm, PETSC_INFINITY, 0.0, step, &reason);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
   for (i=1;i<mfqP->n+1;i++) {
@@ -703,8 +704,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   valid = PETSC_TRUE;
 
   ierr = VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(tao->gradient);
-  ierr = VecAssemblyEnd(tao->gradient);
+  ierr = VecAssemblyBegin(tao->gradient);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   gnorm *= mfqP->delta;
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
@@ -868,8 +869,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     /* Export solution and gradient residual to TAO */
     ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
     ierr = VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(tao->gradient);
-    ierr = VecAssemblyEnd(tao->gradient);
+    ierr = VecAssemblyBegin(tao->gradient);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(tao->gradient);CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     gnorm *= mfqP->delta;
     /*  final criticality test */

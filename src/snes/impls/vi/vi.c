@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>  /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h>  /*I "petscsnes.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -424,7 +424,6 @@ PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 

@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/vecimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscblaslapack.h>
 #include <petscsf.h>
 
@@ -77,7 +77,7 @@ PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
     cnt++;
 ok1:;
   }
-  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)M));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)M));CHKERRQ(ierr);
   if (!n0rows) PetscFunctionReturn(0);
   ierr = PetscMalloc1(M->rmap->n-cnt,&rows);CHKERRQ(ierr);
   cnt  = 0;
@@ -2584,6 +2584,72 @@ static PetscErrorCode  MatSetRandom_MPIAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ"
+PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ(Mat A,PetscBool sc)
+{
+  PetscFunctionBegin;
+  if (sc) A->ops->increaseoverlap = MatIncreaseOverlap_MPIAIJ_Scalable;
+  else A->ops->increaseoverlap    = MatIncreaseOverlap_MPIAIJ;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIAIJSetUseScalableIncreaseOverlap"
+/*@
+   MatMPIAIJSetUseScalableIncreaseOverlap - Determine if the matrix uses a scalable algorithm to compute the overlap
+
+   Collective on Mat
+
+   Input Parameters:
++    A - the matrix
+-    sc - PETSC_TRUE indicates use the scalable algorithm (default is not to use the scalable algorithm)
+
+@*/
+PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A,PetscBool sc)
+{
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(A,"MatMPIAIJSetUseScalableIncreaseOverlap_C",(Mat,PetscBool),(A,sc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetFromOptions_MPIAIJ"
+PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions *PetscOptionsObject,Mat A)
+{
+  PetscErrorCode       ierr;
+  PetscBool            sc = PETSC_FALSE,flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJ options");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)A);
+    if (A->ops->increaseoverlap == MatIncreaseOverlap_MPIAIJ_Scalable) sc = PETSC_TRUE;
+    ierr = PetscOptionsBool("-mat_increase_overlap_scalable","Use a scalable algorithm to compute the overlap","MatIncreaseOverlap",sc,&sc,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatMPIAIJSetUseScalableIncreaseOverlap(A,sc);CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_MPIAIJ"
+PetscErrorCode MatShift_MPIAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *maij = (Mat_MPIAIJ*)Y->data;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)maij->A->data,*bij = (Mat_SeqAIJ*)maij->B->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz && !bij->nz) {
+    ierr = MatMPIAIJSetPreallocation(Y,1,NULL,0,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetRow_MPIAIJ,
@@ -2643,7 +2709,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatCopy_MPIAIJ,
                                 /*44*/ MatGetRowMax_MPIAIJ,
                                        MatScale_MPIAIJ,
-                                       0,
+                                       MatShift_MPIAIJ,
                                        MatDiagonalSet_MPIAIJ,
                                        MatZeroRowsColumns_MPIAIJ,
                                 /*49*/ MatSetRandom_MPIAIJ,
@@ -2673,7 +2739,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        MatSetValuesAdifor_MPIAIJ,
                                 /*75*/ MatFDColoringApply_AIJ,
-                                       0,
+                                       MatSetFromOptions_MPIAIJ,
                                        0,
                                        0,
                                        MatFindZeroDiagonals_MPIAIJ,
@@ -2877,10 +2943,10 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   MPI_Comm       comm;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
-  PetscInt       i,nz,j,rstart,rend,mmax,maxnz = 0,grows,gcols;
+  PetscInt       i,nz,j,rstart,rend,mmax,maxnz = 0;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens = NULL,*procsnz = NULL,*offlens = NULL,jj,*mycols,*smycols;
-  PetscInt       cend,cstart,n,*rowners,sizesset=1;
+  PetscInt       cend,cstart,n,*rowners;
   int            fd;
   PetscInt       bs = newMat->rmap->bs;
 
@@ -2901,20 +2967,12 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (bs < 0) bs = 1;
 
-  if (newMat->rmap->n < 0 && newMat->rmap->N < 0 && newMat->cmap->n < 0 && newMat->cmap->N < 0) sizesset = 0;
-
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M    = header[1]; N = header[2];
-  /* If global rows/cols are set to PETSC_DECIDE, set it to the sizes given in the file */
-  if (sizesset && newMat->rmap->N < 0) newMat->rmap->N = M;
-  if (sizesset && newMat->cmap->N < 0) newMat->cmap->N = N;
 
   /* If global sizes are set, check if they are consistent with that given in the file */
-  if (sizesset) {
-    ierr = MatGetSize(newMat,&grows,&gcols);CHKERRQ(ierr);
-  }
-  if (sizesset && newMat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newMat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (newMat->rmap->N >= 0 && newMat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows:Matrix in file has (%D) and input matrix has (%D)",newMat->rmap->N,M);
+  if (newMat->cmap->N >=0 && newMat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols:Matrix in file has (%D) and input matrix has (%D)",newMat->cmap->N,N);
 
   /* determine ownership of all (block) rows */
   if (M%bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows (%d) and block size (%d)",M,bs);
@@ -3018,9 +3076,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
-  if (!sizesset) {
-    ierr = MatSetSizes(newMat,m,n,M,N);CHKERRQ(ierr);
-  }
+  ierr = MatSetSizes(newMat,m,n,M,N);CHKERRQ(ierr);
 
   if (bs > 1) {ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);}
 
@@ -5077,6 +5133,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   /* flexible pointer used in CUSP/CUSPARSE classes */
   b->spptr = NULL;
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetUseScalableIncreaseOverlap_C",MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
@@ -5183,7 +5240,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 /*
     Special version for direct calls from Fortran
 */
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ

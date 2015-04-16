@@ -1,4 +1,4 @@
-#include <petsc-private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
+#include <petsc/private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 #include <petscsf.h>
 
@@ -265,8 +265,8 @@ PetscErrorCode DMPatchSolve(DM dm)
         /* Scatter Rzoom_restricted -> Rcoarse_restricted */
         if (XZ)  {ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);}
         ierr = VecGetArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPIU_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPIU_SUM);CHKERRQ(ierr);
         ierr = VecRestoreArray(XC, &xcarray);CHKERRQ(ierr);
         if (XZ)  {ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);}
         if (dmz) {ierr = DMRestoreGlobalVector(dmz, &XZ);CHKERRQ(ierr);}
@@ -384,10 +384,7 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
 #define __FUNCT__ "DMCreateSubDM_Patch"
 PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

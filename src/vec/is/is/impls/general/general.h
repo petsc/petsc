@@ -5,7 +5,7 @@
 /*
     Defines the data structure used for the general index set
 */
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 
 typedef struct {
   PetscBool   sorted;    /* indicates the indices are sorted */

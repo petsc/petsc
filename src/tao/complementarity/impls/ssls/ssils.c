@@ -65,7 +65,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
   ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,ssls->dpsi);CHKERRQ(ierr);
   ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
-  while (1) {
+  while (PETSC_TRUE) {
     ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",iter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
     /* Check the termination criteria */
     ierr = TaoMonitor(tao,iter++,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     innerd = -innerd;
 
-    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&psi,ssls->dpsi,tao->stepdirection,&t,&ls_reason);CHKERRQ(ierr);
     ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
   }
@@ -130,7 +130,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   /* Note: linesearch objective and objectivegradient routines are set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
 

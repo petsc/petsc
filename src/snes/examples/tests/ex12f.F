@@ -25,12 +25,12 @@
       program main
       implicit none
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
 
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
@@ -139,12 +139,12 @@
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
 
 
       call MPI_Comm_rank(ctx(4),rank,ierr)
@@ -212,9 +212,9 @@
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
@@ -229,12 +229,12 @@
 
       subroutine FormJacobian(snes,x,jac,B,ctx,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
       SNES             snes
       Vec              x
       Mat              jac,B

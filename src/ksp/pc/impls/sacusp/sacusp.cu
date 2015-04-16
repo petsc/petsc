@@ -6,7 +6,7 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
 #include <cusp/version.h>

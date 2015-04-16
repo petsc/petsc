@@ -534,12 +534,6 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   PetscBool      colflag,*allcolumns,*allrows;
 
   PetscFunctionBegin;
-  /* Currently, unsorted column indices will result in inverted column indices in the resulting submatrices. */
-  for (i = 0; i < ismax; ++i) {
-    PetscBool sorted;
-    ierr = ISSorted(iscol[i], &sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ1(((PetscObject)iscol[i])->comm, PETSC_ERR_SUP, "Column index set %D not sorted", i);
-  }
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
   ierr = PetscMalloc2(ismax+1,&isrow_new,ismax+1,&iscol_new);CHKERRQ(ierr);
@@ -1378,6 +1372,32 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         }
       }
     }
+  }
+  /* sort the rows */
+  {
+    PetscInt  ilen_row,*imat_ilen,*imat_j,*imat_i;
+    MatScalar *imat_a = NULL;
+    MatScalar *work;
+
+    ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
+    for (i=0; i<ismax; i++) {
+      mat       = (Mat_SeqBAIJ*)submats[i]->data;
+      imat_ilen = mat->ilen;
+      imat_j    = mat->j;
+      imat_i    = mat->i;
+      if (!ijonly) imat_a = mat->a;
+      if (allcolumns[i]) continue;
+      jmax   = nrow[i];
+      for (j=0; j<jmax; j++) {
+        mat_i = imat_i[j];
+        if (!ijonly) mat_a = imat_a + mat_i*bs2;
+        mat_j    = imat_j + mat_i;
+        ilen_row = imat_ilen[j];
+        if (!ijonly) {ierr = PetscSortIntWithDataArray(ilen_row,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);}
+        else {ierr = PetscSortInt(ilen_row,mat_j);CHKERRQ(ierr);}
+      }
+    }
+    ierr = PetscFree(work);CHKERRQ(ierr);
   }
   if (!ijonly) {
     ierr = PetscFree(r_status4);CHKERRQ(ierr);

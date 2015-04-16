@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
 PetscLogEvent DMDA_LocalADFunction;

@@ -10,8 +10,8 @@ EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex9bus: ex9bus.o  chkopts
 	-${CLINKER} -o ex9bus ex9bus.o  ${PETSC_TS_LIB}
@@ -51,4 +51,4 @@ clean_files:
 
 TESTEXAMPLES_C_NOCOMPLEX = ex9bus.PETSc runex9bus ex9bus.rm ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm  ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

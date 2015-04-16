@@ -96,7 +96,7 @@ class Configure(config.package.Package):
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, 'lib','petsc-conf',self.name), timeout=30, log = self.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, 'lib','petsc','conf',self.name), timeout=30, log = self.log)
     except RuntimeError, e:
       pass
     return self.installDir

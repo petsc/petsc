@@ -3,7 +3,7 @@
    This provides a matrix that consists of Mats
 */
 
-#include <petsc-private/matimpl.h>              /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>              /*I "petscmat.h" I*/
 #include <../src/mat/impls/baij/seq/baij.h>    /* use the common AIJ data-structure */
 
 typedef struct {
@@ -796,7 +796,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        0,
                                /* 44*/ 0,
                                        0,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                /* 49*/ 0,

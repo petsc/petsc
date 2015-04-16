@@ -1,6 +1,6 @@
 #include <../src/tao/bound/impls/tron/tron.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 
@@ -25,7 +25,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->H_sub);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -146,6 +146,13 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     if (tron->n_free == 0) {
       actred=0;
       ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
+      ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+      if (!reason) {
+        reason = TAO_CONVERGED_STEPTOL;
+        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      }
+
       break;
 
     }

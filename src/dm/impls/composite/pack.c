@@ -1,6 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscds.h>
 
 #undef __FUNCT__
@@ -247,7 +247,8 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
   struct DMCompositeLink *link;
   PetscInt               i,wnum;
   DM_Composite           *com = (DM_Composite*)dm->data;
-
+  PetscInt               readonly;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(pvec,VEC_CLASSID,2);
@@ -255,14 +256,23 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
+  ierr = VecLockGet(pvec,&readonly);CHKERRQ(ierr);
   for (i=0,wnum=0,link=com->next; link && wnum<nwanted; i++,link=link->next) {
     if (!wanted || i == wanted[wnum]) {
-      PetscScalar *array;
       Vec v;
       ierr = DMGetGlobalVector(link->dm,&v);CHKERRQ(ierr);
-      ierr = VecGetArray(pvec,&array);CHKERRQ(ierr);
-      ierr = VecPlaceArray(v,array+link->rstart);CHKERRQ(ierr);
-      ierr = VecRestoreArray(pvec,&array);CHKERRQ(ierr);
+      if (readonly) {
+        const PetscScalar *array;
+        ierr = VecGetArrayRead(pvec,&array);CHKERRQ(ierr);
+        ierr = VecPlaceArray(v,array+link->rstart);CHKERRQ(ierr);
+        ierr = VecLockPush(v);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(pvec,&array);CHKERRQ(ierr);
+      } else {
+        PetscScalar *array;
+        ierr = VecGetArray(pvec,&array);CHKERRQ(ierr);
+        ierr = VecPlaceArray(v,array+link->rstart);CHKERRQ(ierr);
+        ierr = VecRestoreArray(pvec,&array);CHKERRQ(ierr);
+      }
       vecs[wnum++] = v;
     }
   }
@@ -315,10 +325,8 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
       ierr = VecResetArray(*vec);CHKERRQ(ierr);
       if (readonly) {
         ierr = VecLockPop(*vec);CHKERRQ(ierr);
-        ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
-      } else {
-        ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
       }
+      ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
     }
     next = next->next;
   }
@@ -350,6 +358,7 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
   struct DMCompositeLink *link;
   PetscInt               i,wnum;
   DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               readonly;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -358,9 +367,13 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
+  ierr = VecLockGet(pvec,&readonly);CHKERRQ(ierr);
   for (i=0,wnum=0,link=com->next; link && wnum<nwanted; i++,link=link->next) {
     if (!wanted || i == wanted[wnum]) {
       ierr = VecResetArray(vecs[wnum]);CHKERRQ(ierr);
+      if (readonly) {
+        ierr = VecLockPop(vecs[wnum]);CHKERRQ(ierr);
+      }
       ierr = DMRestoreGlobalVector(link->dm,&vecs[wnum]);CHKERRQ(ierr);
       wnum++;
     }

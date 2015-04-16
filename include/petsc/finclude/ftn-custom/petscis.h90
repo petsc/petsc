@@ -1,0 +1,98 @@
+!
+!  These are Fortran interfaces that are custom hand coded because
+!  they cannot currently be generated automatically
+!
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscisdef.h90"
+#endif
+#include "petsc/finclude/ftn-custom/petscishide.h90"
+
+      Interface
+        Subroutine ISGetIndicesF90(i,array,ierr)
+          USE_IS_HIDE
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         IS_HIDE       i
+        End Subroutine
+      End Interface
+
+
+      Interface
+        Subroutine ISRestoreIndicesF90(i,array,ierr)
+          USE_IS_HIDE
+          PetscInt, pointer :: array(:)
+          PetscErrorCode ierr
+         IS_HIDE      i
+        End Subroutine
+      End Interface
+
+! ------------------------------------------------------
+
+      Interface
+        Subroutine ISBlockGetIndicesF90(i,array,ierr)
+          USE_IS_HIDE
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         IS_HIDE       i
+        End Subroutine
+      End Interface
+
+
+      Interface
+        Subroutine ISBlockRestoreIndicesF90(i,array,ierr)
+          USE_IS_HIDE
+          PetscInt, pointer :: array(:)
+          PetscErrorCode ierr
+         IS_HIDE      i
+        End Subroutine
+      End Interface
+
+! ------------------------------------------------------
+      Interface
+        Subroutine ISColoringGetISF90(ic,n,isa,ierr)
+          USE_IS_HIDE
+          IS_HIDE, pointer :: isa(:)
+          PetscInt     n
+          PetscErrorCode ierr
+          ISCOLORING_HIDE ic
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine ISColoringRestoreISF90(ic,isa,ierr)
+          USE_IS_HIDE
+          IS_HIDE, pointer :: isa(:)
+          PetscErrorCode     ierr
+          ISCOLORING_HIDE ic
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionGetConstraintIndicesF90(s,p,a,ierr)
+          USE_PETSCSECTION_HIDE
+          PetscInt p
+          PetscInt, pointer :: a(:)
+          PetscErrorCode  ierr
+          PETSCSECTION_HIDE       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionRestoreConstraintIndicesF90(s,p,a,ierr)
+          USE_PETSCSECTION_HIDE
+          PetscInt p
+          PetscInt, pointer :: a(:)
+          PetscErrorCode  ierr
+          PETSCSECTION_HIDE       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionSetConstraintIndicesF90(s,p,a,ierr)
+          USE_PETSCSECTION_HIDE
+          PetscInt p
+          PetscInt, pointer :: a(:)
+          PetscErrorCode  ierr
+          PETSCSECTION_HIDE       s
+        End Subroutine
+      End Interface

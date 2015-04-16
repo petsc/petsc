@@ -4,7 +4,7 @@
   between Fortran and C.
 */
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscoptionsinsertfileyaml_             PETSCOPTIONSINSERTFILEYAML

@@ -1,7 +1,7 @@
 
-#include <petsc-private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
+#include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 extern PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring*);
 extern PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring*);

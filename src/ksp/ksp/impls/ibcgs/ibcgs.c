@@ -1,6 +1,6 @@
 
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_IBCGS"

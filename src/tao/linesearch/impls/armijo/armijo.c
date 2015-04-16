@@ -1,4 +1,4 @@
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/armijo/armijo.h>
 
 #define REPLACE_FIFO 1

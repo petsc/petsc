@@ -4,8 +4,8 @@
   used for finite difference computations of Jacobians using coloring.
 */
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetF"

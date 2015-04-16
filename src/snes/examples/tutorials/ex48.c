@@ -57,10 +57,10 @@ There are two compile-time options:
 
 #if defined(PETSC_APPLE_FRAMEWORK)
 #import <PETSc/petscsnes.h>
-#import <PETSc/petsc-private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
+#import <PETSc/petsc/private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 #else
 #include <petscsnes.h>
-#include <petsc-private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
+#include <petsc/private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 #endif
 #include <ctype.h>              /* toupper() */
 

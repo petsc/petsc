@@ -13,8 +13,8 @@ EXAMPLESMATLAB   =
 DIRS		 =
 CLEANFILES       =
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 #--------------------------------------------------------------------------
 
@@ -53,4 +53,4 @@ TESTEXAMPLES_FORTRAN_PYTHON = ex1f.PETSc runex1f ex1f.rm
 
 #--------------------------------------------------------------------------
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

@@ -76,7 +76,6 @@ int main(int argc,char **argv)
   /*
      Demonstrate various basic vector routines.
   */
-  MPI_Barrier(PETSC_COMM_WORLD);
   ierr = VecDot(x,y,&dot);CHKERRQ(ierr);
   ierr = VecMDot(x,3,z,dots);CHKERRQ(ierr);
 

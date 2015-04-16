@@ -3,8 +3,8 @@
 
 #include <petscksp.h>
 #include <petscpc.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/pcimpl.h>
 
 #define NTR_KSP_NASH    0
 #define NTR_KSP_STCG    1
@@ -606,7 +606,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     if (reason == TAO_CONTINUE_ITERATING) {
       ierr = VecCopy(tr->W, tao->solution);CHKERRQ(ierr);
       f = ftrial;
-      ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);
+      ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       needH = 1;
