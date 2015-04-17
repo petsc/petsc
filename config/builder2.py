@@ -149,7 +149,6 @@ def check(args):
   if 'regParams' in args and not args.regParams is None:
     mod = __import__(args.regParams)
     builder.localRegressionParameters[os.path.dirname(mod.__file__)] = mod.regressionParameters
-    print builder.localRegressionParameters
   # C test
   if len(args.files):
     examples = []
