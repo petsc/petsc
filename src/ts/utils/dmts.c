@@ -111,8 +111,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 
   PetscFunctionBegin;
   ierr = TSInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
-  ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

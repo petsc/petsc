@@ -1443,7 +1443,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   *outsnes = NULL;
   ierr = SNESInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(snes,SNES_CLASSID,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
 
   snes->ops->converged    = SNESConvergedDefault;
   snes->usesksp           = PETSC_TRUE;

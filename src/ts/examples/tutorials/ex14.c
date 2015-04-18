@@ -501,7 +501,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscClassIdRegister("Toy Hydrostatic Ice",&THI_CLASSID);CHKERRQ(ierr);
     registered = PETSC_TRUE;
   }
-  ierr = PetscHeaderCreate(thi,_p_THI,0,THI_CLASSID,"THI","Toy Hydrostatic Ice","THI",comm,THIDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(thi,THI_CLASSID,"THI","Toy Hydrostatic Ice","THI",comm,THIDestroy,0);CHKERRQ(ierr);
 
   ierr = PetscNew(&thi->units);CHKERRQ(ierr);
 
