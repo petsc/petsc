@@ -187,7 +187,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool invert_Stildas, PetscBool use_edges, PetscBool use_faces)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool use_edges, PetscBool use_faces)
 {
   Mat                    A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all,S_all_inv;
@@ -806,26 +806,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           for (j=0;j<B_N;j++) {
             for (k=j+1;k<B_N;k++) {
               array[k*B_N+j+cum] = array[j*B_N+k+cum];
-            }
-          }
-        }
-        if (invert_Stildas) { /* Stildas can be singular */
-          if (!sub_schurs->is_hermitian) {
-            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array2+cum,&B_N,pivots,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array2+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-          } else {
-            PetscInt j,k;
-
-            PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array2+cum,&B_N,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array2+cum,&B_N,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
-            for (j=0;j<B_N;j++) {
-              for (k=j+1;k<B_N;k++) {
-                array2[k*B_N+j+cum] = array2[j*B_N+k+cum];
-              }
             }
           }
         }

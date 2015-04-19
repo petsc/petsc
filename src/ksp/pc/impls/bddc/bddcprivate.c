@@ -4698,7 +4698,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   }
 
   /* setup sub_schurs data */
-  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {
