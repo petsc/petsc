@@ -535,8 +535,11 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetVariableBounds_C",&f);CHKERRQ(ierr);
-  if (!f) {ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);}
-  ierr                = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
+  if (!f) {
+    ierr = SNESVISetVariableBounds_VI(snes, xl, xu);CHKERRQ(ierr);
+  } else {
+    ierr = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
+  }
   snes->usersetbounds = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
