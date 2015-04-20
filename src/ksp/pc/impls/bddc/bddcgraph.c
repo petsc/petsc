@@ -132,7 +132,6 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
 {
   IS             *ISForFaces,*ISForEdges,ISForVertices;
   PetscInt       i,nfc,nec,nvc,*idx;
-  PetscBool      twodim,twodimr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -153,11 +152,8 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     }
   }
 
-  /* determine if we are in 2D or 3D */
-  twodim  = (PetscBool)!nec;
-  twodimr = PETSC_FALSE;
-  ierr = MPI_Allreduce(&twodim,&twodimr,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
-  if (twodimr) { /* we are in a 2D case -> edge are shared by 2 subregions and faces don't exist */
+  /* check if we are in 2D or 3D */
+  if (graph->twodim) { /* we are in a 2D case -> edges are shared by 2 subregions and faces don't exist */
     nec = nfc;
     nfc = 0;
   }
@@ -180,7 +176,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     PetscInt repdof = graph->queue[graph->cptr[i]];
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
       if (graph->count[repdof] == 1 && graph->special_dof[repdof] != PCBDDCGRAPH_NEUMANN_MARK) {
-        if (twodimr) {
+        if (graph->twodim) {
           if (EdgesIS) {
             ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
           }
@@ -238,6 +234,8 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   PetscBool      adapt_interface_reduced;
   MPI_Comm       interface_comm;
   PetscMPIInt    size;
+  PetscInt       i;
+  PetscBool      twodim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -266,7 +264,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     MPI_Request *recv_requests;
     PetscInt    *aux_new_xadj,*new_xadj,*new_adjncy,**temp_buffer;
     PetscInt    *old_xadj,*old_adjncy;
-    PetscInt    i,j,k,s,sum_requests,buffer_size,size_of_recv,temp_buffer_size;
+    PetscInt    j,k,s,sum_requests,buffer_size,size_of_recv,temp_buffer_size;
     PetscMPIInt rank,neigh,tag,mpi_buffer_size;
     PetscInt    *cum_recv_counts,*subset_to_nodes_indices,*recv_buffer_subset,*nodes_to_temp_buffer_indices;
     PetscInt    *send_buffer,*recv_buffer,*queue_in_global_numbering,*sizes_of_sends,*add_to_subset;
@@ -587,6 +585,19 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     graph->adjncy = old_adjncy;
     ierr = PetscFree(queue_in_global_numbering);CHKERRQ(ierr);
   }
+
+  /* Determine if we are in 2D or 3D */
+  twodim  = PETSC_TRUE;
+  for (i=0;i<graph->ncc;i++) {
+    PetscInt repdof = graph->queue[graph->cptr[i]];
+    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
+      if (graph->count[repdof] > 1 || graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) {
+        twodim = PETSC_FALSE;
+        break;
+      }
+    }
+  }
+  ierr = MPI_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1050,22 +1061,14 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   graph->cptr[graph->ncc] = total_counts;
   /* free memory allocated by ISLocalToGlobalMappingGetInfo */
   ierr = ISLocalToGlobalMappingRestoreInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  /* For consistency among neighbours, I need to sort (by global ordering) each connected component */
   /* get a reference node (min index in global ordering) for each subset */
   ierr = PetscMalloc1(graph->ncc,&subset_ref_node_global);CHKERRQ(ierr);
   ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_global);CHKERRQ(ierr);
   for (i=0;i<graph->ncc;i++) {
-    PetscInt minval = queue_global[graph->cptr[i]];
-    PetscInt minloc = graph->queue[graph->cptr[i]];
-    for (j=graph->cptr[i]+1;j<graph->cptr[i+1];j++) {
-      if (minval > queue_global[j]) {
-        minval = queue_global[j];
-        minloc = graph->queue[j];
-      }
-    }
-    subset_ref_node_global[i] = minloc;
-    /* For consistency among neighbours, I need to sort (by global ordering) each connected component */
     ierr = PetscSortIntWithArray(graph->cptr[i+1]-graph->cptr[i],&queue_global[graph->cptr[i]],&graph->queue[graph->cptr[i]]);CHKERRQ(ierr);
+    subset_ref_node_global[i] = graph->queue[graph->cptr[i]];
   }
   /* renumber reference nodes */
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(graph->l2gmap)),graph->l2gmap,graph->ncc,subset_ref_node_global,NULL,&k,&graph->subset_ref_node);CHKERRQ(ierr);
