@@ -2021,9 +2021,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->computed_rowadj = PETSC_FALSE;
 
   /* adaptivity */
-  pcbddc->adaptive_threshold      = -1.0;
+  pcbddc->adaptive_threshold      = 0.0;
   pcbddc->adaptive_nmax           = 0;
-  pcbddc->adaptive_nmin           = -1;
+  pcbddc->adaptive_nmin           = 0;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
