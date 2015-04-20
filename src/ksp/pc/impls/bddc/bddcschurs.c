@@ -588,7 +588,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
 
-    if (compute_Stilda) { /* TODO PICKUP BETTER NAMES */
+    if (compute_Stilda) {
       ierr = MatCreate(PETSC_COMM_SELF,&S_Ej_tilda_all);CHKERRQ(ierr);
       ierr = MatSetSizes(S_Ej_tilda_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
       ierr = MatSetType(S_Ej_tilda_all,MATAIJ);CHKERRQ(ierr);
@@ -597,27 +597,27 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = MatSetSizes(S_Ej_inv_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
       ierr = MatSetType(S_Ej_inv_all,MATAIJ);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation(S_Ej_inv_all,0,nnz);CHKERRQ(ierr);
-    }
 
-    /* Get St^-1 */
-    if (compute_Stilda) {
-      PetscScalar *vals;
+      /* compute St^-1 */
+      if (local_size) { /* multilevel guard */
+        PetscScalar *vals;
 
-      ierr = PetscBLASIntCast(local_size,&B_N);CHKERRQ(ierr);
-      ierr = MatDuplicate(S_all,MAT_COPY_VALUES,&S_all_inv);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(S_all_inv,&vals);CHKERRQ(ierr);
-      if (!sub_schurs->is_hermitian) {
-        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals,&B_N,pivots,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-      } else {
-        PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,vals,&B_N,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,vals,&B_N,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+        ierr = PetscBLASIntCast(local_size,&B_N);CHKERRQ(ierr);
+        ierr = MatDuplicate(S_all,MAT_COPY_VALUES,&S_all_inv);CHKERRQ(ierr);
+        ierr = MatDenseGetArray(S_all_inv,&vals);CHKERRQ(ierr);
+        if (!sub_schurs->is_hermitian) {
+          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals,&B_N,pivots,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+        } else {
+          PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,vals,&B_N,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+          PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,vals,&B_N,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+        }
+        ierr = MatDenseRestoreArray(S_all_inv,&vals);CHKERRQ(ierr);
       }
-      ierr = MatDenseRestoreArray(S_all_inv,&vals);CHKERRQ(ierr);
     }
 
     /* Work arrays */
