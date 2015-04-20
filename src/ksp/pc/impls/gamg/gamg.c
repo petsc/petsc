@@ -541,7 +541,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   ierr = MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
-  ierr = PetscInfo6(pc,"level %d) N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+  ierr = PetscInfo6(pc,"level %d) N=%D, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
                     0,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,
                     (int)(nnz0/(PetscReal)M+0.5),size);
   CHKERRQ(ierr);
@@ -619,7 +619,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
     ierr = MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
     nnztot += info.nz_used;
-    ierr = PetscInfo5(pc,"%d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",level1,M,pc_gamg->data_cell_cols,(int)(info.nz_used/(PetscReal)M),nactivepe);CHKERRQ(ierr);
+    ierr = PetscInfo5(pc,"%d) N=%D, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",level1,M,pc_gamg->data_cell_cols,(int)(info.nz_used/(PetscReal)M),nactivepe);CHKERRQ(ierr);
 
 #if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
