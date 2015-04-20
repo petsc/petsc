@@ -196,6 +196,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   ISLocalToGlobalMapping l2gmap_subsets;
   IS                     is_I,temp_is;
   PetscInt               *nnz,*all_local_idx_G,*all_local_idx_N;
+  PetscInt               *auxnum1,*auxnum2,*all_local_idx_G_rep;
   PetscInt               i,subset_size,max_subset_size;
   PetscInt               extra,local_size,global_size;
   PetscBLASInt           B_N,B_ierr,B_lwork,*pivots;
@@ -372,6 +373,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = ISRestoreIndices(sub_schurs->is_I_layer,&idxs);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(sub_schurs->n_subs,&auxnum1,sub_schurs->n_subs,&auxnum2);CHKERRQ(ierr);
 
   /* Get local indices in local numbering */
   local_size = 0;
@@ -381,6 +383,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
     ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
     ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
+    /* start (smallest in global ordering) and multiplicity */
+    auxnum1[i] = idxs[0];
+    auxnum2[i] = subset_size;
     /* subset indices in local numbering */
     ierr = PetscMemcpy(all_local_idx_N+local_size+extra,idxs,subset_size*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = ISRestoreIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
@@ -405,7 +410,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
 
   /* prepare parallel matrices for summing up properly schurs on subsets */
-  ierr = PCBDDCSubsetNumbering(comm_n,sub_schurs->l2gmap,local_size,all_local_idx_N+extra,PETSC_NULL,&global_size,&all_local_idx_G);CHKERRQ(ierr);
+  ierr = PCBDDCSubsetNumbering(comm_n,sub_schurs->l2gmap,sub_schurs->n_subs,auxnum1,auxnum2,&global_size,&all_local_idx_G_rep);CHKERRQ(ierr);
+  ierr = PetscMalloc1(local_size,&all_local_idx_G);CHKERRQ(ierr);
+  local_size = 0;
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    PetscInt j;
+    for (j=0;j<auxnum2[i];j++) all_local_idx_G[local_size++] = all_local_idx_G_rep[i] + j;
+  }
+  ierr = PetscFree(all_local_idx_G_rep);CHKERRQ(ierr);
+  ierr = PetscFree2(auxnum1,auxnum2);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm_n,1,local_size,all_local_idx_G,PETSC_COPY_VALUES,&l2gmap_subsets);CHKERRQ(ierr);
   ierr = MatCreateIS(comm_n,1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,&work_mat);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
