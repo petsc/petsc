@@ -1421,6 +1421,7 @@ cdef class NullSpace(Object):
             vec.vec = v[i]
             PetscINCREF(vec.obj)
             vectors.append(vec)
+        return vectors
 
     def getFunction(self):
         return self.get_attr('__function__')
