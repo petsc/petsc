@@ -40,9 +40,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
-  ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
-
+  ierr = PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
 
   v->ltogmap                  = NULL;
   v->bs                       = 1;
