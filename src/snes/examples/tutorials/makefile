@@ -554,6 +554,18 @@ runex9_6:
 	-@${MPIEXEC} -n 1 ./ex9 -da_refine 5 -pc_type mg -snes_monitor_short -ksp_monitor_short > ex9_6.tmp 2>&1; \
            ${DIFF} output/ex9_6.out ex9_6.tmp || printf  "${PWD}\nPossible problem with ex9_6, diffs above\n=========================================\n"; \
            ${RM} -f ex9_6.tmp
+runex9_7:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type multiplicative -snes_composite_sneses vinewtonrsls,vinewtonssls -sub_0_snes_vi_monitor -sub_1_snes_vi_monitor > ex9_7.tmp 2>&1; \
+           ${DIFF} output/ex9_7.out ex9_7.tmp || printf  "${PWD}\nPossible problem with ex9_7, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_7.tmp
+runex9_8:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type additive -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor  > ex9_8.tmp 2>&1; \
+           ${DIFF} output/ex9_8.out ex9_8.tmp || printf  "${PWD}\nPossible problem with ex9_8, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_8.tmp
+runex9_9:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor  > ex9_9.tmp 2>&1; \
+           ${DIFF} output/ex9_9.out ex9_9.tmp || printf  "${PWD}\nPossible problem with ex9_9, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_9.tmp
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
