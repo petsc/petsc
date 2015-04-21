@@ -1499,12 +1499,13 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
-PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat,PetscInt sizesset)
+PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  PetscInt       *rowners,i,m,nz,j;
+  PetscInt       *rowners,i,m,nz,j,mMax;
   PetscScalar    *array,*vals,*vals_ptr;
+  Mat_MPIDense   *a = (Mat_MPIDense*)newmat->data;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1520,14 +1521,15 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
     rowners[i] += rowners[i-1];
   }
 
-  if (!sizesset) {
-    ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  if (!a->A || !((Mat_SeqDense*)(a->A->data))->user_alloc) {
+    ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   }
-  ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   ierr = MatDenseGetArray(newmat,&array);CHKERRQ(ierr);
 
+  ierr = MPI_Reduce(&m,&mMax,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscMalloc1(m*N,&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(mMax*N,&vals);CHKERRQ(ierr);
 
     /* read in my part of the matrix numerical values  */
     ierr = PetscBinaryRead(fd,vals,m*N,PETSC_SCALAR);CHKERRQ(ierr);
@@ -1580,7 +1582,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*rowners,*sndcounts,m,maxnz;
   PetscInt       header[4],*rowlengths = 0,M,N,*cols;
   PetscInt       *ourlens,*procsnz = 0,*offlens,jj,*mycols,*smycols;
-  PetscInt       i,nz,j,rstart,rend,sizesset=1,grows,gcols;
+  PetscInt       i,nz,j,rstart,rend;
   int            fd;
   PetscErrorCode ierr;
 
@@ -1595,27 +1597,21 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
     ierr = PetscBinaryRead(fd,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
-  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) sizesset = 0;
-
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M    = header[1]; N = header[2]; nz = header[3];
 
   /* If global rows/cols are set to PETSC_DECIDE, set it to the sizes given in the file */
-  if (sizesset && newmat->rmap->N < 0) newmat->rmap->N = M;
-  if (sizesset && newmat->cmap->N < 0) newmat->cmap->N = N;
+  if (newmat->rmap->N < 0) newmat->rmap->N = M;
+  if (newmat->cmap->N < 0) newmat->cmap->N = N;
 
-  /* If global sizes are set, check if they are consistent with that given in the file */
-  if (sizesset) {
-    ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
-  }
-  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (newmat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%D) and input matrix has (%D)",M,newmat->rmap->N);
+  if (newmat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%D) and input matrix has (%D)",N,newmat->cmap->N);
 
   /*
        Handle case where matrix is stored on disk as a dense matrix
   */
   if (nz == MATRIX_BINARY_FORMAT_DENSE) {
-    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,newmat,sizesset);CHKERRQ(ierr);
+    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1704,9 +1700,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   /* create our matrix */
   for (i=0; i<m; i++) ourlens[i] -= offlens[i];
 
-  if (!sizesset) {
-    ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  }
+  ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   a = (Mat_MPIDense*)newmat->data;
   if (!a->A || !((Mat_SeqDense*)(a->A->data))->user_alloc) {
     ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
