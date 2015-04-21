@@ -2878,14 +2878,15 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PC_BDDC     *pcbddc = (PC_BDDC*)pc->data;
   PC_IS       *pcis = (PC_IS*)pc->data;
   Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
-  PetscInt    ierr,i,vertex_size;
+  PetscInt    ierr,i,vertex_size,N;
   PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
   /* Reset previously computed graph */
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   /* Init local Graph struct */
-  ierr = PCBDDCGraphInit(pcbddc->mat_graph,matis->mapping);CHKERRQ(ierr);
+  ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCGraphInit(pcbddc->mat_graph,matis->mapping,N);CHKERRQ(ierr);
 
   /* Check validity of the csr graph passed in by the user */
   if (pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) {
@@ -2919,7 +2920,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = ISLocalToGlobalMappingCreateIS(is_dummy,&l2gmap_dummy);CHKERRQ(ierr);
       ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
       ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
-      ierr = PCBDDCGraphInit(graph,l2gmap_dummy);CHKERRQ(ierr);
+      ierr = PCBDDCGraphInit(graph,l2gmap_dummy,pcis->n);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&l2gmap_dummy);CHKERRQ(ierr);
       ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
       if (flg_row) {
@@ -4729,7 +4730,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
 
     ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,NULL,NULL,NULL,NULL,&verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
-    ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap);CHKERRQ(ierr);
+    ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap,pcbddc->mat_graph->nvtxs_global);CHKERRQ(ierr);
     ierr = PCBDDCGraphSetUp(graph,0,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
     ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);

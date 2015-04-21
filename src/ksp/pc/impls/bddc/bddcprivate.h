@@ -16,7 +16,7 @@ PetscErrorCode PCBDDCResetCustomization(PC);
 /* graph */
 PETSC_EXTERN PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
 PETSC_EXTERN PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
-PETSC_EXTERN PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
 PETSC_EXTERN PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
 PETSC_EXTERN PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);

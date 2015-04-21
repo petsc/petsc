@@ -14,6 +14,7 @@
 struct _PCBDDCGraph {
   ISLocalToGlobalMapping l2gmap;
   PetscInt               nvtxs;
+  PetscInt               nvtxs_global;
   PetscBT                touched;
   PetscInt               *count;
   PetscInt               **neighbours_set;
