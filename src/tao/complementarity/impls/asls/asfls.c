@@ -138,7 +138,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 {
   TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
   PetscReal                    psi,ndpsi, normd, innerd, t=0;
-  PetscInt                     iter=0, nf;
+  PetscInt                     nf;
   PetscErrorCode               ierr;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
@@ -161,8 +161,9 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 
   while (1) {
     /* Check the converged criteria */
-    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",iter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, iter++, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
+    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter,(double)asls->merit,(double)ndpsi);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
+    tao->niter++;
     if (TAO_CONTINUE_ITERATING != reason) break;
 
     /* We are going to solve a linear system of equations.  We need to
@@ -267,7 +268,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 
     if (innerd >= -asls->delta*PetscPowReal(normd, asls->rho)) {
       ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", iter);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(asls->dpsi, tao->stepdirection, &innerd);CHKERRQ(ierr);
     }

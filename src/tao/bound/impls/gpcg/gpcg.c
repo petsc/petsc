@@ -146,7 +146,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 {
   TAO_GPCG                     *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode               ierr;
-  PetscInt                     iter=0,its;
+  PetscInt                     its;
   PetscReal                    actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal                    xtHx;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
@@ -182,7 +182,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   gpcg->f = f;
 
     /* Check Stopping Condition      */
-  ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
+  ierr=TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
@@ -241,8 +241,8 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       /* if there were no free variables, no cg method */
     }
 
-    iter++;
-    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
     if (reason!=TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */

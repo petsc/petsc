@@ -20,7 +20,6 @@
    TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
    PetscReal                    step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta;
    PetscReal                    gd_old,gnorm2_old,f_old;
-   PetscInt                     iter=0;
 
    PetscFunctionBegin;
    if (tao->XL || tao->XU || tao->ops->computebounds) {
@@ -32,7 +31,7 @@
    ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
-   ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+   ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
    if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
    /*  Set initial direction to -gradient */
@@ -141,8 +140,8 @@
 
      /*  Check for termination */
      gnorm2 =gnorm * gnorm;
-     iter++;
-     ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+     tao->niter++;
+     ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
      if (reason != TAO_CONTINUE_ITERATING) {
        break;
      }

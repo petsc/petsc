@@ -85,7 +85,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscReal                    norm_d = 0.0, e_min;
 
   PetscInt                     stepType;
-  PetscInt                     iter = 0;
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     n,N,kspits;
   PetscInt                     needH;
@@ -172,7 +171,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* create vectors for the limited memory preconditioner */
@@ -313,7 +312,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
 
-          ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+          ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
           if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
         }
       }
@@ -351,7 +350,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
-    ++iter;
+    ++tao->niter;
     tao->ksp_its=0;
 
     /* Compute the Hessian */
@@ -895,7 +894,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
-    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
