@@ -4,6 +4,8 @@
 */
 
 #include <../src/ksp/ksp/impls/fcg/fcgimpl.h>       /*I  "petscksp.h"  I*/
+extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
+extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
 const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCGTrunctionTypes","KSP_FCG_TRUNC_TYPE_",0};
 
@@ -47,6 +49,7 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
+  PetscInt       maxit = ksp->max_it;
   const PetscInt nworkstd = 2;
 
   PetscFunctionBegin;
@@ -62,6 +65,18 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 
   /* Preallocate additional work vectors */
   ierr = KSPAllocateVectors_FCG(ksp,fcg->nprealloc,fcg->nprealloc);CHKERRQ(ierr);
+  /*
+  If user requested computations of eigenvalues then allocate work
+  work space needed
+  */
+  if (ksp->calc_sings) {
+    /* get space to store tridiagonal matrix for Lanczos */
+    ierr = PetscMalloc4(maxit,&fcg->e,maxit,&fcg->d,maxit,&fcg->ee,maxit,&fcg->dd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+
+    ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
+    ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -72,10 +87,13 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i,k,idx,mi;
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
-  PetscScalar    alpha=0.0,beta,dpi,s;
+  PetscScalar    alpha=0.0,beta = 0.0,dpi,s;
   PetscReal      dp=0.0;
   Vec            B,R,Z,X,Pcurr,Ccurr;
   Mat            Amat,Pmat;
+  PetscInt       eigs = ksp->calc_sings; /* Variables for eigen estimation - START*/
+  PetscInt       stored_max_it = ksp->max_it;
+  PetscScalar    alphaold = 0,betaold = 1.0,*e = 0,*d = 0;/* Variables for eigen estimation  - FINISH */
 
   PetscFunctionBegin;
 
@@ -88,7 +106,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
   Z             = ksp->work[1];
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
-
+  if (eigs) {e = fcg->e; d = fcg->d; e[0] = 0.0; }
   /* Compute initial residual needed for convergence check*/
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -183,9 +201,11 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     }
 
     /* Update X and R */
+    betaold = beta;
     ierr = VecXDot(Pcurr,R,&beta);CHKERRQ(ierr);                 /*  beta <- pi'*r       */
     ierr = KSP_MatMult(ksp,Amat,Pcurr,Ccurr);CHKERRQ(ierr);      /*  w <- A*pi (stored in ci)   */
     ierr = VecXDot(Pcurr,Ccurr,&dpi);CHKERRQ(ierr);              /*  dpi <- pi'*w        */
+    alphaold = alpha;
     alpha = beta / dpi;                                          /*  alpha <- beta/dpi    */
     ierr = VecAXPY(X,alpha,Pcurr);CHKERRQ(ierr);                 /*  x <- x + alpha * pi  */
     ierr = VecAXPY(R,-alpha,Ccurr);CHKERRQ(ierr);                /*  r <- r - alpha * wi  */
@@ -225,9 +245,19 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     /* Compute current C (which is W/dpi) */
     ierr = VecScale(Ccurr,1.0/dpi);CHKERRQ(ierr);              /*   w <- ci/dpi   */
 
+    if (eigs) {
+      if (i > 0) {
+        if (ksp->max_it != stored_max_it) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+        e[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))/alphaold;
+        d[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))*e[i] + 1.0/alpha;
+      } else {
+        d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
+      }
+    }
     ++i;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (eigs) fcg->ned = ksp->its-1;
   PetscFunctionReturn(0);
 }
 
@@ -252,6 +282,10 @@ PetscErrorCode KSPDestroy_FCG(KSP ksp)
     }
   }
   ierr = PetscFree5(fcg->Pvecs,fcg->Cvecs,fcg->pPvecs,fcg->pCvecs,fcg->chunksizes);CHKERRQ(ierr);
+  /* free space used for singular value calculations */
+  if (ksp->calc_sings) {
+    ierr = PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd);CHKERRQ(ierr);
+  }
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

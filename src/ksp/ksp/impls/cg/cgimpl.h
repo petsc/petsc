@@ -23,6 +23,7 @@
 typedef struct {
   KSPCGType   type;                 /* type of system (symmetric or Hermitian) */
   PetscScalar emin,emax;           /* eigenvalues */
+  PetscInt    ned;                 /* size of following arrays */
   PetscScalar *e,*d;
   PetscReal   *ee,*dd;             /* work space for Lanczos algorithm */
 
