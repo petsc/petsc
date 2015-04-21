@@ -1414,7 +1414,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
 .  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
--  data - optional location of matrix data.  Set data=NULL (NULL_SCALAR for Fortran users) for PETSc
+-  data - optional location of matrix data.  Set data=NULL (PETSC_NULL_SCALAR for Fortran users) for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
@@ -1426,7 +1426,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=NULL (NULL_SCALAR for Fortran users).
+   set data=NULL (PETSC_NULL_SCALAR for Fortran users).
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
@@ -1449,6 +1449,10 @@ PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
   if (size > 1) {
     ierr = MatSetType(*A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(*A,data);CHKERRQ(ierr);
+    if (data) {  /* user provided data array, so no need to assemble */
+      ierr = MatSetUpMultiply_MPIDense(*A);CHKERRQ(ierr);
+      (*A)->assembled = PETSC_TRUE;
+    }
   } else {
     ierr = MatSetType(*A,MATSEQDENSE);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*A,data);CHKERRQ(ierr);
