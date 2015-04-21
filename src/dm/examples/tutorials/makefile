@@ -108,6 +108,9 @@ runex3_3:
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_3.tmp
+runex9:
+	-@${MPIEXEC} -n 4 ./ex9
+	-@${MPIEXEC} -n 4 ./ex9 -ndof 2
 runex10:
 	-@${MPIEXEC} -n 4 ./ex10
 	-@${MPIEXEC} -n 4 ./ex10 -viewer_hdf5_base_dimension2
@@ -148,6 +151,6 @@ TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm ex65dm.PETSc ex65dm.rm
 TESTEXAMPLES_13		  =
-TESTEXAMPLES_HDF5         = ex10.PETSc runex10 ex10.rm
+TESTEXAMPLES_HDF5         = ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
