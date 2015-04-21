@@ -842,20 +842,46 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   /*
      Get info for dofs splitting
-     User can specify only a subset; an additional field is considered as a complementary set
+     User can specify just a subset; an additional field is considered as a complementary field
   */
   for (i=0;i<graph->nvtxs;i++) {
     graph->which_dof[i] = n_ISForDofs; /* by default a dof belongs to the complement set */
   }
+  if (n_ISForDofs) {
+    ierr = VecSet(local_vec,-1.0);CHKERRQ(ierr);
+  }
   for (i=0;i<n_ISForDofs;i++) {
+    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (j=0;j<is_size;j++) {
       if (is_indices[j] > -1 && is_indices[j] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
         graph->which_dof[is_indices[j]] = i;
+        array[is_indices[j]] = 1.*i;
       }
     }
     ierr = ISRestoreIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
+  }
+  /* Check consistency among neighbours */
+  if (n_ISForDofs) {
+    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
+    ierr = VecGetArray(local_vec2,&array2);CHKERRQ(ierr);
+    for (i=0;i<graph->nvtxs;i++){
+      PetscInt field1,field2;
+
+      field1 = (PetscInt)PetscRealPart(array[i]);
+      field2 = (PetscInt)PetscRealPart(array2[i]);
+      if (field1 != field2) {
+        SETERRQ3(comm,PETSC_ERR_USER,"Local node %d have been assigned two different field ids %d and %d at the same time\n",i,field1,field2);
+      }
+    }
+    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_vec2,&array2);CHKERRQ(ierr);
   }
   if (neumann_is || dirichlet_is) {
     /* Take into account Neumann nodes */
@@ -898,7 +924,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
           k = is_indices[i];
           if (graph->count[k] && !PetscBTLookup(graph->touched,k)) {
             if (PetscRealPart(array[k]) > 0.1) {
-              SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong!\n",k);
+              SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong\n",k);
             }
             array2[k] = 1.0;
           }
