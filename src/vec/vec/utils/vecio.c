@@ -420,7 +420,7 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "VecChop"
 /*@
-  VecChop - Set all values in the vector less than the tolerance to zero
+  VecChop - Set all values in the vector with an absolute value less than the tolerance to zero
 
   Input Parameters:
 + v   - The vector
