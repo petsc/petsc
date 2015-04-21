@@ -168,6 +168,7 @@ cdef extern from * nogil:
     int SNESSetIterationNumber(PetscSNES,PetscInt)
     int SNESGetIterationNumber(PetscSNES,PetscInt*)
     int SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
+    int SNESSetCountersReset(PetscSNES,PetscBool)
 
     int SNESGetNumberFunctionEvals(PetscSNES,PetscInt*)
     int SNESSetMaxNonlinearStepFailures(PetscSNES,PetscInt)

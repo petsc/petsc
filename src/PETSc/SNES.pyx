@@ -421,6 +421,10 @@ cdef class SNES(Object):
         cdef PetscInt  ival = asInt(linear_its)
         CHKERR( SNESLogConvergenceHistory(self.snes, rval, ival) )
 
+    def setResetCounters(self, reset=True):
+        cdef PetscBool flag = reset
+        CHKERR( SNESSetCountersReset(self.snes, flag) )
+
     # --- monitoring ---
 
     def setMonitor(self, monitor, args=None, kargs=None):
