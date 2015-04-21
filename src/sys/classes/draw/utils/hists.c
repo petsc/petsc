@@ -53,15 +53,13 @@ struct _p_PetscDrawHG {
 PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
 {
   PetscDrawHG    h;
-  MPI_Comm       comm;
   PetscBool      isnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   PetscValidPointer(hist,3);
-  ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(h, _p_PetscDrawHG, int, PETSC_DRAWHG_CLASSID,  "PetscDrawHG", "Histogram", "Draw", comm, PetscDrawHGDestroy, NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID,  "PetscDrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL);CHKERRQ(ierr);
 
   h->view        = NULL;
   h->destroy     = NULL;
