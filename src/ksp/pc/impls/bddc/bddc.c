@@ -162,11 +162,11 @@ static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertic
 /*@
  PCBDDCSetPrimalVerticesLocalIS - Set additional user defined primal vertices in PCBDDC
 
-   Not collective
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  PrimalVertices - index set of primal vertices in local numbering
+-  PrimalVertices - index set of primal vertices in local numbering (can be empty)
 
    Level: intermediate
 
@@ -181,6 +181,7 @@ PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC pc, IS PrimalVertices)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(PrimalVertices,IS_CLASSID,2);
+  PetscCheckSameComm(pc,1,PrimalVertices,2);
   ierr = PetscTryMethod(pc,"PCBDDCSetPrimalVerticesLocalIS_C",(PC,IS),(pc,PrimalVertices));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -830,7 +831,7 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS I
 
    Level: intermediate
 
-   Notes: n_is should be the same among processes. Not all nodes need to be listed: unlisted nodes will belong to a different field.
+   Notes: n_is should be the same among processes. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
 
 .seealso: PCBDDC
 @*/
@@ -899,7 +900,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
 
    Level: intermediate
 
-   Notes: Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to a different field.
+   Notes: Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
 
 .seealso: PCBDDC
 @*/

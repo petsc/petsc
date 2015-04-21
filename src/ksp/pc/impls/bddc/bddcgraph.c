@@ -966,9 +966,9 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     }
   }
 
-  /* mark special nodes -> each will become a single node equivalence class */
-  ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
+  /* mark special nodes (if any) -> each will become a single node equivalence class */
   if (custom_primal_vertices) {
+    ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
@@ -979,22 +979,22 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     }
     ierr = ISRestoreIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-  }
-  /* special nodes: impose consistency among neighbours */
-  ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-  j = 0;
-  for (i=0;i<graph->nvtxs;i++) {
-    if (PetscRealPart(array[i]) > 0.1 && graph->special_dof[i] != PCBDDCGRAPH_DIRICHLET_MARK) {
-      graph->special_dof[i] = PCBDDCGRAPH_SPECIAL_MARK-j;
-      j++;
+    /* special nodes: impose consistency among neighbours */
+    ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
+    j = 0;
+    for (i=0;i<graph->nvtxs;i++) {
+      if (PetscRealPart(array[i]) > 0.1 && graph->special_dof[i] != PCBDDCGRAPH_DIRICHLET_MARK) {
+        graph->special_dof[i] = PCBDDCGRAPH_SPECIAL_MARK-j;
+        j++;
+      }
     }
+    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
 
   /* mark interior nodes as touched and belonging to partition number 0 */
   for (i=0;i<graph->nvtxs;i++) {
