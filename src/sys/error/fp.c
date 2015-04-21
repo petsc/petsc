@@ -427,7 +427,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     /* We could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
     if (feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions\n");
 #elif defined PETSC_HAVE_XMMINTRIN_H
-    _MM_SET_EXCEPTION_MASK(_MM_MASK_INEXACT);
+    _MM_SET_EXCEPTION_MASK(_MM_MASK_INEXACT | _MM_MASK_UNDERFLOW);
 #else
     /* C99 does not provide a way to modify the environment so there is no portable way to activate trapping. */
 #endif
