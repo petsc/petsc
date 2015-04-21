@@ -730,18 +730,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   graph->custom_minimal_size = PetscMax(graph->custom_minimal_size,custom_minimal_size);
   /* get info l2gmap and allocate work vectors  */
   ierr = ISLocalToGlobalMappingGetInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF,&local_vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(local_vec,PETSC_DECIDE,graph->nvtxs);CHKERRQ(ierr);
-  ierr = VecSetType(local_vec,VECSTANDARD);CHKERRQ(ierr);
-  ierr = VecDuplicate(local_vec,&local_vec2);CHKERRQ(ierr);
-  ierr = VecCreate(comm,&global_vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(global_vec,PETSC_DECIDE,graph->nvtxs_global);CHKERRQ(ierr);
-  ierr = VecSetType(global_vec,VECSTANDARD);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,graph->nvtxs,0,1,&to);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,to,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(global_vec,from,local_vec,to,&scatter_ctx);CHKERRQ(ierr);
-
-  /* get local periodic nodes */
+  /* check if we have any local periodic nodes (periodic BCs) */
   mirrors_found = PETSC_FALSE;
   if (graph->nvtxs && n_neigh) {
     for (i=0; i<n_shared[0]; i++) graph->count[shared[0][i]] += 1;
@@ -751,6 +740,28 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         break;
       }
     }
+  }
+  /* create some workspace objects */
+  local_vec = NULL;
+  local_vec2 = NULL;
+  global_vec = NULL;
+  to = NULL;
+  from = NULL;
+  scatter_ctx = NULL;
+  if (n_ISForDofs || dirichlet_is || neumann_is || custom_primal_vertices) {
+    ierr = VecCreate(PETSC_COMM_SELF,&local_vec);CHKERRQ(ierr);
+    ierr = VecSetSizes(local_vec,PETSC_DECIDE,graph->nvtxs);CHKERRQ(ierr);
+    ierr = VecSetType(local_vec,VECSTANDARD);CHKERRQ(ierr);
+    ierr = VecDuplicate(local_vec,&local_vec2);CHKERRQ(ierr);
+    ierr = VecCreate(comm,&global_vec);CHKERRQ(ierr);
+    ierr = VecSetSizes(global_vec,PETSC_DECIDE,graph->nvtxs_global);CHKERRQ(ierr);
+    ierr = VecSetType(global_vec,VECSTANDARD);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,graph->nvtxs,0,1,&to);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,to,&from);CHKERRQ(ierr);
+    ierr = VecScatterCreate(global_vec,from,local_vec,to,&scatter_ctx);CHKERRQ(ierr);
+  } else if (mirrors_found) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,graph->nvtxs,0,1,&to);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,to,&from);CHKERRQ(ierr);
   }
   /* compute local mirrors (if any) */
   if (mirrors_found) {
