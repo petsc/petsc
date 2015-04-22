@@ -21,7 +21,7 @@ class Configure(config.package.GNUPackage):
 
   def configureLibrary(self):
     ''' Just assume the downloaded library will work'''
-    self.getInstallDir()
+    self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
     self.lib     = [os.path.join(self.installDir,'lib','libctetgen.a')]
     self.found   = 1
