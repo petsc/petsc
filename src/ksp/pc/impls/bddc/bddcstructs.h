@@ -29,6 +29,8 @@ struct _PCBDDCGraph {
   PetscInt               **mirrors_set;
   PetscInt               ncc;
   PetscInt               n_subsets;
+  PetscInt               *subsets_size;
+  PetscInt               **subsets;
   PetscInt               custom_minimal_size;
   PetscBool              twodim;
   PetscInt               nvtxs_csr;

@@ -84,6 +84,8 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
           ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
           ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   no adj info\n");CHKERRQ(ierr);
         }
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   interface subset id: %d\n",graph->subset[i]);CHKERRQ(ierr);
@@ -260,16 +262,19 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   }
 
   if (graph->n_subsets && adapt_interface_reduced) {
-    MPI_Request *send_requests;
-    MPI_Request *recv_requests;
-    PetscInt    *aux_new_xadj,*new_xadj,*new_adjncy,**temp_buffer;
+    /* old csr stuff */
+    PetscInt    *aux_new_xadj,*new_xadj,*new_adjncy;
     PetscInt    *old_xadj,*old_adjncy;
-    PetscInt    j,k,s,sum_requests,buffer_size,size_of_recv,temp_buffer_size;
-    PetscMPIInt rank,neigh,tag,mpi_buffer_size;
-    PetscInt    *cum_recv_counts,*subset_to_nodes_indices,*recv_buffer_subset,*nodes_to_temp_buffer_indices;
-    PetscInt    *send_buffer,*recv_buffer,*queue_in_global_numbering,*sizes_of_sends,*add_to_subset;
-    PetscInt    start_of_recv,start_of_send,size_of_send,global_subset_counter,ins_val;
-    PetscBool   *subset_cc_adapt,same_set;
+    PetscBT     subset_cc_adapt;
+    /* MPI */
+    MPI_Request *send_requests,*recv_requests;
+    PetscInt    *send_buffer,*recv_buffer;
+    PetscInt    sum_requests,start_of_recv,start_of_send;
+    PetscInt    *cum_recv_counts;
+    /* others */
+    PetscInt    *labels;
+    PetscInt    global_subset_counter;
+    PetscInt    j,k,s;
 
     /* Retrict adjacency graph using information from previously computed connected components */
     ierr = PetscMalloc1(graph->nvtxs,&aux_new_xadj);CHKERRQ(ierr);
@@ -296,10 +301,13 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       }
     }
     ierr = PetscFree(aux_new_xadj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(graph->nvtxs,&labels);CHKERRQ(ierr);
+    ierr = PetscMemzero(labels,graph->nvtxs*sizeof(*labels));CHKERRQ(ierr);
     for (i=0;i<graph->ncc;i++) {
       k = graph->cptr[i+1]-graph->cptr[i];
       for (j=0;j<k;j++) {
         ierr = PetscMemcpy(&new_adjncy[new_xadj[graph->queue[graph->cptr[i]+j]]],&graph->queue[graph->cptr[i]],k*sizeof(PetscInt));CHKERRQ(ierr);
+        labels[graph->queue[graph->cptr[i]+j]] = i;
       }
     }
     /* set temporarly new CSR into graph */
@@ -308,123 +316,90 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     graph->xadj = new_xadj;
     graph->adjncy = new_adjncy;
     /* allocate some space */
-    ierr = MPI_Comm_rank(interface_comm,&rank);CHKERRQ(ierr);
     ierr = PetscMalloc1(graph->n_subsets+1,&cum_recv_counts);CHKERRQ(ierr);
     ierr = PetscMemzero(cum_recv_counts,(graph->n_subsets+1)*sizeof(*cum_recv_counts));CHKERRQ(ierr);
-    ierr = PetscMalloc1(graph->n_subsets,&subset_to_nodes_indices);CHKERRQ(ierr);
     /* first count how many neighbours per connected component I will receive from */
     cum_recv_counts[0]=0;
-    for (i=1;i<graph->n_subsets+1;i++) {
-      j = 0;
-      while (graph->subset[j] != i) {
-        j++;
-      }
-      subset_to_nodes_indices[i-1]=j;
-      /* We don't want sends/recvs_to/from_self -> here I don't count myself  */
-      cum_recv_counts[i]=cum_recv_counts[i-1]+graph->count[j];
+    for (i=0;i<graph->n_subsets;i++) {
+      cum_recv_counts[i+1]=cum_recv_counts[i]+graph->count[graph->subsets[i][0]];
     }
-    ierr = PetscMalloc1(2*cum_recv_counts[graph->n_subsets],&recv_buffer_subset);CHKERRQ(ierr);
-    ierr = PetscMalloc1(cum_recv_counts[graph->n_subsets],&send_requests);CHKERRQ(ierr);
-    ierr = PetscMalloc1(cum_recv_counts[graph->n_subsets],&recv_requests);CHKERRQ(ierr);
+    ierr = PetscMalloc1(cum_recv_counts[graph->n_subsets],&recv_buffer);CHKERRQ(ierr);
+    ierr = PetscMalloc2(cum_recv_counts[graph->n_subsets],&send_requests,cum_recv_counts[graph->n_subsets],&recv_requests);CHKERRQ(ierr);
     for (i=0;i<cum_recv_counts[graph->n_subsets];i++) {
       send_requests[i]=MPI_REQUEST_NULL;
       recv_requests[i]=MPI_REQUEST_NULL;
     }
-    /* exchange with my neighbours the number of my connected components on the shared interface */
+    /* exchange with my neighbours the number of my connected components on the subset of interface */
     sum_requests = 0;
     for (i=0;i<graph->n_subsets;i++) {
-      j = subset_to_nodes_indices[i];
-      ierr = PetscMPIIntCast(3*graph->subset_ref_node[i],&tag);CHKERRQ(ierr);
+      PetscMPIInt neigh,tag;
+
+      j = graph->subsets[i][0];
+      ierr = PetscMPIIntCast(2*graph->subset_ref_node[i],&tag);CHKERRQ(ierr);
       for (k=0;k<graph->count[j];k++) {
         ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
         ierr = MPI_Isend(&graph->subset_ncc[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-        ierr = MPI_Irecv(&recv_buffer_subset[sum_requests],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
+        ierr = MPI_Irecv(&recv_buffer[sum_requests],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
         sum_requests++;
       }
     }
     ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-    /* determine the connected component I need to adapt */
-    ierr = PetscMalloc1(graph->n_subsets,&subset_cc_adapt);CHKERRQ(ierr);
-    ierr = PetscMemzero(subset_cc_adapt,graph->n_subsets*sizeof(*subset_cc_adapt));CHKERRQ(ierr);
+    /* determine the subsets I have to adapt */
+    ierr = PetscBTCreate(graph->n_subsets,&subset_cc_adapt);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(graph->n_subsets,subset_cc_adapt);CHKERRQ(ierr);
     for (i=0;i<graph->n_subsets;i++) {
       for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
-        /* The first condition is natural (someone has a different number of ccs than me), the second one is just to be safe */
-        if (graph->subset_ncc[i] != recv_buffer_subset[j] || graph->subset_ncc[i] > 1) {
-          subset_cc_adapt[i] = PETSC_TRUE;
+        /* adapt if more than one cc is present */
+         if (graph->subset_ncc[i] > 1 || recv_buffer[j] > 1) {
+          ierr = PetscBTSet(subset_cc_adapt,i);
           break;
         }
       }
     }
-    buffer_size = 0;
+    ierr = PetscFree(recv_buffer);CHKERRQ(ierr);
+    /* determine send/recv buffers sizes */
+    j = 0;
     for (i=0;i<graph->n_subsets;i++) {
-      if (subset_cc_adapt[i]) {
-        for (j=i;j<graph->ncc;j++) {
-          if (graph->subset[graph->queue[graph->cptr[j]]] == i+1) { /* WARNING -> subset values goes from 1 to graph->n_subsets included */
-            buffer_size += 1 + graph->cptr[j+1]-graph->cptr[j];
-          }
+      if (PetscBTLookup(subset_cc_adapt,i)) {
+        j += graph->subsets_size[i];
+      }
+    }
+    k = 0;
+    for (i=0;i<graph->n_subsets;i++) {
+      if (PetscBTLookup(subset_cc_adapt,i)) {
+        k += (cum_recv_counts[i+1]-cum_recv_counts[i])*graph->subsets_size[i];
+      }
+    }
+    ierr = PetscMalloc2(j,&send_buffer,k,&recv_buffer);CHKERRQ(ierr);
+
+    /* fill send buffer */
+    j = 0;
+    for (i=0;i<graph->n_subsets;i++) {
+      if (PetscBTLookup(subset_cc_adapt,i)) {
+        for (k=0;k<graph->subsets_size[i];k++) {
+          send_buffer[j++] = labels[graph->subsets[i][k]];
         }
       }
     }
-    ierr = PetscMalloc1(buffer_size,&send_buffer);CHKERRQ(ierr);
-    /* now get from neighbours their ccs (in global numbering) and adapt them (in case it is needed) */
-    ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_in_global_numbering);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_in_global_numbering);CHKERRQ(ierr);
-    /* determine how much data to send (size of each queue plus the global indices) and communicate it to neighbours */
-    ierr = PetscMalloc1(graph->n_subsets,&sizes_of_sends);CHKERRQ(ierr);
-    ierr = PetscMemzero(sizes_of_sends,graph->n_subsets*sizeof(*sizes_of_sends));CHKERRQ(ierr);
-    sum_requests = 0;
-    start_of_send = 0;
-    start_of_recv = cum_recv_counts[graph->n_subsets];
-    for (i=0;i<graph->n_subsets;i++) {
-      if (subset_cc_adapt[i]) {
-        size_of_send = 0;
-        for (j=i;j<graph->ncc;j++) {
-          if (graph->subset[graph->queue[graph->cptr[j]]] == i+1) { /* WARNING -> subset values goes from 1 to graph->n_subsets included */
-            send_buffer[start_of_send+size_of_send]=graph->cptr[j+1]-graph->cptr[j];
-            size_of_send += 1;
-            ierr = PetscMemcpy(&send_buffer[start_of_send+size_of_send],
-                               &queue_in_global_numbering[graph->cptr[j]],
-                               (graph->cptr[j+1]-graph->cptr[j])*sizeof(*send_buffer));CHKERRQ(ierr);
-            size_of_send = size_of_send+graph->cptr[j+1]-graph->cptr[j];
-          }
-        }
-        j = subset_to_nodes_indices[i];
-        sizes_of_sends[i] = size_of_send;
-        ierr = PetscMPIIntCast(3*graph->subset_ref_node[i]+1,&tag);CHKERRQ(ierr);
-        for (k=0;k<graph->count[j];k++) {
-          ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
-          ierr = MPI_Isend(&sizes_of_sends[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-          ierr = MPI_Irecv(&recv_buffer_subset[sum_requests+start_of_recv],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
-          sum_requests++;
-        }
-        start_of_send += size_of_send;
-      }
-    }
-    ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-    ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-    buffer_size = 0;
-    for (k=0;k<sum_requests;k++) {
-      buffer_size += recv_buffer_subset[start_of_recv+k];
-    }
-    ierr = PetscMalloc1(buffer_size,&recv_buffer);CHKERRQ(ierr);
+    ierr = PetscFree(labels);CHKERRQ(ierr);
+
     /* now exchange the data */
     start_of_recv = 0;
     start_of_send = 0;
     sum_requests = 0;
     for (i=0;i<graph->n_subsets;i++) {
-      if (subset_cc_adapt[i]) {
-        size_of_send = sizes_of_sends[i];
-        j = subset_to_nodes_indices[i];
-        ierr = PetscMPIIntCast(3*graph->subset_ref_node[i]+2,&tag);CHKERRQ(ierr);
+      if (PetscBTLookup(subset_cc_adapt,i)) {
+        PetscMPIInt neigh,tag;
+        PetscInt    size_of_send = graph->subsets_size[i];
+
+        j = graph->subsets[i][0];
+        ierr = PetscMPIIntCast(2*graph->subset_ref_node[i]+1,&tag);CHKERRQ(ierr);
         for (k=0;k<graph->count[j];k++) {
           ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
-          ierr = PetscMPIIntCast(size_of_send,&mpi_buffer_size);CHKERRQ(ierr);
-          ierr = MPI_Isend(&send_buffer[start_of_send],mpi_buffer_size,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-          size_of_recv = recv_buffer_subset[cum_recv_counts[graph->n_subsets]+sum_requests];
-          ierr = PetscMPIIntCast(size_of_recv,&mpi_buffer_size);CHKERRQ(ierr);
-          ierr = MPI_Irecv(&recv_buffer[start_of_recv],mpi_buffer_size,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
-          start_of_recv += size_of_recv;
+          ierr = MPI_Isend(&send_buffer[start_of_send],size_of_send,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
+          ierr = MPI_Irecv(&recv_buffer[start_of_recv],size_of_send,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
+          start_of_recv += size_of_send;
           sum_requests++;
         }
         start_of_send += size_of_send;
@@ -432,133 +407,81 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     }
     ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-    for (j=0;j<buffer_size;) {
-      PetscInt rbs = recv_buffer[j];
+    ierr = PetscFree2(send_requests,recv_requests);CHKERRQ(ierr);
+    ierr = PetscFree(send_buffer);CHKERRQ(ierr);
 
-      ierr = ISGlobalToLocalMappingApply(graph->l2gmap,IS_GTOLM_DROP,rbs,&recv_buffer[j+1],&recv_buffer[j],&recv_buffer[j+1]);CHKERRQ(ierr);
-      if (rbs != recv_buffer[j]) {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mapped received buffer size %d differs from input size %d\n",rbs,recv_buffer[j]);
-      }
-      /* we need to adapt the output of GlobalToLocal mapping if there are mirrored nodes */
-      if (graph->mirrors) {
-        PetscBool mirrored_found=PETSC_FALSE;
-        for (k=0;k<recv_buffer[j];k++) {
-          if (graph->mirrors[recv_buffer[j+k+1]]) {
-            mirrored_found=PETSC_TRUE;
-            recv_buffer[j+k+1]=graph->mirrors_set[recv_buffer[j+k+1]][0];
-          }
-        }
-        if (mirrored_found) {
-          ierr = PetscSortInt(recv_buffer[j],&recv_buffer[j+1]);CHKERRQ(ierr);
-          k=0;
-          while (k<recv_buffer[j]) {
-            PetscInt nmir = graph->mirrors[recv_buffer[j+1+k]];
-            for (s=1;s<nmir;s++) {
-              recv_buffer[j+1+k+s] = graph->mirrors_set[recv_buffer[j+1+k]][s];
-            }
-            k += nmir;
-          }
-        }
-      }
-      k = recv_buffer[j]+1;
-      j += k;
-    }
-    sum_requests = cum_recv_counts[graph->n_subsets];
     start_of_recv = 0;
-    ierr = PetscMalloc1(graph->nvtxs,&nodes_to_temp_buffer_indices);CHKERRQ(ierr);
     global_subset_counter = 0;
     for (i=0;i<graph->n_subsets;i++) {
-      if (subset_cc_adapt[i]) {
-        temp_buffer_size = 0;
-        /* find nodes on the shared interface we need to adapt */
-        for (j=0;j<graph->nvtxs;j++) {
-          if (graph->subset[j]==i+1) {
-            nodes_to_temp_buffer_indices[j] = temp_buffer_size;
-            temp_buffer_size++;
-          } else {
-            nodes_to_temp_buffer_indices[j] = -1;
-          }
-        }
+      if (PetscBTLookup(subset_cc_adapt,i)) {
+        PetscInt **temp_buffer,temp_buffer_size,*private_label;
+
         /* allocate some temporary space */
+        temp_buffer_size = graph->subsets_size[i];
         ierr = PetscMalloc1(temp_buffer_size,&temp_buffer);CHKERRQ(ierr);
         ierr = PetscMalloc1(temp_buffer_size*(cum_recv_counts[i+1]-cum_recv_counts[i]),&temp_buffer[0]);CHKERRQ(ierr);
         ierr = PetscMemzero(temp_buffer[0],temp_buffer_size*(cum_recv_counts[i+1]-cum_recv_counts[i])*sizeof(PetscInt));CHKERRQ(ierr);
         for (j=1;j<temp_buffer_size;j++) {
           temp_buffer[j] = temp_buffer[j-1]+cum_recv_counts[i+1]-cum_recv_counts[i];
         }
-        /* analyze contributions from neighbouring subdomains for i-th conn comp
+        /* analyze contributions from neighbouring subdomains for i-th subset
            temp buffer structure:
-           supposing part of the interface has dimension 5 (for example with global dofs 0,1,2,3,4)
-           3 neighs procs with structured connected components:
-             neigh 0: [0 1 4], [2 3];  (2 connected components)
-             neigh 1: [0 1], [2 3 4];  (2 connected components)
-             neigh 2: [0 4], [1], [2 3]; (3 connected components)
+           supposing part of the interface has dimension 5
+           e.g with global dofs 0,1,2,3,4, locally ordered on the current process as 0,4,3,1,2
+           3 neighs procs having connected components:
+             neigh 0: [0 1 4], [2 3], labels [4,7]  (2 connected components)
+             neigh 1: [0 1], [2 3 4], labels [3 2]  (2 connected components)
+             neigh 2: [0 4], [1], [2 3], labels [1 5 6] (3 connected components)
            tempbuffer (row-oriented) will be filled as:
-             [ 0, 0, 0;
-               0, 0, 1;
-               1, 1, 2;
-               1, 1, 2;
-               0, 1, 0; ];
+             [ 4, 3, 1;
+               4, 2, 1;
+               7, 2, 6;
+               4, 3, 5;
+               7, 2, 6; ];
            This way we can simply find intersections of ccs among neighs.
-           For the example above, the graph->subset array will be modified to reproduce the following 4 connected components [0], [1], [2 3], [4];
+           The graph->subset array will need to be modified. The output for the example is [0], [1], [2 3], [4];
                                                                                                                                    */
         for (j=0;j<cum_recv_counts[i+1]-cum_recv_counts[i];j++) {
-          ins_val = 0;
-          size_of_recv = recv_buffer_subset[sum_requests];  /* total size of recv from neighs */
-          for (buffer_size=0;buffer_size<size_of_recv;) {  /* loop until all data from neighs has been taken into account */
-            for (k=1;k<recv_buffer[buffer_size+start_of_recv]+1;k++) { /* filling properly temp_buffer using data from a single recv */
-              temp_buffer[nodes_to_temp_buffer_indices[recv_buffer[start_of_recv+buffer_size+k]]][j] = ins_val;
-            }
-            buffer_size += k;
-            ins_val++;
+          for (k=0;k<temp_buffer_size;k++) {
+            temp_buffer[k][j] = recv_buffer[start_of_recv+k];
           }
-          start_of_recv += size_of_recv;
-          sum_requests++;
+          start_of_recv += temp_buffer_size;
         }
-        ierr = PetscMalloc1(temp_buffer_size,&add_to_subset);CHKERRQ(ierr);
-        ierr = PetscMemzero(add_to_subset,temp_buffer_size*sizeof(*add_to_subset));CHKERRQ(ierr);
+        ierr = PetscMalloc1(temp_buffer_size,&private_label);CHKERRQ(ierr);
+        ierr = PetscMemzero(private_label,temp_buffer_size*sizeof(*private_label));CHKERRQ(ierr);
         for (j=0;j<temp_buffer_size;j++) {
-          if (!add_to_subset[j]) { /* found a new cc  */
+          if (!private_label[j]) { /* found a new cc  */
+            PetscBool same_set;
+
             global_subset_counter++;
-            add_to_subset[j] = global_subset_counter;
+            private_label[j] = global_subset_counter;
             for (k=j+1;k<temp_buffer_size;k++) { /* check for other nodes in new cc */
               same_set = PETSC_TRUE;
               for (s=0;s<cum_recv_counts[i+1]-cum_recv_counts[i];s++) {
-                if (temp_buffer[j][s]!=temp_buffer[k][s]) {
+                if (temp_buffer[j][s] != temp_buffer[k][s]) {
                   same_set = PETSC_FALSE;
                   break;
                 }
               }
               if (same_set) {
-                add_to_subset[k] = global_subset_counter;
+                private_label[k] = global_subset_counter;
               }
             }
           }
         }
-        /* insert new data in subset array */
-        temp_buffer_size = 0;
-        for (j=0;j<graph->nvtxs;j++) {
-          if (graph->subset[j]==i+1) {
-            graph->subset[j] = graph->n_subsets+add_to_subset[temp_buffer_size];
-            temp_buffer_size++;
-          }
+        /* insert private labels in graph structure */
+        for (j=0;j<graph->subsets_size[i];j++) {
+          graph->subset[graph->subsets[i][j]] = graph->n_subsets+private_label[j];
         }
+        ierr = PetscFree(private_label);CHKERRQ(ierr);
         ierr = PetscFree(temp_buffer[0]);CHKERRQ(ierr);
         ierr = PetscFree(temp_buffer);CHKERRQ(ierr);
-        ierr = PetscFree(add_to_subset);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(nodes_to_temp_buffer_indices);CHKERRQ(ierr);
-    ierr = PetscFree(sizes_of_sends);CHKERRQ(ierr);
-    ierr = PetscFree(send_requests);CHKERRQ(ierr);
-    ierr = PetscFree(recv_requests);CHKERRQ(ierr);
     ierr = PetscFree(recv_buffer);CHKERRQ(ierr);
-    ierr = PetscFree(recv_buffer_subset);CHKERRQ(ierr);
-    ierr = PetscFree(send_buffer);CHKERRQ(ierr);
     ierr = PetscFree(cum_recv_counts);CHKERRQ(ierr);
-    ierr = PetscFree(subset_to_nodes_indices);CHKERRQ(ierr);
-    ierr = PetscFree(subset_cc_adapt);CHKERRQ(ierr);
-    /* We are ready to find for connected components consistent among neighbouring subdomains */
+    ierr = PetscBTDestroy(&subset_cc_adapt);CHKERRQ(ierr);
+    /* We are ready to find for connected components which are consistent among neighbouring subdomains */
     if (global_subset_counter) {
       ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
       global_subset_counter = 0;
@@ -583,7 +506,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscFree(new_adjncy);CHKERRQ(ierr);
     graph->xadj = old_xadj;
     graph->adjncy = old_adjncy;
-    ierr = PetscFree(queue_in_global_numbering);CHKERRQ(ierr);
   }
 
   /* Determine if we are in 2D or 3D */
@@ -1092,20 +1014,33 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   /* final pointer */
   graph->cptr[graph->ncc] = total_counts;
-  /* For consistency among neighbours, I need to sort (by global ordering) each connected component */
-  /* get a reference node (min index in global ordering) for each subset */
-  ierr = PetscMalloc1(graph->ncc,&subset_ref_node_global);CHKERRQ(ierr);
-  ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
+
+  /* save information on subsets (needed if we have to adapt the connected components later) */
+  /* For consistency reasons (among neighbours), I need to sort (by global ordering) each subset */
+  /* Get a reference node (min index in global ordering) for each subset for tagging messages */
+  ierr = PetscMalloc2(graph->ncc,&subset_ref_node_global,graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_global);CHKERRQ(ierr);
-  for (i=0;i<graph->ncc;i++) {
-    ierr = PetscSortIntWithArray(graph->cptr[i+1]-graph->cptr[i],&queue_global[graph->cptr[i]],&graph->queue[graph->cptr[i]]);CHKERRQ(ierr);
-    subset_ref_node_global[i] = graph->queue[graph->cptr[i]];
+  for (j=0;j<graph->ncc;j++) {
+    ierr = PetscSortIntWithArray(graph->cptr[j+1]-graph->cptr[j],&queue_global[graph->cptr[j]],&graph->queue[graph->cptr[j]]);CHKERRQ(ierr);
+    subset_ref_node_global[j] = graph->queue[graph->cptr[j]];
   }
+  ierr = PetscMalloc2(graph->ncc,&graph->subsets_size,graph->ncc,&graph->subsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(graph->cptr[graph->ncc],&graph->subsets[0]);CHKERRQ(ierr);
+  ierr = PetscMemzero(graph->subsets[0],graph->cptr[graph->ncc]*sizeof(PetscInt));CHKERRQ(ierr);
+  for (j=1;j<graph->ncc;j++) {
+    graph->subsets_size[j-1] = graph->cptr[j] - graph->cptr[j-1];
+    graph->subsets[j] = graph->subsets[j-1] + graph->subsets_size[j-1];
+  }
+  graph->subsets_size[graph->ncc-1] = graph->cptr[graph->ncc] - graph->cptr[graph->ncc-1];
+  for (j=0;j<graph->ncc;j++) {
+    ierr = PetscMemcpy(graph->subsets[j],&graph->queue[graph->cptr[j]],graph->subsets_size[j]*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+
   /* renumber reference nodes */
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(graph->l2gmap)),graph->l2gmap,graph->ncc,subset_ref_node_global,NULL,&k,&graph->subset_ref_node);CHKERRQ(ierr);
-  ierr = PetscFree(subset_ref_node_global);CHKERRQ(ierr);
-  ierr = PetscFree(queue_global);CHKERRQ(ierr);
-  /* free objects */
+
+  /* free workspace */
+  ierr = PetscFree2(subset_ref_node_global,queue_global);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec2);CHKERRQ(ierr);
   ierr = VecDestroy(&global_vec);CHKERRQ(ierr);
@@ -1151,6 +1086,10 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
     ierr = PetscFree(graph->mirrors_set[0]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(graph->mirrors,graph->mirrors_set);CHKERRQ(ierr);
+  if (graph->subsets) {
+    ierr = PetscFree(graph->subsets[0]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(graph->subsets_size,graph->subsets);CHKERRQ(ierr);
   graph->nvtxs = 0;
   graph->n_subsets = 0;
   graph->custom_minimal_size = 1;
@@ -1225,29 +1164,7 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
 
   PetscFunctionBegin;
   ierr = PetscNew(&new_graph);CHKERRQ(ierr);
-  /* local to global mapping of dofs */
-  new_graph->l2gmap = 0;
-  /* vertex size */
-  new_graph->nvtxs = 0;
-  new_graph->n_subsets = 0;
   new_graph->custom_minimal_size = 1;
-  /* zeroes ponters */
-  new_graph->mirrors = 0;
-  new_graph->mirrors_set = 0;
-  new_graph->neighbours_set = 0;
-  new_graph->subset = 0;
-  new_graph->which_dof = 0;
-  new_graph->special_dof = 0;
-  new_graph->cptr = 0;
-  new_graph->queue = 0;
-  new_graph->count = 0;
-  new_graph->subset_ncc = 0;
-  new_graph->subset_ref_node = 0;
-  new_graph->touched = 0;
-  /* zeroes pointers to csr graph of local nodes connectivity (optional data) */
-  new_graph->nvtxs_csr = 0;
-  new_graph->xadj = 0;
-  new_graph->adjncy = 0;
   *graph = new_graph;
   PetscFunctionReturn(0);
 }
