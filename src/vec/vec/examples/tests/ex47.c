@@ -21,6 +21,7 @@ int main(int argc,char **args)
   ierr = VecSet(x,22.3);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"x.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
 
   /* Write the Vec without one extra dimension for BS */
   ierr = PetscViewerHDF5SetBaseDimension2(H5viewer, PETSC_FALSE);

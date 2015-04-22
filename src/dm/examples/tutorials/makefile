@@ -114,6 +114,7 @@ runex9:
 runex10:
 	-@${MPIEXEC} -n 4 ./ex10
 	-@${MPIEXEC} -n 4 ./ex10 -viewer_hdf5_base_dimension2
+	-@${MPIEXEC} -n 4 ./ex10 -viewer_hdf5_sp_output
 
 runex11f90:
 	-@${MPIEXEC} -n 1 ./ex11f90  > ex11f90.tmp 2>&1;   \
