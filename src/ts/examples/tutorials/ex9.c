@@ -1238,8 +1238,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   PetscErrorCode    ierr;
   PetscInt          i,j,k,Mx,dof,xs,xm;
   PetscReal         hx,cfl_idt = 0;
-  PetscScalar       *f,*slope;
-  const PetscScalar *x;
+  PetscScalar       *x,*f,*slope;
   Vec               Xloc;
   DM                da;
 
@@ -1253,7 +1252,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
 
@@ -1317,7 +1316,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     }
   }
 
-  ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
