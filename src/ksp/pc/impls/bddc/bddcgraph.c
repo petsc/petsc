@@ -419,7 +419,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     ierr = PetscFree2(send_requests,recv_requests);CHKERRQ(ierr);
-    ierr = PetscFree(send_buffer);CHKERRQ(ierr);
 
     start_of_recv = 0;
     global_subset_counter = 0;
@@ -489,7 +488,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         ierr = PetscFree(temp_buffer);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(recv_buffer);CHKERRQ(ierr);
+    ierr = PetscFree2(send_buffer,recv_buffer);CHKERRQ(ierr);
     ierr = PetscFree(cum_recv_counts);CHKERRQ(ierr);
     ierr = PetscBTDestroy(&subset_cc_adapt);CHKERRQ(ierr);
     /* We are ready to find for connected components which are consistent among neighbouring subdomains */
