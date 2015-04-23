@@ -75,10 +75,10 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC);
 
 /* sub schurs */
 PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
-PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,Mat,Mat,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping);
+PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping);
 PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
 PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,PetscInt[],PetscInt[],PetscInt,PetscBool,PetscBool,PetscBool,PetscBool);
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscInt[],PetscInt[],PetscInt,PetscBool,PetscBool,PetscBool,PetscBool);
 
 #endif
 

@@ -4660,8 +4660,10 @@ static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y)
 #define __FUNCT__ "PCBDDCSetUpSubSchurs"
 PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
 {
+  PC_IS               *pcis=(PC_IS*)pc->data;
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
+  Mat                 S_j;
   PetscInt            *used_xadj,*used_adjncy;
   PetscBool           free_used_adj;
   PetscErrorCode      ierr;
@@ -4699,13 +4701,16 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     }
   }
 
-  /* set Schur complement solver for interior variables (used only when MUMPS is not present) */
-  if (!sub_schurs->use_mumps) {
-    ierr = MatSchurComplementSetKSP(sub_schurs->S,pcbddc->ksp_D);CHKERRQ(ierr);
-  }
-
   /* setup sub_schurs data */
-  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&S_j);CHKERRQ(ierr);
+  if (!sub_schurs->use_mumps) {
+    /* pcbddc->ksp_D up to date only if not using MUMPS */
+    ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  } else {
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&S_j);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {
@@ -4722,7 +4727,6 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
   PCBDDCGraph         graph;
-  Mat                 S_j;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -4745,12 +4749,9 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     graph = pcbddc->mat_graph;
   }
 
-  /* Create Schur complement matrix */
-  ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&S_j);CHKERRQ(ierr);
-
   /* sub_schurs init */
-  ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap);CHKERRQ(ierr);
-  ierr = MatDestroy(&S_j);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursInit(sub_schurs,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap);CHKERRQ(ierr);
+
   /* free graph struct */
   if (pcbddc->sub_schurs_rebuild) {
     ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);

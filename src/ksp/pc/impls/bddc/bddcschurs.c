@@ -187,7 +187,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool use_edges, PetscBool use_faces)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool use_edges, PetscBool use_faces)
 {
   Mat                    A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all,S_all_inv;
@@ -207,6 +207,26 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  /* update info in sub_schurs */
+  ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
+  if (Ain) {
+    PetscBool isseqaij;
+
+    ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    if (isseqaij) {
+      ierr = PetscObjectReference((PetscObject)Ain);CHKERRQ(ierr);
+      sub_schurs->A = Ain;
+    } else { /* SeqBAIJ matrices does not support symmetry checking, SeqSBAIJ does not support MatPermute */
+      ierr = MatConvert(Ain,MATSEQAIJ,MAT_INITIAL_MATRIX,&sub_schurs->A);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscObjectReference((PetscObject)Sin);CHKERRQ(ierr);
+  sub_schurs->S = Sin;
+  if (sub_schurs->use_mumps) {
+    sub_schurs->use_mumps = (PetscBool)(!!sub_schurs->A);
+  }
+
   /* preliminary checks */
   if (!sub_schurs->use_mumps && compute_Stilda) {
     SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
@@ -257,13 +277,21 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
+    Mat       tA_IB,tA_BI,tA_BB;
     PetscBool isseqaij;
-    ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)A_BB,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&tA_IB,&tA_BI,&tA_BB);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)tA_BB,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
     if (!isseqaij) {
-      ierr = MatConvert(A_BB,MATSEQAIJ,MAT_REUSE_MATRIX,&A_BB);CHKERRQ(ierr);
-      ierr = MatConvert(A_IB,MATSEQAIJ,MAT_REUSE_MATRIX,&A_IB);CHKERRQ(ierr);
-      ierr = MatConvert(A_BI,MATSEQAIJ,MAT_REUSE_MATRIX,&A_BI);CHKERRQ(ierr);
+      ierr = MatConvert(tA_BB,MATSEQAIJ,MAT_INITIAL_MATRIX,&A_BB);CHKERRQ(ierr);
+      ierr = MatConvert(tA_IB,MATSEQAIJ,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
+      ierr = MatConvert(tA_BI,MATSEQAIJ,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)tA_BB);CHKERRQ(ierr);
+      A_BB = tA_BB;
+      ierr = PetscObjectReference((PetscObject)tA_IB);CHKERRQ(ierr);
+      A_IB = tA_IB;
+      ierr = PetscObjectReference((PetscObject)tA_BI);CHKERRQ(ierr);
+      A_BI = tA_BI;
     }
   } else {
     A_II = NULL;
@@ -474,6 +502,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       } else {
         ierr = MatGetSubMatrix(A_BI,is_subset_B,is_I,MAT_INITIAL_MATRIX,&AE_EI);CHKERRQ(ierr);
       }
+      ierr = ISDestroy(&is_subset_B);CHKERRQ(ierr);
       ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE,AE_EI,AE_EE,&S_Ej);CHKERRQ(ierr);
       ierr = MatDestroy(&AE_EE);CHKERRQ(ierr);
       ierr = MatDestroy(&AE_IE);CHKERRQ(ierr);
@@ -526,6 +555,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented for sparse matrices");
       }
       ierr = MatDestroy(&S_Ej);CHKERRQ(ierr);
+      ierr = MatDestroy(&S_Ej_expl);CHKERRQ(ierr);
       local_size += subset_size;
     }
     ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
@@ -581,6 +611,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       if (n_I == n_I_all) {
         PCBDDCMumpsInterior msolv_ctx;
 
+        ierr = PCDestroy(&sub_schurs->interior_solver);CHKERRQ(ierr);
         ierr = PetscNew(&msolv_ctx);CHKERRQ(ierr);
         msolv_ctx->n = n_I;
         ierr = PetscObjectReference((PetscObject)F);CHKERRQ(ierr);
@@ -710,6 +741,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all_inv);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_BB);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_IB);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_BI);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (compute_Stilda) {
@@ -794,7 +828,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursInit"
-PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap)
+PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap)
 {
   IS              *faces,*edges,*all_cc,vertices;
   PetscInt        i,n_faces,n_edges,n_all_cc;
@@ -833,23 +867,9 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
   /* Determine if MUMPS cane be used */
   sub_schurs->use_mumps = PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
-  sub_schurs->use_mumps = (PetscBool)(!!A);
+  sub_schurs->use_mumps = PETSC_TRUE;
 #endif
 
-  /* update info in sub_schurs */
-  if (A) {
-    PetscBool isseqaij;
-
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    if (isseqaij) {
-      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-      sub_schurs->A = A;
-    } else { /* SeqBAIJ matrices does not support symmetry checking, SeqSBAIJ does not support MatPermute */
-      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&sub_schurs->A);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscObjectReference((PetscObject)S);CHKERRQ(ierr);
-  sub_schurs->S = S;
   ierr = PetscObjectReference((PetscObject)is_I);CHKERRQ(ierr);
   sub_schurs->is_I = is_I;
   ierr = PetscObjectReference((PetscObject)is_B);CHKERRQ(ierr);
@@ -860,13 +880,12 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
   sub_schurs->BtoNmap = BtoNmap;
   sub_schurs->n_subs = n_all_cc;
   sub_schurs->is_subs = all_cc;
-  if (!sub_schurs->use_mumps) { /* for adaptive selection */
+  if (!sub_schurs->use_mumps) { /* sort by local ordering mumps is not present */
     for (i=0;i<sub_schurs->n_subs;i++) {
       ierr = ISSort(sub_schurs->is_subs[i]);CHKERRQ(ierr);
     }
   }
   sub_schurs->is_Ej_com = vertices;
-
 
   /* allocate space for schur complements */
   sub_schurs->S_Ej_all = NULL;
