@@ -79,6 +79,7 @@ typedef struct {
 
   /* True if mkl_pardiso function have been used.*/
   PetscBool CleanUp;
+
 } Mat_MKL_PARDISO;
 
 
@@ -336,7 +337,7 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A){
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of thrads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of threads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
   if (flg) mkl_set_num_threads(threads);
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_pardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
@@ -423,38 +424,87 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A){
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitializeMKL_PARDISO"
-PetscErrorCode PetscInitializeMKL_PARDISO(Mat A, Mat_MKL_PARDISO *mat_mkl_pardiso){
+PetscErrorCode PetscInitializeMKL_PARDISO(Mat A, MatFactorType ftype, Mat_MKL_PARDISO *mat_mkl_pardiso){
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
+  
+  for ( i = 0; i < IPARM_SIZE; i++ )
+  {
+    mat_mkl_pardiso->iparm[i] = 0;
+  }
+
+  for ( i = 0; i < IPARM_SIZE; i++ )
+  {
+    mat_mkl_pardiso->pt[i] = 0;
+  }
+  
+  /*Default options for both sym and unsym */
+  mat_mkl_pardiso->iparm[ 0] =  1; /* Solver default parameters overriden with provided by iparm */
+  mat_mkl_pardiso->iparm[ 1] =  2; /* Metis reordering */
+  mat_mkl_pardiso->iparm[ 5] =  0; /* Write solution into x */
+  mat_mkl_pardiso->iparm[ 7] =  2; /* Max number of iterative refinement steps */
+  mat_mkl_pardiso->iparm[17] = -1; /* Output: Number of nonzeros in the factor LU */
+  mat_mkl_pardiso->iparm[18] = -1; /* Output: Mflops for LU factorization */
+#if 0
+ mat_mkl_pardiso->iparm[23] =  1; /* Parallel factorization control*/
+#endif
+  mat_mkl_pardiso->iparm[34] =  1; /* Cluster Sparse Solver use C-style indexing for ia and ja arrays */
+  mat_mkl_pardiso->iparm[39] =  0; /* Input: matrix/rhs/solution stored on master
+                                      */
+  
   mat_mkl_pardiso->CleanUp = PETSC_FALSE;
-  mat_mkl_pardiso->maxfct = 1;
-  mat_mkl_pardiso->mnum = 1;
+  mat_mkl_pardiso->maxfct  = 1; /* Maximum number of numerical factorizations. */
+  mat_mkl_pardiso->mnum    = 1; /* Which factorization to use. */
+  mat_mkl_pardiso->msglvl  = 0; /* 0: do not print 1: Print statistical information in file */
+  mat_mkl_pardiso->phase = -1;
+  mat_mkl_pardiso->err = 0;
+  
   mat_mkl_pardiso->n = A->rmap->N;
-  mat_mkl_pardiso->msglvl = 0;
   mat_mkl_pardiso->nrhs = 1;
   mat_mkl_pardiso->err = 0;
   mat_mkl_pardiso->phase = -1;
+  if(ftype == MAT_FACTOR_LU)
+  {
+    /*Default type for non-sym*/
 #if defined(PETSC_USE_COMPLEX)
-  mat_mkl_pardiso->mtype = 13;
+    mat_mkl_pardiso->mtype = 13;
 #else
-  mat_mkl_pardiso->mtype = 11;
+    mat_mkl_pardiso->mtype = 11;
 #endif
 
-  MKL_PARDISO_INIT(mat_mkl_pardiso->pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
+    mat_mkl_pardiso->iparm[ 9] = 13; /* Perturb the pivot elements with 1E-13 */
+    mat_mkl_pardiso->iparm[10] =  1; /* Use nonsymmetric permutation and scaling MPS */
+    mat_mkl_pardiso->iparm[12] =  1; /* Switch on Maximum Weighted Matching algorithm (default for non-symmetric) */
 
-#if defined(PETSC_USE_REAL_SINGLE)
-  mat_mkl_pardiso->iparm[27] = 1;
+  }
+  else
+  {
+    /*Default type for sym*/
+#if defined(PETSC_USE_COMPLEX)
+    mat_mkl_pardiso ->mtype  = 3;
 #else
-  mat_mkl_pardiso->iparm[27] = 0;
+    mat_mkl_pardiso ->mtype  = -2;
 #endif
 
-  mat_mkl_pardiso->iparm[34] = 1;
+    mat_mkl_pardiso->iparm[ 9] =  13; /* Perturb the pivot elements with 1E-13 */
+    mat_mkl_pardiso->iparm[10] =  0; /* Use nonsymmetric permutation and scaling MPS */
+    mat_mkl_pardiso->iparm[12] =  1; /* Switch on Maximum Weighted Matching algorithm (default for non-symmetric) */
 
-  ierr = PetscMalloc1(A->rmap->N, &mat_mkl_pardiso->perm);CHKERRQ(ierr);
+/*    mat_mkl_pardiso->iparm[20] =  1; */ /* Apply 1x1 and 2x2 Bunch-Kaufman pivoting during the factorization process */
+
+#if defined(PETSC_USE_DEBUG)
+    mat_mkl_pardiso->iparm[26] = 1; /* Matrix checker */
+#endif
+  }
+
+  ierr = PetscMalloc(A->rmap->N*sizeof(INT_TYPE), &mat_mkl_pardiso->perm);CHKERRQ(ierr);
   for(i = 0; i < A->rmap->N; i++)
+  {
     mat_mkl_pardiso->perm[i] = 0;
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -463,8 +513,8 @@ PetscErrorCode PetscInitializeMKL_PARDISO(Mat A, Mat_MKL_PARDISO *mat_mkl_pardis
  * Symbolic decomposition. Mkl_Pardiso analysis phase.
  */
 #undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_AIJMKL_PARDISO"
-PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info){
+#define __FUNCT__ "MatFactorSymbolic_AIJMKL_PARDISO_Private"
+PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,const MatFactorInfo *info){
 
   Mat_MKL_PARDISO *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->spptr;
   PetscErrorCode ierr;
@@ -482,7 +532,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const Ma
   /* analysis phase */
   /*----------------*/
 
-  mat_mkl_pardiso->phase = JOB_ANALYSIS;  
+  mat_mkl_pardiso->phase = JOB_ANALYSIS;
 
   MKL_PARDISO (mat_mkl_pardiso->pt,
     &mat_mkl_pardiso->maxfct,
@@ -504,13 +554,48 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const Ma
   if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d\n. Please check manual",mat_mkl_pardiso->err);
 
   mat_mkl_pardiso->CleanUp = PETSC_TRUE;
-  F->ops->lufactornumeric = MatFactorNumeric_MKL_PARDISO;
+
+  if(F->factortype == MAT_FACTOR_LU)
+  {
+    F->ops->lufactornumeric = MatFactorNumeric_MKL_PARDISO;
+  }
+  else
+  {
+    F->ops->choleskyfactornumeric = MatFactorNumeric_MKL_PARDISO;
+  }
   F->ops->solve           = MatSolve_MKL_PARDISO;
   F->ops->solvetranspose  = MatSolveTranspose_MKL_PARDISO;
   F->ops->matsolve        = MatMatSolve_MKL_PARDISO;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactorSymbolic_AIJMKL_PARDISO"
+PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info){
+
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatFactorSymbolic_AIJMKL_PARDISO_Private(F, A, info);
+  CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactorSymbolic_AIJMKL_PARDISO"
+PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,const MatFactorInfo *info){
+
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatFactorSymbolic_AIJMKL_PARDISO_Private(F, A, info);
+  CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MKL_PARDISO"
@@ -590,7 +675,7 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
       mat_mkl_pardiso->iparm[27] = 0;
 #endif
       mat_mkl_pardiso->iparm[34] = 1;
-    } 
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -658,7 +743,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 . -mat_mkl_pardiso_34 - Optimal number of threads for conditional numerical reproducibility (CNR) mode
 - -mat_mkl_pardiso_60 - Intel MKL_PARDISO mode
 
-  Level: beginner 
+  Level: beginner
 
   For more information please check  mkl_pardiso manual
 
@@ -675,24 +760,45 @@ static PetscErrorCode MatFactorGetSolverPackage_mkl_pardiso(Mat A, const MatSolv
   PetscFunctionReturn(0);
 }
 
-
-/* MatGetFactor for Seq AIJ matrices */
+/* MatGetFactor for Seq sbAIJ matrices */
 #undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_aij_mkl_pardiso"
-PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType ftype,Mat *F)
-{
-  Mat             B;
-  PetscErrorCode  ierr;
+#define __FUNCT__ "MatGetFactor_sbaij_mkl_pardiso"
+PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mkl_pardiso(Mat A,MatFactorType ftype,Mat *F){
+  Mat            B;
+  PetscErrorCode ierr;
   Mat_MKL_PARDISO *mat_mkl_pardiso;
+  PetscBool      isSeqSBAIJ;
+  PetscInt       bs;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
+
+
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+  if (isSeqSBAIJ) {
+    ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Is not allowed other types of matrices apart from MATSEQSBAIJ.");
+  }
 
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMKL_PARDISO;
+  ierr = MatGetBlockSize(A,&bs); CHKERRQ(ierr);
+
+  if(bs != 1)
+  {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrice MATSEQSBAIJ with block size other than 1 is not supported by Pardiso");
+  }
+
+  if(ftype != MAT_FACTOR_CHOLESKY)
+  {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrice MATSEQAIJ should be used only with MAT_FACTOR_CHOLESKY.");
+  }
+  
+  B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_AIJMKL_PARDISO;
+  B->factortype                  = MAT_FACTOR_CHOLESKY;
+
   B->ops->destroy = MatDestroy_MKL_PARDISO;
   B->ops->view    = MatView_MKL_PARDISO;
   B->factortype   = ftype;
@@ -701,10 +807,56 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
 
   ierr = PetscNewLog(B,&mat_mkl_pardiso);CHKERRQ(ierr);
   B->spptr = mat_mkl_pardiso;
-
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_pardiso);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_PardisoSetCntl_C",MatMkl_PardisoSetCntl_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscInitializeMKL_PARDISO(A, mat_mkl_pardiso);CHKERRQ(ierr);
+  ierr = PetscInitializeMKL_PARDISO(A, ftype, mat_mkl_pardiso);CHKERRQ(ierr);
+
+  *F = B;
+  PetscFunctionReturn(0);
+}
+
+/* MatGetFactor for Seq AIJ matrices */
+#undef __FUNCT__
+#define __FUNCT__ "MatGetFactor_aij_mkl_pardiso"
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType ftype,Mat *F){
+  Mat            B;
+  PetscErrorCode ierr;
+  Mat_MKL_PARDISO *mat_mkl_pardiso;
+  PetscBool      isSeqAIJ;
+
+  PetscFunctionBegin;
+  /* Create the factorization matrix */
+
+
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  if (isSeqAIJ) {
+    ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Is not allowed other types of matrices apart from MATSEQAIJ.");
+  }
+
+  if(ftype != MAT_FACTOR_LU)
+  {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrice MATSEQAIJ should be used only with MAT_FACTOR_LU.");
+  }
+
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMKL_PARDISO;
+  B->factortype            = MAT_FACTOR_LU;
+
+  B->ops->destroy = MatDestroy_MKL_PARDISO;
+  B->ops->view    = MatView_MKL_PARDISO;
+  B->factortype   = ftype;
+  B->ops->getinfo = MatGetInfo_MKL_PARDISO;
+  B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
+
+  ierr = PetscNewLog(B,&mat_mkl_pardiso);CHKERRQ(ierr);
+  B->spptr = mat_mkl_pardiso;
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_pardiso);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_PardisoSetCntl_C",MatMkl_PardisoSetCntl_MKL_PARDISO);CHKERRQ(ierr);
+  ierr = PetscInitializeMKL_PARDISO(A, ftype, mat_mkl_pardiso);CHKERRQ(ierr);
 
   *F = B;
   PetscFunctionReturn(0);
@@ -717,7 +869,9 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,   MAT_FACTOR_LU,      MatGetFactor_aij_mkl_pardiso  );CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQSBAIJ, MAT_FACTOR_CHOLESKY,MatGetFactor_sbaij_mkl_pardiso);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
