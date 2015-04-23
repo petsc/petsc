@@ -1024,18 +1024,19 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = PetscSortIntWithArray(graph->cptr[j+1]-graph->cptr[j],&queue_global[graph->cptr[j]],&graph->queue[graph->cptr[j]]);CHKERRQ(ierr);
     subset_ref_node_global[j] = graph->queue[graph->cptr[j]];
   }
-  ierr = PetscMalloc2(graph->ncc,&graph->subsets_size,graph->ncc,&graph->subsets);CHKERRQ(ierr);
-  ierr = PetscMalloc1(graph->cptr[graph->ncc],&graph->subsets[0]);CHKERRQ(ierr);
-  ierr = PetscMemzero(graph->subsets[0],graph->cptr[graph->ncc]*sizeof(PetscInt));CHKERRQ(ierr);
-  for (j=1;j<graph->ncc;j++) {
-    graph->subsets_size[j-1] = graph->cptr[j] - graph->cptr[j-1];
-    graph->subsets[j] = graph->subsets[j-1] + graph->subsets_size[j-1];
+  if (graph->ncc) {
+    ierr = PetscMalloc2(graph->ncc,&graph->subsets_size,graph->ncc,&graph->subsets);CHKERRQ(ierr);
+    ierr = PetscMalloc1(graph->cptr[graph->ncc],&graph->subsets[0]);CHKERRQ(ierr);
+    ierr = PetscMemzero(graph->subsets[0],graph->cptr[graph->ncc]*sizeof(PetscInt));CHKERRQ(ierr);
+    for (j=1;j<graph->ncc;j++) {
+      graph->subsets_size[j-1] = graph->cptr[j] - graph->cptr[j-1];
+      graph->subsets[j] = graph->subsets[j-1] + graph->subsets_size[j-1];
+    }
+    graph->subsets_size[graph->ncc-1] = graph->cptr[graph->ncc] - graph->cptr[graph->ncc-1];
+    for (j=0;j<graph->ncc;j++) {
+      ierr = PetscMemcpy(graph->subsets[j],&graph->queue[graph->cptr[j]],graph->subsets_size[j]*sizeof(PetscInt));CHKERRQ(ierr);
+    }
   }
-  graph->subsets_size[graph->ncc-1] = graph->cptr[graph->ncc] - graph->cptr[graph->ncc-1];
-  for (j=0;j<graph->ncc;j++) {
-    ierr = PetscMemcpy(graph->subsets[j],&graph->queue[graph->cptr[j]],graph->subsets_size[j]*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-
   /* renumber reference nodes */
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(graph->l2gmap)),graph->l2gmap,graph->ncc,subset_ref_node_global,NULL,&k,&graph->subset_ref_node);CHKERRQ(ierr);
 
