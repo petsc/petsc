@@ -185,7 +185,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
   sendbuf[1] = mysubsize;
   ierr = MPI_Allgather(sendbuf,2,MPI_INT,recvbuf,2,MPI_INT,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(nsubcomm,&subsize);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nsubcomm,&subsize);CHKERRQ(ierr);
   for (i=0; i<2*size; i+=2) {
     subsize[recvbuf[i]] = recvbuf[i+1];
   }
