@@ -842,6 +842,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 
   /* Set linear solver to default for trust region */
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
