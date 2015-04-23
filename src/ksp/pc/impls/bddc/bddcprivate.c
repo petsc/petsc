@@ -326,7 +326,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   if (pcbddc->dbg_flag) {
     PetscInt maxneigs_r;
     ierr = MPI_Allreduce(&maxneigs,&maxneigs_r,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)pc),"Maximum number of constraints per cc %d\n",maxneigs_r);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Maximum number of constraints per cc %d\n",maxneigs_r);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2907,7 +2907,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
         pcbddc->computed_rowadj = PETSC_TRUE;
       }
       ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-    } else if (pcbddc->current_level) { /* just compute subdomain's connected components for coarser levels */
+    } else if (pcbddc->current_level && pcis->n_B) { /* just compute subdomain's connected components for coarser levels when the local boundary is not empty */
       IS                     is_dummy;
       ISLocalToGlobalMapping l2gmap_dummy;
       PetscInt               j,sum;
@@ -2932,11 +2932,10 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
 
       if (pcbddc->dbg_flag) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] Found %d subdomains\n",PetscGlobalRank,graph->ncc);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] Found %d subdomains (local size %d)\n",PetscGlobalRank,graph->ncc,pcis->n);CHKERRQ(ierr);
         for (i=0;i<graph->ncc;i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] %d cc size %d\n",PetscGlobalRank,i,graph->cptr[i+1]-graph->cptr[i]);CHKERRQ(ierr);
         }
-        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       }
 
       ierr = PetscBTCreate(pcis->n,&is_on_boundary);CHKERRQ(ierr);
@@ -2983,7 +2982,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
           }
         }
       }
-      if (pcis->n) {
+      if (sum) {
         ierr = PCBDDCSetLocalAdjacencyGraph(pc,pcis->n,cxadj,cadjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
       } else {
         ierr = PetscFree(cxadj);CHKERRQ(ierr);
@@ -2994,6 +2993,9 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
       ierr = PetscBTDestroy(&is_on_boundary);CHKERRQ(ierr);
     }
+  }
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
 
   /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
