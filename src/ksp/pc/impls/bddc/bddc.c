@@ -14,12 +14,8 @@
    Debugging output
    - * Better management of verbosity levels of debugging output
 
-   Build
-   - make runexe59
-
    Extra
    - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
-   - Change of basis approach does not work with my nonlinear mechanics example. why? (seems not an issue with l2gmap)
    - BDDC with MG framework?
 
    FETIDP
@@ -27,7 +23,6 @@
 
    MATIS related operations contained in BDDC code
    - Provide general case for subassembling
-   - *** Preallocation routines in MatISGetMPIAXAIJ
 
 */
 

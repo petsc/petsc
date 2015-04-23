@@ -172,6 +172,17 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   }
 
   /* loop on ccs to compute index sets for faces and edges */
+  if (!graph->queue_sorted) {
+    PetscInt *queue_global;
+
+    ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_global);CHKERRQ(ierr);
+    for (i=0;i<graph->ncc;i++) {
+      ierr = PetscSortIntWithArray(graph->cptr[i+1]-graph->cptr[i],&queue_global[graph->cptr[i]],&graph->queue[graph->cptr[i]]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(queue_global);CHKERRQ(ierr);
+    graph->queue_sorted = PETSC_TRUE;
+  }
   nfc = 0;
   nec = 0;
   for (i=0;i<graph->ncc;i++) {
@@ -531,7 +542,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 {
   PetscInt       i,j,k,first,last,nleft,ncc,pid,cum_queue,n,ncc_pid;
-  PetscInt       *queue_global;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -616,15 +626,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
     graph->subset_ncc[n] = ncc_pid;
   }
   graph->ncc = ncc;
-  /* For consistency among neighbours, I need to sort (by global ordering) each connected component */
-  if (size > 1) {
-    ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_global);CHKERRQ(ierr);
-    for (i=0;i<graph->ncc;i++) {
-      ierr = PetscSortIntWithArray(graph->cptr[i+1]-graph->cptr[i],&queue_global[graph->cptr[i]],&graph->queue[graph->cptr[i]]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(queue_global);CHKERRQ(ierr);
-  }
+  graph->queue_sorted = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1032,6 +1034,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = PetscSortIntWithArray(graph->cptr[j+1]-graph->cptr[j],&queue_global[graph->cptr[j]],&graph->queue[graph->cptr[j]]);CHKERRQ(ierr);
     subset_ref_node_global[j] = graph->queue[graph->cptr[j]];
   }
+  graph->queue_sorted = PETSC_TRUE;
   if (graph->ncc) {
     ierr = PetscMalloc2(graph->ncc,&graph->subsets_size,graph->ncc,&graph->subsets);CHKERRQ(ierr);
     ierr = PetscMalloc1(graph->cptr[graph->ncc],&graph->subsets[0]);CHKERRQ(ierr);
