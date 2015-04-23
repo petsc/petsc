@@ -151,7 +151,12 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # 1D Simplex 29-31
                                                                  {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -num_refinements 5 -dm_view ::ascii_info_detail'}],
+                                                                 {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -num_refinements 5 -dm_view ::ascii_info_detail'},
+                                                                 # 2D Simplex 32-34
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 3 -uninterpolate -dm_view ::ascii_info_detail'},
+                                                                 ],
                         'src/dm/impls/plex/examples/tests/ex5': [# 2D Simplex 0-1
                                                                  {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
