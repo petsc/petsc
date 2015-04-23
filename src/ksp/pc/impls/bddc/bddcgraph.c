@@ -536,7 +536,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)graph->l2gmap),&size);CHKERRQ(ierr);
   /* quiet return if no csr info is available */
   if (!graph->xadj || !graph->adjncy) {
     PetscFunctionReturn(0);
@@ -545,6 +544,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   /* reset any previous search of connected components */
   ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
   graph->n_subsets = 0;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)graph->l2gmap),&size);CHKERRQ(ierr);
   if (size == 1) {
     if (graph->nvtxs) {
       graph->n_subsets = 1;
@@ -563,9 +563,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   }
   ierr = PetscFree(graph->subset_ncc);CHKERRQ(ierr);
   ierr = PetscMalloc1(graph->n_subsets,&graph->subset_ncc);CHKERRQ(ierr);
-  ierr = PetscMemzero(graph->subset_ncc,graph->n_subsets*sizeof(*graph->subset_ncc));CHKERRQ(ierr);
-  ierr = PetscMemzero(graph->cptr,(graph->nvtxs+1)*sizeof(*graph->cptr));CHKERRQ(ierr);
-  ierr = PetscMemzero(graph->queue,graph->nvtxs*sizeof(*graph->queue));CHKERRQ(ierr);
 
   /* begin search for connected components */
   cum_queue = 0;
@@ -643,8 +640,9 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   const PetscInt *is_indices;
   PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global,*subset_ref_node_global;
   PetscInt       i,j,k,s,total_counts,nodes_touched,is_size;
-  PetscErrorCode ierr;
+  PetscMPIInt    size;
   PetscBool      same_set,mirrors_found;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)(graph->l2gmap),&comm);CHKERRQ(ierr);
@@ -972,6 +970,16 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   i = 0;
   graph->ncc = 0;
   total_counts = 0;
+
+  /* allocated space for queues */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscMalloc2(graph->nvtxs+1,&graph->cptr,graph->nvtxs,&graph->queue);CHKERRQ(ierr);
+  } else {
+    PetscInt nused = graph->nvtxs - nodes_touched;
+    ierr = PetscMalloc2(nused+1,&graph->cptr,nused,&graph->queue);CHKERRQ(ierr);
+  }
+
   while (nodes_touched<graph->nvtxs) {
     /*  find first untouched node in local ordering */
     while (PetscBTLookup(graph->touched,i)) {
@@ -1076,13 +1084,12 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
     ierr = PetscFree(graph->neighbours_set[0]);CHKERRQ(ierr);
   }
   ierr = PetscBTDestroy(&graph->touched);CHKERRQ(ierr);
-  ierr = PetscFree7(graph->count,
+  ierr = PetscFree5(graph->count,
                     graph->neighbours_set,
                     graph->subset,
                     graph->which_dof,
-                    graph->cptr,
-                    graph->queue,
                     graph->special_dof);CHKERRQ(ierr);
+  ierr = PetscFree2(graph->cptr,graph->queue);CHKERRQ(ierr);
   if (graph->mirrors) {
     ierr = PetscFree(graph->mirrors_set[0]);CHKERRQ(ierr);
   }
@@ -1092,6 +1099,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   }
   ierr = PetscFree2(graph->subsets_size,graph->subsets);CHKERRQ(ierr);
   graph->nvtxs = 0;
+  graph->nvtxs_global = 0;
   graph->n_subsets = 0;
   graph->custom_minimal_size = 1;
   PetscFunctionReturn(0);
@@ -1107,8 +1115,9 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscFunctionBegin;
   PetscValidPointer(graph,1);
   PetscValidHeaderSpecific(l2gmap,IS_LTOGM_CLASSID,2);
+  PetscValidLogicalCollectiveInt(l2gmap,N,3);
   /* raise an error if already allocated */
-  if (graph->nvtxs) {
+  if (graph->nvtxs_global) {
     SETERRQ(PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   }
   /* set number of vertices */
@@ -1119,20 +1128,16 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   graph->nvtxs_global = N;
   /* allocate used space */
   ierr = PetscBTCreate(graph->nvtxs,&graph->touched);CHKERRQ(ierr);
-  ierr = PetscMalloc7(graph->nvtxs,&graph->count,
+  ierr = PetscMalloc5(graph->nvtxs,&graph->count,
                       graph->nvtxs,&graph->neighbours_set,
                       graph->nvtxs,&graph->subset,
                       graph->nvtxs,&graph->which_dof,
-                      graph->nvtxs+1,&graph->cptr,
-                      graph->nvtxs,&graph->queue,
                       graph->nvtxs,&graph->special_dof);CHKERRQ(ierr);
   /* zeroes memory */
   ierr = PetscMemzero(graph->count,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->subset,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   /* use -1 as a default value for which_dof array */
   for (n=0;n<graph->nvtxs;n++) graph->which_dof[n] = -1;
-  ierr = PetscMemzero(graph->cptr,(graph->nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(graph->queue,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->special_dof,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   /* zeroes first pointer to neighbour set */
   if (graph->nvtxs) {
