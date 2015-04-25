@@ -34,12 +34,12 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Get number of DOF's from command line */
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");CHKERRQ(ierr);
   {
     ndof = 1;
     PetscOptionsInt("-ndof","Number of DOF's in DMDA","",ndof,&ndof,NULL);
   }
-  PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Create a DMDA and an associated vector */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da);CHKERRQ(ierr);
