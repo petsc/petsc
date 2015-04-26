@@ -1760,6 +1760,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* space to store constraints and their local indices */
   PetscScalar       *temp_quadrature_constraint;
   PetscInt          *temp_indices,*temp_indices_to_constraint,*temp_indices_to_constraint_B;
+  PetscInt          *aux_primal_numbering;
   /* iterators */
   PetscInt          i,j,k,total_counts,temp_start_ptr;
   /* BLAS integers */
@@ -1770,7 +1771,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscInt          olocal_primal_size;
   PetscInt          *oprimal_indices_local_idxs;
   /* change of basis */
-  PetscInt          *aux_primal_numbering,*aux_primal_minloc,*global_indices;
   PetscBool         boolforchange,qr_needed;
   PetscBT           touched,change_basis,qr_needed_idx;
   /* auxiliary stuff */
@@ -2264,11 +2264,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = MatSetSizes(pcbddc->ConstraintMatrix,pcbddc->local_primal_size,pcis->n,pcbddc->local_primal_size,pcis->n);CHKERRQ(ierr);
   /* array to compute a local numbering of constraints : vertices first then constraints */
   ierr = PetscMalloc1(pcbddc->local_primal_size,&aux_primal_numbering);CHKERRQ(ierr);
-  /* array to select the proper local node (of minimum index with respect to global ordering) when changing the basis */
-  /* note: it should not be needed since IS for faces and edges are already sorted by global ordering when analyzing the graph but... just in case */
-  ierr = PetscMalloc1(pcbddc->local_primal_size,&aux_primal_minloc);CHKERRQ(ierr);
-  /* auxiliary stuff for basis change */
-  ierr = PetscMalloc1(max_size_of_constraint,&global_indices);CHKERRQ(ierr);
   ierr = PetscBTCreate(pcis->n_B,&touched);CHKERRQ(ierr);
 
   /* find primal_dofs: subdomain corners plus dofs selected as primal after change of basis */
@@ -2278,28 +2273,13 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (size_of_constraint == 1) {
       ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]]);CHKERRQ(ierr);
       aux_primal_numbering[total_primal_vertices]=temp_indices_to_constraint[temp_indices[i]];
-      aux_primal_minloc[total_primal_vertices]=0;
       total_primal_vertices++;
     } else if (PetscBTLookup(change_basis,i)) { /* Same procedure used in PCBDDCGetPrimalConstraintsLocalIdx */
-      PetscInt min_loc,min_index;
-      ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,&temp_indices_to_constraint[temp_indices[i]],global_indices);CHKERRQ(ierr);
-      /* find first untouched local node */
+      /* find first (by global ordering) untouched node in the cc */
       k = 0;
       while (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) k++;
-      min_index = global_indices[k];
-      min_loc = k;
-      /* search the minimum among global nodes already untouched on the cc */
-      for (k=1;k<size_of_constraint;k++) {
-        /* there can be more than one constraint on a single connected component */
-        if (!PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k]) && min_index > global_indices[k]) {
-          min_index = global_indices[k];
-          min_loc = k;
-        }
-      }
-      ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+min_loc]);CHKERRQ(ierr);
-      aux_primal_numbering[total_primal_vertices]=temp_indices_to_constraint[temp_indices[i]+min_loc];
-      aux_primal_minloc[total_primal_vertices]=min_loc;
-      total_primal_vertices++;
+      ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+k]);CHKERRQ(ierr);
+      aux_primal_numbering[total_primal_vertices++]=temp_indices_to_constraint[temp_indices[i]+k];
     }
   }
   /* determine if a QR strategy is needed for change of basis */
@@ -2330,29 +2310,13 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   for (i=0;i<pcbddc->local_primal_size;i++) {
     size_of_constraint=temp_indices[i+1]-temp_indices[i];
     if (size_of_constraint != 1 && !PetscBTLookup(change_basis,i)) {
-      PetscInt min_loc,min_index;
-      ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,&temp_indices_to_constraint[temp_indices[i]],global_indices);CHKERRQ(ierr);
-      /* find first untouched local node */
+      /* find first (by global ordering) untouched node in the cc */
       k = 0;
       while (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) k++;
-      min_index = global_indices[k];
-      min_loc = k;
-      /* search the minimum among global nodes already untouched on the cc */
-      for (k=1;k<size_of_constraint;k++) {
-        /* there can be more than one constraint on a single connected component */
-        if (!PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k]) && min_index > global_indices[k]) {
-          min_index = global_indices[k];
-          min_loc = k;
-        }
-      }
-      ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+min_loc]);CHKERRQ(ierr);
-      aux_primal_numbering[total_counts]=temp_indices_to_constraint[temp_indices[i]+min_loc];
-      aux_primal_minloc[total_counts]=min_loc;
-      total_counts++;
+      ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+k]);CHKERRQ(ierr);
+      aux_primal_numbering[total_counts++]=temp_indices_to_constraint[temp_indices[i]+k];
     }
   }
-  /* free workspace */
-  ierr = PetscFree(global_indices);CHKERRQ(ierr);
 
   /* permute indices in order to have a sorted set of vertices */
   ierr = PetscSortInt(total_primal_vertices,aux_primal_numbering);CHKERRQ(ierr);
@@ -2399,8 +2363,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   if (pcbddc->use_change_of_basis) {
     /* dual and primal dofs on a single cc */
     PetscInt     dual_dofs,primal_dofs;
-    /* iterator on aux_primal_minloc (ordered as read from nearnullspace: vertices, edges and then constraints) */
-    PetscInt     primal_counter;
     /* working stuff for GEQRF */
     PetscScalar  *qr_basis,*qr_tau = NULL,*qr_work,lqr_work_t;
     PetscBLASInt lqr_work;
@@ -2523,7 +2485,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* loop on constraints and see whether or not they need a change of basis and compute it */
     /* -> using implicit ordering contained in temp_indices data */
     total_counts = pcbddc->n_vertices;
-    primal_counter = total_counts;
     while (total_counts<pcbddc->local_primal_size) {
       primal_dofs = 1;
       if (PetscBTLookup(change_basis,total_counts)) {
@@ -2598,7 +2559,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           /* insert cols for primal dofs */
           for (j=0;j<primal_dofs;j++) {
             start_vals = &qr_basis[j*size_of_constraint];
-            start_cols = &temp_indices_to_constraint[temp_indices[total_counts]+aux_primal_minloc[primal_counter+j]];
+            start_cols = &temp_indices_to_constraint[temp_indices[total_counts]+j];
             ierr = MatSetValues(localChangeOfBasisMatrix,size_of_constraint,start_rows,1,start_cols,start_vals,INSERT_VALUES);CHKERRQ(ierr);
           }
           /* insert cols for dual dofs */
@@ -2656,16 +2617,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             PetscInt row_B = temp_indices_to_constraint_B[temp_indices[total_counts]+j];
             row = temp_indices_to_constraint[temp_indices[total_counts]+j];
             if (!PetscBTLookup(is_primal,row_B)) {
-              col = temp_indices_to_constraint[temp_indices[total_counts]+aux_primal_minloc[primal_counter]];
+              col = temp_indices_to_constraint[temp_indices[total_counts]];
               ierr = MatSetValue(localChangeOfBasisMatrix,row,row,1.0,INSERT_VALUES);CHKERRQ(ierr);
               ierr = MatSetValue(localChangeOfBasisMatrix,row,col,temp_quadrature_constraint[temp_indices[total_counts]+j]/norm,INSERT_VALUES);CHKERRQ(ierr);
             } else {
               for (k=0;k<size_of_constraint;k++) {
                 col = temp_indices_to_constraint[temp_indices[total_counts]+k];
                 if (row != col) {
-                  val = -temp_quadrature_constraint[temp_indices[total_counts]+k]/temp_quadrature_constraint[temp_indices[total_counts]+aux_primal_minloc[primal_counter]];
+                  val = -temp_quadrature_constraint[temp_indices[total_counts]+k]/temp_quadrature_constraint[temp_indices[total_counts]];
                 } else {
-                  val = temp_quadrature_constraint[temp_indices[total_counts]+aux_primal_minloc[primal_counter]]/norm;
+                  val = temp_quadrature_constraint[temp_indices[total_counts]]/norm;
                 }
                 ierr = MatSetValue(localChangeOfBasisMatrix,row,col,val,INSERT_VALUES);CHKERRQ(ierr);
               }
@@ -2675,8 +2636,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> using standard change of basis\n");CHKERRQ(ierr);
           }
         }
-        /* increment primal counter */
-        primal_counter += primal_dofs;
       } else {
         if (pcbddc->dbg_flag) {
           ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraint %d does not need a change of basis (size %d)\n",total_counts,temp_indices[total_counts+1]-temp_indices[total_counts]);CHKERRQ(ierr);
@@ -2834,7 +2793,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* free workspace */
   ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&qr_needed_idx);CHKERRQ(ierr);
-  ierr = PetscFree(aux_primal_minloc);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&change_basis);CHKERRQ(ierr);
   if (!pcbddc->adaptive_selection) {
     ierr = PetscFree(temp_indices);CHKERRQ(ierr);
