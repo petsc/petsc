@@ -13,12 +13,13 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   const char precision[] = "UnknownPrecision";
 #endif
   MPI_Comm                 comm;
+  Vec                      Coords;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link;
   FILE                     *fp;
   PetscMPIInt              rank,size,tag;
   DMDALocalInfo            info;
-  PetscInt                 dim,mx,my,mz,bs,boffset,maxnnodes,i,j,k,f,r;
+  PetscInt                 dim,mx,my,mz,cdim,bs,boffset,maxnnodes,i,j,k,f,r;
   PetscInt                 rloc[6],(*grloc)[6] = NULL;
   PetscScalar              *array,*array2;
   PetscReal                gmin[3],gmax[3];
@@ -34,6 +35,16 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   ierr = DMDAGetInfo(da,&dim, &mx,&my,&mz, 0,0,0, &bs,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
+  if (Coords) {
+    PetscInt csize;
+    ierr = VecGetSize(Coords,&csize);CHKERRQ(ierr);
+    if (csize % (mx*my*mz)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
+    cdim = csize/(mx*my*mz);
+    if (cdim < dim || cdim > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
+  } else {
+    cdim = dim;
+  }
 
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
@@ -132,50 +143,47 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       nnodes = info.xm*info.ym*info.zm;
     }
 
-    {                           /* Write the coordinates */
-      Vec Coords;
-      ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
-      if (Coords) {
-        const PetscScalar *coords;
-        ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
-        if (!rank) {
-          if (r) {
-            PetscMPIInt nn;
-            ierr = MPI_Recv(array,nnodes*dim,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-            ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
-            if (nn != nnodes*dim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
-          } else {
-            ierr = PetscMemcpy(array,coords,nnodes*dim*sizeof(PetscScalar));CHKERRQ(ierr);
-          }
-          /* Transpose coordinates to VTK (C-style) ordering */
-          for (k=0; k<zm; k++) {
-            for (j=0; j<ym; j++) {
-              for (i=0; i<xm; i++) {
-                PetscInt Iloc = i+xm*(j+ym*k);
-                array2[Iloc*3+0] = array[Iloc*dim + 0];
-                array2[Iloc*3+1] = dim > 1 ? array[Iloc*dim + 1] : 0;
-                array2[Iloc*3+2] = dim > 2 ? array[Iloc*dim + 2] : 0;
-              }
-            }
-          }
-        } else if (r == rank) {
-          ierr = MPI_Send((void*)coords,nnodes*dim,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+    /* Write the coordinates */
+    if (Coords) {
+      const PetscScalar *coords;
+      ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
+      if (!rank) {
+        if (r) {
+          PetscMPIInt nn;
+          ierr = MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
+          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
+          if (nn != nnodes*cdim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+        } else {
+          ierr = PetscMemcpy(array,coords,nnodes*cdim*sizeof(PetscScalar));CHKERRQ(ierr);
         }
-        ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
-      } else {       /* Fabricate some coordinates using grid index */
+        /* Transpose coordinates to VTK (C-style) ordering */
         for (k=0; k<zm; k++) {
           for (j=0; j<ym; j++) {
             for (i=0; i<xm; i++) {
               PetscInt Iloc = i+xm*(j+ym*k);
-              array2[Iloc*3+0] = xs+i;
-              array2[Iloc*3+1] = ys+j;
-              array2[Iloc*3+2] = zs+k;
+              array2[Iloc*3+0] = array[Iloc*cdim + 0];
+              array2[Iloc*3+1] = cdim > 1 ? array[Iloc*cdim + 1] : 0.0;
+              array2[Iloc*3+2] = cdim > 2 ? array[Iloc*cdim + 2] : 0.0;
             }
           }
         }
+      } else if (r == rank) {
+        ierr = MPI_Send((void*)coords,nnodes*cdim,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
       }
-      ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
+    } else {       /* Fabricate some coordinates using grid index */
+      for (k=0; k<zm; k++) {
+        for (j=0; j<ym; j++) {
+          for (i=0; i<xm; i++) {
+            PetscInt Iloc = i+xm*(j+ym*k);
+            array2[Iloc*3+0] = xs+i;
+            array2[Iloc*3+1] = ys+j;
+            array2[Iloc*3+2] = zs+k;
+          }
+        }
+      }
     }
+    ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,PETSC_SCALAR);CHKERRQ(ierr);
 
     /* Write each of the objects queued up for this file */
     for (link=vtk->link; link; link=link->next) {
