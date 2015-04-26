@@ -1760,7 +1760,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* space to store constraints and their local indices */
   PetscScalar       *temp_quadrature_constraint;
   PetscInt          *temp_indices,*temp_indices_to_constraint,*temp_indices_to_constraint_B;
-  PetscInt          *aux_primal_numbering;
   /* iterators */
   PetscInt          i,j,k,total_counts,temp_start_ptr;
   /* BLAS integers */
@@ -1774,7 +1773,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscBool         boolforchange,qr_needed;
   PetscBT           touched,change_basis,qr_needed_idx;
   /* auxiliary stuff */
-  PetscInt          *nnz,*is_indices,*aux_primal_numbering_B;
+  PetscInt          *nnz,*is_indices;
   PetscInt          ncc;
   /* some quantities */
   PetscInt          n_vertices,total_primal_vertices,valid_constraints;
@@ -2257,13 +2256,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   pcbddc->n_constraints = pcbddc->local_primal_size-pcbddc->n_vertices;
 
   /* Create constraint matrix */
-  /* The constraint matrix is used to compute the l2g map of primal dofs */
-  /* so we need to set it up properly either with or without change of basis */
   ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = MatSetType(pcbddc->ConstraintMatrix,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetSizes(pcbddc->ConstraintMatrix,pcbddc->local_primal_size,pcis->n,pcbddc->local_primal_size,pcis->n);CHKERRQ(ierr);
   /* array to compute a local numbering of constraints : vertices first then constraints */
-  ierr = PetscMalloc1(pcbddc->local_primal_size,&aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcbddc->local_primal_size,&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PetscBTCreate(pcis->n_B,&touched);CHKERRQ(ierr);
 
   /* find primal_dofs: subdomain corners plus dofs selected as primal after change of basis */
@@ -2272,16 +2269,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     size_of_constraint=temp_indices[i+1]-temp_indices[i];
     if (size_of_constraint == 1) {
       ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]]);CHKERRQ(ierr);
-      aux_primal_numbering[total_primal_vertices]=temp_indices_to_constraint[temp_indices[i]];
-      total_primal_vertices++;
-    } else if (PetscBTLookup(change_basis,i)) { /* Same procedure used in PCBDDCGetPrimalConstraintsLocalIdx */
+      pcbddc->primal_indices_local_idxs[total_primal_vertices++]=temp_indices_to_constraint[temp_indices[i]];
+    } else if (PetscBTLookup(change_basis,i)) {
       /* find first (by global ordering) untouched node in the cc */
       k = 0;
       while (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) k++;
       ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+k]);CHKERRQ(ierr);
-      aux_primal_numbering[total_primal_vertices++]=temp_indices_to_constraint[temp_indices[i]+k];
+      pcbddc->primal_indices_local_idxs[total_primal_vertices++]=temp_indices_to_constraint[temp_indices[i]+k];
     }
   }
+  pcbddc->n_actual_vertices = total_primal_vertices;
   /* determine if a QR strategy is needed for change of basis */
   qr_needed = PETSC_FALSE;
   ierr = PetscBTCreate(pcbddc->local_primal_size,&qr_needed_idx);CHKERRQ(ierr);
@@ -2314,17 +2311,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       k = 0;
       while (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) k++;
       ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+k]);CHKERRQ(ierr);
-      aux_primal_numbering[total_counts++]=temp_indices_to_constraint[temp_indices[i]+k];
+      pcbddc->primal_indices_local_idxs[total_counts++]=temp_indices_to_constraint[temp_indices[i]+k];
     }
   }
 
   /* permute indices in order to have a sorted set of vertices */
-  ierr = PetscSortInt(total_primal_vertices,aux_primal_numbering);CHKERRQ(ierr);
-
-  /* get reference dofs for local primal dofs */
-  ierr = PetscMalloc1(pcbddc->local_primal_size,&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(pcbddc->primal_indices_local_idxs,aux_primal_numbering,pcbddc->local_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
-  pcbddc->n_actual_vertices = total_primal_vertices;
+  ierr = PetscSortInt(total_primal_vertices,pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
 
   /* nonzero structure of constraint matrix */
   ierr = PetscMalloc1(pcbddc->local_primal_size,&nnz);CHKERRQ(ierr);
@@ -2341,7 +2333,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
   /* set values in constraint matrix */
   for (i=0;i<total_primal_vertices;i++) {
-    ierr = MatSetValue(pcbddc->ConstraintMatrix,i,aux_primal_numbering[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(pcbddc->ConstraintMatrix,i,pcbddc->primal_indices_local_idxs[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
   }
   total_counts = total_primal_vertices;
   for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
@@ -2377,6 +2369,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscScalar  *start_vals;
     /* working stuff for values insertion */
     PetscBT      is_primal;
+    PetscInt     *aux_primal_numbering_B;
     /* matrix sizes */
     PetscInt     global_size,local_size;
     /* temporary change of basis */
@@ -2473,7 +2466,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* array to store whether a node is primal or not */
     ierr = PetscBTCreate(pcis->n_B,&is_primal);CHKERRQ(ierr);
     ierr = PetscMalloc1(total_primal_vertices,&aux_primal_numbering_B);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,total_primal_vertices,aux_primal_numbering,&i,aux_primal_numbering_B);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,total_primal_vertices,pcbddc->primal_indices_local_idxs,&i,aux_primal_numbering_B);CHKERRQ(ierr);
     if (i != total_primal_vertices) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Error in boundary numbering for BDDC vertices! %d != %d\n",total_primal_vertices,i);
     }
@@ -2771,9 +2764,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = MatAssemblyBegin(pcbddc->new_global_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->new_global_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-
-  /* get indices in local ordering for vertices and constraints */
-  ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
 
   /* check if a new primal space has been introduced */
   pcbddc->new_primal_space_local = PETSC_TRUE;
