@@ -128,9 +128,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   n_boundary_dofs = 0;
   s = 0;
   /* Get Vertices used to define the BDDC */
-  ierr = PCBDDCGetPrimalVerticesLocalIdx(fetidpmat_ctx->pc,&n_vertices,&vertex_indices);CHKERRQ(ierr);
+  n_vertices = pcbddc->n_actual_vertices;
+  vertex_indices = pcbddc->primal_indices_local_idxs;
   dual_size = pcis->n_B-n_vertices;
-  ierr = PetscSortInt(n_vertices,vertex_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(dual_size,&dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(dual_size,&aux_local_numbering_1);CHKERRQ(ierr);
   ierr = PetscMalloc1(dual_size,&aux_local_numbering_2);CHKERRQ(ierr);
@@ -529,7 +529,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     }
   }
   /* final cleanup */
-  ierr = PetscFree(vertex_indices);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda_global);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

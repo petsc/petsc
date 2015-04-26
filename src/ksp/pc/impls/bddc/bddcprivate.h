@@ -47,8 +47,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm,ISLocalToGlobalMapping,PetscInt,PetscInt[],PetscInt[],PetscInt*,PetscInt*[]);
 PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
-PetscErrorCode PCBDDCGetPrimalVerticesLocalIdx(PC,PetscInt*,PetscInt**);
-PetscErrorCode PCBDDCGetPrimalConstraintsLocalIdx(PC,PetscInt*,PetscInt**);
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,PetscBool);
