@@ -132,6 +132,7 @@
          PCFactorSetAllowDiagonalFill() now takes a PetscBool argument. Added PCFactorGetAllowDiagonalFill()
          PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean
          Added Interface to AMS solver from HYPRE for Nedelec discretizations (-pc_hypre_type ams)
+         Added Interface to ADS solver from HYPRE for Raviart-Thomas discretizations (-pc_hypre_type ads)
       <h4>KSP:</h4>
          Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev
          Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_
