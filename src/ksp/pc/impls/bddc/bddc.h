@@ -34,9 +34,7 @@ typedef struct {
   PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
-  PetscInt      n_constraints;
   PetscInt      n_vertices;
-  PetscInt      n_actual_vertices;
   Mat           ConstraintMatrix;
   PetscBool     new_primal_space;
   PetscBool     new_primal_space_local;
