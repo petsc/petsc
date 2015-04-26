@@ -1846,22 +1846,26 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
       n_ISForFaces = 0;
     }
-    /* HACKS (the following two blocks of code) */
-    if (!ISForVertices && pcbddc->NullSpace && !pcbddc->user_ChangeOfBasisMatrix) {
-      pcbddc->use_change_of_basis = PETSC_TRUE;
-      if (!ISForEdges) {
-        pcbddc->use_change_on_faces = PETSC_TRUE;
-      }
-    }
+
+#if defined(PETSC_USE_DEBUG)
+    /* HACK: when solving singular problems not using vertices, a change of basis is mandatory.
+       Also use_change_of_basis should be consistent among processors */
     if (pcbddc->NullSpace) {
-      /* use_change_of_basis should be consistent among processors */
       PetscBool tbool[2],gbool[2];
+
+      if (!ISForVertices && !pcbddc->user_ChangeOfBasisMatrix) {
+        pcbddc->use_change_of_basis = PETSC_TRUE;
+        if (!ISForEdges) {
+          pcbddc->use_change_on_faces = PETSC_TRUE;
+        }
+      }
       tbool[0] = pcbddc->use_change_of_basis;
       tbool[1] = pcbddc->use_change_on_faces;
       ierr = MPI_Allreduce(tbool,gbool,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       pcbddc->use_change_of_basis = gbool[0];
       pcbddc->use_change_on_faces = gbool[1];
     }
+#endif
 
     /* check if near null space is attached to global mat */
     ierr = MatGetNearNullSpace(pc->pmat,&nearnullsp);CHKERRQ(ierr);
@@ -2279,6 +2283,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     }
   }
   pcbddc->n_actual_vertices = total_primal_vertices;
+  /* permute indices in order to have a sorted set of vertices */
+  ierr = PetscSortInt(total_primal_vertices,pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
+
   /* determine if a QR strategy is needed for change of basis */
   qr_needed = PETSC_FALSE;
   ierr = PetscBTCreate(pcbddc->local_primal_size,&qr_needed_idx);CHKERRQ(ierr);
@@ -2303,6 +2310,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       }
     }
   }
+
+  /* get reference dof for local constraints */
   total_counts = total_primal_vertices;
   for (i=0;i<pcbddc->local_primal_size;i++) {
     size_of_constraint=temp_indices[i+1]-temp_indices[i];
@@ -2314,9 +2323,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       pcbddc->primal_indices_local_idxs[total_counts++]=temp_indices_to_constraint[temp_indices[i]+k];
     }
   }
-
-  /* permute indices in order to have a sorted set of vertices */
-  ierr = PetscSortInt(total_primal_vertices,pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
 
   /* nonzero structure of constraint matrix */
   ierr = PetscMalloc1(pcbddc->local_primal_size,&nnz);CHKERRQ(ierr);
