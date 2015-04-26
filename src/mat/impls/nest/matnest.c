@@ -907,7 +907,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetISs"
-/*@
+/*@C
  MatNestGetISs - Returns the index sets partitioning the row and column spaces
 
  Not collective
