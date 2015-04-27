@@ -305,13 +305,13 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
-    }
-    if (!ts->costintegralfwd) {
-      /* Evolve ts->vec_costintegral to compute integrals */
-      ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
-      ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
-      ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
-      ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(th->Theta-1.),ts->vec_costintegrand);CHKERRQ(ierr);
+      if (!ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(th->Theta-1.),ts->vec_costintegrand);CHKERRQ(ierr);
+      }
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);     
@@ -348,11 +348,11 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
-    }
-    if (!ts->costintegralfwd) {
-      /* Evolve ts->vec_costintegral to compute integrals */
-      ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
-      ierr = VecAXPY(ts->vec_costintegral,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
+      if (!ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
+      }
     }
      /* When th->endpoint is true and th->Theta==1 (beuler method), the Jacobian is supposed to be evaluated at ts->ptime like this: 
     if(th->endpoint) {
