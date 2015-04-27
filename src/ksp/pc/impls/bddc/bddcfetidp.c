@@ -129,7 +129,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   s = 0;
   /* Get Vertices used to define the BDDC */
   n_vertices = pcbddc->n_vertices;
-  vertex_indices = pcbddc->primal_indices_local_idxs;
+  vertex_indices = pcbddc->local_primal_ref_node;
   dual_size = pcis->n_B-n_vertices;
   ierr = PetscMalloc1(dual_size,&dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(dual_size,&aux_local_numbering_1);CHKERRQ(ierr);

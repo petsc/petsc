@@ -39,6 +39,9 @@ typedef struct {
   PetscBool     new_primal_space;
   PetscBool     new_primal_space_local;
   PetscInt      *primal_indices_local_idxs;
+  PetscInt      local_primal_size_cc;
+  PetscInt      *local_primal_ref_node;
+  PetscInt      *local_primal_ref_mult;
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
   Mat           ChangeOfBasisMatrix;

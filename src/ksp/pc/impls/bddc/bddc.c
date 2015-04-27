@@ -1946,6 +1946,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   /* private */
   pcbddc->issym                      = PETSC_FALSE;
   pcbddc->local_primal_size          = 0;
+  pcbddc->local_primal_size_cc       = 0;
+  pcbddc->local_primal_ref_node      = 0;
+  pcbddc->local_primal_ref_mult      = 0;
   pcbddc->n_vertices                 = 0;
   pcbddc->primal_indices_local_idxs  = 0;
   pcbddc->recompute_topography       = PETSC_FALSE;
