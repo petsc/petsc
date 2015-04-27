@@ -134,8 +134,6 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions*,Mat);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
 PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
