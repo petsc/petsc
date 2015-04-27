@@ -9664,8 +9664,26 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
-  if (!mat->ops->findzerodiagonals) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a find zero diagonals defined");
-  ierr = (*mat->ops->findzerodiagonals)(mat,is);CHKERRQ(ierr);
+  if (!mat->ops->findzerodiagonals) {
+    Vec                diag;
+    const PetscScalar *a;
+    PetscInt          *rows;
+    PetscInt           rStart, rEnd, r, nrow = 0;
+
+    ierr = MatCreateVecs(mat, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(mat, diag);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(mat, &rStart, &rEnd);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(diag, &a);CHKERRQ(ierr);
+    for (r = 0; r < rEnd-rStart; ++r) if (a[r] == 0.0) ++nrow;
+    ierr = PetscMalloc1(nrow, &rows);CHKERRQ(ierr);
+    nrow = 0;
+    for (r = 0; r < rEnd-rStart; ++r) if (a[r] == 0.0) rows[nrow++] = r+rStart;
+    ierr = VecRestoreArrayRead(diag, &a);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) mat), nrow, rows, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+  } else {
+    ierr = (*mat->ops->findzerodiagonals)(mat, is);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
