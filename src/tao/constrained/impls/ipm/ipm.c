@@ -1124,6 +1124,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   ipmP->pushs = 100;
   ipmP->pushnu = 100;
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
