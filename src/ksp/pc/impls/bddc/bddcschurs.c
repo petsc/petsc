@@ -194,7 +194,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   Mat                    global_schur_subsets,work_mat;
   Mat                    S_Ej_tilda_all,S_Ej_inv_all;
   ISLocalToGlobalMapping l2gmap_subsets;
-  IS                     is_I,temp_is;
+  IS                     is_I,is_I_layer,temp_is;
   PetscInt               *nnz,*all_local_idx_G,*all_local_idx_N;
   PetscInt               *auxnum1,*auxnum2,*all_local_idx_G_rep;
   PetscInt               i,subset_size,max_subset_size;
@@ -305,7 +305,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   S_Ej_inv_all = NULL;
 
   /* determine interior problems */
-  ierr = ISDestroy(&sub_schurs->is_I_layer);CHKERRQ(ierr);
   ierr = ISGetLocalSize(sub_schurs->is_I,&i);CHKERRQ(ierr);
   if (nlayers >= 0 && i) { /* Interior problems can be different from the original one */
     PetscBT                touched;
@@ -348,14 +347,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
 
     /* IS for I layer dofs in original numbering */
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sub_schurs->is_I),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&sub_schurs->is_I_layer);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sub_schurs->is_I),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&is_I_layer);CHKERRQ(ierr);
     ierr = PetscFree(local_numbering);CHKERRQ(ierr);
-    ierr = ISSort(sub_schurs->is_I_layer);CHKERRQ(ierr);
+    ierr = ISSort(is_I_layer);CHKERRQ(ierr);
     /* IS for I layer dofs in I numbering */
     if (!sub_schurs->use_mumps) {
       ISLocalToGlobalMapping ItoNmap;
       ierr = ISLocalToGlobalMappingCreateIS(sub_schurs->is_I,&ItoNmap);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_I_layer,&is_I);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,is_I_layer,&is_I);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&ItoNmap);CHKERRQ(ierr);
 
       /* II block */
@@ -366,7 +365,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     /* IS for I dofs in original numbering */
     ierr = PetscObjectReference((PetscObject)sub_schurs->is_I);CHKERRQ(ierr);
-    sub_schurs->is_I_layer = sub_schurs->is_I;
+    is_I_layer = sub_schurs->is_I;
 
     /* IS for I dofs in I numbering (strided 1) */
     if (!sub_schurs->use_mumps) {
@@ -391,14 +390,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   /* Work arrays for local indices */
   extra = 0;
   if (sub_schurs->use_mumps) {
-    ierr = ISGetLocalSize(sub_schurs->is_I_layer,&extra);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is_I_layer,&extra);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(local_size+extra,&all_local_idx_N);CHKERRQ(ierr);
   if (extra) {
     const PetscInt *idxs;
-    ierr = ISGetIndices(sub_schurs->is_I_layer,&idxs);CHKERRQ(ierr);
+    ierr = ISGetIndices(is_I_layer,&idxs);CHKERRQ(ierr);
     ierr = PetscMemcpy(all_local_idx_N,idxs,extra*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = ISRestoreIndices(sub_schurs->is_I_layer,&idxs);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is_I_layer,&idxs);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
   ierr = PetscMalloc2(sub_schurs->n_subs,&auxnum1,sub_schurs->n_subs,&auxnum2);CHKERRQ(ierr);
@@ -570,10 +569,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscInt    *idxs_schur,n_I,n_I_all,*dummy_idx;
 
     /* get working mat */
-    ierr = ISGetLocalSize(sub_schurs->is_I_layer,&n_I);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is_I_layer,&n_I);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size+n_I,all_local_idx_N,PETSC_COPY_VALUES,&is_A_all);CHKERRQ(ierr);
     ierr = MatGetSubMatrixUnsorted(sub_schurs->A,is_A_all,is_A_all,&A);CHKERRQ(ierr);
     ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
 
     if (n_I) {
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
@@ -738,6 +738,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
     }
   }
+  ierr = ISDestroy(&is_I_layer);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all_inv);CHKERRQ(ierr);
@@ -947,7 +948,6 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDestroy(&sub_schurs->is_subs[i]);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&sub_schurs->is_I_layer);CHKERRQ(ierr);
   if (sub_schurs->n_subs) {
     ierr = PetscFree(sub_schurs->is_subs);CHKERRQ(ierr);
   }
