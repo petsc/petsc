@@ -101,9 +101,10 @@ typedef struct {
   PetscInt     adaptive_nmin;
   PetscInt     adaptive_nmax;
   PetscInt*    adaptive_constraints_n;
-  PetscInt*    adaptive_constraints_ptrs;
   PetscInt*    adaptive_constraints_idxs;
+  PetscInt*    adaptive_constraints_idxs_ptr;
   PetscScalar* adaptive_constraints_data;
+  PetscInt*    adaptive_constraints_data_ptr;
 
   /* For verbose output of some bddc data structures */
   PetscInt    dbg_flag;
