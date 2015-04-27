@@ -24,6 +24,8 @@ struct _PCBDDCGraph {
   PetscInt               *special_dof;
   PetscInt               custom_minimal_size;
   PetscBool              twodim;
+  PetscBool              has_dirichlet;
+  IS                     dirdofs;
   /* data for connected components */
   PetscInt               ncc;
   PetscInt               *cptr;

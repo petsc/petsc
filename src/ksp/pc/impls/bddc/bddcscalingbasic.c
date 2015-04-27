@@ -80,7 +80,7 @@ PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec glo
   PetscValidHeaderSpecific(local_interface_vector,VEC_CLASSID,2);
   PetscValidHeaderSpecific(global_vector,VEC_CLASSID,3);
   if (local_interface_vector == pcbddc->work_scaling) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
   }
   ierr = PetscTryMethod(pc,"PCBDDCScalingExtension_C",(PC,Vec,Vec),(pc,local_interface_vector,global_vector));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -152,7 +152,7 @@ PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_inte
   PetscValidHeaderSpecific(global_vector,VEC_CLASSID,2);
   PetscValidHeaderSpecific(local_interface_vector,VEC_CLASSID,3);
   if (local_interface_vector == pcbddc->work_scaling) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Local vector should cannot be pcbddc->work_scaling!\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
   }
   ierr = PetscTryMethod(pc,"PCBDDCScalingRestriction_C",(PC,Vec,Vec),(pc,global_vector,local_interface_vector));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -162,8 +162,8 @@ PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_inte
 #define __FUNCT__ "PCBDDCScalingSetUp"
 PetscErrorCode PCBDDCScalingSetUp(PC pc)
 {
-  PC_IS* pcis=(PC_IS*)pc->data;
-  PC_BDDC* pcbddc=(PC_BDDC*)pc->data;
+  PC_IS*         pcis=(PC_IS*)pc->data;
+  PC_BDDC*       pcbddc=(PC_BDDC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -323,9 +323,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
   /* diagonal scaling on interface dofs not contained in cc */
   dirIS = NULL;
-  if (pcbddc->DirichletBoundariesLocal) {
-    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
-  }
+  ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
   if (sub_schurs->is_Ej_com || dirIS) {
     PetscInt n_com,n_dir;
     n_com = 0;

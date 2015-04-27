@@ -978,10 +978,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   pcbddc->rhs_change = PETSC_FALSE;
 
   /* Take into account zeroed rows -> change rhs and store solution removed */
-  if (rhs && pcbddc->DirichletBoundariesLocal) {
+  if (rhs) {
     IS dirIS = NULL;
 
-    /* DirichletBoundariesLocal may not be consistent among neighbours */
+    /* DirichletBoundariesLocal may not be consistent among neighbours; gets a dirichlet dofs IS from graph (may be cached) */
     ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
     if (dirIS) {
       Mat_IS            *matis = (Mat_IS*)pc->pmat->data;
@@ -1006,8 +1006,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       pcbddc->rhs_change = PETSC_TRUE;
+      ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
     }
-    ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
   }
 
   /* remove the computed solution or the initial guess from the rhs */

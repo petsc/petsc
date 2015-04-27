@@ -4,29 +4,31 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphGetDirichletDofs"
-PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph,IS* dirdofs)
+PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph, IS* dirdofs)
 {
-  PetscInt       i,size,sizer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  size = 0;
-  for (i=0;i<graph->nvtxs;i++) {
-    if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) size++;
-  }
-  ierr = MPI_Allreduce(&size,&sizer,1,MPIU_INT,MPI_LOR,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
-  if (sizer) {
+  if (graph->dirdofs) {
+    ierr = PetscObjectReference((PetscObject)graph->dirdofs);CHKERRQ(ierr);
+  } else if (graph->has_dirichlet) {
+    PetscInt i,size;
     PetscInt *dirdofs_idxs;
+
+    size = 0;
+    for (i=0;i<graph->nvtxs;i++) {
+      if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) size++;
+    }
 
     ierr = PetscMalloc1(size,&dirdofs_idxs);CHKERRQ(ierr);
     size = 0;
     for (i=0;i<graph->nvtxs;i++) {
       if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) dirdofs_idxs[size++] = i;
     }
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)graph->l2gmap),size,dirdofs_idxs,PETSC_OWN_POINTER,dirdofs);CHKERRQ(ierr);
-  } else {
-    *dirdofs = NULL;
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)graph->l2gmap),size,dirdofs_idxs,PETSC_OWN_POINTER,&graph->dirdofs);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)graph->dirdofs);CHKERRQ(ierr);
   }
+  *dirdofs = graph->dirdofs;
   PetscFunctionReturn(0);
 }
 
@@ -646,6 +648,11 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  graph->has_dirichlet = PETSC_FALSE;
+  if (dirichlet_is) {
+    PetscCheckSameComm(graph->l2gmap,1,dirichlet_is,4);
+    graph->has_dirichlet = PETSC_TRUE;
+  }
   ierr = PetscObjectGetComm((PetscObject)(graph->l2gmap),&comm);CHKERRQ(ierr);
   /* custom_minimal_size */
   graph->custom_minimal_size = PetscMax(graph->custom_minimal_size,custom_minimal_size);
@@ -1100,6 +1107,8 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
     ierr = PetscFree(graph->subsets[0]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(graph->subsets_size,graph->subsets);CHKERRQ(ierr);
+  ierr = ISDestroy(&graph->dirdofs);CHKERRQ(ierr);
+  graph->has_dirichlet = PETSC_FALSE;
   graph->nvtxs = 0;
   graph->nvtxs_global = 0;
   graph->n_subsets = 0;
