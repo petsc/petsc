@@ -2245,6 +2245,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     constraints_data_ptr = pcbddc->adaptive_constraints_data_ptr;
     constraints_idxs = pcbddc->adaptive_constraints_idxs;
     constraints_data = pcbddc->adaptive_constraints_data;
+    /* constraints_n differs from pcbddc->adaptive_constraints_n */
     ierr = PetscMalloc1(total_counts_cc,&constraints_n);CHKERRQ(ierr);
     total_counts_cc = 0;
     for (i=0;i<sub_schurs->n_subs+n_vertices;i++) {
@@ -2304,6 +2305,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscMalloc1(pcbddc->local_primal_size,&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
 
   /* find primal_dofs: subdomain corners plus dofs selected as primal after change of basis */
+  /* determine if a QR strategy is needed for change of basis */
+  qr_needed = PETSC_FALSE;
+  ierr = PetscBTCreate(total_counts_cc,&qr_needed_idx);CHKERRQ(ierr);
   total_primal_vertices=0;
   for (i=0;i<total_counts_cc;i++) {
     size_of_constraint = constraints_idxs_ptr[i+1]-constraints_idxs_ptr[i];
@@ -2313,6 +2317,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       for (k=0;k<constraints_n[i];k++) {
         pcbddc->primal_indices_local_idxs[total_primal_vertices++] = constraints_idxs[constraints_idxs_ptr[i]+k];
       }
+      if (constraints_n[i] > 1 || pcbddc->use_qr_single || pcbddc->faster_deluxe) {
+        PetscBTSet(qr_needed_idx,i);
+        qr_needed = PETSC_TRUE;
+      }
     }
   }
   /* note that the local variable n_vertices used below stores the number of pointwise constraints */
@@ -2320,37 +2328,20 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* permute indices in order to have a sorted set of vertices */
   ierr = PetscSortInt(total_primal_vertices,pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
 
-  /* determine if a QR strategy is needed for change of basis */
-  qr_needed = PETSC_FALSE;
-  ierr = PetscBTCreate(total_counts_cc,&qr_needed_idx);CHKERRQ(ierr);
-  for (i=n_vertices;i<total_counts_cc;i++) {
-    if (PetscBTLookup(change_basis,i)) {
-      if (constraints_n[i] > 1 || pcbddc->use_qr_single || pcbddc->faster_deluxe) {
-        PetscBTSet(qr_needed_idx,i);
-        qr_needed = PETSC_TRUE;
-      }
-    }
-  }
-
-  /* get reference dof for local constraints */
-  total_counts = total_primal_vertices;
-  for (i=n_vertices;i<total_counts_cc;i++) {
-    size_of_constraint = constraints_idxs_ptr[i+1]-constraints_idxs_ptr[i];
-    if (!PetscBTLookup(change_basis,i)) {
-      for (k=0;k<constraints_n[i];k++) {
-        pcbddc->primal_indices_local_idxs[total_counts++] = constraints_idxs[constraints_idxs_ptr[i]+k];
-      }
-    }
-  }
-
   /* nonzero structure of constraint matrix */
+  /* and get reference dof for local constraints */
   ierr = PetscMalloc1(pcbddc->local_primal_size,&nnz);CHKERRQ(ierr);
   for (i=0;i<total_primal_vertices;i++) nnz[i]=1;
+
   j = total_primal_vertices;
+  total_counts = total_primal_vertices;
   for (i=n_vertices;i<total_counts_cc;i++) {
     if (!PetscBTLookup(change_basis,i)) {
       size_of_constraint = constraints_idxs_ptr[i+1]-constraints_idxs_ptr[i];
-      for (k=0;k<constraints_n[i];k++) nnz[j+k] = size_of_constraint;
+      for (k=0;k<constraints_n[i];k++) {
+        pcbddc->primal_indices_local_idxs[total_counts++] = constraints_idxs[constraints_idxs_ptr[i]+k];
+        nnz[j+k] = size_of_constraint;
+      }
       j += constraints_n[i];
     }
   }
