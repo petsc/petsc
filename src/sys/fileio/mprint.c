@@ -425,7 +425,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
-C@*/
+@*/
 PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
