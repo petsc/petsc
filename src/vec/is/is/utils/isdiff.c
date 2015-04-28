@@ -623,5 +623,62 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,clen,cindices,PETSC_OWN_POINTER,c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*@
+  ISSortPermutation  -  calculate the permutation of the indices into a nondecreasing order.
+
+  Not collective.
+
+  Input arguments:
++ f      -  IS to sort
+- always -  build the permutation even when f's indices are nondecreasin.
+
+  Output argument:
+. h    -  permutation or NULL, if f is nondecreasing and always == PETSC_TRUE.
+
+
+  Note: Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
+        If always == PETSC_FALSE, an extra check is peformed to see whether
+	the f indices are nondecreasing. h is built on PETSC_COMM_SELF, since
+	the permutation has a local meaning only.
+
+  Level: advanced
+
+.seealso ISLocalToGlobalMapping, ISSort(), PetscIntSortWithPermutation()
+ @*/
+#undef  __FUNCT__
+#define __FUNCT__ "ISSortPermutation"
+PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
+{
+  PetscErrorCode  ierr;
+  const PetscInt  *findices;
+  PetscInt        fsize,*hindices,i;
+  PetscBool       isincreasing;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(f,IS_CLASSID,1);
+  PetscValidPointer(h,3);
+  ierr = ISGetLocalSize(f,&fsize);CHKERRQ(ierr);
+  ierr = ISGetIndices(f,&findices);CHKERRQ(ierr);
+  *h = NULL;
+  if (!always) {
+    isincreasing = PETSC_TRUE;
+    for (i = 1; i < fsize; ++i) {
+      if (findices[i] <= findices[i-1]) {
+	isincreasing = PETSC_FALSE;
+	break;
+      }
+    }
+    if (isincreasing) {
+      ierr = ISRestoreIndices(f,&findices);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  ierr = PetscMalloc1(fsize,&hindices);CHKERRQ(ierr);
+  for (i = 0; i < fsize; ++i) hindices[i] = i;
+  ierr = PetscSortIntWithPermutation(fsize,findices,hindices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(f,&findices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,fsize,hindices,PETSC_OWN_POINTER,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
