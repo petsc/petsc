@@ -3,7 +3,6 @@
       Some PETSc utilites
 */
 #include <petsc/private/petscimpl.h>             /*I    "petscsys.h"   I*/
-#include <petsc/private/threadcommimpl.h>
 /* ---------------------------------------------------------------- */
 /*
    A simple way to manage tags inside a communicator.
@@ -133,8 +132,6 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscErrorCode   ierr;
   PetscCommCounter *counter;
   PetscMPIInt      *maxval,flg;
-  PetscInt         trank;
-  PetscThreadComm  tcomm;
 
   PetscFunctionBegin;
   ierr = MPI_Attr_get(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
@@ -189,15 +186,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
 
   if (first_tag) *first_tag = counter->tag--;
 
-  ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    /* Threadcomm does not exist on this communicator, get the global threadcomm and attach it to this communicator */
-    ierr = PetscCommGetThreadComm(*comm_out,&tcomm);CHKERRQ(ierr);
-    ierr = PetscThreadCommAttach(*comm_out,tcomm);CHKERRQ(ierr);
-  }
-  /* Only the main thread updates counter->refcount */
-  ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
-  if (!trank) counter->refcount++; /* number of references to this comm */
+  counter->refcount++; /* number of references to this comm */
   PetscFunctionReturn(0);
 }
 
@@ -223,7 +212,6 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
   PetscCommCounter *counter;
   PetscMPIInt      flg;
   MPI_Comm         icomm = *comm,ocomm;
-  PetscThreadComm  tcomm;
   union {MPI_Comm comm; void *ptr;} ucomm;
 
   PetscFunctionBegin;
@@ -237,14 +225,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
   }
 
-  /* Only the main thread updates counter->refcount */
-  ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscInt trank;
-    ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
-    /* Only thread rank 0 updates the counter */
-    if (!trank) counter->refcount--;
-  } else counter->refcount--;
+  counter->refcount--;
 
   if (!counter->refcount) {
     /* if MPI_Comm has outer comm then remove reference to inner MPI_Comm from outer MPI_Comm */

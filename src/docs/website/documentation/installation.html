@@ -1052,35 +1052,6 @@
 
       <hr>
 
-      <div id="threads">
-        <h3><a name="threads">Installing PETSc to use Threads</a></h3>
-	<p>
-	  <b>petsc master (git branch)</b>
-	</p>
-        <ul>
-          <li>
-            Configure and build PETSc with the additional configure options
-            <ul>
-              <li> --with-threadcomm --with-pthreadclasses and/or --with-openmp </li>
-            </ul>
-          </li>
-
-          <li>
-            Run a sample example with:
-            <ul>
-              <li>cd src/snes/examples/tutorials</li>
-              <li>make ex19</li>
-              <li>
-                ./ex19 -threadcomm_type pthread -threadcomm_nthreads 2 -pc_type none
-                 -da_grid_x 100 -da_grid_y 100 -log_summary
-                -mat_no_inode -preload off
-              </li>
-            </ul>
-          </li>
-        </ul>
-
-      </div> <!-- #threads -->
-
       <a href="#" target="_top">Return to Installation Instructions</a>
     </div>
 
