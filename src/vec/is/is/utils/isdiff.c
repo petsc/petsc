@@ -413,7 +413,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(listlen, &colors);CHKERRQ(ierr);
-  ierr = PetscObjectsGetGlobalNumbering(comm, listlen, (PetscObject*)islist,&ncolors, colors);CHKERRQ(ierr);
+  ierr = PetscObjectsListGetGlobalNumbering(comm, listlen, (PetscObject*)islist,&ncolors, colors);CHKERRQ(ierr);
   len  = 0;
   for (i = 0; i < listlen; ++i) {
     ierr = ISGetLocalSize(islist[i], &leni);CHKERRQ(ierr);
@@ -570,7 +570,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 
 /*@
    ISEmbed   -   embed IS a into IS b by finding the locations in b that have the same indices as in a.
-                 If c is the IS of these locations, we have a = b*c, regarded as a composition of the 
+                 If c is the IS of these locations, we have a = b*c, regarded as a composition of the
                  corresponding ISLocalToGlobalMaps.
 
   Not collective.
@@ -620,6 +620,8 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
     ierr      = PetscMemcpy(cindices,cindices2,clen*sizeof(PetscInt));CHKERRQ(ierr);
     ierr      = PetscFree(cindices2);CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, clen, cindices, PETSC_OWN_POINTER, c);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,clen,cindices,PETSC_OWN_POINTER,c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
   PetscFunctionReturn(0);
 }
