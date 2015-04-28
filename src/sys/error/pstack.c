@@ -136,7 +136,10 @@ PetscErrorCode PetscStackDestroy(void)
 {
   if (PetscStackActive()) {
     free(petscstack);
+<<<<<<< HEAD
     petscstack = NULL;
+=======
+>>>>>>> 3bba995bb7e1d1a1fc8317b2ad013839166f62a6
   }
   return 0;
 }
