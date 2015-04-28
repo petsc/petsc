@@ -7,10 +7,12 @@ parameters include:\n\
   -N:                           Number of mesh points in the y direction\n\
   -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\
   -user_set_subdomains:         Use the user-provided subdomain partitioning routine\n\
-With -user_set_subdomains on, the following options are meaningful:\n\
+With -user_set_subdomains, the following options are meaningful:\n\
   -Mdomains:                    Number of subdomains in the x direction \n\
   -Ndomains:                    Number of subdomains in the y direction \n\
   -overlap:                     Size of domain overlap in terms of the number of mesh lines in x and y\n\
+Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
+  -pc_gasm_total_subdomains\n\
 General useful options:\n\
   -pc_gasm_print_subdomains:    Print the index sets defining the subdomains\n\
 \n";
@@ -40,8 +42,8 @@ T*/
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
+     petscsys.h    - base PETSc routines   petscvec.h - vectors
+     petscmat.h    - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
@@ -163,9 +165,7 @@ int main(int argc,char **args)
      to set the subdomains for the GASM preconditioner.
   */
 
-  if (!user_set_subdomains) { /* basic version */
-    ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
-  } else { /* advanced version */
+  if (user_set_subdomains) { /* user-control version */
     ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris);CHKERRQ(ierr);
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
@@ -183,6 +183,8 @@ int main(int argc,char **args)
         ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
+  } else { /* basic setup */
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------

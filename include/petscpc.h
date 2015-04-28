@@ -307,15 +307,15 @@ E*/
 typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
 PETSC_EXTERN const char *const PCGASMTypes[];
 
+PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
-PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGASMSetOverlap(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGASMSetDMSubdomains(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGASMGetDMSubdomains(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCGASMSetUseDMSubdomains(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGASMGetUseDMSubdomains(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCGASMSetSortIndices(PC,PetscBool );
 
 PETSC_EXTERN PetscErrorCode PCGASMSetType(PC,PCGASMType);
-PETSC_EXTERN PetscErrorCode PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]);
+PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains(Mat,PetscInt,PetscInt*,IS*[]);
 PETSC_EXTERN PetscErrorCode PCGASMDestroySubdomains(PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubdomains(PC,PetscInt*,IS*[],IS*[]);
