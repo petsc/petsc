@@ -163,8 +163,8 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     /* Check the converged criteria */
     ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter,(double)asls->merit,(double)ndpsi);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
-    tao->niter++;
     if (TAO_CONTINUE_ITERATING != reason) break;
+    tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to
        set the tolerances for the solve so that we maintain an asymptotic

@@ -58,8 +58,9 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   while (PETSC_TRUE) {
     ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
     /* Check the termination criteria */
-    ierr = TaoMonitor(tao,tao->niter++,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
     if (reason!=TAO_CONTINUE_ITERATING) break;
+    tao->niter++;
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,
        rest of the code uses -d.) */

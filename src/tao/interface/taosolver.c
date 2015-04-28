@@ -2501,7 +2501,6 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   tao->residual = res;
   tao->cnorm = cnorm;
   tao->step = steplength;
-  tao->niter=its;
   if (its == 0) {
     tao->cnorm0 = cnorm; tao->gnorm0 = res;
   }
