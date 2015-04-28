@@ -492,7 +492,7 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipRangesColumn(Mat,const PetscInt**);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 
 PETSC_EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_EXTERN PetscErrorCode MatGetSubMatricesParallel(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_EXTERN PetscErrorCode MatGetSubMatricesMPI(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,MatReuse,Mat *);
 PETSC_EXTERN PetscErrorCode MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
@@ -1632,7 +1632,7 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
-    matrices. 
+    matrices.
 
     Not Collective
 
@@ -1654,7 +1654,7 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
 /*E
     MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU)
-    matrices whose operation should use a particular storage format. 
+    matrices whose operation should use a particular storage format.
 
     Not Collective
 
@@ -1680,7 +1680,7 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt
 
 /*E
     MatCUSPStorageFormat - indicates the storage format for CUSP (GPU)
-    matrices. 
+    matrices.
 
     Not Collective
 
@@ -1701,7 +1701,7 @@ PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
 /*E
     MatCUSPFormatOperation - indicates the operation of CUSP (GPU)
-    matrices whose operation should use a particular storage format. 
+    matrices whose operation should use a particular storage format.
 
     Not Collective
 
@@ -1760,5 +1760,7 @@ PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscMPIInt,PetscMPIInt*,IS**);
 
 #endif

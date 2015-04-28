@@ -137,6 +137,8 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
 
    Notes: see the manual page for MatCreateAIJ() for more information on the "diagonal part" of the matrix.
+          Use caution, as the reference count on the returned matrix is not incremented and it is used as
+	  part of the containing MPI Mat's normal operation.
 
    Level: advanced
 
@@ -6625,8 +6627,8 @@ PetscErrorCode  MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ic
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatricesParallel"
-PetscErrorCode  MatGetSubMatricesParallel(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+#define __FUNCT__ "MatGetSubMatricesMPI"
+PetscErrorCode  MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -6646,13 +6648,13 @@ PetscErrorCode  MatGetSubMatricesParallel(Mat mat,PetscInt n,const IS irow[],con
     PetscValidPointer(*submat,6);
     PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
   }
-  if (!mat->ops->getsubmatricesparallel) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->getsubmatricesmpi) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatricesparallel)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = (*mat->ops->getsubmatricesmpi)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
@@ -9415,7 +9417,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   Mat            *matseq;
   IS             isrow,iscol;
   PetscBool      newsubcomm=PETSC_FALSE;
-  
+
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
   if (size == 1 || nsubcomm == 1) {
@@ -9450,7 +9452,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     ierr = PetscCommDuplicate(PetscSubcommChild(psubcomm),&subcomm,NULL);CHKERRQ(ierr);
     newsubcomm = PETSC_TRUE;
     ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
-  } 
+  }
 
   /* get isrow, iscol and a local sequential matrix matseq[0] */
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -9473,7 +9475,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     matseq = redund->matseq;
   }
   ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
-  
+
   /* get matredundant over subcomm */
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],mloc_sub,reuse,matredundant);CHKERRQ(ierr);
@@ -9965,5 +9967,50 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
   ierr = PetscLogEventBegin(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
   ierr = (*seqmat->ops->creatempimatconcatenateseqmat)(comm,seqmat,n,reuse,mpimat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSubdomainsCreateCoalesce"
+/*@
+     MatSubdomainsCreateCoalesce - Creates index subdomains by coalescing adjacent
+                 ranks' ownership ranges.
+
+    Collective on A
+
+   Input Parameters:
++    A   - the matrix to create subdomains from
+-    N   - requested number of subdomains
+
+
+   Output Parameters:
++    n   - number of subdomains resulting on this rank
+-    iss - IS list with indices of subdomains on this rank
+
+    Level: advanced
+
+    Notes: number of subdomains must be smaller than the communicator size
+@*/
+PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscMPIInt N,PetscMPIInt *n,IS *iss[])
+{
+  MPI_Comm        comm,subcomm;
+  PetscMPIInt     size,rank,color,subsize,subrank;
+  PetscInt        rstart,rend,k;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (N < 1 || N >= size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subdomains must be > 0 and < %D, got N = %D",size,N);
+  *n = 1;
+  k = size/N + (size%N>0); /* There are up to k ranks to a color */
+  color = rank/k;
+  ierr = MPI_Comm_split(comm,color,rank,&subcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(subcomm,&subrank);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1,iss);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,*iss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
