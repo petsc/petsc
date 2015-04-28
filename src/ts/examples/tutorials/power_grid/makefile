@@ -69,6 +69,9 @@ ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_TS_LIB}
 	${RM} ex9.o
 
+ex9adj: ex9adj.o  chkopts
+	-${CLINKER} -o ex9adj ex9adj.o  ${PETSC_TS_LIB}
+
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_TS_LIB}
 	${RM} ex10.o
@@ -183,6 +186,11 @@ runex2f:
 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005  > ex3_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex3_1.tmp
+
+runex3_2:
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rk -ts_dt 0.0005  > ex3_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_1.tmp
 

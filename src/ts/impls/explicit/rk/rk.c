@@ -457,7 +457,7 @@ static PetscErrorCode TSStep_RK(TS ts)
         /* Evolve ts->vec_costintegral to compute integrals */
         for (i=0; i<s; i++) {
           ierr = TSAdjointComputeCostIntegrand(ts,t+h*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
-          ierr = VecAXPY(ts->vec_costintegral,ts->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
+          ierr = VecAXPY(ts->vec_costintegral,h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
         }
       }
 
