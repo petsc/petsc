@@ -1129,9 +1129,9 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "initial delta: %g\n",mfqP->delta0);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "final delta: %g\n",mfqP->delta);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "model points: %d\n",mfqP->nmodelpoints);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "initial delta: %g\n",(double)mfqP->delta0);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "final delta: %g\n",(double)mfqP->delta);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "model points: %D\n",mfqP->nmodelpoints);CHKERRQ(ierr);
     if (mfqP->usegqt) {
       ierr = PetscViewerASCIIPrintf(viewer, "subproblem solver: gqt\n");CHKERRQ(ierr);
     } else {
