@@ -93,8 +93,6 @@ nativeptr PetscSegBuffer
 nativeptr PetscSpace
 nativeptr PetscStageLog
 nativeptr PetscSubcomm
-nativeptr PetscThreadComm
-nativeptr PetscThreadCommReduction
 nativeptr PetscToken
 nativeptr PetscViennaCLIndices
 nativeptr Tao

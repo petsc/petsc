@@ -1,17 +1,7 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
-
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-#if defined(PETSC_PTHREAD_LOCAL)
-PETSC_PTHREAD_LOCAL PetscStack *petscstack = 0;
-#else
-PetscThreadKey petscstack;
-#endif
-#else
 PetscStack *petscstack = 0;
-#endif
-
 
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
@@ -68,15 +58,13 @@ void  PetscStackSAWsTakeAccess(void)
 
 PetscErrorCode PetscStackViewSAWs(void)
 {
-  PetscStack*    petscstackp;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (rank) return 0;
-  petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstackp->function,20,SAWs_READ,SAWs_STRING));
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstackp->currentsize,1,SAWs_READ,SAWs_INT));
+  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack->function,20,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstack->currentsize,1,SAWs_READ,SAWs_INT));
   amsmemstack = PETSC_TRUE;
   return 0;
 }
@@ -109,7 +97,7 @@ PetscErrorCode PetscStackCreate(void)
     petscstack_in->function[i] = 0;
     petscstack_in->file[i]     = 0;
   }
-  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  petscstack = petscstack_in;
 
 #if defined(PETSC_HAVE_SAWS)
   {
@@ -127,21 +115,19 @@ PetscErrorCode PetscStackCreate(void)
 PetscErrorCode  PetscStackView(FILE *file)
 {
   int        i;
-  PetscStack *petscstackp;
 
-  petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
   if (!file) file = PETSC_STDOUT;
 
   if (file == PETSC_STDOUT) {
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->file[i]);
+    for (i=petscstack->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s\n",PetscGlobalRank,petscstack->function[i],petscstack->line[i],petscstack->file[i]);
   } else {
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->file[i]);
+    for (i=petscstack->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s\n",PetscGlobalRank,petscstack->function[i],petscstack->line[i],petscstack->file[i]);
   }
   return 0;
 }
@@ -149,10 +135,7 @@ PetscErrorCode  PetscStackView(FILE *file)
 PetscErrorCode PetscStackDestroy(void)
 {
   if (PetscStackActive()) {
-    PetscStack *petscstack_in;
-    petscstack_in = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-    free(petscstack_in);
-    PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,NULL);
+    free(petscstack);
   }
   return 0;
 }

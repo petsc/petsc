@@ -40,8 +40,6 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-#include <petscthreadcomm.h>
-extern PetscErrorCode PetscThreadCommWorldInitialize(void);
 extern PetscErrorCode AOInitializePackage(void);
 extern PetscErrorCode PetscSFInitializePackage(void);
 extern PetscErrorCode CharacteristicInitializePackage(void);
@@ -123,8 +121,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 
 #if defined(PETSC_HAVE_THREADSAFETY)
   /* These must be done here because it is not safe for individual threads to call these initialize routines */
-  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
-  ierr = PetscThreadCommWorldInitialize();CHKERRQ(ierr);
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);

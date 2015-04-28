@@ -3,7 +3,6 @@
      Provides utility routines for split MPI communicator.
 */
 #include <petscsys.h>    /*I   "petscsys.h"    I*/
-#include <petsc/private/threadcommimpl.h> /* Petsc_ThreadComm_keyval */
 #include <petscviewer.h>
 
 const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",0};
@@ -307,14 +306,6 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
 
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-  {
-    PetscThreadComm tcomm;
-    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(dupcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-    ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-  }
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->child,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
@@ -391,14 +382,6 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
 
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-  {
-    PetscThreadComm tcomm;
-    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(dupcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-    ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-  }
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->child,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
