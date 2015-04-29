@@ -72,6 +72,9 @@ ex9: ex9.o  chkopts
 ex9adj: ex9adj.o  chkopts
 	-${CLINKER} -o ex9adj ex9adj.o  ${PETSC_TS_LIB}
 
+ex9opt: ex9opt.o  chkopts
+	-${CLINKER} -o ex9opt ex9opt.o  ${PETSC_LIB}
+
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_TS_LIB}
 	${RM} ex10.o
@@ -84,7 +87,7 @@ ex12: ex12.o  chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_TS_LIB}
 	${RM} ex12.o
 
-ex13: ex13.o  chkopts
+ex13: ex13.o  chkoptu
 	-${CLINKER} -o ex13 ex13.o  ${PETSC_TS_LIB}
 	${RM} ex13.o
 
@@ -204,7 +207,6 @@ runex3adj_events:
 	   ${DIFF} output/ex3adj_events_1.out ex3adj_events_1.tmp || printf "${PWD}\nPossible problem with ex3adj_events_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3adj_events_1.tmp
 
-
 runex3opt:
 	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view > ex3opt_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_1.out ex3opt_1.tmp || printf "${PWD}\nPossible problem with ex3opt_1, diffs above\n=========================================\n"; \
@@ -277,6 +279,11 @@ runex9_3:
 	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_3.tmp 2>&1; \
 	   ${DIFF} output/ex9_3.out ex9_3.tmp || printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9_3.tmp
+
+runex9opt:
+	-${MPIEXEC} -n 1 ./ex9opt -ts_adapt_type none -tao_view -tao_monitor > ex9opt_1.tmp 2>&1; 
+	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
+	 ${RM} -f ex9opt_1.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
