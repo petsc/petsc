@@ -282,6 +282,11 @@ runex9opt:
 	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_1.tmp
 
+runex9opt_2:
+	-@${MPIEXEC} -n 1 ./ex9opt -Pm 1.1 -ts_adapt_type none -tao_type test -tao_test_gradient -tao_test_display -tao_view -tao_monitor > ex9opt_2.tmp 2>&1; 
+	 ${DIFF} output/ex9opt_2.out ex9opt_2.tmp || printf "${PWD}\nPossible problem with ex9opt_2, diffs above\n=========================================\n"; \
+	 ${RM} -f ex9opt_2.tmp
+
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
 	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
