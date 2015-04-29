@@ -268,21 +268,18 @@ runex7_3:
 	   ${RM} -f ex7_3.tmp
 
 runex9:
-	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc > ex9_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9 > ex9_1.tmp 2>&1; \
 	   ${DIFF} output/ex9_1.out ex9_1.tmp || printf "${PWD}\nPossible problem with ex9_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9_1.tmp
-runex9_2:
-	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_2.tmp 2>&1; \
-	   ${DIFF} output/ex9_2.out ex9_2.tmp || printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex9_2.tmp
-runex9_3:
-	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_3.tmp 2>&1; \
-	   ${DIFF} output/ex9_3.out ex9_3.tmp || printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
-	   ${RM} -f ex9_3.tmp
+
+runex9adj:
+	-@${MPIEXEC} -n 1 ./ex9adj -ts_adapt_type none  > ex9adj_1.tmp 2>&1; \
+	   ${DIFF} output/ex9adj_1.out ex9adj_1.tmp || printf "${PWD}\nPossible problem with ex9adj_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9adj_1.tmp
 
 runex9opt:
-	-${MPIEXEC} -n 1 ./ex9opt -ts_adapt_type none -tao_view -tao_monitor > ex9opt_1.tmp 2>&1; 
-	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 1 ./ex9opt -ts_adapt_type none -tao_view -tao_monitor > ex9opt_1.tmp 2>&1; 
+	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_1.tmp
 
 runex10:
