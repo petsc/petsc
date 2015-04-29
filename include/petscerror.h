@@ -423,6 +423,8 @@ typedef struct  {
 
 PETSC_EXTERN PetscStack *petscstack;
 
+PetscErrorCode  PetscStackCopy(PetscStack*,PetscStack*);
+PetscErrorCode  PetscStackPrint(PetscStack *,FILE*);
 #if defined(PETSC_USE_DEBUG)
 PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 {
