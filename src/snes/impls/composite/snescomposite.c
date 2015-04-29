@@ -86,7 +86,12 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     ierr = SNESGetFunction(next->snes,&FSub,NULL,NULL);CHKERRQ(ierr);
     ierr = VecCopy(FSub,F);CHKERRQ(ierr);
     if (fnorm) {
-      ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
+      if (snes->xl && snes->xu) {
+        ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm);CHKERRQ(ierr);
+      } else {
+        ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
+      }
+
       if (PetscIsInfOrNanReal(*fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
@@ -99,7 +104,12 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
       PetscFunctionReturn(0);
     }
     if (fnorm) {
-      ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
+      if (snes->xl && snes->xu) {
+        ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm);CHKERRQ(ierr);
+      } else {
+        ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
+      }
+
       if (PetscIsInfOrNanReal(*fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
@@ -156,7 +166,18 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
   }
   if (snes->normschedule == SNES_NORM_ALWAYS) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
+    if (fnorm) {
+      if (snes->xl && snes->xu) {
+        ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm);CHKERRQ(ierr);
+      } else {
+        ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
+      }
+
+      if (PetscIsInfOrNanReal(*fnorm)) {
+        snes->reason = SNES_DIVERGED_FNORM_NAN;
+        PetscFunctionReturn(0);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -276,7 +297,12 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   ierr = VecScale(X,(1. - tot));CHKERRQ(ierr);
   ierr = VecMAXPY(X,jac->n,jac->beta,Xes);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
+
+  if (snes->xl && snes->xu) {
+    ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm);CHKERRQ(ierr);
+  } else {
+    ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
+  }
 
   /* take the minimum-normed candidate if it beats the combination by a factor of rtol or the combination has stagnated */
   min_fnorm = jac->fnorms[0];
@@ -310,10 +336,27 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+
+  if (snes->ops->computevariablebounds) {
+    /* SNESVI only ever calls computevariablebounds once, so calling it once here is justified */
+    if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
+    if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}
+    ierr = (*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu);CHKERRQ(ierr);
+  }
+
   while (next) {
     n++;
     ierr = SNESSetDM(next->snes,dm);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(next->snes);CHKERRQ(ierr);
+    ierr = SNESSetApplicationContext(next->snes, snes->user);CHKERRQ(ierr);
+    if (snes->xl && snes->xu) {
+      if (snes->ops->computevariablebounds) {
+        ierr = SNESVISetComputeVariableBounds(next->snes, snes->ops->computevariablebounds);CHKERRQ(ierr);
+      } else {
+        ierr = SNESVISetVariableBounds(next->snes,snes->xl,snes->xu);CHKERRQ(ierr);
+      }
+    }
+
     next = next->next;
   }
   jac->nsnes = n;
@@ -524,6 +567,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   ierr = PetscObjectIncrementTabLevel((PetscObject)ilink->snes,(PetscObject)snes,1);CHKERRQ(ierr);
   ierr = SNESSetType(ilink->snes,type);CHKERRQ(ierr);
   ierr = SNESSetNormSchedule(ilink->snes, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+
   ilink->dmp = 1.0;
   jac->nsnes++;
   PetscFunctionReturn(0);
@@ -748,7 +792,12 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
       }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
+    if (snes->xl && snes->xu) {
+      ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm);CHKERRQ(ierr);
+    } else {
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    }
+
     if (PetscIsInfOrNanReal(fnorm)) {
       snes->reason = SNES_DIVERGED_FNORM_NAN;
       PetscFunctionReturn(0);
@@ -801,13 +850,21 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
         break;
       }
 
-      ierr = VecNormBegin(F, NORM_2, &fnorm);CHKERRQ(ierr);
-      ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
-      ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+      if (snes->xl && snes->xu) {
+        ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
+        ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+        ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+      } else {
+        ierr = VecNormBegin(F, NORM_2, &fnorm);CHKERRQ(ierr);
+        ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
+        ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
 
-      ierr = VecNormEnd(F, NORM_2, &fnorm);CHKERRQ(ierr);
-      ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
-      ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(F, NORM_2, &fnorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
+        ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
+      }
 
       if (PetscIsInfOrNanReal(fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;

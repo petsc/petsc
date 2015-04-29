@@ -817,6 +817,11 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   SNES_NASM        *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   Y = snes->vec_sol_update;
