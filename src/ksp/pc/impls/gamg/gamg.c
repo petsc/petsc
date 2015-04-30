@@ -550,7 +550,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   for (level=0, Aarr[0]=Pmat, nactivepe = size; /* hard wired stopping logic */
        level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit);
        level++) {
-    pc_gamg->firstCoarsen = (level ? PETSC_FALSE : PETSC_TRUE);
+    pc_gamg->current_level = level;
     level1 = level + 1;
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
@@ -625,13 +625,12 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
     /* stop if one node or one proc -- could pull back for singular problems */
-    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M < 2) ) {
-      ierr =  PetscInfo1(pc,"HARD stop of coarsening ?????????, level %D\n",level);CHKERRQ(ierr);
+    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M/bs < 2) ) {
+      ierr =  PetscInfo2(pc,"HARD stop of coarsening on level %D.  Grid too small: %D block nodes\n",level,M/bs);CHKERRQ(ierr);
       level++;
       break;
     }
   } /* levels */
-  pc_gamg->firstCoarsen = PETSC_FALSE;
   ierr                  = PetscFree(pc_gamg->data);CHKERRQ(ierr);
 
   ierr = PetscInfo2(pc,"%D levels, grid complexity = %g\n",level+1,nnztot/nnz0);CHKERRQ(ierr);
@@ -730,7 +729,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PCSetFromOptions_MG(PetscOptionsObject,pc);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (!mg->galerkin) SETERRQ(comm,PETSC_ERR_USER,"PCGAMG must use Galerkin for coarse operators.");
-    if (mg->galerkin == 1) mg->galerkin = 2; 
+    if (mg->galerkin == 1) mg->galerkin = 2;
 
     /* create cheby smoothers */
     for (lidx = 1, level = pc_gamg->Nlevels-2; lidx <= fine_level; lidx++, level--) {
@@ -1336,7 +1335,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->threshold        = 0.;
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->emax_id          = -1;
-  pc_gamg->firstCoarsen     = PETSC_FALSE;
+  pc_gamg->current_level    = 0; /* don't need to init really */
   pc_gamg->eigtarget[0]     = 0.05;
   pc_gamg->eigtarget[1]     = 1.05;
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;

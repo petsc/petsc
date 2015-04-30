@@ -486,7 +486,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
