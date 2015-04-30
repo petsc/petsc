@@ -772,6 +772,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
       ierr = PetscMemzero(work,2*n_R*n_vertices*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_vertices,work,&A_RRmA_RV);CHKERRQ(ierr);
+      ierr = MatScale(A_RV,m_one);CHKERRQ(ierr);
       ierr = MatConvert(A_RV,impMatType,MAT_REUSE_MATRIX,&A_RV);CHKERRQ(ierr);
       if (F) {
         ierr = MatMatSolve(F,A_RV,A_RRmA_RV);CHKERRQ(ierr);
@@ -786,7 +787,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         }
         ierr = MatDenseRestoreArray(A_RV,&y);CHKERRQ(ierr);
       }
-      ierr = MatScale(A_RRmA_RV,m_one);CHKERRQ(ierr);
       /* S_VV and S_CV are the subdomain contribution to coarse matrix. WARNING -> column major ordering */
       if (n_constraints) {
         Mat B;
@@ -814,6 +814,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = MatConvert(A_VV,impMatType,MAT_REUSE_MATRIX,&A_VV);CHKERRQ(ierr);
       ierr = MatCopy(A_VV,S_VV,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
+    ierr = MatDestroy(&A_VV);CHKERRQ(ierr);
+    ierr = MatDestroy(&A_RV);CHKERRQ(ierr);
     /* coarse basis functions */
     for (i=0;i<n_vertices;i++) {
       PetscScalar *y;
@@ -837,8 +839,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&A_VV);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_RV);CHKERRQ(ierr);
   }
 
   if (n_constraints) {
