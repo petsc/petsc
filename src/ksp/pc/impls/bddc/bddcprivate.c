@@ -430,10 +430,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = MatDestroy(&pcbddc->coarse_psi_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec1_P);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec1_C);CHKERRQ(ierr);
-  if (pcbddc->local_auxmat2) {
-    ierr = MatDenseGetArray(pcbddc->local_auxmat2,&array);CHKERRQ(ierr);
-    ierr = PetscFree(array);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&pcbddc->local_auxmat2);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_auxmat1);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
@@ -520,7 +516,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PC_IS*                 pcis = (PC_IS*)pc->data;
   PC_BDDC*               pcbddc = (PC_BDDC*)pc->data;
   /* submatrices of local problem */
-  Mat                    A_RV,A_VR,A_VV;
+  Mat                    A_RV,A_VR,A_VV,local_auxmat2_R;
   /* submatrices of local coarse problem */
   Mat                    S_VV,S_CV,S_VC,S_CC;
   /* working matrices */
@@ -578,6 +574,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
   if (n_vertices) {
     n = PetscMax(2*n_R*n_vertices,n);
+    n = PetscMax((n_R+n_B)*n_vertices,n);
   }
   if (!pcbddc->issym) {
     n = PetscMax(2*n_R*pcbddc->local_primal_size,n);
@@ -598,37 +595,21 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
   /* Precompute stuffs needed for preprocessing and application of BDDC*/
   if (n_constraints) {
-    Mat M1,M2,M3;
-    IS  is_aux;
-    /* see if we can save some allocations */
-    if (pcbddc->local_auxmat2) {
-      PetscInt on_R,on_constraints;
-      ierr = MatGetSize(pcbddc->local_auxmat2,&on_R,&on_constraints);CHKERRQ(ierr);
-      if (on_R != n_R || on_constraints != n_constraints) {
-        PetscScalar *marray;
+    Mat         M1,M2,M3;
+    Mat         auxmat;
+    IS          is_aux;
+    PetscScalar *array,*array2;
 
-        ierr = MatDenseGetArray(pcbddc->local_auxmat2,&marray);CHKERRQ(ierr);
-        ierr = PetscFree(marray);CHKERRQ(ierr);
-        ierr = MatDestroy(&pcbddc->local_auxmat2);CHKERRQ(ierr);
-        ierr = MatDestroy(&pcbddc->local_auxmat1);CHKERRQ(ierr);
-      }
-    }
-    /* auxiliary matrices */
-    if (!pcbddc->local_auxmat2) {
-      PetscScalar *marray;
-
-      ierr = PetscMalloc1(2*n_R*n_constraints,&marray);CHKERRQ(ierr);
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,marray,&pcbddc->local_auxmat2);CHKERRQ(ierr);
-      marray += n_R*n_constraints;
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_constraints,n_R,marray,&pcbddc->local_auxmat1);CHKERRQ(ierr);
-    }
+    ierr = MatDestroy(&pcbddc->local_auxmat1);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcbddc->local_auxmat2);CHKERRQ(ierr);
 
     /* Extract constraints on R nodes: C_{CR}  */
     ierr = ISCreateStride(PETSC_COMM_SELF,n_constraints,n_vertices,1,&is_aux);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&C_CR);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_aux,pcis->is_B_local,MAT_INITIAL_MATRIX,&auxmat);CHKERRQ(ierr);
 
-    /* Assemble local_auxmat2 = - A_{RR}^{-1} C^T_{CR} needed by BDDC application */
+    /* Assemble         local_auxmat2_R =        (- A_{RR}^{-1} C^T_{CR}) needed by BDDC setup */
+    /* Assemble pcbddc->local_auxmat2   = R_to_B (- A_{RR}^{-1} C^T_{CR}) needed by BDDC application */
     ierr = PetscMemzero(work,n_R*n_constraints*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=0;i<n_constraints;i++) {
       const PetscScalar *row_cmat_values;
@@ -641,38 +622,64 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       }
       ierr = MatRestoreRow(C_CR,i,&size_of_constraint,&row_cmat_indices,&row_cmat_values);CHKERRQ(ierr);
     }
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,NULL,&local_auxmat2_R);CHKERRQ(ierr);
     if (F) {
       Mat B;
 
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,work,&B);CHKERRQ(ierr);
-      ierr = MatMatSolve(F,B,pcbddc->local_auxmat2);CHKERRQ(ierr);
+      ierr = MatMatSolve(F,B,local_auxmat2_R);CHKERRQ(ierr);
       ierr = MatDestroy(&B);CHKERRQ(ierr);
     } else {
-      PetscScalar *xarray;
-      ierr = MatDenseGetArray(pcbddc->local_auxmat2,&xarray);CHKERRQ(ierr);
+      PetscScalar *marr;
+
+      ierr = MatDenseGetArray(local_auxmat2_R,&marr);CHKERRQ(ierr);
       for (i=0;i<n_constraints;i++) {
         ierr = VecPlaceArray(pcbddc->vec1_R,work+i*n_R);CHKERRQ(ierr);
-        ierr = VecPlaceArray(pcbddc->vec2_R,xarray+i*n_R);CHKERRQ(ierr);
+        ierr = VecPlaceArray(pcbddc->vec2_R,marr+i*n_R);CHKERRQ(ierr);
         ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
         ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
         ierr = VecResetArray(pcbddc->vec2_R);CHKERRQ(ierr);
       }
-      ierr = MatDenseRestoreArray(pcbddc->local_auxmat2,&xarray);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(local_auxmat2_R,&marr);CHKERRQ(ierr);
     }
-
+    if (!pcbddc->switch_static) {
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,n_constraints,NULL,&pcbddc->local_auxmat2);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(pcbddc->local_auxmat2,&array);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(local_auxmat2_R,&array2);CHKERRQ(ierr);
+      for (i=0;i<n_constraints;i++) {
+        ierr = VecPlaceArray(pcbddc->vec1_R,array2+i*n_R);CHKERRQ(ierr);
+        ierr = VecPlaceArray(pcis->vec1_B,array+i*n_B);CHKERRQ(ierr);
+        ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
+        ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
+      }
+      ierr = MatDenseRestoreArray(local_auxmat2_R,&array2);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(pcbddc->local_auxmat2,&array);CHKERRQ(ierr);
+      ierr = MatMatMult(auxmat,pcbddc->local_auxmat2,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&M3);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)local_auxmat2_R);CHKERRQ(ierr);
+      pcbddc->local_auxmat2 = local_auxmat2_R;
+      ierr = MatMatMult(C_CR,pcbddc->local_auxmat2,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&M3);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
     /* Assemble explicitly S_CC = ( C_{CR} A_{RR}^{-1} C^T_{CR} )^{-1}  */
-    ierr = MatConvert(C_CR,impMatType,MAT_REUSE_MATRIX,&C_CR);CHKERRQ(ierr);
-    ierr = MatMatMult(C_CR,pcbddc->local_auxmat2,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&M3);CHKERRQ(ierr);
+    ierr = MatScale(M3,m_one);CHKERRQ(ierr);
     ierr = MatDuplicate(M3,MAT_DO_NOT_COPY_VALUES,&M1);CHKERRQ(ierr);
     ierr = MatDuplicate(M3,MAT_DO_NOT_COPY_VALUES,&M2);CHKERRQ(ierr);
-    ierr = MatLUFactor(M3,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = VecSet(pcbddc->vec1_C,m_one);CHKERRQ(ierr);
+    if (isCHOL) {
+      ierr = MatCholeskyFactor(M3,NULL,NULL);CHKERRQ(ierr);
+    } else {
+      ierr = MatLUFactor(M3,NULL,NULL,NULL);CHKERRQ(ierr);
+    }
+    ierr = VecSet(pcbddc->vec1_C,one);CHKERRQ(ierr);
     ierr = MatDiagonalSet(M2,pcbddc->vec1_C,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatMatSolve(M3,M2,M1);CHKERRQ(ierr);
     ierr = MatDestroy(&M2);CHKERRQ(ierr);
     ierr = MatDestroy(&M3);CHKERRQ(ierr);
-    /* Assemble local_auxmat1 = S_CC*C_{CR} needed by BDDC application in KSP and in preproc */
-    ierr = MatMatMult(M1,C_CR,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pcbddc->local_auxmat1);CHKERRQ(ierr);
+    /* Assemble local_auxmat1 = S_CC*C_{CB} needed by BDDC application in KSP and in preproc */
+    ierr = MatMatMult(M1,auxmat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pcbddc->local_auxmat1);CHKERRQ(ierr);
+    ierr = MatDestroy(&auxmat);CHKERRQ(ierr);
     ierr = MatCopy(M1,S_CC,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* S_CC can have a different LDA, MatMatSolve doesn't support it */
     ierr = MatDestroy(&M1);CHKERRQ(ierr);
   }
@@ -691,10 +698,12 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = MatGetSubMatrix(newmat,pcbddc->is_R_local,is_aux,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(newmat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(newmat,is_aux,is_aux,MAT_INITIAL_MATRIX,&A_VV);CHKERRQ(ierr);
+      ierr = MatConvert(A_VV,impMatType,MAT_REUSE_MATRIX,&A_VV);CHKERRQ(ierr);
       ierr = MatDestroy(&newmat);CHKERRQ(ierr);
     } else {
       /* this is safe */
       ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,is_aux,MAT_INITIAL_MATRIX,&A_VV);CHKERRQ(ierr);
+      ierr = MatConvert(A_VV,impMatType,MAT_REUSE_MATRIX,&A_VV);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)pcbddc->local_mat,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
       if (issbaij) { /* need to convert to BAIJ to get offdiagonal blocks */
         ierr = MatConvert(pcbddc->local_mat,MATSEQBAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
@@ -706,6 +715,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,is_aux,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
         ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
       }
+      /* need to convert to SeqAIJ for MatMatMult with dense matrix */
+      ierr = MatConvert(A_VR,MATSEQAIJ,MAT_REUSE_MATRIX,&A_VR);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
   }
@@ -770,7 +781,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       PetscBLASInt B_N,B_one = 1;
       PetscScalar  *x,*y;
 
-      ierr = PetscMemzero(work,2*n_R*n_vertices*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(work,n_R*n_vertices*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_vertices,work,&A_RRmA_RV);CHKERRQ(ierr);
       ierr = MatScale(A_RV,m_one);CHKERRQ(ierr);
       ierr = MatConvert(A_RV,impMatType,MAT_REUSE_MATRIX,&A_RV);CHKERRQ(ierr);
@@ -787,20 +798,31 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         }
         ierr = MatDenseRestoreArray(A_RV,&y);CHKERRQ(ierr);
       }
+      ierr = MatDestroy(&A_RV);CHKERRQ(ierr);
       /* S_VV and S_CV are the subdomain contribution to coarse matrix. WARNING -> column major ordering */
       if (n_constraints) {
         Mat B;
-        ierr = MatMatMult(pcbddc->local_auxmat1,A_RRmA_RV,MAT_REUSE_MATRIX,PETSC_DEFAULT,&S_CV);CHKERRQ(ierr);
+
+        for (i=0;i<n_vertices;i++) {
+          ierr = VecPlaceArray(pcbddc->vec1_R,work+i*n_R);CHKERRQ(ierr);
+          ierr = VecPlaceArray(pcis->vec1_B,work+n_R*n_vertices+i*n_B);CHKERRQ(ierr);
+          ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+          ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+          ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
+          ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
+        }
+        ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,n_vertices,work+n_R*n_vertices,&B);CHKERRQ(ierr);
+        ierr = MatMatMult(pcbddc->local_auxmat1,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&S_CV);CHKERRQ(ierr);
+        ierr = MatDestroy(&B);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_vertices,work+n_R*n_vertices,&B);CHKERRQ(ierr);
-        ierr = MatMatMult(pcbddc->local_auxmat2,S_CV,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+        ierr = MatMatMult(local_auxmat2_R,S_CV,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
         ierr = MatScale(S_CV,m_one);CHKERRQ(ierr);
         ierr = PetscBLASIntCast(n_R*n_vertices,&B_N);CHKERRQ(ierr);
         PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&B_N,&one,work+n_R*n_vertices,&B_one,work,&B_one));
         ierr = MatDestroy(&B);CHKERRQ(ierr);
       }
-      ierr = MatConvert(A_VR,impMatType,MAT_REUSE_MATRIX,&A_VR);CHKERRQ(ierr);
       ierr = MatMatMult(A_VR,A_RRmA_RV,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&S_VVt);CHKERRQ(ierr);
-      ierr = MatConvert(A_VV,impMatType,MAT_REUSE_MATRIX,&A_VV);CHKERRQ(ierr);
+      ierr = MatDestroy(&A_RRmA_RV);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(n_vertices*n_vertices,&B_N);CHKERRQ(ierr);
       ierr = MatDenseGetArray(A_VV,&x);CHKERRQ(ierr);
       ierr = MatDenseGetArray(S_VVt,&y);CHKERRQ(ierr);
@@ -809,13 +831,10 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = MatDenseRestoreArray(S_VVt,&y);CHKERRQ(ierr);
       ierr = MatCopy(S_VVt,S_VV,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatDestroy(&S_VVt);CHKERRQ(ierr);
-      ierr = MatDestroy(&A_RRmA_RV);CHKERRQ(ierr);
     } else {
-      ierr = MatConvert(A_VV,impMatType,MAT_REUSE_MATRIX,&A_VV);CHKERRQ(ierr);
       ierr = MatCopy(A_VV,S_VV,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A_VV);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_RV);CHKERRQ(ierr);
     /* coarse basis functions */
     for (i=0;i<n_vertices;i++) {
       PetscScalar *y;
@@ -846,10 +865,18 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,work,&B);CHKERRQ(ierr);
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
-    ierr = MatMatMult(pcbddc->local_auxmat2,S_CC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+    ierr = MatMatMult(local_auxmat2_R,S_CC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
     if (n_vertices) {
-      ierr = MatMatMult(A_VR,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&S_VC);CHKERRQ(ierr);
+      if (isCHOL) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
+        ierr = MatTranspose(S_CV,MAT_REUSE_MATRIX,&S_VC);CHKERRQ(ierr);
+      } else {
+        Mat S_VCt;
+
+        ierr = MatMatMult(A_VR,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&S_VCt);CHKERRQ(ierr);
+        ierr = MatCopy(S_VCt,S_VC,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatDestroy(&S_VCt);CHKERRQ(ierr);
+      }
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     /* coarse basis functions */
@@ -863,7 +890,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = MatDenseRestoreArray(pcbddc->coarse_phi_B,&y);CHKERRQ(ierr);
       ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
-
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
         ierr = MatDenseGetArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
         ierr = VecPlaceArray(pcis->vec1_D,y+n_D*(i+n_vertices));CHKERRQ(ierr);
@@ -875,16 +901,18 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
   }
+  if (n_constraints) {
+    ierr = MatDestroy(&local_auxmat2_R);CHKERRQ(ierr);
+  }
 
   /* compute other basis functions for non-symmetric problems */
   if (!pcbddc->issym) {
-    Mat B,X;
-
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,pcbddc->local_primal_size,work,&B);CHKERRQ(ierr);
 
     if (n_constraints) {
       Mat S_CCT,B_C;
 
+      /* this is a lazy thing */
+      ierr = MatConvert(C_CR,impMatType,MAT_REUSE_MATRIX,&C_CR);CHKERRQ(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,work+n_vertices*n_R,&B_C);CHKERRQ(ierr);
       ierr = MatTranspose(S_CC,MAT_INITIAL_MATRIX,&S_CCT);CHKERRQ(ierr);
       ierr = MatTransposeMatMult(C_CR,S_CCT,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B_C);CHKERRQ(ierr);
@@ -899,22 +927,23 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatDestroy(&S_VCT);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&B_C);CHKERRQ(ierr);
+    } else { /* if there are no constraints, reset work */
+      ierr = PetscMemzero(work,n_R*pcbddc->local_primal_size*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (n_vertices && n_R) {
       Mat          A_VRT;
+      PetscScalar  *marray;
       PetscBLASInt B_N,B_one = 1;
 
-      if (!n_constraints) { /* if there are no constraints, reset work */
-        ierr = PetscMemzero(work,n_R*pcbddc->local_primal_size*sizeof(PetscScalar));CHKERRQ(ierr);
-      }
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_vertices,work+pcbddc->local_primal_size*n_R,&A_VRT);CHKERRQ(ierr);
-      ierr = MatTranspose(A_VR,MAT_REUSE_MATRIX,&A_VRT);CHKERRQ(ierr);
+      ierr = MatTranspose(A_VR,MAT_INITIAL_MATRIX,&A_VRT);CHKERRQ(ierr);
+      ierr = MatConvert(A_VRT,impMatType,MAT_REUSE_MATRIX,&A_VRT);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(A_VRT,&marray);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(n_vertices*n_R,&B_N);CHKERRQ(ierr);
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&B_N,&m_one,work+pcbddc->local_primal_size*n_R,&B_one,work,&B_one));
+      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&B_N,&m_one,marray,&B_one,work,&B_one));
+      ierr = MatDenseRestoreArray(A_VRT,&marray);CHKERRQ(ierr);
       ierr = MatDestroy(&A_VRT);CHKERRQ(ierr);
     }
 
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,pcbddc->local_primal_size,work+pcbddc->local_primal_size*n_R,&X);CHKERRQ(ierr);
     if (F) { /* currently there's no support for MatTransposeMatSolve(F,B,X) */
       for (i=0;i<pcbddc->local_primal_size;i++) {
         ierr = VecPlaceArray(pcbddc->vec1_R,work+i*n_R);CHKERRQ(ierr);
@@ -932,7 +961,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = VecResetArray(pcbddc->vec2_R);CHKERRQ(ierr);
       }
     }
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
     /* coarse basis functions */
     for (i=0;i<pcbddc->local_primal_size;i++) {
       PetscScalar *y;
@@ -958,9 +986,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&X);CHKERRQ(ierr);
   }
-
   ierr = PetscFree(idx_V_B);CHKERRQ(ierr);
   ierr = MatDestroy(&S_VV);CHKERRQ(ierr);
   ierr = MatDestroy(&S_CV);CHKERRQ(ierr);
@@ -1059,7 +1085,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     }
     ierr = MatDestroy(&coarse_sub_mat);CHKERRQ(ierr);
   }
-
   /* free memory */
   ierr = PetscFree(work);CHKERRQ(ierr);
   if (n_vertices) {
@@ -1590,24 +1615,58 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSolveSubstructureCorrection"
-static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec rhs, Vec sol, Vec work, PetscBool applytranspose)
+static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec inout_D, PetscBool applytranspose)
 {
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
 
   PetscFunctionBegin;
-  if (applytranspose) {
-    if (pcbddc->local_auxmat1) {
-      ierr = MatMultTranspose(pcbddc->local_auxmat2,rhs,work);CHKERRQ(ierr);
-      ierr = MatMultTransposeAdd(pcbddc->local_auxmat1,work,rhs,rhs);CHKERRQ(ierr);
+  ierr = VecSet(pcbddc->vec1_R,0.);CHKERRQ(ierr);
+  if (!pcbddc->switch_static) {
+    if (applytranspose && pcbddc->local_auxmat1) {
+      ierr = MatMultTranspose(pcbddc->local_auxmat2,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);
+      ierr = MatMultTransposeAdd(pcbddc->local_auxmat1,pcbddc->vec1_C,inout_B,inout_B);CHKERRQ(ierr);
     }
-    ierr = KSPSolveTranspose(pcbddc->ksp_R,rhs,sol);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else {
-    ierr = KSPSolve(pcbddc->ksp_R,rhs,sol);CHKERRQ(ierr);
-    if (pcbddc->local_auxmat1) {
-      ierr = MatMult(pcbddc->local_auxmat1,sol,work);CHKERRQ(ierr);
-      ierr = MatMultAdd(pcbddc->local_auxmat2,work,sol,sol);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_D,inout_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_D,inout_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    if (applytranspose && pcbddc->local_auxmat1) {
+      ierr = MatMultTranspose(pcbddc->local_auxmat2,pcbddc->vec1_R,pcbddc->vec1_C);CHKERRQ(ierr);
+      ierr = MatMultTransposeAdd(pcbddc->local_auxmat1,pcbddc->vec1_C,inout_B,inout_B);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
+  }
+  if (applytranspose) {
+    ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+  }
+  ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
+  if (!pcbddc->switch_static) {
+    ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!applytranspose && pcbddc->local_auxmat1) {
+      ierr = MatMult(pcbddc->local_auxmat1,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);
+      ierr = MatMultAdd(pcbddc->local_auxmat2,pcbddc->vec1_C,inout_B,inout_B);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,inout_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,inout_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!applytranspose && pcbddc->local_auxmat1) {
+      ierr = MatMult(pcbddc->local_auxmat1,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);
+      ierr = MatMultAdd(pcbddc->local_auxmat2,pcbddc->vec1_C,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+    }
+    ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,inout_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,inout_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1651,22 +1710,8 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   }
 
   /* Local solution on R nodes */
-  if (pcis->n) {
-    ierr = VecSet(pcbddc->vec1_R,zero);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    if (pcbddc->switch_static) {
-      ierr = VecScatterBegin(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    }
-    ierr = PCBDDCSolveSubstructureCorrection(pc,pcbddc->vec1_R,pcbddc->vec2_R,pcbddc->vec1_C,applytranspose);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_B,zero);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    if (pcbddc->switch_static) {
-      ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    }
+  if (pcis->n) { /* in/out pcbddc->vec1_B,pcbddc->vec1_D */
+    ierr = PCBDDCSolveSubstructureCorrection(pc,pcis->vec1_B,pcis->vec1_D,applytranspose);CHKERRQ(ierr);
   }
 
   /* communications from coarse sol to local primal nodes */
