@@ -34,7 +34,6 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
   PetscReal                    psi, ndpsi, normd, innerd, t=0;
   PetscReal                    delta, rho;
-  PetscInt                     iter=0;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
   PetscErrorCode               ierr;
@@ -57,9 +56,9 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
   while (PETSC_TRUE) {
-    ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",iter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
+    ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
     /* Check the termination criteria */
-    ierr = TaoMonitor(tao,iter++,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter++,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
     if (reason!=TAO_CONTINUE_ITERATING) break;
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,
@@ -146,9 +145,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   /* Linesearch objective and objectivegradient routines are  set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
 
   tao->max_it = 2000;
   tao->max_funcs = 4000;

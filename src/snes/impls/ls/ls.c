@@ -150,6 +150,11 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   SNESConvergedReason reason;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;

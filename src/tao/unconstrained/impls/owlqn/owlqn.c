@@ -368,6 +368,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,owarmijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

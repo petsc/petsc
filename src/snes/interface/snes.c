@@ -1347,13 +1347,13 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 -  reset - whether to reset the counters or not
 
    Notes:
-   This is automatically called with FALSE
+   This defaults to PETSC_TRUE
 
    Level: developer
 
 .keywords: SNES, nonlinear, set, reset, number, linear, iterations
 
-.seealso:  SNESGetNumberFunctionEvals(), SNESGetNumberLinearSolveIterations(), SNESGetNPC()
+.seealso:  SNESGetNumberFunctionEvals(), SNESGetLinearSolveIterations(), SNESGetNPC()
 @*/
 PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
 {
@@ -2063,7 +2063,6 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
   }
   snes->nfuncs++;
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2117,7 +2116,6 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
     if (b) {ierr = VecLockPop(b);CHKERRQ(ierr);}
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetNGS() before SNESComputeNGS(), likely called from SNESSolve().");
   ierr = PetscLogEventEnd(SNES_NGSEval,snes,x,b,0);CHKERRQ(ierr);
-  ierr = VecValidValues(x,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2818,7 +2816,7 @@ PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
 
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian()
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetGridSequence()
 
 @*/
 PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
@@ -2827,6 +2825,40 @@ PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveInt(snes,steps,2);
   snes->gridsequence = steps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetGridSequence"
+/*@
+   SNESGetGridSequence - gets the number of steps of grid sequencing that SNES does
+
+   Logically Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
+.  steps - the number of refinements to do, defaults to 0
+
+   Options Database Keys:
+.    -snes_grid_sequence <steps>
+
+   Level: intermediate
+
+   Notes:
+   Use SNESGetSolution() to extract the fine grid solution after grid sequencing.
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESSetGridSequence()
+
+@*/
+PetscErrorCode  SNESGetGridSequence(SNES snes,PetscInt *steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  *steps = snes->gridsequence;
   PetscFunctionReturn(0);
 }
 

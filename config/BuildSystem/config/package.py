@@ -427,18 +427,7 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    downloadPackage = 0
-    downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
-    if isinstance(downloadPackageVal, str):
-      self.download = [downloadPackageVal]
-      self.downloadURLSetByUser = True
-      downloadPackage = 1
-    elif downloadPackageVal:
-      downloadPackage = 1
-
-    if downloadPackage:
-      if not self.download:
-        raise RuntimeError('Package'+self.package+' does not support automatic download.\n')
+    if self.argDB['download-'+self.downloadname.lower()]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -669,6 +658,10 @@ class Package(config.base.Configure):
   def configure(self):
     if self.download and self.argDB['download-'+self.downloadname.lower()]:
       self.argDB['with-'+self.package] = 1
+      downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
+      if isinstance(downloadPackageVal, str):
+        self.download = [downloadPackageVal]
+        self.downloadURLSetByUser = True
     if not 'with-'+self.package in self.argDB:
       self.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.argDB or 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:

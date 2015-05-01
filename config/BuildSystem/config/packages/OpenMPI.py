@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.8.4-p1.tar.gz']
     self.downloadfilename = 'openmpi'
     self.skippackagewithoptions = 1
     self.isMPI = 1

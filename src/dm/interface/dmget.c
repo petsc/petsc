@@ -23,6 +23,10 @@
    The output parameter, g, is a regular PETSc vector that should be returned with
    DMRestoreLocalVector() DO NOT call VecDestroy() on it.
 
+   This is intended to be used for vectors you need for a short time, like within a single function call.
+   For vectors that you intend to keep around (for example in a C struct) or pass around large parts of your
+   code you should use DMCreateLocalVector().
+
    VecStride*() operations can be useful when using DM with dof > 1
 
 .keywords: distributed array, create, local, vector
@@ -126,6 +130,10 @@ alldone:
 
    The output parameter, g, is a regular PETSc vector that should be returned with
    DMRestoreGlobalVector() DO NOT call VecDestroy() on it.
+
+   This is intended to be used for vectors you need for a short time, like within a single function call.
+   For vectors that you intend to keep around (for example in a C struct) or pass around large parts of your
+   code you should use DMCreateGlobalVector().
 
    VecStride*() operations can be useful when using DM with dof > 1
 

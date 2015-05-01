@@ -836,6 +836,7 @@ int main(int argc,char **argv)
   PetscInt           *idx2;
   Tao                tao;
   TaoConvergedReason reason;
+  Vec                lowerb,upperb;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   PetscFunctionBeginUser;
@@ -911,7 +912,6 @@ int main(int argc,char **argv)
   ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
-  Vec lowerb,upperb;
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(p,&upperb);CHKERRQ(ierr);
   ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);

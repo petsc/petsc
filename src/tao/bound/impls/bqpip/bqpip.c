@@ -185,7 +185,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 {
   TAO_BQPIP          *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode     ierr;
-  PetscInt           iter=0,its;
+  PetscInt           its;
   PetscReal          d1,d2,ksptol,sigma;
   PetscReal          sigmamu;
   PetscReal          dstep,pstep,step=0;
@@ -227,7 +227,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   while (PETSC_TRUE){
 
     /* Check Stopping Condition      */
-    ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas, step, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas, step, &reason);CHKERRQ(ierr);
+    tao->niter++;
     if (reason != TAO_CONTINUE_ITERATING) break;
     tao->ksp_its=0;
 
@@ -238,7 +239,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     ierr = QPIPComputeNormFromCentralPath(qp,&d1);CHKERRQ(ierr);
 
-    if (iter > 0 && (qp->rnorm>5*qp->mu || d1*d1>qp->m*qp->mu*qp->mu) ) {
+    if (tao->niter > 0 && (qp->rnorm>5*qp->mu || d1*d1>qp->m*qp->mu*qp->mu) ) {
       sigma=1.0;sigmamu=qp->mu;
       sigma=0.0;sigmamu=0;
     } else {
@@ -594,6 +595,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->data = (void*)qp;
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp, KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n));CHKERRQ(ierr);
   PetscFunctionReturn(0);

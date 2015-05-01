@@ -99,7 +99,8 @@ struct _p_KSP {
 
   KSPSetUpStage  setupstage;
 
-  PetscInt       its;       /* number of iterations so far computed */
+  PetscInt       its;       /* number of iterations so far computed in THIS linear solve*/
+  PetscInt       totalits;   /* number of iterations used by this KSP object since it was created */
 
   PetscBool      transpose_solve;    /* solve transpose system instead */
 
