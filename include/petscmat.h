@@ -1761,6 +1761,6 @@ PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscMPIInt,PetscMPIInt*,IS**);
+PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,IS**);
 
 #endif

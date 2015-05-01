@@ -9991,7 +9991,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
 
     Notes: number of subdomains must be smaller than the communicator size
 @*/
-PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscMPIInt N,PetscMPIInt *n,IS *iss[])
+PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[])
 {
   MPI_Comm        comm,subcomm;
   PetscMPIInt     size,rank,color,subsize,subrank;
@@ -10002,9 +10002,9 @@ PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscMPIInt N,PetscMPIInt *n,I
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (N < 1 || N >= size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subdomains must be > 0 and < %D, got N = %D",size,N);
+  if (N < 1 || N >= (PetscInt)size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subdomains must be > 0 and < %D, got N = %D",size,N);
   *n = 1;
-  k = size/N + (size%N>0); /* There are up to k ranks to a color */
+  k = ((PetscInt)size)/N + ((PetscInt)size%N>0); /* There are up to k ranks to a color */
   color = rank/k;
   ierr = MPI_Comm_split(comm,color,rank,&subcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);

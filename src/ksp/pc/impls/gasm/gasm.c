@@ -774,7 +774,7 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetSubdomains_GASM"
-static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscMPIInt n,IS iis[],IS ois[])
+static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -1352,7 +1352,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMCreateStraddlingSubdomains"
-PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscMPIInt N,PetscMPIInt *n,IS *iis[])
+PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
 {
   PetscErrorCode  ierr;
 
@@ -1392,7 +1392,7 @@ PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscMPIInt 
 
 .seealso: PCGASMSetSubdomains(), PCGASMDestroySubdomains()
 @*/
-PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscMPIInt N, PetscMPIInt *n, IS *iis[])
+PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 {
   PetscMPIInt     size;
   PetscErrorCode  ierr;
