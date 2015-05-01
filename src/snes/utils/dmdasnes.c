@@ -109,6 +109,9 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    ierr = VecSetInf(F);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +148,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_DMDA"
-static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
+PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;

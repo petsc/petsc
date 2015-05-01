@@ -91,6 +91,32 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSetErrorIfFPE"
+/*@
+   MatSetErrorIfFPE - Causes Mat to generate an error if a FPE, for example a zero pivot, is detected.
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat -  matrix obtained from MatCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Level: advanced
+
+.keywords: Mat, set, initial guess, nonzero
+
+.seealso: PCSetErrorIfFailure()
+@*/
+PetscErrorCode  MatSetErrorIfFPE(Mat mat,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(mat,flg,2);
+  mat->erroriffpe = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetSizes"
 /*@
   MatSetSizes - Sets the local and global sizes, and checks to determine compatibility

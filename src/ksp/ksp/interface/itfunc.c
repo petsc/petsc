@@ -327,6 +327,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+  ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
     PetscBool test = PETSC_FALSE;
@@ -502,7 +503,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   Mat               mat,premat;
   MPI_Comm          comm;
-
+  PetscInt          pcreason;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
@@ -540,6 +542,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+    goto skipsolve;
+  }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   VecLocked(ksp->vec_sol,3);
 
@@ -587,9 +594,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
   ksp->guess_zero = guess_zero;
 
+
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
+  skipsolve:
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 

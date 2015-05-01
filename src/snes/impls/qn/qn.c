@@ -33,7 +33,6 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   SNES_QN            *qn = (SNES_QN*)snes->data;
   Vec                W   = snes->work[3];
   Vec                *U  = qn->U;
-  KSPConvergedReason kspreason;
   PetscInt           m = qn->m;
   PetscInt           k,i,j,lits,l = m;
   PetscReal          unorm,a,b;
@@ -56,14 +55,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   }
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,D,W);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = VecCopy(W,Y);CHKERRQ(ierr);
@@ -129,7 +121,6 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   Vec            *T  = qn->V;
 
   /* ksp thing for Jacobian scaling */
-  KSPConvergedReason kspreason;
   PetscInt           h,k,j,i,lits;
   PetscInt           m = qn->m;
   PetscScalar        gdot,udot;
@@ -149,14 +140,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = VecCopy(W,Y);CHKERRQ(ierr);
@@ -202,7 +186,6 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   PetscScalar    *YtdX  = qn->YtdX;
 
   /* ksp thing for Jacobian scaling */
-  KSPConvergedReason kspreason;
   PetscInt           k,i,j,g,lits;
   PetscInt           m = qn->m;
   PetscScalar        t;
@@ -263,14 +246,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = VecCopy(W, Y);CHKERRQ(ierr);
@@ -308,16 +284,17 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 #define __FUNCT__ "SNESSolve_QN"
 static PetscErrorCode SNESSolve_QN(SNES snes)
 {
-  PetscErrorCode      ierr;
-  SNES_QN             *qn = (SNES_QN*) snes->data;
-  Vec                 X,Xold;
-  Vec                 F,W;
-  Vec                 Y,D,Dold;
-  PetscInt            i, i_r;
-  PetscReal           fnorm,xnorm,ynorm,gnorm;
-  PetscBool           lssucceed,powell,periodic;
-  PetscScalar         DolddotD,DolddotDold;
-  SNESConvergedReason reason;
+  PetscErrorCode       ierr;
+  SNES_QN              *qn = (SNES_QN*) snes->data;
+  Vec                  X,Xold;
+  Vec                  F,W;
+  Vec                  Y,D,Dold;
+  PetscInt             i, i_r;
+  PetscReal            fnorm,xnorm,ynorm,gnorm;
+  SNESLineSearchReason lssucceed;
+  PetscBool            powell,periodic;
+  PetscScalar          DolddotD,DolddotDold;
+  SNESConvergedReason  reason;
 
   /* basically just a regular newton's method except for the application of the Jacobian */
 
@@ -356,17 +333,10 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
   }
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
@@ -437,18 +407,14 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr  = VecCopy(X, Xold);CHKERRQ(ierr);
     ierr  = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
-    if (!lssucceed) {
+    ierr = SNESLineSearchGetReason(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         break;
       }
     }
-    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
       ierr = SNESLineSearchGetLambda(snes->linesearch, &qn->scaling);CHKERRQ(ierr);
     }

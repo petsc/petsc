@@ -559,8 +559,27 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOrder(SNESLineSearch,PetscInt *order);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order);
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);
+/*E
+    SNESLineSearchReason - if line search has succeeded or failed and why
+
+   Level: intermediate
+
+   Developer Notes: this must match petsc/finclude/petscsnes.h
+
+   Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
+     also adjust that array.
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
+E*/
+typedef enum {SNES_LINESEARCH_SUCCEEDED,
+              SNES_LINESEARCH_FAILED_NANORINF,
+              SNES_LINESEARCH_FAILED_DOMAINERROR,
+              SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION,
+              SNES_LINESEARCH_FAILED_USER_CHANGE,
+              SNES_LINESEARCH_FAILED_FUNCTION_COUNT} SNESLineSearchReason;
+
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetReason(SNESLineSearch, SNESLineSearchReason*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetReason(SNESLineSearch, SNESLineSearchReason);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch,Vec,Vec,Vec,Vec,Vec);

@@ -1684,6 +1684,9 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertDiagonal_SeqAIJ"
+/*
+   Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
+*/
 PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fshift)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*) A->data;
@@ -1704,10 +1707,10 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
   mdiag = a->mdiag;
   idiag = a->idiag;
 
-  if (omega == 1.0 && !PetscAbsScalar(fshift)) {
+  if (omega == 1.0 && PetscRealPart(fshift) <= 0.0) {
     for (i=0; i<m; i++) {
       mdiag[i] = v[diag[i]];
-      if (!PetscAbsScalar(mdiag[i])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+      if (!PetscAbsScalar(mdiag[i]) && !PetscRealPart(fshift)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
       idiag[i] = 1.0/v[diag[i]];
     }
     ierr = PetscLogFlops(m);CHKERRQ(ierr);

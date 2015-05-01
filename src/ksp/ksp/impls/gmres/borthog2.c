@@ -64,7 +64,10 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
      as pointer to rows
   */
   ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
-  for (j=0; j<=it; j++) lhh[j] = -lhh[j];
+  for (j=0; j<=it; j++) {
+    KSPCheckDot(ksp,lhh[j]);
+    lhh[j] = -lhh[j];
+  }
 
   /*
          This is really a matrix vector product:

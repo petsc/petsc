@@ -332,6 +332,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       }
       for (i=0; i<osm->n_local_true; i++) {
         ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
         ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
         ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);

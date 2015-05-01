@@ -333,6 +333,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
 
     /* Create ksp object suitable for extreme eigenvalues' estimation */
     ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(check_ksp,pc->erroriffailure);CHKERRQ(ierr);
     ierr = KSPSetOperators(check_ksp,local_mat,local_mat);CHKERRQ(ierr);
     ierr = KSPSetTolerances(check_ksp,1.e-8,1.e-8,PETSC_DEFAULT,basis_dofs);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(check_ksp,PETSC_TRUE);CHKERRQ(ierr);
@@ -380,6 +381,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   /* create KSP for change of basis */
   ierr = MatGetSize(pcbddc->ChangeOfBasisMatrix,&i,NULL);CHKERRQ(ierr);
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&inv_change);CHKERRQ(ierr);
+  ierr = KSPSetErrorIfNotConverged(inv_change,pc->erroriffailure);CHKERRQ(ierr);
   ierr = KSPSetOperators(inv_change,pcbddc->ChangeOfBasisMatrix,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = KSPSetTolerances(inv_change,1.e-8,1.e-8,PETSC_DEFAULT,2*i);CHKERRQ(ierr);
   if (pcbddc->dbg_flag) {

@@ -8,7 +8,6 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           lits;
   Vec                Y,X,F;
-  KSPConvergedReason kspreason;
 
   PetscFunctionBegin;
 
@@ -27,10 +26,6 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   Y = snes->vec_sol_update;
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
-  }
   if (snes->numbermonitors) {
     PetscReal fnorm;
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
@@ -46,11 +41,8 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-  if (kspreason < 0 && ++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-    ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-    snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-  } else snes->reason = SNES_CONVERGED_ITS;
+  snes->reason = SNES_CONVERGED_ITS;
+  SNESCheckKSPSolve(snes);
 
   ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
   snes->linear_its += lits;

@@ -267,17 +267,10 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     /* compute the initial function and preconditioned update delX */
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
@@ -303,15 +296,8 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     /* only compute norms if requested or about to exit due to maximum iterations */
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
+      SNESCheckFunctionNorm(snes,fnorm);
       /* Monitor convergence */
       ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;

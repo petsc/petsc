@@ -149,6 +149,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscInt nz,nz1,i;
 
   PetscFunctionBegin;
+  if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
 
   its = its*lits;

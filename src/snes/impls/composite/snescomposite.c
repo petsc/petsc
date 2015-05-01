@@ -91,29 +91,17 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
       } else {
         ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
       }
-
-      if (PetscIsInfOrNanReal(*fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
+      SNESCheckFunctionNorm(snes,*fnorm);
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
     if (fnorm) {
       if (snes->xl && snes->xu) {
         ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm);CHKERRQ(ierr);
       } else {
         ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
       }
-
-      if (PetscIsInfOrNanReal(*fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
+      SNESCheckFunctionNorm(snes,*fnorm);
     }
   }
   PetscFunctionReturn(0);
@@ -172,11 +160,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
       } else {
         ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
       }
-
-      if (PetscIsInfOrNanReal(*fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
+      SNESCheckFunctionNorm(snes,*fnorm);
     }
   }
   PetscFunctionReturn(0);
@@ -289,7 +273,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   tot = 0.;
   total = 0.;
   for (i=0; i<jac->n; i++) {
-    if (PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
+    if (snes->errorifnotconverged && PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
     ierr = PetscInfo2(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
@@ -786,22 +770,14 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
   if (normtype == SNES_NORM_ALWAYS || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     if (snes->xl && snes->xu) {
       ierr = SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm);CHKERRQ(ierr);
     } else {
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
     }
-
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
@@ -845,10 +821,6 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
 
     if ((i == snes->max_its - 1) && (normtype == SNES_NORM_INITIAL_FINAL_ONLY || normtype == SNES_NORM_FINAL_ONLY)) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        break;
-      }
 
       if (snes->xl && snes->xu) {
         ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
@@ -865,11 +837,7 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
         ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
         ierr = VecNormEnd(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
       }
-
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        break;
-      }
+      SNESCheckFunctionNorm(snes,fnorm);
     } else if (normtype == SNES_NORM_ALWAYS) {
       ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
       ierr = VecNormBegin(snes->work[0], NORM_2, &snorm);CHKERRQ(ierr);
