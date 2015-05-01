@@ -1254,6 +1254,7 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     Mat          tmat;
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
+    PetscInt     M2;
 
     if (reuse == MAT_INITIAL_MATRIX) {
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&tmat);CHKERRQ(ierr);
@@ -1264,9 +1265,9 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
       tmat = *matout;
     }
     tmatd = (Mat_SeqDense*)tmat->data;
-    v = mat->v; v2 = tmatd->v;
+    v = mat->v; v2 = tmatd->v; M2 = tmatd->lda;
     for (j=0; j<n; j++) {
-      for (k=0; k<m; k++) v2[j + k*n] = v[k + j*M];
+      for (k=0; k<m; k++) v2[j + k*M2] = v[k + j*M];
     }
     ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
