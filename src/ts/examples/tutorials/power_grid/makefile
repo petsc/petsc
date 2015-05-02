@@ -208,7 +208,7 @@ runex3adj_events:
 	   ${RM} -f ex3adj_events_1.tmp
 
 runex3opt:
-	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view > ex3opt_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -tao_monitor > ex3opt_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_1.out ex3opt_1.tmp || printf "${PWD}\nPossible problem with ex3opt_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_1.tmp
 
@@ -273,17 +273,17 @@ runex9:
 	   ${RM} -f ex9_1.tmp
 
 runex9adj:
-	-@${MPIEXEC} -n 1 ./ex9adj -ts_adapt_type none  > ex9adj_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9adj -viewer_binary_skip_info -ts_adapt_type none  > ex9adj_1.tmp 2>&1; \
 	   ${DIFF} output/ex9adj_1.out ex9adj_1.tmp || printf "${PWD}\nPossible problem with ex9adj_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9adj_1.tmp
 
 runex9opt:
-	-@${MPIEXEC} -n 1 ./ex9opt -ts_adapt_type none -tao_view -tao_monitor > ex9opt_1.tmp 2>&1; 
+	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor > ex9opt_1.tmp 2>&1; 
 	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_1.tmp
 
 runex9opt_2:
-	-@${MPIEXEC} -n 1 ./ex9opt -Pm 1.1 -ts_adapt_type none -tao_type test -tao_test_gradient -tao_test_display -tao_view -tao_monitor > ex9opt_2.tmp 2>&1; 
+	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -Pm 1.1 -ts_adapt_type none -tao_type test -tao_test_gradient -tao_test_display -tao_monitor > ex9opt_2.tmp 2>&1; 
 	 ${DIFF} output/ex9opt_2.out ex9opt_2.tmp || printf "${PWD}\nPossible problem with ex9opt_2, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_2.tmp
 
@@ -422,7 +422,10 @@ TESTEXAMPLES_C_NOCOMPLEX   = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 e
                             ex3opt.PETSc runex3opt ex3opt.rm \
                             ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm \
                             ex5.PETSc ex5.rm \
-                            ex6.PETSc ex6.rm ex7.PETSc  ex7.rm 
+                            ex6.PETSc ex6.rm ex7.PETSc  ex7.rm \
+                            ex9adj.PETSc runex9adj ex9adj.rm \
+                            ex9opt.PETSc runex9opt ex9opt.rm \
+                            ex9opt_fd.PETSc runex9opt_fd ex9opt_fd.rm 
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_C_X_MPIUNI =

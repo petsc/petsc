@@ -231,7 +231,7 @@ int main(int argc,char **argv)
     ctx.X       = 0.545;
     ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
-    ctx.Pm      = 0.4;
+    ctx.Pm      = 1.0194;
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
     ctx.tf      = 0.1;
     ctx.tcl     = 0.2;

@@ -8,18 +8,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - P_max \sin(\theta) -D(\omega - \omega_s)\\
 \end{eqnarray}
 
-
-
-  Ensemble of initial conditions
-   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Fault at .1 seconds
-   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Initial conditions same as when fault is ended
-   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
-
-
 F*/
 
 /*
@@ -181,7 +169,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,AppCtx *ctx)
   ierr = VecGetArrayRead(lambda,&x);CHKERRQ(ierr);
   ierr = VecGetArray(mu,&y);CHKERRQ(ierr);
   sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %g \n",(double)sensip);CHKERRQ(ierr);
+  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %g \n",(double)sensip);CHKERRQ(ierr); */
   y[0] = sensip;
   ierr = VecRestoreArray(mu,&y);
   ierr = VecRestoreArrayRead(lambda,&x);CHKERRQ(ierr);
@@ -230,7 +218,7 @@ int main(int argc,char **argv)
     ctx.X       = 0.545;
     ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
-    ctx.Pm     = 0.4;
+    ctx.Pm      = 1.061605;
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
     ctx.tf      = 0.1;
     ctx.tcl     = 0.2;
@@ -288,6 +276,7 @@ int main(int argc,char **argv)
   }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
@@ -350,7 +339,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,ctx);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
