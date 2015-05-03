@@ -610,7 +610,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc1(m1,r1) ((m1) ? PetscMalloc((m1)*sizeof(**(r1)),r1) : (*(r1) = 0,0))
+#define PetscMalloc1(m1,r1) PetscMalloc((m1)*sizeof(**(r1)),r1)
 
 /*MC
    PetscCalloc1 - Allocates a cleared (zeroed) array of memory aligned to PETSC_MEMALIGN
