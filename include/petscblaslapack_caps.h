@@ -29,6 +29,8 @@
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_ SPOTRF
 #  define LAPACKpotrs_ SPOTRS
+#  define LAPACKsytrf_ SSYTRF
+#  define LAPACKsytrs_ SSYTRS
 #  define BLASgemv_    SGEMV
 #  define LAPACKgetrs_ SGETRS
 #  define BLAStrmv_    STRMV
@@ -72,6 +74,8 @@
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_ DPOTRF
 #  define LAPACKpotrs_ DPOTRS
+#  define LAPACKsytrf_ DSYTRF
+#  define LAPACKsytrs_ DSYTRS
 #  define BLASgemv_    DGEMV
 #  define LAPACKgetrs_ DGETRS
 #  define BLAStrmv_    DTRMV
@@ -117,6 +121,8 @@
 /* Complex single precision with character string arguments */
 #  define LAPACKpotrf_ CPOTRF
 #  define LAPACKpotrs_ CPOTRS
+#  define LAPACKsytrf_ CSYTRF
+#  define LAPACKsytrs_ CSYTRS
 #  define BLASgemv_    CGEMV
 #  define LAPACKgetrs_ CGETRS
 #  define BLAStrmv_    CTRMV
@@ -160,6 +166,8 @@
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_ ZPOTRF
 #  define LAPACKpotrs_ ZPOTRS
+#  define LAPACKsytrf_ ZSYTRF
+#  define LAPACKsytrs_ ZSYTRS
 #  define BLASgemv_    ZGEMV
 #  define LAPACKgetrs_ ZGETRS
 #  define BLAStrmv_    ZTRMV
