@@ -49,6 +49,7 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
 
   ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current);CHKERRQ(ierr);
   ierr = MatPartitioningRegister("square",               MatPartitioningCreate_Square);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_HierarchPart);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
   ierr = MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
