@@ -533,8 +533,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   *ao = NULL;
   ierr = AOInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
-  ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(aonew,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   *ao  = aonew;
   PetscFunctionReturn(0);
 }

@@ -81,7 +81,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   *A = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(B,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
 
@@ -299,15 +299,15 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 {
   PetscErrorCode ierr;
   PetscInt       refct;
-  PetscOps       *Abops;
-  MatOps         Aops;
+  PetscOps       Abops;
+  struct _MatOps Aops;
   char           *mtype,*mname;
   void           *spptr;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
-  Abops = ((PetscObject)A)->bops;
-  Aops  = A->ops;
+  Abops = ((PetscObject)A)->bops[0];
+  Aops  = A->ops[0];
   refct = ((PetscObject)A)->refct;
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
@@ -331,8 +331,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   /* return the parts of A we saved */
-  ((PetscObject)A)->bops      = Abops;
-  A->ops                      = Aops;
+  ((PetscObject)A)->bops[0]   = Abops;
+  A->ops[0]                   = Aops;
   ((PetscObject)A)->refct     = refct;
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
@@ -372,7 +372,6 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscFree(A->ops);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);

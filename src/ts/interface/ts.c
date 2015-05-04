@@ -1723,9 +1723,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetCostGradients"
+#define __FUNCT__ "TSGetCostGradients"
 /*@
-   TSAdjointGetCostGradients - Returns the gradients from the TSAdjointSolve()
+   TSGetCostGradients - Returns the gradients from the TSAdjointSolve()
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
@@ -1742,7 +1742,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSAdjointGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
+PetscErrorCode  TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1942,7 +1942,7 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetCostGradients() first");
+  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
 
   ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
   if (ts->vecs_sensip){
@@ -2317,9 +2317,9 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetCostGradients"
+#define __FUNCT__ "TSSetCostGradients"
 /*@
-   TSAdjointSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial conditions and w.r.t. the problem parameters 
+   TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial conditions and w.r.t. the problem parameters 
       for use by the TSAdjoint routines.
 
    Logically Collective on TS and Vec
@@ -2335,13 +2335,14 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSAdjointSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
+PetscErrorCode  TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(lambda,2);
   ts->vecs_sensi  = lambda;
   ts->vecs_sensip = mu;
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
   ts->numcost  = numcost;
   PetscFunctionReturn(0);
 }
@@ -2420,9 +2421,9 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetCostIntegrand"
+#define __FUNCT__ "TSSetCostIntegrand"
 /*@C
-    TSAdjointSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
+    TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
 
     Logically Collective on TS
 
@@ -2454,9 +2455,9 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
-.seealso: TSAdjointSetRHSJacobian(),TSAdjointGetCostGradients(), TSAdjointSetCostGradients()
+.seealso: TSAdjointSetRHSJacobian(),TSGetCostGradients(), TSSetCostGradients()
 @*/
-PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                                                                   PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                                                                   PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 {
@@ -2464,8 +2465,8 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetCostGradients() first so that the number of cost functions can be determined.");
-  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
+  if (!ts->numcost) ts->numcost=numcost;
 
   ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
@@ -2477,9 +2478,9 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetCostIntegral"
+#define __FUNCT__ "TSGetCostIntegral"
 /*@
-   TSAdjointGetCostIntegral - Returns the values of the integral term in the cost functions.
+   TSGetCostIntegral - Returns the values of the integral term in the cost functions.
    It is valid to call the routine after a backward run.
 
    Not Collective
@@ -2492,11 +2493,11 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
 
    Level: intermediate
 
-.seealso: TSAdjointSetCostIntegrand()
+.seealso: TSSetCostIntegrand()
 
 .keywords: TS, sensitivity analysis
 @*/
-PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
+PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2526,7 +2527,7 @@ PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
 
 .keywords: TS, compute
 
-.seealso: TSAdjointSetCostIntegrand()
+.seealso: TSSetCostIntegrand()
 @*/
 PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec y,Vec q)
 {
@@ -3310,6 +3311,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
+  if (ts->vec_costintegral) ts->costintegralfwd=PETSC_TRUE;
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   }

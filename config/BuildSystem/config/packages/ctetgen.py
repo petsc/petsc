@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit         = '6d01158'
     self.giturls           = ['https://bitbucket.org/petsc/ctetgen.git']
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.3.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.4.tar.gz']
     self.functions         = []
     self.includes          = []
     return
@@ -21,7 +21,7 @@ class Configure(config.package.GNUPackage):
 
   def configureLibrary(self):
     ''' Just assume the downloaded library will work'''
-    self.getInstallDir()
+    self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
     self.lib     = [os.path.join(self.installDir,'lib','libctetgen.a')]
     self.found   = 1

@@ -5060,10 +5060,9 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
 .  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See Users-Manual: ch_matlab )
-.  -viewer_socket_machine <machine>
-.  -viewer_socket_port <port>
-.  -mat_view binary - save matrix to file in binary format
--  -viewer_binary_filename <name>
+.  -viewer_socket_machine <machine> - Machine to use for socket
+.  -viewer_socket_port <port> - Port number to use for socket
+-  -mat_view binary:filename[:append] - Save matrix to file in binary format
 
    Notes:
    MatSetValues() generally caches the values.  The matrix is ready to
@@ -9883,7 +9882,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatTransposeColoring,int,MAT_TRANSPOSECOLORING_CLASSID,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,MAT_TRANSPOSECOLORING_CLASSID,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,NULL);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
   if (mat->ops->transposecoloringcreate) {

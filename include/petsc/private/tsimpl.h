@@ -92,6 +92,7 @@ struct _p_TS {
   PetscInt  adjointsetupcalled;
   PetscInt  adjoint_max_steps;
   PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
+  PetscBool costintegralfwd;        /* cost integral is evaluated in the forward run if true */
   /* workspace for Adjoint computations */
   Vec       vec_costintegrand;
   Mat       Jacp;

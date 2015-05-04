@@ -85,8 +85,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   *c = NULL;
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
-  ierr = PetscLogObjectCreate(newC);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(newC, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
   *c   = newC;
 
   newC->structured          = PETSC_TRUE;

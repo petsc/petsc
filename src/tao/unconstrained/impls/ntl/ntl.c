@@ -87,7 +87,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   PetscReal                    norm_d = 0.0;
   PetscErrorCode               ierr;
   PetscInt                     stepType;
-  PetscInt                     iter = 0,its;
+  PetscInt                     its;
 
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     needH;
@@ -123,7 +123,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Create vectors for the limited memory preconditioner */
@@ -282,7 +282,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
         needH = 1;
 
-        ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+        ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
         if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
       }
     }
@@ -320,7 +320,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
-    ++iter;
+    ++tao->niter;
     tao->ksp_its=0;
     /* Compute the Hessian */
     if (needH) {
@@ -789,7 +789,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
 
-    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1051,7 +1051,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

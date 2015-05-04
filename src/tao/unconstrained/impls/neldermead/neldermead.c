@@ -103,7 +103,7 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
   TaoConvergedReason reason;
   PetscReal          *x;
-  PetscInt           iter=0,i;
+  PetscInt           i;
   Vec                Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
   PetscReal          fr,fe,fc;
   PetscInt           shrink;
@@ -147,7 +147,7 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   while (1) {
     shrink = 0;
     ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,iter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
     /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */

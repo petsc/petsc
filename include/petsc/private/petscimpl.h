@@ -64,7 +64,7 @@ typedef struct {
 #define PETSC_MAX_OPTIONS_HANDLER 5
 typedef struct _p_PetscObject {
   PetscClassId         classid;
-  PetscOps             *bops;
+  PetscOps             bops[1];
   MPI_Comm             comm;
   PetscInt             type;
   PetscLogDouble       flops,time,mem,memchildren;
@@ -114,45 +114,41 @@ typedef struct _p_PetscObject {
 
 #define PETSCHEADER(ObjectOps) \
   _p_PetscObject hdr;          \
-  ObjectOps      *ops
+  ObjectOps      ops[1]
 
 #define  PETSCFREEDHEADER -1
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectDestroyFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObject,PetscViewer);
 
 /*@C
-    PetscHeaderCreate - Creates a PETSc object of a particular class, indicated by tp
+    PetscHeaderCreate - Creates a PETSc object of a particular class
 
     Input Parameters:
-+   tp - the data structure type of the object (for example _p_Vec)
-.   pops - the data structure type of the objects operations (for example VecOps)
-.   classid - the classid associated with this object (for example VEC_CLASSID)
++   classid - the classid associated with this object (for example VEC_CLASSID)
 .   class_name - string name of class; should be static (for example "Vec")
-.   com - the MPI Communicator
-.   des - the destroy routine for this object (for example VecDestroy())
--   vie - the view routine for this object (for example VecView())
+.   descr - string containing short description; should be static (for example "Vector")
+.   mansec - string indicating section in manual pages; should be static (for example "Vec")
+.   comm - the MPI Communicator
+.   destroy - the destroy routine for this object (for example VecDestroy())
+-   view - the view routine for this object (for example VecView())
 
     Output Parameter:
 .   h - the newly created object
 
     Level: developer
 
-   Developer Note: This currently is a CPP macro because it takes the types (for example _p_Vec and VecOps) as arguments
-
 .seealso: PetscHeaderDestroy(), PetscClassIdRegister()
 
 @*/
-#define PetscHeaderCreate(h,tp,pops,classid,class_name,descr,mansec,com,des,vie) \
-  (PetscNew(&(h)) ||                                                  \
-   PetscNew(&(((PetscObject)(h))->bops)) ||                            \
-   PetscNew(&((h)->ops)) ||                                                \
-   PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
-   PetscLogObjectCreate(h) ||                                                   \
-   PetscLogObjectMemory((PetscObject)h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
+#define PetscHeaderCreate(h,classid,class_name,descr,mansec,comm,destroy,view) \
+  (PetscNew(&(h)) || \
+   PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,comm,(PetscObjectDestroyFunction)destroy,(PetscObjectViewFunction)view) || \
+   PetscLogObjectCreate(h) || \
+   PetscLogObjectMemory((PetscObject)h,sizeof(*(h))))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscObjectDestroyFunction,PetscObjectViewFunction);
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject
@@ -162,14 +158,9 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,c
 
     Level: developer
 
-   Developer Note: This currently is a CPP macro because it accesses (*h)->ops which is a field in the derived class but not the PetscObject base class
-
 .seealso: PetscHeaderCreate()
 @*/
-#define PetscHeaderDestroy(h)                         \
-  (PetscHeaderDestroy_Private((PetscObject)(*h)) ||   \
-   PetscFree((*h)->ops) ||                            \
-   PetscFree(*h))
+#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*h)) || PetscFree(*h))
 
 PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
