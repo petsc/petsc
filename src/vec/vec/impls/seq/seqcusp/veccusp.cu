@@ -381,7 +381,11 @@ void aypx(ForwardIterator1 first1,ForwardIterator1 last1,ForwardIterator2 first2
  template <typename Array1, typename Array2, typename ScalarType>
    void aypx(const Array1& x, Array2& y, ScalarType alpha)
  {
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+   cusp::assert_same_dimensions(x,y);
+#else
    detail::assert_same_dimensions(x,y);
+#endif
    aypx(x.begin(),x.end(),y.begin(),alpha);
  }
 }
