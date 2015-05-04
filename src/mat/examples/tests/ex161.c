@@ -1,7 +1,7 @@
 static char help[] = "Test MatTransposeColoring for SeqAIJ matrices. Used for '-matmattransmult_color' on  MatMatTransposeMult \n\n";
 
 #include <petscmat.h>
-#include <petsc-private/matimpl.h> /* Need struct _p_MatTransposeColoring for this test. */
+#include <petsc/private/matimpl.h> /* Need struct _p_MatTransposeColoring for this test. */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

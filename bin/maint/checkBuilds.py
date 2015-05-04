@@ -174,13 +174,13 @@ class BuildChecker(script.Script):
     return relpath
 
   def addLineBlameDict(self,line,filename,ln,petscdir,commit,arch,logfile):
-    ''' hack to avoid C++ instantiation sequences '''
-    if re.search(r'instantiated from here',line):
-      return
-    if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):
-      return
-    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):
-      return
+    # avoid solaris compiler errors
+    if re.search(r'warning: loop not entered at top',line): return
+    if re.search(r'warning: statement not reached',line): return
+    # avoid C++ instantiation sequences
+    if re.search(r'instantiated from here',line):      return
+    if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):  return
+    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):  return
     message = line.rstrip()
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
@@ -297,8 +297,11 @@ class BuildChecker(script.Script):
       pairs = [ln+','+ln for ln in sorted(self.commitfileDict[key])]
       output=''
       try:
-        (output, error, status) = self.executeShellCommand('git blame -w -M --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1])
-      except: pass
+        # Requires git version 1.9 or newer!
+        git_blame_cmd = 'git blame -w -M --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1]
+        (output, error, status) = self.executeShellCommand(git_blame_cmd)
+      except:
+        print 'Error running:',git_blame_cmd
       if output:
         blamelines = output.split('\n')
         current = -1
@@ -326,7 +329,7 @@ class BuildChecker(script.Script):
             email =  m.group('mail')
           m = re.match(r'^summary (?P<summary>.*)',bl)
           if m:
-            commit = commit + ' ' + m.group('summary')
+            commit = "https://bitbucket.org/petsc/petsc/commits/" + commit + '\n' + m.group('summary')
         warnings = self.filelineDict[(key[0],key[1],lns[current])]
         fullauthor = author+' '+email
         if not fullauthor in self.blameDict:

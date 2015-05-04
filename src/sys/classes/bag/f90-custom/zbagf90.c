@@ -1,7 +1,7 @@
 #include <../src/sys/f90-src/f90impl.h>
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscbag.h>
-#include <petsc-private/bagimpl.h>
+#include <petsc/private/bagimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

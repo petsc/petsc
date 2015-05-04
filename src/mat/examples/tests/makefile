@@ -22,11 +22,11 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.c ex175.c ex180.c \
-                ex181.c ex182.c ex190.c
+                ex181.c ex182.c ex190.c ex191.c
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB}
@@ -715,6 +715,9 @@ ex190: ex190.o chkopts
 	-${CLINKER} -o ex190 ex190.o ${PETSC_MAT_LIB}
 	${RM} ex190.o
 
+ex191: ex191.o chkopts
+	-${CLINKER} -o ex191 ex191.o ${PETSC_MAT_LIB}
+	${RM} ex191.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -2244,6 +2247,11 @@ runex174_2_sbaij:
 	   else printf "${PWD}\nPossible problem with ex174_2_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex174.tmp
 
+runex175:
+	-@${MPIEXEC} -n 1 ./ex175 > ex175.tmp 2>&1; \
+	   if (${DIFF} output/ex175.out ex175.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex175, diffs above\n=========================================\n"; fi;
+
 runex181:
 	-@${MPIEXEC} -n 2 ./ex181 |grep -v "Mat Object" > ex181.tmp 2>&1; \
 	   ${DIFF} output/ex181.out ex181.tmp || printf "${PWD}\nPossible problem with ex181, diffs above\n=========================================\n"; \
@@ -2287,11 +2295,11 @@ runex190:
 	   ${DIFF} output/ex190_1.out ex190.tmp || printf "${PWD}\nPossible problem with ex190, diffs above\n=========================================\n"; \
 	   ${RM} -f ex190.tmp
 
+runex191:
+	  -@${MPIEXEC} -n 2 ./ex191   > ex191.tmp 2>&1; \
+	   ${DIFF} output/ex191_1.out ex191.tmp || printf "${PWD}\nPossible problem with ex191, diffs above\n=========================================\n"; \
+	   ${RM} -f ex191.tmp
 
-runex175:
-	-@${MPIEXEC} -n 1 ./ex175 > ex175.tmp 2>&1; \
-	   if (${DIFF} output/ex175.out ex175.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex175, diffs above\n=========================================\n"; fi;
 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
@@ -2324,7 +2332,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex160.PETSc runex160 ex160.rm ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
                                  ex164.PETSc runex164 ex164.rm ex172.PETSc runex172 runex172_2 runex172_3 runex172_4 \
                                  runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 ex181.rm\
-                                 ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm
+                                 ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm ex191.PETSc runex191 ex191.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
@@ -2377,4 +2385,4 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
 TESTEXAMPLES_MUMPS             = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

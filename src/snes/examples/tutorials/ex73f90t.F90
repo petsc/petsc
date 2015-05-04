@@ -11,9 +11,9 @@
 !    A -B   *  phi  =  rho
 !   -C  I      lam  = 0
 !
-!  where I is the identity, A is the "normal" Poisson equation, B is the "distributor" of the 
-!  total flux (the first block equation is the flux surface averaging equation).  The second 
-!  equation  lambda = C * x enforces the surface flux auxiliary equation.  B and C have all 
+!  where I is the identity, A is the "normal" Poisson equation, B is the "distributor" of the
+!  total flux (the first block equation is the flux surface averaging equation).  The second
+!  equation  lambda = C * x enforces the surface flux auxiliary equation.  B and C have all
 !  positive entries, areas in C and fraction of area in B.
 !
 !/*T
@@ -43,7 +43,7 @@
 !  in them
 !
       module petsc_kkt_solver
-#include <petsc-finclude/petscdmdef.h>
+#include <petsc/finclude/petscdmdef.h>
       use petscdmdef
       type petsc_kkt_solver_type
         DM::da
@@ -63,7 +63,7 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
         use petsc_kkt_solver
           SNES::    snesIn
           type(petsc_kkt_solver_type) ctx
@@ -73,7 +73,7 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
         use petsc_kkt_solver
           SNES::     snesIn
           type(petsc_kkt_solver_type), pointer :: ctx
@@ -83,8 +83,8 @@
       end module petsc_kkt_solver_interfaces
 
       program main
-#include <petsc-finclude/petscdmdef.h>
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscdm
       use petscdmda
       use petscsnes
@@ -104,7 +104,7 @@
 !
       SNES::       mysnes
       Vec::        x,r,x2,x1,x1loc,x2loc,vecArray(2)
-      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
+      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4),tmat
       DM::       daphi,dalam
       IS::        isglobal(2)
       PetscErrorCode   ierr
@@ -219,6 +219,7 @@
 
       call VecGetOwnershipRange(x2,lamlow,lamhigh,ierr)
       nloclam = lamhigh-lamlow
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set fake B and C
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -233,12 +234,11 @@
             if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
                !     no op
             else
-               call MatSetValues(Bmat,ione,row,ione,j,bval,INSERT_VALUES,ierr)            
+               call MatSetValues(Bmat,ione,row,ione,j,bval,INSERT_VALUES,ierr)
             endif
             call MatSetValues(Cmat,ione,j,ione,row,cval,INSERT_VALUES,ierr)
  20   continue
       endif
-      
       call MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(Bmat,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY,ierr)
@@ -249,7 +249,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       do 30 j=lamlow,lamhigh-1
          call MatSetValues(Dmat,ione,j,ione,j,one,INSERT_VALUES,ierr)
- 30   continue 
+ 30   continue
       call MatAssemblyBegin(Dmat,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(Dmat,MAT_FINAL_ASSEMBLY,ierr)
 
@@ -271,11 +271,8 @@
 !  Create field split DA
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call DMCompositeCreate(PETSC_COMM_WORLD,solver%da,ierr)
-!      call DMSetOptionsPrefix(solver%da,'flux_',ierr)
       call DMCompositeAddDM(solver%da,daphi,ierr)
       call DMCompositeAddDM(solver%da,dalam,ierr)
-!      call PetscObjectSetName(daphi,"phi",ierr) 
-!      call PetscObjectSetName(dalam,"lambda",ierr)
       call DMSetFromOptions(solver%da,ierr)
       call DMSetUp(solver%da,ierr)
       call DMCompositeGetGlobalISs(solver%da,isglobal,ierr)
@@ -332,6 +329,15 @@
 
       call SNESSolve(mysnes,PETSC_NULL_OBJECT,x,ierr)
 
+      ! convert test
+!!$      print *,'[',solver%rank,'] ',N1,' primary global rows, ',N2,' global constraints, ',nloclam,' local constraints'
+!!$      call MatConvert(KKTmat,MATAIJ,MAT_INITIAL_MATRIX,tmat,ierr);CHKERRQ(ierr)
+!!$      if (ierr==0) then
+!!$         call MatDestroy(KKTmat, ierr);CHKERRQ(ierr)
+!!$         KKTmat = tmat
+!!$         print *,'MatConvert Nest-->AIJ worked!!!!!'
+!!$      end if
+
       call SNESGetIterationNumber(mysnes,its,ierr)
       if (solver%rank .eq. 0) then
          write(6,100) its
@@ -384,7 +390,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver
       use petsc_kkt_solver_interfaces
@@ -434,7 +440,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver,X1,ierr)
-#include <petsc-finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
       use petsc_kkt_solver
       implicit none
@@ -489,7 +495,7 @@
 !  flag     - flag indicating matrix structure
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver
       implicit none
@@ -548,7 +554,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
-#include <petsc-finclude/petscmatdef.h>
+#include <petsc/finclude/petscmatdef.h>
       use petscmat
       use petsc_kkt_solver
       implicit none
@@ -631,7 +637,7 @@
 !  F - function vector
 !
       subroutine FormFunction(snesIn,X,F,solver,ierr)
-#include <petsc-finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver
       implicit none
@@ -686,7 +692,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
-#include <petsc-finclude/petscvecdef.h>
+#include <petsc/finclude/petscvecdef.h>
       use petscvec
       use petsc_kkt_solver
       implicit none

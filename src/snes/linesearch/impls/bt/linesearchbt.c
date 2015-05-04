@@ -1,5 +1,5 @@
-#include <petsc-private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>
 
 typedef struct {
   PetscReal alpha;        /* sufficient decrease parameter */

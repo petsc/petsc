@@ -2,7 +2,7 @@
 /*
      Additive Multigrid V Cycle routine
 */
-#include <petsc-private/pcmgimpl.h>
+#include <petsc/private/pcmgimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCMGACycle_Private"

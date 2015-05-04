@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h> /*I "petscsnes.h" I*/
+#include <petsc/private/linesearchimpl.h> /*I "petscsnes.h" I*/
 
 PetscBool         SNESLineSearchRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESLineSearchList              = NULL;
@@ -40,10 +40,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   ierr = SNESInitializePackage();CHKERRQ(ierr);
   *outlinesearch = NULL;
 
-  ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
-
-  linesearch->ops->precheck  = NULL;
-  linesearch->ops->postcheck = NULL;
+  ierr = PetscHeaderCreate(linesearch,SNESLINESEARCH_CLASSID, "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
 
   linesearch->vec_sol_new  = NULL;
   linesearch->vec_func_new = NULL;

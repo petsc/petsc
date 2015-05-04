@@ -5,21 +5,21 @@
 !
 
 !#define PETSC_USE_FORTRAN_MODULES 1
-#include <petsc-finclude/petscsysdef.h>
-#include <petsc-finclude/petscvecdef.h>
-#include <petsc-finclude/petscdmdef.h>
+#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscdmdef.h>
 #if defined(PETSC_USE_FORTRAN_MODULES) || defined(PETSC_USE_FORTRAN_DATATYPES)
       use petsc
 #endif
       implicit none
 #if !defined(PETSC_USE_FORTRAN_MODULES) && !defined(PETSC_USE_FORTRAN_DATATYPES)
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscvec.h90>
-#include <petsc-finclude/petscdmda.h90>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscdmda.h90>
+#include <petsc/finclude/petscviewer.h>
 #endif
 
 #if defined(PETSC_USE_FORTRAN_DATATYPES)

@@ -57,10 +57,10 @@ There are two compile-time options:
 
 #if defined(PETSC_APPLE_FRAMEWORK)
 #import <PETSc/petscsnes.h>
-#import <PETSc/petsc-private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
+#import <PETSc/petsc/private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 #else
 #include <petscsnes.h>
-#include <petsc-private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
+#include <petsc/private/dmdaimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 #endif
 #include <ctype.h>              /* toupper() */
 
@@ -430,7 +430,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr       = PetscClassIdRegister("Toy Hydrostatic Ice",&THI_CLASSID);CHKERRQ(ierr);
     registered = PETSC_TRUE;
   }
-  ierr = PetscHeaderCreate(thi,_p_THI,0,THI_CLASSID,"THI","Toy Hydrostatic Ice","",comm,THIDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(thi,THI_CLASSID,"THI","Toy Hydrostatic Ice","",comm,THIDestroy,0);CHKERRQ(ierr);
 
   ierr            = PetscNew(&thi->units);CHKERRQ(ierr);
   units           = thi->units;

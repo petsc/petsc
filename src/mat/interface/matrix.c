@@ -3,9 +3,9 @@
    This is where the abstract matrix operations are defined
 */
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h>
+#include <petsc/private/isimpl.h>
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
@@ -2676,7 +2676,7 @@ $       -info -mat_view ::ascii_info
    Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension MAT_INFO_SIZE, and then extract the parameters
-   of interest.  See the file ${PETSC_DIR}/include/petsc-finclude/petscmat.h
+   of interest.  See the file ${PETSC_DIR}/include/petsc/finclude/petscmat.h
    a complete list of parameter names.
 .vb
       double  precision info(MAT_INFO_SIZE)
@@ -5060,10 +5060,9 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
 .  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See Users-Manual: ch_matlab )
-.  -viewer_socket_machine <machine>
-.  -viewer_socket_port <port>
-.  -mat_view binary - save matrix to file in binary format
--  -viewer_binary_filename <name>
+.  -viewer_socket_machine <machine> - Machine to use for socket
+.  -viewer_socket_port <port> - Port number to use for socket
+-  -mat_view binary:filename[:append] - Save matrix to file in binary format
 
    Notes:
    MatSetValues() generally caches the values.  The matrix is ready to
@@ -9883,7 +9882,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatTransposeColoring,int,MAT_TRANSPOSECOLORING_CLASSID,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,MAT_TRANSPOSECOLORING_CLASSID,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,NULL);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
   if (mat->ops->transposecoloringcreate) {
@@ -9898,8 +9897,8 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
 #undef __FUNCT__
 #define __FUNCT__ "MatGetNonzeroState"
 /*@
-      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the 
-        matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the 
+      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the
+        matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the
         same, otherwise it will be larger
 
      Not Collective
@@ -9910,7 +9909,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
   Output Parameter:
 .    state - the current state
 
-  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between 
+  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between
          different matrices
 
   Level: intermediate

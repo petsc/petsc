@@ -16,8 +16,8 @@ EXAMPLESFH      = ex2f.h
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -118,14 +118,6 @@ ex17: ex17.o  chkopts
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_TS_LIB}
 	${RM} ex19.o
-
-ex19adj: ex19adj.o  chkopts
-	-${CLINKER} -o ex19adj ex19adj.o  ${PETSC_TS_LIB}
-	${RM} ex19adj.o
-
-ex19opt_ic: ex19opt_ic.o chkopts
-	-${CLINKER} -o ex19opt_ic ex19opt_ic.o ${PETSC_TS_LIB}
-	${RM} ex19opt_ic.o
 
 ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_TS_LIB}
@@ -455,12 +447,6 @@ runex17_2:
 	   ${DIFF} output/ex17_2.out ex17_2.tmp || printf "${PWD}\nPossible problem with ex17_2, diffs above\n=========================================\n";  \
 	   ${RM} -f ex17_2.tmp
 
-runex19adj:
-	-@${MPIEXEC} -n 1 ./ex19adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001
-
-runex19opt_ic:
-	-@${MPIEXEC} -n 1 ./ex19opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -tao_view -ts_dt 0.0001
-
 #  ex20 examples are not in the repository
 runex20:
 	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1; \
@@ -601,4 +587,4 @@ TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 ex35.r
 TESTEXAMPLES_MOAB_HDF5    = ex30.PETSc runex30_2 ex30.rm ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

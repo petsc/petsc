@@ -10,7 +10,7 @@
 
       program ex40f90
       implicit none
-#include <petsc-finclude/petsc.h>
+#include <petsc/finclude/petsc.h>
 
       SNES             snes
       PetscErrorCode   ierr

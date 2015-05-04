@@ -243,8 +243,8 @@ PetscErrorCode  TSGLAdaptCreate(MPI_Comm comm,TSGLAdapt *inadapt)
   TSGLAdapt      adapt;
 
   PetscFunctionBegin;
-  *inadapt = 0;
-  ierr     = PetscHeaderCreate(adapt,_p_TSGLAdapt,struct _TSGLAdaptOps,TSGLADAPT_CLASSID,"TSGLAdapt","General Linear adaptivity","TS",comm,TSGLAdaptDestroy,TSGLAdaptView);CHKERRQ(ierr);
+  *inadapt = NULL;
+  ierr     = PetscHeaderCreate(adapt,TSGLADAPT_CLASSID,"TSGLAdapt","General Linear adaptivity","TS",comm,TSGLAdaptDestroy,TSGLAdaptView);CHKERRQ(ierr);
   *inadapt = adapt;
   PetscFunctionReturn(0);
 }

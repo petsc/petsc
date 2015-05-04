@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 void *PETSCNULLPOINTERADDRESS = NULL;
 
@@ -86,7 +86,7 @@ PetscInt *PetscIntAddressFromFortran(const PetscInt *base,size_t addr)
 */
 PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscScalar *base,PetscScalar *addr,PetscInt N,size_t *res)
 {
-  size_t   tmp1 = (size_t) base,tmp2 = tmp1/sizeof(PetscScalar);
+  size_t   tmp1 = (size_t) base,tmp2;
   size_t   tmp3 = (size_t) addr;
   size_t   itmp2;
   PetscInt shift;

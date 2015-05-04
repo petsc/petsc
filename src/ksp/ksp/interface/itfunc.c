@@ -3,7 +3,7 @@
       Interface KSP routines that the user calls.
 */
 
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -588,6 +588,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   ksp->guess_zero = guess_zero;
 
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  ksp->totalits += ksp->its;
+
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 

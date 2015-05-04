@@ -1,5 +1,5 @@
 
-#include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "ISEqual"

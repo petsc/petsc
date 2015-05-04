@@ -3,7 +3,7 @@
     Routines to project vectors out of null spaces.
 */
 
-#include <petsc-private/matimpl.h>      /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
 
 PetscClassId MAT_NULLSPACE_CLASSID;
 
@@ -256,7 +256,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   *SP = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst;
   sp->n        = n;

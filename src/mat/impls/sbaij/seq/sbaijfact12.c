@@ -1,6 +1,6 @@
 
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /*
       Version for when blocks are 7 by 7 Using natural ordering

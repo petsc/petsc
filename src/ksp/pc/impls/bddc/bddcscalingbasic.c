@@ -556,7 +556,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   auxglobal_parallel = 0;
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)pc),graph->l2gmap,n_local_parallel_problems,auxlocal_parallel,PETSC_NULL,&n_parallel_problems,&auxglobal_parallel);CHKERRQ(ierr);
   if (pcbddc->dbg_flag) {
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of parallel subproblems: %d\n",n_parallel_problems);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of parallel subproblems: %d\n",n_parallel_problems);CHKERRQ(ierr);
   }
 
   /* Compute data structures to solve parallel problems */
@@ -568,7 +568,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   auxglobal_sequential = 0;
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)pc),graph->l2gmap,n_local_sequential_problems,auxlocal_sequential,PETSC_NULL,&n_sequential_problems,&auxglobal_sequential);CHKERRQ(ierr);
   if (pcbddc->dbg_flag) {
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of sequential subproblems: %d\n",n_sequential_problems);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of sequential subproblems: %d\n",n_sequential_problems);CHKERRQ(ierr);
   }
 
   /* Compute data structures to solve sequential problems */

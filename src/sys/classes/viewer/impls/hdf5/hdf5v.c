@@ -1,4 +1,4 @@
-#include <petsc-private/viewerimpl.h>    /*I   "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 
 typedef struct GroupList {
@@ -13,6 +13,7 @@ typedef struct {
   PetscInt      timestep;
   GroupList     *groups;
   PetscBool     basedimension2;  /* save vectors and DMDA vectors with a dimension of at least 2 even if the bs/dof is 1 */
+  PetscBool     spoutput;  /* write data in single precision even if PETSc is compiled with double precision PetscReal */
 } PetscViewer_HDF5;
 
 #undef __FUNCT__
@@ -25,6 +26,7 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptions *PetscOptionsO
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HDF5 PetscViewer Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_hdf5_base_dimension2","1d Vectors get 2 dimensions in HDF5","PetscViewerHDF5SetBaseDimension2",hdf5->basedimension2,&hdf5->basedimension2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_hdf5_sp_output","Force data to be written in single precision","PetscViewerHDF5SetSPOutput",hdf5->spoutput,&hdf5->spoutput,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -154,6 +156,85 @@ PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer,PetscBool *fl
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetSPOutput_HDF5"
+PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  hdf5->spoutput = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetSPOutput"
+/*@C
+     PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
+       compiled with double precision PetscReal.
+
+    Logically Collective on PetscViewer
+
+  Input Parameters:
++  viewer - the PetscViewer; if it is not hdf5 then this command is ignored
+-  flg - if PETSC_TRUE the data will be written to disk with single precision
+
+  Options Database:
+.  -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
+
+
+  Notes: Setting this option does not make any difference if PETSc is compiled with single precision
+         in the first place. It does not affect reading datasets (HDF5 handle this internally).
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen(),
+          PetscReal
+
+@*/
+PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTryMethod(viewer,"PetscViewerHDF5SetSPOutput_C",(PetscViewer,PetscBool),(viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5GetSPOutput"
+/*@C
+     PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
+       compiled with double precision PetscReal.
+
+    Logically Collective on PetscViewer
+
+  Input Parameter:
+.  viewer - the PetscViewer, must be of type HDF5
+
+  Output Parameter:
+.  flg - if PETSC_TRUE the data will be written to disk with single precision
+
+  Notes: Setting this option does not make any difference if PETSc is compiled with single precision
+         in the first place. It does not affect reading datasets (HDF5 handle this internally).
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen(),
+          PetscReal
+
+@*/
+PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer,PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *flg = hdf5->spoutput;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetName_HDF5"
 PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
@@ -211,7 +292,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);  
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,6 +317,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
   Options Database:
 .  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+.  -viewer_hdf5_sp_output - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
 
    Level: beginner
 
@@ -244,9 +327,9 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Concepts: HDF5 files
    Concepts: PetscViewerHDF5^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(), PetscViewerHDF5GetBaseDimension2()
-          VecView(), MatView(), VecLoad(), MatLoad(),
-          PetscFileMode, PetscViewer
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
+          PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),
+          MatLoad(), PetscFileMode, PetscViewer
 @*/
 PetscErrorCode  PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *hdf5v)
 {

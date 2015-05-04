@@ -1,7 +1,7 @@
 #ifndef __TAO_BMRM_H
 #define __TAO_BMRM_H
 
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 #include <petscmath.h>
 
 #define BMRM_INFTY 1e30    /* single precision: ~\pm 10^{38.53}; PetscReal precision: ~\pm 10^{308.25} */

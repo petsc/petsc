@@ -1,4 +1,4 @@
-#include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
+#include <petsc/private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
 #include <petscviewer.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>

@@ -1,6 +1,6 @@
 #define TAO_DLL
 
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 static PetscBool TaoPackageInitialized = PETSC_FALSE;
 

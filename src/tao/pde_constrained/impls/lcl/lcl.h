@@ -1,7 +1,7 @@
 #ifndef __TAO_LCL_H
 #define __TAO_LCL_H
 
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 #include <petscis.h>
 #define LCL_FORWARD1        0
 #define LCL_ADJOINT1        1

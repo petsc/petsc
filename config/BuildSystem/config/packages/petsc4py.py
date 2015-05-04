@@ -51,17 +51,17 @@ class Configure(config.package.Package):
                        ['@echo "*** Building petsc4py ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+newuser+newdir+'python setup.py clean --all && \\\n\
-           '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log 2>&1 || \\\n\
+           '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log" && \\\n\
+             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc-conf/petsc4py.log" && \\\n\
+             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\

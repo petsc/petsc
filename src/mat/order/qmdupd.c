@@ -2,7 +2,7 @@
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
-#include <petsc-private/matorderimpl.h>
+#include <petsc/private/matorderimpl.h>
 
 /******************************************************************/
 /***********     QMDUPD ..... QUOT MIN DEG UPDATE      ************/

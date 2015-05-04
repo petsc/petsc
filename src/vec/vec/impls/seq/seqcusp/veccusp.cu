@@ -6,7 +6,7 @@
 
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
 PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
@@ -381,7 +381,11 @@ void aypx(ForwardIterator1 first1,ForwardIterator1 last1,ForwardIterator2 first2
  template <typename Array1, typename Array2, typename ScalarType>
    void aypx(const Array1& x, Array2& y, ScalarType alpha)
  {
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+   cusp::assert_same_dimensions(x,y);
+#else
    detail::assert_same_dimensions(x,y);
+#endif
    aypx(x.begin(),x.end(),y.begin(),alpha);
  }
 }

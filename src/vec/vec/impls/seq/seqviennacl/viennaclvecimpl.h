@@ -2,7 +2,7 @@
 #define __VIENNACLVECIMPL
 
 #include <petscviennacl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #include <algorithm>
 #include <vector>

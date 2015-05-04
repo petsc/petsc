@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 typedef struct {
   PetscBool complete_print;

@@ -3,7 +3,7 @@
      Provides utility routines for split MPI communicator.
 */
 #include <petscsys.h>    /*I   "petscsys.h"    I*/
-#include <petsc-private/threadcommimpl.h> /* Petsc_ThreadComm_keyval */
+#include <petsc/private/threadcommimpl.h> /* Petsc_ThreadComm_keyval */
 #include <petscviewer.h>
 
 const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",0};
@@ -70,7 +70,7 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
       ierr = MPI_Comm_size(psubcomm->child,&subsize);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(psubcomm->child,&subrank);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(psubcomm->dupparent,&duprank);CHKERRQ(ierr);
-      ierr = PetscSynchronizedPrintf(comm,"  [%d], color %d, sub-size %d, sub-rank %d, duprank %d\n",rank,psubcomm->color,subsize,subrank,duprank);
+      ierr = PetscSynchronizedPrintf(comm,"  [%d], color %d, sub-size %d, sub-rank %d, duprank %d\n",rank,psubcomm->color,subsize,subrank,duprank);CHKERRQ(ierr);
       ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported yet");
@@ -185,7 +185,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
   sendbuf[1] = mysubsize;
   ierr = MPI_Allgather(sendbuf,2,MPI_INT,recvbuf,2,MPI_INT,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(nsubcomm,&subsize);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nsubcomm,&subsize);CHKERRQ(ierr);
   for (i=0; i<2*size; i+=2) {
     subsize[recvbuf[i]] = recvbuf[i+1];
   }

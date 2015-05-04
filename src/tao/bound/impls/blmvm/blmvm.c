@@ -13,7 +13,6 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    stepsize = 1.0,delta;
-  PetscInt                     iter = 0;
 
   PetscFunctionBegin;
   /*  Project initial point onto bounds */
@@ -28,7 +27,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Set initial scaling for the function */
@@ -99,7 +98,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
       /* This may be incorrect; linesearch has values fo stepmax and stepmin
          that should be reset. */
-      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
@@ -115,8 +114,8 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
 
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Not-a-Number");
-    iter++;
-    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -133,7 +132,7 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   /* Existence of tao->solution checked in TaoSetup() */
   ierr = VecDuplicate(tao->solution,&blmP->Xold);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&blmP->Gold);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);
+  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);CHKERRQ(ierr);
 
   if (!tao->stepdirection) {
     ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);
@@ -285,6 +284,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

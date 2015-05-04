@@ -1,6 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscds.h>
 
 #undef __FUNCT__

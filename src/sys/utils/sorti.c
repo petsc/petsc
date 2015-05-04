@@ -2,7 +2,7 @@
 /*
    This file contains routines for sorting integers. Values are sorted in place.
  */
-#include <petsc-private/petscimpl.h>                /*I  "petscsys.h"  I*/
+#include <petsc/private/petscimpl.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
@@ -564,7 +564,14 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#define SWAP2IntData(a,b,c,d,t,td,siz) {t=a;a=b;b=t;memcpy(td,c,siz);memcpy(c,d,siz);memcpy(d,td,siz);}
+#define SWAP2IntData(a,b,c,d,t,td,siz)          \
+  do {                                          \
+  PetscErrorCode _ierr;                         \
+  t=a;a=b;b=t;                                  \
+  _ierr = PetscMemcpy(td,c,siz);CHKERRQ(_ierr); \
+  _ierr = PetscMemcpy(c,d,siz);CHKERRQ(_ierr);  \
+  _ierr = PetscMemcpy(d,td,siz);CHKERRQ(_ierr); \
+} while(0)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSortIntWithDataArray_Private"

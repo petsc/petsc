@@ -1,6 +1,6 @@
 #include <../src/tao/bound/impls/tron/tron.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 
@@ -25,7 +25,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->H_sub);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -104,7 +104,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
-  PetscInt                     iter=0,its;
+  PetscInt                     its;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
@@ -132,7 +132,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   }
 
   tron->stepsize=tao->trust;
-  ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
   while (reason==TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
@@ -146,6 +146,13 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     if (tron->n_free == 0) {
       actred=0;
       ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
+      ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+      if (!reason) {
+        reason = TAO_CONVERGED_STEPTOL;
+        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      }
+
       break;
 
     }
@@ -245,8 +252,8 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
-    iter++;
-    ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
 
   PetscFunctionReturn(0);
@@ -401,8 +408,10 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

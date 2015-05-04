@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>      /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 const char *const TSConvergedReasons_Shifted[] = {
   "DIVERGED_STEP_REJECTED",
@@ -39,8 +39,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   *ts = NULL;
   ierr = TSInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
-  ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(t, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
 
   /* General TS description */
   t->problem_type      = TS_NONLINEAR;

@@ -1,7 +1,7 @@
 
 #if !defined(__DENSE_H)
 #define __DENSE_H
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h> /* Mat_MatTransMatMult is defined here */
 
 /*

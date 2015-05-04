@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h> /*I  "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
 static PetscFunctionList TSAdaptList;
 static PetscBool         TSAdaptPackageInitialized;
@@ -195,7 +195,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt, type);CHKERRQ(ierr);
   if (adapt->ops->load) {
     ierr = (*adapt->ops->load)(adapt,viewer);CHKERRQ(ierr);
@@ -680,7 +680,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   *inadapt = NULL;
   ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(adapt,TSADAPT_CLASSID,"TSAdapt","Time stepping adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;

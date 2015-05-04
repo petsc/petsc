@@ -427,18 +427,7 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    downloadPackage = 0
-    downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
-    if isinstance(downloadPackageVal, str):
-      self.download = [downloadPackageVal]
-      self.downloadURLSetByUser = True
-      downloadPackage = 1
-    elif downloadPackageVal:
-      downloadPackage = 1
-
-    if downloadPackage:
-      if not self.download:
-        raise RuntimeError('Package'+self.package+' does not support automatic download.\n')
+    if self.argDB['download-'+self.downloadname.lower()]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -451,7 +440,7 @@ class Package(config.base.Configure):
 
   def installNeeded(self, mkfile):
     makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, 'lib','petsc-conf',self.name)
+    makefileSaved = os.path.join(self.confDir, 'lib','petsc','conf',self.name)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
@@ -464,7 +453,7 @@ class Package(config.base.Configure):
     self.log.write('********Output of running make on '+self.name+' follows *******\n')
     self.log.write(output)
     self.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc-conf', self.name), timeout=5, log = self.log)
+    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc','conf', self.name), timeout=5, log = self.log)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -669,6 +658,10 @@ class Package(config.base.Configure):
   def configure(self):
     if self.download and self.argDB['download-'+self.downloadname.lower()]:
       self.argDB['with-'+self.package] = 1
+      downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
+      if isinstance(downloadPackageVal, str):
+        self.download = [downloadPackageVal]
+        self.downloadURLSetByUser = True
     if not 'with-'+self.package in self.argDB:
       self.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.argDB or 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:

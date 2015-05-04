@@ -1,4 +1,4 @@
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <../src/tao/bound/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
 
 
@@ -146,7 +146,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 {
   TAO_GPCG                     *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode               ierr;
-  PetscInt                     iter=0,its;
+  PetscInt                     its;
   PetscReal                    actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal                    xtHx;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
@@ -177,12 +177,12 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   /* Project the gradient and calculate the norm */
   ierr = VecCopy(tao->gradient,gpcg->G_New);CHKERRQ(ierr);
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,gpcg->PG);CHKERRQ(ierr);
-  ierr = VecNorm(gpcg->PG,NORM_2,&gpcg->gnorm);
+  ierr = VecNorm(gpcg->PG,NORM_2,&gpcg->gnorm);CHKERRQ(ierr);
   tao->step=1.0;
   gpcg->f = f;
 
     /* Check Stopping Condition      */
-  ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
+  ierr=TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
@@ -241,8 +241,8 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       /* if there were no free variables, no cg method */
     }
 
-    iter++;
-    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
     if (reason!=TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */
@@ -375,11 +375,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   /* gpcg->ksp_type = GPCG_KSP_STCG; */
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -10,7 +10,7 @@
    options database until it has already processed the input.
 */
 
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MALLOC_H)
@@ -256,7 +256,6 @@ PetscErrorCode  PetscOptionsStringToBool(const char value[], PetscBool  *a)
   ierr = PetscStrcasecmp(value,"off",&isfalse);CHKERRQ(ierr);
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
   SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -490,7 +489,6 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           }
         }
         ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
-        free(string);
         ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
         if (!first) {
           goto destroy;
@@ -532,6 +530,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
 destroy:
+        free(string);
         ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
       }
       err = fclose(fd);
@@ -2073,6 +2072,83 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
   }
   ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsGetEnumArray"
+/*@C
+   PetscOptionsGetEnumArray - Gets an array of enum values for a particular option in the database.
+
+   Not Collective
+
+   Input Parameters:
++  pre - option prefix or NULL
+.  name - option name
+.  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+-  nmax - maximum number of values to retrieve
+
+   Output Parameters:
++  dvalue - the  enum values to return
+.  nmax - actual number of values retreived
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database
+
+   Notes:
+   The array must be passed as a comma separated list.
+
+   There must be no intervening spaces between the values.
+
+   list is usually something like PCASMTypes or some other predefined list of enum names.
+
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetEnum(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(), PetscOptionsName(),
+          PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(), PetscOptionsStringArray(),PetscOptionsRealArray(),
+          PetscOptionsScalar(), PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
+@*/
+PetscErrorCode PetscOptionsGetEnumArray(const char pre[],const char name[],const char *const *list,PetscEnum dvalue[],PetscInt *nmax,PetscBool *set)
+{
+  char           *svalue;
+  PetscInt       n = 0;
+  PetscEnum      evalue;
+  PetscBool      flag;
+  PetscToken     token;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(list,3);
+  PetscValidPointer(dvalue,4);
+  PetscValidIntPointer(nmax,5);
+
+  ierr = PetscOptionsFindPair_Private(pre,name,&svalue,&flag);CHKERRQ(ierr);
+  if (!flag) {
+    if (set) *set = PETSC_FALSE;
+    *nmax = 0;
+    PetscFunctionReturn(0);
+  }
+  if (!svalue) {
+    if (set) *set = PETSC_TRUE;
+    *nmax = 0;
+    PetscFunctionReturn(0);
+  }
+  if (set) *set = PETSC_TRUE;
+
+  ierr = PetscTokenCreate(svalue,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&svalue);CHKERRQ(ierr);
+  while (svalue && n < *nmax) {
+    ierr = PetscEnumFind(list,svalue,&evalue,&flag);CHKERRQ(ierr);
+    if (!flag) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown enum value '%s' for -%s%s",svalue,pre ? pre : "",name+1);
+    dvalue[n++] = evalue;
+    ierr = PetscTokenFind(token,&svalue);CHKERRQ(ierr);
+  }
+  *nmax = n;
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

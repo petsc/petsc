@@ -4,8 +4,8 @@
 
 #include <petscksp.h>
 #include <petscpc.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/pcimpl.h>
 
 #define NLS_KSP_CG      0
 #define NLS_KSP_NASH    1
@@ -85,7 +85,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscReal                    norm_d = 0.0, e_min;
 
   PetscInt                     stepType;
-  PetscInt                     iter = 0;
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     n,N,kspits;
   PetscInt                     needH;
@@ -172,7 +171,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* create vectors for the limited memory preconditioner */
@@ -313,7 +312,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
 
-          ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+          ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
           if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
         }
       }
@@ -351,7 +350,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
-    ++iter;
+    ++tao->niter;
     tao->ksp_its=0;
 
     /* Compute the Hessian */
@@ -370,7 +369,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
     /* Shift the Hessian matrix */
     if (pert > 0) {
-      ierr = MatShift(tao->hessian, pert);
+      ierr = MatShift(tao->hessian, pert);CHKERRQ(ierr);
       if (tao->hessian != tao->hessian_pre) {
         ierr = MatShift(tao->hessian_pre, pert);CHKERRQ(ierr);
       }
@@ -754,9 +753,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           /*  Get predicted reduction */
 
           if (NLS_KSP_STCG == nlsP->ksp_type) {
-            ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);
+            ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else if (NLS_KSP_NASH == nlsP->ksp_type)  {
-            ierr = KSPNASHGetObjFcn(tao->ksp,&prered);
+            ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else {
             ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           }
@@ -813,9 +812,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         if (stepType == NLS_NEWTON) {
 
           if (NLS_KSP_STCG == nlsP->ksp_type) {
-              ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);
+              ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else if (NLS_KSP_NASH == nlsP->ksp_type)  {
-              ierr = KSPNASHGetObjFcn(tao->ksp,&prered);
+              ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else {
               ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           }
@@ -895,7 +894,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
-    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1201,9 +1200,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -4,7 +4,7 @@ static char help[] = "Tests MatLoad() with uneven dimensions set in program\n\n"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A;
   PetscViewer    fd;

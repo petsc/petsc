@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
      KSPSetUp_PIPECG - Sets up the workspace needed by the PIPECG method.

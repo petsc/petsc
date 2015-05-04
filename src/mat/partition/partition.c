@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>               /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>               /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscClassId MAT_PARTITIONING_CLASSID;
@@ -400,7 +400,7 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   *newp = 0;
 
   ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(part,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = NULL;
   part->part_weights   = NULL;
 

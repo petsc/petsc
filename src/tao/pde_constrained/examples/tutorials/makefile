@@ -12,8 +12,8 @@ EXAMPLESFH       =
 EXAMPLESMATLAB   =
 CLEANFILES       = elliptic parabolic hyperbolic
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 parabolic: parabolic.o chkopts
 	-${CLINKER} -o parabolic parabolic.o ${PETSC_TAO_LIB}
@@ -55,4 +55,4 @@ TESTEXAMPLES_C_X_MPIUNI   = elliptic.PETSc runelliptic runelliptic_2 runelliptic
                             parabolic.PETSc runparabolic parabolic.rm \
                             hyperbolic.PETSc runhyperbolic hyperbolic.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
