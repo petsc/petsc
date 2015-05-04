@@ -527,6 +527,40 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   ierr = PetscFree(cone);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(udm);CHKERRQ(ierr);
   ierr = DMPlexStratify(udm);CHKERRQ(ierr);
+  /* Reduce SF */
+  {
+    PetscSF            sfPoint, sfPointUn;
+    const PetscSFNode *remotePoints;
+    const PetscInt    *localPoints;
+    PetscSFNode       *remotePointsUn;
+    PetscInt          *localPointsUn;
+    PetscInt           vEnd, numRoots, numLeaves, l;
+    PetscInt           numLeavesUn = 0, n = 0;
+    PetscErrorCode     ierr;
+
+    /* Get original SF information */
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    ierr = DMGetPointSF(udm, &sfPointUn);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, NULL, &vEnd);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+    /* Allocate space for cells and vertices */
+    for (l = 0; l < numLeaves; ++l) if (localPoints[l] < vEnd) numLeavesUn++;
+    /* Fill in leaves */
+    if (vEnd >= 0) {
+      ierr = PetscMalloc1(numLeavesUn, &remotePointsUn);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numLeavesUn, &localPointsUn);CHKERRQ(ierr);
+      for (l = 0; l < numLeaves; l++) {
+        if (localPoints[l] < vEnd) {
+          localPointsUn[n]        = localPoints[l];
+          remotePointsUn[n].rank  = remotePoints[l].rank;
+          remotePointsUn[n].index = remotePoints[l].index;
+          ++n;
+        }
+      }
+      if (n != numLeavesUn) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %d != %d", n, numLeavesUn);
+      ierr = PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+  }
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }
