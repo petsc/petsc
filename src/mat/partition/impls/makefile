@@ -1,7 +1,7 @@
 #
 ALL: lib
 
-DIRS   = chaco party pmetis scotch
+DIRS   = chaco party pmetis scotch hierarchpart
 LOCDIR = src/mat/partition/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
