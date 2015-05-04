@@ -9,7 +9,11 @@
 #include <string>
 
 #include <cublas.h>
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+#include <cusp/blas/blas.h>
+#else
 #include <cusp/blas.h>
+#endif
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/constant_iterator.h>
