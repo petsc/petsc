@@ -1291,9 +1291,11 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
   Calling sequence for r:
 
-$ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+$ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
 
-+ x    - The coordinates at a point on the interface
++ dim  - The spatial dimension
+. Nf   - The number of fields
+. x    - The coordinates at a point on the interface
 . n    - The normal vector to the interface
 . uL   - The state vector to the left of the interface
 . uR   - The state vector to the right of the interface
@@ -1305,7 +1307,7 @@ $ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const Pets
 .seealso: PetscDSSetRiemannSolver()
 @*/
 PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
-                                       void (**r)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+                                       void (**r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1329,9 +1331,11 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
 
   Calling sequence for r:
 
-$ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+$ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
 
-+ x    - The coordinates at a point on the interface
++ dim  - The spatial dimension
+. Nf   - The number of fields
+. x    - The coordinates at a point on the interface
 . n    - The normal vector to the interface
 . uL   - The state vector to the left of the interface
 . uR   - The state vector to the right of the interface
@@ -1343,7 +1347,7 @@ $ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const Pets
 .seealso: PetscDSGetRiemannSolver()
 @*/
 PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
-                                       void (*r)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+                                       void (*r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
 {
   PetscErrorCode ierr;
 

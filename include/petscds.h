@@ -29,7 +29,7 @@ typedef void (*PetscBdPointFunc)(PetscInt, PetscInt,
                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                  PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]);
-typedef void (*PetscRiemannFunc)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *);
+typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *);
 
 
 PETSC_EXTERN PetscFunctionList PetscDSList;
@@ -130,9 +130,9 @@ PETSC_EXTERN PetscErrorCode PetscDSSetJacobian(PetscDS, PetscInt, PetscInt,
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         const PetscReal, const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetRiemannSolver(PetscDS, PetscInt,
-                                                    void (**)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
+                                                    void (**)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode PetscDSSetRiemannSolver(PetscDS, PetscInt,
-                                                    void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
+                                                    void (*)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode PetscDSGetContext(PetscDS, PetscInt, void **);
 PETSC_EXTERN PetscErrorCode PetscDSSetContext(PetscDS, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdResidual(PetscDS, PetscInt,

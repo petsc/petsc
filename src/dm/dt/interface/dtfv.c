@@ -1971,7 +1971,7 @@ PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
 PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                   PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
+  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
   void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
   PetscInt       dim, pdim, totDim, Nc, off, f, d;
@@ -1986,7 +1986,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, Pet
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
@@ -2283,7 +2283,7 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
 PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                         PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
+  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
   void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
   PetscInt       dim, pdim, Nc, totDim, off, f, d;
@@ -2298,7 +2298,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS pro
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
