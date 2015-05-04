@@ -5,9 +5,15 @@
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+#if defined(PETSC_HAVE_CHACO)
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
+#endif
+#if defined(PETSC_HAVE_PARTY)
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
+#endif
+#if defined(PETSC_HAVE_PTSCOTCH)
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningRegisterAll"
