@@ -311,7 +311,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
   PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
-  IS                  dirIS;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -322,45 +321,45 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   ierr = PCBDDCScalingSetUp_Deluxe_Private(pc);CHKERRQ(ierr);
 
   /* diagonal scaling on interface dofs not contained in cc */
-  dirIS = NULL;
-  ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
-  if (sub_schurs->is_Ej_com || dirIS) {
+  if (sub_schurs->is_vertices || sub_schurs->is_dir) {
     PetscInt n_com,n_dir;
     n_com = 0;
-    if (sub_schurs->is_Ej_com) {
-      ierr = ISGetLocalSize(sub_schurs->is_Ej_com,&n_com);CHKERRQ(ierr);
+    if (sub_schurs->is_vertices) {
+      ierr = ISGetLocalSize(sub_schurs->is_vertices,&n_com);CHKERRQ(ierr);
     }
     n_dir = 0;
-    if (dirIS) {
-      ierr = ISGetLocalSize(dirIS,&n_dir);CHKERRQ(ierr);
+    if (sub_schurs->is_dir) {
+      ierr = ISGetLocalSize(sub_schurs->is_dir,&n_dir);CHKERRQ(ierr);
     }
     deluxe_ctx->n_simple = n_dir + n_com;
     ierr = PetscMalloc1(deluxe_ctx->n_simple,&deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-    if (sub_schurs->is_Ej_com) {
+    if (sub_schurs->is_vertices) {
       PetscInt       nmap;
       const PetscInt *idxs;
 
-      ierr = ISGetIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+      ierr = ISGetIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_com,idxs,&nmap,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
       if (nmap != n_com) {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_Ej_com)! %d != %d",nmap,n_com);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %d != %d",nmap,n_com);
       }
-      ierr = ISRestoreIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
     }
-    if (dirIS) {
+    if (sub_schurs->is_dir) {
       PetscInt       nmap;
       const PetscInt *idxs;
 
-      ierr = ISGetIndices(dirIS,&idxs);CHKERRQ(ierr);
+      ierr = ISGetIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_dir,idxs,&nmap,deluxe_ctx->idx_simple_B+n_com);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(dirIS,&idxs);CHKERRQ(ierr);
+      if (nmap != n_dir) {
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %d != %d",nmap,n_dir);
+      }
+      ierr = ISRestoreIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
     }
     ierr = PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
   } else {
     deluxe_ctx->n_simple = 0;
     deluxe_ctx->idx_simple_B = 0;
   }
-  ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -382,7 +381,13 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   ierr = MatCreateVecs(sub_schurs->S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
   /* Compute deluxe sequential scatter */
-  ierr = VecScatterCreate(pcbddc->work_scaling,sub_schurs->is_Ej_all,deluxe_ctx->seq_work1,NULL,&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
+  if (sub_schurs->reuse_mumps && !sub_schurs->is_dir) {
+    PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
+    ierr = PetscObjectReference((PetscObject)reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
+    deluxe_ctx->seq_scctx = reuse_mumps->correction_scatter_B;
+  } else {
+    ierr = VecScatterCreate(pcbddc->work_scaling,sub_schurs->is_Ej_all,deluxe_ctx->seq_work1,NULL,&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
+  }
 
   /* Create Mat object for deluxe scaling */
   ierr = PetscObjectReference((PetscObject)sub_schurs->S_Ej_all);CHKERRQ(ierr);

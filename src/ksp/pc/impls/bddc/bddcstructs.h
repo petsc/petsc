@@ -26,6 +26,7 @@ struct _PCBDDCGraph {
   PetscBool              twodim;
   PetscBool              has_dirichlet;
   IS                     dirdofs;
+  IS                     dirdofsB;
   /* data for connected components */
   PetscInt               ncc;
   PetscInt               *cptr;
@@ -47,18 +48,28 @@ struct _PCBDDCGraph {
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
-/* Temporary wrap to MUMPS solver for interior variables in Schur complement mode */
+/* Temporary wrap to MUMPS solver in Schur complement mode. Provides
+   - standalone solver for interior variables
+   - forward and backward substitutions for correction solver (size local_dofs - local_vertices)
+*/
 /* It assumes that interior variables are a contiguous set starting from 0 */
-struct _PCBDDCMumpsInterior {
+struct _PCBDDCReuseMumps {
   /* the factored matrix obtained from MatGetFactor(...,MAT_SOLVER_MUMPS...) */
   Mat F;
   /* placeholders for the solution and rhs on the whole set of dofs of A */
   Vec sol;
   Vec rhs;
   /* size of interior problem */
-  PetscInt n;
+  PetscInt n_I;
+  /* Placeholder for inverted Schur (optional) */
+  Mat S_inv;
+  /* shell PCs to handle MUMPS interior/correction solvers */
+  PC interior_solver;
+  PC correction_solver;
+  VecScatter correction_scatter_B;
+  VecScatter correction_scatter_R;
 };
-typedef struct _PCBDDCMumpsInterior *PCBDDCMumpsInterior;
+typedef struct _PCBDDCReuseMumps *PCBDDCReuseMumps;
 
 /* structure to handle Schur complements on subsets */
 struct _PCBDDCSubSchurs {
@@ -78,7 +89,8 @@ struct _PCBDDCSubSchurs {
   Mat sum_S_Ej_inv_all;
   Mat sum_S_Ej_tilda_all;
   IS  is_Ej_all;
-  IS  is_Ej_com;
+  IS  is_vertices;
+  IS  is_dir;
   /* l2g maps */
   ISLocalToGlobalMapping l2gmap;
   ISLocalToGlobalMapping BtoNmap;
@@ -91,8 +103,8 @@ struct _PCBDDCSubSchurs {
   /* mat flags */
   PetscBool is_hermitian;
   PetscBool is_posdef;
-  /* shell PC to handle MUMPS interior solver */
-  PC interior_solver;
+  /* data structure to reuse MUMPS Schur solver */
+  PCBDDCReuseMumps reuse_mumps;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 

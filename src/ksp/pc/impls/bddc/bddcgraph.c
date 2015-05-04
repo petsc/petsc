@@ -3,6 +3,36 @@
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCGraphGetDirichletDofsB"
+PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS* dirdofs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (graph->dirdofsB) {
+    ierr = PetscObjectReference((PetscObject)graph->dirdofsB);CHKERRQ(ierr);
+  } else if (graph->has_dirichlet) {
+    PetscInt i,size;
+    PetscInt *dirdofs_idxs;
+
+    size = 0;
+    for (i=0;i<graph->nvtxs;i++) {
+      if (graph->count[i] && graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) size++;
+    }
+
+    ierr = PetscMalloc1(size,&dirdofs_idxs);CHKERRQ(ierr);
+    size = 0;
+    for (i=0;i<graph->nvtxs;i++) {
+      if (graph->count[i] && graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) dirdofs_idxs[size++] = i;
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,dirdofs_idxs,PETSC_OWN_POINTER,&graph->dirdofsB);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)graph->dirdofsB);CHKERRQ(ierr);
+  }
+  *dirdofs = graph->dirdofsB;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphGetDirichletDofs"
 PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph, IS* dirdofs)
 {
@@ -1108,6 +1138,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   }
   ierr = PetscFree2(graph->subsets_size,graph->subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&graph->dirdofs);CHKERRQ(ierr);
+  ierr = ISDestroy(&graph->dirdofsB);CHKERRQ(ierr);
   graph->has_dirichlet = PETSC_FALSE;
   graph->nvtxs = 0;
   graph->nvtxs_global = 0;
