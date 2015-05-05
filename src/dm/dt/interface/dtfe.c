@@ -4864,8 +4864,8 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 {
   /* Nbc = batchSize */
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
-  void            (*f0_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]);
-  void            (*f1_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]);
+  PetscPointFunc    f0_func;
+  PetscPointFunc    f1_func;
   PetscQuadrature   q;
   PetscInt          dim;
   PetscInt          N_b;    /* The number of basis functions */

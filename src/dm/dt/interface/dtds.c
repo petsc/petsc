@@ -1815,9 +1815,6 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
 @*/
 PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
 {
-  PetscInt       g;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 2);
@@ -1844,9 +1841,6 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
 @*/
 PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offsets[])
 {
-  PetscInt       g;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 2);
@@ -1873,9 +1867,6 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
 @*/
 PetscErrorCode PetscDSGetComponentBdOffsets(PetscDS prob, PetscInt *offsets[])
 {
-  PetscInt       g;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 2);
@@ -1902,9 +1893,6 @@ PetscErrorCode PetscDSGetComponentBdOffsets(PetscDS prob, PetscInt *offsets[])
 @*/
 PetscErrorCode PetscDSGetComponentBdDerivativeOffsets(PetscDS prob, PetscInt *offsets[])
 {
-  PetscInt       g;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 2);
