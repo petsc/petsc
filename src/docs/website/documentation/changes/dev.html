@@ -126,6 +126,7 @@
          Removed -pc_hypre_type euclid due to bit-rot
          Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
          Added PCBDDCSetChangeOfBasisMat for user defined change of basis
+         PCBDDC: added adaptive selection of constraints: it is available by command line options
          PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
          PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()
          PCFactorSetUseInplace() now takes a PetscBool argument. Added PCFactorGetUseInplace()
