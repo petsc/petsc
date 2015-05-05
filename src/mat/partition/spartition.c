@@ -5,6 +5,7 @@
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_HierarchPart(MatPartitioning);
 #if defined(PETSC_HAVE_CHACO)
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
 #endif
