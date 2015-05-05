@@ -1141,7 +1141,7 @@ runex54_Classical:
        ${RM} -f ex54.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph false -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
          ${DIFF} output/ex54f.out ex54.tmp || printf "${PWD}\nPossible problem with ex54f, diffs above\n======================================\n"; \
         ${RM} -f ex54.tmp
 
@@ -1171,7 +1171,7 @@ runex55_NC:
         ${RM} -f ex55.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_coarse_ksp_type preonly > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_coarse_ksp_type preonly -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex56.tmp 2>&1; \
          ${DIFF} output/ex56_0.out ex56.tmp || printf "${PWD}\nPossible problem with ex56, diffs above \n=========================================\n"; \
          ${RM} -f ex56.tmp
 
