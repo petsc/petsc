@@ -26,11 +26,14 @@ int main(int argc,char **args)
   PetscInt        *ia,*ja;
   MatPartitioning part;
   IS              is,isn;
+  IS              coarseparts,fineparts;
+  MPI_Comm        comm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 4) SETERRQ(PETSC_COMM_WORLD,1,"Must run with 4 processors");
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size != 4) SETERRQ(comm,1,"Must run with 4 processors");
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);
   ierr = PetscMalloc1(16,&ja);CHKERRQ(ierr);
@@ -52,21 +55,34 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
 
-  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(comm,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
        Partition the graph of the matrix
   */
-  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
+  ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
+  ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchpartSetNcoarseparts(part,2);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchpartSetNfineparts(part,2);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   /* get new processor owner number of each vertex */
   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  /* coarse parts */
+  ierr = MatPartitioningHierarchpartGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
+  ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* fine parts */
+  ierr = MatPartitioningHierarchpartGetFineparts(part,&fineparts);CHKERRQ(ierr);
+  ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* partitioning */
+  ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
+  ierr = ISDestroy(&fineparts);CHKERRQ(ierr);
 
   ierr = ISDestroy(&isn);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
