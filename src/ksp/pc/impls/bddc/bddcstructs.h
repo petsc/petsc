@@ -50,24 +50,25 @@ typedef struct _PCBDDCGraph *PCBDDCGraph;
 
 /* Temporary wrap to MUMPS solver in Schur complement mode. Provides
    - standalone solver for interior variables
-   - forward and backward substitutions for correction solver (size local_dofs - local_vertices)
+   - forward and backward substitutions for correction solver
 */
 /* It assumes that interior variables are a contiguous set starting from 0 */
 struct _PCBDDCReuseMumps {
   /* the factored matrix obtained from MatGetFactor(...,MAT_SOLVER_MUMPS...) */
-  Mat F;
-  /* placeholders for the solution and rhs on the whole set of dofs of A */
-  Vec sol;
-  Vec rhs;
+  Mat        F;
+  /* placeholders for the solution and rhs on the whole set of dofs of A (size local_dofs - local_vertices)*/
+  Vec        sol;
+  Vec        rhs;
   /* size of interior problem */
-  PetscInt n_I;
+  PetscInt   n_I;
   /* Placeholder for inverted Schur (optional) */
-  Mat S_inv;
+  Mat        S_inv;
   /* shell PCs to handle MUMPS interior/correction solvers */
-  PC interior_solver;
-  PC correction_solver;
+  PC         interior_solver;
+  PC         correction_solver;
+  Vec        rhsB;
+  Vec        solB;
   VecScatter correction_scatter_B;
-  VecScatter correction_scatter_R;
 };
 typedef struct _PCBDDCReuseMumps *PCBDDCReuseMumps;
 

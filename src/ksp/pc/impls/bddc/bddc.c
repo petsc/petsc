@@ -1200,7 +1200,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
   pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0 && pcbddc->use_deluxe_scaling);
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
-
+  if (pcbddc->faster_deluxe && pcbddc->adaptive_selection && pcbddc->use_change_of_basis) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute faster deluxe if adaptivity and change of basis are both requested. Rerun with -pc_bddc_deluxe_faster false");
+  }
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {

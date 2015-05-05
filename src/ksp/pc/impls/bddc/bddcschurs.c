@@ -21,11 +21,7 @@ static PetscErrorCode PCBDDCMumpsCorrectionSolve(PC pc, Vec rhs, Vec sol)
   ierr = MatMumpsGetIcntl(ctx->F,26,&ival);CHKERRQ(ierr);
   ierr = MatMumpsSetIcntl(ctx->F,26,-1);CHKERRQ(ierr);
 #endif
-  ierr = VecScatterBegin(ctx->correction_scatter_R,rhs,ctx->rhs,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->correction_scatter_R,rhs,ctx->rhs,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = MatSolve(ctx->F,ctx->rhs,ctx->sol);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->correction_scatter_R,ctx->sol,sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->correction_scatter_R,ctx->sol,sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = MatSolve(ctx->F,rhs,sol);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatMumpsSetIcntl(ctx->F,26,ival);CHKERRQ(ierr);
 #endif
@@ -46,7 +42,8 @@ static PetscErrorCode PCBDDCReuseMumpsReset(PCBDDCReuseMumps reuse)
   ierr = PCDestroy(&reuse->interior_solver);CHKERRQ(ierr);
   ierr = PCDestroy(&reuse->correction_solver);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&reuse->correction_scatter_B);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&reuse->correction_scatter_R);CHKERRQ(ierr);
+  ierr = VecDestroy(&reuse->solB);CHKERRQ(ierr);
+  ierr = VecDestroy(&reuse->rhsB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +215,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool use_edges, PetscBool use_faces)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool reuse_solvers,PetscBool use_edges, PetscBool use_faces)
 {
   Mat                    A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all,S_all_inv;
@@ -615,7 +612,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       size_schur += local_size;
     }
     size_active_schur = local_size;
-    ierr = MatGetSubMatrixUnsorted(sub_schurs->A,is_A_all,is_A_all,&A);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
 
     if (n_I) {
@@ -653,12 +650,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* we can reuse the solvers if we are not using the economic version */
       ierr = ISGetLocalSize(sub_schurs->is_I,&n_I_all);CHKERRQ(ierr);
-      if (n_I == n_I_all) {
+      if (n_I == n_I_all && reuse_solvers) {
         Mat              A_II;
         PCBDDCReuseMumps msolv_ctx;
 
         if (sub_schurs->reuse_mumps) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"This should not happen");
+          ierr = PCBDDCReuseMumpsReset(sub_schurs->reuse_mumps);CHKERRQ(ierr);
+          ierr = PetscFree(sub_schurs->reuse_mumps);CHKERRQ(ierr);
         }
         ierr = PetscNew(&msolv_ctx);CHKERRQ(ierr);
         msolv_ctx->n_I = n_I;
@@ -729,6 +727,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       ierr = PetscObjectReference((PetscObject)S_all_inv);CHKERRQ(ierr);
       reuse_mumps->S_inv = S_all_inv;
+      ierr = MatCreateVecs(S_all_inv,&reuse_mumps->solB,&reuse_mumps->rhsB);CHKERRQ(ierr);
     }
 
     /* Work arrays */
@@ -934,7 +933,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
   sub_schurs->is_dir = NULL;
   ierr = PCBDDCGraphGetDirichletDofsB(graph,&sub_schurs->is_dir);CHKERRQ(ierr);
 
-  /* Determine if MUMPS cane be used */
+  /* Determine if MUMPS can be used */
   sub_schurs->use_mumps = PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
   sub_schurs->use_mumps = PETSC_TRUE;
