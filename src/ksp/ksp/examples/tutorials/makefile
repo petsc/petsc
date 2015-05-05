@@ -383,15 +383,15 @@ runex2_umfpack:
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_umfpack, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_umfpack.tmp
-runex2_mkl_pardiso:
+runex2_mkl_pardiso_lu:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
-           if (${DIFF} output/ex2_mkl_pardiso.out ex2_mkl_pardiso.tmp) then true; \
-           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso, diffs above\n=========================================\n"; fi; \
+           if (${DIFF} output/ex2_mkl_pardiso_lu.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso_lu, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_mkl_pardiso.tmp
-runex2_mkl_pardiso_sym:
-	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
-           if (${DIFF} output/ex2_mkl_pardiso_sym.out ex2_mkl_pardiso.tmp) then true; \
-           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso_sym, diffs above\n=========================================\n"; fi; \
+runex2_mkl_pardiso_cholesky:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
+           if (${DIFF} output/ex2_mkl_pardiso_cholesky.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso_cholesky, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_mkl_pardiso.tmp
 runex2_fbcgs:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ilu  > ex2.tmp 2>&1; \
@@ -1280,7 +1280,7 @@ TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PE
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm \
                                  ex52.PETSc runex52_superlu_dist ex52.rm
-TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso ex2.rm
+TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
 TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
                                  ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
                                  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
