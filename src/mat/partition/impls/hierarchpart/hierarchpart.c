@@ -102,13 +102,23 @@ static PetscErrorCode MatPartitioningApply_HierarchPart(MatPartitioning part,IS 
   }*/
   ierr = MatPartitioningApply(coarsePart,&hpart->coarseparts);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&coarsePart);CHKERRQ(ierr);
+#if 0
+  ierr = ISView(hpart->coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
   /* In the current implementation, destination should be the same as hpart->coarseparts,
    * and this interface is preserved to deal with the case hpart->coarseparts>size in the
    * future.
    * */
   ierr = MatPartitioningHierarchPart_DetermineDestination(part,hpart->coarseparts,0,hpart->Ncoarseparts,&destination);CHKERRQ(ierr);
+#if 0
+  ierr = ISView(destination,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
   /* create a sub-matrix*/
   ierr = MatPartitioningHierarchPart_AssembleSubdomain(adj,destination,&sadj,&mapping);CHKERRQ(ierr);
+#if 0
+  ierr = MatView(sadj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   ierr = ISDestroy(&destination);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sadj,&scomm);CHKERRQ(ierr);
   /*create a fine partitioner */
@@ -122,7 +132,18 @@ static PetscErrorCode MatPartitioningApply_HierarchPart(MatPartitioning part,IS 
   ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);
   ierr = MatPartitioningSetNParts(finePart, hpart->Nfineparts);CHKERRQ(ierr);
   ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
+  ierr = MatDestroy(&sadj);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
+#if 0
+  ierr = ISView(fineparts_temp,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   ierr = MatPartitioningHierarchPart_ReassembleFineparts(adj,fineparts_temp,mapping,&hpart->fineparts);CHKERRQ(ierr);
+  ierr = ISDestroy(&fineparts_temp);CHKERRQ(ierr);
+#if 0
+  ierr = ISView(hpart->fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
 
   ierr = ISGetIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
@@ -133,7 +154,12 @@ static PetscErrorCode MatPartitioningApply_HierarchPart(MatPartitioning part,IS 
       parts_indices[bs*i+j] = fineparts_indices[i]+coarseparts_indices[i]*hpart->Nfineparts;
     }
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),bs*adj->rmap->n,parts_indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,bs*adj->rmap->n,parts_indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+#if 0
+  ierr = ISView(*partitioning,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  /*SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"stop stop stop here \n");*/
+#endif
   ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -333,6 +359,7 @@ PetscErrorCode MatPartitioningHierarchPart_AssembleSubdomain(Mat adj,IS destinat
   ierr = PetscCalloc3(nrows_recv,&localperm,nrows_recv,&reverseperm,nrows_recv,&localperm_tmp);CHKERRQ(ierr);
   for(i=0; i<nrows_recv; i++){
 	localperm[i] = i;
+	reverseperm[i] = i;
   }
   ierr = PetscSortIntWithArray(nrows_recv,rows_recv,localperm);CHKERRQ(ierr);
   ierr = PetscMemcpy(localperm_tmp,localperm,sizeof(PetscInt)*nrows_recv);CHKERRQ(ierr);
@@ -342,6 +369,18 @@ PetscErrorCode MatPartitioningHierarchPart_AssembleSubdomain(Mat adj,IS destinat
   ierr = PetscCalloc1(nrows_recv+1,&si);CHKERRQ(ierr);
   ierr = PetscCalloc1(nrows_recv,&si_sizes);CHKERRQ(ierr);
   ierr = PetscMemcpy(si_sizes,ncols_recv,sizeof(PetscInt)*nrows_recv);CHKERRQ(ierr);
+#if 0
+  ierr = PetscIntView(nrows_recv,ncols_recv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscIntView(nrows_recv,rows_recv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscIntView(nzeros_recv,adjncy_recv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscIntView(nrows_recv,si_sizes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscIntView(nrows_recv,reverseperm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   k       = 0;
   sj_size = 0;
   for(i=0; i<nrows_recv; i++){
@@ -352,13 +391,19 @@ PetscErrorCode MatPartitioningHierarchPart_AssembleSubdomain(Mat adj,IS destinat
 		 si_sizes[reverseperm[i]]   -= 1;
 	   }else{
 		 adjncy_recv[k] = location;
-		 sj_size       += 1;
+		 sj_size++;
 	   }
 	}
   }
   for(i=0; i<nrows_recv; i++){
 	si[i+1] = si[i]+si_sizes[i];
   }
+#if 0
+  ierr = PetscIntView(nrows_recv,si_sizes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"sj_size %D \n",sj_size);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   ierr = PetscFree(si_sizes);CHKERRQ(ierr);
   ierr = PetscCalloc1(sj_size,&sj);CHKERRQ(ierr);
   k = 0;
@@ -370,8 +415,16 @@ PetscErrorCode MatPartitioningHierarchPart_AssembleSubdomain(Mat adj,IS destinat
       m++;
 	}
   }
+#if 0
+  ierr = PetscIntView(nrows_recv+1,si,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscIntView(sj_size,sj,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"nrows_recv %D \n",nrows_recv);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   /* return the assembled submatrix */
-  ierr = MatCreateMPIAdj(PETSC_COMM_SELF,nrows_recv,PETSC_DETERMINE,si,sj,PETSC_NULL,sadj);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(PETSC_COMM_SELF,nrows_recv,nrows_recv,si,sj,PETSC_NULL,sadj);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&mat_localsize,&xadj,&adjncy,&done);CHKERRQ(ierr);
   ierr = PetscFree2(rows_recv,ncols_recv);CHKERRQ(ierr);
   ierr = PetscFree3(localperm,reverseperm,localperm_tmp);CHKERRQ(ierr);
@@ -442,6 +495,7 @@ PetscErrorCode MatPartitioningHierarchpartGetFineparts(MatPartitioning part,IS *
 {
   MatPartitioning_HierarchPart *hpart = (MatPartitioning_HierarchPart*)part->data;
   PetscErrorCode                ierr;
+
   PetscFunctionBegin;
   *fineparts = hpart->fineparts;
   ierr = PetscObjectReference((PetscObject)hpart->fineparts);CHKERRQ(ierr);
@@ -454,9 +508,32 @@ PetscErrorCode MatPartitioningHierarchpartGetCoarseparts(MatPartitioning part,IS
 {
   MatPartitioning_HierarchPart *hpart = (MatPartitioning_HierarchPart*)part->data;
   PetscErrorCode                ierr;
+
   PetscFunctionBegin;
   *coarseparts = hpart->coarseparts;
-  ierr = PetscObjectReference((PetscObject)hpart->fineparts);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)hpart->coarseparts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningHierarchpartSetNcoarseparts"
+PetscErrorCode MatPartitioningHierarchpartSetNcoarseparts(MatPartitioning part, PetscInt Ncoarseparts)
+{
+  MatPartitioning_HierarchPart *hpart = (MatPartitioning_HierarchPart*)part->data;
+
+  PetscFunctionBegin;
+  hpart->Ncoarseparts = Ncoarseparts;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningHierarchpartSetNfineparts"
+PetscErrorCode MatPartitioningHierarchpartSetNfineparts(MatPartitioning part, PetscInt Nfineparts)
+{
+  MatPartitioning_HierarchPart *hpart = (MatPartitioning_HierarchPart*)part->data;
+
+  PetscFunctionBegin;
+  hpart->Nfineparts = Nfineparts;
   PetscFunctionReturn(0);
 }
 
@@ -489,7 +566,7 @@ PetscErrorCode MatPartitioningSetFromOptions_HierarchPart(PetscOptions *PetscOpt
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy_Parmetis"
+#define __FUNCT__ "MatPartitioningDestroy_HierarchPart"
 PetscErrorCode MatPartitioningDestroy_HierarchPart(MatPartitioning part)
 {
   MatPartitioning_HierarchPart *hpart = (MatPartitioning_HierarchPart*)part->data;
