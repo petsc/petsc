@@ -536,17 +536,17 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,rk->stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
+      if (!ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        ierr = TSAdjointComputeCostIntegrand(ts,rk->stage_time,Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,-h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);   
+      }
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
       if (ts->vec_costintegral) {
         ierr = VecAXPY(VecDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdy[nadj]);CHKERRQ(ierr);
       }
-    }
-    if (!ts->costintegralfwd) {
-      /* Evolve ts->vec_costintegral to compute integrals */
-      ierr = TSAdjointComputeCostIntegrand(ts,rk->stage_time,Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
-      ierr = VecAXPY(ts->vec_costintegral,-h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);   
     }
 
     /* Stage values of mu */
