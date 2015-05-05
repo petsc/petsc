@@ -316,7 +316,7 @@ PETSC_EXTERN PetscErrorCode PCGASMSetSortIndices(PC,PetscBool );
 
 PETSC_EXTERN PetscErrorCode PCGASMSetType(PC,PCGASMType);
 PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains(Mat,PetscInt,PetscInt*,IS*[]);
-PETSC_EXTERN PetscErrorCode PCGASMDestroySubdomains(PetscInt,IS[],IS[]);
+PETSC_EXTERN PetscErrorCode PCGASMDestroySubdomains(PetscInt,IS*[],IS*[]);
 PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubdomains(PC,PetscInt*,IS*[],IS*[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubmatrices(PC,PetscInt*,Mat*[]);

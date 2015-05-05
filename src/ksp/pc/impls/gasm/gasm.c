@@ -664,7 +664,7 @@ static PetscErrorCode PCReset_GASM(PC pc)
   ierr     = VecScatterDestroy(&osm->gorestriction);CHKERRQ(ierr);
   ierr     = VecScatterDestroy(&osm->girestriction);CHKERRQ(ierr);
   if (!osm->user_subdomains) {
-    ierr      = PCGASMDestroySubdomains(osm->n,osm->ois,osm->iis);CHKERRQ(ierr);
+    ierr      = PCGASMDestroySubdomains(osm->n,&osm->ois,&osm->iis);CHKERRQ(ierr);
     osm->N    = PETSC_DETERMINE;
     osm->nmax = PETSC_DETERMINE;
     osm->ois = 0;
@@ -760,7 +760,7 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
   if (N < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Total number of subdomains must be 1 or more, got N = %D",N);
   if (pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetTotalSubdomains() should be called before calling PCSetUp().");
 
-  ierr = PCGASMDestroySubdomains(osm->n,osm->iis,osm->ois);CHKERRQ(ierr);
+  ierr = PCGASMDestroySubdomains(osm->n,&osm->iis,&osm->ois);CHKERRQ(ierr);
   osm->ois = osm->iis = NULL;
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
@@ -784,7 +784,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
   if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more subdomains, got n = %D",n);
   if (pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetSubdomains() should be called before calling PCSetUp().");
 
-  ierr = PCGASMDestroySubdomains(osm->n,osm->iis,osm->ois);CHKERRQ(ierr);
+  ierr = PCGASMDestroySubdomains(osm->n,&osm->iis,&osm->ois);CHKERRQ(ierr);
   osm->iis  = osm->ois = NULL;
   osm->n    = n;
   osm->N    = PETSC_DETERMINE;
@@ -1392,7 +1392,7 @@ PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,P
 
 .seealso: PCGASMSetSubdomains(), PCGASMDestroySubdomains()
 @*/
-PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
+PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
 {
   PetscMPIInt     size;
   PetscErrorCode  ierr;
@@ -1429,13 +1429,14 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[]
    Level: intermediate
 
    Notes: this is merely a convenience subroutine that walks each list,
-   destroys each IS on the list, and then frees the list.
+   destroys each IS on the list, and then frees the list. At the end the
+   list pointers are set to NULL.
 
 .keywords: PC, GASM, additive Schwarz, create, subdomains, unstructured grid
 
 .seealso: PCGASMCreateSubdomains(), PCGASMSetSubdomains()
 @*/
-PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS iis[], IS ois[])
+PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -1444,16 +1445,23 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS iis[], IS ois[])
   if (n <= 0) PetscFunctionReturn(0);
   if (iis) {
     PetscValidPointer(iis,2);
-    for (i=0; i<n; i++) {
-      ierr = ISDestroy(&iis[i]);CHKERRQ(ierr);
+    if (*iis) {
+      PetscValidPointer(*iis,2);
+      for (i=0; i<n; i++) {
+        ierr = ISDestroy(&(*iis)[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree((*iis));CHKERRQ(ierr);
     }
-    ierr = PetscFree(iis);CHKERRQ(ierr);
   }
   if (ois) {
-    for (i=0; i<n; i++) {
-      ierr = ISDestroy(&ois[i]);CHKERRQ(ierr);
+    PetscValidPointer(ois,3);
+    if (*ois) {
+      PetscValidPointer(*ois,3);
+      for (i=0; i<n; i++) {
+        ierr = ISDestroy(&(*ois)[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(*ois);CHKERRQ(ierr);
     }
-    ierr = PetscFree(ois);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1515,7 +1523,7 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS iis[], IS ois[])
 
 .seealso: PCGASMSetSubdomains(), PCGASMGetSubKSP(), PCGASMSetOverlap()
 @*/
-PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt Mdomains,PetscInt Ndomains,PetscInt dof,PetscInt overlap, PetscInt *nsub,IS **iis,IS **ois)
+PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Mdomains,PetscInt Ndomains,PetscInt dof,PetscInt overlap,PetscInt *nsub,IS **iis,IS **ois)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size, rank;

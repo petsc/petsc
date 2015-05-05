@@ -167,6 +167,7 @@ int main(int argc,char **args)
   if (user_set_subdomains) { /* user-control version */
     ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris);CHKERRQ(ierr);
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
+    ierr = PCGASMDestroySubdomains(Nsub,&inneris,&outeris);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
@@ -288,9 +289,6 @@ int main(int argc,char **args)
      are no longer needed.
   */
 
-  if (user_set_subdomains) {
-    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris);CHKERRQ(ierr);
-  }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
