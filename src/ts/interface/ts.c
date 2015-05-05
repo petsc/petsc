@@ -3282,6 +3282,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    if (ts->vec_costintegral) ts->costintegralfwd=PETSC_TRUE;
     if(ts->event) {
       ierr = TSEventMonitorInitialize(ts);CHKERRQ(ierr);
     }
@@ -3311,7 +3312,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
-  if (ts->vec_costintegral) ts->costintegralfwd=PETSC_TRUE;
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   }
