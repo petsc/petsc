@@ -337,6 +337,8 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&mu[0],NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
