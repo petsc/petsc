@@ -24,10 +24,12 @@ struct _p_PetscDS {
   PetscBool   *adjacency; /* Flag for variable influence */
   PetscObject *disc;      /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscObject *discBd;    /* The boundary discretization for each solution field (PetscFE, PetscFV, etc.) */
-  PetscPointFunc   *obj;       /* Scalar integral (like an objective function) */
-  PetscPointFunc   *f,   *g;   /* Weak form integrands f_0, f_1, g_0, g_1, g_2, g_3 */
-  PetscBdPointFunc *fBd, *gBd; /* Weak form boundary integrands f_0, f_1, g_0, g_1, g_2, g_3 */
-  PetscRiemannFunc *r;         /* Riemann solvers */
+  PetscPointFunc   *obj;  /* Scalar integral (like an objective function) */
+  PetscPointFunc   *f;    /* Weak form integrands f_0, f_1 */
+  PetscPointJac    *g;    /* Weak form integrands g_0, g_1, g_2, g_3 */
+  PetscBdPointFunc *fBd;  /* Weak form boundary integrands f_0, f_1 */
+  PetscBdPointJac  *gBd;  /* Weak form boundary integrands g_0, g_1, g_2, g_3 */
+  PetscRiemannFunc *r;    /* Riemann solvers */
   void       **ctx;       /* User contexts for each field */
   PetscInt     dim;       /* The spatial dimension */
   /* Computed sizes */

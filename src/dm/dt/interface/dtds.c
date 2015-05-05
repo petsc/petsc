@@ -383,8 +383,10 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
   PetscObject      *tmpd, *tmpdbd;
   PetscBool        *tmpi, *tmpa;
-  PetscPointFunc   *tmpobj, *tmpf, *tmpg;
-  PetscBdPointFunc *tmpfbd, *tmpgbd;
+  PetscPointFunc   *tmpobj, *tmpf;
+  PetscPointJac    *tmpg;
+  PetscBdPointFunc *tmpfbd;
+  PetscBdPointJac  *tmpgbd;
   PetscRiemannFunc *tmpr;
   void            **tmpctx;
   PetscInt          Nf = prob->Nf, f, i;
@@ -1141,7 +1143,7 @@ The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
 $ g0(PetscInt dim, PetscInt Nf,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], PetscScalar g0[])
+$    const PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1156,6 +1158,7 @@ $    const PetscReal t, const PetscReal x[], PetscScalar g0[])
 . a_t - the time derivative of each auxiliary field evaluated at the current point
 . a_x - the gradient of auxiliary each field evaluated at the current point
 . t - current time
+. u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
 - g0 - output values at the current point
 
@@ -1167,19 +1170,19 @@ PetscErrorCode PetscDSGetJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                   void (**g0)(PetscInt dim, PetscInt Nf,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, const PetscReal x[], PetscScalar g0[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
                                   void (**g1)(PetscInt dim, PetscInt Nf,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, const PetscReal x[], PetscScalar g1[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
                                   void (**g2)(PetscInt dim, PetscInt Nf,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, const PetscReal x[], PetscScalar g2[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
                                   void (**g3)(PetscInt dim, PetscInt Nf,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, const PetscReal x[], PetscScalar g3[]))
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1232,6 +1235,7 @@ $    const PetscReal t, const PetscReal x[], PetscScalar g0[])
 . a_t - the time derivative of each auxiliary field evaluated at the current point
 . a_x - the gradient of auxiliary each field evaluated at the current point
 . t - current time
+. u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
 - g0 - output values at the current point
 
@@ -1243,19 +1247,19 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                   void (*g0)(PetscInt dim, PetscInt Nf,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, const PetscReal x[], PetscScalar g0[]),
+                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
                                   void (*g1)(PetscInt dim, PetscInt Nf,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, const PetscReal x[], PetscScalar g1[]),
+                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
                                   void (*g2)(PetscInt dim, PetscInt Nf,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, const PetscReal x[], PetscScalar g2[]),
+                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
                                   void (*g3)(PetscInt dim, PetscInt Nf,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, const PetscReal x[], PetscScalar g3[]))
+                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
@@ -1559,6 +1563,7 @@ $    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0
 . a_t - the time derivative of each auxiliary field evaluated at the current point
 . a_x - the gradient of auxiliary each field evaluated at the current point
 . t - current time
+. u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
 . n - normal at the current point
 - g0 - output values at the current point
@@ -1571,19 +1576,19 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                     void (**g0)(PetscInt dim, PetscInt Nf,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
                                     void (**g1)(PetscInt dim, PetscInt Nf,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
                                     void (**g2)(PetscInt dim, PetscInt Nf,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
                                     void (**g3)(PetscInt dim, PetscInt Nf,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1636,6 +1641,7 @@ $    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0
 . a_t - the time derivative of each auxiliary field evaluated at the current point
 . a_x - the gradient of auxiliary each field evaluated at the current point
 . t - current time
+. u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
 . n - normal at the current point
 - g0 - output values at the current point
@@ -1648,19 +1654,19 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                     void (*g0)(PetscInt dim, PetscInt Nf,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
                                     void (*g1)(PetscInt dim, PetscInt Nf,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
                                     void (*g2)(PetscInt dim, PetscInt Nf,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
                                     void (*g3)(PetscInt dim, PetscInt Nf,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
