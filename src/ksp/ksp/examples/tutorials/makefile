@@ -388,6 +388,11 @@ runex2_mkl_pardiso:
            if (${DIFF} output/ex2_mkl_pardiso.out ex2_mkl_pardiso.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_mkl_pardiso, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_mkl_pardiso.tmp
+runex2_mkl_pardiso_sym:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
+           if (${DIFF} output/ex2_mkl_pardiso_sym.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso_sym, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2_mkl_pardiso.tmp
 runex2_fbcgs:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ilu  > ex2.tmp 2>&1; \
            if (${DIFF} output/ex2_fbcgs.out ex2.tmp) then true; \
