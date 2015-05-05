@@ -78,7 +78,6 @@ testexamples_BLACS:
 testexamples_SCALAPACK:
 testexamples_CMAKE:
 testexamples_AFTERIMAGE:
-testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
 testexamples_NETCDF:
 testexamples_EXODUSII:
@@ -199,7 +198,6 @@ buildexamples_BLACS:
 buildexamples_SCALAPACK:
 buildexamples_CMAKE:
 buildexamples_AFTERIMAGE:
-buildexamples_PTHREADCLASSES:
 buildexamples_OPENMP:
 
 TESTMODE = testexamples

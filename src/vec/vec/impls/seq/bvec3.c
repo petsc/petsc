@@ -4,7 +4,6 @@
 */
 
 #include <../src/vec/vec/impls/dvecimpl.h>          /*I "petscvec.h" I*/
-#include <petscthreadcomm.h>
 /*MC
    VECSEQ - VECSEQ = "seq" - The basic sequential vector
 
