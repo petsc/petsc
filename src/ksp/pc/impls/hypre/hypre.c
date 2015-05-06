@@ -59,6 +59,7 @@ typedef struct {
   PetscInt  gridsweeps[3];
   PetscInt  coarsentype;
   PetscInt  measuretype;
+  PetscInt  smoothtype;
   PetscInt  relaxtype[3];
   double    relaxweight;
   double    outerrelaxweight;
@@ -358,6 +359,7 @@ static const char *HYPREBoomerAMGCycleType[]   = {"","V","W"};
 static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout", "", "PMIS", "", "HMIS"};
 static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};
 /* The following corresponds to HYPRE_BoomerAMGSetRelaxType which has many missing numbers in the enum */
+static const char *HYPREBoomerAMGSmoothType[]   = {"Schwarz-smoothers","Pilut","ParaSails","Euclid"};
 static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","seqboundary-Gauss-Seidel","SOR/Jacobi","backward-SOR/Jacobi",
                                                   "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */,"symmetric-SOR/Jacobi",
                                                   "" /* 7 */,"l1scaled-SOR/Jacobi","Gaussian-elimination",
@@ -463,6 +465,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOption
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleNumSweeps,(jac->hsolver,indx, 3));
     jac->gridsweeps[2] = indx;
+  }
+
+  /* Smooth type */
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,ALEN(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg);
+  if (flg) {
+    jac->smoothtype = indx;
+    PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,(jac->hsolver,indx+6)); 
   }
 
   /* Relax type */
@@ -653,6 +662,11 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Using CF-relaxation\n");CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using CF-relaxation\n");CHKERRQ(ierr);
+    }
+    if (jac->smoothtype!=-1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth type         %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Measure type        %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
@@ -1340,6 +1354,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->coarsentype      = 6;
     jac->measuretype      = 0;
     jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = 1;
+    jac->smoothtype       = -1; /* Not set by default */
     jac->relaxtype[0]     = jac->relaxtype[1] = 6; /* Defaults to SYMMETRIC since in PETSc we are using a a PC - most likely with CG */
     jac->relaxtype[2]     = 9; /*G.E. */
     jac->relaxweight      = 1.0;
