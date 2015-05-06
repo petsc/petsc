@@ -60,6 +60,7 @@ typedef struct {
   PetscInt  coarsentype;
   PetscInt  measuretype;
   PetscInt  smoothtype;
+  PetscInt  smoothnumlevels;
   PetscInt  relaxtype[3];
   double    relaxweight;
   double    outerrelaxweight;
@@ -472,6 +473,15 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOption
   if (flg) {
     jac->smoothtype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,(jac->hsolver,indx+6)); 
+    jac->smoothnumlevels = 25;
+    PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothNumLevels,(jac->hsolver,25));
+  }
+
+  /* Number of smoothing levels */
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_smooth_num_levels","Number of levels on which more complex smoothers are used","None",25,&indx,&flg);CHKERRQ(ierr);
+  if (flg && (jac->smoothtype != -1)) {
+    jac->smoothnumlevels = indx;
+    PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothNumLevels,(jac->hsolver,indx));
   }
 
   /* Relax type */
@@ -665,6 +675,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     }
     if (jac->smoothtype!=-1) {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth type         %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth num levels   %d\n",jac->smoothnumlevels);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
     }
