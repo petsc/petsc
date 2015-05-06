@@ -405,6 +405,19 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceGetOrder"
+/*@
+  PetscSpaceGetOrder - Return the order of approximation for this space
+
+  Input Parameter:
+. sp - The PetscSpace
+
+  Output Parameter:
+. order - The approximation order
+
+  Level: intermediate
+
+.seealso: PetscSpaceSetOrder(), PetscSpaceCreate(), PetscSpace
+@*/
 PetscErrorCode PetscSpaceGetOrder(PetscSpace sp, PetscInt *order)
 {
   PetscFunctionBegin;
@@ -416,6 +429,17 @@ PetscErrorCode PetscSpaceGetOrder(PetscSpace sp, PetscInt *order)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceSetOrder"
+/*@
+  PetscSpaceSetOrder - Set the order of approximation for this space
+
+  Input Parameters:
++ sp - The PetscSpace
+- order - The approximation order
+
+  Level: intermediate
+
+.seealso: PetscSpaceGetOrder(), PetscSpaceCreate(), PetscSpace
+@*/
 PetscErrorCode PetscSpaceSetOrder(PetscSpace sp, PetscInt order)
 {
   PetscFunctionBegin;
