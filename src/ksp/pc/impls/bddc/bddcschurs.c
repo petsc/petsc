@@ -8,8 +8,8 @@ static PetscErrorCode PCBDDCMumpsInteriorSolve(PC,Vec,Vec);
 static PetscErrorCode PCBDDCMumpsCorrectionSolve(PC,Vec,Vec);
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCMumpsCorrectionSolve"
-static PetscErrorCode PCBDDCMumpsCorrectionSolve(PC pc, Vec rhs, Vec sol)
+#define __FUNCT__ "PCBDDCMumpsCorrectionSolve_Private"
+static PetscErrorCode PCBDDCMumpsCorrectionSolve_Private(PC pc, Vec rhs, Vec sol, PetscBool transpose)
 {
   PCBDDCReuseMumps ctx;
   PetscInt         ival;
@@ -21,10 +21,36 @@ static PetscErrorCode PCBDDCMumpsCorrectionSolve(PC pc, Vec rhs, Vec sol)
   ierr = MatMumpsGetIcntl(ctx->F,26,&ival);CHKERRQ(ierr);
   ierr = MatMumpsSetIcntl(ctx->F,26,-1);CHKERRQ(ierr);
 #endif
-  ierr = MatSolve(ctx->F,rhs,sol);CHKERRQ(ierr);
+  if (transpose) {
+    ierr = MatSolveTranspose(ctx->F,rhs,sol);CHKERRQ(ierr);
+  } else {
+    ierr = MatSolve(ctx->F,rhs,sol);CHKERRQ(ierr);
+  }
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatMumpsSetIcntl(ctx->F,26,ival);CHKERRQ(ierr);
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMumpsCorrectionSolve"
+static PetscErrorCode PCBDDCMumpsCorrectionSolve(PC pc, Vec rhs, Vec sol)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCMumpsCorrectionSolve_Private(pc,rhs,sol,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMumpsCorrectionSolveTranspose"
+static PetscErrorCode PCBDDCMumpsCorrectionSolveTranspose(PC pc, Vec rhs, Vec sol)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCMumpsCorrectionSolve_Private(pc,rhs,sol,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,8 +73,8 @@ static PetscErrorCode PCBDDCReuseMumpsReset(PCBDDCReuseMumps reuse)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCMumpsInteriorSolve"
-static PetscErrorCode PCBDDCMumpsInteriorSolve(PC pc, Vec rhs, Vec sol)
+#define __FUNCT__ "PCBDDCMumpsInteriorSolve_Private"
+static PetscErrorCode PCBDDCMumpsInteriorSolve_Private(PC pc, Vec rhs, Vec sol, PetscBool transpose)
 {
   PCBDDCReuseMumps ctx;
   PetscScalar      *array,*array_mumps;
@@ -68,7 +94,11 @@ static PetscErrorCode PCBDDCMumpsInteriorSolve(PC pc, Vec rhs, Vec sol)
   ierr = VecRestoreArray(ctx->rhs,&array_mumps);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(rhs,(const PetscScalar**)&array);CHKERRQ(ierr);
 
-  ierr = MatSolve(ctx->F,ctx->rhs,ctx->sol);CHKERRQ(ierr);
+  if (transpose) {
+    ierr = MatSolveTranspose(ctx->F,ctx->rhs,ctx->sol);CHKERRQ(ierr);
+  } else {
+    ierr = MatSolve(ctx->F,ctx->rhs,ctx->sol);CHKERRQ(ierr);
+  }
 
   /* get back data to caller worskpace */
   ierr = VecGetArrayRead(ctx->sol,(const PetscScalar**)&array_mumps);CHKERRQ(ierr);
@@ -79,6 +109,28 @@ static PetscErrorCode PCBDDCMumpsInteriorSolve(PC pc, Vec rhs, Vec sol)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatMumpsSetIcntl(ctx->F,26,ival);CHKERRQ(ierr);
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMumpsInteriorSolve"
+static PetscErrorCode PCBDDCMumpsInteriorSolve(PC pc, Vec rhs, Vec sol)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCMumpsInteriorSolve_Private(pc,rhs,sol,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMumpsInteriorSolveTranspose"
+static PetscErrorCode PCBDDCMumpsInteriorSolveTranspose(PC pc, Vec rhs, Vec sol)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCMumpsInteriorSolve_Private(pc,rhs,sol,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,10 +724,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       if (sub_schurs->reuse_mumps) {
         ierr = PCBDDCReuseMumpsReset(sub_schurs->reuse_mumps);CHKERRQ(ierr);
-        ierr = PetscFree(sub_schurs->reuse_mumps);CHKERRQ(ierr);
+      } else {
+        ierr = PetscNew(&sub_schurs->reuse_mumps);CHKERRQ(ierr);
       }
+      msolv_ctx = sub_schurs->reuse_mumps;
       ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-      ierr = PetscNew(&msolv_ctx);CHKERRQ(ierr);
       ierr = MatGetSize(A_II,&msolv_ctx->n_I,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)F);CHKERRQ(ierr);
       msolv_ctx->F = F;
@@ -687,6 +740,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = PCSetType(msolv_ctx->interior_solver,PCSHELL);CHKERRQ(ierr);
       ierr = PCShellSetContext(msolv_ctx->interior_solver,msolv_ctx);CHKERRQ(ierr);
       ierr = PCShellSetApply(msolv_ctx->interior_solver,PCBDDCMumpsInteriorSolve);CHKERRQ(ierr);
+      ierr = PCShellSetApplyTranspose(msolv_ctx->interior_solver,PCBDDCMumpsInteriorSolveTranspose);CHKERRQ(ierr);
 
       /* correction solver */
       /* auxiliary scatters are needed and are created in PCBDDCSetUpLocalScatters */
@@ -695,8 +749,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = PCSetType(msolv_ctx->correction_solver,PCSHELL);CHKERRQ(ierr);
       ierr = PCShellSetContext(msolv_ctx->correction_solver,msolv_ctx);CHKERRQ(ierr);
       ierr = PCShellSetApply(msolv_ctx->correction_solver,PCBDDCMumpsCorrectionSolve);CHKERRQ(ierr);
+      ierr = PCShellSetApplyTranspose(msolv_ctx->correction_solver,PCBDDCMumpsCorrectionSolveTranspose);CHKERRQ(ierr);
       ierr = MatCreateVecs(S_all,&msolv_ctx->solB,&msolv_ctx->rhsB);CHKERRQ(ierr);
-      sub_schurs->reuse_mumps = msolv_ctx;
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
 

@@ -1748,7 +1748,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
     PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
 
     if (applytranspose) {
-      /* MatMumpsSolveSchurComplementTranspose */
+      ierr = MatMumpsSolveSchurComplementTranspose(reuse_mumps->F,reuse_mumps->rhsB,reuse_mumps->solB);CHKERRQ(ierr);
     } else {
       ierr = MatMumpsSolveSchurComplement(reuse_mumps->F,reuse_mumps->rhsB,reuse_mumps->solB);CHKERRQ(ierr);
     }
