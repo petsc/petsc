@@ -1171,6 +1171,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   mumps->schur_factored = PETSC_FALSE;
   mumps->schur_inverted = PETSC_FALSE;
 
+  /* just to be sure that ICNTL(19) value returned by a call from MatMumpsGetIcntl is always consistent */
+  if (!mumps->sym && mumps->id.ICNTL(19) && mumps->id.ICNTL(19) != 1) mumps->id.ICNTL(19) = 3;
+
   if (mumps->size > 1) {
     PetscInt    lsol_loc;
     PetscScalar *sol_loc;
@@ -1820,13 +1823,6 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
           PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
 #endif
           array[i*N+j] = val;
-        }
-        for (j=i;j<N;j++) {
-#if !defined(PETSC_USE_COMPLEX)
-          PetscScalar val = mumps->id.schur[i*N+j];
-#else
-          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
-#endif
           array[j*N+i] = val;
         }
       }
@@ -1842,13 +1838,6 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
           PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
 #endif
           array[i*N+j] = val;
-        }
-        for (j=0;j<i+1;j++) {
-#if !defined(PETSC_USE_COMPLEX)
-          PetscScalar val = mumps->id.schur[i*N+j];
-#else
-          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
-#endif
           array[j*N+i] = val;
         }
       }
@@ -1873,6 +1862,7 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
    Notes:
    MUMPS Schur complement mode is currently implemented for sequential matrices.
    The routine provides a copy of the Schur data stored within MUMPS data strutures. The caller must destroy the object when it is no longer needed.
+   If MatMumpsInvertSchurComplement has been called, the routine gets back the inverse
 
    Level: advanced
 
@@ -1911,7 +1901,6 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
   }
   /* It should be the responsibility of the user to handle different ICNTL(19) cases if they want to work with the raw data */
   /* should I also add errors when the Schur complement has been already factored? */
-  ierr = MatCreate(PetscObjectComm((PetscObject)F),&St);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)F),mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&St);CHKERRQ(ierr);
   *S = St;
   mumps->schur_restored = PETSC_FALSE;
@@ -1932,6 +1921,7 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
    Notes:
    MUMPS Schur complement mode is currently implemented for sequential matrices.
    The routine uses the pointer to the raw data of the Schur Complement stored within MUMPS data strutures. The caller should call MatMumpsRestoreSchurComplement when the object is no longer needed.
+   If MatMumpsInvertSchurComplement has been called, the routine gets back the inverse
 
    Level: advanced
 
@@ -1964,8 +1954,8 @@ PetscErrorCode MatMumpsRestoreSchurComplement_MUMPS(Mat F,Mat* S)
     SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
   } else if (!mumps->id.size_schur) {
     SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+  } else if (mumps->schur_restored) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has been already restored");
   }
   ierr = MatDestroy(S);CHKERRQ(ierr);
   *S = NULL;
