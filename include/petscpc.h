@@ -145,6 +145,8 @@ PETSC_EXTERN PetscErrorCode PCASMSetSortIndices(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCASMSetType(PC,PCASMType);
 PETSC_EXTERN PetscErrorCode PCASMGetType(PC,PCASMType*);
+PETSC_EXTERN PetscErrorCode PCASMSetLocalType(PC,PCCompositeType);
+PETSC_EXTERN PetscErrorCode PCASMGetLocalType(PC,PCCompositeType*);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains(Mat,PetscInt,IS*[]);
 PETSC_EXTERN PetscErrorCode PCASMDestroySubdomains(PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
