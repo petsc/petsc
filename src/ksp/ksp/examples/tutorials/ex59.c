@@ -748,9 +748,9 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
     ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-
 #if DEBUG
   {
     Vec       lvec,rvec;
