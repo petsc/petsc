@@ -61,8 +61,6 @@ struct _PCBDDCReuseMumps {
   Vec        rhs;
   /* size of interior problem */
   PetscInt   n_I;
-  /* Placeholder for inverted Schur (optional) */
-  Mat        S_inv;
   /* shell PCs to handle MUMPS interior/correction solvers */
   PC         interior_solver;
   PC         correction_solver;

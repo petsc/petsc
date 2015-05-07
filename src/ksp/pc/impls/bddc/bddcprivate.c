@@ -1704,18 +1704,28 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
 #define __FUNCT__ "PCBDDCSolveSubstructureCorrection"
 static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec inout_D, PetscBool applytranspose)
 {
-  PetscErrorCode ierr;
-  PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
+  PetscErrorCode  ierr;
+  PC_BDDC*        pcbddc = (PC_BDDC*)(pc->data);
+  PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
 
   PetscFunctionBegin;
-  ierr = VecSet(pcbddc->vec1_R,0.);CHKERRQ(ierr);
+  if (!sub_schurs->reuse_mumps) {
+    ierr = VecSet(pcbddc->vec1_R,0.);CHKERRQ(ierr);
+  }
   if (!pcbddc->switch_static) {
     if (applytranspose && pcbddc->local_auxmat1) {
       ierr = MatMultTranspose(pcbddc->local_auxmat2,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);
       ierr = MatMultTransposeAdd(pcbddc->local_auxmat1,pcbddc->vec1_C,inout_B,inout_B);CHKERRQ(ierr);
     }
-    ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    if (!sub_schurs->reuse_mumps) {
+      ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    } else {
+      PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
+
+      ierr = VecScatterBegin(reuse_mumps->correction_scatter_B,inout_B,reuse_mumps->rhsB,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(reuse_mumps->correction_scatter_B,inout_B,reuse_mumps->rhsB,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    }
   } else {
     ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1728,15 +1738,32 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
-  if (applytranspose) {
-    ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+  if (!sub_schurs->reuse_mumps) {
+    if (applytranspose) {
+      ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+    }
   } else {
-    ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
+    PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
+
+    if (applytranspose) {
+      /* MatMumpsSolveSchurComplementTranspose */
+    } else {
+      ierr = MatMumpsSolveSchurComplement(reuse_mumps->F,reuse_mumps->rhsB,reuse_mumps->solB);CHKERRQ(ierr);
+    }
   }
   ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
   if (!pcbddc->switch_static) {
-    ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!sub_schurs->reuse_mumps) {
+      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    } else {
+      PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
+
+      ierr = VecScatterBegin(reuse_mumps->correction_scatter_B,reuse_mumps->solB,inout_B,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(reuse_mumps->correction_scatter_B,reuse_mumps->solB,inout_B,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
     if (!applytranspose && pcbddc->local_auxmat1) {
       ierr = MatMult(pcbddc->local_auxmat1,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);
       ierr = MatMultAdd(pcbddc->local_auxmat2,pcbddc->vec1_C,inout_B,inout_B);CHKERRQ(ierr);
