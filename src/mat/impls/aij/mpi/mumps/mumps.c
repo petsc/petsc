@@ -279,7 +279,20 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat_MUMPS* mumps, PetscBool sol
     if (sol_in_redrhs) {
       ierr = PetscMemcpy(mumps->id.redrhs,mumps->schur_sol,sizesol*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-  } else {
+  } else { /* Schur complement has not been inverted */
+    MumpsScalar *orhs=NULL;
+
+    if (!sol_in_redrhs) {
+      PetscInt sizesol = B_Nrhs*B_N;
+      if (!mumps->schur_sol || sizesol > mumps->schur_sizesol) {
+        ierr = PetscFree(mumps->schur_sol);CHKERRQ(ierr);
+        ierr = PetscMalloc1(sizesol,&mumps->schur_sol);CHKERRQ(ierr);
+        mumps->schur_sizesol = sizesol;
+      }
+      orhs = mumps->id.redrhs;
+      ierr = PetscMemcpy(mumps->schur_sol,mumps->id.redrhs,sizesol*sizeof(PetscScalar));CHKERRQ(ierr);
+      mumps->id.redrhs = (MumpsScalar*)mumps->schur_sol;
+    }
     if (!mumps->sym) { /* MUMPS always return a full Schur matrix */
       char type[2];
       if (mumps->id.ICNTL(19) == 1) { /* stored by rows */
@@ -319,13 +332,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat_MUMPS* mumps, PetscBool sol
       }
     }
     if (!sol_in_redrhs) {
-      PetscInt sizesol = B_Nrhs*B_N;
-      if (!mumps->schur_sol || sizesol > mumps->schur_sizesol) {
-        ierr = PetscFree(mumps->schur_sol);CHKERRQ(ierr);
-        ierr = PetscMalloc1(sizesol,&mumps->schur_sol);CHKERRQ(ierr);
-        mumps->schur_sizesol = sizesol;
-      }
-      ierr = PetscMemcpy(mumps->schur_sol,mumps->id.redrhs,sizesol*sizeof(PetscScalar));CHKERRQ(ierr);
+      mumps->id.redrhs = orhs;
     }
   }
   PetscFunctionReturn(0);
@@ -2055,6 +2062,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   MumpsScalar    *orhs;
   PetscScalar    *osol,*nrhs,*nsol;
+  PetscInt       orhs_size,osol_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2069,11 +2077,16 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   }
   /* swap pointers */
   orhs = mumps->id.redrhs;
+  orhs_size = mumps->sizeredrhs;
   osol = mumps->schur_sol;
+  osol_size = mumps->schur_sizesol;
   ierr = VecGetArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = (MumpsScalar*)nrhs;
+  ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
   mumps->schur_sol = nsol;
+  ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
+
   /* solve Schur complement */
   mumps->id.nrhs = 1;
   ierr = MatMumpsSolveSchur_Private(mumps,PETSC_FALSE);CHKERRQ(ierr);
@@ -2081,7 +2094,9 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = orhs;
+  mumps->sizeredrhs = orhs_size;
   mumps->schur_sol = osol;
+  mumps->schur_sizesol = osol_size;
   PetscFunctionReturn(0);
 }
 
@@ -2129,6 +2144,7 @@ PetscErrorCode MatMumpsSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec s
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   MumpsScalar    *orhs;
   PetscScalar    *osol,*nrhs,*nsol;
+  PetscInt       orhs_size,osol_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2143,11 +2159,16 @@ PetscErrorCode MatMumpsSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec s
   }
   /* swap pointers */
   orhs = mumps->id.redrhs;
+  orhs_size = mumps->sizeredrhs;
   osol = mumps->schur_sol;
+  osol_size = mumps->schur_sizesol;
   ierr = VecGetArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = (MumpsScalar*)nrhs;
+  ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
   mumps->schur_sol = nsol;
+  ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
+
   /* solve Schur complement */
   mumps->id.nrhs = 1;
   mumps->id.ICNTL(9) = 0;
@@ -2157,7 +2178,9 @@ PetscErrorCode MatMumpsSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec s
   ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = orhs;
+  mumps->sizeredrhs = orhs_size;
   mumps->schur_sol = osol;
+  mumps->schur_sizesol = osol_size;
   PetscFunctionReturn(0);
 }
 
