@@ -197,7 +197,7 @@ static PetscErrorCode FunctionalDestroy(Functional *link)
   PetscFunctionReturn(0);
 }
 
-static void f0_zero_u(PetscInt dim, PetscInt Nf,
+static void f0_zero_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                       PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -206,7 +206,7 @@ static void f0_zero_u(PetscInt dim, PetscInt Nf,
   for (comp = 0; comp < dim; ++comp) f0[comp] = u[comp];
 }
 
-static void f0_constant_u(PetscInt dim, PetscInt Nf,
+static void f0_constant_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                           PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -218,7 +218,7 @@ static void f0_constant_u(PetscInt dim, PetscInt Nf,
   for (comp = 0; comp < dim; ++comp) f0[comp] = u[comp] - wind[comp];
 }
 
-static void f1_constant_u(PetscInt dim, PetscInt Nf,
+static void f1_constant_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                           PetscReal t, const PetscReal x[], PetscScalar f1[])
@@ -227,7 +227,7 @@ static void f1_constant_u(PetscInt dim, PetscInt Nf,
   for (comp = 0; comp < dim*dim; ++comp) f1[comp] = 0.0;
 }
 
-static void g0_constant_uu(PetscInt dim, PetscInt Nf,
+static void g0_constant_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                            PetscReal t, const PetscReal x[], PetscScalar g0[])
@@ -236,7 +236,7 @@ static void g0_constant_uu(PetscInt dim, PetscInt Nf,
   for (d = 0; d < dim; ++d) g0[d*dim+d] = 1.0;
 }
 
-static void g0_constant_pp(PetscInt dim, PetscInt Nf,
+static void g0_constant_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                            PetscReal t, const PetscReal x[], PetscScalar g0[])
@@ -244,7 +244,7 @@ static void g0_constant_pp(PetscInt dim, PetscInt Nf,
   g0[0] = 1.0;
 }
 
-static void f0_lap_u(PetscInt dim, PetscInt Nf,
+static void f0_lap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                      PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -253,7 +253,7 @@ static void f0_lap_u(PetscInt dim, PetscInt Nf,
   for (comp = 0; comp < dim; ++comp) f0[comp] = 4.0;
 }
 
-static void f1_lap_u(PetscInt dim, PetscInt Nf,
+static void f1_lap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                      PetscReal t, const PetscReal x[], PetscScalar f1[])
@@ -266,7 +266,7 @@ static void f1_lap_u(PetscInt dim, PetscInt Nf,
   }
 }
 
-static void f0_lap_periodic_u(PetscInt dim, PetscInt Nf,
+static void f0_lap_periodic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                               PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -275,7 +275,7 @@ static void f0_lap_periodic_u(PetscInt dim, PetscInt Nf,
   f0[1] = 2.0*PETSC_PI*x[1]*cos(2.0*PETSC_PI*x[0]);
 }
 
-static void f0_lap_doubly_periodic_u(PetscInt dim, PetscInt Nf,
+static void f0_lap_doubly_periodic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                      PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -284,7 +284,7 @@ static void f0_lap_doubly_periodic_u(PetscInt dim, PetscInt Nf,
   f0[1] =  2.0*sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0]);
 }
 
-static void f0_advection(PetscInt dim, PetscInt Nf,
+static void f0_advection(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                          PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -294,7 +294,7 @@ static void f0_advection(PetscInt dim, PetscInt Nf,
   for (d = 0; d < dim; ++d) f0[0] += u[dim]*u_x[d*dim+d] + u_x[dim*dim+d]*u[d];
 }
 
-static void f1_advection(PetscInt dim, PetscInt Nf,
+static void f1_advection(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                          PetscReal t, const PetscReal x[], PetscScalar f1[])
