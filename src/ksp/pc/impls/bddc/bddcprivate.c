@@ -1361,10 +1361,8 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
       ierr = ISDuplicate(sub_schurs->is_Ej_all,&is_B_reuse_mumps);CHKERRQ(ierr);
     }
     ierr = ISGetLocalSize(is_B_reuse_mumps,&schur_size);CHKERRQ(ierr);
-    if (reuse_mumps->S_inv) {
-      ierr = VecScatterDestroy(&reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
-      ierr = VecScatterCreate(pcis->vec1_B,is_B_reuse_mumps,reuse_mumps->solB,NULL,&reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
-    }
+    ierr = VecScatterDestroy(&reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
+    ierr = VecScatterCreate(pcis->vec1_B,is_B_reuse_mumps,reuse_mumps->solB,NULL,&reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyIS(sub_schurs->BtoNmap,is_B_reuse_mumps,&tisB_N);CHKERRQ(ierr);
     list[0] = pcis->is_I_local;
     list[1] = tisB_N;
@@ -3508,7 +3506,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     PetscMPIInt color,subcommsize;
 
     color = 0;
-    if (!n_recvs) color = 1; /* processes not receiving anything will not partecipate in new comm */
+    if (!n_recvs && n_sends) color = 1; /* processes sending and not receiving anything will not partecipate in new comm */
     ierr = MPI_Allreduce(&color,&subcommsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     subcommsize = commsize - subcommsize;
     /* check if reuse has been requested */
