@@ -1785,7 +1785,7 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   PetscScalar    *array;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar    im = PetscSqrtScalar(-1.0);
+  PetscScalar    im = PetscSqrtScalar((PetscScalar)-1.0);
 #endif
   PetscErrorCode ierr;
 
