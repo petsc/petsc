@@ -1302,8 +1302,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   PC_IS*          pcis = (PC_IS*)(pc->data);
   PC_BDDC*        pcbddc = (PC_BDDC*)pc->data;
   PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
-  IS              is_B_reuse_mumps=NULL;
-  PetscInt        *idx_R_local;
+  PetscInt        *idx_R_local=NULL;
   PetscInt        n_vertices,i,j,n_R,n_D,n_B;
   PetscInt        vbs,bs;
   PetscBT         bitmask=NULL;
@@ -1331,10 +1330,10 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   n_vertices = pcbddc->n_vertices;
 
   /* Dohrmann's notation: dofs splitted in R (Remaining: all dofs but the vertices) and V (Vertices) */
-  ierr = PetscMalloc1(pcis->n-n_vertices,&idx_R_local);CHKERRQ(ierr);
 
-  /* create auxiliary bitmask */
+  /* create auxiliary bitmask and allocate workspace */
   if (!sub_schurs->reuse_mumps) {
+    ierr = PetscMalloc1(pcis->n-n_vertices,&idx_R_local);CHKERRQ(ierr);
     ierr = PetscBTCreate(pcis->n,&bitmask);CHKERRQ(ierr);
     for (i=0;i<n_vertices;i++) {
       ierr = PetscBTSet(bitmask,pcbddc->local_primal_ref_node[i]);CHKERRQ(ierr);
@@ -1345,34 +1344,11 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
         idx_R_local[n_R++] = i;
       }
     }
-  } else { /* A different ordering and auxiliary scatters are needed we are reusing MUMPS Schur solver */
-    PCBDDCReuseMumps       reuse_mumps = sub_schurs->reuse_mumps;
-    const PetscInt         *idxs;
-    PetscInt               schur_size;
-    IS                     list[2],tisB_N,tisR;
+  } else { /* A different ordering (already computed) is present if we are reusing MUMPS Schur solver */
+    PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
 
-    if (sub_schurs->is_dir) {
-      list[0] = sub_schurs->is_Ej_all;
-      list[1] = sub_schurs->is_dir;
-      ierr = ISGlobalToLocalMappingApplyIS(pcis->BtoNmap,IS_GTOLM_DROP,sub_schurs->is_dir,&list[1]);CHKERRQ(ierr);
-      ierr = ISConcatenate(PETSC_COMM_SELF,2,list,&is_B_reuse_mumps);CHKERRQ(ierr);
-      ierr = ISDestroy(&list[1]);CHKERRQ(ierr);
-    } else {
-      ierr = ISDuplicate(sub_schurs->is_Ej_all,&is_B_reuse_mumps);CHKERRQ(ierr);
-    }
-    ierr = ISGetLocalSize(is_B_reuse_mumps,&schur_size);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcis->vec1_B,is_B_reuse_mumps,reuse_mumps->solB,NULL,&reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(sub_schurs->BtoNmap,is_B_reuse_mumps,&tisB_N);CHKERRQ(ierr);
-    list[0] = pcis->is_I_local;
-    list[1] = tisB_N;
-    ierr = ISConcatenate(PETSC_COMM_SELF,2,list,&tisR);CHKERRQ(ierr);
-    ierr = ISDestroy(&tisB_N);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(tisR,&n_R);CHKERRQ(ierr);
-    ierr = ISGetIndices(tisR,&idxs);CHKERRQ(ierr);
-    ierr = PetscMemcpy(idx_R_local,idxs,n_R*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = ISRestoreIndices(tisR,&idxs);CHKERRQ(ierr);
-    ierr = ISDestroy(&tisR);CHKERRQ(ierr);
+    ierr = ISGetIndices(reuse_mumps->is_R,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(reuse_mumps->is_R,&n_R);CHKERRQ(ierr);
   }
 
   /* Block code */
@@ -1400,7 +1376,16 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
     ierr = PetscFree(vary);CHKERRQ(ierr);
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,vbs,n_R/vbs,idx_R_local,PETSC_COPY_VALUES,&pcbddc->is_R_local);CHKERRQ(ierr);
-  ierr = PetscFree(idx_R_local);CHKERRQ(ierr);
+  if (sub_schurs->reuse_mumps) {
+    PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
+
+    ierr = ISRestoreIndices(reuse_mumps->is_R,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
+    ierr = ISDestroy(&reuse_mumps->is_R);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pcbddc->is_R_local);CHKERRQ(ierr);
+    reuse_mumps->is_R = pcbddc->is_R_local;
+  } else {
+    ierr = PetscFree(idx_R_local);CHKERRQ(ierr);
+  }
 
   /* print some info if requested */
   if (pcbddc->dbg_flag) {
@@ -1458,12 +1443,13 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
     ierr = PetscBTDestroy(&bitmask);CHKERRQ(ierr);
     ierr = ISRestoreIndices(pcbddc->is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
   } else {
-    IS       tis;
-    PetscInt schur_size;
+    PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
+    IS               tis;
+    PetscInt         schur_size;
 
-    ierr = ISGetLocalSize(is_B_reuse_mumps,&schur_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(reuse_mumps->is_B,&schur_size);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,schur_size,n_D,1,&tis);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcbddc->vec1_R,tis,pcis->vec1_B,is_B_reuse_mumps,&pcbddc->R_to_B);CHKERRQ(ierr);
+    ierr = VecScatterCreate(pcbddc->vec1_R,tis,pcis->vec1_B,reuse_mumps->is_B,&pcbddc->R_to_B);CHKERRQ(ierr);
     ierr = ISDestroy(&tis);CHKERRQ(ierr);
     if (pcbddc->switch_static || pcbddc->dbg_flag) {
       ierr = ISCreateStride(PETSC_COMM_SELF,n_D,0,1,&tis);CHKERRQ(ierr);
@@ -1471,7 +1457,6 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
       ierr = ISDestroy(&tis);CHKERRQ(ierr);
     }
   }
-  ierr = ISDestroy(&is_B_reuse_mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1723,8 +1708,8 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
     } else {
       PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
 
-      ierr = VecScatterBegin(reuse_mumps->correction_scatter_B,inout_B,reuse_mumps->rhsB,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(reuse_mumps->correction_scatter_B,inout_B,reuse_mumps->rhsB,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(reuse_mumps->correction_scatter_B,inout_B,reuse_mumps->rhs_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(reuse_mumps->correction_scatter_B,inout_B,reuse_mumps->rhs_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
   } else {
     ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1744,14 +1729,16 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
     } else {
       ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_MUMPS)
   } else {
     PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
 
     if (applytranspose) {
-      ierr = MatMumpsSolveSchurComplementTranspose(reuse_mumps->F,reuse_mumps->rhsB,reuse_mumps->solB);CHKERRQ(ierr);
+      ierr = MatMumpsSolveSchurComplementTranspose(reuse_mumps->F,reuse_mumps->rhs_B,reuse_mumps->sol_B);CHKERRQ(ierr);
     } else {
-      ierr = MatMumpsSolveSchurComplement(reuse_mumps->F,reuse_mumps->rhsB,reuse_mumps->solB);CHKERRQ(ierr);
+      ierr = MatMumpsSolveSchurComplement(reuse_mumps->F,reuse_mumps->rhs_B,reuse_mumps->sol_B);CHKERRQ(ierr);
     }
+#endif
   }
   ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
   if (!pcbddc->switch_static) {
@@ -1761,8 +1748,8 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
     } else {
       PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
 
-      ierr = VecScatterBegin(reuse_mumps->correction_scatter_B,reuse_mumps->solB,inout_B,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(reuse_mumps->correction_scatter_B,reuse_mumps->solB,inout_B,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterBegin(reuse_mumps->correction_scatter_B,reuse_mumps->sol_B,inout_B,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(reuse_mumps->correction_scatter_B,reuse_mumps->sol_B,inout_B,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
     if (!applytranspose && pcbddc->local_auxmat1) {
       ierr = MatMult(pcbddc->local_auxmat1,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);

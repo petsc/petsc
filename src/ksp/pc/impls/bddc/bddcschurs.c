@@ -66,9 +66,11 @@ static PetscErrorCode PCBDDCReuseMumpsReset(PCBDDCReuseMumps reuse)
   ierr = VecDestroy(&reuse->rhs);CHKERRQ(ierr);
   ierr = PCDestroy(&reuse->interior_solver);CHKERRQ(ierr);
   ierr = PCDestroy(&reuse->correction_solver);CHKERRQ(ierr);
+  ierr = ISDestroy(&reuse->is_R);CHKERRQ(ierr);
+  ierr = ISDestroy(&reuse->is_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&reuse->correction_scatter_B);CHKERRQ(ierr);
-  ierr = VecDestroy(&reuse->solB);CHKERRQ(ierr);
-  ierr = VecDestroy(&reuse->rhsB);CHKERRQ(ierr);
+  ierr = VecDestroy(&reuse->sol_B);CHKERRQ(ierr);
+  ierr = VecDestroy(&reuse->rhs_B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -663,7 +665,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = ISGetLocalSize(sub_schurs->is_dir,&size_schur);CHKERRQ(ierr);
       size_schur += local_size;
     }
-    size_active_schur = local_size;
+    ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
+    size_active_schur = local_size; /* size active schurs does not count any dirichlet dof on the interface */
     ierr = MatGetSubMatrix(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
 
@@ -715,11 +718,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       reuse_solvers = PETSC_FALSE;
       restore_S = PETSC_FALSE;
     }
-    ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
-    ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
 
     if (reuse_solvers) {
       Mat              A_II;
+      Vec              vec1_B;
       PCBDDCReuseMumps msolv_ctx;
 
       if (sub_schurs->reuse_mumps) {
@@ -743,16 +745,24 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = PCShellSetApplyTranspose(msolv_ctx->interior_solver,PCBDDCMumpsInteriorSolveTranspose);CHKERRQ(ierr);
 
       /* correction solver */
-      /* auxiliary scatters are needed and are created in PCBDDCSetUpLocalScatters */
       ierr = PCCreate(PETSC_COMM_SELF,&msolv_ctx->correction_solver);CHKERRQ(ierr);
       ierr = PCSetOperators(msolv_ctx->correction_solver,A,A);CHKERRQ(ierr);
       ierr = PCSetType(msolv_ctx->correction_solver,PCSHELL);CHKERRQ(ierr);
       ierr = PCShellSetContext(msolv_ctx->correction_solver,msolv_ctx);CHKERRQ(ierr);
       ierr = PCShellSetApply(msolv_ctx->correction_solver,PCBDDCMumpsCorrectionSolve);CHKERRQ(ierr);
       ierr = PCShellSetApplyTranspose(msolv_ctx->correction_solver,PCBDDCMumpsCorrectionSolveTranspose);CHKERRQ(ierr);
-      ierr = MatCreateVecs(S_all,&msolv_ctx->solB,&msolv_ctx->rhsB);CHKERRQ(ierr);
+
+      /* scatter and vecs for Schur complement solver */
+      ierr = MatCreateVecs(S_all,&msolv_ctx->sol_B,&msolv_ctx->rhs_B);CHKERRQ(ierr);
+      ierr = MatCreateVecs(sub_schurs->S,&vec1_B,NULL);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApplyIS(sub_schurs->BtoNmap,IS_GTOLM_DROP,is_A_all,&msolv_ctx->is_B);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vec1_B,msolv_ctx->is_B,msolv_ctx->sol_B,NULL,&msolv_ctx->correction_scatter_B);CHKERRQ(ierr);
+      ierr = VecDestroy(&vec1_B);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)is_A_all);CHKERRQ(ierr);
+      msolv_ctx->is_R = is_A_all;
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
 
     /* Work arrays */
     ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&work);CHKERRQ(ierr);

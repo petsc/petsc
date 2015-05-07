@@ -64,8 +64,11 @@ struct _PCBDDCReuseMumps {
   /* shell PCs to handle MUMPS interior/correction solvers */
   PC         interior_solver;
   PC         correction_solver;
-  Vec        rhsB;
-  Vec        solB;
+  IS         is_R;
+  /* objects to hanlde Schur complement solution */
+  Vec        rhs_B;
+  Vec        sol_B;
+  IS         is_B;
   VecScatter correction_scatter_B;
 };
 typedef struct _PCBDDCReuseMumps *PCBDDCReuseMumps;
