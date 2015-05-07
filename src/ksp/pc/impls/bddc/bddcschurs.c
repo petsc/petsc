@@ -330,7 +330,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = VecCopy(vec1,vec2);CHKERRQ(ierr);
         ierr = MatMult(sub_schurs->A,vec2,vec1);CHKERRQ(ierr);
         ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
-        if (PetscRealPart(val) > 0. && PetscImaginaryPart(val) == 0.) sub_schurs->is_posdef = PETSC_TRUE;
+        if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
         ierr = VecDestroy(&vec1);CHKERRQ(ierr);
         ierr = VecDestroy(&vec2);CHKERRQ(ierr);
       }
@@ -339,7 +339,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       sub_schurs->is_posdef = PETSC_TRUE;
     }
     if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
-      SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"General matrix pencils are not currently supported");
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"General matrix pencils are not currently supported (%d,%d)",sub_schurs->is_hermitian,sub_schurs->is_posdef);
     }
   }
   /* restrict work on active processes */
