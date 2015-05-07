@@ -62,7 +62,7 @@ void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
   *u = x[0]*x[0] + x[1]*x[1];
 }
 
-void f0_u(PetscInt dim, PetscInt Nf,
+void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -70,7 +70,7 @@ void f0_u(PetscInt dim, PetscInt Nf,
   f0[0] = 4.0;
 }
 
-void f0_bd_u(PetscInt dim, PetscInt Nf,
+void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
              PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
@@ -79,7 +79,7 @@ void f0_bd_u(PetscInt dim, PetscInt Nf,
   for (d = 0, f0[0] = 0.0; d < dim; ++d) f0[0] += -n[d]*2.0*x[d];
 }
 
-void f0_bd_zero(PetscInt dim, PetscInt Nf,
+void f0_bd_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                 PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
@@ -87,7 +87,7 @@ void f0_bd_zero(PetscInt dim, PetscInt Nf,
   f0[0] = 0.0;
 }
 
-void f1_bd_zero(PetscInt dim, PetscInt Nf,
+void f1_bd_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                 PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
@@ -97,7 +97,7 @@ void f1_bd_zero(PetscInt dim, PetscInt Nf,
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
-void f1_u(PetscInt dim, PetscInt Nf,
+void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscScalar f1[])
@@ -108,7 +108,7 @@ void f1_u(PetscInt dim, PetscInt Nf,
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
    This just gives \nabla u, give the perdiagonal for the transpose */
-void g3_uu(PetscInt dim, PetscInt Nf,
+void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
            PetscReal t, const PetscReal x[], PetscScalar g3[])
@@ -133,7 +133,7 @@ void nu_2d(const PetscReal x[], PetscScalar *u, void *ctx)
   *u = x[0] + x[1];
 }
 
-void f0_analytic_u(PetscInt dim, PetscInt Nf,
+void f0_analytic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                    PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -142,7 +142,7 @@ void f0_analytic_u(PetscInt dim, PetscInt Nf,
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
-void f1_analytic_u(PetscInt dim, PetscInt Nf,
+void f1_analytic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                    PetscReal t, const PetscReal x[], PetscScalar f1[])
@@ -151,7 +151,7 @@ void f1_analytic_u(PetscInt dim, PetscInt Nf,
   for (d = 0; d < dim; ++d) f1[d] = (x[0] + x[1])*u_x[d];
 }
 
-void f1_field_u(PetscInt dim, PetscInt Nf,
+void f1_field_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                 PetscReal t, const PetscReal x[], PetscScalar f1[])
@@ -162,7 +162,7 @@ void f1_field_u(PetscInt dim, PetscInt Nf,
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
    This just gives \nabla u, give the perdiagonal for the transpose */
-void g3_analytic_uu(PetscInt dim, PetscInt Nf,
+void g3_analytic_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                     PetscReal t, const PetscReal x[], PetscScalar g3[])
@@ -171,7 +171,7 @@ void g3_analytic_uu(PetscInt dim, PetscInt Nf,
   for (d = 0; d < dim; ++d) g3[d*dim+d] = x[0] + x[1];
 }
 
-void g3_field_uu(PetscInt dim, PetscInt Nf,
+void g3_field_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                  PetscReal t, const PetscReal x[], PetscScalar g3[])
@@ -191,7 +191,7 @@ void g3_field_uu(PetscInt dim, PetscInt Nf,
 
     -\div \nu \grad u + f = -16 (x^2 + y^2) + 16 (x^2 + y^2) = 0
 */
-void f0_analytic_nonlinear_u(PetscInt dim, PetscInt Nf,
+void f0_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                              PetscReal t, const PetscReal x[], PetscScalar f0[])
@@ -200,7 +200,7 @@ void f0_analytic_nonlinear_u(PetscInt dim, PetscInt Nf,
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
-void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf,
+void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                              PetscReal t, const PetscReal x[], PetscScalar f1[])
@@ -219,7 +219,7 @@ void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf,
 = 1/2 (eps |grad u|^2 grad w + 2 eps <grad u,grad w> grad u)
 = eps (1/2 |grad u|^2 grad w + grad u <grad u,grad w>)
 */
-void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf,
+void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                               PetscReal t, const PetscReal x[], PetscScalar g3[])
