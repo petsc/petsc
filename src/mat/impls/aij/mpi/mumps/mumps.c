@@ -279,7 +279,20 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat_MUMPS* mumps, PetscBool sol
     if (sol_in_redrhs) {
       ierr = PetscMemcpy(mumps->id.redrhs,mumps->schur_sol,sizesol*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-  } else {
+  } else { /* Schur complement has not been inverted */
+    MumpsScalar *orhs=NULL;
+
+    if (!sol_in_redrhs) {
+      PetscInt sizesol = B_Nrhs*B_N;
+      if (!mumps->schur_sol || sizesol > mumps->schur_sizesol) {
+        ierr = PetscFree(mumps->schur_sol);CHKERRQ(ierr);
+        ierr = PetscMalloc1(sizesol,&mumps->schur_sol);CHKERRQ(ierr);
+        mumps->schur_sizesol = sizesol;
+      }
+      orhs = mumps->id.redrhs;
+      ierr = PetscMemcpy(mumps->schur_sol,mumps->id.redrhs,sizesol*sizeof(PetscScalar));CHKERRQ(ierr);
+      mumps->id.redrhs = (MumpsScalar*)mumps->schur_sol;
+    }
     if (!mumps->sym) { /* MUMPS always return a full Schur matrix */
       char type[2];
       if (mumps->id.ICNTL(19) == 1) { /* stored by rows */
@@ -319,13 +332,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat_MUMPS* mumps, PetscBool sol
       }
     }
     if (!sol_in_redrhs) {
-      PetscInt sizesol = B_Nrhs*B_N;
-      if (!mumps->schur_sol || sizesol > mumps->schur_sizesol) {
-        ierr = PetscFree(mumps->schur_sol);CHKERRQ(ierr);
-        ierr = PetscMalloc1(sizesol,&mumps->schur_sol);CHKERRQ(ierr);
-        mumps->schur_sizesol = sizesol;
-      }
-      ierr = PetscMemcpy(mumps->schur_sol,mumps->id.redrhs,sizesol*sizeof(PetscScalar));CHKERRQ(ierr);
+      mumps->id.redrhs = orhs;
     }
   }
   PetscFunctionReturn(0);
@@ -867,6 +874,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsRestoreSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSolveSchurComplement_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSolveSchurComplementTranspose_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1170,6 +1178,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   mumps->CleanUpMUMPS   = PETSC_TRUE;
   mumps->schur_factored = PETSC_FALSE;
   mumps->schur_inverted = PETSC_FALSE;
+
+  /* just to be sure that ICNTL(19) value returned by a call from MatMumpsGetIcntl is always consistent */
+  if (!mumps->sym && mumps->id.ICNTL(19) && mumps->id.ICNTL(19) != 1) mumps->id.ICNTL(19) = 3;
 
   if (mumps->size > 1) {
     PetscInt    lsol_loc;
@@ -1774,7 +1785,7 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   PetscScalar    *array;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar    im = PetscSqrtScalar(-1.0);
+  PetscScalar    im = PetscSqrtScalar((PetscScalar)-1.0);
 #endif
   PetscErrorCode ierr;
 
@@ -1820,13 +1831,6 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
           PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
 #endif
           array[i*N+j] = val;
-        }
-        for (j=i;j<N;j++) {
-#if !defined(PETSC_USE_COMPLEX)
-          PetscScalar val = mumps->id.schur[i*N+j];
-#else
-          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
-#endif
           array[j*N+i] = val;
         }
       }
@@ -1842,13 +1846,6 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
           PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
 #endif
           array[i*N+j] = val;
-        }
-        for (j=0;j<i+1;j++) {
-#if !defined(PETSC_USE_COMPLEX)
-          PetscScalar val = mumps->id.schur[i*N+j];
-#else
-          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
-#endif
           array[j*N+i] = val;
         }
       }
@@ -1873,6 +1870,7 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
    Notes:
    MUMPS Schur complement mode is currently implemented for sequential matrices.
    The routine provides a copy of the Schur data stored within MUMPS data strutures. The caller must destroy the object when it is no longer needed.
+   If MatMumpsInvertSchurComplement has been called, the routine gets back the inverse
 
    Level: advanced
 
@@ -1911,7 +1909,6 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
   }
   /* It should be the responsibility of the user to handle different ICNTL(19) cases if they want to work with the raw data */
   /* should I also add errors when the Schur complement has been already factored? */
-  ierr = MatCreate(PetscObjectComm((PetscObject)F),&St);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)F),mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&St);CHKERRQ(ierr);
   *S = St;
   mumps->schur_restored = PETSC_FALSE;
@@ -1932,6 +1929,7 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
    Notes:
    MUMPS Schur complement mode is currently implemented for sequential matrices.
    The routine uses the pointer to the raw data of the Schur Complement stored within MUMPS data strutures. The caller should call MatMumpsRestoreSchurComplement when the object is no longer needed.
+   If MatMumpsInvertSchurComplement has been called, the routine gets back the inverse
 
    Level: advanced
 
@@ -1964,8 +1962,8 @@ PetscErrorCode MatMumpsRestoreSchurComplement_MUMPS(Mat F,Mat* S)
     SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
   } else if (!mumps->id.size_schur) {
     SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+  } else if (mumps->schur_restored) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has been already restored");
   }
   ierr = MatDestroy(S);CHKERRQ(ierr);
   *S = NULL;
@@ -2064,6 +2062,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   MumpsScalar    *orhs;
   PetscScalar    *osol,*nrhs,*nsol;
+  PetscInt       orhs_size,osol_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2078,11 +2077,16 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   }
   /* swap pointers */
   orhs = mumps->id.redrhs;
+  orhs_size = mumps->sizeredrhs;
   osol = mumps->schur_sol;
+  osol_size = mumps->schur_sizesol;
   ierr = VecGetArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = (MumpsScalar*)nrhs;
+  ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
   mumps->schur_sol = nsol;
+  ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
+
   /* solve Schur complement */
   mumps->id.nrhs = 1;
   ierr = MatMumpsSolveSchur_Private(mumps,PETSC_FALSE);CHKERRQ(ierr);
@@ -2090,7 +2094,9 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = orhs;
+  mumps->sizeredrhs = orhs_size;
   mumps->schur_sol = osol;
+  mumps->schur_sizesol = osol_size;
   PetscFunctionReturn(0);
 }
 
@@ -2126,7 +2132,91 @@ PetscErrorCode MatMumpsSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
-  ierr = PetscTryMethod(F,"MatMumpsSolveSchurComplement_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  ierr = PetscUseMethod(F,"MatMumpsSolveSchurComplement_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsSolveSchurComplementTranspose_MUMPS"
+PetscErrorCode MatMumpsSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec sol)
+{
+  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
+  MumpsScalar    *orhs;
+  PetscScalar    *osol,*nrhs,*nsol;
+  PetscInt       orhs_size,osol_size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
+  } else if (!mumps->id.ICNTL(19)) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
+  } else if (!mumps->id.size_schur) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  } else if (!mumps->schur_restored) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+  }
+  /* swap pointers */
+  orhs = mumps->id.redrhs;
+  orhs_size = mumps->sizeredrhs;
+  osol = mumps->schur_sol;
+  osol_size = mumps->schur_sizesol;
+  ierr = VecGetArray(rhs,&nrhs);CHKERRQ(ierr);
+  ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
+  mumps->id.redrhs = (MumpsScalar*)nrhs;
+  ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
+  mumps->schur_sol = nsol;
+  ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
+
+  /* solve Schur complement */
+  mumps->id.nrhs = 1;
+  mumps->id.ICNTL(9) = 0;
+  ierr = MatMumpsSolveSchur_Private(mumps,PETSC_FALSE);CHKERRQ(ierr);
+  mumps->id.ICNTL(9) = 1;
+  /* restore pointers */
+  ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
+  ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
+  mumps->id.redrhs = orhs;
+  mumps->sizeredrhs = orhs_size;
+  mumps->schur_sol = osol;
+  mumps->schur_sizesol = osol_size;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsSolveSchurComplementTranspose"
+/*@
+  MatMumpsSolveSchurComplementTranspose - Solve the transpose of the Schur complement system computed by MUMPS during the factorization step
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  rhs - location where the right hand side of the Schur complement system is stored
+-  sol - location where the solution of the Schur complement system has to be returned
+
+   Notes:
+   MUMPS Schur complement mode is currently implemented for sequential matrices.
+   The sizes of the vectors should match the size of the Schur complement
+
+   Level: advanced
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor(), MatMumpsSetSchurIndices()
+@*/
+PetscErrorCode MatMumpsSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscCheckSameComm(F,1,rhs,2);
+  PetscCheckSameComm(F,1,sol,3);
+  ierr = PetscUseMethod(F,"MatMumpsSolveSchurComplementTranspose_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2562,6 +2652,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetSchurComplement_C",MatMumpsGetSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsRestoreSchurComplement_C",MatMumpsRestoreSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplement_C",MatMumpsSolveSchurComplement_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplementTranspose_C",MatMumpsSolveSchurComplementTranspose_MUMPS);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
@@ -2643,6 +2734,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetSchurComplement_C",MatMumpsGetSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsRestoreSchurComplement_C",MatMumpsRestoreSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplement_C",MatMumpsSolveSchurComplement_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplementTranspose_C",MatMumpsSolveSchurComplementTranspose_MUMPS);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 #if defined(PETSC_USE_COMPLEX)
@@ -2713,6 +2805,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetSchurComplement_C",MatMumpsGetSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsRestoreSchurComplement_C",MatMumpsRestoreSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplement_C",MatMumpsSolveSchurComplement_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplementTranspose_C",MatMumpsSolveSchurComplementTranspose_MUMPS);CHKERRQ(ierr);
 
   mumps->isAIJ    = PETSC_TRUE;
   mumps->Destroy  = B->ops->destroy;
