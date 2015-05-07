@@ -953,10 +953,10 @@ PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetObjective"
 PetscErrorCode PetscDSGetObjective(PetscDS prob, PetscInt f,
-                                   void (**obj)(PetscInt dim, PetscInt Nf,
+                                   void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                const PetscReal t, const PetscReal x[], PetscScalar obj[]))
+                                                PetscReal t, const PetscReal x[], PetscScalar obj[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -969,10 +969,10 @@ PetscErrorCode PetscDSGetObjective(PetscDS prob, PetscInt f,
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetObjective"
 PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
-                                   void (*obj)(PetscInt dim, PetscInt Nf,
+                                   void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               const PetscReal t, const PetscReal x[], PetscScalar obj[]))
+                                               PetscReal t, const PetscReal x[], PetscScalar obj[]))
 {
   PetscErrorCode ierr;
 
@@ -1006,10 +1006,10 @@ PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
 
 The calling sequence for the callbacks f0 and f1 is given by:
 
-$ f0(PetscInt dim, PetscInt Nf,
+$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], PetscScalar f0[])
+$    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1032,14 +1032,14 @@ $    const PetscReal t, const PetscReal x[], PetscScalar f0[])
 .seealso: PetscDSSetResidual()
 @*/
 PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
-                                  void (**f0)(PetscInt dim, PetscInt Nf,
+                                  void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              const PetscReal t, const PetscReal x[], PetscScalar f0[]),
-                                  void (**f1)(PetscInt dim, PetscInt Nf,
+                                              PetscReal t, const PetscReal x[], PetscScalar f0[]),
+                                  void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              const PetscReal t, const PetscReal x[], PetscScalar f1[]))
+                                              PetscReal t, const PetscReal x[], PetscScalar f1[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1068,10 +1068,10 @@ PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
 
 The calling sequence for the callbacks f0 and f1 is given by:
 
-$ f0(PetscInt dim, PetscInt Nf,
+$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], PetscScalar f0[])
+$    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1094,14 +1094,14 @@ $    const PetscReal t, const PetscReal x[], PetscScalar f0[])
 .seealso: PetscDSGetResidual()
 @*/
 PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
-                                  void (*f0)(PetscInt dim, PetscInt Nf,
+                                  void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, const PetscReal x[], PetscScalar f0[]),
-                                  void (*f1)(PetscInt dim, PetscInt Nf,
+                                             PetscReal t, const PetscReal x[], PetscScalar f0[]),
+                                  void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, const PetscReal x[], PetscScalar f1[]))
+                                             PetscReal t, const PetscReal x[], PetscScalar f1[]))
 {
   PetscErrorCode ierr;
 
@@ -1140,10 +1140,10 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
 
 The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
 
-$ g0(PetscInt dim, PetscInt Nf,
+$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+$    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1167,19 +1167,19 @@ $    const PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScal
 .seealso: PetscDSSetJacobian()
 @*/
 PetscErrorCode PetscDSGetJacobian(PetscDS prob, PetscInt f, PetscInt g,
-                                  void (**g0)(PetscInt dim, PetscInt Nf,
+                                  void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
-                                  void (**g1)(PetscInt dim, PetscInt Nf,
+                                  void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
-                                  void (**g2)(PetscInt dim, PetscInt Nf,
+                                  void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
-                                  void (**g3)(PetscInt dim, PetscInt Nf,
+                                  void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
@@ -1217,10 +1217,10 @@ PetscErrorCode PetscDSGetJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
 The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
 
-$ g0(PetscInt dim, PetscInt Nf,
+$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], PetscScalar g0[])
+$    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1244,22 +1244,22 @@ $    const PetscReal t, const PetscReal x[], PetscScalar g0[])
 .seealso: PetscDSGetJacobian()
 @*/
 PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
-                                  void (*g0)(PetscInt dim, PetscInt Nf,
+                                  void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
-                                  void (*g1)(PetscInt dim, PetscInt Nf,
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                  void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
-                                  void (*g2)(PetscInt dim, PetscInt Nf,
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                  void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
-                                  void (*g3)(PetscInt dim, PetscInt Nf,
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                  void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             const PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
@@ -1411,10 +1411,10 @@ PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
 
 The calling sequence for the callbacks f0 and f1 is given by:
 
-$ f0(PetscInt dim, PetscInt Nf,
+$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1438,14 +1438,14 @@ $    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0
 .seealso: PetscDSSetBdResidual()
 @*/
 PetscErrorCode PetscDSGetBdResidual(PetscDS prob, PetscInt f,
-                                    void (**f0)(PetscInt dim, PetscInt Nf,
+                                    void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
-                                    void (**f1)(PetscInt dim, PetscInt Nf,
+                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
+                                    void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[]))
+                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1474,10 +1474,10 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS prob, PetscInt f,
 
 The calling sequence for the callbacks f0 and f1 is given by:
 
-$ f0(PetscInt dim, PetscInt Nf,
+$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1501,14 +1501,14 @@ $    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0
 .seealso: PetscDSGetBdResidual()
 @*/
 PetscErrorCode PetscDSSetBdResidual(PetscDS prob, PetscInt f,
-                                    void (*f0)(PetscInt dim, PetscInt Nf,
+                                    void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
-                                    void (*f1)(PetscInt dim, PetscInt Nf,
+                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
+                                    void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[]))
+                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[]))
 {
   PetscErrorCode ierr;
 
@@ -1545,10 +1545,10 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS prob, PetscInt f,
 
 The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
 
-$ g0(PetscInt dim, PetscInt Nf,
+$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
+$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1573,19 +1573,19 @@ $    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0
 .seealso: PetscDSSetBdJacobian()
 @*/
 PetscErrorCode PetscDSGetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
-                                    void (**g0)(PetscInt dim, PetscInt Nf,
+                                    void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                 PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
-                                    void (**g1)(PetscInt dim, PetscInt Nf,
+                                    void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                 PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
-                                    void (**g2)(PetscInt dim, PetscInt Nf,
+                                    void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                 PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
-                                    void (**g3)(PetscInt dim, PetscInt Nf,
+                                    void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                 PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
@@ -1623,10 +1623,10 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
 The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
 
-$ g0(PetscInt dim, PetscInt Nf,
+$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 $    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 $    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
+$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 
 + dim - the spatial dimension
 . Nf - the number of fields
@@ -1651,19 +1651,19 @@ $    const PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0
 .seealso: PetscDSGetBdJacobian()
 @*/
 PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
-                                    void (*g0)(PetscInt dim, PetscInt Nf,
+                                    void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
-                                    void (*g1)(PetscInt dim, PetscInt Nf,
+                                    void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
-                                    void (*g2)(PetscInt dim, PetscInt Nf,
+                                    void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
-                                    void (*g3)(PetscInt dim, PetscInt Nf,
+                                    void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))

@@ -1178,7 +1178,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
       if (obj_func) {
         for (c = 0; c < numCells; ++c) {
           /* TODO: Need full pointwise interpolation and get centroid for x argument */
-          obj_func(dim, Nf, NULL, NULL, &u[totDim*c+foff], NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0, NULL, &lint);
+          obj_func(dim, Nf, 0, NULL, NULL, &u[totDim*c+foff], NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0, NULL, &lint);
           lintegral[f] = PetscRealPart(lint)*vol[c];
         }
       }
