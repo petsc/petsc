@@ -12,7 +12,9 @@ static PetscErrorCode PCBDDCMumpsCorrectionSolve(PC,Vec,Vec);
 static PetscErrorCode PCBDDCMumpsCorrectionSolve_Private(PC pc, Vec rhs, Vec sol, PetscBool transpose)
 {
   PCBDDCReuseMumps ctx;
+#if defined(PETSC_HAVE_MUMPS)
   PetscInt         ival;
+#endif
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -80,7 +82,9 @@ static PetscErrorCode PCBDDCMumpsInteriorSolve_Private(PC pc, Vec rhs, Vec sol, 
 {
   PCBDDCReuseMumps ctx;
   PetscScalar      *array,*array_mumps;
+#if defined(PETSC_HAVE_MUMPS)
   PetscInt         ival;
+#endif
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
