@@ -1,6 +1,6 @@
 
 static char help[] = "Tests MatSolve() and MatMatSolve() with mumps sequential solver in Schur complement mode.\n\
-Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 \n\n";
+Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 -symmetric_solve -hermitian_solve -sratio 0.3\n\n";
 
 #include <petscmat.h>
 
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscInt       icntl19,size_schur,*idxs_schur,i,m,n,nfact,nsolve,nrhs;
   PetscReal      norm,tol=1.e-12;
   PetscRandom    rand;
-  PetscBool      herm,symm;
+  PetscBool      flg,herm,symm;
   PetscReal      sratio = 5.1/12.;
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
@@ -32,38 +32,41 @@ int main(int argc,char **args)
   if (herm) symm = PETSC_TRUE;
 
   /* Determine file from which we read the matrix A */
-  sprintf(file,PETSC_DIR);
-  ierr = PetscStrcat(file,"/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
-  if (symm) {
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (!flg) { /* get matrices from PETSc distribution */
+    sprintf(file,PETSC_DIR);
+    ierr = PetscStrcat(file,"/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
+    if (symm) {
 #if defined (PETSC_USE_COMPLEX)
-    ierr = PetscStrcat(file,"hpd-complex-");CHKERRQ(ierr);
+      ierr = PetscStrcat(file,"hpd-complex-");CHKERRQ(ierr);
 #else
-    ierr = PetscStrcat(file,"spd-real-");CHKERRQ(ierr);
+      ierr = PetscStrcat(file,"spd-real-");CHKERRQ(ierr);
 #endif
-  } else {
+    } else {
 #if defined (PETSC_USE_COMPLEX)
-    ierr = PetscStrcat(file,"nh-complex-");CHKERRQ(ierr);
+      ierr = PetscStrcat(file,"nh-complex-");CHKERRQ(ierr);
 #else
-    ierr = PetscStrcat(file,"ns-real-");CHKERRQ(ierr);
+      ierr = PetscStrcat(file,"ns-real-");CHKERRQ(ierr);
 #endif
-  }
+    }
 #if defined(PETSC_USE_64BIT_INDICES)
-  ierr = PetscStrcat(file,"int64-");CHKERRQ(ierr);
+    ierr = PetscStrcat(file,"int64-");CHKERRQ(ierr);
 #else
-  ierr = PetscStrcat(file,"int32-");CHKERRQ(ierr);
+    ierr = PetscStrcat(file,"int32-");CHKERRQ(ierr);
 #endif
 #if defined (PETSC_USE_REAL_SINGLE)
-  ierr = PetscStrcat(file,"float32");CHKERRQ(ierr);
+    ierr = PetscStrcat(file,"float32");CHKERRQ(ierr);
 #else
-  ierr = PetscStrcat(file,"float64");CHKERRQ(ierr);
+    ierr = PetscStrcat(file,"float64");CHKERRQ(ierr);
 #endif
+  }
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
 #if defined (PETSC_USE_COMPLEX)
-  if (symm) { /* MUMPS (5.0.0) does not have support for hermitian matrices, so make them symmetric */
+  if (symm & !flg) { /* MUMPS (5.0.0) does not have support for hermitian matrices, so make them symmetric */
     PetscScalar im = PetscSqrtScalar((PetscScalar)-1.);
     PetscScalar val = -1.0;
     val = val + im;
