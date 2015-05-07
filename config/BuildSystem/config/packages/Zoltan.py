@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib_v3.8.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib_v3.81.tar.gz']
     self.functions = ['Zoltan_LB_Partition']
     self.includes  = ['zoltan.h']
     self.liblist   = [['libzoltan.a']]
