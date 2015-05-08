@@ -61,6 +61,9 @@ typedef struct {
   PetscInt  measuretype;
   PetscInt  smoothtype;
   PetscInt  smoothnumlevels;
+  PetscInt  eu_level;   // Number of levels for ILU(k) in Euclid
+  double    eu_droptolerance; // Drop tolerance for ILU(k) in Euclid
+  PetscInt  eu_bj;      // Defines use of Block Jacobi ILU in Euclid
   PetscInt  relaxtype[3];
   double    relaxweight;
   double    outerrelaxweight;
@@ -484,6 +487,28 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOption
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothNumLevels,(jac->hsolver,indx));
   }
 
+  /* Number of levels for ILU(k) for Euclid */
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_eu_level","Number of levels for ILU(k) in Euclid smoother","None",0,&indx,&flg);CHKERRQ(ierr);
+  if (flg && (jac->smoothtype == 3)) {
+    jac->eu_level = indx;
+    PetscStackCallStandard(HYPRE_BoomerAMGSetEuLevel,(jac->hsolver,indx));
+  }
+
+  /* Filter for ILU(k) for Euclid */
+  double droptolerance;
+  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_eu_droptolerance","Drop tolerance for ILU(k) in Euclid smoother","None",0,&droptolerance,&flg);CHKERRQ(ierr);
+  if (flg && (jac->smoothtype == 3)) {
+    jac->eu_droptolerance = droptolerance;
+    PetscStackCallStandard(HYPRE_BoomerAMGSetEuLevel,(jac->hsolver,droptolerance));
+  }
+
+  /* Use Block Jacobi ILUT for Euclid */
+  ierr = PetscOptionsBool("-pc_hypre_boomeramg_eu_bj", "Use Block Jacobi for ILU in Euclid smoother?", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  if (flg && (jac->smoothtype == 3)) {
+    jac->eu_bj = tmp_truth;
+    PetscStackCallStandard(HYPRE_BoomerAMGSetEuLevel,(jac->hsolver,jac->eu_bj));
+  }
+
   /* Relax type */
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -674,8 +699,13 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using CF-relaxation\n");CHKERRQ(ierr);
     }
     if (jac->smoothtype!=-1) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth type         %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth num levels   %d\n",jac->smoothnumlevels);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth type          %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth num levels    %d\n",jac->smoothnumlevels);CHKERRQ(ierr);
+    }
+    if (jac->smoothtype==3) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Euclid ILU(k) levels %d\n",jac->eu_level);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Euclid ILU(k) drop tolerance %g\n",jac->eu_droptolerance);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Euclid ILU use Block-Jacobi? %d\n",jac->eu_bj);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
     }
@@ -1367,6 +1397,9 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = 1;
     jac->smoothtype       = -1; /* Not set by default */
     jac->smoothnumlevels  = 25;
+    jac->eu_level         = 0;
+    jac->eu_droptolerance = 0;
+    jac->eu_bj            = 0;
     jac->relaxtype[0]     = jac->relaxtype[1] = 6; /* Defaults to SYMMETRIC since in PETSc we are using a a PC - most likely with CG */
     jac->relaxtype[2]     = 9; /*G.E. */
     jac->relaxweight      = 1.0;
