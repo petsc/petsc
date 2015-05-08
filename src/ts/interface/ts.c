@@ -4890,6 +4890,14 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 +  -ts_rtol <rtol> - relative tolerance for local truncation error
 -  -ts_atol <atol> Absolute tolerance for local truncation error
 
+   Notes:
+   With PETSc's implicit schemes for DAE problems, the calculation of the local truncation error
+   (LTE) includes both the differential and the algebraic variables. If one wants the LTE to be
+   computed only for the differential or the algebraic part then this can be done using the vector of
+   tolerances vatol. For example, by setting the tolerance vector with the desired tolerance for the 
+   differential part and infinity for the algebraic part, the LTE calculation will include only the
+   differential variables.
+
    Level: beginner
 
 .seealso: TS, TSAdapt, TSVecNormWRMS(), TSGetTolerances()
