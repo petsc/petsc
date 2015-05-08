@@ -228,8 +228,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     /* Check Stopping Condition      */
     ierr = TaoMonitor(tao,tao->niter,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas, step, &reason);CHKERRQ(ierr);
-    tao->niter++;
     if (reason != TAO_CONTINUE_ITERATING) break;
+    tao->niter++;
     tao->ksp_its=0;
 
     /*
