@@ -81,8 +81,6 @@ struct _p_TS {
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
 
-  IS is_diff; /* Index set containing indices corresponding to differential equations in DAE */
-
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
   Vec       *vecs_sensi;             /* one vector for each cost function */
