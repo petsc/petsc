@@ -55,6 +55,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'num' : 'fluent_1', 'numProcs': 3, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
                                                                  {'num' : 'fluent_2', 'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets_ascii.cas -interpolate 1 -dm_view'},
                                                                  {'num' : 'fluent_3', 'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets.cas -interpolate 1 -dm_view', 'requires': 'Broken'},
+                                                                 # Med mesh reader tests, including parallel file reads
+                                                                 {'num' : 'med_0', 'numProcs': 1, 'args': '-filename %(meshes)s/square.med -interpolate 1 -dm_view', 'requires': 'med'},
+                                                                 {'num' : 'med_1', 'numProcs': 3, 'args': '-filename %(meshes)s/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view', 'requires': 'med'},
+                                                                 {'num' : 'med_2', 'numProcs': 1, 'args': '-filename %(meshes)s/cylinder.med -interpolate 1 -dm_view', 'requires': 'med'},
+                                                                 {'num' : 'med_3', 'numProcs': 3, 'args': '-filename %(meshes)s/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view', 'requires': 'med'}
                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex3': [# 2D P_1 on a triangle
                                                                  {'num': 'p1_2d_0', 'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
