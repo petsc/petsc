@@ -558,6 +558,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
                                 "year = {2010},\n"
                                 "month = {Aug},\n"
                                 "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);CHKERRQ(ierr);
+  tao->niter=0;
   if (tao->XL && tao->XU) {
     /* Check x0 <= XU */
     PetscReal val;
@@ -594,7 +595,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   mfqP->Fres[0]*=mfqP->Fres[0];
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
-  ierr = TaoMonitor(tao, tao->niter++, minnorm, PETSC_INFINITY, 0.0, step, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, minnorm, PETSC_INFINITY, 0.0, step, &reason);CHKERRQ(ierr);
+  tao->niter++;
 
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
   for (i=1;i<mfqP->n+1;i++) {
