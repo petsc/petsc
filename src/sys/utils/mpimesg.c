@@ -202,6 +202,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
       ierr = MPI_Isend(buf_j,2,MPI_INT,i,tag,comm,s_waits+j);CHKERRQ(ierr);
       j++;
     }
+    if (j != nsends) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d\n",j,nsends);
   }
 
   /* Post waits on sends and receivs */
