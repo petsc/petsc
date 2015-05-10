@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'trilinos-release-11-14-branch'
+    self.gitcommit        = 'trilinos-release-11-8-branch'
     self.giturls          = ['https://bitbucket.org/petsc/newpkg-trilinos.git']
     self.download         = ['none']
     self.includes         = ['TPI.h','Trilinos_version.h']
@@ -18,6 +18,7 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.mpi             = framework.require('config.packages.MPI',self)
+    self.superlu         = framework.require('config.packages.SuperLU',self)
     self.deps            = [self.mpi,self.blasLapack]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
@@ -31,6 +32,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DTrilinos_ENABLE_Epetra=ON')
     args.append('-DTrilinos_ENABLE_AztecOO=ON')
     args.append('-DTrilinos_ENABLE_Ifpack=ON')
+    args.append('-DTrilinos_ENABLE_Amesos2=ON')
+    args.append('-DTrilinos_ENABLE_Tpetra=ON')
 
     # The documentation specifically says:
     #     WARNING: Do not try to hack the system and set:
@@ -42,6 +45,11 @@ class Configure(config.package.CMakePackage):
     # From the docs at http://trilinos.org/download/public-git-repository/
     #TIP: The arguments passed to CMake when building from the Trilinos public repository must include
     args.append('-DTrilinos_ASSERT_MISSING_PACKAGES=OFF')
+
+    if self.superlu.found:
+      args.append('-DTPL_ENABLE_SuperLU:BOOL=ON')
+      args.append('-DSuperLU_INCLUDE_DIRS:FILEPATH='+self.headers.toStringNoDupes(self.superlu.include))
+      args.append('-DSuperLU_LIBRARIES="'+self.libraries.toStringNoDupes(self.superlu.lib)+'"')
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
