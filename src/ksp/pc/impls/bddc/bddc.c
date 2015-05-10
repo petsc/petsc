@@ -74,6 +74,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
   ierr = PetscOptionsReal("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmin","Minimum number of constraints per connected components","none",pcbddc->adaptive_nmin,&pcbddc->adaptive_nmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_symmetric","Symmetric computation of primal basis functions","none",pcbddc->symmetric_primal,&pcbddc->symmetric_primal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1212,13 +1213,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
-  /*ierr = MatIsSymmetric(pc->pmat,0.,&pcbddc->issym);CHKERRQ(ierr);*/
-  { /* this is a temporary workaround since seqbaij matrices does not have support for symmetry checking */
-    PetscBool setsym;
-    ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&pcbddc->issym);CHKERRQ(ierr);
-    if (!setsym) pcbddc->issym = PETSC_FALSE;
-  }
-
   if (pcbddc->user_ChangeOfBasisMatrix) {
     /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
     pcbddc->use_change_of_basis = PETSC_FALSE;
@@ -1231,7 +1225,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* workaround for reals */
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,pcbddc->issym);CHKERRQ(ierr);
+  if (matis->A->symmetric_set) {
+    ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
+  }
 #endif
 
   /* Set up all the "iterative substructuring" common block without computing solvers */
@@ -1944,9 +1940,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->switch_static       = PETSC_FALSE;
   pcbddc->use_nnsp_true       = PETSC_FALSE;
   pcbddc->use_qr_single       = PETSC_FALSE;
+  pcbddc->symmetric_primal    = PETSC_TRUE;
   pcbddc->dbg_flag            = 0;
   /* private */
-  pcbddc->issym                      = PETSC_FALSE;
   pcbddc->local_primal_size          = 0;
   pcbddc->local_primal_size_cc       = 0;
   pcbddc->local_primal_ref_node      = 0;

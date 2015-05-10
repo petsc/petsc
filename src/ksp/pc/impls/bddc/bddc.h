@@ -31,7 +31,6 @@ typedef struct {
   VecScatter    R_to_D;
   KSP           ksp_R;
   KSP           ksp_D;
-  PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
   PetscInt      n_vertices;
@@ -59,32 +58,32 @@ typedef struct {
   PetscBool     use_faces;
   PetscBool     use_edges;
   /* Some customization is possible */
-  PetscBool                  recompute_topography;
-  PCBDDCGraph                mat_graph;
-  MatNullSpace               onearnullspace;
-  PetscObjectState           *onearnullvecs_state;
-  MatNullSpace               NullSpace;
-  IS                         user_primal_vertices;
-  PetscBool                  use_nnsp_true;
-  PetscBool                  use_qr_single;
-  PetscBool                  user_provided_isfordofs;
-  PetscInt                   n_ISForDofs;
-  PetscInt                   n_ISForDofsLocal;
-  IS                         *ISForDofs;
-  IS                         *ISForDofsLocal;
-  IS                         NeumannBoundaries;
-  IS                         NeumannBoundariesLocal;
-  IS                         DirichletBoundaries;
-  IS                         DirichletBoundariesLocal;
-  PetscBool                  switch_static;
-  PetscInt                   coarsening_ratio;
-  PetscInt                   current_level;
-  PetscInt                   max_levels;
-  PetscInt                   redistribute_coarse;
-  IS                         coarse_subassembling;
-  IS                         coarse_subassembling_init;
-  PetscBool                  use_coarse_estimates;
-
+  PetscBool           recompute_topography;
+  PCBDDCGraph         mat_graph;
+  MatNullSpace        onearnullspace;
+  PetscObjectState    *onearnullvecs_state;
+  MatNullSpace        NullSpace;
+  IS                  user_primal_vertices;
+  PetscBool           use_nnsp_true;
+  PetscBool           use_qr_single;
+  PetscBool           user_provided_isfordofs;
+  PetscInt            n_ISForDofs;
+  PetscInt            n_ISForDofsLocal;
+  IS                  *ISForDofs;
+  IS                  *ISForDofsLocal;
+  IS                  NeumannBoundaries;
+  IS                  NeumannBoundariesLocal;
+  IS                  DirichletBoundaries;
+  IS                  DirichletBoundariesLocal;
+  PetscBool           switch_static;
+  PetscInt            coarsening_ratio;
+  PetscInt            current_level;
+  PetscInt            max_levels;
+  PetscInt            redistribute_coarse;
+  IS                  coarse_subassembling;
+  IS                  coarse_subassembling_init;
+  PetscBool           use_coarse_estimates;
+  PetscBool           symmetric_primal;
   /* scaling */
   Vec                 work_scaling;
   PetscBool           use_deluxe_scaling;

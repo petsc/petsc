@@ -295,17 +295,72 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   /* update info in sub_schurs */
   ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
+  sub_schurs->is_hermitian = PETSC_FALSE;
+  sub_schurs->is_posdef = PETSC_FALSE;
   if (Ain) {
     PetscBool isseqaij;
+    /* determine if we are dealing with hermitian positive definite problems */
+#if !defined(PETSC_USE_COMPLEX)
+    if (Ain->symmetric_set) {
+      sub_schurs->is_hermitian = Ain->symmetric;
+    }
+#else
+    if (Ain->hermitian_set) {
+      sub_schurs->is_hermitian = Ain->hermitian;
+    }
+#endif
+    if (Ain->spd_set) {
+      sub_schurs->is_posdef = Ain->spd;
+    }
 
+    /* check */
     ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+      PetscInt lsize;
+
+      ierr = MatGetSize(Ain,&lsize,NULL);CHKERRQ(ierr);
+      if (lsize) {
+        PetscScalar val;
+        PetscReal   norm;
+        Vec         vec1,vec2,vec3;
+
+        ierr = MatCreateVecs(Ain,&vec1,&vec2);CHKERRQ(ierr);
+        ierr = VecDuplicate(vec1,&vec3);CHKERRQ(ierr);
+        ierr = VecSetRandom(vec1,NULL);CHKERRQ(ierr);
+        ierr = MatMult(Ain,vec1,vec2);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+        ierr = MatMultTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
+#else
+        ierr = MatMultHermitianTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
+#endif
+        ierr = VecAXPY(vec3,-1.0,vec2);CHKERRQ(ierr);
+        ierr = VecNorm(vec3,NORM_INFINITY,&norm);CHKERRQ(ierr);
+        if (norm > PETSC_SMALL) {
+          sub_schurs->is_hermitian = PETSC_FALSE;
+        } else {
+          sub_schurs->is_hermitian = PETSC_TRUE;
+        }
+        ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
+        if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
+        ierr = VecDestroy(&vec1);CHKERRQ(ierr);
+        ierr = VecDestroy(&vec2);CHKERRQ(ierr);
+        ierr = VecDestroy(&vec3);CHKERRQ(ierr);
+      } else {
+        sub_schurs->is_hermitian = PETSC_TRUE;
+        sub_schurs->is_posdef = PETSC_TRUE;
+      }
+    }
     if (isseqaij) {
       ierr = PetscObjectReference((PetscObject)Ain);CHKERRQ(ierr);
       sub_schurs->A = Ain;
-    } else { /* SeqBAIJ matrices does not support symmetry checking, SeqSBAIJ does not support MatPermute */
+    } else {
       ierr = MatConvert(Ain,MATSEQAIJ,MAT_INITIAL_MATRIX,&sub_schurs->A);CHKERRQ(ierr);
     }
   }
+  if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"General matrix pencils are not currently supported (%d,%d)",sub_schurs->is_hermitian,sub_schurs->is_posdef);
+  }
+
   ierr = PetscObjectReference((PetscObject)Sin);CHKERRQ(ierr);
   sub_schurs->S = Sin;
   if (sub_schurs->use_mumps) {
@@ -316,36 +371,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   if (!sub_schurs->use_mumps && compute_Stilda) {
     SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
   }
-  /* determine if we are dealing with hermitian positive definite problems */
-  sub_schurs->is_hermitian = PETSC_FALSE;
-  sub_schurs->is_posdef = PETSC_FALSE;
-  if (sub_schurs->A) {
-    PetscInt lsize;
 
-    ierr = MatGetSize(sub_schurs->A,&lsize,NULL);CHKERRQ(ierr);
-    if (lsize) {
-      ierr = MatIsHermitian(sub_schurs->A,0.0,&sub_schurs->is_hermitian);CHKERRQ(ierr);
-      if (sub_schurs->is_hermitian) {
-        PetscScalar val;
-        Vec         vec1,vec2;
-
-        ierr = MatCreateVecs(sub_schurs->A,&vec1,&vec2);CHKERRQ(ierr);
-        ierr = VecSetRandom(vec1,NULL);
-        ierr = VecCopy(vec1,vec2);CHKERRQ(ierr);
-        ierr = MatMult(sub_schurs->A,vec2,vec1);CHKERRQ(ierr);
-        ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
-        if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
-        ierr = VecDestroy(&vec1);CHKERRQ(ierr);
-        ierr = VecDestroy(&vec2);CHKERRQ(ierr);
-      }
-    } else {
-      sub_schurs->is_hermitian = PETSC_TRUE;
-      sub_schurs->is_posdef = PETSC_TRUE;
-    }
-    if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"General matrix pencils are not currently supported (%d,%d)",sub_schurs->is_hermitian,sub_schurs->is_posdef);
-    }
-  }
   /* restrict work on active processes */
   color = 0;
   if (!sub_schurs->n_subs) color = 1; /* this can happen if we are in a multilevel case or if the subdomain is disconnected */
@@ -363,10 +389,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
     Mat       tA_IB,tA_BI,tA_BB;
-    PetscBool isseqaij;
+    PetscBool isseqsbaij;
     ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&tA_IB,&tA_BI,&tA_BB);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)tA_BB,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    if (!isseqaij) {
+    ierr = PetscObjectTypeCompare((PetscObject)tA_BB,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
+    if (isseqsbaij) {
       ierr = MatConvert(tA_BB,MATSEQAIJ,MAT_INITIAL_MATRIX,&A_BB);CHKERRQ(ierr);
       ierr = MatConvert(tA_IB,MATSEQAIJ,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
       ierr = MatConvert(tA_BI,MATSEQAIJ,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
@@ -673,13 +699,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     size_active_schur = local_size; /* size active schurs does not count any dirichlet dof on the interface */
     ierr = MatGetSubMatrix(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_SYMMETRIC,sub_schurs->is_hermitian);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
 
     if (n_I) {
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
-        ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
         ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
       } else {
-        ierr = MatSetOption(A,MAT_SYMMETRIC,sub_schurs->is_hermitian);CHKERRQ(ierr);
         ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
       }
 

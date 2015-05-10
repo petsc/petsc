@@ -191,7 +191,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       }
 
       if (same_data) { /* there's no need of constraints here, deluxe scaling is enough */
-        PetscPrintf(PETSC_COMM_SELF,"[%d] SAME DATA!!!!!!!!!!\n",PetscGlobalRank);
         B_neigs = 0;
       } else {
         /* Threshold: this is an heuristic for edges */
@@ -591,7 +590,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     n = PetscMax(2*n_R*n_vertices,n);
     n = PetscMax((n_R+n_B)*n_vertices,n);
   }
-  if (!pcbddc->issym) {
+  if (!pcbddc->symmetric_primal) {
     n = PetscMax(2*n_R*pcbddc->local_primal_size,n);
     unsymmetric_check = PETSC_TRUE;
   }
@@ -779,7 +778,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     if (pcbddc->switch_static || pcbddc->dbg_flag) {
       n += n_D*pcbddc->local_primal_size;
     }
-    if (!pcbddc->issym) {
+    if (!pcbddc->symmetric_primal) {
       n *= 2;
     }
     ierr = PetscCalloc1(n,&marray);CHKERRQ(ierr);
@@ -789,7 +788,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_D,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_phi_D);CHKERRQ(ierr);
       n += n_D*pcbddc->local_primal_size;
     }
-    if (!pcbddc->issym) {
+    if (!pcbddc->symmetric_primal) {
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
         n = n_B*pcbddc->local_primal_size;
@@ -938,7 +937,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
 
   /* compute other basis functions for non-symmetric problems */
-  if (!pcbddc->issym) {
+  if (!pcbddc->symmetric_primal) {
 
     if (n_constraints) {
       Mat S_CCT,B_C;
@@ -1060,7 +1059,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,coarse_submat_vals,&coarse_sub_mat);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check coarse sub mat computation\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check coarse sub mat computation (symmetric %d)\n",pcbddc->symmetric_primal);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     if (unsymmetric_check) {
       ierr = MatMatMult(A_II,coarse_phi_D,MAT_INITIAL_MATRIX,1.0,&AUXMAT);CHKERRQ(ierr);
@@ -1297,10 +1296,12 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,pcbddc->issym);CHKERRQ(ierr);
+  if (matis->A->symmetric_set) {
+    ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,pcbddc->issym);CHKERRQ(ierr);
+    ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
 #endif
+  }
   /*
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
   ierr = MatView(new_mat,(PetscViewer)0);CHKERRQ(ierr);
@@ -1521,8 +1522,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   /* DIRICHLET PROBLEM */
   if (dirichlet) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
-    if (pcbddc->issym) {
-      ierr = MatSetOption(pcis->A_II,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    if (pcbddc->local_mat->symmetric_set) {
+      ierr = MatSetOption(pcis->A_II,MAT_SYMMETRIC,pcbddc->local_mat->symmetric_set);CHKERRQ(ierr);
     }
     /* Matrix for Dirichlet problem is pcis->A_II */
     n_D = pcis->n - pcis->n_B;
@@ -1605,8 +1606,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       } else {
         ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
       }
-      if (pcbddc->issym) {
-        ierr = MatSetOption(A_RR,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+      if (pcbddc->local_mat->symmetric_set) {
+        ierr = MatSetOption(A_RR,MAT_SYMMETRIC,pcbddc->local_mat->symmetric_set);CHKERRQ(ierr);
       }
     } else {
       PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
@@ -4354,10 +4355,17 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
     ierr = MatDestroy(&coarse_mat_is);CHKERRQ(ierr);
 
-    /* propagate symmetry info to coarse matrix */
-    ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,pcbddc->issym);CHKERRQ(ierr);
+    /* propagate symmetry info of coarse matrix */
     ierr = MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-
+    if (pc->pmat->symmetric_set) {
+      ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,pc->pmat->symmetric);CHKERRQ(ierr);
+    }
+    if (pc->pmat->hermitian_set) {
+      ierr = MatSetOption(coarse_mat,MAT_HERMITIAN,pc->pmat->hermitian);CHKERRQ(ierr);
+    }
+    if (pc->pmat->spd_set) {
+      ierr = MatSetOption(coarse_mat,MAT_SPD,pc->pmat->spd);CHKERRQ(ierr);
+    }
     /* set operators */
     ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
     if (pcbddc->dbg_flag) {
@@ -4762,14 +4770,20 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   PetscFunctionBegin;
   /* attach interface graph for determining subsets */
   if (pcbddc->sub_schurs_rebuild) { /* in case rebuild has been requested, it uses a graph generated only by the neighbouring information */
-    IS verticesIS;
+    IS       verticesIS,verticescomm;
+    PetscInt vsize,*idxs;
 
     ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,NULL,NULL,NULL,NULL,&verticesIS);CHKERRQ(ierr);
+    ierr = ISGetSize(verticesIS,&vsize);CHKERRQ(ierr);
+    ierr = ISGetIndices(verticesIS,(const PetscInt**)&idxs);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),vsize,idxs,PETSC_COPY_VALUES,&verticescomm);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(verticesIS,(const PetscInt**)&idxs);CHKERRQ(ierr);
+    ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
     ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap,pcbddc->mat_graph->nvtxs_global);CHKERRQ(ierr);
-    ierr = PCBDDCGraphSetUp(graph,0,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticesIS);CHKERRQ(ierr);
+    ierr = PCBDDCGraphSetUp(graph,0,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticescomm);CHKERRQ(ierr);
+    ierr = ISDestroy(&verticescomm);CHKERRQ(ierr);
     ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
-    ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
 /*
     if (pcbddc->dbg_flag) {
       ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
