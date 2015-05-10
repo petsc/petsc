@@ -652,7 +652,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     IS          is_A_all;
     PetscScalar *work,*S_data;
     PetscInt    *idxs_schur,n_I,n_I_all,*dummy_idx,size_schur,size_active_schur,cum,cum2;
-    PetscBool   restore_S;
+    PetscBool   mumps_S;
 
     /* get working mat */
     ierr = ISGetLocalSize(is_I_layer,&n_I);CHKERRQ(ierr);
@@ -716,11 +716,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* we can reuse the solvers if we are not using the economic version */
       ierr = ISGetLocalSize(sub_schurs->is_I,&n_I_all);CHKERRQ(ierr);
       reuse_solvers = (PetscBool)(reuse_solvers && (n_I == n_I_all));
-      restore_S = PETSC_TRUE;
+      mumps_S = PETSC_TRUE;
     } else { /* we can't use MUMPS when size_schur == size_of_the_problem */
       ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&S_all);CHKERRQ(ierr);
       reuse_solvers = PETSC_FALSE;
-      restore_S = PETSC_FALSE;
+      mumps_S = PETSC_FALSE;
     }
 
     if (reuse_solvers) {
@@ -789,7 +789,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* get S_E */
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      if (restore_S && sub_schurs->is_hermitian) { /* When using MUMPS data I need to expand to upper triangular (column oriented) */
+      if (mumps_S && sub_schurs->is_hermitian) { /* When using MUMPS data I need to expand to upper triangular (column oriented) */
         PetscInt k;
         for (k=0;k<subset_size;k++) {
           for (j=k;j<subset_size;j++) {
@@ -831,69 +831,84 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       cum2 += subset_size*(size_schur + 1);
     }
     ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_MUMPS)
-    if (restore_S) {
+    if (mumps_S) {
       ierr = MatMumpsRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
-      ierr = MatMumpsInvertSchurComplement(F);CHKERRQ(ierr);
-      ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
-    } else if (compute_Stilda) { /* we need to invert explicitly since we are not using MUMPS */
-      ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(size_schur,&B_N);CHKERRQ(ierr);
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      if (!sub_schurs->is_hermitian) { /* TODO add sytrf/i for symmetric non hermitian */
-        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,S_data,&B_N,pivots,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-      } else {
-        PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,S_data,&B_N,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,S_data,&B_N,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
-      }
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
     }
 #endif
-    /* S_Ej_tilda_all */
-    cum = cum2 = 0;
-    ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      /* if adaptivity is requested, invert S_E and insert St_E^-1 blocks */
-      if (compute_Stilda && ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || (!PetscBTLookup(sub_schurs->is_edge,i) && use_faces))) {
+
+    if (compute_Stilda) {
+      if (sub_schurs->n_subs == 1 && size_schur == size_active_schur) { /* we already computed the inverse */
         PetscInt j;
-        /* get (St^-1)_E */
-        if (sub_schurs->is_hermitian) { /* I need to expand to upper triangular (column oriented) */
-          PetscInt k;
-          for (k=0;k<subset_size;k++) {
-            for (j=k;j<subset_size;j++) {
-              work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
-              work[j*subset_size+k] = S_data[cum2+k*size_schur+j];
-            }
-          }
-        } else { /* copy to workspace */
-          PetscInt k;
-          for (k=0;k<subset_size;k++) {
-            for (j=0;j<subset_size;j++) {
-              work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
-            }
-          }
-        }
-        for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
-        ierr = MatSetValues(S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
-      }
-      cum += subset_size;
-      cum2 += subset_size*(size_schur + 1);
-    }
-    ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
-    ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
+        for (j=0;j<size_schur;j++) dummy_idx[j] = j;
+        ierr = MatSetValues(S_Ej_tilda_all,size_schur,dummy_idx,size_schur,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,0);CHKERRQ(ierr);
+      } else {
+        if (mumps_S) { /* use MatMumps calls to invert S */
 #if defined(PETSC_HAVE_MUMPS)
-    if (restore_S) {
-      ierr = MatMumpsRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
-    }
+          ierr = MatMumpsInvertSchurComplement(F);CHKERRQ(ierr);
+          ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
 #endif
+        } else { /* we need to invert explicitly since we are not using MUMPS for S */
+          ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_schur,&B_N);CHKERRQ(ierr);
+          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+          if (!sub_schurs->is_hermitian) { /* TODO add sytrf/i for symmetric non hermitian */
+            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,S_data,&B_N,pivots,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+          } else {
+            PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,S_data,&B_N,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+            PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,S_data,&B_N,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+          }
+          ierr = PetscFPTrapPop();CHKERRQ(ierr);
+          ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
+        }
+        /* S_Ej_tilda_all */
+        cum = cum2 = 0;
+        ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
+        for (i=0;i<sub_schurs->n_subs;i++) {
+          ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+          /* if adaptivity is requested, invert S_E and insert St_E^-1 blocks */
+          if (((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || (!PetscBTLookup(sub_schurs->is_edge,i) && use_faces))) {
+            PetscInt j;
+            /* get (St^-1)_E */
+            if (sub_schurs->is_hermitian) { /* I need to expand to upper triangular (column oriented) */
+              PetscInt k;
+              for (k=0;k<subset_size;k++) {
+                for (j=k;j<subset_size;j++) {
+                  work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+                  work[j*subset_size+k] = S_data[cum2+k*size_schur+j];
+                }
+              }
+            } else { /* copy to workspace */
+              PetscInt k;
+              for (k=0;k<subset_size;k++) {
+                for (j=0;j<subset_size;j++) {
+                  work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+                }
+              }
+            }
+            for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
+            ierr = MatSetValues(S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
+          }
+          cum += subset_size;
+          cum2 += subset_size*(size_schur + 1);
+        }
+        ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MUMPS)
+        if (mumps_S) {
+          ierr = MatMumpsRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
+        }
+#endif
+      }
+    }
+    ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = ISDestroy(&is_I_layer);CHKERRQ(ierr);
