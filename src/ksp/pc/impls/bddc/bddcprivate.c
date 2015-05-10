@@ -159,16 +159,21 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       PetscReal      infty = PETSC_MAX_REAL;
       PetscInt       eigs_start = 0;
       PetscBLASInt   B_N;
+      PetscBool      same_data = PETSC_FALSE;
 
       ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
       if (allocated_S_St) { /* S and S_t should be copied since we could need them later */
         if (sub_schurs->is_hermitian) {
-          PetscInt j;
-          for (j=0;j<subset_size;j++) {
-            ierr = PetscMemcpy(S+j*(subset_size+1),Sarray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
+          PetscInt j,k;
+          if (sub_schurs->n_subs == 1) { /* zeroing memory to use PetscMemcmp later */
+            ierr = PetscMemzero(S,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscMemzero(St,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
           }
           for (j=0;j<subset_size;j++) {
-            ierr = PetscMemcpy(St+j*(subset_size+1),Starray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
+            for (k=j;k<subset_size;k++) {
+              S [j*subset_size+k] = Sarray [cumarray+j*subset_size+k];
+              St[j*subset_size+k] = Starray[cumarray+j*subset_size+k];
+            }
           }
         } else {
           ierr = PetscMemcpy(S,Sarray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -179,98 +184,107 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         St = Starray + cumarray;
       }
 
-      /* Threshold: this is an heuristic for edges */
       ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
-      thresh = pcbddc->mat_graph->count[idxs[0]]*pcbddc->adaptive_threshold;
+      /* see if we can save some work */
+      if (sub_schurs->n_subs == 1) {
+        ierr = PetscMemcmp(S,St,subset_size*subset_size*sizeof(PetscScalar),&same_data);CHKERRQ(ierr);
+      }
 
-      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
-        PetscBLASInt B_itype = 1;
-        PetscBLASInt B_IL, B_IU;
-        PetscReal    eps = -1.0; /* dlamch? */
-        PetscInt     nmin_s;
+      if (same_data) { /* there's no need of constraints here, deluxe scaling is enough */
+        PetscPrintf(PETSC_COMM_SELF,"[%d] SAME DATA!!!!!!!!!!\n",PetscGlobalRank);
+        B_neigs = 0;
+      } else {
+        /* Threshold: this is an heuristic for edges */
+        thresh = pcbddc->mat_graph->count[idxs[0]]*pcbddc->adaptive_threshold;
 
-        /* ask for eigenvalues larger than thresh */
-        if (pcbddc->dbg_flag) {
-          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Computing for sub %d/%d %d %d.\n",i,sub_schurs->n_subs,subset_size,pcbddc->mat_graph->count[idxs[0]]);
-        }
-        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-        PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
-#else
-        PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
-#endif
-        ierr = PetscFPTrapPop();CHKERRQ(ierr);
-        if (B_ierr) {
-          if (B_ierr < 0 ) {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
-          } else if (B_ierr <= B_N) {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
-          } else {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
-          }
-        }
+        if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+          PetscBLASInt B_itype = 1;
+          PetscBLASInt B_IL, B_IU;
+          PetscReal    eps = -1.0; /* dlamch? */
+          PetscInt     nmin_s;
 
-        if (B_neigs > nmax) {
+          /* ask for eigenvalues larger than thresh */
           if (pcbddc->dbg_flag) {
-            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, more than maximum required %d.\n",B_neigs,nmax);
-          }
-          eigs_start = B_neigs -nmax;
-          B_neigs = nmax;
-        }
-
-        nmin_s = PetscMin(nmin,B_N);
-        if (B_neigs < nmin_s) {
-          PetscBLASInt B_neigs2;
-
-          B_IU = B_N - B_neigs;
-          B_IL = B_N - nmin_s + 1;
-          if (pcbddc->dbg_flag) {
-            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",B_neigs,nmin,B_IL,B_IU);
-          }
-          if (sub_schurs->is_hermitian) {
-            PetscInt j;
-            for (j=0;j<subset_size;j++) {
-              ierr = PetscMemcpy(S+j*(subset_size+1),Sarray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
-            }
-            for (j=0;j<subset_size;j++) {
-              ierr = PetscMemcpy(St+j*(subset_size+1),Starray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
-            }
-          } else {
-            ierr = PetscMemcpy(S,Sarray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
-            ierr = PetscMemcpy(St,Starray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Computing for sub %d/%d %d %d.\n",i,sub_schurs->n_subs,subset_size,pcbddc->mat_graph->count[idxs[0]]);
           }
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
 #else
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
-          B_neigs += B_neigs2;
-        }
-        if (B_ierr) {
-          if (B_ierr < 0 ) {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
-          } else if (B_ierr <= B_N) {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
-          } else {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
-          }
-        }
-        if (pcbddc->dbg_flag) {
-          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Got %d eigs\n",B_neigs);
-          for (j=0;j<B_neigs;j++) {
-            if (eigs[j] == 0.0) {
-              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n");
+          if (B_ierr) {
+            if (B_ierr < 0 ) {
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
+            } else if (B_ierr <= B_N) {
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
             } else {
-              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",eigs[j+eigs_start]);
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
             }
           }
-        }
-      } else {
-          /* TODO */
-      }
 
+          if (B_neigs > nmax) {
+            if (pcbddc->dbg_flag) {
+              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, more than maximum required %d.\n",B_neigs,nmax);
+            }
+            eigs_start = B_neigs -nmax;
+            B_neigs = nmax;
+          }
+
+          nmin_s = PetscMin(nmin,B_N);
+          if (B_neigs < nmin_s) {
+            PetscBLASInt B_neigs2;
+
+            B_IU = B_N - B_neigs;
+            B_IL = B_N - nmin_s + 1;
+            if (pcbddc->dbg_flag) {
+              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",B_neigs,nmin,B_IL,B_IU);
+            }
+            if (sub_schurs->is_hermitian) {
+              PetscInt j;
+              for (j=0;j<subset_size;j++) {
+                ierr = PetscMemcpy(S+j*(subset_size+1),Sarray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
+              }
+              for (j=0;j<subset_size;j++) {
+                ierr = PetscMemcpy(St+j*(subset_size+1),Starray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
+              }
+            } else {
+              ierr = PetscMemcpy(S,Sarray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+              ierr = PetscMemcpy(St,Starray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+            }
+            ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+            PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+#else
+            PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+#endif
+            ierr = PetscFPTrapPop();CHKERRQ(ierr);
+            B_neigs += B_neigs2;
+          }
+          if (B_ierr) {
+            if (B_ierr < 0 ) {
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
+            } else if (B_ierr <= B_N) {
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
+            } else {
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
+            }
+          }
+          if (pcbddc->dbg_flag) {
+            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Got %d eigs\n",B_neigs);
+            for (j=0;j<B_neigs;j++) {
+              if (eigs[j] == 0.0) {
+                PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n");
+              } else {
+                PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",eigs[j+eigs_start]);
+              }
+            }
+          }
+        } else {
+            /* TODO */
+        }
+      }
       maxneigs = PetscMax(B_neigs,maxneigs);
       pcbddc->adaptive_constraints_n[i+nv] = B_neigs;
       if (B_neigs) {
@@ -2939,10 +2953,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* check if a new primal space has been introduced */
   pcbddc->new_primal_space_local = PETSC_TRUE;
   if (olocal_primal_size == pcbddc->local_primal_size) {
-    ierr = PetscMemcmp(pcbddc->local_primal_ref_node,olocal_primal_ref_node,olocal_primal_size_cc,&pcbddc->new_primal_space_local);CHKERRQ(ierr);
+    ierr = PetscMemcmp(pcbddc->local_primal_ref_node,olocal_primal_ref_node,olocal_primal_size_cc*sizeof(PetscScalar),&pcbddc->new_primal_space_local);CHKERRQ(ierr);
     pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     if (!pcbddc->new_primal_space_local) {
-      ierr = PetscMemcmp(pcbddc->local_primal_ref_mult,olocal_primal_ref_mult,olocal_primal_size_cc,&pcbddc->new_primal_space_local);CHKERRQ(ierr);
+      ierr = PetscMemcmp(pcbddc->local_primal_ref_mult,olocal_primal_ref_mult,olocal_primal_size_cc*sizeof(PetscScalar),&pcbddc->new_primal_space_local);CHKERRQ(ierr);
       pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     }
   }

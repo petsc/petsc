@@ -877,12 +877,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           if (((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || (!PetscBTLookup(sub_schurs->is_edge,i) && use_faces))) {
             PetscInt j;
             /* get (St^-1)_E */
-            if (sub_schurs->is_hermitian) { /* I need to expand to upper triangular (column oriented) */
+            if (sub_schurs->is_hermitian) { /* Here I don't need to expand to upper triangular (column oriented) */
               PetscInt k;
               for (k=0;k<subset_size;k++) {
                 for (j=k;j<subset_size;j++) {
                   work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
-                  work[j*subset_size+k] = S_data[cum2+k*size_schur+j];
                 }
               }
             } else { /* copy to workspace */
