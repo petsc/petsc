@@ -378,7 +378,9 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr      = MatCreate(PETSC_COMM_SELF,&temp_local_mat);CHKERRQ(ierr);
   ierr      = MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize);CHKERRQ(ierr);
-  if (dd.DBC_zerorows) { /* in this case, we need to zero out the some rows, so use seqaij */
+  /* set local matrices type: here we use SEQSBAIJ primarily for testing purpose */
+  /* in order to avoid conversions inside the BDDC code, use SeqAIJ if possible */
+  if (dd.DBC_zerorows && !dd.ipx) { /* in this case, we need to zero out some of the rows, so use seqaij */
     ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
   } else {
     ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -744,12 +746,24 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   ierr = MatAssemblyEnd(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (dd.DBC_zerorows) {
+    PetscInt dirsize;
+
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL);CHKERRQ(ierr);
     ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(dirichletIS,&dirsize);CHKERRQ(ierr);
+    /* giving hints to local and global matrices could be useful for the BDDC */
+    if (!dirsize) {
+      ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatSetOption(local_mat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatSetOption(local_mat,MAT_SPD,PETSC_FALSE);CHKERRQ(ierr);
+    }
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
-  } else {
+  } else { /* safe to set the options for the global matrices (they will be communicated to the matis local matrices) */
     ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(temp_A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
 #if DEBUG
   {
