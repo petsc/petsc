@@ -87,7 +87,7 @@ int main(int argc,char **args)
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatSetRandom(C,rand);CHKERRQ(ierr);
