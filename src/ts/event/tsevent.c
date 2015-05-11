@@ -234,12 +234,10 @@ PetscErrorCode TSEventMonitor(TS ts)
   event->nevents_zero = 0;
 
   ierr = (*event->monitor)(ts,t,U,event->fvalue,event->monitorcontext);CHKERRQ(ierr);
-  if (event->status != TSEVENT_NONE) {
-    for (i=0; i < event->nevents; i++) {
-      if (PetscAbsScalar(event->fvalue[i]) < event->tol) {
-	event->status = TSEVENT_ZERO;
-	event->events_zero[event->nevents_zero++] = i;
-      }
+  for (i=0; i < event->nevents; i++) {
+    if (PetscAbsScalar(event->fvalue[i]) < event->tol) {
+      event->status = TSEVENT_ZERO;
+      event->events_zero[event->nevents_zero++] = i;
     }
   }
 
@@ -250,7 +248,7 @@ PetscErrorCode TSEventMonitor(TS ts)
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
     dt = event->tstepend-t;
     if(PetscAbsReal(dt) < PETSC_SMALL) dt += event->initial_timestep;
-    ts->time_step = dt;
+    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -258,7 +256,7 @@ PetscErrorCode TSEventMonitor(TS ts)
     PetscInt fvalue_sign,fvalueprev_sign;
     fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
     fvalueprev_sign = PetscSign(PetscRealPart(event->fvalue_prev[i]));
-    if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign)) {
+    if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign) && (PetscAbsScalar(event->fvalue_prev[i]) > event->tol)) {
       switch (event->direction[i]) {
       case -1:
 	if (fvalue_sign < 0) {
