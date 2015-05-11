@@ -180,7 +180,7 @@ class BuildChecker(script.Script):
     # avoid C++ instantiation sequences
     if re.search(r'instantiated from here',line):      return
     # avoid MPI argument checks that cannot handle const
-    if re.search(r"(aka 'const double *') doesn't match specified 'MPI' type tag that requires 'double *'"): return
+    if re.search(r"(aka 'const double *') doesn't match specified 'MPI' type tag that requires 'double *'",line): return
     if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):  return
     if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):  return
     message = line.rstrip()
