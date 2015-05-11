@@ -28,6 +28,46 @@ PetscErrorCode TSEventMonitorInitialize(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetEventTolerances"
+/*@
+   TSSetEventTolerances - Set tolerances for event zero crossings when using event handler
+
+   Logically Collective
+
+   Input Arguments:
++  ts - time integration context
+.  tol - scalar tolerance, PETSC_DECIDE to leave current value
+-  vtol - array of tolerances or NULL, used in preference to tol if present
+
+-  -ts_event_tol <tol> tolerance for event zero crossing
+
+   Notes:
+   Must call TSSetEventMonitor() before setting the tolerances.
+
+   The size of vtol is equal to the number of events. 
+
+   Level: beginner
+
+.seealso: TS, TSEvent, TSSetEventMonitor()
+@*/
+PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal *vtol)
+{
+  TSEvent        event=ts->event;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if(!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventMonitor()");
+  if(vtol) {
+    for(i=0; i < event->nevents; i++) event->vtol[i] = vtol[i];
+  } else {
+    if(tol != PETSC_DECIDE || tol != PETSC_DEFAULT) {
+      for(i=0; i < event->nevents; i++) event->vtol[i] = tol;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetEventMonitor"
 /*@C
    TSSetEventMonitor - Sets a monitoring function used for detecting events
@@ -83,6 +123,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   TSEvent        event;
   PetscInt       i;
   PetscBool      flg;
+  PetscReal      tol=1e-6;
 
   PetscFunctionBegin;
   ierr = PetscNew(&event);CHKERRQ(ierr);
@@ -90,6 +131,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   ierr = PetscMalloc1(nevents,&event->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->direction);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevents,&event->vtol);CHKERRQ(ierr);
   for (i=0; i < nevents; i++) {
     event->direction[i] = direction[i];
     event->terminate[i] = terminate[i];
@@ -106,10 +148,11 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
   {
-    event->tol = 1.0e-6;
-    ierr = PetscOptionsReal("-ts_event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_event_tol","Scalar event tolerance for zero crossing check","",tol,&tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
   }
+
+  for(i=0; i < event->nevents; i++) event->vtol[i] = tol;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if(flg) {
@@ -198,6 +241,7 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
   ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->vtol);CHKERRQ(ierr);
   for(i=0; i < MAXEVENTRECORDERS; i++) {
     ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
@@ -242,7 +286,7 @@ PetscErrorCode TSEventMonitor(TS ts)
 
   ierr = (*event->monitor)(ts,t,U,event->fvalue,event->monitorcontext);CHKERRQ(ierr);
   for (i=0; i < event->nevents; i++) {
-    if (PetscAbsScalar(event->fvalue[i]) < event->tol) {
+    if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
       event->status = TSEVENT_ZERO;
       event->events_zero[event->nevents_zero++] = i;
       if(event->mon) {
@@ -266,7 +310,7 @@ PetscErrorCode TSEventMonitor(TS ts)
     PetscInt fvalue_sign,fvalueprev_sign;
     fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
     fvalueprev_sign = PetscSign(PetscRealPart(event->fvalue_prev[i]));
-    if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign) && (PetscAbsScalar(event->fvalue_prev[i]) > event->tol)) {
+    if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign) && (PetscAbsScalar(event->fvalue_prev[i]) > event->vtol[i])) {
       switch (event->direction[i]) {
       case -1:
 	if (fvalue_sign < 0) {
