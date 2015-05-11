@@ -4857,7 +4857,7 @@ event monitoring routine
 \begin{tabbing}
      TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
      ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
-     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void* eventP),void *eventP);
+     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 \end{tabbing}
 Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for 
 an event (+1 for positive zero-crossing, -1 for negative zero-crossing, and 0 for both), \trl{terminate} conveys whether 
@@ -4869,7 +4869,7 @@ The arguments to \trl{eventmonitor()} are the timestep context, current time, in
 value, and the (optional) user-provided context \trl{eventP}. 
 
 The arguments to \trl{posteventmonitor()} routine are
-the timestep context, number of events occured, indices of events occured, current time, input state $u$, and the (optional)
+the timestep context, number of events occured, indices of events occured, current time, input state $u$, a boolean flag indicating forward solve (1) or adjoint solve (0), and the (optional)
 user-provided context \trl{eventP}. 
 
 The event monitoring functionality is only available with PETSc's implicit time-stepping solvers TSTHETA, TSARKIMEX, and TSROSW.
