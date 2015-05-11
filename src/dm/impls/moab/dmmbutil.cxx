@@ -20,6 +20,9 @@ typedef struct {
   PetscInt  NX,NY,NZ,nex,ney,nez;
   PetscInt  q,xstride,ystride,zstride;
   PetscBool usrxyzgrid,usrprocgrid,usrrefgrid;
+  PetscInt  fraction,remainder,cumfraction;
+  PetscLogEvent generateMesh, generateElements, generateVertices, parResolve;
+
 } DMMoabMeshGeneratorCtx;
 
 
@@ -64,7 +67,8 @@ PetscInt DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx& gen
 #define __FUNCT__ "DMMoab_SetSimplexElementConnectivity_Private"
 PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, PetscInt subelem, PetscInt offset, PetscInt corner, std::vector<PetscInt>& subent_conn, moab::EntityHandle *connectivity)
 {
-  PetscInt A, B, C, D, E, F, G, H;
+  PetscInt A, B, C, D, E, F, G, H, M;
+  const PetscInt trigen_opts=1; /* 1 - Aligned diagonally to right, 2 - Aligned diagonally to left, 3 - 4 elements per quad */
   A = corner;
   B = corner + 1;
   switch(genCtx.dim) {
@@ -77,17 +81,56 @@ PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& ge
     case 2:
       C = corner + 1 + genCtx.ystride;
       D = corner +     genCtx.ystride;
+      M = corner + 0.5; // technically -- need to modify vertex generation
       subent_conn.resize(3);  /* only linear TRI supported */
       moab::CN::SubEntityVertexIndices(moab::MBTRI, 2, 0, subent_conn.data());
-      if (subelem) { /* 0 1 2 of a QUAD */
-        connectivity[offset+subent_conn[0]] = A;
-        connectivity[offset+subent_conn[1]] = B;
-        connectivity[offset+subent_conn[2]] = C;
+      if (trigen_opts == 1) {
+        if (subelem) { /* 0 1 2 of a QUAD */
+          connectivity[offset+subent_conn[0]] = A;
+          connectivity[offset+subent_conn[1]] = C;
+          connectivity[offset+subent_conn[2]] = B;
+        }
+        else {        /* 2 3 0 of a QUAD */
+          connectivity[offset+subent_conn[0]] = A;
+          connectivity[offset+subent_conn[1]] = D;
+          connectivity[offset+subent_conn[2]] = C;
+        }
       }
-      else {        /* 2 3 0 of a QUAD */
-        connectivity[offset+subent_conn[0]] = C;
-        connectivity[offset+subent_conn[1]] = D;
-        connectivity[offset+subent_conn[2]] = A;
+      else if (trigen_opts == 2) {
+        if (subelem) { /* 0 1 2 of a QUAD */
+          connectivity[offset+subent_conn[0]] = A;
+          connectivity[offset+subent_conn[1]] = D;
+          connectivity[offset+subent_conn[2]] = B;
+        }
+        else {        /* 2 3 0 of a QUAD */
+          connectivity[offset+subent_conn[0]] = D;
+          connectivity[offset+subent_conn[1]] = C;
+          connectivity[offset+subent_conn[2]] = B;
+        }
+      }
+      else {
+        switch (subelem) { /* 0 1 2 of a QUAD */
+          case 0:
+            connectivity[offset+subent_conn[0]] = A;
+            connectivity[offset+subent_conn[1]] = B;
+            connectivity[offset+subent_conn[2]] = M;
+            break;
+          case 1:
+            connectivity[offset+subent_conn[0]] = B;
+            connectivity[offset+subent_conn[1]] = C;
+            connectivity[offset+subent_conn[2]] = M;
+            break;
+          case 2:
+            connectivity[offset+subent_conn[0]] = C;
+            connectivity[offset+subent_conn[1]] = D;
+            connectivity[offset+subent_conn[2]] = M;
+            break;
+          case 3:
+            connectivity[offset+subent_conn[0]] = D;
+            connectivity[offset+subent_conn[1]] = A;
+            connectivity[offset+subent_conn[2]] = M;
+            break;
+        }
       }
       break;
     case 3:
@@ -174,9 +217,10 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
     PetscInt a, PetscInt b, PetscInt c, moab::Tag& global_id_tag, moab::EntityHandle& startv, moab::Range& uverts)
 {
   PetscInt x,y,z,ix,nnodes;
+  PetscErrorCode ierr;
   PetscInt ii,jj,kk;
   std::vector<PetscReal*> arrays;
-  std::vector<PetscInt> gids;
+  PetscInt* gids;
   moab::ErrorCode merr;
 
   PetscFunctionBegin;
@@ -185,15 +229,20 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
    * x will vary from  m*A*q*block + a*q*block to m*A*q*block+(a+1)*q*block etc.
    */
   nnodes = genCtx.blockSizeVertexXYZ[0]*(genCtx.dim>1? genCtx.blockSizeVertexXYZ[1]*(genCtx.dim>2 ? genCtx.blockSizeVertexXYZ[2]:1) :1);
+  ierr = PetscMalloc1(nnodes,&gids);CHKERRQ(ierr);
 
   merr = iface->get_node_coords(3, nnodes, 0, startv, arrays);MBERR("Can't get node coords.", merr);
 
   /* will start with the lower corner: */
-  x = ( m * genCtx.A + a ) * genCtx.q * genCtx.blockSizeElementXYZ[0];
-  y = ( n * genCtx.B + b ) * genCtx.q * genCtx.blockSizeElementXYZ[1];
-  z = ( k * genCtx.C + c ) * genCtx.q * genCtx.blockSizeElementXYZ[2];
+  //x = ( m * genCtx.A + a ) * genCtx.q * genCtx.blockSizeElementXYZ[0];
+  //y = ( n * genCtx.B + b ) * genCtx.q * genCtx.blockSizeElementXYZ[1];
+  //z = ( k * genCtx.C + c ) * genCtx.q * genCtx.blockSizeElementXYZ[2];
+
+  x = ( m * genCtx.A + a ) * genCtx.q;
+  y = ( n * genCtx.B + b ) * genCtx.q;
+  z = ( k * genCtx.C + c ) * genCtx.q;
+  PetscInfo3(NULL, "Starting offset for coordinates := %d, %d, %d\n",x,y,z);
   ix = 0;
-  gids.resize(nnodes);
   moab::Range verts(startv, startv + nnodes - 1);
   for (kk = 0; kk < (genCtx.dim>2?genCtx.blockSizeVertexXYZ[2]:1); kk++) {
     for (jj = 0; jj < (genCtx.dim>1?genCtx.blockSizeVertexXYZ[1]:1); jj++) {
@@ -202,6 +251,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
         arrays[0][ix] = (x + ii)*genCtx.dx + genCtx.xyzbounds[0];
         arrays[1][ix] = (y + jj)*genCtx.dy + genCtx.xyzbounds[2];
         arrays[2][ix] = (z + kk)*genCtx.dz + genCtx.xyzbounds[4];
+        PetscInfo3(NULL, "Creating vertex with coordinates := %f, %f, %f\n",arrays[0][ix],arrays[1][ix],arrays[2][ix]);
 
         /* If we want to set some tags on the vertices -> use the following entity handle definition:
            moab::EntityHandle v = startv + ix;
@@ -214,6 +264,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   /* set global ID data on vertices */
   mbImpl->tag_set_data(global_id_tag, verts, &gids[0]);
   verts.swap(uverts);
+  ierr = PetscFree(gids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -307,9 +358,8 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMBUtil_InitializeOptions"
-PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal* bounds, PetscInt nele)
+PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal* bounds, PetscInt nelems)
 {
-  PetscInt fraction=0,remainder=0;
   PetscFunctionBegin;
   /* Initialize all genCtx data */
   genCtx.dim=dim;
@@ -317,18 +367,35 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   genCtx.newMergeMethod=genCtx.keep_skins=genCtx.adjEnts=true;
   /* determine other global quantities for the mesh used for nodes increments */
   genCtx.q = 1;
+  genCtx.fraction=genCtx.remainder=genCtx.cumfraction=0;
 
   if (!genCtx.usrxyzgrid) { /* not overridden by genCtx - assume nele equally and that genCtx wants a uniform cube mesh */
-    //genCtx.blockSizeElementXYZ[0]=genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=std::pow(nlocalele,1.0/dim);
-    if (dim==1) {
-      fraction=nele/nprocs;    /* partition only by the largest dimension */
-      remainder=nele%nprocs;   /* remainder after partition which gets evenly distributed by round-robin */
-      if(rank < remainder)     /* This process gets "fraction+1" elements */
-        fraction++;
-    }
-    genCtx.blockSizeElementXYZ[0]=(dim>1?nele:fraction);
-    genCtx.blockSizeElementXYZ[1]=(dim>2?nele:nele/nprocs);
-    genCtx.blockSizeElementXYZ[2]=(dim>2?nele/nprocs:1);
+
+    genCtx.fraction=nelems/nprocs;    /* partition only by the largest dimension */
+    genCtx.remainder=nelems%nprocs;   /* remainder after partition which gets evenly distributed by round-robin */
+    genCtx.cumfraction = (rank > 0 ? (genCtx.fraction) * (rank) + (rank-1 < genCtx.remainder ? rank : genCtx.remainder ) : 0);
+    PetscInfo3(NULL,"Fraction = %D, Remainder = %D, Cumulative fraction = %D\n",genCtx.fraction,genCtx.remainder,genCtx.cumfraction);
+    if(rank < genCtx.remainder)     /* This process gets "fraction+1" elements */
+      genCtx.fraction++;
+
+    switch(genCtx.dim) {
+      case 1:
+        genCtx.blockSizeElementXYZ[0]=genCtx.fraction;
+        genCtx.blockSizeElementXYZ[1]=1;
+        genCtx.blockSizeElementXYZ[2]=1;
+        break;
+      case 2:
+        genCtx.blockSizeElementXYZ[0]=nelems;
+        genCtx.blockSizeElementXYZ[1]=genCtx.fraction;
+        genCtx.blockSizeElementXYZ[2]=1;
+        break;
+      case 3:
+      default:
+        genCtx.blockSizeElementXYZ[0]=nelems;
+        genCtx.blockSizeElementXYZ[1]=nelems;
+        genCtx.blockSizeElementXYZ[2]=genCtx.fraction;
+        break;
+      }
   }
 
   /* partition only by the largest dimension */
@@ -343,18 +410,21 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   }
 
   if (!genCtx.usrprocgrid) {
-    genCtx.M=genCtx.N=genCtx.K=std::pow(nprocs,1.0/dim);
     switch(genCtx.dim) {
      case 1:
        genCtx.M=nprocs;
        genCtx.N=genCtx.K=1;
        break;
      case 2:
+       genCtx.M=1;
+       genCtx.N=nprocs;
        genCtx.K=1;
-       genCtx.N=nprocs/(genCtx.M);
        break;
      default:
-       genCtx.K=nprocs/(genCtx.M*genCtx.N);
+       genCtx.M=1;
+       genCtx.N=1;
+       // genCtx.M=genCtx.N=1;
+       genCtx.K=nprocs;
        break;
     }
   }
@@ -370,66 +440,73 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   genCtx.nex=genCtx.ney=genCtx.nez=0;
   genCtx.blockSizeVertexXYZ[0]=genCtx.blockSizeVertexXYZ[1]=genCtx.blockSizeVertexXYZ[2]=1;
 
-  //genCtx.blockSizeElementXYZ[0]=genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=nele;
-  //genCtx.blockSizeVertexXYZ[0]=genCtx.blockSizeVertexXYZ[1]=genCtx.blockSizeVertexXYZ[2]=nele+1;
-
   switch(genCtx.dim) {
    case 3:
-     //genCtx.blockSizeElementXYZ[2]=std::max(1,genCtx.blockSizeElementXYZ[2]/nprocs);
-     //genCtx.blockSizeElementXYZ[2]=std::max(1,nele/nprocs);
      genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
      genCtx.blockSizeVertexXYZ[1] = genCtx.q*genCtx.blockSizeElementXYZ[1] + 1;
-     //genCtx.blockSizeElementXYZ[2]=fraction/(genCtx.blockSizeElementXYZ[0]*genCtx.blockSizeElementXYZ[1]);
      genCtx.blockSizeVertexXYZ[2] = genCtx.q*genCtx.blockSizeElementXYZ[2] + 1;
 
      genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
-     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     //genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(nelems*genCtx.q);  /* distance between 2 nodes in x direction */
      genCtx.NX = (genCtx.q * genCtx.nex + 1);
      genCtx.xstride = 1;
      genCtx.ney = genCtx.N * genCtx.B * genCtx.blockSizeElementXYZ[1];  /* number of elements in y direction  .... */
-     genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(genCtx.ney*genCtx.q);   /* distance between 2 nodes in y direction */
+     genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(nelems*genCtx.q);   /* distance between 2 nodes in y direction */
      genCtx.NY = (genCtx.q * genCtx.ney + 1);
      genCtx.ystride = genCtx.blockSizeVertexXYZ[0];
      genCtx.nez = genCtx.K * genCtx.C * genCtx.blockSizeElementXYZ[2];  /* number of elements in z direction  .... */
-     genCtx.dz = (genCtx.xyzbounds[5]-genCtx.xyzbounds[4])/(genCtx.nez*genCtx.q);   /* distance between 2 nodes in z direction */
+     //genCtx.dz = (genCtx.xyzbounds[5]-genCtx.xyzbounds[4])/(genCtx.nez*genCtx.q);   /* distance between 2 nodes in z direction */
+     genCtx.dz = (genCtx.xyzbounds[5]-genCtx.xyzbounds[4])/(nelems*genCtx.q);   /* distance between 2 nodes in z direction */
      genCtx.NZ = (genCtx.q * genCtx.nez + 1);
      genCtx.zstride = genCtx.blockSizeVertexXYZ[0] * genCtx.blockSizeVertexXYZ[1];
      break;
    case 2:
-     //genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=std::max(1,nele/nprocs);
-     //genCtx.blockSizeElementXYZ[1]=fraction/genCtx.blockSizeElementXYZ[0];
      genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
      genCtx.blockSizeVertexXYZ[1] = genCtx.q*genCtx.blockSizeElementXYZ[1] + 1;
      genCtx.blockSizeElementXYZ[2]=0;
 
      genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
+     // genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
      genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
      genCtx.NX = (genCtx.q * genCtx.nex + 1);
      genCtx.xstride = 1;
      genCtx.ney = genCtx.N * genCtx.B * genCtx.blockSizeElementXYZ[1];  /* number of elements in y direction  .... */
-     genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(genCtx.ney*genCtx.q);   /* distance between 2 nodes in y direction */
+     // genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(genCtx.ney*genCtx.q);   /* distance between 2 nodes in y direction */
+     genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(nelems*genCtx.q);   /* distance between 2 nodes in y direction */
      genCtx.NY = (genCtx.q * genCtx.ney + 1);
      genCtx.ystride = genCtx.blockSizeVertexXYZ[0];
      break;
    case 1:
      genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=0;
-     //genCtx.blockSizeElementXYZ[0]=nele;
      genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
 
      genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
-     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     //genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(nelems*genCtx.q);  /* distance between 2 nodes in x direction */
      genCtx.NX = (genCtx.q * genCtx.nex + 1);
      genCtx.xstride = 1;
      break;
   }
 
-  /*
+  /* Lets check for some valid input */
+  if (genCtx.dim < 1 || genCtx.dim > 3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid topological dimension specified: %d.\n",genCtx.dim);
+  if (genCtx.M * genCtx.N * genCtx.K != nprocs) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid [m, n, k] data: %d, %d, %d. Product must be equal to global size = %d.\n",genCtx.M,genCtx.N,genCtx.K,nprocs);
+  if (genCtx.xyzbounds) {
+    /* validate the bounds data */
+    if(genCtx.xyzbounds[0] >= genCtx.xyzbounds[1]) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"X-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[0],genCtx.xyzbounds[1]);
+    if(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Y-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[2],genCtx.xyzbounds[3]);
+    if(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Z-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[4],genCtx.xyzbounds[5]);
+  }
+
   PetscInfo3(NULL, "Local elements:= %d, %d, %d\n",genCtx.blockSizeElementXYZ[0],genCtx.blockSizeElementXYZ[1],genCtx.blockSizeElementXYZ[2]);
   PetscInfo3(NULL, "Local vertices:= %d, %d, %d\n",genCtx.blockSizeVertexXYZ[0],genCtx.blockSizeVertexXYZ[1],genCtx.blockSizeVertexXYZ[2]);
+  PetscInfo3(NULL, "Local blocks/processors := %d, %d, %d\n",genCtx.A,genCtx.B,genCtx.C);
+  PetscInfo3(NULL, "Local processors := %d, %d, %d\n",genCtx.M,genCtx.N,genCtx.K);
   PetscInfo3(NULL, "Local nexyz:= %d, %d, %d\n",genCtx.nex,genCtx.ney,genCtx.nez);
   PetscInfo3(NULL, "Local delxyz:= %g, %g, %g\n",genCtx.dx,genCtx.dy,genCtx.dz);
   PetscInfo3(NULL, "Local strides:= %d, %d, %d\n",genCtx.xstride,genCtx.ystride,genCtx.zstride);
-  */
+
   PetscFunctionReturn(0);
 }
 
@@ -469,11 +546,16 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   moab::Tag              global_id_tag,part_tag,geom_tag;
   moab::Range            ownedvtx,ownedelms,localvtxs,localelms;
   moab::EntityHandle     regionset;
-  PetscInt               ml=0,nl=0,kl=0,leftover;
+  PetscInt               ml=0,nl=0,kl=0;
 
   PetscFunctionBegin;
   if(dim < 1 || dim > 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid dimension argument for mesh: dim=[1,3].\n");
 
+  ierr = PetscLogEventRegister("GenerateMesh", DM_CLASSID,   &genCtx.generateMesh);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("AddVertices", DM_CLASSID,   &genCtx.generateVertices);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("AddElements", DM_CLASSID,   &genCtx.generateElements);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ParResolve", DM_CLASSID,   &genCtx.parResolve);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(genCtx.generateMesh,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &global_size);CHKERRQ(ierr);
   /* total number of vertices in all dimensions */
   n=pow(npts,dim);
@@ -501,8 +583,10 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   /* No errors yet; proceed with building the mesh */
   merr = mbImpl->query_interface(readMeshIface);MBERRNM(merr);
 
-  //PetscObjectOptionsBegin(dm);
-  PetscOptionsBegin(comm,"","DMMoab Creation Options","DMMOAB");
+  genCtx.M=genCtx.N=genCtx.K=1;
+  genCtx.A=genCtx.B=genCtx.C=1;
+
+  ierr = PetscOptionsBegin(comm,"","DMMoab Creation Options","DMMOAB");CHKERRQ(ierr);
   /* Handle DMMoab spatial resolution */
   PetscOptionsInt("-dmb_grid_x","Number of grid points in x direction","DMMoabSetSizes",genCtx.blockSizeElementXYZ[0],&genCtx.blockSizeElementXYZ[0],&genCtx.usrxyzgrid);
   if (dim > 1) {PetscOptionsInt("-dmb_grid_y","Number of grid points in y direction","DMMoabSetSizes",genCtx.blockSizeElementXYZ[1],&genCtx.blockSizeElementXYZ[1],&genCtx.usrxyzgrid);}
@@ -523,22 +607,22 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   //if(nele<nprocs) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
 
-  /* Lets check for some valid input */
-  if (genCtx.dim < 1 || genCtx.dim > 3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid topological dimension specified: %d.\n",genCtx.dim);
-  if (genCtx.M * genCtx.N * genCtx.K != global_size) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid [m, n, k] data: %d, %d, %d. Product must be equal to global size = %d.\n",genCtx.M,genCtx.N,genCtx.K,global_size);
-  if (genCtx.xyzbounds) {
-    /* validate the bounds data */
-    if(genCtx.xyzbounds[0] >= genCtx.xyzbounds[1]) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"X-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[0],genCtx.xyzbounds[1]);
-    if(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Y-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[2],genCtx.xyzbounds[3]);
-    if(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Z-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[4],genCtx.xyzbounds[5]);
-  }
   if (genCtx.adjEnts) genCtx.keep_skins = true; /* do not delete anything - consumes more memory */
 
   /* determine m, n, k for processor rank */
-  kl = (genCtx.dim>2?global_rank/(genCtx.M*genCtx.N):0);
-  leftover = global_rank%(genCtx.M*genCtx.N);
-  nl = leftover/genCtx.M;
-  ml = leftover%genCtx.M;
+  ml=nl=kl=0;
+  switch(genCtx.dim) {
+   case 1:
+     ml=(genCtx.cumfraction);
+     break;
+   case 2:
+     nl=(genCtx.cumfraction);
+     break;
+   default:
+     kl=(genCtx.cumfraction)/genCtx.q / genCtx.blockSizeElementXYZ[2] / genCtx.C;//genCtx.K
+     break;
+  }
+  //PetscInfo3(NULL, "Local proc index := %d, %d, %d\n",ml,nl,kl);
 
   /*
    * so there are a total of M * A * blockSizeElement elements in x direction (so M * A * blockSizeElement + 1 verts in x direction)
@@ -559,6 +643,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   /* lets create some sets */
   merr = mbImpl->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_CREAT|moab::MB_TAG_SPARSE, &dum_id);MBERRNM(merr);
   merr = mbImpl->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
+  ierr     = PetscLogEventEnd(genCtx.generateMesh,0,0,0,0);CHKERRQ(ierr);
 
   for (a=0; a<(genCtx.dim>0?genCtx.A:genCtx.A); a++) {
     for (b=0; b<(genCtx.dim>1?genCtx.B:1); b++) {
@@ -566,9 +651,13 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
         
         moab::EntityHandle startv;
 
+        ierr = PetscLogEventBegin(genCtx.generateVertices,0,0,0,0);CHKERRQ(ierr);
         ierr = DMMoab_GenerateVertices_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, verts);CHKERRQ(ierr);
+        ierr     = PetscLogEventEnd(genCtx.generateVertices,0,0,0,0);CHKERRQ(ierr);
 
+        ierr = PetscLogEventBegin(genCtx.generateElements,0,0,0,0);CHKERRQ(ierr);
         ierr = DMMoab_GenerateElements_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, cells);CHKERRQ(ierr);
+        ierr     = PetscLogEventEnd(genCtx.generateElements,0,0,0,0);CHKERRQ(ierr);
 
         PetscInt part_num=0;
         switch(genCtx.dim) {
@@ -616,6 +705,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     }
   }
   
+  ierr = PetscLogEventBegin(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
   /* set geometric dimension tag for regions */
   merr = mbImpl->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
   merr = mbImpl->add_parent_child(dmmoab->fileset,regionset);MBERRNM(merr);
@@ -665,6 +755,34 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
     merr = dmmoab->pcomm->delete_entities(toDelete) ;MBERR("Can't delete entities", merr);
   }
+  ierr = PetscLogEventEnd(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
+
+#if 0
+  {
+    moab::Range vowned, vlocal, vghost, adjs;
+    //merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,*dmmoab->vlocal,true);MBERRNM(merr);
+    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, vlocal, false);MBERRNM(merr);
+
+    /* filter based on parallel status */
+    merr = pcomm->filter_pstatus(vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&vowned);MBERRNM(merr);
+
+    /* filter all the non-owned and shared entities out of the list */
+    adjs = moab::subtract(vlocal, vowned);
+    merr = pcomm->filter_pstatus(adjs,PSTATUS_GHOST|PSTATUS_INTERFACE,PSTATUS_OR,-1,&vghost);MBERRNM(merr);
+    adjs = moab::subtract(adjs, vghost);
+    vlocal = moab::subtract(vlocal, adjs);
+
+    /* compute and cache the sizes of local and ghosted entities */
+    int nloc, n, nghost;
+    nloc = vowned.size();
+    nghost = vghost.size();
+    ierr = MPI_Allreduce(&nloc, &n, 1, MPI_INTEGER, MPI_SUM, comm);CHKERRQ(ierr);
+
+    PetscInfo4(NULL, "Vertices: total - %d, local - %D, owned - %D, ghosted - %D.\n", n, vlocal.size(), nloc, nghost);
+  }
+
+  mbImpl->write_file("dmmbutil.h5m", 0, (global_size > 1 ? "PARALLEL=WRITE_PART" : ""), &dmmoab->fileset);
+#endif
   PetscFunctionReturn(0);
 }
 

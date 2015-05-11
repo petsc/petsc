@@ -597,6 +597,35 @@ PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim)
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetHierarchyLevel"
+/*@
+  DMMoabGetHierarchyLevel - Get the current level of the mesh hierarchy 
+  generated through uniform refinement.
+
+  Collective on DM
+
+  Input Parameter:
+. dm - The DMMoab object being set
+
+  Output Parameter:
+. nvg - The current mesh hierarchy level
+
+  Level: beginner
+
+.keywords: DMMoab, multigrid
+@*/
+PetscErrorCode DMMoabGetHierarchyLevel(DM dm,PetscInt *nlevel)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if(nlevel) *nlevel = ((DM_Moab*)dm->data)->hlevel;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetMaterialBlock"
 /*@
   DMMoabGetMaterialBlock - Get the material ID corresponding to the current entity of the DM Mesh
 
@@ -1153,7 +1182,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     /* get all the nodes via connectivity and the parent elements via adjacency information */
     merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
-    merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
+    merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyvtx, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
   }
   PetscInfo3(NULL, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyfaces->size(), dmmoab->bndyelems->size());
   PetscFunctionReturn(0);

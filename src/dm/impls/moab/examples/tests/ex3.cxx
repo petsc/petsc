@@ -9,6 +9,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt      dim;                            /* The topological mesh dimension */
   PetscInt      nele;                           /* Elements in each dimension */
+  PetscInt      degree;                         /* Degree of refinement */
   PetscBool     simplex;                        /* Use simplex elements */
   PetscInt      nlevels;                        /* Number of levels in mesh hierarchy */
   PetscInt      nghost;                        /* Number of ghost layers in the mesh */
@@ -29,6 +30,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->nghost            = 1;
   options->dim               = 2;
   options->nele              = 5;
+  options->degree            = 2;
   options->simplex           = PETSC_FALSE;
   options->write_output      = PETSC_FALSE;
   options->input_file[0]     = '\0';
@@ -39,6 +41,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-levels", "Number of levels in the hierarchy", "ex3.cxx", options->nlevels, &options->nlevels, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-degree", "Number of degrees at each level of refinement", "ex3.cxx", options->degree, &options->degree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
@@ -86,6 +89,7 @@ int main(int argc, char **argv)
   PetscInt       i;
   Mat            R;
   DM            *dmhierarchy;
+  PetscInt      *degrees;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -107,8 +111,10 @@ int main(int argc, char **argv)
   PetscObjectReference((PetscObject)user.dm);
 
   if (user.nlevels) {
+    ierr = PetscMalloc1(user.nlevels, &degrees);CHKERRQ(ierr);
+    for (i=0; i < user.nlevels; i++) degrees[i] = user.degree;
     if (user.debug) PetscPrintf(comm, "Generate the MOAB mesh hierarchy with %D levels.\n", user.nlevels);
-    ierr = DMMoabGenerateHierarchy(user.dm,user.nlevels,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMMoabGenerateHierarchy(user.dm,user.nlevels,degrees);CHKERRQ(ierr);
 
     PetscBool usehierarchy=PETSC_FALSE;
     if (usehierarchy) {
@@ -143,6 +149,7 @@ int main(int argc, char **argv)
   for (i=0; i<=user.nlevels; i++) {
     ierr = DMDestroy(&dmhierarchy[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree(degrees);CHKERRQ(ierr);
   ierr = PetscFree(dmhierarchy);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();

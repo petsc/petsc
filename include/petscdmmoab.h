@@ -42,6 +42,7 @@ PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM,moab::Tag*);
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM,PetscInt bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM,PetscInt *bs);
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockFills(DM,const PetscInt*,const PetscInt*);
+PETSC_EXTERN PetscErrorCode DMMoabGetHierarchyLevel(DM,PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim);
 PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range*,moab::Range*,moab::Range*);
