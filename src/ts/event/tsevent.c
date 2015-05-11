@@ -82,6 +82,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   PetscErrorCode ierr;
   TSEvent        event;
   PetscInt       i;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscNew(&event);CHKERRQ(ierr);
@@ -107,8 +108,13 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   {
     event->tol = 1.0e-6;
     ierr = PetscOptionsReal("-ts_event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if(flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&event->mon);CHKERRQ(ierr);
+  }
   ts->event = event;
   PetscFunctionReturn(0);
 }
@@ -195,6 +201,7 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   for(i=0; i < MAXEVENTRECORDERS; i++) {
     ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
+  ierr = PetscViewerDestroy(&(*event)->mon);CHKERRQ(ierr);
   ierr = PetscFree(*event);CHKERRQ(ierr);
   *event = NULL;
   PetscFunctionReturn(0);
@@ -238,6 +245,9 @@ PetscErrorCode TSEventMonitor(TS ts)
     if (PetscAbsScalar(event->fvalue[i]) < event->tol) {
       event->status = TSEVENT_ZERO;
       event->events_zero[event->nevents_zero++] = i;
+      if(event->mon) {
+	ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D zero crossing at time %g\n",i,(double)t);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -263,6 +273,9 @@ PetscErrorCode TSEventMonitor(TS ts)
 	  rollback = 1;
 	  /* Compute linearly interpolated new time step */
 	  dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+	  if(event->mon) {
+	    ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+	  }
 	}
 	break;
       case 1:
@@ -270,12 +283,18 @@ PetscErrorCode TSEventMonitor(TS ts)
 	  rollback = 1;
 	  /* Compute linearly interpolated new time step */
 	  dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+	  if(event->mon) {
+	    ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+	  }
 	}
 	break;
       case 0: 
 	rollback = 1; 
 	/* Compute linearly interpolated new time step */
 	dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+	if(event->mon) {
+	  ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+	}
 	break;
       }
     }

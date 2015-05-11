@@ -279,6 +279,7 @@ struct _p_TSEvent {
   TSEventStatus   status;           /* Event status */
   PetscReal       tstepend;         /* End time of step */
   PetscReal       initial_timestep; /* Initial time step */
+  PetscViewer     mon;
   /* Struct to record the events */
   struct {
     PetscInt  ctr;                          /* recorder counter */
