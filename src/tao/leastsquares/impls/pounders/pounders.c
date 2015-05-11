@@ -1171,15 +1171,16 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
 
   ierr = PetscNewLog(tao,&mfqP);CHKERRQ(ierr);
   tao->data = (void*)mfqP;
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
   mfqP->deltamin=1e-3;
 #else
-  tao->fatol = 1e-8;
-  tao->frtol = 1e-8;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
   mfqP->deltamin=1e-6;
 #endif
   mfqP->delta0 = 0.1;

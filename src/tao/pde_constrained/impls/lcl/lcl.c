@@ -607,19 +607,21 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   ierr = PetscNewLog(tao,&lclP);CHKERRQ(ierr);
   tao->data = (void*)lclP;
 
-  tao->max_it=200;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 200;
+  
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol=1e-5;
-  tao->frtol=1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol=1e-8;
-  tao->frtol=1e-8;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
 #endif
-  tao->catol=1e-4;
-  tao->crtol=1e-4;
-  tao->gttol=1e-4;
-  tao->gatol=1e-4;
-  tao->grtol=1e-4;
+
+  if (!tao->catol_changed) tao->catol = 1.0e-4;
+  if (!tao->gatol_changed) tao->gttol = 1.0e-4;
+  if (!tao->grtol_changed) tao->gttol = 1.0e-4;
+  if (!tao->gttol_changed) tao->gttol = 1.0e-4;
   lclP->rho0 = 1.0e-4;
   lclP->rhomax=1e5;
   lclP->eps1 = 1.0e-8;

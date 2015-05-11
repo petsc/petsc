@@ -120,11 +120,10 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->gatol       = 1e-8;
   tao->grtol       = 1e-8;
 #endif
-  tao->gttol       = 0.0;
-  tao->catol       = 0.0;
   tao->crtol       = 0.0;
-  tao->xtol        = 0.0;
+  tao->catol       = 0.0;
   tao->steptol     = 0.0;
+  tao->gttol       = 0.0;
   tao->trust0      = PETSC_INFINITY;
   tao->fmin        = PETSC_NINFINITY;
   tao->hist_malloc = PETSC_FALSE;
@@ -143,6 +142,19 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewjacobian=PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
 
+  /* These flags prevents algorithms from overriding user options */
+  tao->max_it_changed   =PETSC_FALSE;
+  tao->max_funcs_changed=PETSC_FALSE;
+  tao->fatol_changed    =PETSC_FALSE;
+  tao->frtol_changed    =PETSC_FALSE;
+  tao->gatol_changed    =PETSC_FALSE;
+  tao->grtol_changed    =PETSC_FALSE;
+  tao->gttol_changed    =PETSC_FALSE;
+  tao->steptol_changed  =PETSC_FALSE;
+  tao->trust0_changed   =PETSC_FALSE;
+  tao->fmin_changed     =PETSC_FALSE;
+  tao->catol_changed    =PETSC_FALSE;
+  tao->crtol_changed    =PETSC_FALSE;
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
   *newtao = tao;
   PetscFunctionReturn(0);
@@ -390,19 +402,30 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetType(tao,default_type);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,NULL);CHKERRQ(ierr);
-
+    ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
+    if (flg) tao->fatol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
+    if (flg) tao->frtol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
+    if (flg) tao->catol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
+    if (flg) tao->crtol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
+    if (flg) tao->gatol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr);
+    if (flg) tao->grtol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr);
+    if (flg) tao->gttol_changed=PETSC_TRUE;
+    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,&flg);CHKERRQ(ierr);
+    if (flg) tao->max_it_changed=PETSC_TRUE;
+    ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg);CHKERRQ(ierr);
+    if (flg) tao->max_funcs_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg);CHKERRQ(ierr);
+    if (flg) tao->fmin_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,&flg);CHKERRQ(ierr);
+    if (flg) tao->steptol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg);CHKERRQ(ierr);
+    if (flg) tao->trust0_changed=PETSC_TRUE;
     ierr = PetscOptionsString("-tao_view_solution","view solution vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
@@ -714,6 +737,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->fatol = PetscMax(0,fatol);
+      tao->fatol_changed=PETSC_TRUE;
     }
   }
   if (frtol != PETSC_DEFAULT) {
@@ -721,6 +745,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->frtol = PetscMax(0,frtol);
+      tao->frtol_changed=PETSC_TRUE;
     }
   }
 
@@ -729,6 +754,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gatol = PetscMax(0,gatol);
+      tao->gatol_changed=PETSC_TRUE;
     }
   }
 
@@ -737,6 +763,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->grtol = PetscMax(0,grtol);
+      tao->grtol_changed=PETSC_TRUE;
     }
   }
 
@@ -745,6 +772,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gttol = PetscMax(0,gttol);
+      tao->gttol_changed=PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);
@@ -766,6 +794,9 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 + -tao_catol <catol> - Sets catol
 - -tao_crtol <crtol> - Sets crtol
 
+  Notes:
+  Use PETSC_DEFAULT to leave any tolerance unchanged.
+
   Level: intermediate
 
 .seealso: TaoGetTolerances(), TaoGetConstraintTolerances(), TaoSetTolerances()
@@ -783,6 +814,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
       ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->catol = PetscMax(0,catol);
+      tao->catol_changed=PETSC_TRUE;
     }
   }
 
@@ -791,6 +823,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
       ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->crtol = PetscMax(0,crtol);
+      tao->crtol_changed=PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);
@@ -849,6 +882,7 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao,PetscReal fmin)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->fmin = fmin;
+  tao->fmin_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -904,6 +938,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao,PetscInt nfcn)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->max_funcs = PetscMax(0,nfcn);
+  tao->max_funcs_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -984,6 +1019,7 @@ PetscErrorCode TaoSetMaximumIterations(Tao tao,PetscInt maxits)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->max_it = PetscMax(0,maxits);
+  tao->max_it_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1035,6 +1071,7 @@ PetscErrorCode TaoSetInitialTrustRegionRadius(Tao tao, PetscReal radius)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->trust0 = PetscMax(0.0,radius);
+  tao->trust0_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

@@ -347,15 +347,19 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   ierr = PetscNewLog(tao,&gpcg);CHKERRQ(ierr);
   tao->data = (void*)gpcg;
 
-  tao->max_it = 500;
-  tao->max_funcs = 100000;
-
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it=500;
+  if (!tao->max_funcs_changed) tao->max_funcs = 100000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-6;
-  tao->frtol = 1e-6;
+  if (!tao->fatol_changed) tao->fatol=1e-6;
+  if (!tao->frtol_changed) tao->frtol=1e-6;
+  if (!tao->gatol_changed) tao->grtol=1e-6;
+  if (!tao->grtol_changed) tao->grtol=1e-6;
 #else
-  tao->fatol = 1e-12;
-  tao->frtol = 1e-12;
+  if (!tao->fatol_changed) tao->fatol=1e-12;
+  if (!tao->frtol_changed) tao->frtol=1e-12;
+  if (!tao->gatol_changed) tao->grtol=1e-12;
+  if (!tao->grtol_changed) tao->grtol=1e-12;
 #endif
 
   /* Initialize pointers and variables */
