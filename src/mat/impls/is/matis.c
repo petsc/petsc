@@ -270,7 +270,7 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   Mat_IS                 *matis = (Mat_IS*)(mat->data);
   /* info on mat */
   /* ISLocalToGlobalMapping rmapping,cmapping; */
-  PetscInt               bs,rows,cols;
+  PetscInt               bs,rows,cols,lrows,lcols;
   PetscInt               local_rows,local_cols;
   PetscBool              isdense,issbaij,isseqaij;
   const PetscInt         *global_indices_rows;
@@ -297,6 +297,7 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   /* ierr = MatGetLocalToGlobalMapping(mat,&rmapping,&cmapping);CHKERRQ(ierr); */
   ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isdense);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
@@ -326,20 +327,27 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     }
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),M);CHKERRQ(ierr);
-    ierr = MatSetSizes(*M,PETSC_DECIDE,PETSC_DECIDE,rows,cols);CHKERRQ(ierr);
+    ierr = MatSetSizes(*M,lrows,lcols,rows,cols);CHKERRQ(ierr);
     ierr = MatSetBlockSize(*M,bs);CHKERRQ(ierr);
     ierr = MatSetType(*M,new_mat_type);CHKERRQ(ierr);
     ierr = MatISSetMPIXAIJPreallocation_Private(mat,*M,PETSC_FALSE);CHKERRQ(ierr);
   } else {
-    PetscInt mbs,mrows,mcols;
+    PetscInt mbs,mrows,mcols,mlrows,mlcols;
     /* some checks */
     ierr = MatGetBlockSize(*M,&mbs);CHKERRQ(ierr);
     ierr = MatGetSize(*M,&mrows,&mcols);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(*M,&mlrows,&mlcols);CHKERRQ(ierr);
     if (mrows != rows) {
       SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong number of rows (%d != %d)",rows,mrows);
     }
-    if (mrows != rows) {
+    if (mcols != cols) {
       SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong number of cols (%d != %d)",cols,mcols);
+    }
+    if (mlrows != lrows) {
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong number of local rows (%d != %d)",lrows,mlrows);
+    }
+    if (mlcols != lcols) {
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong number of local cols (%d != %d)",lcols,mlcols);
     }
     if (mbs != bs) {
       SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong block size (%d != %d)",bs,mbs);
