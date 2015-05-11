@@ -5755,7 +5755,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt fi
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateJacobian"
-/*C
+/*@C
   PetscFEIntegrateJacobian - Produce the element Jacobian for a chunk of elements by quadrature integration
 
   Not collective
