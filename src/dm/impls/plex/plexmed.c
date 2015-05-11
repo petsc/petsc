@@ -26,9 +26,9 @@
 PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   PetscMPIInt     rank;
-  PetscInt        i, nstep, ngeo, fileID, cellID, spaceDim, meshDim;
-  PetscInt        numVertices = 0, numCells = 0, numCorners;
-  PetscInt       *cellList;
+  PetscInt        i, nstep, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
+  PetscInt        numVertices = 0, numCells = 0, numFacets = 0, numCorners, numFacetCorners;
+  PetscInt       *cellList, *facetList, *facetIDs;
   char           *axisname, *unitname, meshname[MED_NAME_SIZE+1], geotypename[MED_NAME_SIZE+1];
   char            meshdescription[MED_COMMENT_SIZE+1], dtunit[MED_SNAME_SIZE+1];
   PetscScalar    *coordinates = NULL;
@@ -76,6 +76,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   else geotype[1] = 0;
   /* Determine topological dim and set ID for cells */
   cellID = geotype[0]/100 > geotype[1]/100 ? 0 : 1;
+  facetID = geotype[0]/100 > geotype[1]/100 ? 1 : 0;
   meshDim = geotype[cellID] / 100;
   numCorners = geotype[cellID] % 100;
 
@@ -87,11 +88,39 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     ierr = PetscMalloc1(numCells*numCorners, &cellList);
     ierr = MEDmeshElementConnectivityRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
                                         MED_NODAL, MED_FULL_INTERLACE, cellList);CHKERRQ(ierr);
-    for (i = 0; i < numCells*numCorners; i++) cellList[i]--; /* Correct entity couting */
+    for (i = 0; i < numCells*numCorners; i++) cellList[i]--; /* Correct entity counting */
   }
   /* Generate the DM */
   ierr = DMPlexCreateFromCellList(comm, meshDim, numCells, numVertices, numCorners, interpolate, cellList, spaceDim, coordinates, dm);CHKERRQ(ierr);
 
+  if (!rank) {
+    /* Read facet connectivity */
+    if (ngeo > 1) {
+      numFacets = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID],
+                                 MED_CONNECTIVITY, MED_NODAL,&coordinatechangement, &geotransformation);
+    }
+    if (numFacets > 0) {
+      PetscInt c, f, vStart, joinSize, vertices[8];
+      const PetscInt *join;
+      ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, NULL);CHKERRQ(ierr);
+      numFacetCorners = geotype[facetID] % 100;
+      ierr = PetscMalloc1(numFacets*numFacetCorners, &facetList);
+      ierr = PetscCalloc1(numFacets, &facetIDs);
+      ierr = MEDmeshElementConnectivityRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], MED_NODAL, MED_FULL_INTERLACE, facetList);CHKERRQ(ierr);
+      for (i = 0; i < numFacets*numFacetCorners; i++) facetList[i]--; /* Correct entity counting */
+      ierr = MEDmeshEntityFamilyNumberRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], facetIDs);CHKERRQ(ierr);
+      /* Identify marked facets via vertex joins */
+      for (f = 0; f < numFacets; ++f) {
+        for (c = 0; c < numFacetCorners; ++c) vertices[c] = vStart + facetList[f*numFacetCorners+c];
+        ierr = DMPlexGetFullJoin(*dm, numFacetCorners, (const PetscInt*)vertices, &joinSize, &join);CHKERRQ(ierr);
+        if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for element %d", f);
+        ierr = DMSetLabelValue(*dm, "Face Sets", join[0], facetIDs[f]);CHKERRQ(ierr);
+        ierr = DMPlexRestoreJoin(*dm, numFacetCorners, (const PetscInt*)vertices, &joinSize, &join);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(facetList);
+      ierr = PetscFree(facetIDs);
+    }
+  }
   ierr = MEDfileClose(fileID);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFree(coordinates);CHKERRQ(ierr);
