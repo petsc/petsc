@@ -295,6 +295,7 @@ PetscErrorCode TSEventMonitor(TS ts)
     ierr = TSRollBack(ts);CHKERRQ(ierr);
     ts->steps--;
     ts->total_steps--;
+    ts->reason = TS_CONVERGED_ITERATING;
     event->status = TSEVENT_PROCESSING;
   } else {
     for (i = 0; i < event->nevents; i++) {
