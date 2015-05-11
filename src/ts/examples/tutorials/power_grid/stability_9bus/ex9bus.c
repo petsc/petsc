@@ -800,6 +800,7 @@ int main(int argc,char **argv)
   PetscInt       i,idx,*idx2,row_loc,col_loc;
   Vec            Xdot;
   PetscScalar    *x,*mat,val,*amat;
+  Vec            vatol;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -918,7 +919,16 @@ int main(int argc,char **argv)
   ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
 
   if(user.setisdiff) {
-    ierr = TSSetDifferentialEquationsIS(ts,user.is_diff);CHKERRQ(ierr);
+    const PetscInt *idx;
+    PetscScalar *vatoli;
+    PetscInt k;
+    /* Create vector of absolute tolerances and set the algebraic part to infinity */
+    ierr = VecDuplicate(X,&vatol);CHKERRQ(ierr);
+    ierr = VecSet(X,100000.0);CHKERRQ(ierr);
+    ierr = VecGetArray(vatol,&vatoli);CHKERRQ(ierr);
+    ierr = ISGetIndices(user.is_diff,&idx);
+    for(k=0; k < 7*ngen; k++) vatoli[idx[k]] = 1e-2;
+    ierr = VecRestoreArray(vatol,&vatoli);CHKERRQ(ierr);
   }
   
   user.alg_flg = PETSC_FALSE;
@@ -1037,6 +1047,9 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  if(user.setisdiff) {
+    ierr = VecDestroy(&vatol);CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();
   return(0);
 }
