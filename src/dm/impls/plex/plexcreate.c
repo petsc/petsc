@@ -1099,6 +1099,15 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
       ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
       ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
     }
+    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
+    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
+    if (flg) {
+      b->numcomps = len;
+      ierr = PetscFree(b->comps);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
+      ierr = PetscMemcpy(b->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* Handle viewing */

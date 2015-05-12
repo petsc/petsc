@@ -625,6 +625,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
   *boundary = NULL;
   for (; b; b = next) {
     next = b->next;
+    ierr = PetscFree(b->comps);CHKERRQ(ierr);
     ierr = PetscFree(b->ids);CHKERRQ(ierr);
     ierr = PetscFree(b->name);CHKERRQ(ierr);
     ierr = PetscFree(b->labelname);CHKERRQ(ierr);
@@ -5564,7 +5565,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscInt  field;
     PetscBool isEssential;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     if (isFE[field] && isEssential) ++numBC;
   }
   /* Add ghost cell boundaries for FVM */
@@ -5584,17 +5585,18 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   for (bd = 0; bd < numBd; ++bd) {
     const char     *bdLabel;
     DMLabel         label;
+    const PetscInt *comps;
     const PetscInt *values;
-    PetscInt        bd2, field, numValues;
+    PetscInt        bd2, field, numComps, numValues;
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (!isFE[field]) continue;
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {
       const char *bdname;
-      ierr = DMPlexGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
       if (duplicate) break;
     }
@@ -5608,6 +5610,8 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       PetscInt        n, newn = 0, p, v;
 
       bcFields[bc] = field;
+      if (numComps) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]);CHKERRQ(ierr);}
+      else          {bcComps[bc] = NULL;}
       for (v = 0; v < numValues; ++v) {
         IS              tmp;
         const PetscInt *idx;
@@ -5683,8 +5687,8 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   }
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);}
-  ierr = PetscFree2(bcFields,bcPoints);CHKERRQ(ierr);
+  for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);ierr = ISDestroy(&bcComps[bc]);CHKERRQ(ierr);}
+  ierr = PetscFree3(bcFields,bcPoints,bcComps);CHKERRQ(ierr);
   ierr = PetscFree2(numComp,numDof);CHKERRQ(ierr);
   ierr = PetscFree(isFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
