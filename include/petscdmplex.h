@@ -107,6 +107,7 @@ PETSC_EXTERN PetscErrorCode DMLabelGetName(DMLabel, const char **);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMLabelInsertIS(DMLabel, IS, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelGetNumValues(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumBounds(DMLabel, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetValueIS(DMLabel, IS *);
