@@ -28,4 +28,5 @@ make test
 if [[ ${testall} == "true" ]]; then
   make alltests
 fi
-date
+exit $?
+

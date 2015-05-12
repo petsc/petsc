@@ -25,4 +25,6 @@ if [ ${named_test} != "none" ]; then
 fi
 export PETSC_DIR=${WORKSPACE}
 make
+exit $?
+
 
