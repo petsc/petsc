@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGradientFVM(DM, PetscFV, Vec, Vec, DM *
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, Vec, PetscReal, Vec, Vec, Vec);
 
-PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], IS, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt, const PetscInt [], const PetscInt [], PetscInt, const PetscInt [], const IS [], const IS [], IS, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscFE, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
