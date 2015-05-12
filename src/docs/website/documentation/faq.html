@@ -1506,13 +1506,14 @@ PETSC_COMM_WORLD = NewComm;
 
         <li>
           The equations are intentionally singular (e.g.  constant null space),
-          but the Krylov method was not informed, see KSPSetNullSpace().
+          but the Krylov method was not informed, see MatSetNullSpace().
         </li>
 
         <li>
-          The equations are intentionally singular and KSPSetNullSpace() was
+          The equations are intentionally singular and MatSetNullSpace() was
           used, but the right hand side is not consistent. You may have to call
           MatNullSpaceRemove() on the right hand side before calling KSPSolve().
+          See MatSetTransposeNullSpace()
         </li>
 
         <li>
@@ -1769,7 +1770,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         grid solver.  See PCFactorSetShiftType(), PCFactorSetAmount().
       </p>
 
-      <p>This error can also happen if your matrix is singular, see KSPSetNullSpace() for how to handle this.</p>
+      <p>This error can also happen if your matrix is singular, see MatSetNullSpace() for how to handle this.</p>
 
       <p>
         If this error occurs in the zeroth row of the matrix, it is likely you have

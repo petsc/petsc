@@ -3961,7 +3961,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       if (isbddc) {
         ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
       } else {
-        ierr = KSPSetNullSpace(pcbddc->coarse_ksp,CoarseNullSpace);CHKERRQ(ierr);
+        ierr = MatSetNullSpace(coarse_mat,CoarseNullSpace);CHKERRQ(ierr);
       }
     }
     /* setup coarse ksp */

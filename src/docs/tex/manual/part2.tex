@@ -3501,7 +3501,8 @@ functions you do not need to include it in the \trl{basis} vectors you provide).
 
 One then tells the KSP object you are using what the null space is with the call
 \begin{tabbing}
-KSPSetNullSpace(KSP ksp,MatNullSpace nsp);
+MatSetNullSpace(Mat mat,MatNullSpace nsp);
+MatSetTransposeNullSpace(Mat mat,MatNullSpace nsp);
 \end{tabbing}
 The PETSc solvers will now handle the null space during the solution process.
 

@@ -336,6 +336,7 @@ struct _p_Mat {
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
   MatNullSpace           nullsp;           /* null space (operator is singular) */
+  MatNullSpace           transnullsp;      /* null space of transpose of operator */
   MatNullSpace           nearnullsp;       /* near null space to be used by multigrid methods */
   PetscBool              preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
