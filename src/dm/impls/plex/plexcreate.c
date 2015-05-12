@@ -184,8 +184,8 @@ $ 12--0-13--1--14
 @*/
 PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
-  PetscInt       numVertices    = (edges[0]+1)*(edges[1]+1);
-  PetscInt       numEdges       = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
+  const PetscInt numVertices    = (edges[0]+1)*(edges[1]+1);
+  const PetscInt numEdges       = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
   PetscInt       markerRight    = 1;
@@ -202,10 +202,10 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
-    markerTop    = 1;
-    markerBottom = 0;
-    markerRight  = 0;
-    markerLeft   = 0;
+    markerTop    = 3;
+    markerBottom = 1;
+    markerRight  = 2;
+    markerLeft   = 4;
   }
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   if (!rank) {
