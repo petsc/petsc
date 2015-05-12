@@ -273,10 +273,11 @@ struct _p_TSEvent {
   PetscInt        nevents_zero;     /* Number of event zero detected */
   PetscInt        *events_zero;      /* List of events that have reached zero */
   void           *monitorcontext;
-  PetscReal       tol;              /* Tolerance for event zero check */
+  PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
   PetscReal       tstepend;         /* End time of step */
   PetscReal       initial_timestep; /* Initial time step */
+  PetscViewer     mon;
   /* Struct to record the events */
   struct {
     PetscInt  ctr;                          /* recorder counter */
