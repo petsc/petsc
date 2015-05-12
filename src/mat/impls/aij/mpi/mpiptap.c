@@ -291,15 +291,15 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   proc = 0;
   for (i=0; i<pon; i++) {
     while (prmap[i] >= owners[proc+1]) proc++;
-    len_si[proc]++;  /* num of rows in Co to be sent to [proc] */
-    len_s[proc] += coi[i+1] - coi[i];
+    len_si[proc]++;  /* num of rows in Co(=Pt*AP) to be sent to [proc] -- could be empty row!!! */
+    len_s[proc] += coi[i+1] - coi[i]; /* num of nonzeros in Co to be sent to [proc] */
   }
 
   len          = 0; /* max length of buf_si[] */
   owners_co[0] = 0;
   for (proc=0; proc<size; proc++) {
     owners_co[proc+1] = owners_co[proc] + len_si[proc];
-    if (len_si[proc]) {
+    if (len_s[proc]) {
       merge->nsend++;
       len_si[proc] = 2*(len_si[proc] + 1);
       len         += len_si[proc];
