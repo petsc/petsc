@@ -2884,7 +2884,7 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
 /* Set the number of dof on each point and separate by fields
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
-PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section)
+PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section)
 {
   PetscInt       numFields;
   PetscInt       bc;
@@ -2905,23 +2905,21 @@ PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcF
     ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
     ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
-      const PetscInt p        = idx[i];
-      PetscInt       numConst = Nc;
+      const PetscInt p = idx[i];
+      PetscInt       numConst;
 
-      if (numConst < 0) {
-        /* Constrain every dof on the point */
-        if (numFields) {
-          ierr = PetscSectionGetFieldDof(section, p, field, &numConst);CHKERRQ(ierr);
-        } else {
-          ierr = PetscSectionGetDof(section, p, &numConst);CHKERRQ(ierr);
-        }
-      }
       if (numFields) {
-        ierr = PetscSectionAddFieldConstraintDof(section, p, field, numConst);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldDof(section, p, field, &numConst);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionGetDof(section, p, &numConst);CHKERRQ(ierr);
       }
+      /* If Nc < 0, constrain every dof on the point */
+      if (Nc > 0) numConst = PetscMin(numConst, Nc);
+      if (numFields) {ierr = PetscSectionAddFieldConstraintDof(section, p, field, numConst);CHKERRQ(ierr);}
       ierr = PetscSectionAddConstraintDof(section, p, numConst);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
+    if (bcComps && bcComps[bc]) {ierr = ISRestoreIndices(bcComps[bc], &comp);CHKERRQ(ierr);}
   }
   ierr = DMPlexGetAnchors(dm, &aSec, NULL);CHKERRQ(ierr);
   if (aSec) {
