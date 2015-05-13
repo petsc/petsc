@@ -1503,7 +1503,8 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  PetscInt       *rowners,i,m,nz,j,mMax;
+  const PetscInt *rowners;
+  PetscInt       i,m,n,nz,j,mMax;
   PetscScalar    *array,*vals,*vals_ptr;
   Mat_MPIDense   *a = (Mat_MPIDense*)newmat->data;
 
@@ -1511,22 +1512,16 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  /* determine ownership of all rows */
-  if (newmat->rmap->n < 0) m = M/size + ((M % size) > rank);
-  else m = newmat->rmap->n;
-  ierr       = PetscMalloc1(size+2,&rowners);CHKERRQ(ierr);
-  ierr       = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
-  rowners[0] = 0;
-  for (i=2; i<=size; i++) {
-    rowners[i] += rowners[i-1];
-  }
+  /* determine ownership of rows and columns */
+  m = (newmat->rmap->n < 0) ? PETSC_DECIDE : newmat->rmap->n;
+  n = (newmat->cmap->n < 0) ? PETSC_DECIDE : newmat->cmap->n;
 
-  ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(newmat,m,n,M,N);CHKERRQ(ierr);
   if (!a->A || !((Mat_SeqDense*)(a->A->data))->user_alloc) {
     ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   }
   ierr = MatDenseGetArray(newmat,&array);CHKERRQ(ierr);
-
+  ierr = MatGetOwnershipRanges(newmat,&rowners);CHKERRQ(ierr);
   ierr = MPI_Reduce(&m,&mMax,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc1(mMax*N,&vals);CHKERRQ(ierr);
@@ -1564,7 +1559,6 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
     }
   }
   ierr = MatDenseRestoreArray(newmat,&array);CHKERRQ(ierr);
-  ierr = PetscFree(rowners);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
