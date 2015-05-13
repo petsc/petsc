@@ -179,6 +179,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
 
   ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew; /* Inherit insertion error options. */
+  Bnew->nonzerostate = B->nonzerostate;
 
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
