@@ -527,7 +527,6 @@ $           set size, type, etc of mat and pmat
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
-  MatNullSpace   nullsp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
