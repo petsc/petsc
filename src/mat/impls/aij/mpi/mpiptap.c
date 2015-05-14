@@ -149,8 +149,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   pi_loc = p_loc->i; pj_loc = p_loc->j;
   pi_oth = p_oth->i; pj_oth = p_oth->j;
 
-  /* (1) compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
-  /*-------------------------------------------------------------------*/
+  /* (1) compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth (api,apj) */
+  /*--------------------------------------------------------------------------*/
   ierr   = PetscMalloc1(am+1,&api);CHKERRQ(ierr);
   api[0] = 0;
 
@@ -207,8 +207,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   afill_tmp = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1);
   if (afill_tmp > afill) afill = afill_tmp;
 
-  /* (2) determine symbolic Co=(p->B)^T*AP - send to others */
-  /*--------------------------------------------------------*/
+  /* (2) determine symbolic Co=(p->B)^T*AP - send to others (coi,coj)*/
+  /*-----------------------------------------------------------------*/
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* then, compute symbolic Co = (p->B)^T*AP */
@@ -249,7 +249,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     coi[i+1] = coi[i] + nnz;
   }
-  printf("[%d] coi[%d] = %d\n",rank,pon,coi[pon]); //coi[pon] can be 0!!!
   
   ierr      = PetscMalloc1(coi[pon],&coj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
@@ -280,24 +279,23 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   proc = 0;
   for (i=0; i<pon; i++) {
     while (prmap[i] >= owners[proc+1]) proc++;
-    len_si[proc]++;  /* num of rows in Co(=Pt*AP) to be sent to [proc] -- could be empty row!!! */
+    len_si[proc]++;               /* num of rows in Co(=Pt*AP) to be sent to [proc] */
     len_s[proc] += coi[i+1] - coi[i]; /* num of nonzeros in Co to be sent to [proc] */
   }
 
-  len          = 0; /* max length of buf_si[] */
+  len          = 0; /* max length of buf_si[], see (4) */
   owners_co[0] = 0;
   for (proc=0; proc<size; proc++) {
     owners_co[proc+1] = owners_co[proc] + len_si[proc];
     if (len_s[proc]) {
       merge->nsend++;
-      len_si[proc] = 2*(len_si[proc] + 1);
+      len_si[proc] = 2*(len_si[proc] + 1); /* length of buf_si to be sent to [proc] */
       len         += len_si[proc];
     }
   }
 
   /* determine the number and length of messages to receive for coi and coj  */
   ierr = PetscGatherNumberOfMessages(comm,NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
-  printf("[%d] nsend %d, nrecv %d\n",rank,merge->nsend,merge->nrecv);
   ierr = PetscGatherMessageLengths2(comm,merge->nsend,merge->nrecv,len_s,len_si,&merge->id_r,&merge->len_r,&len_ri);CHKERRQ(ierr);
 
   /* post the Irecv and Isend of coj */
@@ -332,15 +330,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
                [nrows+1:2*nrows+1]: i-structure index
     */
     /*-------------------------------------------*/
-    nrows       = len_si[proc]/2 - 1;
+    nrows       = len_si[proc]/2 - 1; /* num of rows in Co to be sent to [proc] */
     buf_si_i    = buf_si + nrows+1;
     buf_si[0]   = nrows;
     buf_si_i[0] = 0;
     nrows       = 0;
     for (i=owners_co[proc]; i<owners_co[proc+1]; i++) {
       nzi = coi[i+1] - coi[i];
-
-      buf_si_i[nrows+1] = buf_si_i[nrows] + nzi; /* i-structure */
+      buf_si_i[nrows+1] = buf_si_i[nrows] + nzi;  /* i-structure */
       buf_si[nrows+1]   = prmap[i] -owners[proc]; /* local row index */
       nrows++;
     }

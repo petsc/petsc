@@ -1,4 +1,4 @@
-static char help[] = "Test PtAP \n\
+static char help[] = "Test MatPtAP,  MatMatMatMult\n\
 Reads PETSc matrix A and P, then comput Pt*A*P \n\
 Input parameters include\n\
   -fA <input_file> -fP <input_file>: second files to load (projection) \n\n";
@@ -10,12 +10,12 @@ Input parameters include\n\
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  Mat            A,P,C;
+  Mat            A,P,C,R,RAP;
   PetscViewer    fd;
   char           file[2][PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscErrorCode ierr;
-  PetscReal      fill=2.0;
+  PetscReal      fill=2.0,norm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if defined(WRITEFILE)
@@ -52,7 +52,19 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  /* ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
+  /* Test PtAP = RAP */
+  ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
+  ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,2.0,&RAP);CHKERRQ(ierr);
+  ierr = MatAXPY(RAP,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+ 
+  ierr = MatNorm(RAP,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+  if (norm > 1.e-14) printf("norm(PtAP - RAP)= %G\n",norm);
+ 
+  ierr = MatDestroy(&R);CHKERRQ(ierr);
+  ierr = MatDestroy(&RAP);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
