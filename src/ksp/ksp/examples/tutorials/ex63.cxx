@@ -103,9 +103,9 @@ int main(int argc, char *argv[]) {
   bool printResidual = false;
   bool printLUStats  = false;
   bool verbose       = false;
-  std::string solver_name = "SuperLU";
-  std::string filedir = "../test/matrices/";
-  std::string filename = "arc130.mtx";
+  std::string solver_name;
+  std::string filedir;
+  std::string filename;
   Teuchos::CommandLineProcessor cmdp(false,false); // set last argument to false so Trilinos won't generate exceptionif it sees unrecognized option
                                                    // note it still prints a warning to stderr which cannot be stopped.
   cmdp.setOption("verbose","quiet",&verbose,"Print messages and results.");
@@ -198,8 +198,9 @@ int main(int argc, char *argv[]) {
   }
 
   PetscInitialize(&argc,&argv,NULL,NULL);
+  PetscErrorCode ierr = PetscOptionsSetValue("-options_left","false");CHKERRQ(ierr);
   KSP ksp;
-  PetscErrorCode ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   Mat Apetsc;
   ierr = MatCreate(PETSC_COMM_WORLD,&Apetsc);CHKERRQ(ierr);
   PetscViewer viewer;

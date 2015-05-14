@@ -44,9 +44,3 @@ PC Object: 1 MPI processes
     total: nonzeros=46, allocated nonzeros=46
     total number of mallocs used during MatSetValues calls =0
       not using I-node routines
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:--filedir=/Users/barrysmith/Src/PETSc/share/petsc/datafiles/matrices/ (no value)
-Option left: name:--filename=amesos2_test_mat0.mtx (no value)
-Option left: name:--print-residual=true (no value)
-Option left: name:--solver=SuperLU (no value)
