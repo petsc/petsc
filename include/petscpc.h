@@ -21,6 +21,7 @@ PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
+PETSC_EXTERN PetscErrorCode PCGetSetUpFailedReason(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplySymmetricLeft(PC,Vec,Vec);
@@ -31,6 +32,7 @@ PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCSetReusePreconditioner(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetReusePreconditioner(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCSetErrorIfFailure(PC,PetscBool);
 
 #define PC_FILE_CLASSID 1211222
 

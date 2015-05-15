@@ -290,4 +290,28 @@ PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 
+/*
+    Either generate an error or mark as diverged when a scalar from an inner product is Nan or Inf
+*/
+#define KSPCheckDot(ksp,beta)           \
+  if (PetscIsInfOrNanScalar(beta)) { \
+    if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
+  else {\
+    ksp->reason = KSP_DIVERGED_NANORINF;\
+    PetscFunctionReturn(0);\
+  }\
+}
+
+/*
+    Either generate an error or mark as diverged when a real from a norm is Nan or Inf
+*/
+#define KSPCheckNorm(ksp,beta)           \
+  if (PetscIsInfOrNanReal(beta)) { \
+    if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
+  else {\
+    ksp->reason = KSP_DIVERGED_NANORINF;\
+    PetscFunctionReturn(0);\
+  }\
+}
+
 #endif

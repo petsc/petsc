@@ -39,10 +39,10 @@ struct _p_PC {
   PetscInt         setupcalled;
   PetscObjectState matstate,matnonzerostate;          /* last known nonzero state of the pmat associated with this PC */
   PetscBool        reusepreconditioner;
-  MatStructure     flag;                              /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */ 
+  MatStructure     flag;                              /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */
 
   PetscInt         setfromoptionscalled;
-
+  PetscBool        erroriffailure;                      /* Generate an error if FPE detected (for example a zero pivot) instead of returning*/
   Mat              mat,pmat;
   Vec              diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscBool        diagonalscale;

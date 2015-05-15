@@ -1930,3 +1930,18 @@ PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
   ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetInf"
+PetscErrorCode VecSetInf(Vec xin)
+{
+  PetscInt       i,n = xin->map->n;
+  PetscScalar    *xx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  for (i=0; i<n; i++) xx[i] = 1.0/0.0;
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -282,14 +282,30 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 
 /* -------------------------------------------------------------------------- */
 /*MC
-     PCPBJACOBI - Point block Jacobi
+     PCPBJACOBI - Point block Jacobi preconditioner
+
+
+   Notes: See PCJACOBI for point Jacobi preconditioning
+
+   This works for AIJ and BAIJ matrices and uses the blocksize provided to the matrix
+
+   Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
+   is detected a PETSc error is generated.
+
+   Developer Notes: This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
+   the factorization to continue even after a zero pivot is found resulting in a Nan and hence
+   terminating KSP with a KSP_DIVERGED_NANORIF allowing
+   a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
+
+   Developer Note: Perhaps should provide an option that allows generation of a valid preconditioner
+   even if a block is singular as the PCJACOBI does.
 
    Level: beginner
 
   Concepts: point block Jacobi
 
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI
 
 M*/
 

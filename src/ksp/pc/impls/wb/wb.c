@@ -753,6 +753,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptions *PetscOptionsObject,PC pc)
     if (!ctx->ksp) {
       const char *prefix;
       ierr = KSPCreate(PETSC_COMM_SELF,&ctx->ksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(ctx->ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ctx->ksp);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);

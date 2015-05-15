@@ -175,27 +175,29 @@
 #if !(PETSC_USE_FORTRAN_DATATYPES_)
 #include "petsc/finclude/petscmatfactorinfosize.h"
 #endif
-      PetscEnum MAT_FACTORINFO_LEVELS
-      PetscEnum MAT_FACTORINFO_FILL
       PetscEnum MAT_FACTORINFO_DIAGONAL_FILL
+      PetscEnum MAT_FACTORINFO_USEDT
       PetscEnum MAT_FACTORINFO_DT
       PetscEnum MAT_FACTORINFO_DTCOL
       PetscEnum MAT_FACTORINFO_DTCOUNT
-      PetscEnum MAT_FACTORINFO_DAMPING
-      PetscEnum MAT_FACTORINFO_SHIFT
-      PetscEnum MAT_FACTORINFO_ZERO_PIVOT
+      PetscEnum MAT_FACTORINFO_FILL
+      PetscEnum MAT_FACTORINFO_LEVELS
       PetscEnum MAT_FACTORINFO_PIVOT_IN_BLOCKS
+      PetscEnum MAT_FACTORINFO_ZERO_PIVOT
+      PetscEnum MAT_FACTORINFO_SHIFT_TYPE
+      PetscEnum MAT_FACTORINFO_SHIFT_AMOUNT
 
-      parameter (MAT_FACTORINFO_DAMPING = 1)
-      parameter (MAT_FACTORINFO_SHIFT = 2)
-      parameter (MAT_FACTORINFO_DIAGONAL_FILL = 3)
-      parameter (MAT_FACTORINFO_DT = 4)
-      parameter (MAT_FACTORINFO_DTCOL = 5)
-      parameter (MAT_FACTORINFO_DTCOUNT = 6)
+      parameter (MAT_FACTORINFO_DIAGONAL_FILL = 1)
+      parameter (MAT_FACTORINFO_USEDT = 2)
+      parameter (MAT_FACTORINFO_DT = 3)
+      parameter (MAT_FACTORINFO_DTCOL = 4)
+      parameter (MAT_FACTORINFO_DTCOUNT = 5)
+      parameter (MAT_FACTORINFO_FILL = 6)
       parameter (MAT_FACTORINFO_LEVELS = 7)
-      parameter (MAT_FACTORINFO_FILL = 8)
-      parameter (MAT_FACTORINFO_PIVOT_IN_BLOCKS = 9)
-      parameter (MAT_FACTORINFO_ZERO_PIVOT = 10)
+      parameter (MAT_FACTORINFO_PIVOT_IN_BLOCKS = 8)
+      parameter (MAT_FACTORINFO_ZERO_PIVOT = 9)
+      parameter (MAT_FACTORINFO_SHIFT_TYPE = 10)
+      parameter (MAT_FACTORINFO_SHIFT_AMOUNT = 11)
 
 
 !

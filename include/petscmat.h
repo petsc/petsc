@@ -184,6 +184,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const 
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
@@ -991,7 +992,7 @@ PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
 /*S
-   MatFactorInfo - Data passed into the matrix factorization routines
+   MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
 $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
@@ -1470,7 +1471,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_VALUES_BATCH=129,
                MATOP_TRANSPOSE_MAT_MULT=130,
                MATOP_TRANSPOSE_MAT_MULT_SYMBO=131,
-               MATOP_TRANSPOSE_MAT_MULT_NUMER=132,
+               MATOP_TRANSPOSE_MATM_ULT_NUMER=132,
                MATOP_TRANSPOSE_COLORING_CREAT=133,
                MATOP_TRANS_COLORING_APPLY_SPT=134,
                MATOP_TRANS_COLORING_APPLY_DEN=135,
