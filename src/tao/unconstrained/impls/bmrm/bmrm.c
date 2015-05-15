@@ -285,13 +285,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   bmrm->lambda = 1.0;
   tao->data = (void*)bmrm;
 
-  /* Note: May need to be tuned! */
-  tao->max_it = 2048;
-  tao->max_funcs = 300000;
-  tao->fatol = 1e-20;
-  tao->frtol = 1e-25;
-  tao->gatol = 1e-25;
-  tao->grtol = 1e-25;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-12;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-12;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-12;
+  if (!tao->grtol_changed) tao->grtol = 1.0e-12;
 
   PetscFunctionReturn(0);
 }
