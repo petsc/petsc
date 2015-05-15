@@ -8,7 +8,7 @@ Input parameters include\n\
 #undef WRITEFILE
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+PetscInt main(int argc,char **args)
 {
   Mat            A,P,C,R,RAP;
   PetscViewer    fd;
@@ -61,7 +61,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatAXPY(RAP,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
  
   ierr = MatNorm(RAP,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-14) printf("norm(PtAP - RAP)= %G\n",norm);
+  if (norm > 1.e-14) printf("norm(PtAP - RAP)= %g\n",norm);
  
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&RAP);CHKERRQ(ierr);
