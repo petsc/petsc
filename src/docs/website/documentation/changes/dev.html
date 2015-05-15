@@ -122,6 +122,7 @@
          <li>MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
          <li>MatCreateMPIAIJConcatenateSeqAIJ and MatCreateMPIBAIJConcatenateSeqBAIJ replaced with MatCreateMPIMatConcatenateSeqMat</li>
          <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
+         <li>Added support for MUMPS sequential solver in Schur complement mode</li>
       </ul>
       <h4>PC:</h4>
          Removed -pc_hypre_type euclid due to bit-rot

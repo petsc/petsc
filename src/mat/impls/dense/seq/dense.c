@@ -1793,7 +1793,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(B->cmap->n,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
-  PetscStackCallBLAS("BLASgemv",BLASgemm_("N","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda));
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda));
   PetscFunctionReturn(0);
 }
 
@@ -1854,7 +1854,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   /*
      Note the m and n arguments below are the number rows and columns of A', not A!
   */
-  PetscStackCallBLAS("BLASgemv",BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda));
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda));
   PetscFunctionReturn(0);
 }
 

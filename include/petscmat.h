@@ -1609,6 +1609,14 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode MatMumpsSetSchurIndices(Mat,PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatMumpsInvertSchurComplement(Mat);
+PETSC_EXTERN PetscErrorCode MatMumpsCreateSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsRestoreSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsSolveSchurComplement(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatMumpsSolveSchurComplementTranspose(Mat,Vec,Vec);
 #endif
 
 /*
