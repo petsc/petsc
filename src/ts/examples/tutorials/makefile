@@ -191,6 +191,18 @@ ex34: ex34.o chkopts
 	-${CLINKER} -o ex34 ex34.o ${PETSC_TS_LIB}
 	${RM} ex34.o
 
+ex36: ex36.o chkopts
+	-${CLINKER} -o ex36 ex36.o ${PETSC_TS_LIB}
+	${RM} ex36.o
+
+ex36SE: ex36SE.o chkopts
+	-${CLINKER} -o ex36SE ex36SE.o ${PETSC_TS_LIB}
+	${RM} ex36SE.o
+
+ex36A: ex36A.o chkopts
+	-${CLINKER} -o ex36A ex36A.o ${PETSC_TS_LIB}
+	${RM} ex36A.o
+
 extchem: extchem.o chkopts
 	-${CLINKER} -o extchem extchem.o ${PETSC_TS_LIB}
 	${RM} extchem.o

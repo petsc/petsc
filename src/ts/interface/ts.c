@@ -432,6 +432,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   TSRHSJacobian  rhsjacobianfunc;
   void           *ctx;
   TSIJacobian    ijacobianfunc;
+  TSRHSFunction  rhsfunction;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -441,8 +442,9 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
-  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate))) {
+  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) {
     PetscFunctionReturn(0);
   }
 
@@ -3310,6 +3312,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,NULL,"-ts_view_solution");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
@@ -4386,7 +4389,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Input Parameter:
 +  ts - the TS context
-.  equation_type - see TSEquationType
+-  equation_type - see TSEquationType
 
    Level: advanced
 
@@ -6244,7 +6247,6 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobianDefaultColor"
 /*@C
@@ -6328,5 +6330,90 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
     ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "TSClone"
+/*@C
+  TSClone - This function clones a time step object. 
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. tsin    - The input TS
+
+  Output Parameter:
+. tsout   - The output TS (cloned)
+
+  Notes:
+  This function is used to create a clone of a TS object. It is used in ARKIMEX for initializing the slope for first stage explicit methods. It will likely be replaced in the future with a mechanism of switching methods on the fly. 
+
+  When using TSDestroy() on a clone the user has to first reset the correct TS reference in the embedded SNES object: e.g.: by running SNES snes_dup=NULL; TSGetSNES(ts,&snes_dup); ierr = TSSetSNES(ts,snes_dup);
+
+  Level: developer
+
+.keywords: TS, clone
+.seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
+@*/
+PetscErrorCode  TSClone(TS tsin, TS *tsout)
+{
+  TS             t;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(tsin,1);
+  *tsout = NULL;
+
+  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
+
+  /* General TS description */
+  t->numbermonitors    = 0;
+  t->setupcalled       = 0;
+  t->ksp_its           = 0;
+  t->snes_its          = 0;
+  t->nwork             = 0;
+  t->rhsjacobian.time  = -1e20;
+  t->rhsjacobian.scale = 1.;
+  t->ijacobian.shift   = 1.;
+
+  SNES snes_start;
+  DM   dm;
+  ierr = TSGetSNES(tsin,&snes_start);                   CHKERRQ(ierr);
+  ierr = TSSetSNES(t,snes_start);                       CHKERRQ(ierr);
+
+  ierr = TSGetDM(tsin,&dm);                             CHKERRQ(ierr);
+  ierr = TSSetDM(t,dm);                                 CHKERRQ(ierr);
+
+  t->adapt=tsin->adapt;
+  PetscObjectReference((PetscObject)t->adapt);
+
+  t->problem_type      = tsin->problem_type;
+  t->ptime             = tsin->ptime;
+  t->time_step         = tsin->time_step;
+  t->time_step_orig    = tsin->time_step_orig;
+  t->max_time          = tsin->max_time;
+  t->steps             = tsin->steps;
+  t->max_steps         = tsin->max_steps;
+  t->equation_type     = tsin->equation_type;
+  t->atol              = tsin->atol;
+  t->rtol              = tsin->rtol;
+  t->max_snes_failures = tsin->max_snes_failures;
+  t->max_reject        = tsin->max_reject;
+  t->errorifstepfailed = tsin->errorifstepfailed;
+
+  TSType type;
+  ierr = TSGetType(tsin,&type); CHKERRQ(ierr);
+  ierr = TSSetType(t,type);     CHKERRQ(ierr);
+
+  t->vec_sol           = NULL;
+
+  t->cfltime          = tsin->cfltime;
+  t->cfltime_local    = tsin->cfltime_local;
+  t->exact_final_time = tsin->exact_final_time;
+
+  ierr = PetscMemcpy(t->ops,tsin->ops,sizeof(struct _TSOps));CHKERRQ(ierr);
+
+  *tsout = t;
   PetscFunctionReturn(0);
 }

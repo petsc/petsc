@@ -186,6 +186,7 @@ PETSC_EXTERN PetscClassId DMTS_CLASSID;
 PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode TSCreate(MPI_Comm,TS*);
+PETSC_EXTERN PetscErrorCode TSClone(TS,TS*);
 PETSC_EXTERN PetscErrorCode TSDestroy(TS*);
 
 PETSC_EXTERN PetscErrorCode TSSetProblemType(TS,TSProblemType);
