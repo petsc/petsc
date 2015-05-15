@@ -2340,7 +2340,6 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  runex93_2 runex93_3 ex93.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
                                  ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm \
-                                 ex111.PETSc runex111 runex111_2 runex111_3 ex111.rm \
                                  ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
@@ -2375,10 +2374,12 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm e
                                  ex95.PETSc  ex95.rm ex101.PETSc runex101 ex101.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm  ex99.PETSc ex99.rm \
                                  ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm
-TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm ex42.PETSc runex42 \
-                                 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
+TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
+                                 ex42.PETSc runex42 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  \
+                                 ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
                                  runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
+                                 ex111.PETSc runex111 runex111_2 runex111_3 ex111.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm \
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \

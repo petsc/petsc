@@ -8,7 +8,7 @@ Input parameters include\n\
 #undef WRITEFILE
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(int argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,P,C,R,RAP;
   PetscViewer    fd;
