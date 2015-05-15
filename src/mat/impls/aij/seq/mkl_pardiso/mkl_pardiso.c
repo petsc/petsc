@@ -126,7 +126,6 @@ PetscErrorCode MatCopy_MKL_PARDISO(Mat A, MatReuse reuse, INT_TYPE *nnz, INT_TYP
   PetscFunctionReturn(0);
 }
 
-
 /*
  * Free memory for Mat_MKL_PARDISO structure and pointers to objects.
  */
@@ -165,6 +164,8 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMkl_PardisoSetCntl_C",NULL);CHKERRQ(ierr);
+
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -685,7 +686,6 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
   MATSOLVERMKL_PARDISO -  A matrix type providing direct solvers (LU) for
   sequential matrices via the external package MKL_PARDISO.
@@ -751,14 +751,10 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mkl_pardiso(Mat A,MatFactorType f
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  if (isSeqSBAIJ) {
-    ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Is not allowed other types of matrices apart from MATSEQSBAIJ.");
-
+  ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs); CHKERRQ(ierr);
 
   if(bs != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrice MATSEQSBAIJ with block size other than 1 is not supported by Pardiso");
-
   if(ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrice MATSEQAIJ should be used only with MAT_FACTOR_CHOLESKY.");
   
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_AIJMKL_PARDISO;
@@ -794,9 +790,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  if (isSeqAIJ) {
-    ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Is not allowed other types of matrices apart from MATSEQAIJ.");
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
   if(ftype != MAT_FACTOR_LU) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrice MATSEQAIJ should be used only with MAT_FACTOR_LU.");
 
