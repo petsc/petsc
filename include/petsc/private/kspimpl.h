@@ -118,8 +118,6 @@ struct _p_KSP {
   Vec          diagonal;     /* 1/sqrt(diag of matrix) */
   Vec          truediagonal;
 
-  MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
-
   PetscBool    skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
   PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */
@@ -200,7 +198,15 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y);CHKERRQ(ierr);}
+  if (ksp->pc_side == PC_LEFT) {
+    Mat          A;
+    MatNullSpace nullsp;
+    ierr = PCGetOperators(ksp->pc,NULL,&A);CHKERRQ(ierr);
+    ierr = MatGetNullSpace(A,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

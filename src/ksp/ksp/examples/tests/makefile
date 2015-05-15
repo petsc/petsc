@@ -401,7 +401,7 @@ runex19_2:
 	   else printf "${PWD}\nPossible problem with ex19_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_2.tmp
 runex20:
-	-@${MPIEXEC} -n 1 ./ex20 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -mat_view -ksp_monitor_short -ksp_atol 1.0e-13 > ex20_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20 -ksp_monitor_short  > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
