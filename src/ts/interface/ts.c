@@ -6365,7 +6365,7 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   PetscValidPointer(tsin,1);
   *tsout = NULL;
 
-  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(t,TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
 
   /* General TS description */
   t->numbermonitors    = 0;
