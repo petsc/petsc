@@ -6360,12 +6360,15 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
 {
   TS             t;
   PetscErrorCode ierr;
+  SNES           snes_start;
+  DM             dm;
+  TSType         type;
 
   PetscFunctionBegin;
   PetscValidPointer(tsin,1);
   *tsout = NULL;
 
-  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(t, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
 
   /* General TS description */
   t->numbermonitors    = 0;
@@ -6377,8 +6380,6 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->rhsjacobian.scale = 1.;
   t->ijacobian.shift   = 1.;
 
-  SNES snes_start;
-  DM   dm;
   ierr = TSGetSNES(tsin,&snes_start);                   CHKERRQ(ierr);
   ierr = TSSetSNES(t,snes_start);                       CHKERRQ(ierr);
 
@@ -6402,7 +6403,6 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->max_reject        = tsin->max_reject;
   t->errorifstepfailed = tsin->errorifstepfailed;
 
-  TSType type;
   ierr = TSGetType(tsin,&type); CHKERRQ(ierr);
   ierr = TSSetType(t,type);     CHKERRQ(ierr);
 
