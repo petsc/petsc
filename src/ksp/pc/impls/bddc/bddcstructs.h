@@ -101,7 +101,6 @@ struct _PCBDDCSubSchurs {
   /* connected components */
   IS*      is_subs;
   PetscBT  is_edge;
-  PetscBT  computed_Stilda_subs;
   /* mat flags */
   PetscBool is_hermitian;
   PetscBool is_posdef;

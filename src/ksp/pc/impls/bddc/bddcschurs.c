@@ -272,7 +272,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool reuse_solvers,PetscBool use_edges, PetscBool use_faces)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool reuse_solvers)
 {
   Mat                    F,A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all;
@@ -334,7 +334,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #endif
         ierr = VecAXPY(vec3,-1.0,vec2);CHKERRQ(ierr);
         ierr = VecNorm(vec3,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        if (norm > PETSC_SMALL) {
+        if (norm > PetscSqrtReal(PETSC_SMALL)) {
           sub_schurs->is_hermitian = PETSC_FALSE;
         } else {
           sub_schurs->is_hermitian = PETSC_TRUE;
@@ -582,7 +582,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* Compute Schur complements explicitly */
   F = NULL;
-  ierr = PetscBTMemzero(sub_schurs->n_subs,sub_schurs->computed_Stilda_subs);CHKERRQ(ierr);
   if (!sub_schurs->use_mumps) {
     Mat         S_Ej_expl;
     PetscScalar *work;
@@ -837,7 +836,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
 
       /* if adaptivity is requested, invert S_E block */
-      if (compute_Stilda && ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || (!PetscBTLookup(sub_schurs->is_edge,i) && use_faces))) {
+      if (compute_Stilda) {
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         if (sub_schurs->is_hermitian && sub_schurs->is_posdef) { /* TODO add sytrf/i for symmetric non hermitian */
@@ -870,7 +869,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         PetscInt j;
         for (j=0;j<size_schur;j++) dummy_idx[j] = j;
         ierr = MatSetValues(sub_schurs->sum_S_Ej_tilda_all,size_schur,dummy_idx,size_schur,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,0);CHKERRQ(ierr);
       } else {
         if (mumps_S) { /* use MatMumps calls to invert S */
 #if defined(PETSC_HAVE_MUMPS)
@@ -899,30 +897,27 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         cum = cum2 = 0;
         ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
         for (i=0;i<sub_schurs->n_subs;i++) {
+          PetscInt j;
+
           ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-          /* if adaptivity is requested, invert S_E and insert St_E^-1 blocks */
-          if (((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || (!PetscBTLookup(sub_schurs->is_edge,i) && use_faces))) {
-            PetscInt j;
-            /* get (St^-1)_E */
-            if (sub_schurs->is_hermitian) { /* Here I don't need to expand to upper triangular (column oriented) */
-              PetscInt k;
-              for (k=0;k<subset_size;k++) {
-                for (j=k;j<subset_size;j++) {
-                  work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
-                }
-              }
-            } else { /* copy to workspace */
-              PetscInt k;
-              for (k=0;k<subset_size;k++) {
-                for (j=0;j<subset_size;j++) {
-                  work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
-                }
+          /* get (St^-1)_E */
+          if (sub_schurs->is_hermitian) { /* Here I don't need to expand to upper triangular (column oriented) */
+            PetscInt k;
+            for (k=0;k<subset_size;k++) {
+              for (j=k;j<subset_size;j++) {
+                work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
               }
             }
-            for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
-            ierr = MatSetValues(sub_schurs->sum_S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
+          } else { /* copy to workspace */
+            PetscInt k;
+            for (k=0;k<subset_size;k++) {
+              for (j=0;j<subset_size;j++) {
+                work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+              }
+            }
           }
+          for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
+          ierr = MatSetValues(sub_schurs->sum_S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
           cum += subset_size;
           cum2 += subset_size*(size_schur + 1);
         }
@@ -1056,7 +1051,6 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
   ierr = PCBDDCGraphGetCandidatesIS(graph,&n_faces,&faces,&n_edges,&edges,&vertices);CHKERRQ(ierr);
   n_all_cc = n_faces+n_edges;
   ierr = PetscBTCreate(n_all_cc,&sub_schurs->is_edge);CHKERRQ(ierr);
-  ierr = PetscBTCreate(n_all_cc,&sub_schurs->computed_Stilda_subs);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_all_cc,&all_cc);CHKERRQ(ierr);
   for (i=0;i<n_faces;i++) {
     all_cc[i] = faces[i];
@@ -1148,7 +1142,6 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   ierr = ISDestroy(&sub_schurs->is_vertices);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_dir);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&sub_schurs->is_edge);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(&sub_schurs->computed_Stilda_subs);CHKERRQ(ierr);
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDestroy(&sub_schurs->is_subs[i]);CHKERRQ(ierr);
   }
