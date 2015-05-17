@@ -177,15 +177,6 @@ cdef class KSP(Object):
         PetscINCREF(P.obj)
         return (A, P)
 
-    def setNullSpace(self, NullSpace nsp not None):
-        CHKERR( KSPSetNullSpace(self.ksp, nsp.nsp) )
-
-    def getNullSpace(self):
-        cdef NullSpace nsp = NullSpace()
-        CHKERR( KSPGetNullSpace(self.ksp, &nsp.nsp) )
-        PetscINCREF(nsp.obj)
-        return nsp
-
     def setPC(self, PC pc not None):
         CHKERR( KSPSetPC(self.ksp, pc.pc) )
 
@@ -501,12 +492,6 @@ cdef class KSP(Object):
     property mat_pc:
         def __get__(self):
             return self.getOperators()[1]
-
-    property nullsp:
-        def __get__(self):
-            return self.getNullSpace()
-        def __set__(self, value):
-            self.setNullSpace(value)
 
     # --- initial guess ---
 
