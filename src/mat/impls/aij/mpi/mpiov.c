@@ -1746,8 +1746,8 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 					         PetscErrorCode(*setseqmats)(Mat,IS,IS,IS,MatStructure,Mat,Mat))
 {
   PetscErrorCode ierr;
-  PetscMPIInt    isize,flag,ispar;
-  PetscInt       i,ii,cismax;
+  PetscMPIInt    isize,flag;
+  PetscInt       i,ii,cismax,ispar;
   Mat            *A,*B;
   IS             *isrow_p,*iscol_p,*cisrow,*ciscol,*ciscol_p;
 
@@ -1756,7 +1756,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 
   for (i = 0, cismax = 0; i < ismax; ++i) {
     PetscMPIInt isize;
-    ierr = MPI_Comm_compare(((PetscObject)isrow[i])->comm,((PetscObject)iscol[i])->comm, &flag);CHKERRQ(ierr);
+    ierr = MPI_Comm_compare(((PetscObject)isrow[i])->comm,((PetscObject)iscol[i])->comm,&flag);CHKERRQ(ierr);
     if (flag != MPI_IDENT) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row and column index sets must have the same communicator");
     ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &isize);CHKERRQ(ierr);
     if (isize > 1) ++cismax;
@@ -1765,7 +1765,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
      If cismax is zero on all C's ranks, then and only then can we use purely sequential matrix extraction.
      ispar counts the number of parallel ISs across C's comm.
   */
-  ierr = MPI_Allreduce(&cismax,&ispar,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cismax,&ispar,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
   if (!ispar) { /* Sequential ISs only across C's comm, so can call the sequential matrix extraction subroutine. */
     ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,submat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
