@@ -149,7 +149,6 @@ int main(int argc, char **args)
   ierr = ISSort(rowis[0]);CHKERRQ(ierr);
   ierr = ISSort(colis[0]);CHKERRQ(ierr);
   nsubdomains = 1;
-  ierr = PetscMalloc1(nsubdomains,&submats);CHKERRQ(ierr);
   ierr = MatGetSubMatricesMPI(A,nsubdomains,rowis,colis,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
   /*
     Now view the matrices.  To avoid deadlock when viewing a list of objects on different subcomms,
