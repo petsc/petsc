@@ -1386,6 +1386,113 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "BuildGradientReconstruction_Internal_Tree"
+static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV fvm, DM dmFace, PetscScalar *fgeom, DM dmCell, PetscScalar *cgeom)
+{
+  DMLabel        ghostLabel;
+  PetscScalar   *dx, *grad, **gref;
+  PetscInt       dim, cStart, cEnd, c, cEndInterior, fStart, fEnd, f, nStart, nEnd, maxNumFaces = 0;
+  PetscSection   neighSec;
+  PetscInt     (*neighbors)[2];
+  PetscInt      *counter;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&neighSec);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(neighSec,cStart,cEndInterior);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  for (f = fStart; f < fEnd; f++) {
+    const PetscInt        *fcells;
+    PetscBool              boundary;
+    PetscInt               ghost;
+    PetscInt               numChildren, numCells, c;
+
+    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
+    if ((ghost >= 0) || boundary || numChildren) continue;
+    ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
+    if (numCells != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "facet %d has %d support points: expected 2",f,numCells);
+    ierr  = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
+    for (c = 0; c < 2; c++) {
+      PetscInt cell = fcells[c];
+
+      if (cell >= cStart && cell <= cEndInterior) {
+        ierr = PetscSectionAddDof(neighSec,cell,1);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(neighSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetMaxDof(neighSec,&maxNumFaces);CHKERRQ(ierr);
+  ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
+  nStart = 0;
+  ierr = PetscSectionGetStorageSize(neighSec,&nEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nEnd-nStart),&neighbors);CHKERRQ(ierr);
+  ierr = PetscCalloc1((cEndInterior-cStart),&counter);CHKERRQ(ierr);
+  for (f = fStart; f < fEnd; f++) {
+    const PetscInt        *fcells;
+    PetscBool              boundary;
+    PetscInt               ghost;
+    PetscInt               numChildren, numCells, c;
+
+    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
+    if ((ghost >= 0) || boundary || numChildren) continue;
+    ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
+    if (numCells != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "facet %d has %d support points: expected 2",f,numCells);
+    ierr  = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
+    for (c = 0; c < 2; c++) {
+      PetscInt cell = fcells[c], off;
+
+      if (cell >= cStart && cell <= cEndInterior) {
+        ierr = PetscSectionGetOffset(neighSec,cell,&off);CHKERRQ(ierr);
+        off += counter[cell - cStart]++;
+        neighbors[off][0] = f;
+        neighbors[off][1] = fcells[1 - c];
+      }
+    }
+  }
+  ierr = PetscFree(counter);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref);CHKERRQ(ierr);
+  for (c = cStart; c < cEndInterior; c++) {
+    PetscInt               numFaces, f, d, off;
+    const PetscFVCellGeom *cg;
+
+    ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(neighSec, c, &numFaces);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(neighSec, c, &off);CHKERRQ(ierr);
+    if (numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    for (f = 0; f < numFaces; ++f) {
+      const PetscFVCellGeom *cg1;
+      PetscFVFaceGeom       *fg;
+      const PetscInt        *fcells;
+      PetscInt               ncell, side, nface;
+
+      nface = neighbors[off + f][0];
+      ncell = neighbors[off + f][1];
+      ierr  = DMPlexGetSupport(dm,nface,&fcells);CHKERRQ(ierr);
+      side  = (c != fcells[0]);
+      ierr  = DMPlexPointLocalRef(dmFace, nface, fgeom, &fg);CHKERRQ(ierr);
+      ierr  = DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1);CHKERRQ(ierr);
+      for (d = 0; d < dim; ++d) dx[f*dim+d] = cg1->centroid[d] - cg->centroid[d];
+      gref[f] = fg->grad[side];  /* Gradient reconstruction term will go here */
+    }
+    ierr = PetscFVComputeGradient(fvm, numFaces, dx, grad);CHKERRQ(ierr);
+    for (f = 0; f < numFaces; ++f) {
+      for (d = 0; d < dim; ++d) gref[f][d] = grad[f*dim+d];
+    }
+  }
+  ierr = PetscFree3(dx, grad, gref);CHKERRQ(ierr);
+  ierr = PetscFree(neighbors);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeGradientFVM"
 /*@
   DMPlexComputeGradientFVM - Compute geometric factors for gradient reconstruction, which are stored in the geometry data, and compute layout for gradient data
@@ -1410,7 +1517,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
 {
   DM             dmFace, dmCell;
   PetscScalar   *fgeom, *cgeom;
-  PetscSection   sectionGrad;
+  PetscSection   sectionGrad, parentSection;
   PetscInt       dim, pdim, cStart, cEnd, cEndInterior, c;
   PetscErrorCode ierr;
 
@@ -1424,7 +1531,13 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
   ierr = VecGetArray(faceGeometry, &fgeom);CHKERRQ(ierr);
   ierr = VecGetArray(cellGeometry, &cgeom);CHKERRQ(ierr);
-  ierr = BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+  ierr = DMPlexGetTree(dm,&parentSection,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  if (!parentSection) {
+    ierr = BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+  }
+  else {
+    ierr = BuildGradientReconstruction_Internal_Tree(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArray(faceGeometry, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(cellGeometry, &cgeom);CHKERRQ(ierr);
   /* Create storage for gradients */
