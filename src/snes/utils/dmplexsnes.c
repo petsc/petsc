@@ -1356,12 +1356,14 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscInt fStart, Petsc
     const PetscScalar     *cx[2];
     PetscScalar           *cgrad[2];
     PetscBool              boundary;
-    PetscInt               ghost, c, pd, d;
+    PetscInt               ghost, c, pd, d, numChildren, numCells;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-    if (ghost >= 0) continue;
     ierr = DMPlexIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
-    if (boundary) continue;
+    ierr = DMPlexGetTreeChildren(dm, face, &numChildren, NULL);CHKERRQ(ierr);
+    if (ghost >= 0 || boundary || numChildren) continue;
+    ierr = DMPlexGetSupportSize(dm, face, &numCells);CHKERRQ(ierr);
+    if (numCells != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "facet %d has %d support points: expected 2",face,numCells);
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     for (c = 0; c < 2; ++c) {
