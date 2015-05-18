@@ -128,18 +128,21 @@ int main(int argc, char **args)
   ierr = PetscObjectsListGetGlobalNumbering(PETSC_COMM_WORLD,1,(PetscObject*)rowis,&gnsubdomains,gsubdomainnums);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(nsubdomains,gsubdomainnums,gsubdomainperm);CHKERRQ(ierr);
   for (gs=0,s=0; gs < gnsubdomains;++gs) {
-    PetscInt ss = gsubdomainperm[s];
-    if (gs == gsubdomainnums[ss]) {
-      PetscViewer subviewer = NULL;
-      ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(subviewer,"Row IS %D\n",gs);CHKERRQ(ierr);
-      ierr = ISView(rowis[ss],subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(subviewer,"Col IS %D\n",gs);CHKERRQ(ierr);
-      ierr = ISView(colis[ss],subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
-      ++s;
+    if (s < nsubdomains) {
+      PetscInt ss;
+      ss = gsubdomainperm[s];
+      if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
+        PetscViewer subviewer = NULL;
+        ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(subviewer,"Row IS %D\n",gs);CHKERRQ(ierr);
+        ierr = ISView(rowis[ss],subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(subviewer,"Col IS %D\n",gs);CHKERRQ(ierr);
+        ierr = ISView(colis[ss],subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
+        ++s;
+      }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
@@ -158,14 +161,17 @@ int main(int argc, char **args)
   ierr = PetscObjectsListGetGlobalNumbering(PETSC_COMM_WORLD,1,(PetscObject*)submats,&gnsubdomains,gsubdomainnums);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(nsubdomains,gsubdomainnums,gsubdomainperm);CHKERRQ(ierr);
   for (gs=0,s=0; gs < gnsubdomains;++gs) {
-    PetscInt ss = gsubdomainperm[s];
-    if (gs == gsubdomainnums[ss]) {
-      PetscViewer subviewer = NULL;
-      ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
-      ierr = MatView(submats[ss],subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
-      ++s;
+    if (s < nsubdomains) {
+      PetscInt ss;
+      ss = gsubdomainperm[s];
+      if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
+        PetscViewer subviewer = NULL;
+        ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = MatView(submats[ss],subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ++s;
+      }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
@@ -182,14 +188,17 @@ int main(int argc, char **args)
   ierr = PetscObjectsListGetGlobalNumbering(PETSC_COMM_WORLD,1,(PetscObject*)submats,&gnsubdomains,gsubdomainnums);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(nsubdomains,gsubdomainnums,gsubdomainperm);CHKERRQ(ierr);
   for (gs=0,s=0; gs < gnsubdomains;++gs) {
-    PetscInt ss = gsubdomainperm[s];
-    if (gs == gsubdomainnums[ss]) {
-      PetscViewer subviewer = NULL;
-      ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
-      ierr = MatView(submats[ss],subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
-      ++s;
+    if (s < nsubdomains) {
+      PetscInt ss;
+      ss = gsubdomainperm[s];
+      if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
+        PetscViewer subviewer = NULL;
+        ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = MatView(submats[ss],subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ++s;
+      }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
