@@ -3,7 +3,7 @@
    Support for the parallel AIJ matrix vector multiply
 */
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <petsc-private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
+#include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUpMultiply_MPIAIJ"
@@ -179,6 +179,11 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
 
   ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew; /* Inherit insertion error options. */
+  /*
+   Ensure that B's nonzerostate is monotonically increasing.
+   Or should this follow the MatSetValues() loop to preserve B's nonzerstate across a MatDisAssemble() call?
+   */
+  Bnew->nonzerostate = B->nonzerostate;
 
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -308,5 +313,3 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
   ierr = MatDiagonalScale(a->B,NULL,auglyoo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

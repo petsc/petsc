@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);

@@ -2,15 +2,13 @@
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
-
-#include <petscthreadcomm.h>
 
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
@@ -861,9 +859,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
 
-  /* Ensure that threadcomm-related keyval exists, so that PetscOptionsSetFromOptions can use PetscCommDuplicate. */
-  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
-
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions();CHKERRQ(ierr);
@@ -900,7 +895,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       Setup building of stack frames for all function calls
   */
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates pthread_key */
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
@@ -920,6 +914,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_USE_LOG)
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+extern PetscBool   PetscObjectsLog;
 #endif
 
 #undef __FUNCT__
@@ -1101,7 +1096,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
   ierr = PetscStackDestroy();CHKERRQ(ierr);
-  PetscThreadLocalDestroy((PetscThreadKey)petscstack); /* Deletes pthread_key */
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
@@ -1168,28 +1162,23 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-  {
-    PetscThreadComm tcomm_world;
-    ierr = PetscGetThreadCommWorld(&tcomm_world);CHKERRQ(ierr);
-    /* Free global thread communicator */
-    ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
-  }
-
 #if defined(PETSC_USE_LOG)
   /*
        List all objects the user may have forgot to free
   */
-  ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    MPI_Comm local_comm;
-    char     string[64];
+  if (PetscObjectsLog) {
+    ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      MPI_Comm local_comm;
+      char     string[64];
 
-    ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
-    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
+      ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+    }
   }
 #endif
 

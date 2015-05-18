@@ -1,5 +1,5 @@
-#include <petsc-private/dmpleximpl.h> /*I "petscdmplex.h" I*/
-#include <petsc-private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/dmpleximpl.h> /*I "petscdmplex.h" I*/
+#include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
 #include <petscds.h>
 #include <petscfv.h>
 

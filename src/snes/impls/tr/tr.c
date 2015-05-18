@@ -94,9 +94,13 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
   PetscBool           conv   = PETSC_FALSE,breakout = PETSC_FALSE;
-  PetscBool           domainerror;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   maxits = snes->max_its;               /* maximum number of iterations */
   X      = snes->vec_sol;               /* solution vector */
   F      = snes->vec_func;              /* residual vector */
@@ -110,19 +114,10 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
-    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-    if (domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
-  if (PetscIsInfOrNanReal(fnorm)) {
-    snes->reason = SNES_DIVERGED_FNORM_NAN;
-    PetscFunctionReturn(0);
-  }
-
+  SNESCheckFunctionNorm(snes,fnorm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);

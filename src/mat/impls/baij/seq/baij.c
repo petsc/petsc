@@ -5,8 +5,8 @@
 */
 #include <../src/mat/impls/baij/seq/baij.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
-#include <petsc-private/kernels/blockinvert.h>
-#include <petsc-private/kernels/blockmatmult.h>
+#include <petsc/private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockmatmult.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
@@ -138,6 +138,7 @@ PetscErrorCode MatSOR_SeqBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   const PetscInt    *diag,*ai = a->i,*aj = a->j,*vi;
 
   PetscFunctionBegin;
+  if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   its = its*lits;
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
   if (its <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
@@ -2593,6 +2594,21 @@ PetscErrorCode MatRestoreColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_SeqBAIJ"
+PetscErrorCode MatShift_SeqBAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ     *aij = (Mat_SeqBAIJ*)Y->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz) {
+    ierr = MatSeqBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        MatGetRow_SeqBAIJ,
@@ -2640,7 +2656,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        MatCopy_SeqBAIJ,
                                /* 44*/ 0,
                                        MatScale_SeqBAIJ,
-                                       0,
+                                       MatShift_SeqBAIJ,
                                        0,
                                        MatZeroRowsColumns_SeqBAIJ,
                                /* 49*/ 0,
@@ -2902,9 +2918,6 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
     }
     b->free_a  = PETSC_TRUE;
     b->free_ij = PETSC_TRUE;
-#if defined(PETSC_THREADCOMM_ACTIVE)
-    ierr = MatZeroEntries_SeqBAIJ(B);CHKERRQ(ierr);
-#endif
   } else {
     b->free_a  = PETSC_FALSE;
     b->free_ij = PETSC_FALSE;

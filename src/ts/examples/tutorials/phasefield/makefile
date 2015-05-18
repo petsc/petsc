@@ -9,8 +9,8 @@ EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 potentials: potentials.o  chkopts
 	-${CLINKER} -o potentials potentials.o  ${PETSC_TS_LIB}
@@ -36,4 +36,4 @@ biharmonic3: biharmonic3.o  chkopts
 TESTEXAMPLES_C		  = potentials.PETSc potentials.rm  biharmonic.PETSc biharmonic.rm biharmonic2.PETSc biharmonic2.rm
 TESTEXAMPLES_C_X	  =
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

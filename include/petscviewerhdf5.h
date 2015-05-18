@@ -53,6 +53,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer,PetscBool*);
+
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer,PetscBool*);
+
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"

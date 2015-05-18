@@ -1,5 +1,5 @@
 
-#include <petsc-private/petscimpl.h>        /*I    "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I    "petscsys.h"   I*/
 #include <petscviewer.h>
 
 #undef __FUNCT__

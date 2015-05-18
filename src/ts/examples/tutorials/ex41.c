@@ -126,6 +126,7 @@ int main(int argc,char **argv)
   PetscInt       n = 2,direction=-1;
   PetscScalar    *u;
   PetscBool      terminate=PETSC_FALSE;
+  TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -172,7 +173,6 @@ int main(int argc,char **argv)
   
   ierr = TSSetEventMonitor(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
-  TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in 
      the same event occuring multiple times in the same interval. A max. step 

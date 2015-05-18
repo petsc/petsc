@@ -1,9 +1,9 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h> /* Hack to access same_local_solves */
 
 #if defined PETSC_GAMG_USE_LOG
@@ -124,7 +124,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
 
-     ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, neq = %D\n",*a_nactive_proc,new_size,ncrs_eq);
+     ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, neq = %D\n",*a_nactive_proc,new_size,ncrs_eq);CHKERRQ(ierr);
 
       /* get 'adj' */
       if (cr_bs == 1) {
@@ -245,11 +245,11 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       if (new_size==nactive) {
         *a_Amat_crs = Cmat; /* output - no repartitioning or reduction, bail out because nested here */
         ierr        = PetscFree(counts);CHKERRQ(ierr);
-        ierr = PetscInfo2(pc,"Aggregate processors noop: new_size=%D, neq(loc)=%D\n",new_size,ncrs_eq);
+        ierr = PetscInfo2(pc,"Aggregate processors noop: new_size=%D, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
 
-      ierr = PetscInfo1(pc,"Number of equations (loc) %D with simple aggregation\n",ncrs_eq);
+      ierr = PetscInfo1(pc,"Number of equations (loc) %D with simple aggregation\n",ncrs_eq);CHKERRQ(ierr);
       targetPE = rank/rfactor;
       ierr     = ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc);CHKERRQ(ierr);
     } /* end simple 'is_eq_newproc' */
@@ -541,7 +541,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   ierr = MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
-  ierr = PetscInfo6(pc,"level %d) N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+  ierr = PetscInfo6(pc,"level %d) N=%D, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
                     0,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,
                     (int)(nnz0/(PetscReal)M+0.5),size);
   CHKERRQ(ierr);
@@ -550,7 +550,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   for (level=0, Aarr[0]=Pmat, nactivepe = size; /* hard wired stopping logic */
        level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit);
        level++) {
-    pc_gamg->firstCoarsen = (level ? PETSC_FALSE : PETSC_TRUE);
+    pc_gamg->current_level = level;
     level1 = level + 1;
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
@@ -619,20 +619,18 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
     ierr = MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
     nnztot += info.nz_used;
-    ierr = PetscInfo5(pc,"%d) N=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-                      level1,M,pc_gamg->data_cell_cols,(int)(info.nz_used/(PetscReal)M),nactivepe);
+    ierr = PetscInfo5(pc,"%d) N=%D, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",level1,M,pc_gamg->data_cell_cols,(int)(info.nz_used/(PetscReal)M),nactivepe);CHKERRQ(ierr);
 
 #if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
     /* stop if one node or one proc -- could pull back for singular problems */
-    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M < 2) ) {
-      ierr =  PetscInfo1(pc,"HARD stop of coarsening ?????????, level %D\n",level);CHKERRQ(ierr);
+    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M/bs < 2) ) {
+      ierr =  PetscInfo2(pc,"HARD stop of coarsening on level %D.  Grid too small: %D block nodes\n",level,M/bs);CHKERRQ(ierr);
       level++;
       break;
     }
   } /* levels */
-  pc_gamg->firstCoarsen = PETSC_FALSE;
   ierr                  = PetscFree(pc_gamg->data);CHKERRQ(ierr);
 
   ierr = PetscInfo2(pc,"%D levels, grid complexity = %g\n",level+1,nnztot/nnz0);CHKERRQ(ierr);
@@ -731,7 +729,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PCSetFromOptions_MG(PetscOptionsObject,pc);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (!mg->galerkin) SETERRQ(comm,PETSC_ERR_USER,"PCGAMG must use Galerkin for coarse operators.");
-    if (mg->galerkin == 1) mg->galerkin = 2; 
+    if (mg->galerkin == 1) mg->galerkin = 2;
 
     /* create cheby smoothers */
     for (lidx = 1, level = pc_gamg->Nlevels-2; lidx <= fine_level; lidx++, level--) {
@@ -770,7 +768,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   } else {
     KSP smoother;
-    ierr = PetscInfo(pc,"One level solver used (system is seen as DD). Using default solver.\n");
+    ierr = PetscInfo(pc,"One level solver used (system is seen as DD). Using default solver.\n");CHKERRQ(ierr);
     ierr = PCMGGetSmoother(pc, 0, &smoother);CHKERRQ(ierr);
     ierr = KSPSetOperators(smoother, Aarr[0], Aarr[0]);CHKERRQ(ierr);
     ierr = KSPSetType(smoother, KSPPREONLY);CHKERRQ(ierr);
@@ -1337,7 +1335,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->threshold        = 0.;
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->emax_id          = -1;
-  pc_gamg->firstCoarsen     = PETSC_FALSE;
+  pc_gamg->current_level    = 0; /* don't need to init really */
   pc_gamg->eigtarget[0]     = 0.05;
   pc_gamg->eigtarget[1]     = 1.05;
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;

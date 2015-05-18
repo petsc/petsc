@@ -1,5 +1,5 @@
 #include <petsctaolinesearch.h> /*I "petsctaolinesearch.h" I*/
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 
 PetscBool TaoLineSearchInitialized = PETSC_FALSE;
 PetscFunctionList TaoLineSearchList = NULL;
@@ -133,7 +133,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
   ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
  #endif
 
-  ierr = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,TAOLINESEARCH_CLASSID,"TaoLineSearch",0,0,comm,TaoLineSearchDestroy,TaoLineSearchView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ls,TAOLINESEARCH_CLASSID,"TaoLineSearch","Linesearch","Tao",comm,TaoLineSearchDestroy,TaoLineSearchView);CHKERRQ(ierr);
   ls->bounded = 0;
   ls->max_funcs=30;
   ls->ftol = 0.0001;
@@ -399,7 +399,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
     *reason=TAOLINESEARCH_FAILED_INFORNAN;
   }
 
-  ierr = PetscObjectReference((PetscObject)x);
+  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
   ierr = VecDestroy(&ls->start_x);CHKERRQ(ierr);
   ls->start_x = x;
 
@@ -530,7 +530,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   if (flg) {
     ierr = TaoLineSearchSetType(ls,type);CHKERRQ(ierr);
   } else if (!((PetscObject)ls)->type_name) {
-    ierr = TaoLineSearchSetType(ls,default_type);
+    ierr = TaoLineSearchSetType(ls,default_type);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsInt("-tao_ls_max_funcs","max function evals in line search","",ls->max_funcs,&ls->max_funcs,NULL);CHKERRQ(ierr);

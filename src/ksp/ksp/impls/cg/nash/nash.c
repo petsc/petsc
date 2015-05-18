@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/cg/nash/nashimpl.h>
 
 #define NASH_PRECONDITIONED_DIRECTION   0
@@ -153,16 +153,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   ierr = VecCopy(ksp->vec_rhs, r);CHKERRQ(ierr);        /* r = -grad         */
   ierr = VecDot(r, r, &rr);CHKERRQ(ierr);               /* rr = r^T r        */
-  if (PetscIsInfOrNanScalar(rr)) {
-    /*************************************************************************/
-    /* The right-hand side contains not-a-number or an infinite value.       */
-    /* The gradient step does not work; return a zero value for the step.    */
-    /*************************************************************************/
-
-    ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad right-hand side: rr=%g\n", (double)rr);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  KSPCheckDot(ksp,rr);
 
   /***************************************************************************/
   /* Check the preconditioner for numerical problems and for positive        */

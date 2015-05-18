@@ -2,7 +2,7 @@
 #define _matelemimpl_h
 
 #include <El.hpp>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscmatelemental.h>
 
 typedef struct {

@@ -534,12 +534,6 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   PetscBool      colflag,*allcolumns,*allrows;
 
   PetscFunctionBegin;
-  /* Currently, unsorted column indices will result in inverted column indices in the resulting submatrices. */
-  for (i = 0; i < ismax; ++i) {
-    PetscBool sorted;
-    ierr = ISSorted(iscol[i], &sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ1(((PetscObject)iscol[i])->comm, PETSC_ERR_SUP, "Column index set %D not sorted", i);
-  }
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
   ierr = PetscMalloc2(ismax+1,&isrow_new,ismax+1,&iscol_new);CHKERRQ(ierr);
@@ -808,12 +802,11 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   ierr     = PetscMalloc1(nrqs+1,&rbuf2);CHKERRQ(ierr);
   rbuf2[0] = tmp + msz;
   for (i=1; i<nrqs; ++i) {
-    j        = pa[i];
     rbuf2[i] = rbuf2[i-1]+w1[pa[i-1]];
   }
   for (i=0; i<nrqs; ++i) {
-    j    = pa[i];
-    ierr = MPI_Irecv(rbuf2[i],w1[j],MPIU_INT,j,tag1,comm,r_waits2+i);CHKERRQ(ierr);
+    j        = pa[i];
+    ierr     = MPI_Irecv(rbuf2[i],w1[j],MPIU_INT,j,tag1,comm,r_waits2+i);CHKERRQ(ierr);
   }
 
   /* Send to other procs the buf size they should allocate */
@@ -901,9 +894,11 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         kmax = rbuf1[i][2*j];
         for (k=0; k<kmax; k++,ct1++) {
           row    = rbuf1_i[ct1] - rstart;
-          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+          nzA    = a_i[row+1] - a_i[row];
+          nzB    = b_i[row+1] - b_i[row];
           ncols  = nzA + nzB;
-          cworkA = a_j + a_i[row]; cworkB = b_j + b_i[row];
+          cworkA = a_j + a_i[row];
+          cworkB = b_j + b_i[row];
 
           /* load the column indices for this row into cols*/
           cols = sbuf_aj_i + ct2;
@@ -941,10 +936,12 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
           kmax = rbuf1_i[2*j];
           for (k=0; k<kmax; k++,ct1++) {
             row    = rbuf1_i[ct1] - rstart;
-            nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+            nzA    = a_i[row+1] - a_i[row];
+            nzB    = b_i[row+1] - b_i[row];
             ncols  = nzA + nzB;
-            cworkA = a_j + a_i[row];     cworkB = b_j + b_i[row];
-            vworkA = a_a + a_i[row]*bs2; vworkB = b_a + b_i[row]*bs2;
+            cworkB = b_j + b_i[row];
+            vworkA = a_a + a_i[row]*bs2;
+            vworkB = b_a + b_i[row]*bs2;
 
             /* load the column values for this row into vals*/
             vals = sbuf_aa_i+ct2*bs2;
@@ -1034,8 +1031,10 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       if (proc == rank) {
         /* Get indices from matA and then from matB */
         row    = row - rstart;
-        nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
-        cworkA =  a_j + a_i[row]; cworkB = b_j + b_i[row];
+        nzA    = a_i[row+1] - a_i[row];
+        nzB    = b_i[row+1] - b_i[row];
+        cworkA =  a_j + a_i[row];
+        cworkB = b_j + b_i[row];
         if (!allcolumns[i]) {
 #if defined(PETSC_USE_CTABLE)
           for (k=0; k<nzA; k++) {
@@ -1378,6 +1377,32 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         }
       }
     }
+  }
+  /* sort the rows */
+  {
+    PetscInt  ilen_row,*imat_ilen,*imat_j,*imat_i;
+    MatScalar *imat_a = NULL;
+    MatScalar *work;
+
+    ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
+    for (i=0; i<ismax; i++) {
+      mat       = (Mat_SeqBAIJ*)submats[i]->data;
+      imat_ilen = mat->ilen;
+      imat_j    = mat->j;
+      imat_i    = mat->i;
+      if (!ijonly) imat_a = mat->a;
+      if (allcolumns[i]) continue;
+      jmax   = nrow[i];
+      for (j=0; j<jmax; j++) {
+        mat_i = imat_i[j];
+        if (!ijonly) mat_a = imat_a + mat_i*bs2;
+        mat_j    = imat_j + mat_i;
+        ilen_row = imat_ilen[j];
+        if (!ijonly) {ierr = PetscSortIntWithDataArray(ilen_row,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);}
+        else {ierr = PetscSortInt(ilen_row,mat_j);CHKERRQ(ierr);}
+      }
+    }
+    ierr = PetscFree(work);CHKERRQ(ierr);
   }
   if (!ijonly) {
     ierr = PetscFree(r_status4);CHKERRQ(ierr);

@@ -334,11 +334,14 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap->bs,0,nz);CHKERRQ(ierr);
-
-  ((Mat_SeqSBAIJ*)Bnew->data)->nonew = Bbaij->nonew; /* Inherit insertion error options. */
-
   ierr = PetscFree(nz);CHKERRQ(ierr);
 
+  ((Mat_SeqSBAIJ*)Bnew->data)->nonew = Bbaij->nonew; /* Inherit insertion error options. */
+  /*
+   Ensure that B's nonzerostate is monotonically increasing.
+   Or should this follow the MatSetValues() loop to preserve B's nonzerstate across a MatDisAssemble() call?
+   */
+  Bnew->nonzerostate = B->nonzerostate;
   ierr = PetscMalloc1(bs,&rvals);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     rvals[0] = bs*i;
@@ -373,6 +376,3 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   A->was_assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
-
-

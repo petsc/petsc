@@ -2,7 +2,7 @@
 /*
     Defines the multigrid preconditioner interface.
 */
-#include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -222,6 +222,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(mglevels[i]->smoothd,pc->erroriffailure);CHKERRQ(ierr);
     ierr = KSPSetType(mglevels[i]->smoothd,KSPCHEBYSHEV);CHKERRQ(ierr);
     ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
     ierr = KSPSetNormType(mglevels[i]->smoothd,KSP_NORM_NONE);CHKERRQ(ierr);
@@ -531,8 +532,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
     Calls setup for the KSP on each level

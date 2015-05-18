@@ -2,7 +2,7 @@
 #if !defined(__PETSCRANDOMIMPL_H)
 #define __PETSCRANDOMIMPL_H
 
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscBool PetscRandomRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);

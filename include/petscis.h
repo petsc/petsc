@@ -264,8 +264,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
     if (idx < map->range[t]) hi = t;
     else                     lo = t;
   }
-  *owner = lo;
-  *lidx  = idx-map->range[lo];
+  if (owner) *owner = lo;
+  if (lidx) *lidx  = idx-map->range[lo];
   PetscFunctionReturn(0);
 }
 

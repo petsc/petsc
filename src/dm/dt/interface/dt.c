@@ -7,8 +7,8 @@
 
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
-#include <petsc-private/petscimpl.h>
-#include <petsc-private/dtimpl.h>
+#include <petsc/private/petscimpl.h>
+#include <petsc/private/dtimpl.h>
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
@@ -48,7 +48,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   PetscFunctionBegin;
   PetscValidPointer(q, 2);
   ierr = DMInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*q,_p_PetscQuadrature,int,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*q,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
   (*q)->order     = -1;
   (*q)->numPoints = 0;

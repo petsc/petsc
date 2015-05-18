@@ -1,5 +1,5 @@
 
-#include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
+#include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 
 typedef struct _n_PetscSFBasicPack *PetscSFBasicPack;
 struct _n_PetscSFBasicPack {
@@ -801,7 +801,7 @@ static PetscErrorCode PetscSFBasicGetPackInUse(PetscSF sf,MPI_Datatype unit,cons
   for (p=&bas->inuse; (link=*p); p=&link->next) {
     PetscBool match;
     ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-    if (match) {
+    if (match && (key == link->key)) {
       switch (cmode) {
       case PETSC_OWN_POINTER: *p = link->next; break; /* Remove from inuse list */
       case PETSC_USE_POINTER: break;

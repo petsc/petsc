@@ -1,0 +1,10 @@
+[0] MatAssemblyBegin_MPISBAIJ(): Block-Stash has 0 entries, uses 0 mallocs.
+[0] MatAssemblyBegin_MPISBAIJ(): Stash has 0 entries,uses 0 mallocs.
+[0] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[0] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[0] MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0
+[0] MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0
+[1] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[1] MatAssemblyEnd_SeqBAIJ(): Number of mallocs during MatSetValues is 0
+[1] MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0
+[1] MatAssemblyEnd_SeqSBAIJ(): Number of mallocs during MatSetValues is 0

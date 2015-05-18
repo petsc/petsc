@@ -7,7 +7,7 @@
 
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscmat.h> /* so that MAT_FILE_CLASSID is defined */
 #include <petscviewerhdf5.h>
 
@@ -22,7 +22,7 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   /* Read vector header */
-  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
   type = tr[0];
   if (type != VEC_FILE_CLASSID) {
     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(vec, &N);CHKERRQ(ierr);
-  if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", rows, N);
+  if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", rows, N);
 
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
@@ -249,6 +249,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   const char     *vecname;
   PetscErrorCode ierr;
+  PetscBool      dim2 = PETSC_FALSE;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -274,7 +275,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   dim = 0;
   if (timestep >= 0) ++dim;
   ++dim;
-  if (bs >= 1) ++dim;
+  if (bs > 1) ++dim;
 #if defined(PETSC_USE_COMPLEX)
   ++dim;
 #endif
@@ -285,21 +286,40 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   bsInd = rdim-1;
 #endif
   lenInd = timestep >= 0 ? 1 : 0;
+  
   if (rdim != dim) {
-    if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
-  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) {
+    /* In this case the input dataset have one extra, unexpected dimension. */
+    if (rdim == dim+1)
+    {
+      /* In this case the block size is unset */
+      if (bs == -1)
+      {
+        ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
+        bs = dims[bsInd];
+      }
+    
+      /* In this case the block size unity */
+      else if (bs == 1 && dims[bsInd] == 1) dim2 = PETSC_TRUE;
+      
+      /* Special error message for the case where bs does not match the input file */
+      else if (bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %D, not %D as expected",(PetscInt)dims[bsInd],bs);
+      
+      /* All other cases is errors */
+      else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with bs = %D",rdim,dim,bs);
+    }
+    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected",rdim,dim);
+  } else if (bs > 1 && bs != (PetscInt) dims[bsInd]) {
     ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
     bs = dims[bsInd];
   }
-
+  
   /* Set Vec sizes,blocksize,and type if not already set */
   if ((xin)->map->n < 0 && (xin)->map->N < 0) {
     ierr = VecSetSizes(xin, PETSC_DECIDE, dims[lenInd]*bs);CHKERRQ(ierr);
   }
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
-  if (N/bs != (PetscInt) dims[lenInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (PetscInt) dims[lenInd], N/bs);
+  if (N/bs != (PetscInt) dims[lenInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", (PetscInt) dims[lenInd], N/bs);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
@@ -310,7 +330,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1) {
+  if (bs > 1 || dim2) {
     count[dim] = bs;
     ++dim;
   }
@@ -329,7 +349,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1) {
+  if (bs > 1 || dim2) {
     offset[dim] = 0;
     ++dim;
   }
@@ -400,7 +420,7 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "VecChop"
 /*@
-  VecChop - Set all values in the vector less than the tolerance to zero
+  VecChop - Set all values in the vector with an absolute value less than the tolerance to zero
 
   Input Parameters:
 + v   - The vector

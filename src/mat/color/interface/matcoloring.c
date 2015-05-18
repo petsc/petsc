@@ -1,4 +1,4 @@
-#include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 
 PetscFunctionList MatColoringList              = 0;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
@@ -74,13 +74,14 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *mcptr = 0;
+  PetscValidHeaderSpecific(m,MAT_CLASSID,1);
+  PetscValidPointer(mcptr,2);
+  *mcptr = NULL;
 
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(mc,_p_MatColoring, struct _MatColoringOps, MAT_COLORING_CLASSID,"MatColoring","Matrix coloring",
-                           "MatColoring",PetscObjectComm((PetscObject)m),MatColoringDestroy, MatColoringView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mc, MAT_COLORING_CLASSID,"MatColoring","Matrix coloring", "MatColoring",PetscObjectComm((PetscObject)m),MatColoringDestroy, MatColoringView);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)m);CHKERRQ(ierr);
   mc->mat       = m;
   mc->dist      = 2; /* default to Jacobian computation case */

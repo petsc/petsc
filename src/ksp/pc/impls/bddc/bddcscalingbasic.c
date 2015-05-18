@@ -556,7 +556,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   auxglobal_parallel = 0;
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)pc),graph->l2gmap,n_local_parallel_problems,auxlocal_parallel,PETSC_NULL,&n_parallel_problems,&auxglobal_parallel);CHKERRQ(ierr);
   if (pcbddc->dbg_flag) {
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of parallel subproblems: %d\n",n_parallel_problems);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of parallel subproblems: %d\n",n_parallel_problems);CHKERRQ(ierr);
   }
 
   /* Compute data structures to solve parallel problems */
@@ -568,7 +568,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   auxglobal_sequential = 0;
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)pc),graph->l2gmap,n_local_sequential_problems,auxlocal_sequential,PETSC_NULL,&n_sequential_problems,&auxglobal_sequential);CHKERRQ(ierr);
   if (pcbddc->dbg_flag) {
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of sequential subproblems: %d\n",n_sequential_problems);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Deluxe global number of sequential subproblems: %d\n",n_sequential_problems);CHKERRQ(ierr);
   }
 
   /* Compute data structures to solve sequential problems */
@@ -703,7 +703,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
     }
 
     if (deluxe_ctx->par_col2sub[i] >= 0) {
-      PC                     pc;
+      PC                     dpc;
       Mat                    color_mat,color_mat_is,temp_mat;
       ISLocalToGlobalMapping WtoNmap,l2gmap_subset;
       IS                     is_local_numbering,isB_local,isW_local,isW;
@@ -760,11 +760,12 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
 
       /* KSP for extended dirichlet problem */
       ierr = KSPCreate(PetscSubcommChild(par_subcomm),&deluxe_ctx->par_ksp[i]);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(deluxe_ctx->par_ksp[i],pc->erroriffailure);CHKERRQ(ierr);
       ierr = KSPSetOperators(deluxe_ctx->par_ksp[i],color_mat,color_mat);CHKERRQ(ierr);
       ierr = KSPSetTolerances(deluxe_ctx->par_ksp[i],1.e-12,1.e-12,1.e10,10000);CHKERRQ(ierr);
       ierr = KSPSetType(deluxe_ctx->par_ksp[i],KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(deluxe_ctx->par_ksp[i],&pc);CHKERRQ(ierr);
-      ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
+      ierr = KSPGetPC(deluxe_ctx->par_ksp[i],&dpc);CHKERRQ(ierr);
+      ierr = PCSetType(dpc,PCREDUNDANT);CHKERRQ(ierr);
       ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
       len -= 10; /* remove "dirichlet_" */
       ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr); /* PetscStrncpy puts a terminating char at the end */
@@ -978,6 +979,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
 
   /* Create KSP object for sequential part of deluxe scaling */
   ierr = KSPCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_ksp);CHKERRQ(ierr);
+  ierr = KSPSetErrorIfNotConverged(deluxe_ctx->seq_ksp,pc->erroriffailure);CHKERRQ(ierr);
   ierr = KSPSetOperators(deluxe_ctx->seq_ksp,work_mat,work_mat);CHKERRQ(ierr);
   ierr = KSPSetType(deluxe_ctx->seq_ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPGetPC(deluxe_ctx->seq_ksp,&pc_temp);CHKERRQ(ierr);

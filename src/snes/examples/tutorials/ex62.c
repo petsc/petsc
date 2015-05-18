@@ -108,18 +108,23 @@ void constant_p(const PetscReal x[], PetscScalar *p, void *ctx)
   *p = 1.0;
 }
 
-void f0_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
+void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+          PetscReal t, const PetscReal x[], PetscScalar f0[])
 {
   PetscInt c;
-  for (c = 0; c < spatialDim; ++c) f0[c] = 3.0;
+  for (c = 0; c < dim; ++c) f0[c] = 3.0;
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
    u[Ncomp]          = {p} */
-void f1_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[])
+void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+          PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
-  const PetscInt dim   = spatialDim;
-  const PetscInt Ncomp = spatialDim;
+  const PetscInt Ncomp = dim;
   PetscInt       comp, d;
 
   for (comp = 0; comp < Ncomp; ++comp) {
@@ -132,47 +137,54 @@ void f1_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z} */
-void f0_p(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
-{
-  const PetscInt dim = spatialDim;
-  PetscInt       d;
-
-  f0[0] = 0.0;
-  for (d = 0; d < dim; ++d) f0[0] += u_x[d*dim+d];
-}
-
-void f1_p(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[])
+void f0_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+          PetscReal t, const PetscReal x[], PetscScalar f0[])
 {
   PetscInt d;
-  for (d = 0; d < spatialDim; ++d) f1[d] = 0.0;
+  for (d = 0, f0[0] = 0.0; d < dim; ++d) f0[0] += u_x[d*dim+d];
+}
+
+void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+          PetscReal t, const PetscReal x[], PetscScalar f1[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) f1[d] = 0.0;
 }
 
 /* < q, \nabla\cdot u >
    NcompI = 1, NcompJ = dim */
-void g1_pu(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar g1[])
+void g1_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+           PetscReal t, const PetscReal x[], PetscScalar g1[])
 {
-  const PetscInt dim = spatialDim;
-  PetscInt       d;
-
+  PetscInt d;
   for (d = 0; d < dim; ++d) g1[d*dim+d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
 }
 
 /* -< \nabla\cdot v, p >
     NcompI = dim, NcompJ = 1 */
-void g2_up(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar g2[])
+void g2_up(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+           PetscReal t, const PetscReal x[], PetscScalar g2[])
 {
-  const PetscInt dim = spatialDim;
-  PetscInt       d;
-
+  PetscInt d;
   for (d = 0; d < dim; ++d) g2[d*dim+d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
 }
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
    This just gives \nabla u, give the perdiagonal for the transpose */
-void g3_uu(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar g3[])
+void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+           PetscReal t, const PetscReal x[], PetscScalar g3[])
 {
-  const PetscInt dim   = spatialDim;
-  const PetscInt Ncomp = spatialDim;
+  const PetscInt Ncomp = dim;
   PetscInt       compI, d;
 
   for (compI = 0; compI < Ncomp; ++compI) {

@@ -1,4 +1,4 @@
-#include <petsc-private/tsimpl.h>      /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;

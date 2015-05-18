@@ -1,0 +1,80 @@
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscsnesdef.h90"
+#endif
+#include "petsc/finclude/ftn-custom/petscvechide.h90"
+#include "petsc/finclude/ftn-custom/petscdmhide.h90"
+#include "petsc/finclude/ftn-custom/petscsneshide.h90"
+
+      Interface
+        Subroutine DMPlexGetCellFields(m,s,e,x,xt,a,u,ut,v,ierr)
+          USE_DM_HIDE
+          PetscInt  s, e
+          VEC_HIDE  x, xt, a
+          PetscScalar, pointer :: u(:)
+          PetscScalar, pointer :: ut(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreCellFields(m,s,e,x,xt,a,u,ut,v,ierr)
+          USE_DM_HIDE
+          PetscInt  s, e
+          VEC_HIDE  x, xt, a
+          PetscScalar, pointer :: u(:)
+          PetscScalar, pointer :: ut(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFaceFields(m,s,e,x,xt,f,c,g,uL,uR,ierr)
+          USE_DM_HIDE
+          PetscInt  s, e
+          VEC_HIDE  x, xt, f, c, g
+          PetscScalar, pointer :: uL(:)
+          PetscScalar, pointer :: uR(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreFaceFields(m,s,e,x,xt,f,c,g,uL,uR,ierr)
+          USE_DM_HIDE
+          PetscInt  s, e
+          VEC_HIDE  x, xt, f, c, g
+          PetscScalar, pointer :: uL(:)
+          PetscScalar, pointer :: uR(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFaceGeometry(m,s,e,f,c,g,v,ierr)
+          USE_DM_HIDE
+          PetscInt  s, e
+          VEC_HIDE  f, c
+          PetscScalar, pointer :: g(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreFaceGeometry(m,s,e,f,c,g,v,ierr)
+          USE_DM_HIDE
+          PetscInt  s, e
+          VEC_HIDE  f, c
+          PetscScalar, pointer :: g(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface

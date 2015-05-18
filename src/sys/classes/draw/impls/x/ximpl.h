@@ -6,7 +6,7 @@
 
 #if !defined(_XIMPL_H)
 #define _XIMPL_H
-#include <petsc-private/drawimpl.h>
+#include <petsc/private/drawimpl.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

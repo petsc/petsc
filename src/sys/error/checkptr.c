@@ -1,4 +1,4 @@
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 #include <petscvalgrind.h>
 
 static PetscInt petsc_checkpointer_intensity = 1;
@@ -56,15 +56,13 @@ PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
   struct sigaction sa,oldsa;
-  PetscStack *stackp;
 
   if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
   if (!ptr) return PETSC_FALSE;
   if (petsc_checkpointer_intensity < 1) return PETSC_TRUE;
 
   /* Skip the verbose check if we are inside a hot function. */
-  stackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-  if (stackp && stackp->hotdepth > 0 && petsc_checkpointer_intensity < 2) return PETSC_TRUE;
+  if (petscstack && petscstack->hotdepth > 0 && petsc_checkpointer_intensity < 2) return PETSC_TRUE;
 
   sigemptyset(&sa.sa_mask);
   sa.sa_sigaction = PetscSegv_sigaction;

@@ -16,7 +16,6 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscReal                    delta;
   PetscErrorCode               ierr;
   PetscInt                     stepType;
-  PetscInt                     iter = 0;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
@@ -31,7 +30,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /*  Set initial scaling for the function */
@@ -165,8 +164,8 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     }
     /*  Check for termination */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
-    iter++;
-    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -225,7 +224,6 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptions *PetscOptionsObject,Ta
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
 
@@ -303,14 +301,16 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   lmP->Gold = 0;
 
   tao->data = (void*)lmP;
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

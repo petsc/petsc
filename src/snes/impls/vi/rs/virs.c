@@ -1,9 +1,9 @@
 
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIGetInactiveSet"
@@ -335,15 +335,15 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
 #define __FUNCT__ "SNESSolve_VINEWTONRSLS"
 PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 {
-  SNES_VINEWTONRSLS  *vi = (SNES_VINEWTONRSLS*)snes->data;
-  PetscErrorCode     ierr;
-  PetscInt           maxits,i,lits;
-  PetscBool          lssucceed;
-  PetscReal          fnorm,gnorm,xnorm=0,ynorm;
-  Vec                Y,X,F;
-  KSPConvergedReason kspreason;
-  KSP                ksp;
-  PC                 pc;
+  SNES_VINEWTONRSLS    *vi = (SNES_VINEWTONRSLS*)snes->data;
+  PetscErrorCode       ierr;
+  PetscInt             maxits,i,lits;
+  SNESLineSearchReason lssucceed;
+  PetscReal            fnorm,gnorm,xnorm=0,ynorm;
+  Vec                  Y,X,F;
+  KSPConvergedReason   kspreason;
+  KSP                  ksp;
+  PC                   pc;
 
   PetscFunctionBegin;
   /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
@@ -371,15 +371,10 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
-  }
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-
+  SNESCheckFunctionNorm(snes,fnorm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -590,7 +585,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
     ierr  = SNESLineSearchApply(snes->linesearch, X, F, &gnorm, Y);CHKERRQ(ierr);
-    ierr  = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr  = SNESLineSearchGetReason(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     ierr  = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr  = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -599,7 +594,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       ierr         = DMDestroyVI(snes->dm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    if (!lssucceed) {
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h>
+#include <petsc/private/sfimpl.h>
 
 #if !defined(PETSC_HAVE_MPI_TYPE_GET_ENVELOPE)
 #define MPI_Type_get_envelope(datatype,num_ints,num_addrs,num_dtypes,combiner) (*(num_ints)=0,*(num_addrs)=0,*(num_dtypes)=0,*(combiner)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")

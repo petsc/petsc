@@ -7,7 +7,7 @@
   Udot = F(t,U)
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static TSRKType  TSRKDefault = TSRK3BS;
@@ -453,6 +453,14 @@ static PetscErrorCode TSStep_RK(TS ts)
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
     if (accept) {
+      if (ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        for (i=0; i<s; i++) {
+          ierr = TSAdjointComputeCostIntegrand(ts,t+h*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+          ierr = VecAXPY(ts->vec_costintegral,h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
+        }
+      }
+
       /* ignore next_scheme for now */
       ts->ptime    += ts->time_step;
       ts->time_step = next_time_step;
@@ -518,23 +526,41 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     rk->stage_time = t + h*(1.0-c[i]);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);
+      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);CHKERRQ(ierr);
       for (j=i+1; j<s; j++) {
-        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);
+        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);CHKERRQ(ierr);
       }
     }
     /* Stage values of lambda */
     ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
     ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
+    if (ts->vec_costintegral) {
+      ierr = TSAdjointComputeDRDYFunction(ts,rk->stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
+      if (!ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        ierr = TSAdjointComputeCostIntegrand(ts,rk->stage_time,Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,-h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);   
+      }
+    }
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+      if (ts->vec_costintegral) {
+        ierr = VecAXPY(VecDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdy[nadj]);CHKERRQ(ierr);
+      }
     }
 
     /* Stage values of mu */
     if(ts->vecs_sensip) {
       ierr = TSAdjointComputeRHSJacobian(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      if (ts->vec_costintegral) {
+        ierr = TSAdjointComputeDRDPFunction(ts,rk->stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
+      }
+
       for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+        if (ts->vec_costintegral) {
+          ierr = VecAXPY(VecDeltaMu[nadj*s+i],-h*b[i],ts->vecs_drdp[nadj]);CHKERRQ(ierr);
+        }
       }
     }
   }

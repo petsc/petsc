@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
 PetscFunctionList MatMFFDList              = 0;
@@ -362,7 +362,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
-  if (PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
+  if (mat->erroriffpe && PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }
@@ -692,7 +692,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscFunctionBegin;
   ierr = MatMFFDInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mfctx,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
 
   mfctx->sp                       = 0;
   mfctx->error_rel                = PETSC_SQRT_MACHINE_EPSILON;

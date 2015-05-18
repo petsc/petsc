@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcmgimpl.h>       /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>       /*I "petscksp.h" I*/
 
 /* ---------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -455,6 +455,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = PCGetType(ipc,&pctype);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&mglevels[l]->smoothu);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(mglevels[l]->smoothu,pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[l]->smoothu,(PetscObject)pc,mglevels[0]->levels-l);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mglevels[l]->smoothu,prefix);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits);CHKERRQ(ierr);

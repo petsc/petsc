@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdm.h>
 
 
@@ -751,6 +751,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
         ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_upper_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
         ierr = KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspupper);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(jac->kspupper,pc->erroriffailure);CHKERRQ(ierr);
         ierr = KSPSetOptionsPrefix(jac->kspupper, schurprefix);CHKERRQ(ierr);
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
         ierr = KSPSetDM(jac->kspupper, dmInner);CHKERRQ(ierr);
@@ -767,6 +768,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 	ierr = MatSchurComplementGetPmat(jac->schur,MAT_INITIAL_MATRIX,&jac->schurp);CHKERRQ(ierr);
       }
       ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->kspschur);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(jac->kspschur,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
@@ -1228,6 +1230,7 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
   ilink->nfields = n;
   ilink->next    = NULL;
   ierr           = KSPCreate(PetscObjectComm((PetscObject)pc),&ilink->ksp);CHKERRQ(ierr);
+  ierr           = KSPSetErrorIfNotConverged(ilink->ksp,pc->erroriffailure);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
@@ -1314,6 +1317,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
   ilink->is_col = is;
   ilink->next   = NULL;
   ierr          = KSPCreate(PetscObjectComm((PetscObject)pc),&ilink->ksp);CHKERRQ(ierr);
+  ierr          = KSPSetErrorIfNotConverged(ilink->ksp,pc->erroriffailure);CHKERRQ(ierr);
   ierr          = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr          = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr          = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #if defined(PETSC_HAVE_CGNS)
 #include <cgnslib.h>

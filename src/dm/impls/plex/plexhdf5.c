@@ -1,6 +1,6 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/isimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/isimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
@@ -362,23 +362,30 @@ static PetscErrorCode DMPlexWriteCoordinates_HDF5_Static(DM dm, PetscViewer view
   DM             cdm;
   Vec            coordinates, newcoords;
   PetscReal      lengthScale;
+  PetscInt       m, M, bs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(cdm, &newcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newcoords, "vertices");CHKERRQ(ierr);
+  ierr = VecGetSize(coordinates, &M);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coordinates, &m);CHKERRQ(ierr);
+  ierr = VecSetSizes(newcoords, m, M);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(newcoords, bs);CHKERRQ(ierr);
+  ierr = VecSetType(newcoords,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecCopy(coordinates, newcoords);CHKERRQ(ierr);
   ierr = VecScale(newcoords, lengthScale);CHKERRQ(ierr);
-  /* Use the local version to bypass the default group setting */
+  /* Did not use DMGetGlobalVector() in order to bypass default group assignment */
   ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = VecView(newcoords, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(cdm, &newcoords);CHKERRQ(ierr);
+  ierr = VecDestroy(&newcoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +451,6 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   ierr = VecRestoreArray(newcoords,   &ncoords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newcoords, "vertices");CHKERRQ(ierr);
   ierr = VecScale(newcoords, lengthScale);CHKERRQ(ierr);
-  /* Use the local version to bypass the default group setting */
   ierr = PetscViewerHDF5PushGroup(viewer, "/viz");CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
   PetscStackCallHDF5(H5Gclose,(groupId));
@@ -638,6 +644,7 @@ PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
     ierr = PetscViewerHDF5ReadSizes(viewer, "cones", NULL, &pEnd);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(conesIS->map, !rank ? pEnd : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(conesIS->map, pEnd);CHKERRQ(ierr);
+    pEnd = !rank ? pEnd : 0;
     ierr = PetscViewerHDF5ReadSizes(viewer, "cells", NULL, &N);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(cellsIS->map, !rank ? N : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(cellsIS->map, N);CHKERRQ(ierr);

@@ -105,7 +105,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   *pf = NULL;
   ierr = PFInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(newpf,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
   newpf->data          = 0;
   newpf->ops->destroy  = 0;
   newpf->ops->apply    = 0;

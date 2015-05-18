@@ -1,10 +1,10 @@
-#include <petsc-private/snesimpl.h>  /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h>  /*I "petscsnes.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetComputeVariableBounds"
 /*@C
-   SNESVISetComputeVariableBounds - Sets a function  that is called to compute the variable bounds
+   SNESVISetComputeVariableBounds - Sets a function that is called to compute the variable bounds
 
    Input parameter
 +  snes - the SNES context
@@ -22,8 +22,11 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",&f);CHKERRQ(ierr);
-  if (!f) {ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);}
-  ierr = PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec)),(snes,compute));CHKERRQ(ierr);
+  if (!f) {
+    ierr = SNESVISetComputeVariableBounds_VI(snes,compute);CHKERRQ(ierr);
+  } else {
+    ierr = PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec)),(snes,compute));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -535,8 +538,11 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetVariableBounds_C",&f);CHKERRQ(ierr);
-  if (!f) {ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);}
-  ierr                = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
+  if (!f) {
+    ierr = SNESVISetVariableBounds_VI(snes, xl, xu);CHKERRQ(ierr);
+  } else {
+    ierr = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
+  }
   snes->usersetbounds = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

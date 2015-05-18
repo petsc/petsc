@@ -10,8 +10,8 @@ EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -147,4 +147,4 @@ TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_13		  =
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

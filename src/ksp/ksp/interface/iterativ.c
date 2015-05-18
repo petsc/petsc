@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files)
  */
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
 #undef __FUNCT__
@@ -58,7 +58,7 @@ PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
       During the ith iteration this returns i-1
 .keywords: KSP, get, residual norm
 
-.seealso: KSPBuildResidual(), KSPGetResidualNorm()
+.seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetTotalIterations()
 @*/
 PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
@@ -66,6 +66,37 @@ PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidIntPointer(its,2);
   *its = ksp->its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGetTotalIterations"
+/*@
+   KSPGetTotalIterations - Gets the total number of iterations this KSP object has performed since was created, counted over all linear solves
+
+   Not Collective
+
+   Input Parameters:
+.  ksp - the iterative context
+
+   Output Parameters:
+.  its - total number of iterations
+
+   Level: intermediate
+
+   Notes: Use KSPGetIterationNumber() to get the count for the most recent solve only
+   If this is called within a linear solve (such as in a KSPMonitor routine) then it does not include iterations within that current solve
+
+.keywords: KSP, get, residual norm
+
+.seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetIterationNumber()
+@*/
+PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidIntPointer(its,2);
+  *its = ksp->totalits;
   PetscFunctionReturn(0);
 }
 
@@ -1095,7 +1126,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetDM"
 /*@

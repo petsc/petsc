@@ -16,8 +16,8 @@ MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -355,11 +355,6 @@ runex2_5:
 	   if (${DIFF} output/ex2_2.out ex2_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_5.tmp
-runex2_7:
-	-@${MPIEXEC} -n 1 ./ex2 -pc_type ilu -pc_factor_drop_tolerance 0.01,0.0,2 > ex2_7.tmp 2>&1; \
-	   if (${DIFF} output/ex2_7.out ex2_7.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex2_7, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex2_7.tmp
 runex2_bjacobi:
 	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
 	   if (${DIFF} output/ex2_bjacobi.out ex2.tmp) then true; \
@@ -388,10 +383,15 @@ runex2_umfpack:
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_umfpack, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_umfpack.tmp
-runex2_mkl_pardiso:
+runex2_mkl_pardiso_lu:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
-           if (${DIFF} output/ex2_mkl_pardiso.out ex2_mkl_pardiso.tmp) then true; \
-           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso, diffs above\n=========================================\n"; fi; \
+           if (${DIFF} output/ex2_mkl_pardiso_lu.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso_lu, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2_mkl_pardiso.tmp
+runex2_mkl_pardiso_cholesky:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
+           if (${DIFF} output/ex2_mkl_pardiso_cholesky.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_mkl_pardiso_cholesky, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_mkl_pardiso.tmp
 runex2_fbcgs:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ilu  > ex2.tmp 2>&1; \
@@ -1146,7 +1146,7 @@ runex54_Classical:
        ${RM} -f ex54.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph false -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
          ${DIFF} output/ex54f.out ex54.tmp || printf "${PWD}\nPossible problem with ex54f, diffs above\n======================================\n"; \
         ${RM} -f ex54.tmp
 
@@ -1176,7 +1176,7 @@ runex55_NC:
         ${RM} -f ex55.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_coarse_ksp_type preonly > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_coarse_ksp_type preonly -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex56.tmp 2>&1; \
          ${DIFF} output/ex56_0.out ex56.tmp || printf "${PWD}\nPossible problem with ex56, diffs above \n=========================================\n"; \
          ${RM} -f ex56.tmp
 
@@ -1280,7 +1280,7 @@ TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PE
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm \
                                  ex52.PETSc runex52_superlu_dist ex52.rm
-TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso ex2.rm
+TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
 TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
                                  ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
                                  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
@@ -1288,4 +1288,4 @@ TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
 TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

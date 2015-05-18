@@ -1,5 +1,5 @@
-#include <petsc-private/dmforestimpl.h>
-#include <petsc-private/viewerimpl.h>
+#include <petsc/private/dmforestimpl.h>
+#include <petsc/private/viewerimpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #if defined(PETSC_HAVE_P4EST)

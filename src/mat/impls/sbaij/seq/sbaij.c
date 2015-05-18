@@ -1351,6 +1351,21 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_SeqSBAIJ"
+PetscErrorCode MatShift_SeqSBAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ*)Y->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz) {
+    ierr = MatSeqSBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        MatGetRow_SeqSBAIJ,
@@ -1398,7 +1413,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        MatCopy_SeqSBAIJ,
                                /* 44*/ 0,
                                        MatScale_SeqSBAIJ,
-                                       0,
+                                       MatShift_SeqSBAIJ,
                                        0,
                                        MatZeroRowsColumns_SeqSBAIJ,
                                /* 49*/ 0,

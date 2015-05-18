@@ -2,7 +2,7 @@
 /*
   This file defines a "solve the problem redundantly on each subgroup of processor" preconditioner.
 */
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/pcimpl.h>
 #include <petscksp.h>           /*I "petscksp.h" I*/
 
 typedef struct {
@@ -81,6 +81,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       subcomm = PetscSubcommChild(red->psubcomm);
 
       ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
       ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -407,6 +408,7 @@ static PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     subcomm = PetscSubcommChild(red->psubcomm);
 
     ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
     ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);

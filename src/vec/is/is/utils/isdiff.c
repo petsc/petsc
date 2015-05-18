@@ -1,5 +1,5 @@
 
-#include <petsc-private/isimpl.h>                    /*I "petscis.h"  I*/
+#include <petsc/private/isimpl.h>                    /*I "petscis.h"  I*/
 #include <petscbt.h>
 
 #undef __FUNCT__

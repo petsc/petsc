@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petsc-private/vecimpl.h>    /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>    /*I  "petscvec.h"   I*/
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
@@ -1928,5 +1928,20 @@ PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetInf"
+PetscErrorCode VecSetInf(Vec xin)
+{
+  PetscInt       i,n = xin->map->n;
+  PetscScalar    *xx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  for (i=0; i<n; i++) xx[i] = 1.0/0.0;
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

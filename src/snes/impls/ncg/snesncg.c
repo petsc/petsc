@@ -262,17 +262,22 @@ PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 #define __FUNCT__ "SNESSolve_NCG"
 PetscErrorCode SNESSolve_NCG(SNES snes)
 {
-  SNES_NCG            *ncg = (SNES_NCG*)snes->data;
-  Vec                 X,dX,lX,F,dXold;
-  PetscReal           fnorm, ynorm, xnorm, beta = 0.0;
-  PetscScalar         dXdotdX, dXolddotdXold, dXdotdXold, lXdotdX, lXdotdXold;
-  PetscInt            maxits, i;
-  PetscErrorCode      ierr;
-  PetscBool           lsSuccess = PETSC_TRUE;
-  SNESLineSearch      linesearch;
-  SNESConvergedReason reason;
+  SNES_NCG             *ncg = (SNES_NCG*)snes->data;
+  Vec                  X,dX,lX,F,dXold;
+  PetscReal            fnorm, ynorm, xnorm, beta = 0.0;
+  PetscScalar          dXdotdX, dXolddotdXold, dXdotdXold, lXdotdX, lXdotdXold;
+  PetscInt             maxits, i;
+  PetscErrorCode       ierr;
+  SNESLineSearchReason lsresult = SNES_LINESEARCH_SUCCEEDED;
+  SNESLineSearch       linesearch;
+  SNESConvergedReason  reason;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
 
@@ -304,19 +309,11 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     /* convergence test */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
-
+    SNESCheckFunctionNorm(snes,fnorm);
     ierr = VecCopy(F,dX);CHKERRQ(ierr);
   }
   if (snes->pc) {
@@ -351,14 +348,14 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   /* first update -- just use the (preconditioned) residual direction for the initial conjugate direction */
 
   for (i = 1; i < maxits + 1; i++) {
-    lsSuccess = PETSC_TRUE;
     /* some update types require the old update direction or conjugate direction */
     if (ncg->type != SNES_NCG_FR) {
       ierr = VecCopy(dX, dXold);CHKERRQ(ierr);
     }
     ierr = SNESLineSearchApply(linesearch,X,F,&fnorm,lX);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetSuccess(linesearch, &lsSuccess);CHKERRQ(ierr);
-    if (!lsSuccess) {
+    ierr = SNESLineSearchGetReason(linesearch, &lsresult);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    if (lsresult) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         PetscFunctionReturn(0);
@@ -368,11 +365,6 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       PetscFunctionReturn(0);
     }
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-    ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     /* Monitor convergence */
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i;

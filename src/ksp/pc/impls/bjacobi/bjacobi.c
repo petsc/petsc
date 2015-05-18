@@ -2,7 +2,7 @@
 /*
    Defines a block Jacobi preconditioner.
 */
-#include <petsc-private/pcimpl.h>              /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>              /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h>
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
@@ -788,6 +788,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       wasSetup = PETSC_FALSE;
 
       ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -1041,6 +1042,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
       for (i=0; i<n_local; i++) {
         ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
         ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
         ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -1194,7 +1196,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
@@ -1234,6 +1236,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     /* create a new PC that processors in each subcomm have copy of */
     ierr = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
     ierr = KSPCreate(subcomm,&jac->ksp[0]);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(jac->ksp[0],pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0],(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->ksp[0]);CHKERRQ(ierr);
     ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats);CHKERRQ(ierr);

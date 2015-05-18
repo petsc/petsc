@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_BAIJ"

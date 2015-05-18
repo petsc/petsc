@@ -2,7 +2,7 @@
    This file contains routines for basic section object implementation.
 */
 
-#include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
 #include <petscsf.h>
 #include <petscviewer.h>
 
@@ -43,7 +43,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   PetscValidPointer(s,2);
   ierr = ISInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(*s,_p_PetscSection,int,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*s,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
 
   (*s)->pStart             = -1;
   (*s)->pEnd               = -1;

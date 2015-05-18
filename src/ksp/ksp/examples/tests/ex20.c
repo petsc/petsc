@@ -24,7 +24,6 @@ int main(int argc,char **args)
   Mat          C;
   int          i,m = 5,rank,size,N,start,end,M;
   int          ierr,idx[4];
-  PetscBool    flg;
   PetscScalar  Ke[16];
   PetscReal    h;
   Vec          u,b;
@@ -67,8 +66,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
 
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(C,u,b);CHKERRQ(ierr);
+  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  ierr = VecSetValue(b,0,1.2,ADD_VALUES);CHKERRQ(ierr);
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Solve linear system */
@@ -77,13 +76,17 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-fixnullspace",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(ksp,nullsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-  }
+  ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
+  /*
+     The KSP solver will remove this nullspace from the solution at each iteration
+  */
+  ierr = MatSetNullSpace(C,nullsp);CHKERRQ(ierr);
+  /*
+     The KSP solver will remove from the right hand side any portion in this nullspace, thus making the linear system consistent.
+  */
+  ierr = MatSetTransposeNullSpace(C,nullsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
 

@@ -21,11 +21,11 @@
      &                 qvec,A,cdt,                                              &
      &                 rl,vol,xn,yn,zn,cfl,irank,nvertices)
 !
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscsnes.h>
 !
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,ipv,
      &             nstage,ncyct,iramp,nitfo,ncyc

@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 
 

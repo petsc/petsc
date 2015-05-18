@@ -1,11 +1,11 @@
 
 #include <petscdm.h>     /*I  "petscdm.h"  I*/
 #include <petscdmplex.h> /*I  "petscdmplex.h"  I*/
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/dmpleximpl.h>
-#include <petsc-private/petscfeimpl.h>
-#include <petsc-private/petscfvimpl.h>
-#include <petsc-private/petscdsimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/dmpleximpl.h>
+#include <petsc/private/petscfeimpl.h>
+#include <petsc/private/petscfvimpl.h>
+#include <petsc/private/petscdsimpl.h>
 PETSC_EXTERN PetscErrorCode DMCreate_DA(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM);

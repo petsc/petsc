@@ -139,17 +139,20 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Ve
 #define __FUNCT__ "SNESSolve_NEWTONLS"
 PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 {
-  PetscErrorCode      ierr;
-  PetscInt            maxits,i,lits;
-  PetscBool           lssucceed;
-  PetscReal           fnorm,gnorm,xnorm,ynorm;
-  Vec                 Y,X,F;
-  KSPConvergedReason  kspreason;
-  PetscBool           domainerror;
-  SNESLineSearch      linesearch;
-  SNESConvergedReason reason;
+  PetscErrorCode       ierr;
+  PetscInt             maxits,i,lits;
+  SNESLineSearchReason lssucceed;
+  PetscReal            fnorm,gnorm,xnorm,ynorm;
+  Vec                  Y,X,F;
+  SNESLineSearch       linesearch;
+  SNESConvergedReason  reason;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
@@ -179,20 +182,11 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-      if (domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
   }
 
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
-  if (PetscIsInfOrNanReal(fnorm)) {
-    snes->reason = SNES_DIVERGED_FNORM_NAN;
-    PetscFunctionReturn(0);
-  }
-
+  SNESCheckFunctionNorm(snes,fnorm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -237,14 +231,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        break;
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
@@ -259,16 +246,12 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     */
     gnorm = fnorm;
     ierr  = SNESLineSearchApply(linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
-    ierr  = SNESLineSearchGetSuccess(linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr  = SNESLineSearchGetReason(linesearch, &lssucceed);CHKERRQ(ierr);
     ierr  = SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     ierr  = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)gnorm,(double)fnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-    if (domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-    if (!lssucceed) {
+    SNESCheckFunctionNorm(snes,fnorm);
+    if (lssucceed) {
       if (snes->stol*xnorm > ynorm) {
         snes->reason = SNES_CONVERGED_SNORM_RELATIVE;
         PetscFunctionReturn(0);

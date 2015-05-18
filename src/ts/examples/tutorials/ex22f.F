@@ -16,13 +16,13 @@
 
       program main
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
-#include <petsc-finclude/petscts.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
@@ -143,9 +143,9 @@
 ! Small helper to extract the layout, result uses 1-based indexing.
       subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       DM da
       PetscInt mx,xs,xe,gxs,gxe
       PetscErrorCode ierr
@@ -185,13 +185,13 @@
 
       subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
-#include <petsc-finclude/petscts.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       TS ts
       PetscReal t
       Vec X,Xdot,F
@@ -274,13 +274,13 @@
 
       subroutine FormRHSFunction(ts,t,X,F,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
-#include <petsc-finclude/petscts.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       TS ts
       PetscReal t
       Vec X,F
@@ -324,13 +324,13 @@
 !
       subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
-#include <petsc-finclude/petscts.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       TS ts
       PetscReal t,shift
       Vec X,Xdot
@@ -395,13 +395,13 @@
 
       subroutine FormInitialSolution(ts,X,user,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
-#include <petsc-finclude/petscts.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       TS ts
       Vec X
       PetscReal user(6)

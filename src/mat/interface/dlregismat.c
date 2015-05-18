@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 const char       *MatOptions[] = {"NEW_NONZERO_LOCATION_ERR",
                                   "UNUSED_NONZERO_LOCATION_ERR",

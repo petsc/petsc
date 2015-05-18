@@ -5,7 +5,7 @@
 
 #include <petscvec.h>
 #include <petscsf.h>
-#include <petsc-private/threadcommimpl.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutCreate"
 /*@C
@@ -94,10 +94,6 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
   if (!(*map)->refcnt--) {
     ierr = PetscFree((*map)->range);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&(*map)->mapping);CHKERRQ(ierr);
-#if defined(PETSC_THREADCOMM_ACTIVE)
-    ierr = PetscFree((*map)->trstarts);CHKERRQ(ierr);
-#endif
-
     ierr = PetscFree((*map));CHKERRQ(ierr);
   }
   *map = NULL;
@@ -160,10 +156,6 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
-#if defined(PETSC_THREADCOMM_ACTIVE)
-  /* Set the thread ownership ranges */
-  ierr = PetscThreadCommGetOwnershipRanges(map->comm,map->n,&map->trstarts);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

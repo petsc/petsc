@@ -3,7 +3,7 @@
     Defines the operations for the X PetscDraw implementation.
 */
 
-#include <petsc-private/drawimpl.h>         /*I  "petscsys.h" I*/
+#include <petsc/private/drawimpl.h>         /*I  "petscsys.h" I*/
 
 typedef struct {
   char      *filename;

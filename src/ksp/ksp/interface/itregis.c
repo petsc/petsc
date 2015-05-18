@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP);

@@ -271,7 +271,7 @@
         </p>
 
 
-          The software <a href="http://open-mx.org">http://open-mx.org</a>
+          The software <a href="http://open-mx.gforge.inria.fr">http://open-mx.gforge.inria.fr</a>
           provides faster speed for ethernet systems, we have not tried it but it
           claims it can dramatically reduce latency and increase bandwidth on
           Linux system. You must first install this software and then install
@@ -1284,7 +1284,7 @@ PETSC_COMM_WORLD = NewComm;
       Some makefiles use ${DATAFILESPATH}/matrices/medium and other files. These
       test matrices in PETSc binary format can be found with anonymous ftp from
       <a href="http://ftp.mcs.anl.gov">ftp.mcs.anl.gov</a> in the directory
-      pub/petsc/matrices. The are not included with the PETSc distribution in the
+      pub/petsc/Datafiles/matrices. The are not included with the PETSc distribution in the
       interest of reducing the distribution size.
 
       <h3><a name="info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></h3>
@@ -1506,13 +1506,14 @@ PETSC_COMM_WORLD = NewComm;
 
         <li>
           The equations are intentionally singular (e.g.  constant null space),
-          but the Krylov method was not informed, see KSPSetNullSpace().
+          but the Krylov method was not informed, see MatSetNullSpace().
         </li>
 
         <li>
-          The equations are intentionally singular and KSPSetNullSpace() was
+          The equations are intentionally singular and MatSetNullSpace() was
           used, but the right hand side is not consistent. You may have to call
           MatNullSpaceRemove() on the right hand side before calling KSPSolve().
+          See MatSetTransposeNullSpace()
         </li>
 
         <li>
@@ -1769,7 +1770,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         grid solver.  See PCFactorSetShiftType(), PCFactorSetAmount().
       </p>
 
-      <p>This error can also happen if your matrix is singular, see KSPSetNullSpace() for how to handle this.</p>
+      <p>This error can also happen if your matrix is singular, see MatSetNullSpace() for how to handle this.</p>
 
       <p>
         If this error occurs in the zeroth row of the matrix, it is likely you have

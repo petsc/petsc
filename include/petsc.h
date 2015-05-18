@@ -4,7 +4,6 @@
 
 #include <petscbag.h>
 #include <petsctime.h>
-#include <petscthreadcomm.h>
 #include <petscbt.h>
 #include <petscctable.h>
 #include <petscmatlab.h>

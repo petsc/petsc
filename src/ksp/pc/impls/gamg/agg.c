@@ -3,14 +3,14 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #include <petscblaslapack.h>
 
 typedef struct {
   PetscInt  nsmooths;
   PetscBool sym_graph;
-  PetscBool square_graph;
+  PetscInt square_graph;
 } PC_GAMG_AGG;
 
 #undef __FUNCT__
@@ -116,19 +116,19 @@ PetscErrorCode PCGAMGSetSymGraph_GAMG(PC pc, PetscBool n)
 
 .seealso: ()
 @*/
-PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscBool n)
+PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGAMGSetSquareGraph_C",(PC,PetscBool),(pc,n));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCGAMGSetSquareGraph_C",(PC,PetscInt),(pc,n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSquareGraph_GAMG"
-PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscBool n)
+PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscInt n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -169,9 +169,9 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptions *PetscOptionsObject,PC pc)
     ierr = PetscOptionsBool("-pc_gamg_sym_graph","Set for asymmetric matrices","PCGAMGSetSymGraph",pc_gamg_agg->sym_graph,&pc_gamg_agg->sym_graph,NULL);CHKERRQ(ierr);
 
     /* -pc_gamg_square_graph */
-    pc_gamg_agg->square_graph = PETSC_TRUE;
+    pc_gamg_agg->square_graph = 1;
 
-    ierr = PetscOptionsBool("-pc_gamg_square_graph","For faster coarsening and lower coarse grid complexity","PCGAMGSetSquareGraph",pc_gamg_agg->square_graph,&pc_gamg_agg->square_graph,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_gamg_square_graph","Number of levels to square graph for faster coarsening and lower coarse grid complexity","PCGAMGSetSquareGraph",pc_gamg_agg->square_graph,&pc_gamg_agg->square_graph,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -290,7 +290,7 @@ static const NState REMOVED =-3;
      - AGG-MG specific: clears singletons out of 'selected_2'
 
    Input Parameter:
-   . Gmat_2 - glabal matrix of graph (data not defined)   base (squared) graph 
+   . Gmat_2 - glabal matrix of graph (data not defined)   base (squared) graph
    . Gmat_1 - base graph to grab with                 base graph
    Input/Output Parameter:
    . aggs_2 - linked list of aggs with gids)
@@ -946,8 +946,9 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bs %D must be 1",bs);
   nloc = n/bs;
 
-  if (pc_gamg->firstCoarsen && pc_gamg_agg->square_graph) { /* we don't want to square coarse grids */
-    ierr = PetscInfo(a_pc,"Square Graph (fine grid only)\n");CHKERRQ(ierr);
+  if (pc_gamg->current_level < pc_gamg_agg->square_graph) {
+    ierr = PetscInfo2(a_pc,"Square Graph on level %d of %d to square\n",pc_gamg->current_level+1,pc_gamg_agg->square_graph);
+    CHKERRQ(ierr);
     /* ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2); */
     ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
   } else Gmat2 = Gmat1;
@@ -1002,7 +1003,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
     if (mat) SETERRQ(comm,PETSC_ERR_ARG_WRONG, "Auxilary matrix with squared graph????");
   } else {
     const PetscCoarsenData *llist = *agg_lists;
-    /* see if we have a matrix that takes precedence (returned from MatCoarsenAppply) */
+    /* see if we have a matrix that takes precedence (returned from MatCoarsenApply) */
     ierr = PetscCDGetMat(llist, &mat);CHKERRQ(ierr);
     if (mat) {
       ierr     = MatDestroy(&Gmat1);CHKERRQ(ierr);
@@ -1226,6 +1227,7 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       }
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
       ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
@@ -1311,7 +1313,7 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->optprolongator    = PCGAMGOptProlongator_AGG;
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
   pc_gamg->ops->view              = PCView_GAMG_AGG;
-  
+
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

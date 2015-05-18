@@ -6,7 +6,7 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
 #include <cusp/krylov/bicgstab.h>
@@ -162,6 +162,10 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+    cusp::monitor<PetscReal> monitor(*xarray,bicg->maxits,bicg->rtol);
+    cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,monitor);
+#else
     cusp::default_monitor<PetscReal> monitor(*xarray,bicg->maxits,bicg->rtol);
     if (bicg->monitorverbose) {
       cusp::verbose_monitor<PetscReal> verbosemonitor(*xarray,bicg->maxits,bicg->rtol);
@@ -169,6 +173,7 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
     } else {
       cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,monitor);
     }
+#endif
   } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }

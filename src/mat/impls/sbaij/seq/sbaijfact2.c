@@ -5,7 +5,7 @@
 
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N_inplace"

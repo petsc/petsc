@@ -1,5 +1,5 @@
-#include <petsc-private/dmforestimpl.h> /*I petscdmforest.h I*/
-#include <petsc-private/dmimpl.h>       /*I petscdm.h */
+#include <petsc/private/dmforestimpl.h> /*I petscdmforest.h I*/
+#include <petsc/private/dmimpl.h>       /*I petscdm.h */
 #include <petscsf.h>
 
 #undef __FUNCT__

@@ -1709,9 +1709,15 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscBool      flg;
+  PetscBool      flg,sorted;
 
   PetscFunctionBegin;
+  for (i = 0; i < n; i++) {
+    ierr = ISSorted(irow[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Row index set %d not sorted",i);
+    ierr = ISSorted(icol[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Column index set %d not sorted",i);
+  }
   ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
@@ -1719,6 +1725,22 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
       ierr = MatSetOption(*B[i],MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_MPISBAIJ"
+PetscErrorCode MatShift_MPISBAIJ(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  Mat_MPISBAIJ    *maij = (Mat_MPISBAIJ*)Y->data;
+  Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ*)maij->A->data,*bij = (Mat_SeqSBAIJ*)maij->B->data;
+
+  PetscFunctionBegin;
+  if (!aij->nz && !bij->nz) {
+    ierr = MatMPISBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL,0,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1769,7 +1791,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatCopy_MPISBAIJ,
                                /* 44*/ 0,
                                        MatScale_MPISBAIJ,
-                                       0,
+                                       MatShift_MPISBAIJ,
                                        0,
                                        0,
                                /* 49*/ 0,
@@ -2476,7 +2498,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   PetscInt       *procsnz = 0,jj,*mycols,*ibuf;
   PetscInt       bs = newmat->rmap->bs,Mbs,mbs,extra_rows;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
-  PetscInt       dcount,kmax,k,nzcount,tmp,sizesset=1,grows,gcols;
+  PetscInt       dcount,kmax,k,nzcount,tmp;
   int            fd;
 
   PetscFunctionBegin;
@@ -2497,22 +2519,13 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     if (header[3] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as MPISBAIJ");
   }
 
-  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) sizesset = 0;
-
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M    = header[1];
   N    = header[2];
 
-  /* If global rows/cols are set to PETSC_DECIDE, set it to the sizes given in the file */
-  if (sizesset && newmat->rmap->N < 0) newmat->rmap->N = M;
-  if (sizesset && newmat->cmap->N < 0) newmat->cmap->N = N;
-
   /* If global sizes are set, check if they are consistent with that given in the file */
-  if (sizesset) {
-    ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
-  }
-  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (newmat->rmap->N >= 0 && newmat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%D) and input matrix has (%D)",newmat->rmap->N,M);
+  if (newmat->cmap->N >= 0 && newmat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%D) and input matrix has (%D)",newmat->cmap->N,N);
 
   if (M != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only do square matrices");
 
@@ -2644,9 +2657,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     for (j=0; j<dcount; j++) mask[masked1[j]] = 0;
     for (j=0; j<odcount; j++) mask[masked2[j]] = 0;
   }
-  if (!sizesset) {
-    ierr = MatSetSizes(newmat,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
-  }
+  ierr = MatSetSizes(newmat,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(newmat,bs,0,dlens,0,odlens);CHKERRQ(ierr);
   ierr = MatSetOption(newmat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 

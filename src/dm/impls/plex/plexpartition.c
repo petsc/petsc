@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 PetscClassId PETSCPARTITIONER_CLASSID = 0;
 
@@ -627,8 +627,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   *part = NULL;
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(p, _p_PetscPartitioner, struct _PetscPartitionerOps, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
-  ierr = PetscMemzero(p->ops, sizeof(struct _PetscPartitionerOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
 
   *part = p;
   PetscFunctionReturn(0);
@@ -1236,10 +1235,10 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

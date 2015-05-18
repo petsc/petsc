@@ -148,7 +148,7 @@ int main(int argc,char **argv)
      Set final conditions for sensitivities
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDuplicate(X,&lambda);CHKERRQ(ierr);
-  ierr = TSAdjointSetCostGradients(ts,1,&lambda,NULL);CHKERRQ(ierr);
+  ierr = TSSetCostGradients(ts,1,&lambda,NULL);CHKERRQ(ierr);
   ierr = VecSetValue(lambda,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(lambda);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(lambda);CHKERRQ(ierr);

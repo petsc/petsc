@@ -1,5 +1,5 @@
       program main   !   Solves the linear system  J x = f
-#include <petsc-finclude/petscdef.h>
+#include <petsc/finclude/petscdef.h>
       use petscksp; use petscdm
       Vec x,f
       Mat J
@@ -31,7 +31,7 @@
       call PetscFinalize(ierr)
       end
       subroutine  ComputeRHS(da,x,ierr)
-#include <petsc-finclude/petscdef.h>
+#include <petsc/finclude/petscdef.h>
       use petscdm
       DM da
       Vec x
@@ -55,7 +55,7 @@
       return
       end
       subroutine ComputeMatrix(da,J,ierr)
-#include <petsc-finclude/petscdef.h>
+#include <petsc/finclude/petscdef.h>
       use petscdm
       Mat J
       DM da
