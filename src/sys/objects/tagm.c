@@ -280,7 +280,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
               (subcomm ordering is assumed to be deadlock-free)
 
     Output Parameters:
-+   count      - number of globally-distinct subcommunicators on objlist
++   count      - global number of distinct subcommunicators on objlist (may be > len)
 -   numbering  - global numbers of objlist entries (allocated by user)
 
 
@@ -315,8 +315,9 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
   if (numbering) {
     /* Introduce a global numbering for subcomms, initially known only by subcomm roots. */
     /*
-      At the subcomm roots number the subcomms in the subcomm-root local manner,
-      and make it global by calculating the shift.
+      At each subcomm root number all of the subcomms it owns locally
+      and make it global by calculating the shift among all of the roots.
+      The roots are ordered using the comm ordering.
     */
     ierr    = MPI_Scan(&roots,&offset,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     offset -= roots;
