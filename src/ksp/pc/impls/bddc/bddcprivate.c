@@ -1085,7 +1085,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatAXPY(TM1,m_one,coarse_sub_mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(TM1,NORM_FROBENIUS,&real_value);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d      matrix error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d          matrix error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
 
     /* check constraints */
     ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->local_primal_size,0,1,&is_dummy);CHKERRQ(ierr);
@@ -1373,14 +1373,29 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   if (bs>1 && !(n_vertices%bs)) {
     PetscBool is_blocked = PETSC_TRUE;
     PetscInt  *vary;
-    /* Verify if the vertex indices correspond to each element in a block (code taken from sbaij2.c) */
-    ierr = PetscMalloc1(pcis->n/bs,&vary);CHKERRQ(ierr);
-    ierr = PetscMemzero(vary,pcis->n/bs*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0; i<n_vertices; i++) vary[pcbddc->local_primal_ref_node[i]/bs]++;
-    for (i=0; i<n_vertices/bs; i++) {
-      if (vary[i]!=0 && vary[i]!=bs) {
-        is_blocked = PETSC_FALSE;
-        break;
+    if (!sub_schurs->reuse_mumps) {
+      ierr = PetscMalloc1(pcis->n/bs,&vary);CHKERRQ(ierr);
+      ierr = PetscMemzero(vary,pcis->n/bs*sizeof(PetscInt));CHKERRQ(ierr);
+      /* Verify that the vertex indices correspond to each element in a block (code taken from sbaij2.c) */
+      /* it is ok to check this way since local_primal_ref_node are always sorted by local numbering and idx_R_local is obtained as a complement */
+      for (i=0; i<n_vertices; i++) vary[pcbddc->local_primal_ref_node[i]/bs]++;
+      for (i=0; i<pcis->n/bs; i++) {
+        if (vary[i]!=0 && vary[i]!=bs) {
+          is_blocked = PETSC_FALSE;
+          break;
+        }
+      }
+      ierr = PetscFree(vary);CHKERRQ(ierr);
+    } else {
+      /* Verify directly the R set */
+      for (i=0; i<n_R/bs; i++) {
+        PetscInt j,node=idx_R_local[bs*i];
+        for (j=1; j<bs; j++) {
+          if (node != idx_R_local[bs*i+j]-j) {
+            is_blocked = PETSC_FALSE;
+            break;
+          }
+        }
       }
     }
     if (is_blocked) { /* build compressed IS for R nodes (complement of vertices) */
@@ -1389,7 +1404,6 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
         idx_R_local[i] = idx_R_local[vbs*i]/vbs;
       }
     }
-    ierr = PetscFree(vary);CHKERRQ(ierr);
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,vbs,n_R/vbs,idx_R_local,PETSC_COPY_VALUES,&pcbddc->is_R_local);CHKERRQ(ierr);
   if (sub_schurs->reuse_mumps) {
