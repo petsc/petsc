@@ -333,7 +333,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   in[1] = rollback;
   ierr = MPI_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
   
-  event->status = out[0];
+  event->status = (TSEventStatus)out[0];
   rollback = out[1];
   if (rollback) {
     event->status = TSEVENT_LOCATED_INTERVAL;
