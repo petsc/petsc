@@ -1115,9 +1115,10 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
     const PetscFVCellGeom *cgL, *cgR;
     const PetscScalar     *xL, *xR, *gL, *gR;
     PetscScalar           *uLl = *uL, *uRl = *uR;
-    PetscInt               ghost;
+    PetscInt               ghost, nsupp;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
@@ -1154,6 +1155,19 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 
         ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fv);CHKERRQ(ierr);
         ierr = PetscFVGetNumComponents(fv, &numComp);CHKERRQ(ierr);
+        if (nsupp > 2) {
+          for (f = 0; f < Nf; ++f) {
+            PetscInt off;
+
+            ierr = PetscDSGetComponentOffset(prob, f, &off);CHKERRQ(ierr);
+            ierr = PetscFVGetNumComponents(fv, &numComp);CHKERRQ(ierr);
+            for (c = 0; c < numComp; ++c) {
+              uLl[iface*Nc+off+c] = 0.;
+              uRl[iface*Nc+off+c] = 0.;
+            }
+          }
+          continue;
+        }
         ierr = DMPlexPointLocalFieldRead(dm, cells[0], f, x, &xL);CHKERRQ(ierr);
         ierr = DMPlexPointLocalFieldRead(dm, cells[1], f, x, &xR);CHKERRQ(ierr);
         if (dmGrad) {
