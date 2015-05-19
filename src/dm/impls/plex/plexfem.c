@@ -86,24 +86,26 @@ PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectRigidBody"
-static void DMPlexProjectRigidBody(const PetscReal X[], PetscScalar *mode, void *ctx)
+static PetscErrorCode DMPlexProjectRigidBody(PetscInt dim, const PetscReal X[], PetscInt Nf, PetscScalar *mode, void *ctx)
 {
-  PetscInt       *ctxInt = (PetscInt *)ctx;
-  PetscInt       dim     = ctxInt[0];
-  PetscInt       d       = ctxInt[1];
-  PetscInt       i, j, k = dim > 2 ? d - dim : d;
+  PetscInt *ctxInt  = (PetscInt *) ctx;
+  PetscInt  dim2    = ctxInt[0];
+  PetscInt  d       = ctxInt[1];
+  PetscInt  i, j, k = dim > 2 ? d - dim : d;
 
+  PetscFunctionBegin;
+  if (dim != dim2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input dimension %d does not match context dimension %d", dim, dim2);
   for (i = 0; i < dim; i++) mode[i] = 0.;
   if (d < dim) {
     mode[d] = 1.;
-  }
-  else {
+  } else {
     for (i = 0; i < dim; i++) {
       for (j = 0; j < dim; j++) {
         mode[j] += epsilon(i, j, k)*X[i];
       }
     }
   }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -150,12 +152,12 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
   for (d = 0; d < m; d++) {
     PetscInt ctx[2];
-    void     *voidctx = (void *)(&ctx[0]);
-    void     (*func)(const PetscReal *,PetscScalar *,void *) = DMPlexProjectRigidBody;
+    void    *voidctx = (void *) (&ctx[0]);
+    PetscErrorCode (*func)(PetscInt, const PetscReal *, PetscInt, PetscScalar *, void *) = DMPlexProjectRigidBody;
 
     ctx[0] = dim;
     ctx[1] = d;
-    ierr = DMPlexProjectFunction(dm,&func,&voidctx,INSERT_VALUES,mode[d]);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
   }
   for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system */
@@ -229,7 +231,7 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFunctionLabelLocal"
-PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDualSpace *sp, *cellsp;
   PetscInt       *numComp;
@@ -343,7 +345,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFunctionLocal"
-PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDualSpace *sp, *cellsp;
   PetscInt       *numComp;
@@ -460,11 +462,20 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   Output Parameter:
 . X - vector
 
+   Calling sequence of func:
+$    func(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+
++  dim - The spatial dimension
+.  x   - The coordinates
+.  Nf  - The number of fields
+.  u   - The output field values
+-  ctx - optional user-defined function context
+
   Level: developer
 
 .seealso: DMPlexComputeL2Diff()
 @*/
-PetscErrorCode DMPlexProjectFunction(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMPlexProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
   Vec            localX;
   PetscErrorCode ierr;
@@ -579,12 +590,12 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInsertBoundaryValues_FEM_Internal"
-static PetscErrorCode DMPlexInsertBoundaryValues_FEM_Internal(DM dm, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], void (*func)(const PetscReal[], PetscScalar *, void *), void *ctx, Vec locX)
+static PetscErrorCode DMPlexInsertBoundaryValues_FEM_Internal(DM dm, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
 {
-  void        (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
-  void         **ctxs;
-  PetscInt       numFields;
-  PetscErrorCode ierr;
+  PetscErrorCode (**funcs)(PetscInt, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  void            **ctxs;
+  PetscInt          numFields;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
@@ -718,7 +729,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
-      ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, field, label, numids, ids, (void (*)(const PetscReal[], PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
+      ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, field, label, numids, ids, (PetscErrorCode (*)(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       if (!faceGeomFVM) continue;
       ierr = DMPlexInsertBoundaryValues_FVM_Internal(dm, time, faceGeomFVM, cellGeomFVM, gradFVM,
@@ -746,7 +757,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
 
 .seealso: DMPlexProjectFunction(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
 @*/
-PetscErrorCode DMPlexComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt   debug = 0;
   PetscSection     section;
@@ -818,7 +829,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Pet
       }
       for (q = 0; q < numQuadPoints; ++q) {
         CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
-        (*funcs[field])(coords, funcVal, ctx);
+        ierr = (*funcs[field])(dim, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
@@ -859,7 +870,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Pet
 
 .seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff()
 @*/
-PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscSection    section;
@@ -924,7 +935,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal
             coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
           }
         }
-        (*funcs[field])(coords, n, funcVal, ctx);
+        ierr = (*funcs[field])(dim, coords, n, numFields, funcVal, ctx);CHKERRQ(ierr);
         for (fc = 0; fc < Ncomp; ++fc) {
           PetscScalar interpolant = 0.0;
 
@@ -977,7 +988,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal
 
 .seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2GradientDiff()
 @*/
-PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
+PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
 {
   const PetscInt   debug = 0;
   PetscSection     section;
@@ -1050,7 +1061,7 @@ PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, void (**funcs)(const PetscReal []
       }
       for (q = 0; q < numQuadPoints; ++q) {
         CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
-        (*funcs[field])(coords, funcVal, ctx);
+        ierr = (*funcs[field])(dim, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);

@@ -2181,7 +2181,7 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESCheckFromOptions_Internal"
-PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, PetscErrorCode (**exactFuncs)(PetscInt, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
 {
   Mat            J, M;
   Vec            r, b;
@@ -2249,7 +2249,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESCheckFromOptions"
-PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
   Vec            sol;

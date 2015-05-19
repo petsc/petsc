@@ -150,11 +150,11 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,void (**)(const PetscReal[],PetscScalar*,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSCheckFromOptions"
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
   SNES           snes;

@@ -28,12 +28,13 @@ typedef struct {
   /* Problem definition */
   BCType        bcType;
   CoeffType     variableCoefficient;
-  void       (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
-void zero(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  *u = 0.0;
+  u[0] = 0.0;
+  return 0;
 }
 
 /*
@@ -57,9 +58,10 @@ void zero(const PetscReal coords[], PetscScalar *u, void *ctx)
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
 */
-void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
+  return 0;
 }
 
 void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -111,7 +113,7 @@ void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, const PetscReal x[], PetscScalar g3[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
@@ -128,9 +130,10 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\div \nu \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-void nu_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+PetscErrorCode nu_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0] + x[1];
+  return 0;
 }
 
 void f0_analytic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -165,7 +168,7 @@ void f1_field_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_analytic_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                    PetscReal t, const PetscReal x[], PetscScalar g3[])
+                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = x[0] + x[1];
@@ -174,7 +177,7 @@ void g3_analytic_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_field_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                 PetscReal t, const PetscReal x[], PetscScalar g3[])
+                 PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = a[0];
@@ -222,7 +225,7 @@ void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                              PetscReal t, const PetscReal x[], PetscScalar g3[])
+                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscScalar nu = 0.0;
   PetscInt    d, e;
@@ -258,9 +261,10 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
-void quadratic_u_3d(const PetscReal x[], PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_3d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
+  return 0;
 }
 
 #undef __FUNCT__
@@ -441,7 +445,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupMaterial"
 PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  void (*matFuncs[1])(const PetscReal x[], PetscScalar *u, void *ctx) = {nu_2d};
+  PetscErrorCode (*matFuncs[1])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {nu_2d};
   Vec            nu;
   PetscErrorCode ierr;
 
@@ -608,7 +612,7 @@ int main(int argc, char **argv)
     ierr = DMRestoreLocalVector(dm, &lv);CHKERRQ(ierr);
   }
   if (user.runType == RUN_FULL) {
-    void (*initialGuess[1])(const PetscReal x[], PetscScalar *, void *ctx) = {zero};
+    PetscErrorCode (*initialGuess[1])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {zero};
 
     ierr = DMPlexProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.debug) {
