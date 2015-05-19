@@ -451,6 +451,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     PetscBool    isNullSpace;
     PetscDS ds;
 
+    if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
