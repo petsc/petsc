@@ -4761,6 +4761,12 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
+    if (!pcbddc->use_vertices && reuse_solvers) {
+      PetscInt n_vertices;
+
+      ierr = ISGetLocalSize(sub_schurs->is_vertices,&n_vertices);CHKERRQ(ierr);
+      reuse_solvers = !n_vertices;
+    }
     ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
