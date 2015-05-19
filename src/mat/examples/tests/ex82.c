@@ -64,16 +64,16 @@ int main(int argc,char **args)
   ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchpartSetNcoarseparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchpartSetNfineparts(part,2);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   /* get new processor owner number of each vertex */
   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
   /* coarse parts */
-  ierr = MatPartitioningHierarchpartGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
   ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* fine parts */
-  ierr = MatPartitioningHierarchpartGetFineparts(part,&fineparts);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
   ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* partitioning */
   ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
