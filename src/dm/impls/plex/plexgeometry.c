@@ -1489,6 +1489,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     }
   }
   ierr = PetscFree3(dx, grad, gref);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&neighSec);CHKERRQ(ierr);
   ierr = PetscFree(neighbors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
