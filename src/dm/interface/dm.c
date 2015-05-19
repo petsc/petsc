@@ -3053,17 +3053,19 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
 @*/
 PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
 {
-  PetscInt       numFields;
+  PetscInt       numFields = 0;
   PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
+  if (section) {
+    PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+    ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
+  }
   ierr = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
   dm->defaultSection = section;
-  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
+  if (section) {ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);}
   if (numFields) {
     ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
