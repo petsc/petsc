@@ -5567,6 +5567,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscInt        bd2, field, numComps, numValues;
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
+    bcComps[bc] = NULL;
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (!isFE[field]) continue;
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
@@ -5588,7 +5589,6 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 
       bcFields[bc] = field;
       if (numComps) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]);CHKERRQ(ierr);}
-      else          {bcComps[bc] = NULL;}
       for (v = 0; v < numValues; ++v) {
         IS              tmp;
         const PetscInt *idx;
