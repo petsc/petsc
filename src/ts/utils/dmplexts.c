@@ -165,12 +165,13 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(ts->hdr.prefix, "-dmts_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
+  ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts, sol);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts, sol);CHKERRQ(ierr);
   ierr = SNESSetSolution(snes, sol);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions_Internal(snes, dm, u, sol, exactFuncs, ctxs);CHKERRQ(ierr);
+  ierr = VecDestroy(&sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
