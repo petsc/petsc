@@ -1,5 +1,6 @@
 #include <petsc/private/dmpleximpl.h> /*I "petscdmplex.h" I*/
 #include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/snesimpl.h>
 #include <petscds.h>
 #include <petscfv.h>
 
@@ -149,8 +150,6 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   ierr = DMPlexComputeResidual_Internal(dm, time, locX, locX_t, locF, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSCheckFromOptions"
