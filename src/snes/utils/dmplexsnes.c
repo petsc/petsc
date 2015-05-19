@@ -1753,10 +1753,11 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
         for (face = fS, iface = 0; face < fE; ++face) {
           const PetscInt *cells;
           PetscScalar    *fL, *fR;
-          PetscInt        ghost, d;
+          PetscInt        ghost, d, nsupp;
 
           ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-          if (ghost >= 0) continue;
+          ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
+          if (ghost >= 0 || nsupp > 2) continue;
           ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
           ierr = DMPlexPointGlobalFieldRef(dm, cells[0], f, fa, &fL);CHKERRQ(ierr);
           ierr = DMPlexPointGlobalFieldRef(dm, cells[1], f, fa, &fR);CHKERRQ(ierr);
