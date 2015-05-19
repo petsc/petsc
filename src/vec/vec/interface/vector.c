@@ -1937,11 +1937,12 @@ PetscErrorCode VecSetInf(Vec xin)
 {
   PetscInt       i,n = xin->map->n;
   PetscScalar    *xx;
+  PetscScalar    zero=0.0,one=1.0,inf=one/zero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) xx[i] = 1.0/0.0;
+  for (i=0; i<n; i++) xx[i] = inf;
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -505,7 +505,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   MPI_Comm          comm;
   PetscInt          pcreason;
   MatNullSpace      nullsp;
-  Vec               btmp,vec_rhs;
+  Vec               btmp,vec_rhs=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
