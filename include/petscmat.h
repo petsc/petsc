@@ -1269,10 +1269,10 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning,M
 /*
  * hierarchical partitioning
  */
-PETSC_EXTERN PetscErrorCode MatPartitioningHierarchpartGetFineparts(MatPartitioning,IS*);
-PETSC_EXTERN PetscErrorCode MatPartitioningHierarchpartGetCoarseparts(MatPartitioning,IS*);
-PETSC_EXTERN PetscErrorCode MatPartitioningHierarchpartSetNcoarseparts(MatPartitioning,PetscInt);
-PETSC_EXTERN PetscErrorCode MatPartitioningHierarchpartSetNfineparts(MatPartitioning, PetscInt);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning,PetscInt);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning, PetscInt);
 
 /*
     These routines are for coarsening matrices:
