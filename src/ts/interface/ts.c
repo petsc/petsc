@@ -1924,18 +1924,11 @@ PetscErrorCode  TSSetUp(TS ts)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Notes:
-   For basic use of the TS solvers the user need not explicitly call
-   TSSetUp(), since these actions will automatically occur during
-   the call to TSStep().  However, if one wishes to control this
-   phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().
-
    Level: advanced
 
 .keywords: TS, timestep, setup
 
-.seealso: TSCreate(), TSStep(), TSDestroy()
+.seealso: TSCreate(), TSAdjointStep(), TSSetCostGradients()
 @*/
 PetscErrorCode  TSAdjointSetUp(TS ts)
 {
@@ -1946,9 +1939,11 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
   if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
 
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  if (ts->vecs_sensip){
-    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+  if (ts->vec_costintegral) { /* if there is integral in the cost function*/
+    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+    if (ts->vecs_sensip){
+      ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    }
   }
 
   if (ts->ops->adjointsetup) {
@@ -1995,9 +1990,11 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
 
-  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  if (ts->vecs_drdp){
-    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+ if (ts->vec_costintegral) {
+    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+    if (ts->vecs_drdp){
+      ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    }
   }
   ts->vecs_sensi  = NULL;
   ts->vecs_sensip = NULL;
@@ -2469,12 +2466,12 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
   if (!ts->numcost) ts->numcost=numcost;
 
-  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
-  ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
-  ts->costintegrand     = rf;
-  ts->costintegrandctx  = ctx;
-  ts->drdyfunction    = drdyf;
-  ts->drdpfunction    = drdpf;
+  ierr                 = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
+  ierr                 = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
+  ts->costintegrand    = rf;
+  ts->costintegrandctx = ctx;
+  ts->drdyfunction     = drdyf;
+  ts->drdpfunction     = drdpf;
   PetscFunctionReturn(0);
 }
 
