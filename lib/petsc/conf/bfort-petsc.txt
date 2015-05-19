@@ -5,6 +5,7 @@ native PetscSizeT
 native MatStructure
 native KSPConvergedReason
 native SNESConvergedReason
+native SNESLineSearchReason
 native TSConvergedReason
 native BCArrayPart
 native PetscLogDouble

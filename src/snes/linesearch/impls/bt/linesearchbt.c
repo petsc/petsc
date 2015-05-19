@@ -110,7 +110,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     ierr = VecCopy(X,W);CHKERRQ(ierr);
     ierr = VecCopy(F,G);CHKERRQ(ierr);
     ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (ynorm > maxstep) {        /* Step too big, so scale back */
@@ -149,7 +149,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   if (snes->nfuncs >= snes->max_funcs) {
     ierr         = PetscInfo(snes,"Exceeded maximum function evaluations, while checking full step length!\n");CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
-    ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION_COUNT);CHKERRQ(ierr);
+    ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -188,7 +188,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     /* Since the full step didn't work and the step is tiny, quit */
     if (stol*xnorm > ynorm) {
       ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
-      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
       if (monitor) {
         ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",(double)ynorm,(double)stol*xnorm);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     if (snes->nfuncs >= snes->max_funcs) {
       ierr         = PetscInfo1(snes,"Exceeded maximum function evaluations, while attempting quadratic backtracking! %D \n",snes->nfuncs);CHKERRQ(ierr);
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
-      ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION_COUNT);CHKERRQ(ierr);
+      ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     if (objective) {
@@ -264,7 +264,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
             }
             ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
           }
-          ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION);CHKERRQ(ierr);
+          ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
         if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
@@ -295,7 +295,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
             ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
                               (double)fnorm,(double)gnorm,(double)ynorm,(double)lambda,(double)initslope);CHKERRQ(ierr);
           }
-          ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION_COUNT);CHKERRQ(ierr);
+          ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION);CHKERRQ(ierr);
           snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
           PetscFunctionReturn(0);
         }
