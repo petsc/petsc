@@ -26,4 +26,3 @@ class Configure(config.package.Package):
     if self.checkPreprocess('#include <sys/sysctl.h>'):
       self.addDefine('HAVE_SYS_SYSCTL_H','1')
 
-# sets PETSC_HAVE_PTHREAD but does NOT set PETSC_HAVE_PTHREADCLASSES

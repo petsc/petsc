@@ -1117,16 +1117,18 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NLS;
   tao->ops->destroy = TaoDestroy_NLS;
 
-  tao->max_it = 50;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 50;
+  if (!tao->trust0_changed) tao->trust0 = 100.0;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-5;
-  tao->frtol = 1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol = 1e-10;
-  tao->frtol = 1e-10;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-10;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-10;
 #endif
+
   tao->data = (void*)nlsP;
-  tao->trust0 = 100.0;
 
   nlsP->sval   = 0.0;
   nlsP->imin   = 1.0e-4;

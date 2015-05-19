@@ -27,6 +27,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
     if self.sharedLibraries.useShared:
       args.append('-DSHARED=1')
+      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
     if self.indexTypes.integerSize == 64:

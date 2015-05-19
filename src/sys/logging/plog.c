@@ -11,7 +11,6 @@
 #include <petsc/private/logimpl.h>        /*I    "petscsys.h"   I*/
 #include <petsctime.h>
 #include <petscviewer.h>
-#include <petscthreadcomm.h>
 
 PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 {
@@ -1305,7 +1304,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   PetscErrorCode     ierr;
   char               version[256];
   MPI_Comm           comm;
-  PetscInt           nthreads;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -1329,10 +1327,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   } else {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
-  }
-  ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
-  if (nthreads > 1) {
-    ierr = PetscFPrintf(comm,fd,"With %d threads per MPI_Comm\n", (int)nthreads);CHKERRQ(ierr);
   }
 
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);

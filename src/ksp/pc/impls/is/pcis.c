@@ -268,6 +268,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     PC pc_ctx;
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(pcis->ksp_D,pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcis->ksp_D,"is_localD_");CHKERRQ(ierr);
@@ -279,6 +280,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     ierr = KSPSetUp(pcis->ksp_D);CHKERRQ(ierr);
     /* Neumann */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_N);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(pcis->ksp_N,pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_N,(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcis->ksp_N,"is_localN_");CHKERRQ(ierr);
@@ -319,7 +321,7 @@ PetscErrorCode  PCISSetUp(PC pc)
         if (!(not_remove_nullspace_floating)) {
           MatNullSpace nullsp;
           ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
-          ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
+          ierr = MatSetNullSpace(matis->A,nullsp);CHKERRQ(ierr);
           ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
         }
       } else {  /* fixed subdomain */
@@ -330,7 +332,7 @@ PetscErrorCode  PCISSetUp(PC pc)
         if (remove_nullspace_fixed) {
           MatNullSpace nullsp;
           ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
-          ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
+          ierr = MatSetNullSpace(matis->A,nullsp);CHKERRQ(ierr);
           ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
         }
       }

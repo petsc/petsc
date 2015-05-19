@@ -25,75 +25,84 @@ typedef struct {
   PetscBool constraints;       /* Test local constraints */
   PetscBool tree;              /* Test tree routines */
   PetscInt  treeCell;          /* Cell to refine in tree test */
+  PetscReal constants[3];      /* Constant values for each dimension */
 } AppCtx;
-
-static int spdim = 1;
 
 /* u = 1 */
 void constant(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
+  AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = ((PetscReal *) ctx)[d];
+  for (d = 0; d < user->dim; ++d) u[d] = user->constants[d];
 }
 void constantDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
+  AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = 0.0;
+  for (d = 0; d < user->dim; ++d) u[d] = 0.0;
 }
 
 /* u = x */
 void linear(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
+  AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = coords[d];
+  for (d = 0; d < user->dim; ++d) u[d] = coords[d];
 }
 void linearDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
+  AppCtx *user = (AppCtx *) ctx;
   PetscInt d, e;
-  for (d = 0; d < spdim; ++d) {
+  for (d = 0; d < user->dim; ++d) {
     u[d] = 0.0;
-    for (e = 0; e < spdim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+    for (e = 0; e < user->dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
   }
 }
 
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
 void quadratic(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
-  if (spdim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
-  else if (spdim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
-  else if (spdim > 0) {u[0] = coords[0]*coords[0];}
+  AppCtx *user = (AppCtx *) ctx;
+  if (user->dim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
+  else if (user->dim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
+  else if (user->dim > 0) {u[0] = coords[0]*coords[0];}
 }
 void quadraticDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
-  if (spdim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
-  else if (spdim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
-  else if (spdim > 0) {u[0] = 2.0*coords[0]*n[0];}
+  AppCtx *user = (AppCtx *) ctx;
+  if (user->dim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
+  else if (user->dim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
+  else if (user->dim > 0) {u[0] = 2.0*coords[0]*n[0];}
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
 void cubic(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
-  if (spdim > 2)      {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
-  else if (spdim > 1) {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
-  else if (spdim > 0) {u[0] = coords[0]*coords[0]*coords[0];}
+  AppCtx *user = (AppCtx *) ctx;
+  if (user->dim > 2)      {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
+  else if (user->dim > 1) {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
+  else if (user->dim > 0) {u[0] = coords[0]*coords[0]*coords[0];}
 }
 void cubicDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
-  if (spdim > 2)      {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
-  else if (spdim > 1) {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
-  else if (spdim > 0) {u[0] = 3.0*coords[0]*coords[0]*n[0];}
+  AppCtx *user = (AppCtx *) ctx;
+  if (user->dim > 2)      {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
+  else if (user->dim > 1) {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
+  else if (user->dim > 0) {u[0] = 3.0*coords[0]*coords[0]*n[0];}
 }
 
 /* u = sin(x) */
 void trig(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
+  AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = tanh(coords[d] - 0.5);
+  for (d = 0; d < user->dim; ++d) u[d] = tanh(coords[d] - 0.5);
 }
 void trigDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
+  AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
+  for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
 }
 
 #undef __FUNCT__
@@ -133,7 +142,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  spdim = options->numComponents = options->dim;
   PetscFunctionReturn(0);
 }
 
@@ -220,10 +228,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "simple_mass"
-static void simple_mass(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar g0[])
+static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                        PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
 {
   PetscInt d, e;
-  for (d = 0, e = 0; d < spdim; d++, e+=spdim+1) {
+  for (d = 0, e = 0; d < dim; d++, e+=dim+1) {
     g0[e] = 1.;
   }
 }
@@ -231,24 +242,25 @@ static void simple_mass(const PetscScalar u[], const PetscScalar u_t[], const Pe
 /* < \nabla v, 1/2(\nabla u + {\nabla u}^T) > */
 #undef __FUNCT__
 #define __FUNCT__ "symmetric_gradient_inner_product"
-void symmetric_gradient_inner_product (const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar C[])
+static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar C[])
 {
-  const PetscInt dim   = spdim;
-  const PetscInt Ncomp = spdim;
-  PetscInt       compI, compJ, d, e;
+  PetscInt compI, compJ, d, e;
 
-  for (compI = 0; compI < Ncomp; ++compI) {
-    for (compJ = 0; compJ < Ncomp; ++compJ) {
+  for (compI = 0; compI < dim; ++compI) {
+    for (compJ = 0; compJ < dim; ++compJ) {
       for (d = 0; d < dim; ++d) {
         for (e = 0; e < dim; e++) {
           if (d == e && d == compI && d == compJ) {
-            C[((compI*Ncomp+compJ)*dim+d)*dim+e] = 1.0;
+            C[((compI*dim+compJ)*dim+d)*dim+e] = 1.0;
           }
           else if ((d == compJ && e == compI) || (d == e && compI == compJ)) {
-            C[((compI*Ncomp+compJ)*dim+d)*dim+e] = 0.5;
+            C[((compI*dim+compJ)*dim+d)*dim+e] = 0.5;
           }
           else {
-            C[((compI*Ncomp+compJ)*dim+d)*dim+e] = 0.0;
+            C[((compI*dim+compJ)*dim+d)*dim+e] = 0.0;
           }
         }
       }
@@ -439,6 +451,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     PetscBool    isNullSpace;
     PetscDS ds;
 
+    if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
@@ -518,22 +531,21 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
   void          (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx);
   void          (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx);
-  PetscReal       constants[3] = {1.0, 2.0, 3.0};
-  void           *exactCtxs[3] = {NULL, NULL, NULL};
+  void           *exactCtxs[3] = {user, user, user};
   MPI_Comm        comm;
   PetscReal       error, errorDer, tol = 1.0e-10;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  user->constants[0] = 1.0;
+  user->constants[1] = 2.0;
+  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   /* Setup functions to approximate */
   switch (order) {
   case 0:
     exactFuncs[0]    = constant;
     exactFuncDers[0] = constantDer;
-    exactCtxs[0]     = &constants[0];
-    exactCtxs[1]     = &constants[1];
-    exactCtxs[2]     = &constants[2];
     break;
   case 1:
     exactFuncs[0]    = linear;
@@ -566,8 +578,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   void          (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx);
   void          (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx);
   PetscReal       n[3]         = {1.0, 1.0, 1.0};
-  PetscReal       constants[3] = {1.0, 2.0, 3.0};
-  void           *exactCtxs[3] = {NULL, NULL, NULL};
+  void           *exactCtxs[3] = {user, user, user};
   DM              rdm, idm, fdm;
   Mat             Interp;
   Vec             iu, fu, scaling;
@@ -578,6 +589,9 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  user->constants[0] = 1.0;
+  user->constants[1] = 2.0;
+  user->constants[2] = 3.0;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
@@ -594,9 +608,6 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   case 0:
     exactFuncs[0]    = constant;
     exactFuncDers[0] = constantDer;
-    exactCtxs[0]     = &constants[0];
-    exactCtxs[1]     = &constants[1];
-    exactCtxs[2]     = &constants[2];
     break;
   case 1:
     exactFuncs[0]    = linear;
@@ -653,7 +664,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   DM             odm = dm, rdm = NULL;
   void         (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx) = {trig};
   void         (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx) = {trigDer};
-  void          *exactCtxs[3] = {NULL, NULL, NULL};
+  void          *exactCtxs[3] = {user, user, user};
   PetscInt       r;
   PetscReal      errorOld, errorDerOld, error, errorDer;
   double         p;

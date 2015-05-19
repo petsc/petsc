@@ -117,15 +117,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0,j,ap_rmax=0;
   PetscReal           afill=1.0,afill_tmp;
   PetscInt            rmax;
-#if defined(PTAP_PROFILE)
-  PetscLogDouble t0,t1,t2,t3,t4;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t0);CHKERRQ(ierr);
-#endif
 
   /* check if matrix local sizes are compatible */
   if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) {
@@ -154,12 +148,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
   pi_loc = p_loc->i; pj_loc = p_loc->j;
   pi_oth = p_oth->i; pj_oth = p_oth->j;
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
-#endif
 
-  /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
-  /*-------------------------------------------------------------------*/
+  /* (1) compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth (api,apj) */
+  /*--------------------------------------------------------------------------*/
   ierr   = PetscMalloc1(am+1,&api);CHKERRQ(ierr);
   api[0] = 0;
 
@@ -216,12 +207,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   afill_tmp = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1);
   if (afill_tmp > afill) afill = afill_tmp;
 
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t2);CHKERRQ(ierr);
-#endif
-
-  /* determine symbolic Co=(p->B)^T*AP - send to others */
-  /*----------------------------------------------------*/
+  /* (2) determine symbolic Co=(p->B)^T*AP - send to others (coi,coj)*/
+  /*-----------------------------------------------------------------*/
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* then, compute symbolic Co = (p->B)^T*AP */
@@ -262,14 +249,20 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     coi[i+1] = coi[i] + nnz;
   }
-  ierr      = PetscMalloc1(coi[pon]+1,&coj);CHKERRQ(ierr);
+  
+  ierr      = PetscMalloc1(coi[pon],&coj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
-  /* send j-array (coj) of Co to other processors */
-  /*----------------------------------------------*/
+  /* (3) send j-array (coj) of Co to other processors */
+  /*--------------------------------------------------*/
+  ierr = PetscCalloc1(size,&merge->len_s);CHKERRQ(ierr);
+  len_s        = merge->len_s;
+  merge->nsend = 0;
+
+
   /* determine row ownership */
   ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr);
   merge->rowmap->n  = pn;
@@ -281,27 +274,22 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc2(size,&len_si,size,&sstatus);CHKERRQ(ierr);
   ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscCalloc1(size,&merge->len_s);CHKERRQ(ierr);
-
-  len_s        = merge->len_s;
-  merge->nsend = 0;
-
   ierr = PetscMalloc1(size+2,&owners_co);CHKERRQ(ierr);
 
   proc = 0;
   for (i=0; i<pon; i++) {
     while (prmap[i] >= owners[proc+1]) proc++;
-    len_si[proc]++;  /* num of rows in Co to be sent to [proc] */
-    len_s[proc] += coi[i+1] - coi[i];
+    len_si[proc]++;               /* num of rows in Co(=Pt*AP) to be sent to [proc] */
+    len_s[proc] += coi[i+1] - coi[i]; /* num of nonzeros in Co to be sent to [proc] */
   }
 
-  len          = 0; /* max length of buf_si[] */
+  len          = 0; /* max length of buf_si[], see (4) */
   owners_co[0] = 0;
   for (proc=0; proc<size; proc++) {
     owners_co[proc+1] = owners_co[proc] + len_si[proc];
-    if (len_si[proc]) {
+    if (len_s[proc]) {
       merge->nsend++;
-      len_si[proc] = 2*(len_si[proc] + 1);
+      len_si[proc] = 2*(len_si[proc] + 1); /* length of buf_si to be sent to [proc] */
       len         += len_si[proc];
     }
   }
@@ -328,8 +316,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscFree(rwaits);CHKERRQ(ierr);
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);}
 
-  /* send and recv coi */
-  /*-------------------*/
+  /* (4) send and recv coi */
+  /*-----------------------*/
   ierr   = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
   ierr   = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&rwaits);CHKERRQ(ierr);
   ierr   = PetscMalloc1(len+1,&buf_s);CHKERRQ(ierr);
@@ -342,15 +330,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
                [nrows+1:2*nrows+1]: i-structure index
     */
     /*-------------------------------------------*/
-    nrows       = len_si[proc]/2 - 1;
+    nrows       = len_si[proc]/2 - 1; /* num of rows in Co to be sent to [proc] */
     buf_si_i    = buf_si + nrows+1;
     buf_si[0]   = nrows;
     buf_si_i[0] = 0;
     nrows       = 0;
     for (i=owners_co[proc]; i<owners_co[proc+1]; i++) {
       nzi = coi[i+1] - coi[i];
-
-      buf_si_i[nrows+1] = buf_si_i[nrows] + nzi; /* i-structure */
+      buf_si_i[nrows+1] = buf_si_i[nrows] + nzi;  /* i-structure */
       buf_si[nrows+1]   = prmap[i] -owners[proc]; /* local row index */
       nrows++;
     }
@@ -370,12 +357,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscFree(swaits);CHKERRQ(ierr);
   ierr = PetscFree(buf_s);CHKERRQ(ierr);
 
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t3);CHKERRQ(ierr);
-#endif
-
-  /* compute the local portion of C (mpi mat) */
-  /*------------------------------------------*/
+  /* (5) compute the local portion of C (mpi mat) */
+  /*----------------------------------------------*/
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
 
   /* allocate pti array and free space for accumulating nonzero column info */
@@ -444,8 +427,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
-  /* create symbolic parallel matrix Cmpi */
-  /*--------------------------------------*/
+  /* (6) create symbolic parallel matrix Cmpi */
+  /*------------------------------------------*/
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(P->cmap->bs));CHKERRQ(ierr);
@@ -488,11 +471,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   } else {
     ierr = PetscCalloc1(ap_rmax+1,&ptap->apa);CHKERRQ(ierr);
   }
-
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t4);CHKERRQ(ierr);
-  if (rank==1) PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPSymbolic %g/P + %g/AP + %g/comm + %g/PtAP = %g\n",rank,t1-t0,t2-t1,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
-#endif
 
 #if defined(PETSC_USE_INFO)
   if (pti[pn] != 0) {
@@ -551,7 +529,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   scalable = ptap->scalable;
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
-  /*--------------------------------------------------*/
+  /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_INITIAL_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic(), skip calling MatGetBrowsOfAoCols() and MatMPIAIJGetLocalMat() */
     ptap->reuse = MAT_REUSE_MATRIX;

@@ -186,6 +186,7 @@ PETSC_EXTERN PetscClassId DMTS_CLASSID;
 PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode TSCreate(MPI_Comm,TS*);
+PETSC_EXTERN PetscErrorCode TSClone(TS,TS*);
 PETSC_EXTERN PetscErrorCode TSDestroy(TS*);
 
 PETSC_EXTERN PetscErrorCode TSSetProblemType(TS,TSProblemType);
@@ -340,7 +341,6 @@ PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
-PETSC_EXTERN PetscErrorCode TSSetDifferentialEquationsIS(TS,IS);
 PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*);
@@ -462,6 +462,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS,PetscReal,PetscReal*);
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 

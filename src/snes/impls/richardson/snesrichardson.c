@@ -112,12 +112,12 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 #define __FUNCT__ "SNESSolve_NRichardson"
 PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
-  Vec                 X, Y, F;
-  PetscReal           xnorm, fnorm, ynorm;
-  PetscInt            maxits, i;
-  PetscErrorCode      ierr;
-  PetscBool           lsSuccess;
-  SNESConvergedReason reason;
+  Vec                  X, Y, F;
+  PetscReal            xnorm, fnorm, ynorm;
+  PetscInt             maxits, i;
+  PetscErrorCode       ierr;
+  SNESLineSearchReason lsresult;
+  SNESConvergedReason  reason;
 
   PetscFunctionBegin;
 
@@ -148,17 +148,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
   }
   if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
@@ -193,12 +186,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i = 1; i < maxits+1; i++) {
-    lsSuccess = PETSC_TRUE;
-
     ierr = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetReason(snes->linesearch, &lsresult);CHKERRQ(ierr);
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lsSuccess);CHKERRQ(ierr);
-    if (!lsSuccess) {
+    if (lsresult) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         break;
@@ -207,10 +198,6 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->nfuncs >= snes->max_funcs) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
-    }
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
     }
 
     /* Monitor convergence */

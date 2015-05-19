@@ -558,6 +558,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
                                 "year = {2010},\n"
                                 "month = {Aug},\n"
                                 "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);CHKERRQ(ierr);
+  tao->niter=0;
   if (tao->XL && tao->XU) {
     /* Check x0 <= XU */
     PetscReal val;
@@ -594,7 +595,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   mfqP->Fres[0]*=mfqP->Fres[0];
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
-  ierr = TaoMonitor(tao, tao->niter++, minnorm, PETSC_INFINITY, 0.0, step, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, minnorm, PETSC_INFINITY, 0.0, step, &reason);CHKERRQ(ierr);
+  tao->niter++;
 
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
   for (i=1;i<mfqP->n+1;i++) {
@@ -1171,15 +1173,16 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
 
   ierr = PetscNewLog(tao,&mfqP);CHKERRQ(ierr);
   tao->data = (void*)mfqP;
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
   mfqP->deltamin=1e-3;
 #else
-  tao->fatol = 1e-8;
-  tao->frtol = 1e-8;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
   mfqP->deltamin=1e-6;
 #endif
   mfqP->delta0 = 0.1;

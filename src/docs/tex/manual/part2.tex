@@ -3501,7 +3501,8 @@ functions you do not need to include it in the \trl{basis} vectors you provide).
 
 One then tells the KSP object you are using what the null space is with the call
 \begin{tabbing}
-KSPSetNullSpace(KSP ksp,MatNullSpace nsp);
+MatSetNullSpace(Mat mat,MatNullSpace nsp);
+MatSetTransposeNullSpace(Mat mat,MatNullSpace nsp);
 \end{tabbing}
 The PETSc solvers will now handle the null space during the solution process.
 
@@ -4715,9 +4716,52 @@ Currently supported types are TSEULER, TSRK (Runge-Kutta), \sindex{generalized l
 TSBEULER, TSCN (Crank-Nicolson), TSTHETA, TSGL (generalized linear), TSPSEUDO, and \sindex{Crank-Nicolson} \sindex{Runge-Kutta}
 TSSUNDIALS (only if the Sundials package is installed), \sindex{backward Euler} \sindex{Euler, backward}
 or the command line option \\
-\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials}.
+\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials,eimex,arkimex,rosw}.
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
+
+A list of available methods is given in Table \ref{tab:TSPET}.
+
+%
+\begin{table}
+\caption{Time integration schemes.}
+\centering
+%{   \scriptsize
+%\tiny
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS Name}&{\bf Reference}&{\bf Class}& {\bf Type}&{\bf Order}\\
+\hline
+euler&forward Euler&one-step&explicit&1\\
+\hline
+ssp&multistage SSP \cite{Ketcheson_2008}&Runge-Kutta&explicit&$\le$ 4\\
+\hline
+rk*&multistage&Runge-Kutta&explicit&$\ge$ 1\\
+\hline
+beuler&backward Euler&one-step&implicit&1\\
+\hline
+cn&Crank-Nicolson&one-step&implicit&2\\
+\hline
+theta*&theta-method&one-step&implicit&$\le$2\\
+\hline
+alpha&alpha-method \cite{Jansen_2000}&one-step&implicit&2\\
+\hline
+gl&general linear
+\cite{Butcher_2007}&multistep-multistage&implicit& $\le$ 3\\
+\hline
+eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
+1$, adaptive&\\
+\hline
+arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
+\hline
+rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly implicit&$1-4$\\
+\hline
+\end{tabular}%}
+\label{tab:TSPET} 
+\end{table}
+%
+
+
 
 
 \noindent Set the initial time and timestep with the command
@@ -4762,7 +4806,7 @@ In place of TSSolve(), a single step can be taken using
 TSStep(TS ts);
 \end{tabbing}
 
-\subsection{Using Implicit-Explicit (IMEX) methods for multi-rate problems}
+\subsection{Using Implicit-Explicit (IMEX) methods for stiff problems}
 \label{sec_imex}
 For problems with multiple time scales
 $F()$ will be treated implicitly using a method suitable for stiff problems and $G()$ will be treated explicitly when using an IMEX method like TSARKIMEX.
@@ -4773,6 +4817,165 @@ The user provides three pieces of information, the APIs for which have been desc
 \item ``Stiff'' part $F(t,u,\dot u)$ using TSSetIFunction().
 \item Jacobian $F_u + (shift) F_{\dot u}$ using TSSetIJacobian().
 \end{itemize}
+
+The user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher if the problem is implicit; e.g.,
+$F(t,u,\dot u) = M \dot u - f(t,u)$, where M is not the identity matrix: 
+\begin{itemize}
+\item the problem is an implicit ODE (defined implicitly through TSSetIFunction())
+or
+\item a DAE is being solved.
+\end{itemize}
+An IMEX problem representation can be made
+implicit by setting TSARKIMEXSetFullyImplicit().
+
+Some use-case examples for TSARKIMEX are listed in Table \ref{tab:DE:forms} and a
+list of methods with a summary of their properties is given in
+Table \ref{tab:IMEX:RK:PETSc}. 
+
+%
+\begin{table}
+\centering
+\caption{\label{tab:DE:forms}In PETSc the DAEs and ODEs are formulated
+as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
+implicitly and $G()$ explicitly. An IMEX formulation such as
+$M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
+solve  $g(t,y) - M x=0$ in place of $g(t,u)$. General cases such as
+$f(t,y,\dot{y})=g(t,y)$ are 
+not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
+%
+\begin{tabular}{|l|c|p{3in}|}
+\hline
+$\dot{y}=g(t,y)$ & nonstiff ODE & $f(t,y,\dot{y}) = \dot{y}$,
+$G(t,y)=g(t,y)$\\
+\hline
+$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+\hline
+$M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+\hline
+$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$,
+$G(t,y)=g(t,y)$\\
+\hline
+$M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
+$G(t,y)=M^{-1}g(t,y)$\\
+\hline
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $f(t,y,\dot{y}) = f(t,y,\dot{y})$,
+$F(t,y)=0$; the user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher\\
+\hline
+\end{tabular}
+\end{table}
+%
+
+%
+\begin{table}
+\centering
+\caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
+IMEX Runge-Kutta schemes.  For each method we listed the reference, the
+  total number 
+  of stages/implicit stages, the order/stage-order,
+  the implicit stability properties, stiff accuracy (SA), the
+  existence of an embedded scheme, and dense output.} 
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+{\bf Name} &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+\hline
+a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
+\hline
+l2&SSP2(2,2,2)\cite{Pareschi_2005}
+&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
+\hline
+ars122&ARS122,
+\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
+\hline
+2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+prssp2&PRS(3,3,2)
+\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
+\hline
+3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
+\hline
+bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
+\hline
+ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
+\hline
+4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
+\hline
+5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
+\hline
+\end{tabular}
+\end{table}
+%
+
+ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
+W-methods. They can accommodate inexact Jacobian matrices in their
+formulation. A series of methods are available in PETSc listed in
+Table \ref{tab:IMEX:RosW:PETSc}.
+
+%
+\begin{table}
+\centering
+
+\caption{\label{tab:IMEX:RosW:PETSc}List
+of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
+  of stages and implicit stages, the scheme order and stage-order,
+  the implicit stability properties, stiff accuracy (SA), the
+  existence of an embedded scheme, dense output, the capacity to use
+  inexact Jacobian matrices (-W), and high order integration of differential
+  algebraic equations (PDAE).} 
+{\scriptsize
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
+Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
+\hline
+theta1& classical&
+1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
+\hline
+theta2& classical&
+1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
+\hline
+2m             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+\hline
+2p             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+\hline
+ra3pw          &\cite{Rang_2005}&
+3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
+\hline
+ra34pw2        &\cite{Rang_2005}&
+4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
+\hline
+rodas3         &\cite{Sandu_1997}&
+4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
+\hline
+sandu3         &\cite{Sandu_1997}&
+3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
+\hline
+assp3p3s1c &unpublished&
+3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
+\hline
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+\hline
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+\hline
+ark3       &unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
+\hline
+\end{tabular}}
+\end{table}
+%
+
 
 \subsection{Using fully implicit methods}
 Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a DM that provides a coloring so the Jacobian can be computed efficiently via finite differences.
@@ -4857,7 +5060,7 @@ event monitoring routine
 \begin{tabbing}
      TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
      ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
-     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void* eventP),void *eventP);
+     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 \end{tabbing}
 Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for 
 an event (+1 for positive zero-crossing, -1 for negative zero-crossing, and 0 for both), \trl{terminate} conveys whether 
@@ -4869,7 +5072,7 @@ The arguments to \trl{eventmonitor()} are the timestep context, current time, in
 value, and the (optional) user-provided context \trl{eventP}. 
 
 The arguments to \trl{posteventmonitor()} routine are
-the timestep context, number of events occured, indices of events occured, current time, input state $u$, and the (optional)
+the timestep context, number of events occured, indices of events occured, current time, input state $u$, a boolean flag indicating forward solve (1) or adjoint solve (0), and the (optional)
 user-provided context \trl{eventP}. 
 
 The event monitoring functionality is only available with PETSc's implicit time-stepping solvers TSTHETA, TSARKIMEX, and TSROSW.
@@ -8487,3 +8690,10 @@ for(v=Start; v \trl{<} End; v++) \{ \\
 \label{ch_index}
 \end{theindex}
 
+
+%%  LocalWords:  IMEX TSARKIMEX nonlinearities PDE APIs Jacobian DAE
+%%  LocalWords:  TSSetRHSFunction TSSetIFunction TSSetIJacobian EQ IM
+%%  LocalWords:  TSSetEquationType TSARKIMEXSetFullyImplicit PETSc CN
+%%  LocalWords:  DAEs ODEs Runge Kutta nonstiff SSP SDIRK ars ARS PRS
+%%  LocalWords:  prssp nonSDIRK bpr ROSW linearized Rosenbrock PDAE
+%%  LocalWords:  Zoltan ra pw rodas sandu assp lassp RK

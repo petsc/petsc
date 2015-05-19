@@ -99,6 +99,7 @@
       <ul>
         <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
         <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
+        <li>  Removed all threadcomm support including --with-pthreadclasses and --with-openmpclasses configure arguments </li>
       </ul>
       <h4>Configure/Build:</h4>
       <ul>
@@ -121,6 +122,7 @@
          <li>MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
          <li>MatCreateMPIAIJConcatenateSeqAIJ and MatCreateMPIBAIJConcatenateSeqBAIJ replaced with MatCreateMPIMatConcatenateSeqMat</li>
          <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
+         <li>Added support for MUMPS sequential solver in Schur complement mode</li>
       </ul>
       <h4>PC:</h4>
          Removed -pc_hypre_type euclid due to bit-rot
@@ -134,6 +136,8 @@
          Added Interface to AMS solver from HYPRE for Nedelec discretizations (-pc_hypre_type ams)
          Added Interface to ADS solver from HYPRE for Raviart-Thomas discretizations (-pc_hypre_type ads)
       <h4>KSP:</h4>
+      Removed KSPSetNullSpace() always use MatSetNullSpace()
+      Added MatSetTransposeNullSpace() to indicate the null space of the transpose operator
          Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev
          Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_
          KSPGetVecs() replaced with KSPCreateVecs() because it actually does create the Vecs that need to be destroyed
@@ -143,6 +147,9 @@
       Added SNESVIMonitorResidual() and -snes_vi_monitor_residual
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+	<li>The postevent routine set with TSSetEventMonitor() now takes an additional PetscBool argument 'forwardsolve'. The forwardsolve flag is used to distinguish between a TS forward solve (forwardsolve = 1) and adjoint solve (forwardsolve = 0).</li>
+      </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>DMCreateInjection() now returns a Mat, rather than a VecScatter</li>

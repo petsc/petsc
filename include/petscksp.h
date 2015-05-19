@@ -103,8 +103,6 @@ PETSC_EXTERN PetscErrorCode KSPGetSolution(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPGetTotalIterations(KSP,PetscInt*);
-PETSC_EXTERN PetscErrorCode KSPSetNullSpace(KSP,MatNullSpace);
-PETSC_EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
 PETSC_EXTERN PetscErrorCode KSPCreateVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 PETSC_DEPRECATED("Use KSPCreateVecs()") PETSC_STATIC_INLINE PetscErrorCode KSPGetVecs(KSP ksp,PetscInt n,Vec **x,PetscInt m,Vec **y) {return KSPCreateVecs(ksp,n,x,m,y);}
 
@@ -404,6 +402,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_PC       = -8,
               KSP_DIVERGED_NANORINF            = -9,
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
+              KSP_DIVERGED_PCSETUP_FAILED      = -11,
 
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 PETSC_EXTERN const char *const*KSPConvergedReasons;

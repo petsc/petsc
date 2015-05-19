@@ -319,7 +319,7 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
        This will require 1 more iteration of the solver than usual.
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
-.   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
+.   -ksp_test_null_space - tests the null space set with MatSetNullSpace() to see if it truly is a null space
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_monitor_cancel - cancel all previous convergene monitor routines set
 .   -ksp_monitor <optional filename> - print residual norm at each iteration
@@ -433,18 +433,17 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPSetDiagonalScaleFix(ksp,flag);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver","KSPSetNullSpace",ksp->nullsp ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver matrix","MatSetNullSpace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
     MatNullSpace nsp;
+    Mat          Bmat;
 
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)ksp),PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(ksp,nsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
-  }
-
-  /* option is actually checked in KSPSetUp(), just here so goes into help message */
-  if (ksp->nullsp) {
-    ierr = PetscOptionsName("-ksp_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)ksp),PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,NULL,&Bmat);CHKERRQ(ierr);
+    if (Bmat) {
+      ierr = MatSetNullSpace(Bmat,nsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot set nullspace, matrix has not yet been provided");
   }
 
   ierr = PetscOptionsBool("-ksp_monitor_cancel","Remove any hardwired monitor routines","KSPMonitorCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);

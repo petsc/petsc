@@ -228,8 +228,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     /* Check Stopping Condition      */
     ierr = TaoMonitor(tao,tao->niter,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas, step, &reason);CHKERRQ(ierr);
-    tao->niter++;
     if (reason != TAO_CONTINUE_ITERATING) break;
+    tao->niter++;
     tao->ksp_its=0;
 
     /*
@@ -570,20 +570,17 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->ops->destroy = TaoDestroy_BQPIP;
   tao->ops->computedual = TaoComputeDual_BQPIP;
 
-  tao->max_it=100;
-  tao->max_funcs = 500;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it=100;
+  if (!tao->max_funcs_changed) tao->max_funcs = 500;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol=1e-6;
-  tao->frtol=1e-6;
-  tao->gatol=1e-6;
-  tao->grtol=1e-6;
-  tao->catol=1e-6;
+  if (!tao->fatol_changed) tao->fatol=1e-6;
+  if (!tao->frtol_changed) tao->frtol=1e-6;
+  if (!tao->catol_changed) tao->catol=1e-6;
 #else
-  tao->fatol=1e-12;
-  tao->frtol=1e-12;
-  tao->gatol=1e-12;
-  tao->grtol=1e-12;
-  tao->catol=1e-12;
+  if (!tao->fatol_changed) tao->fatol=1e-12;
+  if (!tao->frtol_changed) tao->frtol=1e-12;
+  if (!tao->catol_changed) tao->catol=1e-12;
 #endif
 
   /* Initialize pointers and variables */

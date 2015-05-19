@@ -184,6 +184,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const 
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
@@ -991,7 +992,7 @@ PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
 /*S
-   MatFactorInfo - Data passed into the matrix factorization routines
+   MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
 $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
@@ -1479,7 +1480,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_VALUES_BATCH=129,
                MATOP_TRANSPOSE_MAT_MULT=130,
                MATOP_TRANSPOSE_MAT_MULT_SYMBO=131,
-               MATOP_TRANSPOSE_MAT_MULT_NUMER=132,
+               MATOP_TRANSPOSE_MATM_ULT_NUMER=132,
                MATOP_TRANSPOSE_COLORING_CREAT=133,
                MATOP_TRANS_COLORING_APPLY_SPT=134,
                MATOP_TRANS_COLORING_APPLY_DEN=135,
@@ -1532,6 +1533,8 @@ PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode 
 PETSC_EXTERN PetscErrorCode MatNullSpaceDestroy(MatNullSpace*);
 PETSC_EXTERN PetscErrorCode MatNullSpaceRemove(MatNullSpace,Vec);
 PETSC_EXTERN PetscErrorCode MatGetNullSpace(Mat, MatNullSpace *);
+PETSC_EXTERN PetscErrorCode MatGetTransposeNullSpace(Mat, MatNullSpace *);
+PETSC_EXTERN PetscErrorCode MatSetTransposeNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNearNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatGetNearNullSpace(Mat,MatNullSpace*);
@@ -1615,6 +1618,14 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode MatMumpsSetSchurIndices(Mat,PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatMumpsInvertSchurComplement(Mat);
+PETSC_EXTERN PetscErrorCode MatMumpsCreateSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsRestoreSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsSolveSchurComplement(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatMumpsSolveSchurComplementTranspose(Mat,Vec,Vec);
 #endif
 
 /*

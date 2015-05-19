@@ -1169,16 +1169,16 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
       ierr = PetscFEIntegrate(fe, prob, f, Nr, &cgeom[offset], &u[offset*totDim], probAux, &a[offset*totDimAux], lintegral);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       /* PetscFV  fv = (PetscFV) obj; */
-      PetscInt    foff;
-      void      (*obj_func)(const PetscScalar u[], const PetscScalar u_x[], const PetscScalar u_t[], const PetscScalar a[], const PetscScalar a_x[], const PetscScalar a_t[], const PetscReal x[], PetscScalar obj[]);
-      PetscScalar lint;
+      PetscInt       foff;
+      PetscPointFunc obj_func;
+      PetscScalar    lint;
 
       ierr = PetscDSGetObjective(prob, f, &obj_func);CHKERRQ(ierr);
       ierr = PetscDSGetFieldOffset(prob, f, &foff);CHKERRQ(ierr);
       if (obj_func) {
         for (c = 0; c < numCells; ++c) {
           /* TODO: Need full pointwise interpolation and get centroid for x argument */
-          obj_func(&u[totDim*c+foff], NULL, NULL, NULL, NULL, NULL, NULL, &lint);
+          obj_func(dim, Nf, 0, NULL, NULL, &u[totDim*c+foff], NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0, NULL, &lint);
           lintegral[f] = PetscRealPart(lint)*vol[c];
         }
       }

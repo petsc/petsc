@@ -43,6 +43,7 @@ PetscErrorCode  KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it
   for (j=0; j<=it; j++) {
     /* (vv(it+1), vv(j)) */
     ierr   = VecDot(VEC_VV(it+1),VEC_VV(j),hh);CHKERRQ(ierr);
+    KSPCheckDot(ksp,*hh);
     *hes++ = *hh;
     /* vv(it+1) <- vv(it+1) - hh[it+1][j] vv(j) */
     ierr = VecAXPY(VEC_VV(it+1),-(*hh++),VEC_VV(j));CHKERRQ(ierr);

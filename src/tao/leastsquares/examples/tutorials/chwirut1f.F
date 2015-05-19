@@ -13,7 +13,6 @@
 !  Routines: TaoSetType();
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetSeparableObjectiveRoutine();
-!  Routines: TaoSetMonitor();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
 !  Routines: TaoDestroy();

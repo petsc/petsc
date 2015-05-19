@@ -301,10 +301,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_CG;
   tao->ops->destroy = TaoDestroy_CG;
 
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1e-4;
+  if (!tao->frtol_changed) tao->frtol = 1e-4;
 
   /*  Note: nondefault values should be used for nonlinear conjugate gradient  */
   /*  method.  In particular, gtol should be less that 0.5; the value used in  */

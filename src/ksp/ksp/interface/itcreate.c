@@ -147,7 +147,6 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     }
     if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess method %D with size %D\n",ksp->guess->method,ksp->guess->maxl);CHKERRQ(ierr);}
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
-    if (ksp->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
     if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -528,7 +527,6 @@ $           set size, type, etc of mat and pmat
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
-  MatNullSpace   nullsp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -542,12 +540,6 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
-  }
-  if (Pmat) {
-    ierr = MatGetNullSpace(Pmat, &nullsp);CHKERRQ(ierr);
-    if (nullsp) {
-      ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
-    }
   }
   PetscFunctionReturn(0);
 }
@@ -890,59 +882,3 @@ PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
   ierr = PetscFunctionListAdd(&KSPList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetNullSpace"
-/*@
-  KSPSetNullSpace - Sets the null space of the operator
-
-  Logically Collective on KSP
-
-  Input Parameters:
-+  ksp - the Krylov space object
--  nullsp - the null space of the operator
-
-  Notes: If the Mat provided to KSP has a nullspace added to it with MatSetNullSpace() then
-         KSP will automatically use the MatNullSpace and you don't need to call KSPSetNullSpace().
-
-  Level: advanced
-
-.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace(), MatSetNullSpace()
-@*/
-PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (ksp->nullsp) { ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr); }
-  ksp->nullsp = nullsp;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetNullSpace"
-/*@
-  KSPGetNullSpace - Gets the null space of the operator
-
-  Not Collective
-
-  Input Parameters:
-+  ksp - the Krylov space object
--  nullsp - the null space of the operator
-
-  Level: advanced
-
-.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPSetNullSpace()
-@*/
-PetscErrorCode  KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(nullsp,2);
-  *nullsp = ksp->nullsp;
-  PetscFunctionReturn(0);
-}
-

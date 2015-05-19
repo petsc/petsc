@@ -1075,6 +1075,7 @@ PetscErrorCode  MatDestroy(Mat *A)
   }
   ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&(*A)->transnullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nearnullsp);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
@@ -1154,7 +1155,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
-      if (PetscIsInfOrNanScalar(v[i*n+j]))
+      if (mat->erroriffpe && PetscIsInfOrNanScalar(v[i*n+j]))
 #if defined(PETSC_USE_COMPLEX)
         SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g+ig at matrix entry (%D,%D)",(double)PetscRealPart(v[i*n+j]),(double)PetscImaginaryPart(v[i*n+j]),idxm[i],idxn[j]);
 #else
@@ -2215,7 +2216,7 @@ PetscErrorCode  MatMult(Mat mat,Vec x,Vec y)
   if (mat->rmap->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %D %D",mat->rmap->n,y->map->n);
 #endif
   VecLocked(y,3);
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (mat->erroriffpe) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   MatCheckPreallocated(mat,1);
 
   ierr = VecLockPush(x);CHKERRQ(ierr);
@@ -2223,7 +2224,7 @@ PetscErrorCode  MatMult(Mat mat,Vec x,Vec y)
   ierr = PetscLogEventBegin(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  if (mat->erroriffpe) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   ierr = VecLockPop(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2272,7 +2273,7 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
   if (mat->rmap->N != x->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->rmap->N,x->map->N);
   if (mat->cmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->cmap->N,y->map->N);
 #endif
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (mat->erroriffpe) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->multtranspose) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
@@ -2282,7 +2283,7 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
   ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  if (mat->erroriffpe) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -7857,8 +7858,6 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 #define __FUNCT__ "MatSetNullSpace"
 /*@
    MatSetNullSpace - attaches a null space to a matrix.
-        This null space will be removed from the resulting vector whenever
-        MatMult() is called
 
    Logically Collective on Mat and MatNullSpace
 
@@ -7869,11 +7868,23 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
    Level: advanced
 
    Notes:
-      This null space is used by solvers. Overwrites any previous null space that may have been attached
+      This null space is used by the linear solvers. Overwrites any previous null space that may have been attached
+
+      For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) you also likely should
+      call MatSetTransposeNullSpace(). This allows the linear system to be solved in a least squares sense.
+
+
+      The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
+   the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
+   Similarly R^m = direct sum n(A^T) + R(A).  Hence the linear system A x = b has a solution only if b in R(A) (or correspondingly b is orthogonal to
+   n(A^T)) and if x is a solution then x + alpha n(A) is a solution for any alpha. The minimum norm solution is orthogonal to n(A). For problems without a solution
+   the solution that minimizes the norm of the residual (the least squares solution) can be obtained by solving A x = \hat{b} where \hat{b} is b orthogonalized to the n(A^T).
+
+      Krylov solvers can produce the minimal norm solution to the least squares problem by utilizing MatNullSpaceRemove().
 
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetTransposeNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
 @*/
 PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 {
@@ -7886,8 +7897,82 @@ PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
   MatCheckPreallocated(mat,1);
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
-
   mat->nullsp = nullsp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetTransposeNullSpace"
+/*@
+   MatGetTransposeNullSpace - retrieves the null space to a matrix.
+
+   Logically Collective on Mat and MatNullSpace
+
+   Input Parameters:
++  mat - the matrix
+-  nullsp - the null space object
+
+   Level: developer
+
+   Notes:
+      This null space is used by solvers. Overwrites any previous null space that may have been attached
+
+   Concepts: null space^attaching to matrix
+
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace()
+@*/
+PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(nullsp,2);
+  *nullsp = mat->transnullsp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetTransposeNullSpace"
+/*@
+   MatSetTransposeNullSpace - attaches a null space to a matrix.
+
+   Logically Collective on Mat and MatNullSpace
+
+   Input Parameters:
++  mat - the matrix
+-  nullsp - the null space object
+
+   Level: advanced
+
+   Notes:
+      For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) this allows the linear system to be solved in a least squares sense.
+      You must also call MatSetNullSpace()
+
+
+      The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
+   the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
+   Similarly R^m = direct sum n(A^T) + R(A).  Hence the linear system A x = b has a solution only if b in R(A) (or correspondingly b is orthogonal to
+   n(A^T)) and if x is a solution then x + alpha n(A) is a solution for any alpha. The minimum norm solution is orthogonal to n(A). For problems without a solution
+   the solution that minimizes the norm of the residual (the least squares solution) can be obtained by solving A x = \hat{b} where \hat{b} is b orthogonalized to the n(A^T).
+
+      Krylov solvers can produce the minimal norm solution to the least squares problem by utilizing MatNullSpaceRemove().
+
+   Concepts: null space^attaching to matrix
+
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetNullSpace(), MatGetNullSpace(), MatNullSpaceRemove()
+@*/
+PetscErrorCode  MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
+  MatCheckPreallocated(mat,1);
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&mat->transnullsp);CHKERRQ(ierr);
+  mat->transnullsp = nullsp;
   PetscFunctionReturn(0);
 }
 
@@ -9664,8 +9749,26 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
-  if (!mat->ops->findzerodiagonals) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a find zero diagonals defined");
-  ierr = (*mat->ops->findzerodiagonals)(mat,is);CHKERRQ(ierr);
+  if (!mat->ops->findzerodiagonals) {
+    Vec                diag;
+    const PetscScalar *a;
+    PetscInt          *rows;
+    PetscInt           rStart, rEnd, r, nrow = 0;
+
+    ierr = MatCreateVecs(mat, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(mat, diag);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(mat, &rStart, &rEnd);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(diag, &a);CHKERRQ(ierr);
+    for (r = 0; r < rEnd-rStart; ++r) if (a[r] == 0.0) ++nrow;
+    ierr = PetscMalloc1(nrow, &rows);CHKERRQ(ierr);
+    nrow = 0;
+    for (r = 0; r < rEnd-rStart; ++r) if (a[r] == 0.0) rows[nrow++] = r+rStart;
+    ierr = VecRestoreArrayRead(diag, &a);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) mat), nrow, rows, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+  } else {
+    ierr = (*mat->ops->findzerodiagonals)(mat, is);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

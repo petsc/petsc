@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(A, nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
