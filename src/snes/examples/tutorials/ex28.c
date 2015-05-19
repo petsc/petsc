@@ -5,7 +5,7 @@ static const char help[] = "1D multiphysics prototype with analytic Jacobians to
  * PDE (U):
  *     -(k u_x)_x = 1 on (0,1), subject to u(0) = 0, u(1) = 1
  * Algebraic (K):
- *     exp(k-1) + k = u + 1/(1/(1+u) + 1/(1+u_x^2))
+ *     exp(k-1) + k = 1/(1/(1+u) + 1/(1+u_x^2))
  *
  * The discretization places k at staggered points, and a separate DMDA is used for each "physics".
  *
