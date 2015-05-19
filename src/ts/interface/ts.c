@@ -3121,7 +3121,7 @@ PetscErrorCode  TSStep(TS ts)
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointStep"
 /*@
-   TSAdjointStep - Steps one time step
+   TSAdjointStep - Steps one time step backward in the adjoint run
 
    Collective on TS
 
@@ -3130,16 +3130,9 @@ PetscErrorCode  TSStep(TS ts)
 
    Level: intermediate
 
-   Notes:
-   The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
-   be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
+.keywords: TS, adjoint, step
 
-   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
-   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
-
-.keywords: TS, timestep, solve
-
-.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
+.seealso: TSAdjointSetUp(), TSAdjointSolve()
 @*/
 PetscErrorCode  TSAdjointStep(TS ts)
 {
@@ -3342,7 +3335,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetSolution(), TSStep()
+.seealso: TSCreate(), TSSetCostGradients(), TSSetSolution(), TSAdjointStep()
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
@@ -3369,15 +3362,6 @@ PetscErrorCode TSAdjointSolve(TS ts)
     if (ts->event) {
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
     }
-
-#if 0 /* I don't think PostStep is needed in AdjointSolve */
-      if (ts->event->status != TSEVENT_PROCESSING) {
-        ierr = TSPostStep(ts);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = TSPostStep(ts);CHKERRQ(ierr);
-    }
-#endif
   }
   ts->solvetime = ts->ptime;
   ierr = VecViewFromOptions(ts->vecs_sensi[0], ((PetscObject) ts)->prefix, "-ts_adjoint_view_solution");CHKERRQ(ierr);
