@@ -5,7 +5,7 @@
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_HierarchPart(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning);
 #if defined(PETSC_HAVE_CHACO)
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
 #endif
@@ -50,7 +50,7 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
 
   ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current);CHKERRQ(ierr);
   ierr = MatPartitioningRegister("square",               MatPartitioningCreate_Square);CHKERRQ(ierr);
-  ierr = MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_HierarchPart);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_Hierarchical);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
   ierr = MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
