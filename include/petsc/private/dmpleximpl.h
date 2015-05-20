@@ -115,6 +115,8 @@ struct _n_Boundary {
   DMLabel     label;
   PetscBool   essential;
   PetscInt    field;
+  PetscInt    numcomps;
+  PetscInt   *comps;
   void      (*func)();
   PetscInt    numids;
   PetscInt   *ids;
