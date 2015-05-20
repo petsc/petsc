@@ -1,10 +1,9 @@
-
 #undef __FUNCT__
 #define __FUNCT__ "SolKxData5"
 /* Solution data from a Maple run */
 PetscErrorCode SolKxData5(PetscReal x[], PetscReal z[], PetscReal *kn, PetscReal *km, PetscReal *B, PetscScalar vx[41][41], PetscScalar vz[41][41], PetscScalar p[41][41], PetscScalar sxx[41][41], PetscScalar sxz[41][41], PetscScalar szz[41][41])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *B     = 100.0;
   *kn    = 100*M_PI;
   *km    = 100*M_PI;

@@ -6,8 +6,7 @@ Exact solutions provided by Mirko Velic.\n\n\n";
 #include "ex75.h"
 
 typedef struct {
-  PetscBool fem;             /* Flag for FEM tests */
-  PetscReal refinementLimit; /* The largest allowable cell volume */
+  PetscBool fem; /* Flag for FEM tests */
 } AppCtx;
 
 #undef __FUNCT__
@@ -17,12 +16,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->fem             = PETSC_FALSE;
-  options->refinementLimit = 0.0;
+  options->fem = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex75.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -498,29 +495,15 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SolKxWrapperVx"
-PetscScalar SolKxWrapperVx(const PetscReal x[])
+#define __FUNCT__ "SolKxWrapperV"
+void SolKxWrapperV(const PetscReal x[], PetscScalar v[], void *ctx)
 {
   PetscReal   B  = 100.0;
   PetscReal   kn = 100*M_PI;
   PetscReal   km = 100*M_PI;
   PetscScalar vx, vz, p, sxx, sxz, szz;
 
-  SolKxSolution(x[0], x[1], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz);
-  return vx;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SolKxWrapperVz"
-PetscScalar SolKxWrapperVz(const PetscReal x[])
-{
-  PetscReal   B  = 100.0;
-  PetscReal   kn = 100*M_PI;
-  PetscReal   km = 100*M_PI;
-  PetscScalar vx, vz, p, sxx, sxz, szz;
-
-  SolKxSolution(x[0], x[1], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz);
-  return vz;
+  SolKxSolution(x[0], x[1], kn, km, B, &v[0], &v[1], &p, &sxx, &sxz, &szz);
 }
 
 #undef __FUNCT__
@@ -576,42 +559,24 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
 PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
 {
   DM             dm;
-  Vec            U;
+  Vec            u;
   PetscViewer    viewer;
-  PetscScalar  (*funcs[3])(const PetscReal x[]) = {SolKxWrapperVx, SolKxWrapperVz, SolKxWrapperP};
+  PetscScalar  (*funcs[2])(const PetscReal x[]) = {SolKxWrapperV, SolKxWrapperP};
+  PetscReal      discError;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
   /* Create DM */
   ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, &dm);CHKERRQ(ierr);
-  {
-    DM        refinedMesh     = NULL;
-    PetscReal refinementLimit = ctx->refinementLimit;
-
-    /* Refine mesh using a volume constraint */
-    ierr = DMPlexSetRefinementLimit(dm, refinementLimit);CHKERRQ(ierr);
-    ierr = DMRefine(dm, comm, &refinedMesh);CHKERRQ(ierr);
-    if (refinedMesh) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = refinedMesh;
-    }
-  }
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   /* Project solution into FE space */
-  ierr = DMGetGlobalVector(dm, &U);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, 3, funcs, INSERT_VALUES, U);CHKERRQ(ierr);
-  ierr = VecView(U, viewer);CHKERRQ(ierr);
-  /* View solution */
-  ierr = PetscViewerCreate(PetscObjectComm((PetscObject) dm), &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, "ex75_sol.vtk");CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-  ierr = PetscObjectReference((PetscObject) U);CHKERRQ(ierr);  /* Needed because viewer destroys the Vec */
-  ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) U);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2Diff(dm, funcs, NULL, u, &discError);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
   /* Cleanup */
-  ierr = DMRestoreGlobalVector(dm, &U);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
