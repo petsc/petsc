@@ -4765,7 +4765,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       PetscInt n_vertices;
 
       ierr = ISGetLocalSize(sub_schurs->is_vertices,&n_vertices);CHKERRQ(ierr);
-      reuse_solvers = !n_vertices;
+      reuse_solvers = (PetscBool)!n_vertices;
     }
     ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers);CHKERRQ(ierr);
   }
