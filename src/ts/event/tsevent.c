@@ -146,7 +146,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
     ierr = PetscMalloc1(nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
   }
 
-  PetscOptionsBegin(((PetscObject)ts)->comm,"","TS Event options","");
+  ierr = PetscOptionsBegin(((PetscObject)ts)->comm,"","TS Event options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_event_tol","Scalar event tolerance for zero crossing check","",tol,&tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
