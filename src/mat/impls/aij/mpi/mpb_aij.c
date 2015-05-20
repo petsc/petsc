@@ -2,10 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetMultiProcBlock_MPIAIJ"
-/*
-    Developers Note: This is used directly by some preconditioners, hence is PETSC_EXTERN
-*/
-PETSC_EXTERN PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
+PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)mat->data;
@@ -23,11 +20,9 @@ PETSC_EXTERN PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subCo
     ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
     ierr = MatSetType(*subMat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatSetSizes(*subMat,mat->rmap->n,mat->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(*subMat,mat->rmap->bs,mat->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(*subMat,mat,mat);CHKERRQ(ierr);
 
     /* need to setup rmap and cmap before Preallocation */
-    ierr = PetscLayoutSetBlockSize((*subMat)->rmap,mat->rmap->bs);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize((*subMat)->cmap,mat->cmap->bs);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp((*subMat)->rmap);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp((*subMat)->cmap);CHKERRQ(ierr);
   }
@@ -35,14 +30,13 @@ PETSC_EXTERN PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subCo
   /* create a map of comm_rank from subComm to comm - should commRankMap and garrayCMap be kept for reused? */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
-  ierr = PetscMalloc(subCommSize*sizeof(PetscMPIInt),&commRankMap);CHKERRQ(ierr);
+  ierr = PetscMalloc1(subCommSize,&commRankMap);CHKERRQ(ierr);
   ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);
 
   /* Traverse garray and identify column indices [of offdiag mat] that
    should be discarded. For the ones not discarded, store the newCol+1
    value in garrayCMap */
-  ierr = PetscMalloc(aij->B->cmap->n*sizeof(PetscInt),&garrayCMap);CHKERRQ(ierr);
-  ierr = PetscMemzero(garrayCMap,aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(aij->B->cmap->n,&garrayCMap);CHKERRQ(ierr);
   for (i=0; i<aij->B->cmap->n; i++) {
     col = aij->garray[i];
     for (subRank=0; subRank<subCommSize; subRank++) {
@@ -56,8 +50,7 @@ PETSC_EXTERN PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subCo
 
   if (scall == MAT_INITIAL_MATRIX) {
     /* Now compute preallocation for the offdiag mat */
-    ierr = PetscMalloc(aij->B->rmap->n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(nnz,aij->B->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(aij->B->rmap->n,&nnz);CHKERRQ(ierr);
     for (i=0; i<aij->B->rmap->n; i++) {
       for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
         if (garrayCMap[aijB->j[j]]) nnz[i]++;

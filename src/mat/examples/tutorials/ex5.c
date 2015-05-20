@@ -53,15 +53,15 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
 
   /* error checking on files */
   if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
-  ierr = MPI_Allreduce(header+2,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(header+2,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (N != size*header[2]) SETERRQ(PETSC_COMM_SELF,1,"All files must have matrices with the same number of total columns");
 
   /* number of rows in matrix is sum of rows in all files */
   m    = header[1]; N = header[2];
-  ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   /* determine rows of matrices owned by each process */
-  ierr       = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(size+1,&rowners);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
@@ -83,8 +83,8 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   }
 
   /* read in local row lengths */
-  ierr = PetscMalloc(m*sizeof(PetscInt),&ourlens);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&offlens);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&ourlens);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&offlens);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd1,ourlens,m,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd2,ourlens,m,PETSC_INT);CHKERRQ(ierr);
 
@@ -95,7 +95,7 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   }
 
   /* allocate enough memory to hold a single row of column indices */
-  ierr = PetscMalloc(maxnz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxnz,&mycols);CHKERRQ(ierr);
 
   /* loop over local rows, determining number of off diagonal entries */
   ierr = PetscMemzero(offlens,m*sizeof(PetscInt));CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = PetscFree(offlens);CHKERRQ(ierr);
 
   /* allocate enough memory to hold a single row of matrix values */
-  ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxnz,&vals);CHKERRQ(ierr);
 
   /* read in my part of the matrix numerical values and columns 1 row at a time and put in matrix  */
   jj = rstart;

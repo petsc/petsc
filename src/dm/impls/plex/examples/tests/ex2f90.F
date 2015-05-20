@@ -1,7 +1,7 @@
       program main
       implicit none
 !
-#include <finclude/petsc.h90>
+#include <petsc/finclude/petsc.h90>
 !
       DM dm
       PetscInt, target, dimension(3) :: EC
@@ -33,7 +33,7 @@
       call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
       CHKERRQ(ierr)
       dim = 2
-      call DMPlexSetDimension(dm, dim, ierr)
+      call DMSetDimension(dm, dim, ierr)
       CHKERRQ(ierr)
 
 ! Make Doublet Mesh from Fig 2 of Flexible Representation of Computational Meshes,

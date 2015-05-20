@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPointSetSize"
@@ -35,7 +35,7 @@ PetscErrorCode  PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Bad size %G, should be between 0 and 1",width);
+  if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",(double)width);
   if (draw->ops->pointsetsize) {
     ierr = (*draw->ops->pointsetsize)(draw,width);CHKERRQ(ierr);
   }

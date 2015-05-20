@@ -2,9 +2,9 @@ static char help[] = "Tests coarsening with DM.\n";
 
 
 
-#include "petscsys.h"
-#include "petscvec.h"
-#include "petscdmda.h"
+#include <petscsys.h>
+#include <petscvec.h>
+#include <petscdmda.h>
 
 
 #undef __FUNCT__
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for complex numbers");
 #else
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,1024,1024,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&daf);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,1024,1024,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&daf);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daf,&x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   ierr = DMCreateInterpolation(daf3,daf4,&interp_m4,NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer_in);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer_in,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer_in,values,1048576,NULL,PETSC_DOUBLE);CHKERRQ(ierr);
   ierr = MatRestrict(interp_p1,x,yp1);
   ierr = VecPointwiseMult(yp1,yp1,scaling_p1);CHKERRQ(ierr);
   ierr = MatRestrict(interp_p2,yp1,yp2);

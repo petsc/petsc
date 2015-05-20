@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/matimpl.h>
 
 /* Declare these pointer types instead of void* for clarity, but do not include petscts.h so that this code does have an actual reverse dependency. */
 typedef struct _p_TS *TS;
@@ -42,7 +42,7 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDCo
 
 PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  (*fd)->ftn_func_pointer = (void*) f;
+  (*fd)->ftn_func_pointer =  (void (*)(void)) f;
   (*fd)->ftn_func_cntx    = ctx;
 
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionts,*fd);
@@ -50,7 +50,7 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,vo
 
 PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  (*fd)->ftn_func_pointer = (void*) f;
+  (*fd)->ftn_func_pointer = (void (*)(void)) f;
   (*fd)->ftn_func_cntx    = ctx;
 
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,*fd);

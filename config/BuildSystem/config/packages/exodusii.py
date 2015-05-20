@@ -36,7 +36,6 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
 
   def Install(self):
-    self.logPrintBox('Compiling ExodusII; this may take several minutes')
     import os
     import shutil
     configOpts     = []
@@ -55,31 +54,40 @@ class Configure(config.package.Package):
       configOpts.append('F77OPTIONS="'+self.setCompilers.getCompilerFlags()+'"')
       self.setCompilers.popLanguage()
 
-    mkfile = 'make.inc'
-    g = open(os.path.join(self.packageDir, mkfile), 'w')
-    self.framework.log.write(repr(dir(self.setCompilers)))
+    self.log.write(repr(dir(self.setCompilers)))
 
     args = ' '.join(configOpts)
-    fd = file(os.path.join(self.packageDir,'exodusii'), 'w')
+    cfgfile = 'exodusii'
+    fd = file(os.path.join(self.packageDir,cfgfile), 'w')
     fd.write(args)
     fd.close()
 
-    if self.installNeeded('exodusii'):
+    if self.installNeeded(cfgfile):
       cincludes  = ['exodusII.h','exodusII_cfg.h','exodusII_int.h','exodusII_par.h']
       fincludes  = ['exodusII.inc','exodusII_int.inc']
       try:
         self.logPrintBox('Compiling ExodusII; this may take several minutes')
         builddir = os.path.join(self.packageDir, 'exodus')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexodus.a '+args, timeout=2500, log = self.framework.log)
-        shutil.copy(os.path.join(builddir,'libexodus.a'),os.path.join(self.installDir,'lib'))
-        for i in cincludes:
-          shutil.copy(os.path.join(builddir,'cbind','include',i),os.path.join(self.installDir,'include'))
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean libexodus.a '+args, timeout=2500, log = self.log)
+        if self.installSudo:
+          self.installDirProvider.printSudoPasswordMessage()
+          output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib')+' && '+self.installSudo+'cp -rf '+os.path.join(builddir,'libexodus.a')+' '+os.path.join(self.installDir,'lib'), timeout=6000, log = self.log)
+          output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include')+' && '+self.installSudo+'cp -rf '+os.path.join(builddir,'cbind','include','*.h')+' '+os.path.join(self.installDir,'include'), timeout=6000, log = self.log)
+        else:
+          shutil.copy(os.path.join(builddir,'libexodus.a'),os.path.join(self.installDir,'lib'))
+          for i in cincludes:
+            shutil.copy(os.path.join(builddir,'cbind','include',i),os.path.join(self.installDir,'include'))
         if hasattr(self.setCompilers, 'FC'):
-          output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexoIIv2for.a '+args, timeout=2500, log = self.framework.log)
-          shutil.copy(os.path.join(builddir,'libexoIIv2for.a'),os.path.join(self.installDir,'lib'))
-          for i in fincludes:
-            shutil.copy(os.path.join(builddir,'forbind','include',i),os.path.join(self.installDir,'include'))
+          output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexoIIv2for.a '+args, timeout=2500, log = self.log)
+          if self.installSudo:
+            output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'cp -rf '+os.path.join(builddir,'libexoIIv2for.a')+' '+os.path.join(self.installDir,'lib'), timeout=6000, log = self.log)
+            output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'cp -rf '+os.path.join(builddir,'forbind','include','*.inc')+' '+os.path.join(self.installDir,'include'), timeout=6000, log = self.log)
+          else:
+            shutil.copy(os.path.join(builddir,'libexoIIv2for.a'),os.path.join(self.installDir,'lib'))
+            for i in fincludes:
+              shutil.copy(os.path.join(builddir,'forbind','include',i),os.path.join(self.installDir,'include'))
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean', timeout=250, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ExodusII: '+str(e))
-      self.postInstall(output+err, mkfile)
+      self.postInstall(output+err, cfgfile)
     return self.installDir

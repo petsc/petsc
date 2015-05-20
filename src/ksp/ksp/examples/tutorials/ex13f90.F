@@ -22,11 +22,11 @@
 !     petscksp.h    - Krylov subspace methods
 !     petscpc.h     - preconditioners
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
 
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
@@ -67,7 +67,7 @@
       PetscScalar,ALLOCATABLE :: solution(:,:)
       PetscScalar,ALLOCATABLE :: rho(:,:)
 
-      double precision hx2,hy2
+      PetscReal hx2,hy2
       common /param/ hx2,hy2
 
       tmax = 2
@@ -146,9 +146,8 @@
          cnorm = 0.0
          do 90 j=1,n
             do 80 i=1,m
-               cnorm = cnorm +                                           &
-     &    PetscConj(solution(i,j)-userx(i,j))*                                            &
-     &                             (solution(i,j)-userx(i,j))
+              cnorm = cnorm +                                              &
+     &    PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
          enorm =  PetscRealPart(cnorm*hx*hy)
@@ -170,18 +169,18 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
 
       PetscInt m,n
       PetscErrorCode ierr
       PetscFortranAddr userctx(*)
 
       common /param/ hx2,hy2
-      double precision hx2,hy2
+      PetscReal hx2,hy2
 
 !  Local variable declararions
       Mat     A
@@ -239,11 +238,11 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
 
       PetscErrorCode ierr
       PetscFortranAddr userctx(*)
@@ -251,7 +250,7 @@
 
 
       common /param/ hx2,hy2
-      double precision hx2,hy2
+      PetscReal hx2,hy2
 
       PC   pc
       KSP ksp
@@ -323,7 +322,7 @@
 !     will have the same nonzero pattern here, we indicate this so the
 !     linear solvers can take advantage of this.
 !
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
 
 !
 !     Set linear solver defaults for this problem (optional).
@@ -374,11 +373,11 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
 
       PetscErrorCode ierr
       PetscFortranAddr userctx(*)

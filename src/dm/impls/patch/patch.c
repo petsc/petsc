@@ -1,4 +1,4 @@
-#include <petsc-private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
+#include <petsc/private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 #include <petscsf.h>
 
@@ -69,10 +69,10 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
 
   if (commz != MPI_COMM_NULL) {
     ierr = DMDACreate(commz, dmz);CHKERRQ(ierr);
-    ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(*dmz, dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(*dmz, rM, rN, rP);CHKERRQ(ierr);
     ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(*dmz, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
     ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
     ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
     ierr = DMDASetStencilWidth(*dmz, 0);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
     exr  = PetscMin(sxb+mxb, upper.i - blower.i);
     eyr  = PetscMin(syb+myb, upper.j - blower.j);
     ezr  = PetscMin(szb+mzb, upper.k - blower.k);
-    ierr = PetscMalloc2(rM*rN*rP,PetscInt,&localPoints,rM*rN*rP,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc2(rM*rN*rP,&localPoints,rM*rN*rP,&remotePoints);CHKERRQ(ierr);
   } else {
     sxr = syr = szr = exr = eyr = ezr = sxb = syb = szb = mxb = myb = mzb = 0;
   }
@@ -265,8 +265,8 @@ PetscErrorCode DMPatchSolve(DM dm)
         /* Scatter Rzoom_restricted -> Rcoarse_restricted */
         if (XZ)  {ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);}
         ierr = VecGetArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPIU_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPIU_SUM);CHKERRQ(ierr);
         ierr = VecRestoreArray(XC, &xcarray);CHKERRQ(ierr);
         if (XZ)  {ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);}
         if (dmz) {ierr = DMRestoreGlobalVector(dmz, &XZ);CHKERRQ(ierr);}
@@ -384,10 +384,7 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
 #define __FUNCT__ "DMCreateSubDM_Patch"
 PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

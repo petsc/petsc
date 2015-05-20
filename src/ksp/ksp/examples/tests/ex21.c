@@ -17,6 +17,7 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&r,&rend);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
 
@@ -32,11 +33,11 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
       cols1[]           = {r+1,r+2,(r+4+1)%M,(r+M-4+1)%M},
       cols2[]           = {r,r+2,(r+4+2)%M},
       cols3[]           = {r+1,r+3,(r+4+3)%M};
-    PetscScalar RR      = 1000*rank,
-                vals0[] = {RR+1,RR+2,RR+3,RR+4,RR+5},
-                vals1[] = {RR+6,RR+7,RR+8,RR+9},
-                vals2[] = {RR+10,RR+11,RR+12},
-                vals3[] = {RR+13,RR+14,RR+15};
+    PetscScalar RR      = 1000.*rank,
+                vals0[] = {RR+1.,RR+2.,RR+3.,RR+4.,RR+5.},
+                vals1[] = {RR+6.,RR+7.,RR+8.,RR+9.},
+                vals2[] = {RR+10.,RR+11.,RR+12.},
+                vals3[] = {RR+13.,RR+14.,RR+15.};
     ierr = MatSetValues(A,1,&rows[0],5,cols0,vals0,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&rows[1],4,cols1,vals1,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&rows[2],3,cols2,vals2,INSERT_VALUES);CHKERRQ(ierr);
@@ -50,14 +51,14 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 
 #undef __FUNCT__
 #define __FUNCT__ "Destroy"
-PetscErrorCode Destroy(Mat A,IS is0,IS is1)
+PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&is0);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = ISDestroy(is0);CHKERRQ(ierr);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,7 +67,7 @@ PetscErrorCode Destroy(Mat A,IS is0,IS is1)
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;
-  Mat            A,S,Sexplicit;
+  Mat            A,S = NULL,Sexplicit = NULL;
   IS             is0,is1;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
@@ -76,35 +77,35 @@ int main(int argc,char *argv[])
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(is0,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(is1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,MAT_SCHUR_COMPLEMENT_AINV_LUMP,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
   ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
   /* And the other */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,MAT_SCHUR_COMPLEMENT_AINV_LUMP,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
   ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
   /* This time just the preconditioner */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_SCHUR_COMPLEMENT_AINV_LUMP,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nPreconditioning Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Modify and refresh */
   ierr = MatShift(A,1.);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_SCHUR_COMPLEMENT_AINV_LUMP,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
 
   ierr = PetscFinalize();

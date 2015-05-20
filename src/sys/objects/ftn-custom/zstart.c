@@ -11,15 +11,11 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#define PETSC_DESIRE_COMPLEX
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
-#include <petscthreadcomm.h>
-
-extern PetscBool PetscHMPIWorker;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
@@ -130,7 +126,8 @@ extern MPI_Op PetscMaxSum_Op;
 
 PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm,PetscMPIInt,void*,void*);
 
 extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
@@ -138,8 +135,8 @@ extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode  PetscLogBegin_Private(void);
 #endif
-extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
+extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
 extern int  PetscGlobalArgc;
 extern char **PetscGlobalArgs;
 
@@ -172,7 +169,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
-  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,0,(void**)argv);CHKERRQ(ierr);
+  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,(void**)argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {
@@ -211,13 +208,16 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;
 }
 
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+extern PetscFPT PetscFPTData;
+#endif
+
 /* -----------------------------------------------------------------------------------------------*/
 
-extern MPI_Op PetscADMax_Op;
-extern MPI_Op PetscADMin_Op;
-PETSC_EXTERN void MPIAPI PetscADMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-PETSC_EXTERN void MPIAPI PetscADMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
+extern PetscErrorCode  PetscInitializeSAWs(const char[]);
+#endif
 
 /*
     petscinitialize - Version called from Fortran.
@@ -236,12 +236,13 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   int         j;
 #endif
 #endif
+#if defined(PETSC_HAVE_CUDA)
+  PetscBool   flg2;
+#endif
   int         flag;
   PetscMPIInt size;
   char        *t1,name[256],hostname[64];
   PetscMPIInt f_petsc_comm_world;
-  PetscInt    nodesize;
-  PetscBool   flg;
 
   *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
@@ -249,6 +250,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   /* this must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
+
+  /* on Windows - set printf to default to printing 2 digit exponents */
+#if defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
+  _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
 
   *ierr = PetscOptionsCreate();
   if (*ierr) return;
@@ -375,15 +381,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = MPI_Type_commit(&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
 #endif
-  *ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
-  *ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
 
   /*
@@ -400,6 +402,12 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
   *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
+  *ierr = PetscCitationsInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
+#if defined(PETSC_HAVE_SAWS)
+  *ierr = PetscInitializeSAWs(NULL);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing SAWs\n");return;}
+#endif
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogBegin_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
@@ -421,39 +429,20 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-  *ierr = PetscThreadCommInitializePackage();
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
-
 #if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates petscstack_key if needed */
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
 
-  *ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);
-  if (flg) {
-#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    *ierr = PetscHMPISpawn((PetscMPIInt) nodesize); /* worker nodes never return from here; they go directly to PetscEnd() */
-    if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIS-pawn()\n");return;}
-#else
-    *ierr = PETSC_ERR_SUP;
-    (*PetscErrorPrintf)("PetscInitialize: PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
-    return;
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  *ierr = PetscFPTCreate(10000);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
 #endif
-  } else {
-    *ierr = PetscOptionsGetInt(NULL,"-hmpi_merge_size",&nodesize,&flg);
-    if (flg) {
-      *ierr = PetscHMPIMerge((PetscMPIInt) nodesize,NULL,NULL);
-      if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIMerge()\n");return;}
-      if (PetscHMPIWorker) { /* if worker then never enter user code */
-        PetscInitializeCalled = PETSC_TRUE;
-        *ierr = PetscEnd();
-      }
-    }
-  }
 
 #if defined(PETSC_HAVE_CUDA)
-  cublasInit();
+  flg2  = PETSC_TRUE;
+  *ierr = PetscOptionsGetBool(NULL,"-cublas",&flg2,NULL);
+  if (flg2) cublasInit();
 #endif
 }
 
@@ -464,7 +453,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   standard_arithmetic();
 #endif
   /* was malloced with PetscMallocAlign() so free the same way */
-  *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");return;}
+  *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");return;}
 
   *ierr = PetscFinalize();
 }

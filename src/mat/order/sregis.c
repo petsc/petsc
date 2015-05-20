@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>     /*I       "petscmat.h"   I*/
+#include <petsc/private/matimpl.h>     /*I       "petscmat.h"   I*/
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_ND(Mat,MatOrderingType,IS*,IS*);
@@ -8,7 +8,9 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
-#if defined(PETSC_HAVE_UMFPACK)
+PETSC_EXTERN PetscErrorCode MatGetOrdering_WBM(Mat,MatOrderingType,IS*,IS*);
+PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat,MatOrderingType,IS*,IS*);
+#if defined(PETSC_HAVE_SUITESPARSE)
 PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
 #endif
 
@@ -41,6 +43,7 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural);CHKERRQ(ierr);
@@ -49,7 +52,11 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   ierr = MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM);CHKERRQ(ierr);
   ierr = MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD);CHKERRQ(ierr);
   ierr = MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_UMFPACK)
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+  ierr = MatOrderingRegister(MATORDERINGWBM,      MatGetOrdering_WBM);CHKERRQ(ierr);
+#endif
+  ierr = MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUITESPARSE)
   ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

@@ -36,7 +36,7 @@
 !
 
       module f90module
-#include <finclude/petscdmdef.h>
+#include <petsc/finclude/petscdmdef.h>
       use petscdmdef
       type userctx
         type(DM) da
@@ -44,7 +44,7 @@
         PetscInt ys,ye,ym,gys,gye,gym
         PetscInt mx,my
         PetscMPIInt rank
-        double precision lambda
+        PetscReal lambda
       end type userctx
 
       contains
@@ -70,7 +70,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormFunction(snesIn,X,F,user,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
 
 !  Input/output variables:
@@ -126,7 +126,7 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
         use petscsnes
         use f90module
           type(SNES)    snesIn
@@ -137,7 +137,7 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
         use petscsnes
         use f90module
           type(SNES)     snesIn
@@ -148,8 +148,8 @@
       end module f90moduleinterfaces
 
       program main
-#include <finclude/petscdmdef.h>
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscdm
       use petscsnes
       use f90module
@@ -173,7 +173,7 @@
       PetscInt         its
       PetscBool        flg,matrix_free
       PetscInt         ione,nfour
-      double precision lambda_max,lambda_min
+      PetscReal lambda_max,lambda_min
       type(userctx)    user
       type(userctx), pointer:: puser
 
@@ -215,7 +215,7 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,                      &
+     &     DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,                          &
      &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
      &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr)
       call DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
@@ -287,7 +287,8 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (.not. matrix_free) then
-        call DMCreateMatrix(user%da,MATAIJ,J,ierr)
+        call DMSetMatType(user%da,MATAIJ,ierr)
+        call DMCreateMatrix(user%da,J,ierr)
         call SNESSetJacobian(mysnes,J,J,FormJacobian,user,ierr)
       endif
 
@@ -352,7 +353,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,X,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use f90module
       use f90moduleinterfaces
@@ -364,7 +365,6 @@
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
-      type(Vec)      localX
 
       ierr = 0
       call SNESGetApplicationContext(mysnes,puser,ierr)
@@ -376,19 +376,15 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call DMGetLocalVector(puser%da,localX,ierr)
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(X,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
       call InitialGuessLocal(puser,lx_v,ierr)
 
 !  Restore vector
-      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr)
 
 !  Insert values into global vector
-      call DMLocalToGlobalBegin(puser%da,localX,INSERT_VALUES,X,ierr)
-      call DMLocalToGlobalEnd(puser%da,localX,INSERT_VALUES,X,ierr)
-      call DMRestoreLocalVector(puser%da,localX,ierr)
 
       return
       end
@@ -409,13 +405,13 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(user,x,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
       use f90module
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,                                 &
-     &              user%gys:user%gye)
+      PetscScalar  x(user%xs:user%xe,                                             &
+     &              user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:
@@ -463,7 +459,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionLocal(x,f,user,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
       use f90module
 !  Input/output variables:
@@ -533,7 +529,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndicesF90()).
+!  global numbering with the "ltog" mapping 
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -541,28 +537,25 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
+!        - Use DMGetLocalToGlobalMapping() then
+!          ISLocalToGlobalMappingGetIndicesF90() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobian(mysnes,X,jac,jac_prec,flag,user,ierr)
-#include <finclude/petscsnesdef.h>
+      subroutine FormJacobian(mysnes,X,jac,jac_prec,user,ierr)
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use f90module
 !  Input/output variables:
       type(SNES)     mysnes
       type(Vec)      X
       type(Mat)      jac,jac_prec
-      MatStructure   flag
       type(userctx)  user
       PetscErrorCode ierr
 
@@ -602,24 +595,6 @@
         call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
 !      endif
 
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all nonlinear iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
-
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
@@ -647,7 +622,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndicesF90()).
+!  global numbering with the "ltog" mapping 
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -655,21 +630,16 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
-!        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
-#include <finclude/petscmatdef.h>
+#include <petsc/finclude/petscmatdef.h>
       use petscmat
       use f90module
 !  Input/output variables:

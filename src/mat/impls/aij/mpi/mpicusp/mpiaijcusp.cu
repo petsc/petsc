@@ -1,17 +1,17 @@
-#include "petscconf.h"
+#define PETSC_SKIP_COMPLEX
+
+#include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 PETSC_CUDA_EXTERN_C_END
-#include "mpicuspmatimpl.h"
+#include <../src/mat/impls/aij/mpi/mpicusp/mpicuspmatimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
-#if defined(PETSC_HAVE_TXPETSCGPU)
   Mat_MPIAIJCUSP * cuspStruct = (Mat_MPIAIJCUSP*)b->spptr;
-#endif
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -33,40 +33,42 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJCUSP);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(b->B,MATSEQAIJCUSP);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  ierr=MatCUSPSetFormat(b->A,MAT_CUSP_MULT,cuspStruct->diagGPUMatFormat);CHKERRQ(ierr);
-  ierr=MatCUSPSetFormat(b->B,MAT_CUSP_MULT,cuspStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
-#endif
+  ierr = MatCUSPSetFormat(b->A,MAT_CUSP_MULT,cuspStruct->diagGPUMatFormat);CHKERRQ(ierr);
+  ierr = MatCUSPSetFormat(b->B,MAT_CUSP_MULT,cuspStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
+  ierr = MatCUSPSetStream(b->A,cuspStruct->stream);CHKERRQ(ierr);
+  ierr = MatCUSPSetStream(b->B,cuspStruct->stream);CHKERRQ(ierr);
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_MPIAIJCUSP"
-PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_MPIAIJCUSP"
+PetscErrorCode  MatCreateVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
+  PetscInt rbs,cbs;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
   if (right) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
     ierr = VecSetType(*right,VECCUSP);CHKERRQ(ierr);
     ierr = VecSetLayout(*right,mat->cmap);CHKERRQ(ierr);
   }
   if (left) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
     ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
     ierr = VecSetType(*left,VECCUSP);CHKERRQ(ierr);
     ierr = VecSetLayout(*left,mat->rmap);CHKERRQ(ierr);
   }
@@ -74,7 +76,6 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 }
 
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIAIJCUSP"
 PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
@@ -105,11 +106,8 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
   ierr = VecScatterFinalizeForGPU(a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPSetFormat_MPIAIJCUSP"
@@ -138,28 +136,30 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
-PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
 {
   MatCUSPStorageFormat format;
   PetscErrorCode       ierr;
   PetscBool            flg;
+  Mat_MPIAIJ           *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSP       *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("MPIAIJCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusp_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusp gpu matrices for SpMV",
-                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspStruct->diagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_DIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusp_mult_offdiag_storage_format","sets storage format of the off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
-                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspStruct->offdiagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_OFFDIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of the diagonal and off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
-                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspStruct->diagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
     }
@@ -167,27 +167,26 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJCUSP"
 PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
-#if defined(PETSC_HAVE_TXPETSCGPU)
   Mat_MPIAIJ     *a           = (Mat_MPIAIJ*)A->data;
-  Mat_MPIAIJCUSP * cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
-#endif
+  Mat_MPIAIJCUSP *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
+  cudaError_t    err=cudaSuccess;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_TXPETSCGPU)
   try {
+    err = cudaStreamDestroy(cuspStruct->stream);
+    if (err!=cudaSuccess)
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
     delete cuspStruct;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", ex);
   }
   cuspStruct = 0;
-#endif
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -197,31 +196,31 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
-#if defined(PETSC_HAVE_TXPETSCGPU)
   Mat_MPIAIJ     *a;
   Mat_MPIAIJCUSP * cuspStruct;
-#endif
+  cudaError_t    err=cudaSuccess;
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
-  A->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
+  A->ops->getvecs        = MatCreateVecs_MPIAIJCUSP;
   A->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
   a          = (Mat_MPIAIJ*)A->data;
   a->spptr   = new Mat_MPIAIJCUSP;
   cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   cuspStruct->diagGPUMatFormat    = MAT_CUSP_CSR;
   cuspStruct->offdiagGPUMatFormat = MAT_CUSP_CSR;
+  err = cudaStreamCreate(&(cuspStruct->stream));
+  if (err!=cudaSuccess)
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
 
   A->ops->mult           = MatMult_MPIAIJCUSP;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPSetFormat_C", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
-#endif
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -301,8 +300,7 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format.
    All matrix calculations are performed using the CUSP library. DIA and ELL
-   formats are ONLY available when using the 'txpetscgpu' package. Use --download-txpetscgpu
-   to build/install PETSc to use different GPU storage formats with CUSP matrix types.
+   formats are also available
 
    This matrix type is identical to MATSEQAIJCUSP when constructed with a single process communicator,
    and MATMPIAIJCUSP otherwise.  As a result, for single process communicators,
@@ -312,9 +310,9 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
 
    Options Database Keys:
 +  -mat_type mpiaijcusp - sets the matrix type to "mpiaijcusp" during a call to MatSetFromOptions()
-.  -mat_cusp_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack) which are only available with 'txpetscgpu' package. Moreover this option is only available with the 'txpetscgpu' package.
-.  -mat_cusp_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack) which are only available with 'txpetscgpu' package. Moreover this option is only available with the 'txpetscgpu' package.
--  -mat_cusp_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack) which are only available with 'txpetscgpu' package. Moreover this option is only available with the 'txpetscgpu' package.
+.  -mat_cusp_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack).
+.  -mat_cusp_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack).
+-  -mat_cusp_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack).
 
   Level: beginner
 

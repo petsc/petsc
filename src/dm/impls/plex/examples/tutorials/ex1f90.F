@@ -1,11 +1,12 @@
       program DMPlexTestField
       implicit none
-#include "finclude/petsc.h90"
+#include "petsc/finclude/petsc.h90"
       DM :: dm
+      DMLabel :: label
       Vec :: u
       PetscViewer :: viewer
       PetscSection :: section
-      PetscInt :: dim,numFields,numBC,i
+      PetscInt :: dim,numFields,numBC,i,val
       PetscInt, target, dimension(3) ::                                 &
      &     numComp
       PetscInt, pointer :: pNumComp(:)
@@ -50,6 +51,19 @@
       pNumDof => numDof
 !     Setup boundary conditions
       numBC = 1
+!     Test label retrieval
+      call DMPlexGetLabel(dm, "marker", label, ierr)
+      CHKERRQ(ierr)
+      call DMLabelGetValue(label, 0, val, ierr)
+      CHKERRQ(ierr)
+      if (val .ne. -1) then
+        CHKERRQ(1)
+      endif
+      call DMLabelGetValue(label, 8, val, ierr)
+      CHKERRQ(ierr)
+      if (val .ne. 1) then
+        CHKERRQ(1)
+      endif
 !     Prescribe a Dirichlet condition on u on the boundary
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
@@ -60,8 +74,8 @@
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
       call DMPlexCreateSection(dm, dim, numFields, pNumComp,
-     $     pNumDof, numBC, pBcField, pBcPointIS, section,
-     $     ierr)
+     $     pNumDof, numBC, pBcField, pBcPointIS, PETSC_NULL_OBJECT,
+     $     section, ierr)
       CHKERRQ(ierr)
       call ISDestroy(bcPointIS(1), ierr)
       CHKERRQ(ierr)

@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
+#include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToAll"
@@ -101,8 +101,8 @@ $        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
 $        // destroy scatter context and local vector when no longer needed
-$        VecScatterDestroy(ctx);
-$        VecDestroy(vout);
+$        VecScatterDestroy(&ctx);
+$        VecDestroy(&vout);
 
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 

@@ -6,7 +6,7 @@
 # but it can also be run as a stand-alone program. The library paths and
 # flags should have been written to
 #
-#     $PETSC_DIR/$PETSC_ARCH/conf/PETScConfig.cmake
+#     $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/PETScConfig.cmake
 #
 # by configure before running this script.
 
@@ -37,7 +37,7 @@ class PETScMaker(script.Script):
 
    if not argDB:
      argDB = RDict.RDict(None, None, 0, 0, readonly = True)
-     argDB.saveFilename = os.path.join(petscdir,petscarch,'conf','RDict.db')
+     argDB.saveFilename = os.path.join(petscdir,petscarch,'lib','petsc','conf','RDict.db')
      argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.framework = framework
@@ -49,21 +49,18 @@ class PETScMaker(script.Script):
    self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
    self.setCompilers  = self.framework.require('config.setCompilers',         None)
-   self.arch          = self.framework.require('PETSc.utilities.arch',        None)
-   self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
-   self.languages     = self.framework.require('PETSc.utilities.languages',   None)
-   self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
-   self.make          = self.framework.require('config.programs',        None)
-   self.cmake         = self.framework.require('PETSc.packages.cmake',       None)
-   self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
+   self.arch          = self.framework.require('PETSc.options.arch',        None)
+   self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
+   self.languages     = self.framework.require('PETSc.options.languages',   None)
+   self.debugging     = self.framework.require('PETSc.options.debugging',   None)
+   self.cmake         = self.framework.require('config.packages.cmake',       None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
    self.headers       = self.framework.require('config.headers',              None)
    self.functions     = self.framework.require('config.functions',            None)
    self.libraries     = self.framework.require('config.libraries',            None)
-   self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
-   self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)
+   self.scalarType    = self.framework.require('PETSc.options.scalarTypes', None)
+   self.memAlign      = self.framework.require('PETSc.options.memAlign',    None)
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 
@@ -82,15 +79,15 @@ class PETScMaker(script.Script):
    import re
    m = re.match(r'cmake version (.+)$', output)
    if not m:
-       self.logPrintBox('Could not parse CMake version: %s, falling back to legacy build' % output)
+       self.logPrint('Could not parse CMake version: %s, disabling cmake build option' % output)
        return False
    from distutils.version import LooseVersion
    version = LooseVersion(m.groups()[0])
    if version < LooseVersion('2.6.2'):
-       self.logPrintBox('CMake version %s < 2.6.2, falling back to legacy build' % version.vstring)
+       self.logPrint('CMake version %s < 2.6.2, disabling cmake build option' % version.vstring)
        return False
    if self.languages.clanguage == 'Cxx' and version < LooseVersion('2.8'):
-       self.logPrintBox('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, falling back to legacy build' % version.vstring)
+       self.logPrint('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, disabling cmake build option' % version.vstring)
        return False # no support for: set_source_files_properties(${file} PROPERTIES LANGUAGE CXX)
 
    langlist = [('C','C')]
@@ -98,21 +95,20 @@ class PETScMaker(script.Script):
      langlist.append(('FC','Fortran'))
    if hasattr(self.compilers,'CUDAC'):
      langlist.append(('CUDA','CUDA'))
-   if (self.languages.clanguage == 'Cxx'):
+   if hasattr(self.compilers,'CXX'):
      langlist.append(('Cxx','CXX'))
    win32fe = None
    for petsclanguage,cmakelanguage in langlist:
      self.setCompilers.pushLanguage(petsclanguage)
      compiler = self.setCompilers.getCompiler()
      if (cmakelanguage == 'CUDA'):
-       self.cuda = self.framework.require('PETSc.packages.cuda',       None)
+       self.cuda = self.framework.require('config.packages.cuda',       None)
        if (self.cuda.directory != None):
          options.append('CUDA_TOOLKIT_ROOT_DIR ' + self.cuda.directory + ' CACHE FILEPATH')
        options.append('CUDA_NVCC_FLAGS ' + self.setCompilers.getCompilerFlags() + ' CACHE STRING')
      else:
        flags = [self.setCompilers.getCompilerFlags(),
-                self.setCompilers.CPPFLAGS,
-                self.CHUD.CPPFLAGS]
+                self.setCompilers.CPPFLAGS]
        if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
          win32fe = compiler.split()[0] + '.exe'
          compiler = ' '.join(compiler.split()[1:])
@@ -161,7 +157,7 @@ class PETScMaker(script.Script):
    log.write('Invoking: %s\n' % cmd)
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=300)
    if retcode:
-     self.logPrintBox('CMake setup incomplete (status %d), falling back to legacy build' % (retcode,))
+     self.logPrint('CMake setup incomplete (status %d), disabling cmake build option' % (retcode,))
      self.logPrint('Output: '+output+'\nError: '+error)
      cachetxt = os.path.join(archdir, 'CMakeCache.txt')
      try:

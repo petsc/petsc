@@ -1,0 +1,11 @@
+Initial function norm = 0.207564
+   linear solve iterations = 2, xnorm=1.21872, ynorm=0.228979
+Iteration 1, function norm = 0.0148968
+   linear solve iterations = 2, xnorm=1.23797, ynorm=0.0192507
+Iteration 2, function norm = 0.000113967
+   linear solve iterations = 2, xnorm=1.23812, ynorm=0.000149569
+Iteration 3, function norm = 6.92417e-09
+   linear solve iterations = 2, xnorm=1.23812, ynorm=9.0883e-09
+Iteration 4, function norm = 4.44089e-16
+Converged due to function norm 4.44089e-16 < 2.07564e-09 (relative tolerance)
+Number of SNES iterations = 4

@@ -3,7 +3,7 @@
       PetscInfo() is contained in a different file from the other profiling to
    allow it to be replaced at link time by an alternative routine.
 */
-#include <petsc-private/petscimpl.h>        /*I    "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I    "petscsys.h"   I*/
 
 /*
   The next three variables determine which, if any, PetscInfo() calls are used.
@@ -133,7 +133,7 @@ extern FILE *petsc_history;
     or a file when the option -info <file> is specified.
 
    Synopsis:
-       #include "petscsys.h"
+       #include <petscsys.h>
        PetscErrorCode PetscInfo(void *vobj, const char message[])
        PetscErrorCode PetscInfo1(void *vobj, const char formatmessage[],arg1)
        PetscErrorCode PetscInfo2(void *vobj, const char formatmessage[],arg1,arg2)

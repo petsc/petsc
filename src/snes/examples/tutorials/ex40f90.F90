@@ -10,7 +10,7 @@
 
       program ex40f90
       implicit none
-#include <finclude/petsc.h>
+#include <petsc/finclude/petsc.h>
 
       SNES             snes
       PetscErrorCode   ierr
@@ -26,7 +26,7 @@
       two = 2
 
       call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                       &
+     &     DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                       &
      &                DMDA_STENCIL_BOX,                                 &
      &                -ten,-ten,PETSC_DECIDE,PETSC_DECIDE,two,one,      &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)

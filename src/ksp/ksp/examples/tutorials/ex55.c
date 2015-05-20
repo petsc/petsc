@@ -72,12 +72,8 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&bb);CHKERRQ(ierr);
   ierr = VecSet(bb,.0);CHKERRQ(ierr);
-  /* generate element matrices */
+  /* generate element matrices -- see ex56.c on how to use different data set */
   {
-    FILE *file;
-    char fname[] = "data/elem_2d_pln_strn_v_25.txt";
-    file = fopen(fname, "r");
-    if (file == 0) {
       DD[0][0] =  0.53333333333333321;
       DD[0][1] =  0.20000000000000001;
       DD[0][2] = -0.33333333333333331;
@@ -142,15 +138,7 @@ int main(int argc,char **args)
       DD[7][5] =  6.66666666666666519E-002;
       DD[7][6] = -0.20000000000000001;
       DD[7][7] =  0.53333333333333321;
-    } else {
-      for (i=0; i<8; i++) {
-        for (j=0; j<8; j++) {
-          double val;
-          fscanf(file, "%le", &val);
-          DD1[i][j] = val;
-        }
-      }
-    }
+    
     /* BC version of element */
     for (i=0; i<8; i++) {
       for (j=0; j<8; j++) {
@@ -163,7 +151,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
-    ierr = PetscMalloc(m*sizeof(PetscReal),&coords);
+    ierr = PetscMalloc1(m,&coords);
     /* forms the element stiffness and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -173,7 +161,7 @@ int main(int argc,char **args)
       if (i<ne && j<ne) {
         PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
         /* radius */
-        PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
+        PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
         PetscReal alpha  = 1.0;
         if (radius < 0.25) alpha = soft_alpha;
 
@@ -212,7 +200,7 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     if (use_coords) {
       ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
     }

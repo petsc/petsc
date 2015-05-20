@@ -1,10 +1,10 @@
 
-#requirespackage    'PETSC_HAVE_CHOLMOD'
+#requirespackage    'PETSC_HAVE_SUITESPARSE'
 #requiresprecision  double
 
 ALL: lib
 
-CFLAGS	 = ${CHOLMOD_INCLUDE}
+CFLAGS	 = ${SUITESPARSE_INCLUDE}
 FFLAGS	 =
 CPPFLAGS =
 FPPFLAGS =
@@ -16,6 +16,6 @@ DIRS     =
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/seq/cholmod/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

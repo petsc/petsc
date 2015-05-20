@@ -577,6 +577,10 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 #endif
 
   PetscFunctionBegin;
+  if (draw->savefinalfilename) {
+    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
+    draw->savefilecount = 0;
+  }
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_POPEN)
@@ -593,7 +597,7 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   XCloseDisplay(win->disp);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   ierr = PetscFree(win->font);CHKERRQ(ierr);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -659,7 +663,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   ierr = PetscObjectChangeTypeName((PetscObject)*sdraw,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
-  (*sdraw)->ops->destroy = 0;
+  (*sdraw)->ops->destroy = NULL;
 
   (*sdraw)->pause   = draw->pause;
   (*sdraw)->coor_xl = draw->coor_xl;
@@ -673,7 +677,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   (*sdraw)->popup   = draw->popup;
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_X,&sXwin);CHKERRQ(ierr);
+  ierr = PetscNew(&sXwin);CHKERRQ(ierr);
   ierr = PetscDrawXiQuickWindowFromWindow(sXwin,draw->display,Xwin->win);CHKERRQ(ierr);
 
   sXwin->x       = Xwin->x;
@@ -724,6 +728,22 @@ PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PETSC_DRAW_X  - PETSc graphics device that uses either X windows or its virtual version Xvfb
+
+   Options Database Keys:
++  -display <display> - sets the display to use
+.  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
+                started up in PetscSetDisplay() with this option
+.  -geometry x,y,w,h - set location and size in pixels
+-  -draw_size w,h - percentage of screeen, either 1, .5, .3, .25
+
+   Level: beginner
+
+.seealso:  PetscDrawOpenX(), PetscDrawSetDisplay(), PetscDrawSetFromOptions()
+
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_X"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
@@ -731,14 +751,15 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   PetscDraw_X    *Xwin;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       xywh[4],osize = 4;
+  PetscInt       xywh[4],osize = 4,nsizes=2;
   int            x          = draw->x,y = draw->y,w = draw->w,h = draw->h;
   static int     xavailable = 0,yavailable = 0,xmax = 0,ymax = 0,ybottom = 0;
-  PetscBool      flg        = PETSC_FALSE;
+  PetscBool      flg        = PETSC_FALSE,set;
+  PetscReal      sizes[2] = {.3,.3};
 
   PetscFunctionBegin;
   if (!draw->display) {
-    ierr = PetscMalloc(256*sizeof(char),&draw->display);CHKERRQ(ierr);
+    ierr = PetscMalloc1(256,&draw->display);CHKERRQ(ierr);
     ierr = PetscGetDisplay(draw->display,256);CHKERRQ(ierr);
   }
 
@@ -753,6 +774,18 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
       ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
+  }
+
+  ierr = PetscOptionsGetRealArray(NULL,"-draw_size",sizes,&nsizes,&set);CHKERRQ(ierr);
+  if (set) {
+    if (sizes[0] == 1.0)      w = PETSC_DRAW_FULL_SIZE;
+    else if (sizes[0] == .5)  w = PETSC_DRAW_HALF_SIZE;
+    else if (sizes[0] == .3)  w = PETSC_DRAW_THIRD_SIZE;
+    else if (sizes[0] == .25) w = PETSC_DRAW_QUARTER_SIZE;
+    if (sizes[1] == 1.0)      h = PETSC_DRAW_FULL_SIZE;
+    else if (sizes[1] == .5)  h = PETSC_DRAW_HALF_SIZE;
+    else if (sizes[1] == .3)  h = PETSC_DRAW_THIRD_SIZE;
+    else if (sizes[1] == .25) h = PETSC_DRAW_QUARTER_SIZE;
   }
 
   if (w == PETSC_DECIDE) w = draw->w = 300;
@@ -821,8 +854,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
+  ierr = PetscNew(&Xwin);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 
   if (!rank) {

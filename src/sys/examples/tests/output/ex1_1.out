@@ -1,0 +1,9 @@
+[0]PETSC ERROR: Error Created
+[0]PETSC ERROR: #1 CreateError() line
+[0]PETSC ERROR: #2 CreateError() line
+[0]PETSC ERROR: #3 CreateError() line
+[0]PETSC ERROR: #4 CreateError() line
+[0]PETSC ERROR: #5 CreateError() line
+[0]PETSC ERROR: #6 CreateError() line
+[0]PETSC ERROR: #7 main() line
+[0]PETSC ERROR: ----------------End of Error

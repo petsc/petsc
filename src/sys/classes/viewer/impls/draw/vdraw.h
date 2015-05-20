@@ -3,10 +3,10 @@
 */
 
 #if !defined(__VDRAW_H)
-#define __VDRAWL_H
+#define __VDRAW_H
 
 #include <petscdraw.h>
-#include <petsc-private/viewerimpl.h>
+#include <petsc/private/viewerimpl.h>
 typedef struct {
   PetscInt      draw_max;
   PetscInt      draw_base;
@@ -21,6 +21,7 @@ typedef struct {
   PetscBool     singleton_made;
   PetscBool     hold;                       /* Keep previous image when adding new */
   PetscReal     pause;
+  PetscDrawType drawtype;
 } PetscViewer_Draw;
 
 #endif

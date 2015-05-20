@@ -2,8 +2,8 @@
 ALL:
 
 LOCDIR	 = src/dm/impls/plex/examples/
-DIRS	 = tests
+DIRS	 = tests tutorials
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

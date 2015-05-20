@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 #
-# Author: Eloy Romero (slepc-maint@grycap.upv.es)
+# Author: Eloy Romero (slepc-maint@upv.es)
 #         Universidad Politecnica de Valencia, Spain
 #
 
@@ -41,14 +41,14 @@ SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.1.q
+FBLASLAPACK=f2cblaslapack-3.4.2.q1
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
 LAPACKDIR=${PAC}/lapack
 BLASSRC="$1"
 LAPACKSRC="$2"
-ORIG=$PWD
+ORIG="$PWD"
 MAXPROCS="16"
 TESTING="0"   # 0: don't include second, dsecnd and qsecnd
 
@@ -128,7 +128,7 @@ TAR        = tar
 # By default, pick up the options from the PETSc configuration files
 ########################################################################################
 BLASLAPACK_TYPE  = F2CBLASLAPACK
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/lib/petsc/conf/base
 
 ########################################################################################
 # compile the source files and create the blas and lapack libs
@@ -230,8 +230,8 @@ echo "
 for p in blas qblas lapack qlapack; do
 	case $p in
 	blas) 
-		SRC=$BLASSRC
-		DES=$BLASDIR
+		SRC="$BLASSRC"
+		DES="$BLASDIR"
 		NOOP=""
 		echo "pow_ii" > ${TMP}/AUX.list
 		echo $'pow_si\nsmaxloc\nsf__cabs' > ${TMP}/SINGLE.list
@@ -241,16 +241,16 @@ for p in blas qblas lapack qlapack; do
 		cd -
 		;;
 	qblas) 
-		SRC=$TMP
-		DES=$BLASDIR
+		SRC="$TMP"
+		DES="$BLASDIR"
 		NOOP=""
 		echo $'pow_qi\nqmaxloc\nqf__cabs' > ${TMP}/QUAD.list
 		files="`cat ${TMP}/ql.list`"
 		;;
 
 	lapack)
-		SRC=$LAPACKSRC
-		DES=$LAPACKDIR
+		SRC="$LAPACKSRC"
+		DES="$LAPACKDIR"
 		NOOP="slaruv dlaruv slamch dlamch"
 		rm ${TMP}/AUX.list
 		echo 'slamch' > ${TMP}/SINGLE.list
@@ -267,13 +267,13 @@ for p in blas qblas lapack qlapack; do
 	qlapack)
 		NOOP="qlaruv qlamch"
 		echo $'qlamch' > ${TMP}/QUAD.list
-		SRC=$TMP
-		DES=$LAPACKDIR
+		SRC="$TMP"
+		DES="$LAPACKDIR"
 		files="`cat ${TMP}/ql.list`"
 	esac
 
 	# Transform sources
-	BACK=${PWD}
+	BACK="${PWD}"
 	cd $SRC
 	NPROC="0"
 	for file in $files; do
@@ -291,6 +291,12 @@ for p in blas qblas lapack qlapack; do
 		[sc]*)		PR="SINGLE";;
 		[dz]*)		PR="DOUBLE";;
 		[qw]*)		PR="QUAD";;
+		icmax1)		PR="SINGLE";;
+		izmax1)		PR="DOUBLE";;
+		iwmax1)		PR="QUAD";;
+		ila[sc]l[rc])	PR="SINGLE";;
+		ila[dz]l[rc])	PR="DOUBLE";;
+		ila[qw]l[rc])	PR="QUAD";;
 		*)		PR="AUX";;
 		esac
 
@@ -349,7 +355,8 @@ for p in blas qblas lapack qlapack; do
 				/^i?d[^z]/ { s/d/q/ }
 				s/^zd/wq/
 				/^i?z[^d]/ { s/z/w/ }
-				s/^sdsdot/dqddot/ ' )";
+				s/^sdsdot/dqddot/
+				/^ila[dz]l[rc]/ { y/dz/qw/; }' )";
 			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${qbase}_\\2/g;" >> $QL
 			cp $base.f ${TMP}/${qbase}.f
 			echo ${qbase}.f >> ${TMP}/ql.list

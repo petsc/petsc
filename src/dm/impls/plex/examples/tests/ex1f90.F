@@ -1,7 +1,7 @@
       program main
       implicit none
 !
-#include <finclude/petsc.h90>
+#include <petsc/finclude/petsc.h90>
 !
       DM dm
       PetscInt, target, dimension(4) :: EC

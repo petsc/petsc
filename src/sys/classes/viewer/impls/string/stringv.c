@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  I*/
+#include <petsc/private/viewerimpl.h>   /*I  "petscsys.h"  I*/
 
 typedef struct  {
   char   *string;         /* string where info is stored */
@@ -43,7 +43,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 {
   va_list            Argp;
   size_t             fullLength;
-  size_t             shift;
+  size_t             shift,cshift;
   PetscErrorCode     ierr;
   PetscBool          isstring;
   char               tmp[4096];
@@ -59,11 +59,10 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
   va_start(Argp,format);
   ierr = PetscVSNPrintf(tmp,4096,format,&fullLength,Argp);CHKERRQ(ierr);
   va_end(Argp);
-
   ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);
-  if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;
-  ierr = PetscStrncpy(vstr->head,tmp,shift);CHKERRQ(ierr);
-
+  cshift = shift+1;
+  if (cshift >= vstr->maxlen - vstr->curlen - 1) cshift = vstr->maxlen - vstr->curlen - 1;
+  ierr = PetscStrncpy(vstr->head,tmp,cshift);CHKERRQ(ierr);
   vstr->head   += shift;
   vstr->curlen += shift;
   PetscFunctionReturn(0);
@@ -95,7 +94,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf()
 @*/
-PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],PetscInt len,PetscViewer *lab)
+PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],size_t len,PetscViewer *lab)
 {
   PetscErrorCode ierr;
 
@@ -146,7 +145,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   v->ops->flush            = 0;
   v->ops->getsingleton     = PetscViewerGetSingleton_String;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_String;
-  ierr                     = PetscNewLog(v,PetscViewer_String,&vstr);CHKERRQ(ierr);
+  ierr                     = PetscNewLog(v,&vstr);CHKERRQ(ierr);
   v->data                  = (void*)vstr;
   vstr->string             = 0;
   PetscFunctionReturn(0);

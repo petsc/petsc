@@ -30,7 +30,7 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobianLinear"
-PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat *A, Mat *J, MatStructure *flag, void *ctx)
+PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
@@ -111,15 +111,15 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
 #define __FUNCT__ "CheckProblem2"
 PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
 {
-  PetscInt       N = 10, constraintSize = 4, r;
-  PetscReal      norm, error;
-  PetscScalar    *uArray, *bArray;
-  PetscErrorCode ierr;
+  PetscInt          N = 10, constraintSize = 4, r;
+  PetscReal         norm, error;
+  const PetscScalar *uArray, *bArray;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr  = VecNorm(b, NORM_2, &norm);CHKERRQ(ierr);
-  ierr  = VecGetArray(u, &uArray);CHKERRQ(ierr);
-  ierr  = VecGetArray(b, &bArray);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(u, &uArray);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(b, &bArray);CHKERRQ(ierr);
   error = 0.0;
   for (r = 0; r < constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r + N-constraintSize]));
 
@@ -132,8 +132,8 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   for (r = N - constraintSize; r < N; ++r) error += PetscRealPart(PetscSqr(uArray[r] - (bArray[r - (N-constraintSize)] - bArray[r])));
 
   if (error/norm > 1e-12) SETERRQ1(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
-  ierr = VecRestoreArray(u, &uArray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b, &bArray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(u, &uArray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b, &bArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

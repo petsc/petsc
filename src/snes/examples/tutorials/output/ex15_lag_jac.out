@@ -1,0 +1,92 @@
+  0 SNES Function norm 0.199059 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 18
+  1 SNES Function norm 0.179922 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+  2 SNES Function norm 0.163911 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+  3 SNES Function norm 0.150371 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 15
+  4 SNES Function norm 0.145174 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+  5 SNES Function norm 0.143808 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+  6 SNES Function norm 0.129987 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+  7 SNES Function norm 0.118428 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+  8 SNES Function norm 0.108643 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+  9 SNES Function norm 0.100214 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 17
+ 10 SNES Function norm 0.0804723 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 11 SNES Function norm 0.0784986 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 12 SNES Function norm 0.0776338 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 13 SNES Function norm 0.0773329 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 11
+ 14 SNES Function norm 0.0768854 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 15 SNES Function norm 0.0765425 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 14
+ 16 SNES Function norm 0.0691688 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 14
+ 17 SNES Function norm 0.0629957 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 14
+ 18 SNES Function norm 0.0577882 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 19 SNES Function norm 0.0533855 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 14
+ 20 SNES Function norm 0.0496041 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 21 SNES Function norm 0.0386158 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 22 SNES Function norm 0.0340579 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 23 SNES Function norm 0.0304921 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 24 SNES Function norm 0.0264418 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 13
+ 25 SNES Function norm 0.0160981 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 26 SNES Function norm 0.0146566 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 27 SNES Function norm 0.0136091 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 28 SNES Function norm 0.0128454 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 29 SNES Function norm 0.0123047 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 12
+ 30 SNES Function norm 0.0134276 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 11
+ 31 SNES Function norm 0.0156118 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 10
+ 32 SNES Function norm 0.00580062 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 11
+ 33 SNES Function norm 0.0108986 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 11
+ 34 SNES Function norm 0.00900118 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 11
+ 35 SNES Function norm 0.00402106 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 9
+ 36 SNES Function norm 0.00359493 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 9
+ 37 SNES Function norm 0.00316284 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 9
+ 38 SNES Function norm 0.00273642 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 9
+ 39 SNES Function norm 0.00252167 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 9
+ 40 SNES Function norm 0.000539772 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 8
+ 41 SNES Function norm 2.7964e-05 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 7
+ 42 SNES Function norm 4.05351e-06 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 8
+ 43 SNES Function norm 1.28119e-07 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 8
+ 44 SNES Function norm 4.3833e-09 
+    Linear npc_ solve converged due to CONVERGED_RTOL iterations 8
+ 45 SNES Function norm 5.236e-10 
+CONVERGED_FNORM_RELATIVE Number of nonlinear iterations = 45

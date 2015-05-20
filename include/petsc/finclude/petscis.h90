@@ -1,0 +1,11 @@
+!
+!
+!  Include files for IS used from Fortran 90
+!
+#include "petsc/finclude/ftn-custom/petscis.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "petsc/finclude/ftn-auto/petscis.h90"
+      end interface
+#endif
+

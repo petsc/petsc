@@ -5,6 +5,7 @@ static char help[] = "Tests DMDA with variable multiple degrees of freedom per n
    This code only compiles with gcc, since it is not ANSI C
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 PetscErrorCode doit(DM da,Vec global)
@@ -15,17 +16,17 @@ PetscErrorCode doit(DM da,Vec global)
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   {
     struct {PetscScalar inside[dof];} **mystruct;
-    ierr = DMDAVecGetArray(da,global,(void*) &mystruct);
+    ierr = DMDAVecGetArrayRead(da,global,(void*) &mystruct);
     for (i=0; i<N; i++) {
       for (j=0; j<M; j++) {
         for (k=0; k<dof; k++) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"%d %d %G\n",i,j,mystruct[i][j].inside[0]);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D %D %g\n",i,j,(double)mystruct[i][j].inside[0]);CHKERRQ(ierr);
 
           mystruct[i][j].inside[1] = 2.1;
         }
       }
     }
-    ierr = DMDAVecRestoreArray(da,global,(void*) &mystruct);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,global,(void*) &mystruct);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       M,N,m,n,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

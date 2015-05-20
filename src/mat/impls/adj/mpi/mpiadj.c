@@ -75,6 +75,7 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
       ierr = PetscFree(a->values);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(a->rowvalues);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",NULL);CHKERRQ(ierr);
@@ -119,8 +120,8 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
   PetscInt       i,j,m = A->rmap->n;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&a->diag);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
@@ -137,7 +138,7 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
-  PetscInt   *itmp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   row -= A->rmap->rstart;
@@ -145,14 +146,17 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
-  if (v) *v = NULL;
-  if (idx) {
-    itmp = a->j + a->i[row];
-    if (*nz) {
-      *idx = itmp;
+  if (v) {
+    PetscInt j;
+    if (a->rowvalues_alloc < *nz) {
+      ierr = PetscFree(a->rowvalues);CHKERRQ(ierr);
+      a->rowvalues_alloc = PetscMax(a->rowvalues_alloc*2, *nz);
+      ierr = PetscMalloc1(a->rowvalues_alloc,&a->rowvalues);CHKERRQ(ierr);
     }
-    else *idx = 0;
+    for (j=0; j<*nz; j++) a->rowvalues[j] = a->values[a->i[row]+j];
+    *v = (*nz) ? a->rowvalues : NULL;
   }
+  if (idx) *idx = (*nz) ? a->j + a->i[row] : NULL;
   PetscFunctionReturn(0);
 }
 
@@ -257,9 +261,9 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
   }
 
   /* malloc space for nonzeros */
-  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nzeros+1,&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N+1,&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nzeros+1,&ja);CHKERRQ(ierr);
 
   nzeros = 0;
   ia[0]  = 0;
@@ -338,7 +342,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                 /*44*/ 0,
                                        0,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                 /*49*/ 0,
@@ -432,6 +436,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                /*139*/ 0,
+                                       0,
                                        0
 };
 
@@ -500,7 +505,7 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscMalloc(nranks*sizeof(PetscMPIInt),&ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nranks,&ranks);CHKERRQ(ierr);
   for (i=0,nranks=0; i<size; i++) {
     if (ranges[i+1] - ranges[i] > 0) ranks[nranks++] = i;
   }
@@ -572,7 +577,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
+  ierr         = PetscNewLog(B,&b);CHKERRQ(ierr);
   B->data      = (void*)b;
   ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled = PETSC_FALSE;

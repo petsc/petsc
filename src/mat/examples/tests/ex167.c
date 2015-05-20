@@ -93,7 +93,7 @@ int main(int argc,char **args)
   sort_cols = PETSC_FALSE;
   ierr      = PetscOptionsGetBool(NULL, "-sort_cols", &sort_cols, NULL);CHKERRQ(ierr);
   for (l = 0; l < nsub; ++l) {
-    ierr = PetscMalloc(12*sizeof(PetscInt), &subindices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(12, &subindices);CHKERRQ(ierr);
     k    = 0;
     for (i = 0; i < 4; ++i) {
       for (j = jlow[l]; j < jhigh[l]; ++j) {
@@ -115,7 +115,7 @@ int main(int argc,char **args)
       ierr = ISSort(colis[l]);CHKERRQ(ierr);
     }
   }
-  ierr = PetscMalloc(nsub*sizeof(Mat), &S);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nsub, &S);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
 
   show_inversions = PETSC_FALSE;
@@ -152,7 +152,7 @@ int main(int argc,char **args)
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
   if (show_inversions) {
-    ierr = MPI_Reduce(&inversions,&total_inversions,1,MPIU_INT, MPIU_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&inversions,&total_inversions,1,MPIU_INT, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "*Total inversions: %D\n", total_inversions);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);

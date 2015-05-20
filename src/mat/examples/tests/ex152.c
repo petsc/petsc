@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  int            rank, size;
-  int            i, ni, status;
-  idx_t          *vtxdist, *xadj, *adjncy, *vwgt, *part;
+  PetscMPIInt    rank, size;
+  int            i, status;
+  idx_t          ni,isize,*vtxdist, *xadj, *adjncy, *vwgt, *part;
   idx_t          wgtflag=0, numflag=0, ncon=1, ndims=3, edgecut=0;
   idx_t          options[5];
   real_t         *xyz, *tpwgts, ubvec[1];
@@ -38,6 +38,11 @@ int main(int argc, char *argv[])
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
   PetscInitialize(&argc,&argv,NULL,help);
+#if defined(PETSC_USE_64BIT_INDICES)
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n");
+  PetscFinalize();
+  return 0;
+#endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
@@ -46,7 +51,7 @@ int main(int argc, char *argv[])
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc((size+1)*sizeof(idx_t),&vtxdist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1,&vtxdist);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph",prefix,rank);CHKERRQ(ierr);
 
@@ -56,11 +61,11 @@ int main(int argc, char *argv[])
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
-  ierr = PetscMalloc((ni+1)*sizeof(idx_t),&xadj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
   fread(xadj, sizeof(idx_t), ni+1, fp);
 
-  ierr = PetscMalloc(xadj[ni]*sizeof(idx_t),&adjncy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(xadj[ni],&adjncy);CHKERRQ(ierr);
 
   for (i=0; i<ni; i++) fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
 
@@ -69,7 +74,7 @@ int main(int argc, char *argv[])
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph.xyz",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc3(ni*ndims,real_t,&xyz,ni,idx_t,&part,size,real_t,&tpwgts);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
 
   fread(xyz, sizeof(real_t), ndims*ni, fp);
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
@@ -77,6 +82,7 @@ int main(int argc, char *argv[])
   vwgt = NULL;
 
   for (i = 0; i < size; i++) tpwgts[i] = 1. / size;
+  isize = size;
 
   ubvec[0]   = 1.05;
   options[0] = 1;
@@ -86,9 +92,7 @@ int main(int argc, char *argv[])
   options[4] = 0;
 
   ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
-  status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt,
-                                    NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &size, tpwgts, ubvec,
-                                    options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
+  status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
   ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
   ierr = PetscFree(vtxdist);CHKERRQ(ierr);

@@ -1,7 +1,7 @@
 
 #if !defined(__ADJ_H)
 #define __ADJ_H
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 
 /*
@@ -20,6 +20,8 @@ typedef struct {
   PetscBool symmetric;               /* user indicates the nonzero structure is symmetric */
   PetscBool freeaij;                 /* free a, i,j at destroy */
   PetscBool freeaijwithfree;         /* use free() to free i,j instead of PetscFree() */
+  PetscScalar *rowvalues;            /* scalar work space for MatGetRow() */
+  PetscInt    rowvalues_alloc;
 } Mat_MPIAdj;
 
 #endif

@@ -1,4 +1,4 @@
-Star Forest Object: 4 MPI processes
+PetscSF Object: 4 MPI processes
   type: window
     synchronization=FENCE sort=rank-order
   [0] Number of roots=3, leaves=2, remote ranks=2
@@ -41,7 +41,7 @@ Star Forest Object: 4 MPI processes
   [3] 2: 1 edges
   [3]    0 <- 1
 ## Multi-SF
-Star Forest Object: 4 MPI processes
+PetscSF Object: 4 MPI processes
   type: window
     synchronization=FENCE sort=rank-order
   [0] Number of roots=5, leaves=2, remote ranks=2
@@ -60,7 +60,7 @@ Star Forest Object: 4 MPI processes
   [3] 1 <- (0,0)
   [3] 2 <- (0,4)
 ## Inverse of Multi-SF
-Star Forest Object: 4 MPI processes
+PetscSF Object: 4 MPI processes
   type: window
     synchronization=FENCE sort=rank-order
   [0] Number of roots=2, leaves=5, remote ranks=3

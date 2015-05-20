@@ -1,19 +1,4 @@
-/*
- author: Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
- This file implements a preconditioned pipelined CR. There is only a single
- non-blocking reduction per iteration, compared to 2 blocking for standard CR.
- The non-blocking reduction is overlapped by the matrix-vector product.
-
- See "Hiding global synchronization latency in the
- preconditioned Conjugate Gradient algorithm", P. Ghysels and W. Vanroose.
- Submitted to Parallel Computing, 2012
-
- See also pipecg.c, where the reduction can be overlapped with both the
- matrix-vector product and the preconditioner.
- */
-
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
      KSPSetUp_PIPECR - Sets up the workspace needed by the PIPECR method.
@@ -50,7 +35,6 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   PetscReal      dp   = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -67,7 +51,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   Q = ksp->work[5];
   U = ksp->work[6];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   /* we don't have an R vector, so put the (unpreconditioned) residual in w for now */
@@ -157,6 +141,30 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   KSPPIPECR - Pipelined conjugate residual method
+
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CR.  The
+   non-blocking reduction is overlapped by the matrix-vector product, but not the preconditioner application.
+
+   See also KSPPIPECG, where the reduction is only overlapped with the matrix-vector product.
+
+   Level: intermediate
+
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
+   Contributed by:
+   Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
+
+   Reference:
+   P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
+   Submitted to Parallel Computing, 2012.
+
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECG, KSPGROPPCG, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPECR"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)
@@ -164,8 +172,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPECR;
   ksp->ops->solve          = KSPSolve_PIPECR;

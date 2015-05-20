@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I     "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>  /*I     "petscsys.h"   I*/
 
 typedef struct {
   FILE          *fd;
@@ -8,6 +8,7 @@ typedef struct {
   PetscInt      tab_store;      /* store tabs value while tabs are turned off */
   PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
   PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
+  PetscViewer   subviewer;      /* used with PetscViewerGetSubcomm() */
   char          *filename;
   PetscBool     storecompressed;
   PetscBool     closefile;

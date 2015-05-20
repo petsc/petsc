@@ -1,5 +1,5 @@
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 
 #undef __FUNCT__
@@ -31,7 +31,7 @@ PetscErrorCode  DMDACreatePF(DM da,PF *pf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(pf,2);
-  ierr = PFCreate(PetscObjectComm((PetscObject)da),dd->dim,dd->w,pf);CHKERRQ(ierr);
+  ierr = PFCreate(PetscObjectComm((PetscObject)da),da->dim,dd->w,pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,20 +1,5 @@
-/*
- author: Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
 
- This file implements a preconditioned pipelined CG. There is only a single
- non-blocking reduction per iteration, compared to 2 blocking for standard CG.
- The non-blocking reduction is overlapped by the matrix-vector product.
-
- See "Hiding global synchronization latency in the
- preconditioned Conjugate Gradient algorithm", P. Ghysels and W. Vanroose.
- Submitted to Parallel Computing, 2012
-
- See also pipecr.c, where the reduction is only overlapped with
- the matrix-vector product.
-
- */
-
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
      KSPSetUp_PIPECG - Sets up the workspace needed by the PIPECG method.
@@ -51,7 +36,6 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   PetscReal      dp    = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N,R,S;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -70,7 +54,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   R = ksp->work[7];
   S = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -100,7 +84,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
     ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);              /*     w <- Au   */
     ierr = VecDotEnd(R,U,&gamma);CHKERRQ(ierr);
-    if (PetscIsInfOrNanScalar(gamma)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    KSPCheckDot(ksp,gamma);
     dp = PetscSqrtReal(PetscAbsScalar(gamma));                  /*     dp <- r'*u = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
@@ -121,7 +105,8 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNormBegin(U,NORM_2,&dp);CHKERRQ(ierr);
-    } else if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
+    }
+    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
       ierr = VecDotBegin(R,U,&gamma);CHKERRQ(ierr);
     }
     ierr = VecDotBegin(W,U,&delta);CHKERRQ(ierr);
@@ -134,7 +119,8 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       ierr = VecNormEnd(R,NORM_2,&dp);CHKERRQ(ierr);
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNormEnd(U,NORM_2,&dp);CHKERRQ(ierr);
-    } else if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
+    }
+    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
       ierr = VecDotEnd(R,U,&gamma);CHKERRQ(ierr);
     }
     ierr = VecDotEnd(W,U,&delta);CHKERRQ(ierr);
@@ -185,6 +171,29 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 }
 
 
+/*MC
+   KSPPIPECG - Pipelined conjugate gradient method.
+
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
+   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
+   See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
+
+   Level: intermediate
+
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
+   Contributed by:
+   Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
+
+   Reference:
+   P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
+   Submitted to Parallel Computing, 2012.
+
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECR, KSPGROPPCG, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPECG"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
@@ -192,10 +201,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPECG;
   ksp->ops->solve          = KSPSolve_PIPECG;

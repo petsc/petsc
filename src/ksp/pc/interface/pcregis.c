@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcimpl.h>          /*I   "petscpc.h"   I*/
+#include <petsc/private/pcimpl.h>          /*I   "petscpc.h"   I*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC);
@@ -21,18 +21,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC);
 
-#if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
-PETSC_EXTERN PetscErrorCode PCCreate_SupportGraph(PC);
-#endif
 #if defined(PETSC_HAVE_ML)
 PETSC_EXTERN PetscErrorCode PCCreate_ML(PC);
 #endif
@@ -48,7 +44,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
 #endif
-#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC);
@@ -57,9 +53,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC);
 #if defined(PETSC_HAVE_PARMS)
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC);
 #endif
-#if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC);
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRegisterAll"
@@ -82,6 +76,7 @@ PetscErrorCode  PCRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PCRegisterAllCalled) PetscFunctionReturn(0);
   PCRegisterAllCalled = PETSC_TRUE;
 
   ierr = PCRegister(PCNONE         ,PCCreate_None);CHKERRQ(ierr);
@@ -106,16 +101,12 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCFIELDSPLIT   ,PCCreate_FieldSplit);CHKERRQ(ierr);
   ierr = PCRegister(PCGALERKIN     ,PCCreate_Galerkin);CHKERRQ(ierr);
   ierr = PCRegister(PCEXOTIC       ,PCCreate_Exotic);CHKERRQ(ierr);
-  ierr = PCRegister(PCHMPI         ,PCCreate_HMPI);CHKERRQ(ierr);
-  ierr = PCRegister(PCASA          ,PCCreate_ASA);CHKERRQ(ierr);
   ierr = PCRegister(PCCP           ,PCCreate_CP);CHKERRQ(ierr);
   ierr = PCRegister(PCLSC          ,PCCreate_LSC);CHKERRQ(ierr);
   ierr = PCRegister(PCREDISTRIBUTE ,PCCreate_Redistribute);CHKERRQ(ierr);
   ierr = PCRegister(PCSVD          ,PCCreate_SVD);CHKERRQ(ierr);
   ierr = PCRegister(PCGAMG         ,PCCreate_GAMG);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
-  ierr = PCRegister(PCSUPPORTGRAPH ,PCCreate_SupportGraph);CHKERRQ(ierr);
-#endif
+  ierr = PCRegister(PCKACZMARZ     ,PCCreate_Kaczmarz);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegister(PCML           ,PCCreate_ML);CHKERRQ(ierr);
 #endif
@@ -130,7 +121,7 @@ PetscErrorCode  PCRegisterAll(void)
 #if !defined(PETSC_USE_COMPLEX)
   ierr = PCRegister(PCTFS          ,PCCreate_TFS);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP)
   ierr = PCRegister(PCSACUSP       ,PCCreate_SACUSP);CHKERRQ(ierr);
   ierr = PCRegister(PCAINVCUSP     ,PCCreate_AINVCUSP);CHKERRQ(ierr);
   ierr = PCRegister(PCBICGSTABCUSP ,PCCreate_BiCGStabCUSP);CHKERRQ(ierr);
@@ -139,8 +130,6 @@ PetscErrorCode  PCRegisterAll(void)
 #if defined(PETSC_HAVE_PARMS)
   ierr = PCRegister(PCPARMS        ,PCCreate_PARMS);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_PCBDDC)
   ierr = PCRegister(PCBDDC         ,PCCreate_BDDC);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }

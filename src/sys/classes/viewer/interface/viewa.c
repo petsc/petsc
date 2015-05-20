@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/
+#include <petsc/private/viewerimpl.h>  /*I "petscsys.h" I*/
 
 const char *const PetscViewerFormats[] = {
   "DEFAULT",
@@ -25,9 +25,11 @@ const char *const PetscViewerFormats[] = {
   "DRAW_CONTOUR",
   "DRAW_PORTS",
   "VTK_VTS",
+  "VTK_VTR",
   "VTK_VTU",
   "BINARY_MATLAB",
   "NATIVE",
+  "HDF5_VIZ",
   "NOFORMAT",
   "PetscViewerFormat",
   "PETSC_VIEWER_",

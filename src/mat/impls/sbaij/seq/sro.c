@@ -35,15 +35,17 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  const PetscInt mbs=a->mbs,*rip,*riip;
-  PetscInt       *ai,*aj,*r;
-  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,i;
-  IS             iperm;  /* inverse of perm */
+  const PetscInt mbs=a->mbs;
 
   PetscFunctionBegin;
   if (!mbs) PetscFunctionReturn(0);
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
+#if 0
+  PetscErrorCode ierr;
+  const PetscInt *rip,*riip;
+  PetscInt       *ai,*aj,*r;
+  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,i;
+  IS             iperm;  /* inverse of perm */
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
@@ -56,7 +58,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
 
   if (!a->inew) {
-    ierr = PetscMalloc2(mbs+1,PetscInt,&ai, 2*a->i[mbs],PetscInt,&aj);CHKERRQ(ierr);
+    ierr = PetscMalloc2(mbs+1,&ai, 2*a->i[mbs],&aj);CHKERRQ(ierr);
   } else {
     ai = a->inew; aj = a->jnew;
   }
@@ -70,8 +72,8 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
               s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
   */
 
-  ierr = PetscMalloc(mbs*sizeof(PetscInt),&nzr);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&r);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs,&nzr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ai[mbs],&r);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) nzr[i] = 0;
   for (i=0; i<ai[mbs]; i++) r[i] = 0;
 
@@ -146,6 +148,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = PetscFree(nzr);CHKERRQ(ierr);
   ierr = PetscFree(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#endif
 }
 
 

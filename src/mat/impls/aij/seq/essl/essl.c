@@ -116,11 +116,11 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   ierr = PetscBLASIntCast(100 + 10*A->rmap->n,&essl->naux);CHKERRQ(ierr);
 
   /* since malloc is slow on IBM we try a single malloc */
-  ierr = PetscMalloc4(essl->lna,PetscScalar,&essl->a,essl->naux,PetscScalar,&essl->aux,essl->lna,int,&essl->ia,essl->lna,int,&essl->ja);CHKERRQ(ierr);
+  ierr = PetscMalloc4(essl->lna,&essl->a,essl->naux,&essl->aux,essl->lna,&essl->ia,essl->lna,&essl->ja);CHKERRQ(ierr);
 
   essl->CleanUpESSL = PETSC_TRUE;
 
-  ierr = PetscLogObjectMemory(B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar));CHKERRQ(ierr);
 
   B->ops->lufactornumeric = MatLUFactorNumeric_Essl;
   PetscFunctionReturn(0);
@@ -164,7 +164,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&essl);CHKERRQ(ierr);
 
   B->spptr                 = essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
@@ -173,5 +173,15 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
 
   B->factortype = MAT_FACTOR_LU;
   *F            = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Essl"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Essl(void)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERESSL,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_essl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

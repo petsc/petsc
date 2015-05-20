@@ -8,8 +8,8 @@ EXAMPLESC        = ex1.c
 EXAMPLESF        =
 MANSEC           = Sys
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_LIB}
@@ -19,9 +19,9 @@ ex1: ex1.o  chkopts
 runex1:
 	-@${MPIEXEC} -n 1 ex1 > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_1.tmp
 
 #TESTEXAMPLES_C = ex1.PETSc runex1 ex1.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

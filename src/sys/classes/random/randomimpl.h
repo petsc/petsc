@@ -2,7 +2,10 @@
 #if !defined(__PETSCRANDOMIMPL_H)
 #define __PETSCRANDOMIMPL_H
 
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
+
+PETSC_EXTERN PetscBool PetscRandomRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);
 
 typedef struct _PetscRandomOps *PetscRandomOps;
 struct _PetscRandomOps {
@@ -11,7 +14,7 @@ struct _PetscRandomOps {
   PetscErrorCode (*getvalue)(PetscRandom,PetscScalar*);
   PetscErrorCode (*getvaluereal)(PetscRandom,PetscReal*);
   PetscErrorCode (*destroy)(PetscRandom);
-  PetscErrorCode (*setfromoptions)(PetscRandom);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PetscRandom);
 };
 
 struct _p_PetscRandom {

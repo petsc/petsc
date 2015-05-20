@@ -18,16 +18,16 @@
 !   see the manual page UsingFortran
 !
 #define PETSC_USE_FORTRAN_MODULES
-#include <finclude/petscsysdef.h>
-#include <finclude/petscvecdef.h>
+#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscvecdef.h>
 #if defined(PETSC_USE_FORTRAN_MODULES)
       use petscvec
 #endif
       implicit none
 #if !defined(PETSC_USE_FORTRAN_MODULES)
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscvec.h90>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
 
 #endif
 !
@@ -47,10 +47,10 @@
       Vec, pointer :: z(:)
 #endif
       PetscReal norm,v,v1,v2
-      integer         n,ithree
-      integer   ierr
-      integer      rank
-      logical       flg
+      PetscInt  n,ithree
+      PetscErrorCode ierr
+      PetscMPIInt  rank
+      PetscBool       flg
       PetscScalar      one,two,three
       PetscScalar      dots(3),dot
 

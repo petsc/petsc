@@ -37,7 +37,7 @@ configure module for HYPRE requires information about MPI, and thus contains
 Notice that passing self for the last arguments means that the MPI module will
 run before the HYPRE module. Furthermore, we save the resulting object as
 self.mpi so that we may interogate it later. HYPRE can initially test whether
-MPI was indeed found using self.mpi.foundMPI. When HYPRE requires the list of
+MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
 import user
@@ -138,7 +138,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       for dir in files:
         if re.match(nextDirs[0], dir):
           if nextDirs[1:]:
-            rest = apply(os.path.join, nextDirs[1:])
+            rest = os.path.join(*nextDirs[1:])
           else:
             rest = None
           dirs.extend(self.listDirs(os.path.join(base, dir),rest ))
@@ -147,6 +147,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
       self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
+      if not os.access(self._tmpDir, os.X_OK):
+        raise RuntimeError('Cannot execute things in tmp directory '+self._tmpDir+'. Consider setting TMPDIR to something else.')
       self.logPrint('All intermediate test results are stored in '+self._tmpDir)
     return self._tmpDir
   def setTmpDir(self, temp):
@@ -236,7 +238,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputMakeRuleHeader(self.makeRuleHeader)
       self.log.write('**** ' + self.makeRuleHeader + ' ****\n')
       self.outputMakeRuleHeader(self.log)
-      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeRuleHeader)
     if self.header:
       self.outputHeader(self.header)
       self.log.write('**** ' + self.header + ' ****\n')
@@ -280,7 +282,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if isinstance(child, type):
         config = child
         break
-    if config is None and not self.configureParent is None:
+    if config is None and hasattr(self, 'configureParent') and not self.configureParent is None:
       for child in self.configureParent.childGraph.vertices:
         if isinstance(child, type):
           config = child
@@ -295,7 +297,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           config.setupDependencies(self)
           break
     if config is None:
-      config = apply(type, [self], keywordArgs)
+      config = type(self, *keywordArgs)
       self.addChild(config)
       config.showHelp = 0
       config.logName  = self.logName
@@ -322,7 +324,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def require(self, moduleName, depChild, keywordArgs = {}):
     '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
     config = self.getChild(moduleName, keywordArgs)
-    self.childGraph.addEdges(depChild, [config])
+    if not config is depChild:
+      self.childGraph.addEdges(depChild, [config])
     return config
 
   ###############################################
@@ -393,10 +396,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   # Filtering Mechanisms
 
   def filterPreprocessOutput(self,output):
+    self.log.write("Preprocess stderr before filtering:"+output+":\n")
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
     lines = output.splitlines()
+    # Intel
+    lines = filter(lambda s: s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0, lines)
     # IBM:
     lines = filter(lambda s: not s.startswith('cc_r:'), lines)
     # PGI: Ignore warning about temporary license
@@ -407,10 +413,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Lahey/Fujitsu
     lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
+    self.log.write("Preprocess stderr after filtering:"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
-    if self.argDB['ignoreCompileOutput']:
+    if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
+    if output.find('warning: ISO C90 does not support complex types') >= 0: return output
+    elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
       lines = output.splitlines()
@@ -429,6 +438,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
       # GCC: Ignore stupid warning about unused variables
       lines = filter(lambda s: s.find('warning: unused variable') < 0, lines)
+      # Intel
+      lines = filter(lambda s: s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0, lines)
       # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       # Cray XT3
@@ -882,7 +893,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchCleanup)
       # pretty print repr(args.values())
       for itm in args:
-        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=PETSc.compilerOptions'):
+        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
           body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
@@ -918,22 +929,156 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       sys.exit(0)
     return
 
-  def configure(self, out = None):
-    '''Configure the system
-       - Must delay database initialization until children have contributed variable types
-       - Any child with the "_configured" attribute will not be configured'''
+  def parallelQueueEvaluation(self, depGraph, numThreads = 1):
+    import graph
+    import Queue
+    from threading import Thread
+
+    if numThreads < 1: raise RuntimeError('Parallel configure must use at least one thread')
+    # TODO Insert a cycle check
+    todo = Queue.Queue()
+    done = Queue.Queue()
+    numChildren = len(depGraph.vertices)
+    for child in graph.DirectedGraph.getRoots(depGraph):
+      if not hasattr(child, '_configured'):
+        #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
+        todo.put(child)
+
+    def processChildren(num, q):
+      emsg = ''
+      while 1:
+        child = q.get() # Might have to indicate blocking
+        ret = 1
+        child.saveLog()
+        try:
+          if not hasattr(child, '_configured'):
+            child.configure()
+          else:
+            child.no_configure()
+          ret = 0
+        except (RuntimeError, config.base.ConfigureSetupError), e:
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'         UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except (TypeError, ValueError), e:
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except ImportError, e :
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                     UNABLE to FIND MODULE for ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except OSError, e :
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                    UNABLE to EXECUTE BINARIES for ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except SystemExit, e:
+          if e.code is None or e.code == 0:
+            return
+          msg ='*******************************************************************************\n'\
+              +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+              +'*******************************************************************************\n'
+          se  = str(e)
+        except Exception, e:
+          msg ='*******************************************************************************\n'\
+              +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+              +'*******************************************************************************\n'
+          se  = str(e)
+        if ret:
+          self.logWrite(msg+'\n'+se+'\n')
+          try:
+            import sys,traceback
+            traceback.print_tb(sys.exc_info()[2], file = self.log)
+          except: pass
+        out = child.restoreLog()
+        # Udpate queue
+        done.put((ret, out, emsg, child))
+        q.task_done()
+        if ret: break
+      return
+
+    # Set up some threads to fetch the enclosures
+    for i in range(numThreads):
+      worker = Thread(target = processChildren, args = (i, todo,))
+      worker.setDaemon(True)
+      worker.start()
+
+    while numChildren > 0:
+      ret, msg, emsg, vertex = done.get()
+      vertex._configured = 1
+      numChildren = numChildren - 1
+      #self.logPrint('POP  %s from DONE %d LEFT' % (vertex.__class__.__module__, numChildren))
+      self.logWrite(msg)
+      if ret:
+        self.logWrite(emsg)
+        raise RuntimeError(emsg)
+      for child in depGraph.outEdges[vertex]:
+        push = True
+        for v in depGraph.inEdges[child]:
+          if not hasattr(v, '_configured'):
+            #self.logPrint('DENY %s since %s is not configured' % (child.__class__.__module__, v.__class__.__module__))
+            push = False
+            break
+        if push:
+          #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
+          todo.put(child)
+      done.task_done()
+    todo.join()
+    done.join()
+    return
+
+  def serialEvaluation(self, depGraph):
     import graph
 
-    self.setup()
-    self.outputBanner()
-    self.updateDependencies()
-    self.executeTest(self.configureExternalPackagesDir)
-    for child in graph.DirectedGraph.topologicalSort(self.childGraph):
+    for child in graph.DirectedGraph.topologicalSort(depGraph):
       if not hasattr(child, '_configured'):
         child.configure()
       else:
         child.no_configure()
       child._configured = 1
+    return
+
+  def processChildren(self):
+    import script
+
+    useParallel = False
+    if script.useThreads:
+      try:
+        import Queue
+        from threading import Thread
+        if hasattr(Queue.Queue(), 'join'): useParallel = True
+      except: pass
+    if useParallel:
+      self.parallelQueueEvaluation(self.childGraph, script.useThreads)
+    else:
+      self.serialEvaluation(self.childGraph)
+    return
+
+  def configure(self, out = None):
+    '''Configure the system
+       - Must delay database initialization until children have contributed variable types
+       - Any child with the "_configured" attribute will not be configured'''
+    self.setup()
+    self.outputBanner()
+    self.updateDependencies()
+    self.executeTest(self.configureExternalPackagesDir)
+    self.processChildren()
     if self.argDB['with-batch']:
       self.configureBatch()
     self.dumpConfFiles()

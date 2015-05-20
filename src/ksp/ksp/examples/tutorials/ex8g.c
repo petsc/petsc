@@ -123,7 +123,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set the default preconditioner for this program to be GASM
@@ -174,12 +174,12 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Outer IS:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  outer IS[%d]\n",i);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  outer IS[%D]\n",i);CHKERRQ(ierr);
         ierr = ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
       ierr = PetscPrintf(PETSC_COMM_SELF,"Inner IS:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  inner IS[%d]\n",i);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  inner IS[%D]\n",i);CHKERRQ(ierr);
         ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
@@ -279,7 +279,7 @@ int main(int argc,char **args)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e);CHKERRQ(ierr);
   }
 
   /*

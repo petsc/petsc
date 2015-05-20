@@ -1,23 +1,27 @@
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petsc_null_function_          PETSC_NULL_FUNCTION
+#define petscsetcommonblocknumeric_   PETSCSETCOMMONBLOCKNUMERIC
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
 #define petscsetcommonblock_          petscsetcommonblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petsc_null_function_          petsc_null_function
+#define petscsetcommonblocknumeric_   petscsetcommonblocknumeric
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(int*,int*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -41,12 +45,33 @@ PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(int*,int*);
 @*/
 PetscErrorCode PetscInitializeFortran(void)
 {
-  PetscMPIInt c1=0,c2=0;
+  MPI_Fint c1=0,c2=0;
 
   if (PETSC_COMM_WORLD) c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
-  /* PETSC_COMM_SELF is defined as MPI_COMM_SELF */
   c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
   petscsetcommonblock_(&c1,&c2);
+
+#if defined(PETSC_USE_REAL___FLOAT128)
+  {
+    MPI_Fint freal,fscalar,fsum;
+    freal   = MPI_Type_c2f(MPIU_REAL);
+    fscalar = MPI_Type_c2f(MPIU_SCALAR);
+    fsum    = MPI_Op_c2f(MPIU_SUM);
+    petscsetcommonblockmpi_(&freal,&fscalar,&fsum);
+  }
+#endif
+
+  {
+    PetscReal pi = PETSC_PI;
+    PetscReal maxreal = PETSC_MAX_REAL;
+    PetscReal minreal = PETSC_MIN_REAL;
+    PetscReal eps = PETSC_MACHINE_EPSILON;
+    PetscReal seps = PETSC_SQRT_MACHINE_EPSILON;
+    PetscReal small = PETSC_SMALL;
+    PetscReal pinf = PETSC_INFINITY;
+    PetscReal pninf = PETSC_NINFINITY;
+    petscsetcommonblocknumeric_(&pi,&maxreal,&minreal,&eps,&seps,&small,&pinf,&pninf);
+  }
   return 0;
 }
 

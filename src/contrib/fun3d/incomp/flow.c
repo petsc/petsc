@@ -35,7 +35,7 @@ typedef struct {                               /*============================*/
   PetscBool PreLoading;
 } AppCtx;                                      /*============================*/
 
-extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+extern int  FormJacobian(SNES,Vec,Mat,Mat,void*),
             FormFunction(SNES,Vec,Vec,void*),
             FormInitialGuess(SNES,GRID*),
             Update(SNES,void*),
@@ -156,7 +156,7 @@ int main(int argc,char **args)
   user.grid  = &f_pntr;
   user.tsCtx = &tsCtx;
 
-  /* AMS Stuff */
+  /* SAWs Stuff */
 
   /*
     Preload the executable to get accurate timings. This runs the following chunk of
@@ -445,13 +445,12 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
 /*---------------------------------------------------------------------*/
 {
   AppCtx      *user  = (AppCtx*) dummy;
   GRID        *grid  = user->grid;
   TstepCtx    *tsCtx = user->tsCtx;
-  Mat         pc_mat = *B;
   Vec         localX = grid->qnodeLoc;
   PetscScalar *qnode;
   int         ierr;
@@ -472,9 +471,8 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
             grid->area,grid->xyzn,&tsCtx->cfl,
            &rank,&grid->nvertices);
   ierr  = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
+  ierr  = MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 #if defined(MATRIX_VIEW)
   if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {
     PetscViewer viewer;
@@ -681,7 +679,7 @@ int GetLocalOrdering(GRID *grid)
   int         nsnodeLoc,nvnodeLoc,nfnodeLoc;
   int         nnbound,nvbound,nfbound;
   int         bs = 4;
-  int         fdes;
+  int         fdes = 0;
   off_t       currentPos  = 0,newPos = 0;
   int         grid_param  = 13;
   int         cross_edges = 0;
@@ -896,7 +894,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,0);CHKERRQ(ierr);
+  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__);CHKERRQ(ierr);
   k    = 0;
   for (i = 0; i < nedgeLoc; i++) {
     int cross_node=nnodesLoc/2;
@@ -1961,10 +1959,9 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   *incell = -1;
   *iconn  = NULL;
   acell   = 100000;              /* allocate for this many cells */
-  ierr    = PetscMalloc(acell*sizeof(*conn),&conn);CHKERRQ(ierr);
-  ierr    = PetscMalloc2(nnodes+1,PetscInt,&ui,nedge,PetscInt,&uj);CHKERRQ(ierr);
-  ierr    = PetscMalloc(nnodes*sizeof(PetscInt),&utmp);CHKERRQ(ierr);
-  ierr    = PetscMemzero(utmp,nnodes*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr    = PetscMalloc1(acell,&conn);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(nnodes+1,&ui,nedge,&uj);CHKERRQ(ierr);
+  ierr    = PetscCalloc1(nnodes,&utmp);CHKERRQ(ierr);
   /* count the number of edges in the upper-triangular matrix u */
   for (i=0; i<nedge; i++) {     /* count number of nonzeros in upper triangular matrix */
     GetEdge(eptr,i,node0,node1);
@@ -1990,7 +1987,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
 
   /* Infer cells */
   ncell = 0;
-  ierr  = PetscMalloc3(rowmax,PetscInt,&tmp1,rowmax,PetscInt,&tmp2,rowmax,PetscInt,&tmp3);CHKERRQ(ierr);
+  ierr  = PetscMalloc3(rowmax,&tmp1,rowmax,&tmp2,rowmax,&tmp3);CHKERRQ(ierr);
   for (i=0; i<nnodes; i++) {
     node0 = i;
     ntmp1 = ui[node0+1] - ui[node0]; /* Number of candidates for node1 */
@@ -2038,7 +2035,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   ierr = PetscFree2(ui,uj);CHKERRQ(ierr);
 
   ierr    = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %D cells with nnodes=%D nedge=%D\n",ncell,nnodes,nedge);CHKERRQ(ierr);
-  ierr    = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   *incell = ncell;
   *iconn  = (PetscInt*)conn;
   PetscFunctionReturn(0);
@@ -2066,7 +2063,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   /* Count the number of neighbors of each owned node */
   ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   rstart -= nnodesLoc;
-  ierr    = PetscMalloc2(nnodesLoc,PetscInt,&nodeEdgeCount,nnodesLoc,PetscInt,&nodeEdgeOffset);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(nnodesLoc,&nodeEdgeCount,nnodesLoc,&nodeEdgeOffset);CHKERRQ(ierr);
   ierr    = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);
   for (i=0; i<nedgeLoc; i++) {
     GetEdge(grid->eptr,i,node0,node1);
@@ -2127,7 +2124,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr    = VecGetArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
   for (i=0; i<nvertices; i++) nedgeOv += (PetscInt)vnei[2*i+0];
   /* Allocate for the global indices in VNodeEdge of the edges to receive */
-  ierr = PetscMalloc(nedgeOv*sizeof(*eIdxOv),&eIdxOv);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nedgeOv,&eIdxOv);CHKERRQ(ierr);
   for (i=0,cnt=0; i<nvertices; i++) {
     for (j=0; j<(PetscInt)vnei[2*i+0]; j++) eIdxOv[cnt++] = (PetscInt)vnei[2*i+1] + j;
   }
@@ -2145,7 +2142,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %D, half=%D\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
 
   /* Create the non-scalable global-to-local index map. Yuck, but it has already been used elsewhere. */
-  ierr = PetscMalloc(nnodes*sizeof(PetscInt),&p2l);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnodes,&p2l);CHKERRQ(ierr);
   for (i=0; i<nnodes; i++) p2l[i] = -1;
   for (i=0; i<nvertices; i++) p2l[grid->loc2pet[i]] = i;
   if (1) {
@@ -2169,7 +2166,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
     }
   }
   /* Array of edges to keep */
-  ierr    = PetscMalloc(2*nedgeOv*sizeof(PetscInt),&eptrOv);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(2*nedgeOv,&eptrOv);CHKERRQ(ierr);
   nedgeOv = 0;
   for (i=0,cnt=0; i<nvertices; i++) {
     PetscInt n = (PetscInt)vnei[2*i+0]; /* number of nodes connected to i */
@@ -2191,7 +2188,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = PetscFree(p2l);CHKERRQ(ierr);
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%D nedgeOv=%D\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,"-complete_overlap",&flg,NULL);CHKERRQ(ierr);
@@ -2203,7 +2200,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
     *invertices = grid->nvertices;
     *inedgeOv   = nedgeLoc;
     ierr        = PetscFree(eptrOv);CHKERRQ(ierr);
-    ierr        = PetscMalloc(2*nedgeLoc*sizeof(PetscInt),&eptrOv);CHKERRQ(ierr);
+    ierr        = PetscMalloc1(2*nedgeLoc,&eptrOv);CHKERRQ(ierr);
     ierr        = PetscMemcpy(eptrOv,grid->eptr,2*nedgeLoc*sizeof(PetscInt));CHKERRQ(ierr);
     *ieptrOv    = eptrOv;
   }
@@ -2345,7 +2342,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 
   /* Label cell rank, not a measure of computation because nothing is actually computed at cells.  This is written
    * primarily to aid in debugging. The partition for computation should label vertices. */
-  ierr = PetscMalloc(ncells*sizeof(int),&cellrank);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncells,&cellrank);CHKERRQ(ierr);
   for (i=0; i<ncells; i++) cellrank[i] = rank;
   ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,cellrank,ncells,PETSC_INT,base64);CHKERRQ(ierr);
   ierr = PetscFree(cellrank);CHKERRQ(ierr);
@@ -2354,12 +2351,12 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,conn,ncells*4,PETSC_INT,base64);CHKERRQ(ierr);
   ierr = PetscFree(conn);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(ncells*sizeof(int),&celloffset);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncells,&celloffset);CHKERRQ(ierr);
   for (i=0; i<ncells; i++) celloffset[i] = 4*(i+1);
   ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,celloffset,ncells,PETSC_INT,base64);CHKERRQ(ierr);
   ierr = PetscFree(celloffset);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(ncells*sizeof(unsigned char),&celltype);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncells,&celltype);CHKERRQ(ierr);
   for (i=0; i<ncells; i++) celltype[i] = 10; /* VTK_TETRA */
   ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,celltype,ncells,PETSC_CHAR,base64);CHKERRQ(ierr);
   ierr = PetscFree(celltype);CHKERRQ(ierr);
@@ -2382,7 +2379,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*---------------------------------------------------------------------*/
 {
-  int                    ierr,i,j,k,bs;
+  int                    ierr,i,j,bs;
   int                    nnodes,jstart,jend,nbrs_diag,nbrs_offd;
   int                    nnodesLoc,nvertices;
   int                    *val_diag,*val_offd,*svertices,*loc2pet;
@@ -2552,25 +2549,9 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /* Set local to global mapping for setting the matrix elements in
 * local ordering : first set row by row mapping
 */
-#if defined(INTERLACING)
-  ICALLOC(bs*nvertices,&svertices);
-  k = 0;
-  for (i=0; i < nvertices; i++)
-    for (j=0; j < bs; j++)
-      svertices[k++] = (bs*loc2pet[i] + j);
-  /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-
-/* Now set the blockwise local to global mapping */
-#if defined(BLOCKING)
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
-  ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g,isl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-#endif
-  ierr = PetscFree(svertices);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

@@ -3,7 +3,7 @@
     Factorization code for BAIJ format.
 */
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /* ------------------------------------------------------------*/
 /*
@@ -32,7 +32,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -193,7 +193,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
   }
 
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
@@ -309,7 +309,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
   PetscReal      shift         = info->shiftamount;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -452,7 +452,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   if (info->shifttype == MAT_SHIFT_NONE) {
@@ -577,7 +577,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
 
   if ((unsigned long)aa%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
   if ((unsigned long)ba%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
-  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
   if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */
@@ -1020,7 +1020,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
 
   if ((unsigned long)aa%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
   if ((unsigned long)ba%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
-  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
   if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */
@@ -1463,7 +1463,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
 
   if ((unsigned long)aa%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
   if ((unsigned long)ba%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
-  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
   if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */

@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <../src/mat/order/order.h>
+#include <petsc/private/matorderimpl.h>
 
 /*
     MatGetOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
@@ -18,9 +18,9 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&perm);CHKERRQ(ierr);
-  ierr = PetscMalloc5(nrow,PetscInt,&iperm,nrow,PetscInt,&deg,nrow,PetscInt,&marker,nrow,PetscInt,&rchset,nrow,PetscInt,&nbrhd);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nrow,PetscInt,&qsize,nrow,PetscInt,&qlink);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrow,&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc5(nrow,&iperm,nrow,&deg,nrow,&marker,nrow,&rchset,nrow,&nbrhd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nrow,&qsize,nrow,&qlink);CHKERRQ(ierr);
   /* WARNING - genqmd trashes ja */
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);

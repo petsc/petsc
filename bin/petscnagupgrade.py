@@ -34,8 +34,9 @@ def currentversion(petscdir):
   except:
     return
   try:
-    import urllib
-    fd = urllib.urlopen("http://www.mcs.anl.gov/petsc/petsc-dev/include/petscversion.h")
+    import urllib2
+    fd = urllib2.urlopen("https://bitbucket.org/petsc/petsc/raw/maint/include/petscversion.h",timeout = 2)
+    #fd = urllib2.urlopen("http://www.mcs.anl.gov/petsc/petsc-current/include/petscversion.h",timeout = 2)
     pv = fd.read()
     fd.close()
     aversion = parse_version_h(pv)

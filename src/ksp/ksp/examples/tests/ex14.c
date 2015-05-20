@@ -55,6 +55,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -66,16 +67,15 @@ T*/
 typedef struct {
   PetscReal param;             /* test problem parameter */
   PetscInt  mx,my;             /* discretization in x,y directions */
-  Vec       localX,localF;    /* ghosted local vector */
+  Vec       localX;           /* ghosted local vector */
   DM        da;                /* distributed array data structure */
-  PetscInt  rank;              /* processor rank */
 } AppCtx;
 
 /*
    User-defined routines
 */
 extern PetscErrorCode ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
-extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
+extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -102,12 +102,10 @@ int main(int argc,char **argv)
   PetscInt     max_functions  = 50;   /* maximum number of function evaluations */
   PetscInt     lin_its;               /* number of linear solver iterations for each step */
   PetscInt     i;                     /* nonlinear solve iteration number */
-  MatStructure mat_flag;              /* flag indicating structure of preconditioner matrix */
   PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
 
   /*
@@ -139,7 +137,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
@@ -149,7 +147,6 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,7 +188,7 @@ int main(int argc,char **argv)
   ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);   /* Compute F(X)    */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
-  if (!no_output) PetscPrintf(comm,"Initial function norm = %G\n",fnorm);
+  if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",(double)fnorm);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system with a user-defined method
@@ -212,10 +209,9 @@ int main(int argc,char **argv)
   for (i=0; i<max_nonlin_its; i++) {
 
     /*
-        Compute the Jacobian matrix.  See the comments in this routine for
-        important information about setting the flag mat_flag.
+        Compute the Jacobian matrix.  
      */
-    ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRQ(ierr);
+    ierr = ComputeJacobian(&user,X,J);CHKERRQ(ierr);
 
     /*
         Solve J Y = F, where J is the Jacobian matrix.
@@ -224,7 +220,7 @@ int main(int argc,char **argv)
             matrix.
           - Then solve the Newton system.
      */
-    ierr = KSPSetOperators(ksp,J,J,mat_flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,J,J);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 
@@ -236,7 +232,7 @@ int main(int argc,char **argv)
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%G, ynorm=%G\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%g, ynorm=%g\n",lin_its,(double)xnorm,(double)ynorm);CHKERRQ(ierr);
     }
 
     /*
@@ -245,7 +241,7 @@ int main(int argc,char **argv)
     ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);       /* fnorm = || F || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"Iteration %D, function norm = %G\n",i+1,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Iteration %D, function norm = %g\n",i+1,(double)fnorm);CHKERRQ(ierr);
     }
 
     /*
@@ -253,13 +249,13 @@ int main(int argc,char **argv)
      */
     if (fnorm <= ttol) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)ttol);CHKERRQ(ierr);
       }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to small update length: %G < %G * %G\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",(double)ynorm,(double)xtol,(double)xnorm);CHKERRQ(ierr);
       }
       break;
     }
@@ -279,7 +275,7 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(&J);CHKERRQ(ierr);           ierr = VecDestroy(&Y);CHKERRQ(ierr);
   ierr = VecDestroy(&user.localX);CHKERRQ(ierr); ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
@@ -303,7 +299,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscInt    i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   PetscReal   one = 1.0,lambda,temp1,temp,hx,hy;
   PetscScalar *x;
-  Vec         localX = user->localX;
 
   mx    = user->mx;            my = user->my;            lambda = user->param;
   hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -316,7 +311,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DMDA):
@@ -339,20 +334,14 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
         x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtScalar(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-
-  /*
-     Insert values into global vector
-  */
-  ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -374,7 +363,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   PetscInt       i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
   PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,uxx,uyy,*x,*f;
-  Vec            localX = user->localX,localF = user->localF;
+  Vec            localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -393,7 +382,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
      Get pointers to vector data
   */
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -423,13 +412,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
      Restore vectors
   */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
-
-  /*
-     Insert values into global vector
-  */
-  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0;
 }
@@ -450,18 +433,19 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
    Notes:
    Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
+   global numbering with the "ltog" mapping 
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
+PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
 {
-  PetscErrorCode ierr;
-  Vec            localX = user->localX;   /* local vector */
-  PetscInt       *ltog;                   /* local-to-global mapping */
-  PetscInt       i,j,row,mx,my,col[5];
-  PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
-  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  PetscErrorCode         ierr;
+  Vec                    localX = user->localX;   /* local vector */
+  const PetscInt         *ltog;                   /* local-to-global mapping */
+  PetscInt               i,j,row,mx,my,col[5];
+  PetscInt               xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  PetscScalar            two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  ISLocalToGlobalMapping ltogm;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -490,7 +474,8 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   /*
      Get the global node numbers for all local nodes, including ghost points
   */
-  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(user->da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /*
      Compute entries for the locally owned part of the Jacobian.
@@ -523,6 +508,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /*
      Assemble matrix, using the 2-step process:
@@ -534,23 +520,5 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

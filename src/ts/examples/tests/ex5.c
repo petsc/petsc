@@ -66,6 +66,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* stefan-boltzmann constant */
@@ -104,6 +105,7 @@ typedef struct {
 typedef struct {
   PetscBool   drawcontours;   /* flag - 1 indicates drawing contours */
   PetscViewer drawviewer;
+  PetscInt    interval;
 } MonitorCtx;
 
 
@@ -170,6 +172,9 @@ int main(int argc,char **argv)
   Mat            J;              /* Jacobian matrix */
   PetscReal      ftime,dt;
   PetscInt       steps,dof = 5;
+  PetscBool      use_coloring  = PETSC_TRUE;
+  MatFDColoring  matfdcoloring = 0;
+  PetscBool      monitor_off = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -184,7 +189,7 @@ int main(int argc,char **argv)
   airtemp   = put.Ta;
   pwat      = put.pwt;
 
-  if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",sfctemp); /* input surface temperature */
+  if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",(double)sfctemp); /* input surface temperature */
 
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
   emma           = emission(pwat); /* accounts for radiative effects of water vapor */
@@ -208,7 +213,7 @@ int main(int argc,char **argv)
   mixratio = calcmixingr(sfctemp,pressure1);
   rh       = (x/mixratio)*100;
 
-  if (!rank) printf("Initial RH = %.1f percent\n\n",rh);   /* prints initial relative humidity */
+  if (!rank) printf("Initial RH = %.1f percent\n\n",(double)rh);   /* prints initial relative humidity */
 
   time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
@@ -216,7 +221,7 @@ int main(int argc,char **argv)
   /*------------------------------------------*/
 
   /* Create grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
                       PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
@@ -251,6 +256,8 @@ int main(int argc,char **argv)
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetBounds(usermonitor.drawviewer,dof,bounds);CHKERRQ(ierr);
   }
+  usermonitor.interval = 1;
+  ierr = PetscOptionsGetInt(NULL,"-monitor_interval",&usermonitor.interval,NULL);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DA;
@@ -264,15 +271,15 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,rhs,RhsFunc,&user);CHKERRQ(ierr);
 
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
-  PetscBool     use_coloring  = PETSC_TRUE;
-  MatFDColoring matfdcoloring = 0;
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (use_coloring) {
     ISColoring iscoloring;
-    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
@@ -281,7 +288,6 @@ int main(int argc,char **argv)
   }
 
   /* Define what to print for ts_monitor option */
-  PetscBool monitor_off = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
   if (!monitor_off) {
     ierr = TSMonitorSet(ts,Monitor,&usermonitor,NULL);CHKERRQ(ierr);
@@ -289,7 +295,7 @@ int main(int argc,char **argv)
   ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,ftime/3600,dt);
+  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);
@@ -307,7 +313,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,T);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  if (!rank) PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);
+  if (!rank) PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",(double)(ftime/3600),steps);
 
 
   if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
@@ -332,7 +338,7 @@ int main(int argc,char **argv)
 PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux)
 {
   PetscFunctionBeginUser;
-  *flux = SIG*((EMMSFC*emma*pow(airtemp,4)) + (EMMSFC*fract*(1 - emma)*pow(cloudTemp,4)) - (EMMSFC*pow(sfctemp,4)));   /* calculates flux using Stefan-Boltzmann relation */
+  *flux = SIG*((EMMSFC*emma*PetscPowScalarInt(airtemp,4)) + (EMMSFC*fract*(1 - emma)*PetscPowScalarInt(cloudTemp,4)) - (EMMSFC*PetscPowScalarInt(sfctemp,4)));   /* calculates flux using Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
 
@@ -343,7 +349,7 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   PetscScalar emm = 0.001;
 
   PetscFunctionBeginUser;
-  *flux = SIG*(-emm*(pow(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
+  *flux = SIG*(-emm*(PetscPowScalarInt(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -392,19 +398,19 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
 PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
 {
   PetscScalar kdry;     /* poisson constant for dry atmosphere */
-  PetscScalar kmoist;   /* poisson constant for moist atmosphere */
   PetscScalar pavg;     /* average atmospheric pressure */
-  PetscScalar mixratio; /* mixing ratio */
+  /* PetscScalar mixratio; mixing ratio */
+  /* PetscScalar kmoist;   poisson constant for moist atmosphere */
 
   PetscFunctionBeginUser;
-  mixratio = calcmixingr(sfctemp,pressure1);
+  /* mixratio = calcmixingr(sfctemp,pressure1); */
 
 /* initialize poisson constant */
   kdry   = 0.2854;
-  kmoist = 0.2854*(1 - 0.24*mixratio);
+  /* kmoist = 0.2854*(1 - 0.24*mixratio); */
 
   pavg     = ((0.7*pressure1)+pressure2)/2;     /* calculates simple average press */
-  *pottemp = temp*(pow((pressure1/pavg),kdry)); /* calculates potential temperature */
+  *pottemp = temp*(PetscPowScalar((pressure1/pavg),kdry)); /* calculates potential temperature */
   PetscFunctionReturn(0);
 }
 extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
@@ -413,7 +419,7 @@ extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
   PetscScalar mixratio; /* mixing ratio */
 
   dtemp    = dtemp - 273;                                /* converts from Kelvin to Celsuis */
-  e        = 6.11*(pow(10,((7.5*dtemp)/(237.7+dtemp)))); /* converts from dew point temp to vapor pressure */
+  e        = 6.11*(PetscPowScalar(10,((7.5*dtemp)/(237.7+dtemp)))); /* converts from dew point temp to vapor pressure */
   e        = e*100;                                      /* converts from hPa to Pa */
   mixratio = (0.622*e)/(pressure1 - e);                  /* computes mixing ratio */
   mixratio = mixratio*1;                                 /* convert to g/Kg */
@@ -488,41 +494,53 @@ extern PetscScalar cel_to_fahr(PetscScalar temp)
 }
 void readinput(struct in *put)
 {
-  int  i;
-  char x;
-  FILE *ifp;
+  int    i;
+  char   x;
+  FILE   *ifp;
+  double tmp;
 
   ifp = fopen("ex5_control.txt", "r");
 
   for (i=0; i<110; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Ts);
+  fscanf(ifp, "%lf", &tmp);
+  put->Ts = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Td);
+  fscanf(ifp, "%lf", &tmp);
+  put->Td = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Ta);
+  fscanf(ifp, "%lf", &tmp);
+  put->Ta = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Tc);
+  fscanf(ifp, "%lf", &tmp);
+  put->Tc = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->fr);
+  fscanf(ifp, "%lf", &tmp);
+  put->fr = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->wnd);
+  fscanf(ifp, "%lf", &tmp);
+  put->wnd = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->pwt);
+  fscanf(ifp, "%lf", &tmp);
+  put->pwt = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->wndDir);
+  fscanf(ifp, "%lf", &tmp);
+  put->wndDir = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->time);
+  fscanf(ifp, "%lf", &tmp);
+  put->time = tmp;
 
   for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->init);
+  fscanf(ifp, "%lf", &tmp);
+  put->init = tmp;
+
 }
 
 /* ------------------------------------------------------------------- */
@@ -534,21 +552,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   AppCtx         *user = (AppCtx*)ctx;       /* user-defined application context */
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **X;
-  PetscScalar    deltT;
-  PetscReal      hx,hy;
-  FILE           *ifp;
-  FILE           *ofp;
 
   PetscFunctionBeginUser;
-  ofp   = fopen("swing", "w");
-  ifp   = fopen("grid.in", "r");
-  deltT = 0.8;
-
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-
-  hx = 1/(PetscReal)(Mx-1);
-  hy = 1/(PetscReal)(My-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,Xglobal,&X);CHKERRQ(ierr);
@@ -624,9 +631,9 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscScalar    Cp             = 1005.7;               /* specific heat of air at constant pressure */
   PetscScalar    Rd             = 287.058;              /* gas constant for dry air */
   PetscScalar    diffconst      = 1000;                 /* diffusion coefficient */
-  PetscScalar    f              = 2*0.0000727*sin(lat); /* coriolis force */
+  PetscScalar    f              = 2*0.0000727*PetscSinScalar(lat); /* coriolis force */
   PetscScalar    deep_grnd_temp = user->deep_grnd_temp; /* temp in lowest ground layer */
-  PetscScalar    Ts,u,v,p,P;
+  PetscScalar    Ts,u,v,p;
   PetscScalar    u_abs,u_plus,u_minus,v_abs,v_plus,v_minus;
 
   PetscScalar sfctemp1,fsfc1,Ra;
@@ -654,7 +661,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   ierr = DMGlobalToLocalEnd(da,Xglobal,INSERT_VALUES,localT);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,localT,&X);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localT,&X);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&Frhs);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
@@ -686,7 +693,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       v_minus = .5*(v - v_abs); /* v if v <0; 0 if v>0 */
 
       /* Solve governing equations */
-      P = p*Rd*Ts;
+      /* P = p*Rd*Ts; */
 
       /* du/dt -> time change of east-west component of the wind */
       Frhs[j][i].u = - u_plus*(u - X[j][i-1].u)*dhx - u_minus*(X[j][i+1].u - u)*dhx       /* - u(du/dx) */
@@ -718,7 +725,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,localT,&X);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localT,&X);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&Frhs);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -728,20 +735,22 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *array;
-  MonitorCtx     *user  = (MonitorCtx*)ctx;
-  PetscViewer    viewer = user->drawviewer;
-  PetscMPIInt    rank;
-  PetscReal      norm;
+  PetscErrorCode    ierr;
+  const PetscScalar *array;
+  MonitorCtx        *user  = (MonitorCtx*)ctx;
+  PetscViewer       viewer = user->drawviewer;
+  PetscMPIInt       rank;
+  PetscReal         norm;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
-  ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-  if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
-  ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
+  if (step%user->interval == 0) {
+    ierr = VecGetArrayRead(T,&array);CHKERRQ(ierr);
+    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);
+    ierr = VecRestoreArrayRead(T,&array);CHKERRQ(ierr);
+  }
 
   if (user->drawcontours) {
     ierr = VecView(T,viewer);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS
@@ -33,14 +33,14 @@ static PetscErrorCode ourkspcomputeinitialguess(KSP ksp,Vec b,void *ctx)
   return 0;
 }
 
-static PetscErrorCode ourkspcomputeoperators(KSP ksp,Mat A,Mat B,MatStructure *str,void *ctx)
+static PetscErrorCode ourkspcomputeoperators(KSP ksp,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr = 0;
   DM             dm;
   DMKSP          kdm;
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
-  (*(void (PETSC_STDCALL *)(KSP*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[1]))(&ksp,&A,&B,str,ctx,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(KSP*,Mat*,Mat*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[1]))(&ksp,&A,&B,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 

@@ -29,12 +29,12 @@
             <li><span class="current">Citing PETSc</span></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><a href="installation.html">Installation</a> </li>
-            <li><a href="ams.html">AMS</a></li>
+            <li><a href="saws.html">SAWs</a></li>
             <li><a href="changes/index.html">Changes</a></li>
             <li><a href="bugreporting.html">Bug Reporting</a></li>
             <li><a href="codemanagement.html">Code Management</a></li>
             <li><a href="faq.html">FAQ</a></li>
-            <li><a href="copyright.html">License</a></li>
+            <li><a href="license.html">License</a></li>
             <li><a href="linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -49,22 +49,32 @@
 
     <div id="main">
 
-      When citing PETSc in a publication, please cite the following: <br>
+      When citing computations performed with PETSc in a publication, plus run the application code with all the options you usually use and the option -citations optionalfilename   This will generate a list of bibtex references appropriate for that computation. Otherwise please cite the following: <br>
 
       <pre style="font-size: small">
           @Misc{petsc-web-page,
-            Author = "Satish Balay and Jed Brown and Kris Buschelman and William D. Gropp and Dinesh Kaushik and Matthew G. Knepley and Lois Curfman McInnes and Barry F. Smith and Hong Zhang",
-            Title = "{PETSc} {W}eb page",
-            Note = <a href="http://www.mcs.anl.gov/petsc">"http://www.mcs.anl.gov/petsc"</a>,
-            Year = "2013"
+            author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune
+                      and Kris Buschelman and Victor Eijkhout and William~D. Gropp
+                      and Dinesh Kaushik and Matthew~G. Knepley
+                      and Lois Curfman McInnes and Karl Rupp and Barry~F. Smith
+                      and Hong Zhang},
+            title =  {{PETS}c {W}eb page},
+            url =    {http://www.mcs.anl.gov/petsc},
+            howpublished = {\url{http://www.mcs.anl.gov/petsc}},
+            year = {2014}
           }
 
           @TechReport{petsc-user-ref,
-            Author = "Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley and Lois Curfman McInnes and Barry F. Smith and Hong Zhang",
-            Title = "{PETS}c Users Manual",
-            Number = "ANL-95/11 - Revision 3.4",
-            Institution = "Argonne National Laboratory",
-            Year = "2013"
+            author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune
+                      and Kris Buschelman and Victor Eijkhout and William~D. Gropp
+                      and Dinesh Kaushik and Matthew~G. Knepley
+                      and Lois Curfman McInnes and Karl Rupp and Barry~F. Smith
+                      and Hong Zhang},
+            title  = {{PETS}c Users Manual},
+            institution = {Argonne National Laboratory},
+            year   = 2014,
+            number = {ANL-95/11 - Revision 3.5},
+            url    = {http://www.mcs.anl.gov/petsc}
           }
 
           @InProceedings{petsc-efficient,

@@ -1,6 +1,3 @@
-#define PCBOOMERAMG   "boomeramg"
-#define PCEUCLID      "euclid"
-#define PCSPBASICC    "spbasicc"
 
 PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm);
 PetscErrorCode precond_lsqr_monitor(KSP solksp, /* Krylov Subspace method context */

@@ -33,13 +33,13 @@ int main(int argc,char **args)
   if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(3*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-  ierr  = PetscMalloc(6*sizeof(PetscInt),&jj);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(3,&ii);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(6,&jj);CHKERRQ(ierr);
   ii[0] = 0; ii[1] = 3; ii[2] = 6;
   if (!rank) {
-    jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 3; jj[5] = 2;
+    jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 2; jj[5] = 3;
   } else {
-    jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 5; jj[5] = 3;
+    jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 3; jj[5] = 5;
   }
   ierr = MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,NULL,&mesh);CHKERRQ(ierr);
   ierr = MatMeshToCellGraph(mesh,2,&dual);CHKERRQ(ierr);

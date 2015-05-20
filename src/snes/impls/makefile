@@ -1,11 +1,11 @@
 
 ALL: lib
 
-DIRS     = ksponly ls tr test richardson python vi ngmres qn shell ncg fas gs ms nasm
+DIRS     = ksponly ls tr test richardson python vi ngmres qn shell ncg fas gs ms nasm composite
 LOCDIR   = src/snes/impls/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 

@@ -15,7 +15,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
   PetscScalar    *d,*e;
   PetscReal      *ee;
   PetscErrorCode ierr;
-  PetscInt       j,n = ksp->its;
+  PetscInt       j,n = cgP->ned;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -23,7 +23,6 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
 
   ierr = PetscMemzero(c,nmax*sizeof(PetscReal));CHKERRQ(ierr);
   if (!n) {
-    *r = 0.0;
     PetscFunctionReturn(0);
   }
   d = cgP->d; e = cgP->e; ee = cgP->ee;
@@ -47,7 +46,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscR
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
   PetscScalar *d,*e;
   PetscReal   *dd,*ee;
-  PetscInt    j,n = ksp->its;
+  PetscInt    j,n = cgP->ned;
 
   PetscFunctionBegin;
   if (!n) {

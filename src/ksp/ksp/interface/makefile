@@ -4,14 +4,14 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
-           xmon.c eige.c dlregisksp.c kspams.c dmksp.c
+           xmon.c eige.c dlregisksp.c dmksp.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     =
+DIRS     = saws
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/interface/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

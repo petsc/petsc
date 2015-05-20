@@ -1,6 +1,6 @@
 
 #include <petscksp.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscInt    restart;
@@ -33,7 +33,7 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
   PetscFunctionBegin;
   restart = ctx->restart;
   ierr    = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr    = KSPGetOperators(ksp, &A, &B, 0);CHKERRQ(ierr);
+  ierr    = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
 
   x = ksp->vec_sol;
   r = ctx->R;
@@ -45,8 +45,8 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
       ierr = (*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx);CHKERRQ(ierr);
     }
 
-    ierr = PCApply(pc, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
-    ierr = MatMult(A, s, v);CHKERRQ(ierr);  /* v = A s */
+    ierr = KSP_PCApply(ksp, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
+    ierr = KSP_MatMult(ksp,A, s, v);CHKERRQ(ierr);  /* v = A s */
 
     ierr = VecMDot(v,k, ctx->VV, ctx->val);CHKERRQ(ierr);
     for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
@@ -96,13 +96,13 @@ PetscErrorCode KSPSolve_GCR(KSP ksp)
   PetscReal      norm_r;
 
   PetscFunctionBegin;
-  ierr = KSPGetOperators(ksp, &A, &B, NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x    = ksp->vec_sol;
   b    = ksp->vec_rhs;
   r    = ctx->R;
 
   /* compute initial residual */
-  ierr = MatMult(A, x, r);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,A, x, r);CHKERRQ(ierr);
   ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr); /* r = b - A x  */
   ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
 
@@ -154,12 +154,12 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = KSPGetOperators(ksp, &A, 0, 0);CHKERRQ(ierr);
-  ierr = MatGetVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*ctx->restart, &ctx->val);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->restart, &ctx->val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -195,7 +195,7 @@ PetscErrorCode KSPDestroy_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GCR"
-PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GCR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -203,7 +203,7 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GCR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GCR options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gcr_restart","Number of Krylov search directions","KSPGCRSetRestart",ctx->restart,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGCRSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -367,13 +367,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   KSP_GCR        *ctx;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_GCR,&ctx);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&ctx);CHKERRQ(ierr);
 
   ctx->restart    = 30;
   ctx->n_restarts = 0;
   ksp->data       = (void*)ctx;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_GCR;
   ksp->ops->solve          = KSPSolve_GCR;

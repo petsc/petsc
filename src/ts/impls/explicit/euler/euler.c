@@ -1,7 +1,7 @@
 /*
        Code for Timestepping with explicit Euler.
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;     /* work vector where new solution is formed  */
@@ -20,6 +20,7 @@ static PetscErrorCode TSStep_Euler(TS ts)
   ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
   ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
+  ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->steps++;
   PetscFunctionReturn(0);
@@ -65,7 +66,7 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Euler"
-static PetscErrorCode TSSetFromOptions_Euler(TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -127,7 +128,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->interpolate     = TSInterpolate_Euler;
   ts->ops->linearstability = TSComputeLinearStability_Euler;
 
-  ierr = PetscNewLog(ts,TS_Euler,&euler);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
   PetscFunctionReturn(0);
 }

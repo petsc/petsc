@@ -1,0 +1,26 @@
+
+---- Minimum Surface Area Problem -----
+mx: 6     my: 8   
+
+iter =   0, Function value 3.60139, Residual: 1.76968 
+iter =   0, Function value 2.02225, Residual: 1.30445 
+iter =   1, Function value 2.00305, Residual: 1.44781 
+iter =   2, Function value 1.47826, Residual: 0.476468 
+iter =   3, Function value 1.42149, Residual: 0.199717 
+iter =   4, Function value 1.41564, Residual: 0.00970249 
+iter =   5, Function value 1.41562, Residual: 0.00011287 
+iter =   6, Function value 1.41562, Residual: < 1.0e-6 
+Tao Object: 2 MPI processes
+  type: ntr
+      Rejected matrix updates: 0
+  KSP Object:   2 MPI processes
+    type: stcg
+  total KSP iterations: 97
+  convergence tolerances: fatol=1e-10,   frtol=1e-10
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  Residual in Function/Gradient:=2.32539e-08
+  Objective value=1.41562
+  total number of iterations=6,                          (max: 50)
+  total number of function/gradient evaluations=19,      (max: 4000)
+  total number of Hessian evaluations=7
+  Solution converged:   estimated f(x)-f(X*) <= fatol

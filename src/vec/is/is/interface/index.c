@@ -2,7 +2,7 @@
 /*
    Defines the abstract operations on index sets, i.e. the public interface.
 */
-#include <petsc-private/isimpl.h>      /*I "petscis.h" I*/
+#include <petsc/private/isimpl.h>      /*I "petscis.h" I*/
 #include <petscviewer.h>
 
 /* Logging support */
@@ -62,9 +62,12 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 @*/
 PetscErrorCode  ISSetIdentity(IS is)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   is->isidentity = PETSC_TRUE;
+  ierr = ISSetPermutation(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +175,7 @@ PetscErrorCode  ISSetPermutation(IS is)
       const PetscInt *iidx;
 
       ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-      ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
       ierr = PetscMemcpy(idx,iidx,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscSortInt(n,idx);CHKERRQ(ierr);
@@ -219,6 +222,7 @@ PetscErrorCode  ISDestroy(IS *is)
   if ((*is)->ops->destroy) {
     ierr = (*(*is)->ops->destroy)(*is);CHKERRQ(ierr);
   }
+  ierr = PetscLayoutDestroy(&(*is)->map);CHKERRQ(ierr);
   /* Destroy local representations of offproc data. */
   ierr = PetscFree((*is)->total);CHKERRQ(ierr);
   ierr = PetscFree((*is)->nonlocal);CHKERRQ(ierr);
@@ -259,8 +263,12 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
   if (!is->isperm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
-  ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
-  ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+  if (is->isidentity) {
+    ierr = ISDuplicate(is,isout);CHKERRQ(ierr);
+  } else {
+    ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -436,6 +444,9 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    Level: intermediate
 
+   Note:
+   This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
+
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
 PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
@@ -468,7 +479,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
   ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
   ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -476,7 +487,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   for (i=1; i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
-  ierr = PetscMalloc(N*sizeof(PetscInt),&(is->total));CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&(is->total));CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
@@ -751,7 +762,46 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
 
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer);CHKERRQ(ierr);
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLoad"
+/*@
+  ISLoad - Loads a vector that has been stored in binary or HDF5 format with ISView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ is - the newly loaded vector, this needs to have been created with ISCreate() or some related function before a call to ISLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or HDF5 file viewer, obtained from PetscViewerHDF5Open()
+
+  Level: intermediate
+
+  Notes:
+  IF using HDF5, you must assign the IS the same name as was used in the IS
+  that was stored in the file using PetscObjectSetName(). Otherwise you will
+  get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
+
+  Concepts: index set^loading from file
+
+.seealso: PetscViewerBinaryOpen(), ISView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode ISLoad(IS is, PetscViewer viewer)
+{
+  PetscBool      isbinary, ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
+  ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -770,7 +820,7 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
    Concepts: index sets^sorting
    Concepts: sorting^index set
 
-.seealso: ISSorted()
+.seealso: ISSortRemoveDups(), ISSorted()
 @*/
 PetscErrorCode  ISSort(IS is)
 {
@@ -779,6 +829,33 @@ PetscErrorCode  ISSort(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   ierr = (*is->ops->sort)(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISSortRemoveDups"
+/*@
+  ISSortRemoveDups - Sorts the indices of an index set, removing duplicates.
+
+  Collective on IS
+
+  Input Parameters:
+. is - the index set
+
+  Level: intermediate
+
+  Concepts: index sets^sorting
+  Concepts: sorting^index set
+
+.seealso: ISSort(), ISSorted()
+@*/
+PetscErrorCode ISSortRemoveDups(IS is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  ierr = (*is->ops->sortremovedups)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -831,7 +908,7 @@ PetscErrorCode  ISToGeneral(IS is)
 
    Level: intermediate
 
-.seealso: ISSort()
+.seealso: ISSort(), ISSortRemoveDups()
 @*/
 PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 {
@@ -857,10 +934,6 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
    Output Parameters:
 .  isnew - the copy of the index set
 
-   Notes:
-   ISDuplicate() does not copy the index set, but rather allocates storage
-   for the new one.  Use ISCopy() to copy an index set.
-
    Level: beginner
 
    Concepts: index sets^duplicating
@@ -875,6 +948,8 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newIS,2);
   ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
+  (*newIS)->isidentity = is->isidentity;
+  (*newIS)->isperm     = is->isperm;
   PetscFunctionReturn(0);
 }
 
@@ -1008,8 +1083,10 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 @*/
 PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  *size = is->bs;
+  ierr = PetscLayoutGetBlockSize(is->map, size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

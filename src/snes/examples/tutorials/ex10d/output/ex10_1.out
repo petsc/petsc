@@ -6,4 +6,4 @@
   5 SNES Function norm 0.19249 
   6 SNES Function norm 0.000720729 
   7 SNES Function norm 8.9956e-09 
-number of Newton iterations = 7, number of unsuccessful steps = 0
+number of SNES iterations = 7, number of unsuccessful steps = 0

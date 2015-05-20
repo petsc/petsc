@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_PREONLY"
@@ -36,7 +36,7 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
                   commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
 
    Options Database Keys:
-.   see KSPSolve()
+.   -ksp_type preonly
 
    Level: beginner
 
@@ -51,8 +51,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr); /* LEFT/RIGHT is arbitrary, so "support" both */
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,3);CHKERRQ(ierr); /* LEFT/RIGHT is arbitrary, so "support" both */
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->data                = (void*)0;
   ksp->ops->setup          = KSPSetUp_PREONLY;

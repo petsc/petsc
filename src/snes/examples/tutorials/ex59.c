@@ -21,7 +21,7 @@ const PetscScalar sperturb = 1.1;
 /*
    User-defined routines
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 int main(int argc,char **argv)
@@ -129,11 +129,12 @@ int main(int argc,char **argv)
 
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscScalar    *xx,*ff,*FF,d,d2;
-  PetscErrorCode ierr;
-  PetscInt       i,n;
+  const PetscScalar *xx;
+  PetscScalar       *ff,*FF,d,d2;  
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
 
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
   ierr = VecGetArray((Vec)dummy,&FF);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
@@ -145,48 +146,48 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   for (i=1; i<n-1; i++) ff[i] = d2*(xx[i-1] - 2.*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
 
   ff[n-1] = d*d*(xx[n-1] - X1);
-  ierr    = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr    = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   ierr    = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
   return 0;
 }
 
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,void *dummy)
 {
-  PetscScalar    *xx,A[3],d,d2;
-  PetscInt       i,n,j[3];
-  PetscErrorCode ierr;
+  const PetscScalar *xx;
+  PetscScalar       A[3],d,d2;  
+  PetscInt          i,n,j[3];
+  PetscErrorCode    ierr;
 
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   d    = (PetscReal)(n - 1); d2 = d*d;
 
   i = 0;
   if (second_order) {
     j[0] = 0; j[1] = 1; j[2] = 2;
     A[0] = -3.*d*d*0.5; A[1] = 4.*d*d*0.5;  A[2] = -1.*d*d*0.5;
-    ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   } else {
     j[0] = 0; j[1] = 1;
     A[0] = -d*d; A[1] = d*d;
-    ierr = MatSetValues(*prejac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(prejac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
   for (i=1; i<n-1; i++) {
     j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
     A[0] = d2;    A[1] = -2.*d2 + 2.*xx[i];  A[2] = d2;
-    ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   i    = n-1;
   A[0] = d*d;
-  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
+  ierr  = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   return 0;
 }

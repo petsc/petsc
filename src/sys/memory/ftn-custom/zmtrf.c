@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscsys.h>
 #include <petscviewer.h>
 
@@ -44,7 +44,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
 
 PETSC_EXTERN void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
 {
-  *ierr = PetscMallocValidate(0,"Unknown Fortran",0,0);
+  *ierr = PetscMallocValidate(0,"Unknown Fortran",0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)
@@ -59,8 +59,9 @@ PETSC_EXTERN void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR mes
 
   FIXCHAR(message,len,msg);
   *ierr = PetscFixSlashN(msg,&tmp);if (*ierr) return;
-  PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = PetscMemoryShowUsage(v,tmp);
   FREECHAR(message,msg);
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = PetscMemoryShowUsage(v,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 

@@ -1,14 +1,12 @@
 
 #include <petscmat.h>
-#include <../src/mat/order/order.h>
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
+#include <petsc/private/matorderimpl.h>
 #include <amd.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define amd_AMD_defaults amd_l_defaults
-#  define amd_AMD_order    amd_l_order
+/* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
+#  define amd_AMD_order(a,b,c,d,e,f)    amd_l_order((SuiteSparse_long)a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f)
 #else
 #  define amd_AMD_defaults amd_defaults
 #  define amd_AMD_order    amd_order
@@ -46,17 +44,15 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   */
   val  = (PetscReal)Control[AMD_DENSE];
   ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,NULL);CHKERRQ(ierr);
-
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool)Control[AMD_AGGRESSIVE];
   ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL);CHKERRQ(ierr);
-
   Control[AMD_AGGRESSIVE] = (double)tval;
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr   = PetscMalloc(nrow*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(nrow,&perm);CHKERRQ(ierr);
   status = amd_AMD_order(nrow,ia,ja,perm,Control,Info);
   switch (status) {
   case AMD_OK: break;

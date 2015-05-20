@@ -26,17 +26,18 @@
 
       module Petscmod
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscvec.h90>
-#include <finclude/petscmat.h>
-#include <finclude/petscmat.h90>
-#include <finclude/petscviewer.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscis.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscmat.h90>
+#include <petsc/finclude/petscviewer.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       end module Petscmod
 
       module Snesmonitormod
@@ -125,7 +126,7 @@ c      call flush(6)
       ctx(5) = size
 
 ! Set up data structures
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
       call DMCreateGlobalVector(ctx(1),x,ierr)
@@ -185,9 +186,9 @@ c      call flush(6)
 
 ! Setup nonlinear solver, and call SNESSolve() for first few iterations, which calls SNESSetUp() :-(
 !--------------------------------------------------------------------------------------------------
-      call SNESSetTolerances(snes,PETSC_DEFAULT_DOUBLE_PRECISION,
-     &                            PETSC_DEFAULT_DOUBLE_PRECISION,
-     &                            PETSC_DEFAULT_DOUBLE_PRECISION,
+      call SNESSetTolerances(snes,PETSC_DEFAULT_REAL,                     &
+     &                            PETSC_DEFAULT_REAL,                     &
+     &                            PETSC_DEFAULT_REAL,                     &
      &                          3,PETSC_DEFAULT_INTEGER,ierr)
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
 
@@ -198,9 +199,9 @@ c      call flush(6)
 #endif
 
 ! Solve nonlinear system
-       call SNESSetTolerances(snes,PETSC_DEFAULT_DOUBLE_PRECISION,
-     &                            PETSC_DEFAULT_DOUBLE_PRECISION,
-     &                            PETSC_DEFAULT_DOUBLE_PRECISION,
+       call SNESSetTolerances(snes,PETSC_DEFAULT_REAL,                     &
+     &                            PETSC_DEFAULT_REAL,                      &
+     &                            PETSC_DEFAULT_REAL,                      &
      &      1000,PETSC_DEFAULT_INTEGER,ierr)
 
 ! Call SNESSolve() for next few iterations
@@ -241,11 +242,12 @@ c      call flush(6)
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
 
 
       rank  = ctx(4)
@@ -313,9 +315,9 @@ c      call flush(6)
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes

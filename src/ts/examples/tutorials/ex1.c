@@ -46,7 +46,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*), FormFunction(TS,PetscReal,Vec,Vec,void*), FormInitialGuess(Vec,AppCtx*);
+extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat,Mat,void*), FormFunction(TS,PetscReal,Vec,Vec,void*), FormInitialGuess(Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   /*
       Set any additional options from the options database. This
      includes all options for the nonlinear and linear solvers used
-     internally the the timestepping routines.
+     internally the timestepping routines.
   */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -167,7 +167,7 @@ int main(int argc,char **argv)
   */
   ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %D final time %4.2e\n",its,(double)ftime);CHKERRQ(ierr);
 
   /*
      Free the data structures constructed above
@@ -225,12 +225,13 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
-  PetscInt       i,j,row,mx,my;
-  PetscReal      two = 2.0,one = 1.0,lambda;
-  PetscReal      hx,hy,hxdhy,hydhx;
-  PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,row,mx,my;
+  PetscReal         two = 2.0,one = 1.0,lambda;
+  PetscReal         hx,hy,hxdhy,hydhx;
+  PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc,*f;
+  const PetscScalar *x;
 
   mx     = user->mx;
   my     = user->my;
@@ -242,7 +243,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
@@ -261,7 +262,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
       f[row] = -uxx + -uyy + sc*lambda*PetscExpScalar(u);
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   return 0;
 }
@@ -277,13 +278,14 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
    J with a finite difference approximation, using our analytic Jacobian B for
    the preconditioner.
 */
-PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscInt       i,j,row,mx,my,col[5];
-  PetscErrorCode ierr;
-  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  PetscReal      hx,hy,hxdhy,hydhx;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscInt          i,j,row,mx,my,col[5];
+  PetscErrorCode    ierr;
+  PetscScalar       two = 2.0,one = 1.0,lambda,v[5],sc;
+  const PetscScalar *x;
+  PetscReal         hx,hy,hxdhy,hydhx;
 
 
   mx     = user->mx;
@@ -296,12 +298,12 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        ierr = MatSetValues(*B,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(B,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
       v[0] = hxdhy; col[0] = row - mx;
@@ -309,17 +311,16 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *
       v[2] = -two*(hydhx + hxdhy) + sc*lambda*PetscExpScalar(x[row]); col[2] = row;
       v[3] = hydhx; col[3] = row + 1;
       v[4] = hxdhy; col[4] = row + mx;
-      ierr = MatSetValues(*B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *B) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != B) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
 

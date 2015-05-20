@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/dmdaimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdagetownershipranges_        DMDAGETOWNERSHIPRANGES
@@ -12,11 +12,11 @@
 PETSC_EXTERN void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
   const PetscMPIInt *r;
-  PetscInt          n;
-  DM_DA             *dd = (DM_DA*)(*da)->data;
+  PetscInt          n,dim;
 
   *ierr = DMDAGetNeighbors(*da,&r);if (*ierr) return;
-  if (dd->dim == 2) n = 9;
+  *ierr = DMGetDimension(*da,&dim);if (*ierr) return;
+  if (dim == 2) n = 9;
   else n = 27;
   *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));
 }

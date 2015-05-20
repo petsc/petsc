@@ -3,7 +3,7 @@
       Routines to handle signals the program will receive.
     Usually this will call the error handlers.
 */
-#include <petsc-private/petscimpl.h>             /*I   "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>             /*I   "petscsys.h"   I*/
 #include <signal.h>
 
 static PetscClassId SIGNAL_CLASSID = 0;
@@ -117,7 +117,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-  SIGNAME[SIGTERM] = "Terminate: Somet process (or the batch system) has told this process to end";
+  SIGNAME[SIGTERM] = "Terminate: Some process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
@@ -141,7 +141,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   else (*PetscErrorPrintf)("Caught signal\n");
 
   (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
-  (*PetscErrorPrintf)("or see http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind");
+  (*PetscErrorPrintf)("or see http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind\n");
   (*PetscErrorPrintf)("or try http://valgrind.org on GNU/linux and Apple Mac OS X to find memory corruption errors\n");
 #if defined(PETSC_USE_DEBUG)
   if (!PetscStackActive()) (*PetscErrorPrintf)("  or try option -log_stack\n");
@@ -157,7 +157,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
-  ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
+  ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
   MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);
 }
@@ -304,7 +304,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 #endif
     SignalSet = PETSC_FALSE;
   }
-  ierr = PetscNew(struct SH,&newsh);CHKERRQ(ierr);
+  ierr = PetscNew(&newsh);CHKERRQ(ierr);
   if (sh) {
     if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;

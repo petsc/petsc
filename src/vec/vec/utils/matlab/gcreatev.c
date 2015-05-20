@@ -1,13 +1,13 @@
 
 #include <petscvec.h>    /*I "petscvec.h" I*/
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMatlabEnginePut_Default"
-PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   PetscInt       n;
@@ -33,7 +33,7 @@ PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMatlabEngineGet_Default"
-PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   PetscInt       n;

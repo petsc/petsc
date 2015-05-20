@@ -44,12 +44,13 @@ int main(int argc,char **args)
   ierr = VecSetSizes(b,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  ierr = MatMult(A,x,b);CHKERRQ(ierr);
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* Create linear solver context */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 

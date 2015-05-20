@@ -1,5 +1,27 @@
 
-#include <petsc-private/matimpl.h>       /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>       /*I "petscmat.h"  I*/
+
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_Basic"
+PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,start,end;
+  PetscScalar    alpha = a;
+  PetscBool      prevoption;
+
+  PetscFunctionBegin;
+  ierr = MatGetOption(Y,MAT_NO_OFF_PROC_ENTRIES,&prevoption);CHKERRQ(ierr);
+  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
+  for (i=start; i<end; i++) {
+    ierr = MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,prevoption);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate"
@@ -57,16 +79,40 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscValidPointer(A,2);
 
   *A = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
 
-  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(B,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
 
   B->preallocated = PETSC_FALSE;
   *A              = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetErrorIfFPE"
+/*@
+   MatSetErrorIfFPE - Causes Mat to generate an error if a FPE, for example a zero pivot, is detected.
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat -  matrix obtained from MatCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Level: advanced
+
+.keywords: Mat, set, initial guess, nonzero
+
+.seealso: PCSetErrorIfFailure()
+@*/
+PetscErrorCode  MatSetErrorIfFPE(Mat mat,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(mat,flg,2);
+  mat->erroriffpe = flg;
   PetscFunctionReturn(0);
 }
 
@@ -112,8 +158,8 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   if (N > 0) PetscValidLogicalCollectiveInt(A,N,5);
   if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
-  if ((A->rmap->n >= 0 || A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
-  if ((A->cmap->n >= 0 || A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
+  if ((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
+  if ((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
   A->rmap->n = m;
   A->cmap->n = n;
   A->rmap->N = M;
@@ -178,21 +224,19 @@ PetscErrorCode  MatSetFromOptions(Mat B)
     }
   }
 
-  ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetType(B,type);CHKERRQ(ierr);
   } else if (!((PetscObject)B)->type_name) {
     ierr = MatSetType(B,deft);CHKERRQ(ierr);
   }
 
-  ierr = PetscViewerDestroy(&B->viewonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatView",&B->viewonassembly,&B->viewformatonassembly,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",0.0,&B->checksymmetrytol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",PETSC_FALSE,&B->checknullspaceonassembly,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",B->checksymmetrytol,&B->checksymmetrytol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL);CHKERRQ(ierr);
 
   if (B->ops->setfromoptions) {
-    ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
+    ierr = (*B->ops->setfromoptions)(PetscOptionsObject,B);CHKERRQ(ierr);
   }
 
   flg  = PETSC_FALSE;
@@ -228,13 +272,14 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 .seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(),
           PetscSplitOwnership()
 @*/
-PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,const PetscInt *onnz,const PetscInt *dnnzu,const PetscInt *onnzu)
+PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],const PetscInt onnz[],const PetscInt dnnzu[],const PetscInt onnzu[])
 {
   PetscErrorCode ierr;
   void           (*aij)(void);
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(A,bs,0,dnnz);CHKERRQ(ierr);
@@ -256,7 +301,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc2((!!dnnz)*m,PetscInt,&sdnnz,(!!onnz)*m,PetscInt,&sonnz);CHKERRQ(ierr);
+      ierr = PetscMalloc2((!!dnnz)*m,&sdnnz,(!!onnz)*m,&sonnz);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
         if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
         if (onnz) sonnz[i] = onnz[i/bs] * bs;
@@ -280,15 +325,15 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 {
   PetscErrorCode ierr;
   PetscInt       refct;
-  PetscOps       *Abops;
-  MatOps         Aops;
+  PetscOps       Abops;
+  struct _MatOps Aops;
   char           *mtype,*mname;
   void           *spptr;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
-  Abops = ((PetscObject)A)->bops;
-  Aops  = A->ops;
+  Abops = ((PetscObject)A)->bops[0];
+  Aops  = A->ops[0];
   refct = ((PetscObject)A)->refct;
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
@@ -312,8 +357,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   /* return the parts of A we saved */
-  ((PetscObject)A)->bops      = Abops;
-  A->ops                      = Aops;
+  ((PetscObject)A)->bops[0]   = Abops;
+  A->ops[0]                   = Aops;
   ((PetscObject)A)->refct     = refct;
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
@@ -339,8 +384,9 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 #define __FUNCT__ "MatHeaderReplace"
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 {
-  PetscErrorCode ierr;
-  PetscInt       refct;
+  PetscErrorCode   ierr;
+  PetscInt         refct;
+  PetscObjectState state;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -352,18 +398,18 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscFree(A->ops);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* copy C over to A */
   refct = ((PetscObject)A)->refct;
+  state = ((PetscObject)A)->state;
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   ((PetscObject)A)->refct = refct;
+  ((PetscObject)A)->state = state + 1;
 
-  ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
   ierr = PetscFree(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

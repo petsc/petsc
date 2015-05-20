@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,"-allocate",&flg);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc((nlocal+nghost)*sizeof(PetscScalar),&tarray);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nlocal+nghost,&tarray);CHKERRQ(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
   } else if (flg2) {
     ierr = VecCreate(PETSC_COMM_WORLD,&gxs);CHKERRQ(ierr);
@@ -113,10 +113,10 @@ int main(int argc,char **argv)
   */
   ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
   for (i=0; i<nlocal+nghost; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %G\n",i,PetscRealPart(array[i]));CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
   ierr = VecDestroy(&gx);CHKERRQ(ierr);

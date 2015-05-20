@@ -1,6 +1,6 @@
 
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /* Version for when blocks are 7 by 7 */
 #undef __FUNCT__
@@ -21,13 +21,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
 
   PetscFunctionBegin;
   /* initialization */
-  ierr = PetscMalloc(49*mbs*sizeof(MatScalar),&w);CHKERRQ(ierr);
-  ierr = PetscMemzero(w,49*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscCalloc1(49*mbs,&w);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc2(49,MatScalar,&dk,49,MatScalar,&uik);CHKERRQ(ierr);
+  ierr = PetscMalloc2(49,&dk,49,&uik);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
   /* check permutation */
@@ -35,9 +34,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
     ai = a->i; aj = a->j; aa = a->a;
   } else {
     ai   = a->inew; aj = a->jnew;
-    ierr = PetscMalloc(49*ai[mbs]*sizeof(MatScalar),&aa);CHKERRQ(ierr);
+    ierr = PetscMalloc1(49*ai[mbs],&aa);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa,a->a,49*ai[mbs]*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&a2anew);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ai[mbs],&a2anew);CHKERRQ(ierr);
     ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
 
     for (i=0; i<mbs; i++) {

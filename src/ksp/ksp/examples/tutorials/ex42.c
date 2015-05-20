@@ -9,9 +9,8 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
 
 /* Contributed by Dave May */
 
-#include "petscksp.h"
-#include "petscdmda.h"
-#include <petsctime.h>
+#include <petscksp.h>
+#include <petscdmda.h>
 
 #define PROFILE_TIMING
 #define ASSEMBLE_LOWER_TRIANGULAR
@@ -71,7 +70,7 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   cells->sey    = sey;
   cells->sez    = sez;
 
-  ierr = PetscMalloc(sizeof(GaussPointCoefficients)*mx*my*mz,&cells->gpc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mx*my*mz,&cells->gpc);CHKERRQ(ierr);
 
   *C = cells;
   PetscFunctionReturn(0);
@@ -95,10 +94,10 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
 
 #undef __FUNCT__
 #define __FUNCT__ "CellPropertiesGetCell"
-PetscErrorCode CellPropertiesGetCell(CellProperties C,PetscInt I,PetscInt J,PetscInt K,GaussPointCoefficients **G)
+PetscErrorCode CellPropertiesGetCell(CellProperties C,PetscInt II,PetscInt J,PetscInt K,GaussPointCoefficients **G)
 {
   PetscFunctionBeginUser;
-  *G = &C->gpc[(I-C->sex) + (J-C->sey)*C->mx + (K-C->sez)*C->mx*C->my];
+  *G = &C->gpc[(II-C->sex) + (J-C->sey)*C->mx + (K-C->sez)*C->mx*C->my];
   PetscFunctionReturn(0);
 }
 
@@ -482,32 +481,32 @@ static PetscInt ASS_MAP_wIwDI_uJuDJ(PetscInt wi,PetscInt wd,PetscInt w_NPE,Petsc
 #define __FUNCT__ "DMDASetValuesLocalStencil3D_ADD_VALUES"
 static PetscErrorCode DMDASetValuesLocalStencil3D_ADD_VALUES(StokesDOF ***fields_F,MatStencil u_eqn[],MatStencil p_eqn[],PetscScalar Fe_u[],PetscScalar Fe_p[])
 {
-  PetscInt n,I,J,K;
+  PetscInt n,II,J,K;
 
   PetscFunctionBeginUser;
   for (n = 0; n<NODES_PER_EL; n++) {
-    I = u_eqn[NSD*n].i;
+    II = u_eqn[NSD*n].i;
     J = u_eqn[NSD*n].j;
     K = u_eqn[NSD*n].k;
 
-    fields_F[K][J][I].u_dof = fields_F[K][J][I].u_dof+Fe_u[NSD*n];
+    fields_F[K][J][II].u_dof = fields_F[K][J][II].u_dof+Fe_u[NSD*n];
 
-    I = u_eqn[NSD*n+1].i;
+    II = u_eqn[NSD*n+1].i;
     J = u_eqn[NSD*n+1].j;
     K = u_eqn[NSD*n+1].k;
 
-    fields_F[K][J][I].v_dof = fields_F[K][J][I].v_dof+Fe_u[NSD*n+1];
+    fields_F[K][J][II].v_dof = fields_F[K][J][II].v_dof+Fe_u[NSD*n+1];
 
-    I = u_eqn[NSD*n+2].i;
+    II = u_eqn[NSD*n+2].i;
     J = u_eqn[NSD*n+2].j;
     K = u_eqn[NSD*n+2].k;
-    fields_F[K][J][I].w_dof = fields_F[K][J][I].w_dof+Fe_u[NSD*n+2];
+    fields_F[K][J][II].w_dof = fields_F[K][J][II].w_dof+Fe_u[NSD*n+2];
 
-    I = p_eqn[n].i;
+    II = p_eqn[n].i;
     J = p_eqn[n].j;
     K = p_eqn[n].k;
 
-    fields_F[K][J][I].p_dof = fields_F[K][J][I].p_dof+Fe_p[n];
+    fields_F[K][J][II].p_dof = fields_F[K][J][II].p_dof+Fe_p[n];
 
   }
   PetscFunctionReturn(0);
@@ -834,7 +833,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   GaussPointCoefficients *props;
   PetscScalar            *prop_eta;
   PetscInt               n,M,N,P;
-  PetscLogDouble         t0,t1;
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
@@ -845,7 +843,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
-  PetscTime(&t0);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -904,7 +901,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
 
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
-  PetscTime(&t1);
   PetscFunctionReturn(0);
 }
 
@@ -1077,9 +1073,9 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
 static void evaluate_MS_FrankKamentski_constants(PetscReal *theta,PetscReal *MX,PetscReal *MY,PetscReal *MZ)
 {
   *theta = 0.0;
-  *MX    = 2.0 * M_PI;
-  *MY    = 2.0 * M_PI;
-  *MZ    = 2.0 * M_PI;
+  *MX    = 2.0 * PETSC_PI;
+  *MY    = 2.0 * PETSC_PI;
+  *MZ    = 2.0 * PETSC_PI;
 }
 static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *p,PetscReal *eta,PetscReal Fm[],PetscReal *Fc)
 {
@@ -1092,48 +1088,48 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
   z = pos[2];
   if (v) {
     /*
-     v[0] = pow(z,3)*exp(y)*sin(M_PI*x);
-     v[1] = z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y);
-     v[2] = -(pow(x,3) + pow(y,3))*sin(2.0*M_PI*z);
+     v[0] = PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x);
+     v[1] = z*cos(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y);
+     v[2] = -(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscSinReal(2.0*PETSC_PI*z);
      */
     /*
-     v[0] = sin(M_PI*x);
-     v[1] = sin(M_PI*y);
-     v[2] = sin(M_PI*z);
+     v[0] = PetscSinReal(PETSC_PI*x);
+     v[1] = PetscSinReal(PETSC_PI*y);
+     v[2] = PetscSinReal(PETSC_PI*z);
      */
-    v[0] = PetscPowRealInt(z,3)*exp(y)*sin(M_PI*x);
-    v[1] = z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y);
-    v[2] = PetscPowRealInt(z,2)*(cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 - M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2) - M_PI*PetscPowRealInt(z,4)*cos(M_PI*x)*exp(y)/4;
+    v[0] = PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x);
+    v[1] = z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y);
+    v[2] = PetscPowRealInt(z,2)*(PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 - PETSC_PI*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)/2) - PETSC_PI*PetscPowRealInt(z,4)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y)/4;
   }
   if (p) *p = PetscPowRealInt(x,2) + PetscPowRealInt(y,2) + PetscPowRealInt(z,2);
   if (eta) {
-    /**eta = exp(-theta*(1.0 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)));*/
+    /**eta = PetscExpReal(-theta*(1.0 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)));*/
     *eta = 1.0;
   }
   if (Fm) {
     /*
-     Fm[0] = -2*x - 2.0*pow(M_PI,2)*pow(z,3)*exp(y)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(M_PI*x) - 0.2*MZ*theta*(-1.5*pow(x,2)*sin(2.0*M_PI*z) + 1.5*pow(z,2)*exp(y)*sin(M_PI*x))*cos(MX*x)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(MY*y)*sin(MZ*z) - 0.2*M_PI*MX*theta*pow(z,3)*cos(M_PI*x)*cos(MZ*z)*exp(y)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(MX*x)*sin(MY*y) + 2.0*(3.0*z*exp(y)*sin(M_PI*x) - 3.0*M_PI*pow(x,2)*cos(2.0*M_PI*z))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) + 2.0*(0.5*pow(z,3)*exp(y)*sin(M_PI*x) + M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x) - 1.0*z*pow(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) + 2.0*theta*(1 + 0.1*MY*cos(MX*x)*cos(MY*y)*cos(MZ*z))*(0.5*pow(z,3)*exp(y)*sin(M_PI*x) - 1.0*M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) ;
-     Fm[1] = -2*y - 0.2*MX*theta*(0.5*pow(z,3)*exp(y)*sin(M_PI*x) - 1.0*M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x))*cos(MZ*z)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(MX*x)*sin(MY*y) - 0.2*MZ*theta*(-1.5*pow(y,2)*sin(2.0*M_PI*z) + 0.5*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y))*cos(MX*x)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(MY*y)*sin(MZ*z) + 2.0*(-2.0*z*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 0.5*M_PI*pow(z,3)*cos(M_PI*x)*exp(y))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) + 2.0*(z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - z*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - 2*M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) + 2.0*theta*(1 + 0.1*MY*cos(MX*x)*cos(MY*y)*cos(MZ*z))*(-z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) - 6.0*M_PI*pow(y,2)*cos(2.0*M_PI*z)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)));
-     Fm[2] = -2*z + 8.0*pow(M_PI,2)*(pow(x,3) + pow(y,3))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(2.0*M_PI*z) - 0.2*MX*theta*(-1.5*pow(x,2)*sin(2.0*M_PI*z) + 1.5*pow(z,2)*exp(y)*sin(M_PI*x))*cos(MZ*z)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(MX*x)*sin(MY*y) + 0.4*M_PI*MZ*theta*(pow(x,3) + pow(y,3))*cos(MX*x)*cos(2.0*M_PI*z)*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))*sin(MY*y)*sin(MZ*z) + 2.0*(-3.0*x*sin(2.0*M_PI*z) + 1.5*M_PI*pow(z,2)*cos(M_PI*x)*exp(y))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) + 2.0*(-3.0*y*sin(2.0*M_PI*z) - 0.5*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 0.5*M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y))) + 2.0*theta*(1 + 0.1*MY*cos(MX*x)*cos(MY*y)*cos(MZ*z))*(-1.5*pow(y,2)*sin(2.0*M_PI*z) + 0.5*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y))*exp(-theta*(1 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)))  ;
+     Fm[0] = -2*x - 2.0*PetscPowRealInt(PETSC_PI,2)*PetscPowRealInt(z,3)*PetscExpReal(y)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(PETSC_PI*x) - 0.2*MZ*theta*(-1.5*PetscPowRealInt(x,2)*PetscSinReal(2.0*PETSC_PI*z) + 1.5*PetscPowRealInt(z,2)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x))*PetscCosReal(MX*x)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(MY*y)*PetscSinReal(MZ*z) - 0.2*PETSC_PI*MX*theta*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscCosReal(MZ*z)*PetscExpReal(y)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(MX*x)*PetscSinReal(MY*y) + 2.0*(3.0*z*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) - 3.0*PETSC_PI*PetscPowRealInt(x,2)*PetscCosReal(2.0*PETSC_PI*z))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) + 2.0*(0.5*PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) + PETSC_PI*z*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)*PetscSinReal(2.0*PETSC_PI*x) - 1.0*z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(PETSC_PI*y)*PetscExpReal(-y)*PetscSinReal(2.0*PETSC_PI*x))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) + 2.0*theta*(1 + 0.1*MY*PetscCosReal(MX*x)*PetscCosReal(MY*y)*PetscCosReal(MZ*z))*(0.5*PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) - 1.0*PETSC_PI*z*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)*PetscSinReal(2.0*PETSC_PI*x))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) ;
+     Fm[1] = -2*y - 0.2*MX*theta*(0.5*PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) - 1.0*PETSC_PI*z*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)*PetscSinReal(2.0*PETSC_PI*x))*PetscCosReal(MZ*z)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(MX*x)*PetscSinReal(MY*y) - 0.2*MZ*theta*(-1.5*PetscPowRealInt(y,2)*PetscSinReal(2.0*PETSC_PI*z) + 0.5*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y))*PetscCosReal(MX*x)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(MY*y)*PetscSinReal(MZ*z) + 2.0*(-2.0*z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 0.5*PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) + 2.0*(z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) - z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) - 2*PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) + 2.0*theta*(1 + 0.1*MY*PetscCosReal(MX*x)*PetscCosReal(MY*y)*PetscCosReal(MZ*z))*(-z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) - 6.0*PETSC_PI*PetscPowRealInt(y,2)*PetscCosReal(2.0*PETSC_PI*z)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)));
+     Fm[2] = -2*z + 8.0*PetscPowRealInt(PETSC_PI,2)*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(2.0*PETSC_PI*z) - 0.2*MX*theta*(-1.5*PetscPowRealInt(x,2)*PetscSinReal(2.0*PETSC_PI*z) + 1.5*PetscPowRealInt(z,2)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x))*PetscCosReal(MZ*z)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(MX*x)*PetscSinReal(MY*y) + 0.4*PETSC_PI*MZ*theta*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(MX*x)*PetscCosReal(2.0*PETSC_PI*z)*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))*PetscSinReal(MY*y)*PetscSinReal(MZ*z) + 2.0*(-3.0*x*PetscSinReal(2.0*PETSC_PI*z) + 1.5*PETSC_PI*PetscPowRealInt(z,2)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) + 2.0*(-3.0*y*PetscSinReal(2.0*PETSC_PI*z) - 0.5*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 0.5*PETSC_PI*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y))) + 2.0*theta*(1 + 0.1*MY*PetscCosReal(MX*x)*PetscCosReal(MY*y)*PetscCosReal(MZ*z))*(-1.5*PetscPowRealInt(y,2)*PetscSinReal(2.0*PETSC_PI*z) + 0.5*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y))*PetscExpReal(-theta*(1 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)))  ;
      */
     /*
-     Fm[0]=-2*x - 2.0*pow(M_PI,2)*sin(M_PI*x);
-     Fm[1]=-2*y - 2.0*pow(M_PI,2)*sin(M_PI*y);
-     Fm[2]=-2*z - 2.0*pow(M_PI,2)*sin(M_PI*z);
+     Fm[0]=-2*x - 2.0*PetscPowRealInt(PETSC_PI,2)*PetscSinReal(PETSC_PI*x);
+     Fm[1]=-2*y - 2.0*PetscPowRealInt(PETSC_PI,2)*PetscSinReal(PETSC_PI*y);
+     Fm[2]=-2*z - 2.0*PetscPowRealInt(PETSC_PI,2)*PetscSinReal(PETSC_PI*z);
      */
     /*
-     Fm[0] = -2*x + pow(z,3)*exp(y)*sin(M_PI*x) + 6.0*z*exp(y)*sin(M_PI*x) - 6.0*M_PI*pow(x,2)*cos(2.0*M_PI*z) - 2.0*pow(M_PI,2)*pow(z,3)*exp(y)*sin(M_PI*x) + 2.0*M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x) - 2.0*z*pow(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x) ;
-     Fm[1] = -2*y - 6.0*M_PI*pow(y,2)*cos(2.0*M_PI*z) + 2.0*z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - 6.0*z*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + M_PI*pow(z,3)*cos(M_PI*x)*exp(y) - 4.0*M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y);
-     Fm[2] = -2*z - 6.0*x*sin(2.0*M_PI*z) - 6.0*y*sin(2.0*M_PI*z) - cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 8.0*pow(M_PI,2)*(pow(x,3) + pow(y,3))*sin(2.0*M_PI*z) + 3.0*M_PI*pow(z,2)*cos(M_PI*x)*exp(y) + M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y) ;
+     Fm[0] = -2*x + PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) + 6.0*z*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) - 6.0*PETSC_PI*PetscPowRealInt(x,2)*PetscCosReal(2.0*PETSC_PI*z) - 2.0*PetscPowRealInt(PETSC_PI,2)*PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) + 2.0*PETSC_PI*z*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)*PetscSinReal(2.0*PETSC_PI*x) - 2.0*z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(PETSC_PI*y)*PetscExpReal(-y)*PetscSinReal(2.0*PETSC_PI*x) ;
+     Fm[1] = -2*y - 6.0*PETSC_PI*PetscPowRealInt(y,2)*PetscCosReal(2.0*PETSC_PI*z) + 2.0*z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) - 6.0*z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 4.0*PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);
+     Fm[2] = -2*z - 6.0*x*PetscSinReal(2.0*PETSC_PI*z) - 6.0*y*PetscSinReal(2.0*PETSC_PI*z) - PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 8.0*PetscPowRealInt(PETSC_PI,2)*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscSinReal(2.0*PETSC_PI*z) + 3.0*PETSC_PI*PetscPowRealInt(z,2)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y) ;
      */
-    Fm[0] = -2*x + 2*z*(PetscPowRealInt(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x) - 1.0*M_PI*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x)) + PetscPowRealInt(z,3)*exp(y)*sin(M_PI*x) + 6.0*z*exp(y)*sin(M_PI*x) - 1.0*PetscPowRealInt(M_PI,2)*PetscPowRealInt(z,3)*exp(y)*sin(M_PI*x) + 2.0*M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x) - 2.0*z*PetscPowRealInt(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x);
-    Fm[1] = -2*y + 2*z*(-cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)) + 2.0*z*cos(2.0*M_PI *x)*exp(-y)*sin(M_PI*y) - 6.0*z*PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - 4.0*M_PI*z*cos(M_PI *y)*cos(2.0*M_PI*x)*exp(-y);
-    Fm[2] = -2*z + PetscPowRealInt(z,2)*(-2.0*PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 2.0*PetscPowRealInt(M_PI,3)*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)) + PetscPowRealInt(z,2)*(cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 - 3*PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + PetscPowRealInt(M_PI,3)*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2 - 3*M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2) + 1.0*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 0.25*PetscPowRealInt(M_PI,3)*PetscPowRealInt(z,4)*cos(M_PI*x)*exp(y) - 0.25*M_PI*PetscPowRealInt(z,4)*cos(M_PI*x)*exp(y) - 3.0*M_PI*PetscPowRealInt(z,2)*cos(M_PI*x)*exp(y) - 1.0*M_PI*cos(M_PI *y)*cos(2.0*M_PI*x)*exp(-y);
+    Fm[0] = -2*x + 2*z*(PetscPowRealInt(PETSC_PI,2)*PetscCosReal(PETSC_PI*y)*PetscExpReal(-y)*PetscSinReal(2.0*PETSC_PI*x) - 1.0*PETSC_PI*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)*PetscSinReal(2.0*PETSC_PI*x)) + PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) + 6.0*z*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) - 1.0*PetscPowRealInt(PETSC_PI,2)*PetscPowRealInt(z,3)*PetscExpReal(y)*PetscSinReal(PETSC_PI*x) + 2.0*PETSC_PI*z*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)*PetscSinReal(2.0*PETSC_PI*x) - 2.0*z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(PETSC_PI*y)*PetscExpReal(-y)*PetscSinReal(2.0*PETSC_PI*x);
+    Fm[1] = -2*y + 2*z*(-PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 + PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 + PETSC_PI*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)) + 2.0*z*PetscCosReal(2.0*PETSC_PI *x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) - 6.0*z*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) - 4.0*PETSC_PI*z*PetscCosReal(PETSC_PI *y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);
+    Fm[2] = -2*z + PetscPowRealInt(z,2)*(-2.0*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 2.0*PetscPowRealInt(PETSC_PI,3)*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)) + PetscPowRealInt(z,2)*(PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 - 3*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 + PetscPowRealInt(PETSC_PI,3)*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)/2 - 3*PETSC_PI*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)/2) + 1.0*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 0.25*PetscPowRealInt(PETSC_PI,3)*PetscPowRealInt(z,4)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 0.25*PETSC_PI*PetscPowRealInt(z,4)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 3.0*PETSC_PI*PetscPowRealInt(z,2)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 1.0*PETSC_PI*PetscCosReal(PETSC_PI *y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);
   }
   if (Fc) {
-    /**Fc = -2.0*M_PI*(pow(x,3) + pow(y,3))*cos(2.0*M_PI*z) - z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + M_PI*pow(z,3)*cos(M_PI*x)*exp(y) + M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y) ;*/
-    /**Fc = M_PI*cos(M_PI*x) + M_PI*cos(M_PI*y) + M_PI*cos(M_PI*z);*/
-    /**Fc = -2.0*M_PI*(pow(x,3) + pow(y,3))*cos(2.0*M_PI*z) - z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + M_PI*pow(z,3)*cos(M_PI*x)*exp(y) + M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y);*/
+    /**Fc = -2.0*PETSC_PI*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(2.0*PETSC_PI*z) - z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y) ;*/
+    /**Fc = PETSC_PI*PetscCosReal(PETSC_PI*x) + PETSC_PI*PetscCosReal(PETSC_PI*y) + PETSC_PI*PetscCosReal(PETSC_PI*z);*/
+    /**Fc = -2.0*PETSC_PI*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(2.0*PETSC_PI*z) - z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);*/
     *Fc = 0.0;
   }
 }
@@ -1143,7 +1139,7 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
 static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,PetscInt mz,DM *_da,Vec *_X)
 {
   DM             da,cda;
-  Vec            X,local_X;
+  Vec            X;
   StokesDOF      ***_stokes;
   Vec            coords;
   DMDACoor3d     ***_coords;
@@ -1151,7 +1147,7 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"anlytic_Vy");CHKERRQ(ierr);
@@ -1165,10 +1161,9 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local_X);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,local_X,&_stokes);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&_stokes);CHKERRQ(ierr);
 
-  ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&ei,&ej,&ek);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&si,&sj,&sk,&ei,&ej,&ek);CHKERRQ(ierr);
   for (k = sk; k < sk+ek; k++) {
     for (j = sj; j < sj+ej; j++) {
       for (i = si; i < si+ei; i++) {
@@ -1187,13 +1182,8 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,local_X,&_stokes);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&_stokes);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-
-  ierr = DMLocalToGlobalBegin(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
-
-  ierr = VecDestroy(&local_X);CHKERRQ(ierr);
 
   *_da = da;
   *_X  = X;
@@ -1394,11 +1384,9 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscScalar    *_L_FIELD;
   PetscInt       memory_offset;
   PetscScalar    *buffer;
-  PetscLogDouble t0,t1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
@@ -1458,7 +1446,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    </Piece>\n");
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  </StructuredGrid>\n");
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*N,&buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&buffer);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&l_FIELD);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da, FIELD,INSERT_VALUES,l_FIELD);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,FIELD,INSERT_VALUES,l_FIELD);CHKERRQ(ierr);
@@ -1500,7 +1488,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
     vtk_fp = NULL;
   }
 
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1508,7 +1495,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
 #define __FUNCT__ "DAViewVTK_write_PieceExtend"
 PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM da,const char local_file_prefix[])
 {
-  PetscMPIInt    nproc,rank;
+  PetscMPIInt    size,rank;
   MPI_Comm       comm;
   const PetscInt *lx,*ly,*lz;
   PetscInt       M,N,P,pM,pN,pP,sum,*olx,*oly,*olz;
@@ -1519,16 +1506,16 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   PetscFunctionBeginUser;
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
-  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
   ierr = DMDAGetInfo(da,0,&M,&N,&P,&pM,&pN,&pP,0,&stencil,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
 
   /* generate start,end list */
-  ierr = PetscMalloc(sizeof(PetscInt)*(pM+1),&olx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pN+1),&oly);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pP+1),&olz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pM+1,&olx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pN+1,&oly);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pP+1,&olz);CHKERRQ(ierr);
   sum  = 0;
   for (i=0; i<pM; i++) {
     olx[i] = sum;
@@ -1548,12 +1535,12 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   }
   olz[pP] = sum;
 
-  ierr = PetscMalloc(sizeof(PetscInt)*(pM),&osx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pN),&osy);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pP),&osz);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pM),&oex);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pN),&oey);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(pP),&oez);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pM,&osx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pN,&osy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pP,&osz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pM,&oex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pN,&oey);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pP,&oez);CHKERRQ(ierr);
   for (i=0; i<pM; i++) {
     osx[i] = olx[i] - stencil;
     oex[i] = olx[i] + lx[i] + stencil;
@@ -1606,7 +1593,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
 PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const char local_file_prefix[])
 {
   MPI_Comm       comm;
-  PetscMPIInt    nproc,rank;
+  PetscMPIInt    size,rank;
   char           vtk_filename[PETSC_MAX_PATH_LEN];
   FILE           *vtk_fp = NULL;
   PetscInt       M,N,P,si,sj,sk,nx,ny,nz;
@@ -1616,7 +1603,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscFunctionBeginUser;
   /* only master generates this file */
   PetscObjectGetComm((PetscObject)da,&comm);
-  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
   if (rank != 0) PetscFunctionReturn(0);
@@ -1697,8 +1684,8 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
 
   ierr = KSPBuildResidual(ksp,v,w,&Br);CHKERRQ(ierr);
 
@@ -1727,9 +1714,9 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   nlevels = 1;
   PetscOptionsGetInt(NULL,"-levels",&nlevels,0);
 
-  ierr = PetscMalloc(sizeof(DM)*nlevels,&da_list);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&da_list);CHKERRQ(ierr);
   for (k=0; k<nlevels; k++) da_list[k] = NULL;
-  ierr = PetscMalloc(sizeof(DM)*nlevels,&daclist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&daclist);CHKERRQ(ierr);
   for (k=0; k<nlevels; k++) daclist[k] = NULL;
 
   /* finest grid is nlevels - 1 */
@@ -1789,7 +1776,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof+p_dof;
   stencil_width = 1;
-  ierr          = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr          = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                                mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,0,"Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,1,"Vy");CHKERRQ(ierr);
@@ -1865,7 +1852,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             cell->eta[p] = 1.0;
 
             cell->fx[p] = 0.0*coord_x;
-            cell->fy[p] = -sin((double)2.2*M_PI*coord_y)*cos(1.0*M_PI*coord_x);
+            cell->fy[p] = -PetscSinReal(2.2*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
             cell->fz[p] = 0.0*coord_z;
             cell->hc[p] = 0.0;
           }
@@ -1919,7 +1906,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             cell->eta[p] = 1.0;
 
             cell->fx[p] = 0.0;
-            cell->fy[p] = -sin((double)3*M_PI*coord_y)*cos(1.0*M_PI*coord_x);
+            cell->fy[p] = -PetscSinReal(3.0*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
             cell->fz[p] = 0.0*coord_z;
             cell->hc[p] = 0.0;
           }
@@ -1967,8 +1954,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   ierr = DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DMCreateMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMSetMatType(da_Stokes,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da_Stokes,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da_Stokes,&B);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&X);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&f);CHKERRQ(ierr);
 
@@ -1985,7 +1973,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   /* SOLVE */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_S);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_S,A,B);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
 
   {

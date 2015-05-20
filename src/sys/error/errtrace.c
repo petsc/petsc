@@ -1,6 +1,9 @@
 
 #include <petscsys.h>        /*I "petscsys.h" I*/
 #include <petscconfiginfo.h>
+#if defined(PETSC_HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscIgnoreErrorHandler"
@@ -14,7 +17,6 @@
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - specific error number
@@ -39,7 +41,7 @@ $     SETERRQ(comm,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -124,6 +126,26 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
   return 0;
 }
 
+static void PetscErrorPrintfHilight(void)
+{
+#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
+  if (PetscErrorPrintf == PetscErrorPrintfDefault) {
+    if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[1;31m");
+  }
+#endif
+}
+
+static void PetscErrorPrintfNormal(void)
+{
+#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
+  if (PetscErrorPrintf == PetscErrorPrintfDefault) {
+    if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[0;39m\033[0;49m");
+  }
+#endif
+}
+
+extern PetscErrorCode  PetscOptionsViewError(void);
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscTraceBackErrorHandler"
 /*@C
@@ -138,10 +160,9 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - PETSC_ERROR_INITIAL if this is the first call the the error handler, otherwise PETSC_ERROR_REPEAT
+.  p - PETSC_ERROR_INITIAL if this is the first call the error handler, otherwise PETSC_ERROR_REPEAT
 -  ctx - error handler context
 
    Level: developer
@@ -163,7 +184,7 @@ $     SETERRQ(comm,number,n,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscLogDouble mem,rss;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
@@ -173,8 +194,13 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm,&rank);
 
   if (!rank) {
+    PetscBool  ismain,isunknown;
+    static int cnt = 1;
+
     if (p == PETSC_ERROR_INITIAL) {
-      (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
+      PetscErrorPrintfHilight();
+      (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
+      PetscErrorPrintfNormal();
       if (n == PETSC_ERR_MEM) {
         (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
         (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
@@ -193,23 +219,24 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       } else {
         const char *text;
         PetscErrorMessage(n,&text,NULL);
-        if (text) (*PetscErrorPrintf)("%s!\n",text);
+        if (text) (*PetscErrorPrintf)("%s\n",text);
       }
-      if (mess) (*PetscErrorPrintf)("%s!\n",mess);
-      (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+      if (mess) (*PetscErrorPrintf)("%s\n",mess);
+      (*PetscErrorPrintf)("See http://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.\n");
       (*PetscErrorPrintf)("%s\n",version);
-      (*PetscErrorPrintf)("See docs/changes/index.html for recent updates.\n");
-      (*PetscErrorPrintf)("See docs/faq.html for hints about trouble shooting.\n");
-      (*PetscErrorPrintf)("See docs/index.html for manual pages.\n");
-      (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
       if (PetscErrorPrintfInitializeCalled) (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
-      (*PetscErrorPrintf)("Libraries linked from %s\n",PETSC_LIB_DIR);
-      (*PetscErrorPrintf)("Configure run at %s\n",petscconfigureruntime);
       (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
-      (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
     }
     /* print line of stack trace */
-    (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
+    (*PetscErrorPrintf)("#%d %s() line %d in %s\n",cnt++,fun,line,file);
+    PetscStrncmp(fun,"main",4,&ismain);
+    PetscStrncmp(fun,"unknown",7,&isunknown);
+    if (ismain || isunknown) {
+      PetscOptionsViewError();
+      PetscErrorPrintfHilight();
+      (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
+      PetscErrorPrintfNormal();
+    }
   } else {
     /* do not print error messages since process 0 will print them, sleep before aborting so will not accidently kill process 0*/
     PetscSleep(10.0);

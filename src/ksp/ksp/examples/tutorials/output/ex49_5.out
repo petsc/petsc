@@ -1,0 +1,16 @@
+  Residual norms for elas_ solve.
+  0 KSP Residual norm 4.55812 
+  1 KSP Residual norm 0.248974 
+  2 KSP Residual norm 0.0670537 
+  3 KSP Residual norm 0.0246263 
+  4 KSP Residual norm 0.0169067 
+  5 KSP Residual norm 0.00821465 
+  6 KSP Residual norm 0.00402236 
+  7 KSP Residual norm 0.00266141 
+  8 KSP Residual norm 0.00152368 
+  9 KSP Residual norm 0.000820703 
+ 10 KSP Residual norm 0.000430815 
+ 11 KSP Residual norm 0.000142413 
+ 12 KSP Residual norm 5.26304e-05 
+ 13 KSP Residual norm 2.08607e-05 
+Linear elas_ solve converged due to CONVERGED_RTOL iterations 13

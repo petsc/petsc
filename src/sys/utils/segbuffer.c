@@ -126,6 +126,7 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
   struct _PetscSegBufferLink *s;
 
   PetscFunctionBegin;
+  if (!*seg) PetscFunctionReturn(0);
   for (s=(*seg)->head; s;) {
     struct _PetscSegBufferLink *tail = s->tail;
     ierr = PetscFree(s);CHKERRQ(ierr);

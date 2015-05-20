@@ -1,6 +1,6 @@
 
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /*
       Version for when blocks are 4 by 4 Using natural ordering
@@ -20,13 +20,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
 
   PetscFunctionBegin;
   /* initialization */
-  ierr = PetscMalloc(16*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,16*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscCalloc1(16*mbs,&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc2(16,MatScalar,&dk,16,MatScalar,&uik);CHKERRQ(ierr);
+  ierr = PetscMalloc2(16,&dk,16,&uik);CHKERRQ(ierr);
   ai   = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */

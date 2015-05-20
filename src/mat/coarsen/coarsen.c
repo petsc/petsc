@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>               /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>               /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscClassId MAT_COARSEN_CLASSID;
@@ -10,9 +10,9 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenRegister"
 /*@C
-   MatCoarsenRegister - Adds a new sparse matrix coarsen to the  matrix package.
+   MatCoarsenRegister - Adds a new sparse matrix coarser to the  matrix package.
 
-   Not Collective
+   Logically Collective
 
    Input Parameters:
 +  sname - name of coarsen (for example MATCOARSENMIS)
@@ -55,7 +55,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
 .  coarsen - the coarsen context
 
    Output Parameter:
-.  type - aggregator type
+.  type - coarsener type
 
    Level: intermediate
 
@@ -77,14 +77,10 @@ PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,MatCoarsenType *type)
 /*@
    MatCoarsenApply - Gets a coarsen for a matrix.
 
-   Collective on Mat
+   Collective on MatCoarsen
 
-   Input Parameters:
-.  matp - the matrix coarsen object
-
-   Output Parameters:
-.   coarsen - the coarsen. For each local node this tells the aggregate
-                   number that that node is assigned to.
+   Input Parameter:
+.   coarsen - the coarsen
 
    Options Database Keys:
    To specify the coarsen through the options database, use one of
@@ -95,18 +91,19 @@ $    -mat_coarsen_view
 
    Level: beginner
 
+   Notes: Use MatCoarsenGetData() to access the results of the coarsening
+
    The user can define additional coarsens; see MatCoarsenRegister().
 
 .keywords: matrix, get, coarsen
 
 .seealso:  MatCoarsenRegister(), MatCoarsenCreate(),
            MatCoarsenDestroy(), MatCoarsenSetAdjacency(), ISCoarsenToNumbering(),
-           ISCoarsenCount()
+           ISCoarsenCount(), MatCoarsenGetData()
 @*/
 PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 {
   PetscErrorCode ierr;
-  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
@@ -117,14 +114,6 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   ierr = PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(NULL,"-mat_coarsen_view",&flag,NULL);CHKERRQ(ierr);
-  if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)coarser),&viewer);CHKERRQ(ierr);
-    ierr = MatCoarsenView(coarser,viewer);CHKERRQ(ierr);
-    /* ierr = ISView(coarser->mis,viewer);CHKERRQ(ierr); */
-  }
   PetscFunctionReturn(0);
 }
 
@@ -160,7 +149,7 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 /*@
    MatCoarsenSetStrictAggs -
 
-   Not Collective on MatCoarsen and Mat
+   Logically Collective on MatCoarsen
 
    Input Parameters:
 +  agg - the coarsen context
@@ -181,36 +170,11 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetVerbose"
-/*@
-   MatCoarsenSetVerbose -
-
-   Not Collective on MatCoarsen and Mat
-
-   Input Parameters:
-+  agg - the coarsen context
--  str - the adjacency matrix
-
-   Level: beginner
-
-.keywords: Coarsen, adjacency
-
-.seealso: MatCoarsenCreate()
-@*/
-PetscErrorCode MatCoarsenSetVerbose(MatCoarsen agg, PetscInt vv)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(agg,MAT_COARSEN_CLASSID,1);
-  agg->verbose = vv;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenDestroy"
 /*@
    MatCoarsenDestroy - Destroys the coarsen context.
 
-   Collective on Coarsen
+   Collective on MatCoarsen
 
    Input Parameters:
 .  agg - the coarsen context
@@ -271,11 +235,8 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   PetscFunctionBegin;
   *newcrs = 0;
 
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
-  ierr = PetscHeaderCreate(agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen",
-                           "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(agg, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
 
   *newcrs = agg;
   PetscFunctionReturn(0);
@@ -323,10 +284,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
   PetscCheckSameComm(agg,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer,"MatCoarsen Object");CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatCoarsen",((PetscObject)viewer)->type_name);
-
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer);CHKERRQ(ierr);
   if (agg->ops->view) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*agg->ops->view)(agg,viewer);CHKERRQ(ierr);
@@ -343,8 +301,8 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
    Collective on MatCoarsen
 
    Input Parameter:
-.  coarser - the coarsen context.
-.  type - a known method
++  coarser - the coarsen context.
+-  type - a known coarsening method
 
    Options Database Command:
 $  -mat_coarsen_type  <type>
@@ -355,7 +313,7 @@ $      (for instance, mis)
 
 .keywords: coarsen, set, method, type
 
-.seealso: MatCoarsenCreate(), MatCoarsenApply(), MatCoarsenType
+.seealso: MatCoarsenCreate(), MatCoarsenApply(), MatCoarsenType, MatCoarsenGetType()
 
 @*/
 PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
@@ -395,7 +353,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetGreedyOrdering"
 /*@C
-   MatCoarsenSetGreedyOrdering - Sets the weights for vertices for a coarsen.
+   MatCoarsenSetGreedyOrdering - Sets the ordering of the vertices to use with a greedy coarsening method
 
    Logically Collective on Coarsen
 
@@ -423,18 +381,17 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenGetData"
 /*@C
-   MatCoarsenGetData - Sets the weights for vertices for a coarsen.
+   MatCoarsenGetData - Gets the weights for vertices for a coarsen.
 
    Logically Collective on Coarsen
 
-   Input Parameters:
-+  coarser - the coarsen context
--  mis - pointer into 'llist'
--  llist - linked list of aggregates
+   Input Parameter:
+.  coarser - the coarsen context
 
-   Level: beginner
+   Output Parameter:
+.  llist - linked list of aggregates
 
-   Notes:
+   Level: advanced
 
 .keywords: Coarsen
 
@@ -485,7 +442,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     def = ((PetscObject)coarser)->type_name;
   }
 
-  ierr = PetscOptionsList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatCoarsenSetType(coarser,type);CHKERRQ(ierr);
   }
@@ -497,9 +454,10 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   }
 
   if (coarser->ops->setfromoptions) {
-    ierr = (*coarser->ops->setfromoptions)(coarser);CHKERRQ(ierr);
+    ierr = (*coarser->ops->setfromoptions)(PetscOptionsObject,coarser);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

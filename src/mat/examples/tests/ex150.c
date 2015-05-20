@@ -42,8 +42,8 @@ PetscInt main(PetscInt argc,char **args)
   dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
 
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&z,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&z,NULL);CHKERRQ(ierr);
   ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
   printf("The vector size from the main routine is %d\n",vsize);
 
@@ -81,7 +81,7 @@ PetscInt main(PetscInt argc,char **args)
 
 
 
-/* ierr = MatGetVecs(A,&z,NULL);CHKERRQ(ierr); */
+/* ierr = MatCreateVecs(A,&z,NULL);CHKERRQ(ierr); */
 /*  printf("Vector size from ex148 %d\n",vsize); */
 /*  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr); */
 /*      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr); */

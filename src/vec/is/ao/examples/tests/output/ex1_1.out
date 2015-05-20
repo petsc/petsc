@@ -1,3 +1,5 @@
+AO Object: 1 MPI processes
+  type: basic
 Number of elements in ordering 5
 PETSc->App  App->PETSc
   0    0      0    0
@@ -7,7 +9,10 @@ PETSc->App  App->PETSc
   4    4      4    4
 [0] 2,1,9,7 PetscToApplication 2 1 -1 -1
 [0] 0,3,4 ApplicationToPetsc 0 3 4
+
 Test AOCreateMemoryScalable: 
+AO Object: 1 MPI processes
+  type: memoryscalable
 Number of elements in ordering 5
 PETSc->App  App->PETSc
 Process [0]
@@ -16,7 +21,10 @@ Process [0]
   2    2      2    2
   3    3      3    3
   4    4      4    4
+
 Test AOCreateMemoryScalable with ispetsc=NULL:
+AO Object: 1 MPI processes
+  type: memoryscalable
 Number of elements in ordering 5
 PETSc->App  App->PETSc
 Process [0]
@@ -25,6 +33,7 @@ Process [0]
   2    2      2    2
   3    3      3    3
   4    4      4    4
+
 Test general API: 
 [0] 2,1,9,7 PetscToApplication 2 1 -1 -1
 [0] 0,3,4 ApplicationToPetsc 0 3 4

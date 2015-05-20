@@ -1,4 +1,38 @@
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
+#include <petscvalgrind.h>
+
+static PetscInt petsc_checkpointer_intensity = 1;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCheckPointerSetIntensity"
+/*@
+   PetscCheckPointerSetIntensity - An intense pointer check registers a signal handler and attempts to dereference to
+   confirm whether the address is valid.  An intensity of 0 never uses signal handlers, 1 uses them when not in a "hot"
+   function, and intensity of 2 always uses a signal handler.
+
+   Not Collective
+
+   Input Arguments:
+.  intensity - how much to check pointers for validity
+
+   Level: advanced
+
+.seealso: PetscCheckPointer(), PetscFunctionBeginHot
+@*/
+PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
+{
+
+  PetscFunctionBegin;
+  switch (intensity) {
+  case 0:
+  case 1:
+  case 2:
+    petsc_checkpointer_intensity = intensity;
+    break;
+  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Intensity %D not in 0,1,2",intensity);
+  }
+  PetscFunctionReturn(0);
+}
 
 /* ---------------------------------------------------------------------------------------*/
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
@@ -25,6 +59,10 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 
   if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
   if (!ptr) return PETSC_FALSE;
+  if (petsc_checkpointer_intensity < 1) return PETSC_TRUE;
+
+  /* Skip the verbose check if we are inside a hot function. */
+  if (petscstack && petscstack->hotdepth > 0 && petsc_checkpointer_intensity < 2) return PETSC_TRUE;
 
   sigemptyset(&sa.sa_mask);
   sa.sa_sigaction = PetscSegv_sigaction;
@@ -61,7 +99,7 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
       break;
     }
     case PETSC_CHAR:{
-      PETSC_UNUSED char *x = *(char*volatile*)ptr;
+      PETSC_UNUSED char x = *(volatile char*)ptr;
       break;
     }
     case PETSC_OBJECT:{

@@ -2,14 +2,18 @@
 #define __CUSPVECIMPL
 
 #include <petsccusp.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #include <algorithm>
 #include <vector>
 #include <string>
 
 #include <cublas.h>
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+#include <cusp/blas/blas.h>
+#else
 #include <cusp/blas.h>
+#endif
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/constant_iterator.h>
@@ -49,31 +53,11 @@ PETSC_INTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
+PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUSP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec,Vec);
 
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-#include "tx_vector_interface.h"
-#endif
-
-struct  _p_PetscCUSPIndices {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  GPU_Indices<PetscInt, PetscScalar> * sendIndices;
-  GPU_Indices<PetscInt, PetscScalar> * recvIndices;
-#else
-  CUSPINTARRAYCPU sendIndicesCPU;
-  CUSPINTARRAYGPU sendIndicesGPU;
-
-  CUSPINTARRAYCPU recvIndicesCPU;
-  CUSPINTARRAYGPU recvIndicesGPU;
-#endif
-};
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-PETSC_INTERN PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec, PetscCUSPIndices);
-PETSC_INTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndices);
-#endif
 
 #define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
 
@@ -83,9 +67,47 @@ PETSC_INTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUS
 
 struct Vec_CUSP {
   CUSPARRAY *GPUarray;        /* this always holds the GPU data */
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  GPU_Vector<PetscInt, PetscScalar> * GPUvector; /* this always holds the GPU data */
-#endif
+  cudaStream_t stream;        /* A stream for doing asynchronous data transfers */
+  PetscBool hostDataRegisteredAsPageLocked;
+};
+
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesDestroy(PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSP_StoS(Vec,Vec,PetscCUSPIndices,InsertMode,ScatterMode);
+
+typedef enum {VEC_SCATTER_CUSP_STOS, VEC_SCATTER_CUSP_PTOP} VecCUSPScatterType;
+typedef enum {VEC_SCATTER_CUSP_GENERAL, VEC_SCATTER_CUSP_STRIDED} VecCUSPSequentialScatterMode;
+
+struct  _p_VecScatterCUSPIndices_PtoP {
+  PetscInt ns;
+  PetscInt sendLowestIndex;
+  PetscInt nr;
+  PetscInt recvLowestIndex;
+};
+
+struct  _p_VecScatterCUSPIndices_StoS {
+  /* from indices data */
+  PetscInt *fslots;
+  PetscInt fromFirst;
+  PetscInt fromStep;
+  VecCUSPSequentialScatterMode fromMode;
+
+  /* to indices data */
+  PetscInt *tslots;
+  PetscInt toFirst;
+  PetscInt toStep;
+  VecCUSPSequentialScatterMode toMode;
+
+  PetscInt n;
+  PetscInt MAX_BLOCKS;
+  PetscInt MAX_CORESIDENT_THREADS;
+  cudaStream_t stream;
+};
+
+struct  _p_PetscCUSPIndices {
+  void * scatter;
+  VecCUSPScatterType scatterType;
 };
 
 #endif

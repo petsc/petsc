@@ -1,9 +1,9 @@
       program main
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscpc.h"
+#include "petsc/finclude/petscksp.h"
 
       PetscInt       N
       PetscBool      draw, flg
@@ -36,7 +36,7 @@
       call MatPythonSetType(A,'example1.py:Laplace1D',ierr)
       call MatSetUp(A,ierr)
 
-      call MatGetVecs(A,x,b,ierr)
+      call MatCreateVecs(A,x,b,ierr)
       call VecSet(b,one,ierr)
 
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
@@ -47,7 +47,7 @@
       call PCSetType(pc,'python',ierr)
       call PCPythonSetType(pc,'example1.py:Jacobi',ierr)
 
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,b,x,ierr)
 

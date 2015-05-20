@@ -1,13 +1,13 @@
 !
-!   This program tests MatGetVecs() for Shell Matrix
+!   This program tests MatCreateVecs() for Shell Matrix
 !
       subroutine mymatgetvecs(A,x,y,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
       PetscErrorCode ierr
       Mat A
       Vec x,y
@@ -26,11 +26,11 @@
       program main
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscviewer.h>
 
       PetscErrorCode ierr
       Vec     x,y
@@ -43,7 +43,7 @@
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatShellSetOperation(m,MATOP_GET_VECS,mymatgetvecs,ierr)
-      call MatGetVecs(m,x,y,ierr)
+      call MatCreateVecs(m,x,y,ierr)
       call MatDestroy(m,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)

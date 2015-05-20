@@ -78,7 +78,7 @@ PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 
@@ -158,7 +158,7 @@ PetscViewer  PETSC_VIEWER_STDERR_(MPI_Comm comm)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStderr(comm,&viewer);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 
@@ -271,7 +271,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
     ierr = PetscViewerFileSetName(*lab,name);CHKERRQ(ierr);
   }
   /* save viewer into communicator if needed later */
-  ierr       = PetscNew(PetscViewerLink,&nv);CHKERRQ(ierr);
+  ierr       = PetscNew(&nv);CHKERRQ(ierr);
   nv->viewer = *lab;
   if (!flg) {
     ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-#include <petsc-private/tsimpl.h>      /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;
@@ -6,7 +6,7 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "TSSetType"
 /*@C
-  TSSetType - Sets the method for the timestepping solver.
+  TSSetType - Sets the method to be used as the timestepping solver.
 
   Collective on TS
 
@@ -39,6 +39,8 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
    Level: intermediate
 
 .keywords: TS, set, type
+
+.seealso: TS, TSSolve(), TSCreate(), TSSetFromOptions(), TSDestroy(), TSType
 
 @*/
 PetscErrorCode  TSSetType(TS ts,TSType type)

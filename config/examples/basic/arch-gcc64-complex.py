@@ -9,9 +9,8 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--with-64-bit-indices=1',
     '--with-scalar-type=complex',
-    '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
-    '--download-f-blas-lapack=1',
+    '--download-fblaslapack=1',
     '--download-mpich=1',
     '--with-python=1',
     '--PETSC_ARCH=arch-gcc64-complex'

@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_VIEWER_CLASSID;
 
@@ -22,6 +22,7 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscViewerPackageInitialized = PETSC_FALSE;
+  PetscViewerRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +101,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
   if (--((PetscObject)(*viewer))->refct > 0) {*viewer = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSViewOff((PetscObject)*viewer);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*viewer);CHKERRQ(ierr);
   if ((*viewer)->ops->destroy) {
     ierr = (*(*viewer)->ops->destroy)(*viewer);CHKERRQ(ierr);
   }
@@ -266,8 +267,15 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
 @*/
 PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (viewer->setupcalled) PetscFunctionReturn(0);
+  if (viewer->ops->setup) {
+    ierr = (*viewer->ops->setup)(viewer);CHKERRQ(ierr);
+  }
+  viewer->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -301,6 +309,9 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
+#if defined(PETSC_HAVE_SAWS)
+  PetscBool         issaws;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
@@ -312,10 +323,13 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
+#endif
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer,"PetscViewer Object");CHKERRQ(ierr);
       if (v->format) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Viewer format = %s\n",PetscViewerFormats[v->format]);CHKERRQ(ierr);
       }
@@ -325,6 +339,67 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_SAWS)
+  } else if (issaws) {
+    if (!((PetscObject)v)->amsmem) {
+      ierr = PetscObjectViewSAWs((PetscObject)v,viewer);CHKERRQ(ierr);
+      if (v->ops->view) {
+        ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
+      }
+    }
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRead"
+/*@C
+   PetscViewerRead - Reads data from a PetscViewer
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  viewer   - The viewer
+.  data     - Location to write the data
+.  num      - Number of items of data to read
+-  datatype - Type of data to read
+
+   Output Parameters:
+.  count - number of items of data actually read, or NULL
+
+   Level: beginner
+
+   Concepts: binary files, ascii files
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer
+@*/
+PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, PetscInt *count, PetscDataType dtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (dtype == PETSC_STRING) {
+    PetscInt c, i = 0, cnt;
+    char *s = (char *)data;
+    for (c = 0; c < num; c++) {
+      /* Skip leading whitespaces */
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i]), 1, &cnt, PETSC_CHAR);CHKERRQ(ierr); if (count && !cnt) break;}
+      while (s[i]=='\n' || s[i]=='\t' || s[i]==' ' || s[i]=='\0' || s[i]=='\v' || s[i]=='\f' || s[i]=='\r');
+      i++;
+      /* Read strings one char at a time */
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i++]), 1, &cnt, PETSC_CHAR);CHKERRQ(ierr); if (count && !cnt) break;}
+      while (s[i-1]!='\n' && s[i-1]!='\t' && s[i-1]!=' ' && s[i-1]!='\0' && s[i-1]!='\v' && s[i-1]!='\f' && s[i-1]!='\r');
+      /* Terminate final string */
+      if (c == num-1) s[i-1] = '\0';
+    }
+    if (count) *count = c;
+    else if (c < num) SETERRQ2(PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %D < %D strings", c, num);
+  } else {
+    ierr = (*viewer->ops->read)(viewer, data, num, count, dtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

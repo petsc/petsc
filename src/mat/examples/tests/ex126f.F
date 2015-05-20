@@ -6,9 +6,9 @@
       program main
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
 
       Vec            x,b,u
       Mat            A, fact
@@ -20,6 +20,7 @@
       PetscScalar    one, v
       IS             perm,iperm
       PetscErrorCode ierr
+      PetscReal      info(MAT_FACTORINFO_SIZE)
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
       m    = 10
@@ -78,25 +79,24 @@
       call VecSet(u, one, ierr)
       call MatMult(A, u, b, ierr)
 
+      call MatFactorInfoInitialize(info,ierr)
       if (wmumps) then
           write(*,*) 'use MUMPS LU...'
-          call MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU,                             &
-     &                      fact, ierr)
+          call MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,fact,ierr)
           call MatLUFactorSymbolic(fact, A, PETSC_NULL_OBJECT,                            &
-     &                    PETSC_NULL_OBJECT,PETSC_NULL_INTEGER, ierr)
+     &                    PETSC_NULL_OBJECT,info, ierr)
       else
          write(*,*) 'use PETSc LU...'
          call MatGetOrdering(A,MATORDERINGNATURAL,perm,iperm,ierr)
-         call MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU,                              &
-     &         fact, ierr)
+         call MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,fact,ierr)
 
          call MatLUFactorSymbolic(fact, A, perm, iperm,                                   &
-     &         PETSC_NULL_INTEGER, ierr)
+     &         info, ierr)
          call ISDestroy(perm,ierr)
          call ISDestroy(iperm,ierr)
       endif
 
-      call MatLUFactorNumeric(fact, A, PETSC_NULL_INTEGER, ierr)
+      call MatLUFactorNumeric(fact, A, info, ierr)
       call MatSolve(fact, b, x,ierr)
       call MatDestroy(fact, ierr)
 

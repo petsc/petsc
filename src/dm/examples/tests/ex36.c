@@ -1,39 +1,40 @@
 
 static char help[] = "Checks the functionality of DMGetInterpolation() on deformed grids.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 typedef struct _n_CCmplx CCmplx;
 struct _n_CCmplx {
-  double real;
-  double imag;
+  PetscReal real;
+  PetscReal imag;
 };
 
-CCmplx CCmplxPow(CCmplx a,double n)
+CCmplx CCmplxPow(CCmplx a,PetscReal n)
 {
   CCmplx b;
-  double r,theta;
-  r      = sqrt(a.real*a.real + a.imag*a.imag);
+  PetscReal r,theta;
+  r      = PetscSqrtReal(a.real*a.real + a.imag*a.imag);
   theta  = atan2(a.imag,a.real);
-  b.real = pow(r,n) * cos(n*theta);
-  b.imag = pow(r,n) * sin(n*theta);
+  b.real = PetscPowReal(r,n) * PetscCosReal(n*theta);
+  b.imag = PetscPowReal(r,n) * PetscSinReal(n*theta);
   return b;
 }
 CCmplx CCmplxExp(CCmplx a)
 {
   CCmplx b;
-  b.real = exp(a.real) * cos(a.imag);
-  b.imag = exp(a.real) * sin(a.imag);
+  b.real = PetscExpReal(a.real) * PetscCosReal(a.imag);
+  b.imag = PetscExpReal(a.real) * PetscSinReal(a.imag);
   return b;
 }
 CCmplx CCmplxSqrt(CCmplx a)
 {
   CCmplx b;
-  double r,theta;
-  r      = sqrt(a.real*a.real + a.imag*a.imag);
+  PetscReal r,theta;
+  r      = PetscSqrtReal(a.real*a.real + a.imag*a.imag);
   theta  = atan2(a.imag,a.real);
-  b.real = sqrt(r) * cos(0.5*theta);
-  b.imag = sqrt(r) * sin(0.5*theta);
+  b.real = PetscSqrtReal(r) * PetscCosReal(0.5*theta);
+  b.imag = PetscSqrtReal(r) * PetscSinReal(0.5*theta);
   return b;
 }
 CCmplx CCmplxAdd(CCmplx a,CCmplx c)
@@ -214,7 +215,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
 
   for (i=sx; i<sx+nx; i++) {
@@ -251,7 +252,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +272,7 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&sx,&sy,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -283,7 +284,7 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   }
 
   ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +304,7 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -324,7 +325,7 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   }
 
   ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +343,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,
                       mx+1,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
@@ -392,7 +393,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,nrm/sqrt((PetscReal)N));
+    PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,(double)(nrm/PetscSqrtReal((PetscReal)N)));
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
@@ -433,7 +434,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,
                       mx+1, my+1,
                       PETSC_DECIDE, PETSC_DECIDE,
                       1, /* 1 dof */
@@ -492,7 +493,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,nrm/sqrt((PetscReal)N));
+    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,(double)(nrm/PetscSqrtReal((PetscReal)N)));
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
@@ -533,7 +534,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1, my+1,mz+1,
                       PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
                       1, /* 1 dof */
@@ -596,7 +597,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,nrm/sqrt((PetscReal)N));
+    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,(double)(nrm/PetscSqrtReal((PetscReal)N)));
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 

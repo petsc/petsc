@@ -9,6 +9,7 @@
    The file storage of the vector is independent of the number of processes used.
  */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsys.h>
 #include <petscviewerhdf5.h>
@@ -25,8 +26,10 @@ int main(int argc,char **argv)
   PetscScalar    ym    = -1.0, yp=1.0;
   PetscScalar    value = 1.0,dx,dy;
   PetscInt       Nx    = 40, Ny=40;
-  Vec            gauss;
+  Vec            gauss,input;
   PetscScalar    **gauss_ptr;
+  PetscReal      norm;
+  const char     *vecname;
 
   dx=(xp-xm)/(Nx-1);
   dy=(yp-ym)/(Ny-1);
@@ -35,7 +38,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Build of the DMDA */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da2D);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da2D);CHKERRQ(ierr);
 
   /* Set the coordinates */
   DMDASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
@@ -54,19 +57,36 @@ int main(int argc,char **argv)
   ierr = DMDAVecGetArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
   for (j=iys; j<iys+iym; j++) {
     for (i=ixs; i<ixs+ixm; i++) {
-      gauss_ptr[j][i]=exp(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
+      gauss_ptr[j][i]=PetscExpScalar(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
     }
   }
   ierr = DMDAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
 
   /* Create the HDF5 viewer */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
 
   /* Write the H5 file */
   ierr = VecView(gauss,H5viewer);CHKERRQ(ierr);
 
-  /* Cleaning stage */
+  /* Close the viewer */
   ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
+
+  ierr = VecDuplicate(gauss,&input);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)gauss,&vecname);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)input,vecname);CHKERRQ(ierr);
+
+  /* Create the HDF5 viewer for reading */
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_READ,&H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
+  ierr = VecLoad(input,H5viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
+
+  ierr = VecAXPY(input,-1.0,gauss);CHKERRQ(ierr);
+  ierr = VecNorm(input,NORM_2,&norm);CHKERRQ(ierr);
+  if (norm > 1.e-6) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in does not match vector written out");
+
+  ierr = VecDestroy(&input);CHKERRQ(ierr);
   ierr = VecDestroy(&gauss);CHKERRQ(ierr);
   ierr = DMDestroy(&da2D);CHKERRQ(ierr);
   ierr = PetscFinalize();

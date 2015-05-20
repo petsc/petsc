@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,PC_NN,&pcnn);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&pcnn);CHKERRQ(ierr);
   pc->data = (void*)pcnn;
 
   ierr             = PCISCreate(pc);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 
   PetscFunctionBegin;
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
-  ierr = PetscMalloc((n_neigh*n_neigh+1)*sizeof(PetscScalar),&mat);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_neigh*n_neigh+1,&mat);CHKERRQ(ierr);
 
   /* Allocate memory for DZ */
   /* Notice that DZ_OUT[0] is allocated some space that is never used. */
@@ -268,8 +268,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   {
     PetscMPIInt tag;
     ierr         = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
-    ierr         = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
-    recv_request = send_request + (n_neigh);
+    ierr         = PetscMalloc2(n_neigh+1,&send_request,n_neigh+1,&recv_request);CHKERRQ(ierr);
     for (i=1; i<n_neigh; i++) {
       ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(send_request[i]));CHKERRQ(ierr);
       ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(recv_request[i]));CHKERRQ(ierr);
@@ -308,13 +307,13 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   /* Complete the sending. */
   if (n_neigh>1) {
     MPI_Status *stat;
-    ierr = PetscMalloc((n_neigh-1)*sizeof(MPI_Status),&stat);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_neigh-1,&stat);CHKERRQ(ierr);
     if (n_neigh-1) {ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);}
     ierr = PetscFree(stat);CHKERRQ(ierr);
   }
 
   /* Free the memory for the MPI requests */
-  ierr = PetscFree(send_request);CHKERRQ(ierr);
+  ierr = PetscFree2(send_request,recv_request);CHKERRQ(ierr);
 
   /* Free the memory for DZ_OUT */
   if (DZ_OUT) {
@@ -333,7 +332,9 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,1,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,n_neigh,NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(pcnn->coarse_mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(pcnn->coarse_mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetValues(pcnn->coarse_mat,n_neigh,neigh,n_neigh,neigh,mat,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -359,7 +360,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 
     ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&pcnn->ksp_coarse);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcnn->ksp_coarse,(PetscObject)pc,2);CHKERRQ(ierr);
-    ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat);CHKERRQ(ierr);
     ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);
     ierr = KSPSetType(pcnn->ksp_coarse,KSPPREONLY);CHKERRQ(ierr);

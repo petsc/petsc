@@ -23,6 +23,9 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscSF        sf;
   PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert;
+  MPI_Op         mop;
+  char           opstring[256];
+  PetscBool      strflg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -33,6 +36,49 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL);CHKERRQ(ierr);
   test_reduce     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
+  mop             = MPI_SUM;
+  ierr            = PetscStrcpy(opstring,"sum");CHKERRQ(ierr);
+  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,256,NULL);CHKERRQ(ierr);
+  ierr = PetscStrcmp("sum",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPIU_SUM;
+  }
+  ierr = PetscStrcmp("prod",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_PROD;
+  }
+  ierr = PetscStrcmp("max",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_MAX;
+  }
+  ierr = PetscStrcmp("min",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_MIN;
+  }
+  ierr = PetscStrcmp("land",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_LAND;
+  }
+  ierr = PetscStrcmp("band",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_BAND;
+  }
+  ierr = PetscStrcmp("lor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_LOR;
+  }
+  ierr = PetscStrcmp("bor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_BOR;
+  }
+  ierr = PetscStrcmp("lxor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_LXOR;
+  }
+  ierr = PetscStrcmp("bxor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_BXOR;
+  }
   test_degree     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,NULL);CHKERRQ(ierr);
   test_fetchandop = PETSC_FALSE;
@@ -49,7 +95,7 @@ int main(int argc,char **argv)
 
   nroots  = 2 + (PetscInt)(rank == 0);
   nleaves = 2 + (PetscInt)(rank > 0);
-  ierr    = PetscMalloc(nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   /* Left periodic neighbor */
   remote[0].rank  = (rank+size-1)%size;
   remote[0].index = 1;
@@ -76,7 +122,7 @@ int main(int argc,char **argv)
     PetscInt *rootdata,*leafdata;
     /* Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
      * user-defined structures, could also be used. */
-    ierr = PetscMalloc2(nroots,PetscInt,&rootdata,nleaves,PetscInt,&leafdata);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
     /* Set rootdata buffer to be broadcast */
     for (i=0; i<nroots; i++) rootdata[i] = 100*(rank+1) + i;
     /* Initialize local buffer, these values are never used. */
@@ -93,7 +139,7 @@ int main(int argc,char **argv)
 
   if (test_reduce) {            /* Reduce leafdata into rootdata */
     PetscInt *rootdata,*leafdata;
-    ierr = PetscMalloc2(nroots,PetscInt,&rootdata,nleaves,PetscInt,&leafdata);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
     for (i=0; i<nroots; i++) rootdata[i] = 100*(rank+1) + i;
     /* Set leaf values to reduce. */
@@ -102,8 +148,8 @@ int main(int argc,char **argv)
     ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* Perform reduction. Computation or other communication can be performed between the begin and end calls.
      * This example sums the values, but other MPI_Ops can be used (e.g MPI_MAX, MPI_PROD). */
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nleaves,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n");CHKERRQ(ierr);
@@ -122,11 +168,11 @@ int main(int argc,char **argv)
   if (test_fetchandop) {
     /* Cannot use text compare here because token ordering is not deterministic */
     PetscInt *leafdata,*leafupdate,*rootdata;
-    ierr = PetscMalloc3(nleaves,PetscInt,&leafdata,nleaves,PetscInt,&leafupdate,nroots,PetscInt,&rootdata);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nleaves,&leafdata,nleaves,&leafupdate,nroots,&rootdata);CHKERRQ(ierr);
     for (i=0; i<nleaves; i++) leafdata[i] = 1;
     for (i=0; i<nroots; i++) rootdata[i] = 0;
-    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Rootdata (sum of 1 from each leaf)\n");CHKERRQ(ierr);
     ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Leafupdate (value at roots prior to my atomic update)\n");CHKERRQ(ierr);
@@ -140,7 +186,7 @@ int main(int argc,char **argv)
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
     for (i=0,inedges=0; i<nroots; i++) inedges += degree[i];
-    ierr = PetscMalloc2(inedges,PetscInt,&indata,nleaves,PetscInt,&outdata);CHKERRQ(ierr);
+    ierr = PetscMalloc2(inedges,&indata,nleaves,&outdata);CHKERRQ(ierr);
     for (i=0; i<nleaves; i++) outdata[i] = 1000*(rank+1) + i;
     ierr = PetscSFGatherBegin(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
@@ -155,7 +201,7 @@ int main(int argc,char **argv)
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
     for (i=0,inedges=0; i<nroots; i++) inedges += degree[i];
-    ierr = PetscMalloc2(inedges,PetscInt,&indata,nleaves,PetscInt,&outdata);CHKERRQ(ierr);
+    ierr = PetscMalloc2(inedges,&indata,nleaves,&outdata);CHKERRQ(ierr);
     for (i=0,count=0; i<nroots; i++) {
       for (j=0; j<degree[i]; j++) indata[count++] = 1000*(rank+1) + 100*i + j;
     }

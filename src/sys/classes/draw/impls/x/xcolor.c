@@ -90,7 +90,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 
   /* set the uniform hue colors into the color map */
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
+  ierr    = PetscMalloc3(ncolors,&red,ncolors,&green,ncolors,&blue);CHKERRQ(ierr);
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
   ierr    = PetscOptionsGetBool(NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
   if (!fast) {
@@ -155,7 +155,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
 
   /* set the uniform hue colors into the color map */
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
+  ierr    = PetscMalloc3(ncolors,&red,ncolors,&green,ncolors,&blue);CHKERRQ(ierr);
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
   ierr    = PetscOptionsGetBool(NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
   if (!fast) {

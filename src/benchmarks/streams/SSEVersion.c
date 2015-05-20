@@ -274,7 +274,7 @@ static double Second()
 }
 
 #define M 20
-static int checktick()
+static int checktick(void)
 {
   int    i, minDelta, Delta;
   double t1, t2, timesfound[M];

@@ -1,5 +1,5 @@
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscdmda.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -9,7 +9,7 @@
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL dmdagetinfo_(DM *da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *w,PetscInt *s,
-                                DMDABoundaryType *wrapx, DMDABoundaryType *wrapy, DMDABoundaryType *wrapz, DMDAStencilType *st,PetscErrorCode *ierr)
+                                DMBoundaryType *wrapx, DMBoundaryType *wrapy, DMBoundaryType *wrapz, DMDAStencilType *st,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(dim);
   CHKFORTRANNULLINTEGER(M);

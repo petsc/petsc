@@ -3,6 +3,7 @@
 #
 #    Uses PETSC_ARCH and PETSC_DIR plus the MPIEXEC command in
 #  packages to run mpiexec
+#    Also use PETSCVALGRIND_OPTIONS from env
 #
 if ($1 == '-h' | $1 == '--help') then
   echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
@@ -29,9 +30,9 @@ shift
 set np=$1
 shift
 
-set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
-set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
-set run = `grep MPIEXEC ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | grep -v "#MPIEXEC" | cut -f2 -d=`
+set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
+set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
+set run = `grep MPIEXEC ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v "#MPIEXEC" | cut -f2 -d=`
 
 #echo $MPI_BUILD_HOME
 #echo $MPI_HOME
@@ -46,28 +47,25 @@ set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 
 #echo $qrun $*
 
-
 if ( ${valgrind} == "1" ) then
+  if ! $?PETSCVALGRIND_OPTIONS then
+    set PETSCVALGRIND_OPTIONS=
+  endif
+  set VALGRIND_CMD=`which valgrind`
+  set VALGRIND_OPTIONS="-q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes ${PETSCVALGRIND_OPTIONS}"
   if ( ${debugger} == "1" ) then
-    if ( `uname` == 'Darwin') then
-      $qrun -n $np xterm -e `which valgrind` --db-attach=yes -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
-      rm -rf *.dSYM
-    else 
-      $qrun -n $np xterm -e `which valgrind` --db-attach=yes -q --tool=memcheck --num-callers=20  $*
-    endif
-  else 
-    if ( `uname` == 'Darwin') then
-      $qrun -n $np `which valgrind` -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
-      rm -rf *.dSYM
-    else 
-      $qrun -n $np `which valgrind` -q --tool=memcheck --num-callers=20  $*
-    endif
+    set VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"
+    set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --db-attach=yes"
+  endif
+  if ( `uname` == 'Darwin') then
+    set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --dsymutil=yes"
+  endif
+  $qrun -n $np ${VALGRIND_CMD} ${VALGRIND_OPTIONS} $*
+  if ( `uname` == 'Darwin') then
+    rm -rf *.dSYM
+    rm -rf ${PETSC_DIR}/${PETSC_ARCH}/lib/lib*.dSYM
   endif
 else
   $qrun -n $np $*
 endif
-if ( ${valgrind} == "1" &&  `uname` == 'Darwin') then
-  rm -rf ${PETSC_DIR}/${PETSC_ARCH}/lib/lib*.dSYM
-endif
-
 

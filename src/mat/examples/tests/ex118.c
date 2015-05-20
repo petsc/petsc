@@ -9,7 +9,10 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScala
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-#if !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_DSTEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
+  PetscInitialize(&argc,&args,(char*)0,help);
+  SETERRQ(PETSC_COMM_WORLD,1,"This example requires LAPACK routines dstebz and stien and real numbers");
+#else
   PetscErrorCode ierr;
   PetscReal      *work,tols[2];
   PetscInt       i,j;
@@ -19,27 +22,22 @@ int main(int argc,char **args)
   Vec            *evecs;
   PetscScalar    *evecs_array,*D,*E,*evals;
   Mat            T;
-#if !defined(PETSC_MISSING_LAPACK_DSTEBZ)
-  PetscReal vl=0.0,vu=4.0,tol=1.e-10;
-  PetscBLASInt  nsplit,info;
-#endif
-#endif
+  PetscReal      vl=0.0,vu=4.0,tol=1.e-10;
+  PetscBLASInt   nsplit,info;
+
 
   PetscInitialize(&argc,&args,(char*)0,help);
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
-#else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   n      = 100;
   nevs   = iu - il;
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscScalar),&D);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(3*n+1,&D);CHKERRQ(ierr);
   E      = D + n;
   evals  = E + n;
-  ierr   = PetscMalloc((5*n+1)*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscBLASInt),&iblock);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(5*n+1,&work);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(3*n+1,&iwork);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(3*n+1,&iblock);CHKERRQ(ierr);
   isplit = iblock + n;
 
   /* Set symmetric tridiagonal matrix */
@@ -49,28 +47,20 @@ int main(int argc,char **args)
   }
 
   /* Solve eigenvalue problem: A*evec = eval*evec */
-#if defined(PETSC_MISSING_LAPACK_STEBZ)
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
-#else
-  printf(" LAPACKstebz_: compute %d eigenvalues...\n",nevs);
+  ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKstebz_: compute %d eigenvalues...\n",nevs);CHKERRQ(ierr);
   LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,(PetscReal*)D,(PetscReal*)E,&nevs,&nsplit,(PetscReal*)evals,iblock,isplit,work,iwork,&info);
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info);
-#endif
 
-  printf(" LAPACKstein_: compute %d found eigenvectors...\n",nevs);
-  ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevs*sizeof(PetscBLASInt),&ifail);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_STEIN)
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
-#else
+  ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKstein_: compute %d found eigenvectors...\n",nevs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*nevs,&evecs_array);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevs,&ifail);CHKERRQ(ierr);
   LAPACKstein_(&n,(PetscReal*)D,(PetscReal*)E,&nevs,(PetscReal*)evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info);
-#endif
   /* View evals */
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) PetscPrintf(PETSC_COMM_SELF,"%d  %G\n",i,evals[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);CHKERRQ(ierr);
+    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i,(double)evals[i]);CHKERRQ(ierr);}
   }
 
   /* Check residuals and orthogonality */
@@ -89,7 +79,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevs+1,&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
@@ -117,8 +107,8 @@ int main(int argc,char **args)
   ierr = PetscFree(evecs_array);CHKERRQ(ierr);
   ierr = PetscFree(ifail);CHKERRQ(ierr);
   ierr = PetscFinalize();
-#endif
   return 0;
+#endif
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution
@@ -168,12 +158,12 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %d\n",i,j,(double)dot,(double)norm);CHKERRQ(ierr);
         }
 #endif
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %G\n",dot_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);CHKERRQ(ierr);
 
   case 1:
     norm_max = 0.0;
@@ -183,16 +173,15 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       tmp  = -eval[i];
       ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
       ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      norm = PetscAbsScalar(norm);
+      norm = PetscAbsReal(norm);
       if (norm > norm_max) norm_max = norm;
 #if defined(DEBUG_CkEigenSolutions)
-      /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %d, resi: %g\n",i, norm);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  residual violation: %d, resi: %g\n",i, norm);CHKERRQ(ierr);
       }
 #endif
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
     break;
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);CHKERRQ(ierr);

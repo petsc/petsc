@@ -1,5 +1,5 @@
 
-#include <petsc-private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElements_1D"
@@ -16,7 +16,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
     ierr   = DMDAGetGhostCorners(dm,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     da->ne = 1*(xe - xs - 1);
-    ierr   = PetscMalloc((1 + 2*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(1 + 2*da->ne,&da->e);CHKERRQ(ierr);
     for (i=xs; i<xe-1; i++) {
       da->e[cnt++] = (i-Xs);
       da->e[cnt++] = (i-Xs+1);
@@ -49,7 +49,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye    += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1);
-    ierr   = PetscMalloc((1 + nn*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
         cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs);
@@ -98,7 +98,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
     ye    += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     ze    += zs; Ze += Zs; if (zs != Zs) zs -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1)*(ze - zs - 1);
-    ierr   = PetscMalloc((1 + nn*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
     for (k=zs; k<ze-1; k++) {
       for (j=ys; j<ye-1; j++) {
         for (i=xs; i<xe-1; i++) {
@@ -211,19 +211,20 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 #define __FUNCT__ "DMDAGetElements"
 PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
-  DM_DA          *da = (DM_DA*)dm->data;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (da->dim==-1) {
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim==-1) {
     *nel = 0; *nen = 0; *e = NULL;
-  } else if (da->dim==1) {
+  } else if (dim==1) {
     ierr = DMDAGetElements_1D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else if (da->dim==2) {
+  } else if (dim==2) {
     ierr = DMDAGetElements_2D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else if (da->dim==3) {
+  } else if (dim==3) {
     ierr = DMDAGetElements_3D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",da->dim);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   PetscFunctionReturn(0);
 }
 

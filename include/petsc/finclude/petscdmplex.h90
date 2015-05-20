@@ -1,0 +1,10 @@
+!
+!
+!  Additional DMPlex include file for use of PETSc with Fortran 90/HPF
+!
+#include "petsc/finclude/ftn-custom/petscdmplex.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "petsc/finclude/ftn-auto/petscdmplex.h90"
+      end interface
+#endif

@@ -2,12 +2,12 @@
 #
 #  mpiexec for use with the PETSC_ARCH remote
 #
-ssh=`grep SSH ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | cut -f2 -d=`
-rsync=`grep RSYNC ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | cut -f2 -d=`
-workspace=`grep WORKSPACE ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | cut -f2 -d=`
-workmachine=`grep WORKMACHINE ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | cut -f2 -d=`
-workpetscdir=`grep WORKPETSCDIR ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | cut -f2 -d=`
-workpetscarch=`grep WORKPETSCARCH ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | cut -f2 -d=`
+ssh=`grep SSH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | cut -f2 -d=`
+rsync=`grep RSYNC ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | cut -f2 -d=`
+workspace=`grep WORKSPACE ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | cut -f2 -d=`
+workmachine=`grep WORKMACHINE ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | cut -f2 -d=`
+workpetscdir=`grep WORKPETSCDIR ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | cut -f2 -d=`
+workpetscarch=`grep WORKPETSCARCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | cut -f2 -d=`
 inputdatafiles=`grep INPUTDATAFILES makefile | cut -f2 -d=`
 outputdatafiles=`grep OUTPUTDATAFILES makefile | cut -f2 -d=`
 

@@ -22,11 +22,11 @@
 !     petscis.h     - index sets
 !
       program main
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
 
 !  Variables:
 !
@@ -150,11 +150,11 @@
 !
       subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
 
 !
 !   solve1 - This routine is used for repeated linear system solves.
@@ -216,7 +216,8 @@
 ! Set operators, keeping the identical preconditioner matrix for
 ! all linear solves.  This approach is often effective when the
 ! linear systems do not change very much between successive steps.
-      call KSPSetOperators(ksp,A,A2,SAME_PRECONDITIONER,ierr)
+      call KSPSetReusePreconditioner(ksp,PETSC_TRUE,ierr)
+      call KSPSetOperators(ksp,A,A2,ierr)
 
 ! Solve linear system
       call KSPSolve(ksp,b,x,ierr)

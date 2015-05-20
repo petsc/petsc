@@ -4,7 +4,7 @@
 
 #if !defined(__SNES_RICHARDSON_H)
 #define __SNES_RICHARDSON_H
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 typedef struct {
   int dummy;

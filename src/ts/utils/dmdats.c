@@ -1,13 +1,14 @@
 #include <petscdmda.h>          /*I "petscdmda.h" I*/
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petscdraw.h>
 
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {
   PetscErrorCode (*ifunctionlocal)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*);
   PetscErrorCode (*rhsfunctionlocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
-  PetscErrorCode (*ijacobianlocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*);
-  PetscErrorCode (*rhsjacobianlocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*ijacobianlocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*);
+  PetscErrorCode (*rhsjacobianlocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,void*);
   void       *ifunctionlocalctx;
   void       *ijacobianlocalctx;
   void       *rhsfunctionlocalctx;
@@ -34,7 +35,7 @@ static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DMTS sdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(sdm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,(DMTS_DA**)&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMTS_DA));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -48,7 +49,7 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
   PetscFunctionBegin;
   *dmdats = NULL;
   if (!sdm->data) {
-    ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,(DMTS_DA**)&sdm->data);CHKERRQ(ierr);
     sdm->ops->destroy   = DMTSDestroy_DMDA;
     sdm->ops->duplicate = DMTSDuplicate_DMDA;
   }
@@ -58,10 +59,6 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunction_DMDA"
-/*
-  This function should eventually replace:
-    DMDAComputeFunction() and DMDAComputeFunction1()
- */
 static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -115,7 +112,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian_DMDA"
-static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -136,26 +133,22 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
     ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Xdot,&xdot);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmdats->ijacobianlocal)(&info,ptime,x,xdot,shift,*A,*B,mstr,dmdats->ijacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmdats->ijacobianlocal)(&info,ptime,x,xdot,shift,A,B,dmdats->ijacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dm,Xdot,&xdot);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"TSComputeIJacobian_DMDA() called without calling DMDATSSetIJacobian()");
   /* This will be redundant if the user called both, but it's too common to forget. */
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSFunction_DMDA"
-/*
-  This function should eventually replace:
-    DMDAComputeFunction() and DMDAComputeFunction1()
- */
 static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -207,7 +200,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian_DMDA"
-static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -227,15 +220,15 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
     ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmdats->rhsjacobianlocal)(&info,ptime,x,*A,*B,mstr,dmdats->rhsjacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmdats->rhsjacobianlocal)(&info,ptime,x,A,B,dmdats->rhsjacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"TSComputeRHSJacobian_DMDA() called without calling DMDATSSetRHSJacobian()");
   /* This will be redundant if the user called both, but it's too common to forget. */
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -299,14 +292,13 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
 
    Calling sequence for func:
 
-$ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,MatStructure *flg,void *ctx);
+$ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,void *ctx);
 
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate residual
 .  x    - array of local state information
 .  J    - Jacobian matrix
 .  B    - preconditioner matrix; often same as J
-.  flg  - flag indicating information about the preconditioner matrix structure (same as flag in KSPSetOperators())
 -  ctx  - optional context passed above
 
    Level: beginner
@@ -385,15 +377,15 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
 
    Calling sequence for func:
 
-$ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,Mat J,Mat B,MatStructure *flg,void *ctx);
+$ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,PetscScalar shift,Mat J,Mat B,void *ctx);
 
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate the jacobian
 .  x    - array of local state information
 .  xdot - time derivative at this state
+.  shift - see TSSetIJacobian() for the meaning of this parameter
 .  J    - Jacobian matrix
 .  B    - preconditioner matrix; often same as J
-.  flg  - flag indicating information about the preconditioner matrix structure (same as flag in KSPSetOperators())
 -  ctx  - optional context passed above
 
    Level: beginner
@@ -420,10 +412,11 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx
 #define __FUNCT__ "TSMonitorDMDARayDestroy"
 PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
 {
-  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx*)*mctx;
-  PetscErrorCode      ierr;
+  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *) *mctx;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  if (rayctx->lgctx) {ierr = TSMonitorLGCtxDestroy(&rayctx->lgctx);CHKERRQ(ierr);}
   ierr = VecDestroy(&rayctx->ray);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&rayctx->scatter);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&rayctx->viewer);CHKERRQ(ierr);
@@ -445,6 +438,50 @@ PetscErrorCode TSMonitorDMDARay(TS ts,PetscInt steps,PetscReal time,Vec u,void *
   ierr = VecScatterEnd(rayctx->scatter,solution,rayctx->ray,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (rayctx->viewer) {
     ierr = VecView(rayctx->ray,rayctx->viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGDMDARay"
+PetscErrorCode  TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx)
+{
+  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *) ctx;
+  TSMonitorLGCtx       lgctx  = (TSMonitorLGCtx) rayctx->lgctx;
+  Vec                  v      = rayctx->ray;
+  const PetscScalar   *a;
+  PetscInt             dim;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterBegin(rayctx->scatter, u, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(rayctx->scatter, u, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  if (!step) {
+    PetscDrawAxis axis;
+
+    ierr = PetscDrawLGGetAxis(lgctx->lg, &axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis, "Solution Ray as function of time", "Time", "Solution");CHKERRQ(ierr);
+    ierr = VecGetLocalSize(rayctx->ray, &dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(lgctx->lg, dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(lgctx->lg);CHKERRQ(ierr);
+  }
+  ierr = VecGetArrayRead(v, &a);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  {
+    PetscReal *areal;
+    PetscInt   i,n;
+    ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &areal);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) areal[i] = PetscRealPart(a[i]);
+    ierr = PetscDrawLGAddCommonPoint(lgctx->lg, ptime, areal);CHKERRQ(ierr);
+    ierr = PetscFree(areal);CHKERRQ(ierr);
+  }
+#else
+  ierr = PetscDrawLGAddCommonPoint(lgctx->lg, ptime, a);CHKERRQ(ierr);
+#endif
+  ierr = VecRestoreArrayRead(v, &a);CHKERRQ(ierr);
+  if (((lgctx->howoften > 0) && (!(step % lgctx->howoften))) || ((lgctx->howoften == -1) && ts->reason)) {
+    ierr = PetscDrawLGDraw(lgctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

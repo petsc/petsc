@@ -4,7 +4,7 @@
     Testing examples can be found in ~/src/mat/examples/tests FIX: should these be moved to dm/da/examples/tests?
 */
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 #include <petscdmda.h>                  /*I "petscdmda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
 #include <fftw3.h>
 
@@ -191,7 +191,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (out) not yet supported by USFFT");
   ierr         = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr         = PetscNewLog(*A,Mat_USFFT,&usfft);CHKERRQ(ierr);
+  ierr         = PetscNewLog(*A,&usfft);CHKERRQ(ierr);
   (*A)->data   = (void*)usfft;
   usfft->inda  = inda;
   usfft->outda = outda;
@@ -204,7 +204,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   usfft->freqDA = freqDA;
   /* NB: we reverse the freq and resample DMDA sizes, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
-  ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->indim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(usfft->ndim+1,&usfft->indim);CHKERRQ(ierr);
   for (i = usfft->ndim; i > 0; --i) usfft->indim[usfft->ndim-i] = dim[i-1];
 
   /* outda */
@@ -214,7 +214,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   /* Store output dimensions */
   /* NB: we reverse the DMDA dimensions, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
-  ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->outdim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(usfft->ndim+1,&usfft->outdim);CHKERRQ(ierr);
   for (i = usfft->ndim; i > 0; --i) usfft->outdim[usfft->ndim-i] = dim[i-1];
 
   /* TODO: Use the new form of DMDACreate() */

@@ -16,7 +16,7 @@
       subroutine FORLINK()
 
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -45,7 +45,7 @@
 !=====================================================================72
       block data Block_Initialization
       implicit none
-#include <finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       PetscScalar vkar,cmu,ce1,ce2
       PetscScalar aplus1,aplus2,turbinf
       PetscScalar cb1,sig,cb2,cw1,cw2
@@ -72,7 +72,7 @@
 #define __FUNCT__ "INIT"
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar  turbre(1),amut(1)
       integer ivnode(1),nnodes,nvnode,irank
       PetscScalar  title(20),beta,alpha
@@ -99,10 +99,10 @@
       Integer i,k,n
 #if defined(INTERLACING)
        PetscScalar qvec(4,nnodes)
-#define qnode(i,j) qvec(i,j)
+#define qnod(i,j) qvec(i,j)
 #else
        PetscScalar qvec(nnodes,4)
-#define qnode(i,j) qvec(j,i)
+#define qnod(i,j) qvec(j,i)
 #endif
 !
       cw1 = cb1/vkar/vkar + (1.0d0 + cb2)/sig
@@ -138,10 +138,10 @@
       w0    = 0.0d0
 #endif
       do n = 1,nnodes
-         qnode(1,n) = p0
-         qnode(2,n) = u0
-         qnode(3,n) = v0
-         qnode(4,n) = w0
+         qnod(1,n) = p0
+         qnod(2,n) = u0
+         qnod(3,n) = v0
+         qnod(4,n) = w0
       enddo
       if (ivisc.eq.3) then
        do n = 1,nnodes
@@ -159,9 +159,9 @@
 ! Compute the velocity normal to the surface
 !
         k       = ivnode(i)
-        qnode(2,k) = 0.0d0
-        qnode(3,k) = 0.0d0
-        qnode(4,k) = 0.0d0
+        qnod(2,k) = 0.0d0
+        qnod(3,k) = 0.0d0
+        qnod(4,k) = 0.0d0
  9010 continue
 !
 ! If turbulent, initialize turbre
@@ -215,7 +215,7 @@
       subroutine READR1(ileast, irank)
 
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -288,7 +288,7 @@
      &                  irank)
 !
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar pinf
       PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
@@ -448,7 +448,7 @@
      &                 evec,qvec,xyz,sface_bit,vface_bit,               &
      &                 clift, cdrag, cmom,irank,nvertices)
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -488,7 +488,7 @@
       PetscScalar qvec(4,nvertices)
       PetscScalar xyz(3,nvertices)
       integer evec(2,nedge)
-#define qnode(i,j) qvec(i,j)
+#define qnod(i,j) qvec(i,j)
 #define x(i) xyz(1,i)
 #define y(i) xyz(2,i)
 #define z(i) xyz(3,i)
@@ -497,7 +497,7 @@
       PetscScalar qvec(nvertices,4)
       PetscScalar xyz(nvertices,3)
       integer evec(nedge,2)
-#define qnode(i,j) qvec(j,i)
+#define qnod(i,j) qvec(j,i)
 #define x(i) xyz(i,1)
 #define y(i) xyz(i,2)
 #define z(i) xyz(i,3)
@@ -563,20 +563,20 @@
                ynorm = 0.5d0*(ax*bz - az*bx)
                znorm =-0.5d0*(ax*by - ay*bx)
 
-               p1 = qnode(1,node1)
-               u1 = qnode(2,node1)
-               v1 = qnode(3,node1)
-               w1 = qnode(4,node1)
+               p1 = qnod(1,node1)
+               u1 = qnod(2,node1)
+               v1 = qnod(3,node1)
+               w1 = qnod(4,node1)
 
-               p2 = qnode(1,node2)
-               u2 = qnode(2,node2)
-               v2 = qnode(3,node2)
-               w2 = qnode(4,node2)
+               p2 = qnod(1,node2)
+               u2 = qnod(2,node2)
+               v2 = qnod(3,node2)
+               w2 = qnod(4,node2)
 
-               p3 = qnode(1,node3)
-               u3 = qnode(2,node3)
-               v3 = qnode(3,node3)
-               w3 = qnode(4,node3)
+               p3 = qnod(1,node3)
+               u3 = qnod(2,node3)
+               v3 = qnod(3,node3)
+               w3 = qnod(4,node3)
 
                press = (p1 + p2 + p3)/3.0d0
                cp    = 2.d0*(press - 1.0d0)
@@ -641,20 +641,20 @@
                ynorm = 0.5d0*(ax*bz - az*bx)
                znorm =-0.5d0*(ax*by - ay*bx)
 
-               p1    = qnode(1,node1)
-               u1    = qnode(2,node1)
-               v1    = qnode(3,node1)
-               w1    = qnode(4,node1)
+               p1    = qnod(1,node1)
+               u1    = qnod(2,node1)
+               v1    = qnod(3,node1)
+               w1    = qnod(4,node1)
 
-               p2    = qnode(1,node2)
-               u2    = qnode(2,node2)
-               v2    = qnode(3,node2)
-               w2    = qnode(4,node2)
+               p2    = qnod(1,node2)
+               u2    = qnod(2,node2)
+               v2    = qnod(3,node2)
+               w2    = qnod(4,node2)
 
-               p3    = qnode(1,node3)
-               u3    = qnode(2,node3)
-               v3    = qnode(3,node3)
-               w3    = qnode(4,node3)
+               p3    = qnod(1,node3)
+               u3    = qnod(2,node3)
+               v3    = qnod(3,node3)
+               w3    = qnod(4,node3)
 
                press = (p1 + p2 + p3)/3.0d0
                cp    = 2.d0*(press -1.0d0)
@@ -681,7 +681,7 @@
       coef_loc(2) = cdloc
       coef_loc(3) = cmloc
       call MPI_ALLREDUCE(coef_loc,coef_glo,icount,                       &
-     &                   MPIU_SCALAR, MPI_SUM,                           &
+     &                   MPIU_SCALAR, MPIU_SUM,                           &
      &                   MPI_COMM_WORLD,ierr)
 !     call MPI_ALLREDUCE(cdloc,cdglo,icount,
 !    &                   MPIU_REAL_PRECISION, MPI_SUM,
@@ -721,7 +721,7 @@
      &                  LocalTS,irank,nvertices)
 !
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -747,7 +747,7 @@
       PetscScalar xyz(3,nvertices)
       PetscScalar xyzn(4,nedge)
       integer evec(2,nedge)
-#define qnode(i,j) qvec(i,j)
+#define qnod(i,j) qvec(i,j)
 #define x(i) xyz(1,i)
 #define y(i) xyz(2,i)
 #define z(i) xyz(3,i)
@@ -761,7 +761,7 @@
       PetscScalar xyz(nvertices,3)
       PetscScalar xyzn(nedge,4)
       integer evec(nedge,2)
-#define qnode(i,j) qvec(j,i)
+#define qnod(i,j) qvec(j,i)
 #define x(i) xyz(i,1)
 #define y(i) xyz(i,2)
 #define z(i) xyz(i,3)
@@ -804,13 +804,13 @@
 ! ynorm = ynormal * area of face
 ! znorm = znormal * area of face
 !*/
-               u1   = qnode(2,node1)
-               v1   = qnode(3,node1)
-               w1   = qnode(4,node1)
+               u1   = qnod(2,node1)
+               v1   = qnod(3,node1)
+               w1   = qnod(4,node1)
 
-               u2   = qnode(2,node2)
-               v2   = qnode(3,node2)
-               w2   = qnode(4,node2)
+               u2   = qnod(2,node2)
+               v2   = qnod(3,node2)
+               w2   = qnod(4,node2)
 !
 ! Get average values on face
 !
@@ -839,9 +839,9 @@
             znorm = szn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
 
-            u   = qnode(2,inode)
-            v   = qnode(3,inode)
-            w   = qnode(4,inode)
+            u   = qnod(2,inode)
+            v   = qnod(3,inode)
+            w   = qnod(4,inode)
             ubar= (u*xnorm + v*ynorm + w*znorm)/area
             c   = sqrt(ubar*ubar + beta)
 !
@@ -887,9 +887,9 @@
             znorm = fzn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
 
-            u   = qnode(2,inode)
-            v   = qnode(3,inode)
-            w   = qnode(4,inode)
+            u   = qnod(2,inode)
+            v   = qnod(3,inode)
+            w   = qnod(4,inode)
             ubar= (u*xnorm + v*ynorm + w*znorm)/area
             c = sqrt(ubar*ubar + beta)
 
@@ -975,7 +975,7 @@
      &                irank,nvertices)
 #endif
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1049,7 +1049,7 @@
       PetscScalar xyz(3,nvertices)
       PetscScalar xyzn(4,nedge)
       integer evec(2,nedge)
-#define qnode(i,j) qvec(i,j)
+#define qnod(i,j) qvec(i,j)
 #define res(i,j) resvec(i,j)
 #define gradx(i,j) grad(1,i,j)
 #define grady(i,j) grad(2,i,j)
@@ -1069,7 +1069,7 @@
       PetscScalar xyz(nvertices,3)
       PetscScalar xyzn(nedge,4)
       integer evec(nedge,2)
-#define qnode(i,j) qvec(j,i)
+#define qnod(i,j) qvec(j,i)
 #define res(i,j) resvec(j,i)
 #define gradx(i,j) grad(j,i,1)
 #define grady(i,j) grad(j,i,2)
@@ -1253,16 +1253,16 @@
          rx     = second*(xmean - x(node1))
          ry     = second*(ymean - y(node1))
          rz     = second*(zmean - z(node1))
-         pL = qnode(1,node1) + gradx(1,node1)*rx                           &
+         pL = qnod(1,node1) + gradx(1,node1)*rx                           &
      &                       + grady(1,node1)*ry                           &
      &                       + gradz(1,node1)*rz
-         uL = qnode(2,node1) + gradx(2,node1)*rx                           &
+         uL = qnod(2,node1) + gradx(2,node1)*rx                           &
      &                       + grady(2,node1)*ry                           &
      &                       + gradz(2,node1)*rz
-         vL = qnode(3,node1) + gradx(3,node1)*rx                           &
+         vL = qnod(3,node1) + gradx(3,node1)*rx                           &
      &                       + grady(3,node1)*ry                           &
      &                       + gradz(3,node1)*rz
-         wL = qnode(4,node1) + gradx(4,node1)*rx                           &
+         wL = qnod(4,node1) + gradx(4,node1)*rx                           &
      &                       + grady(4,node1)*ry                           &
      &                       + gradz(4,node1)*rz
 
@@ -1273,16 +1273,16 @@
          rx     = second*(xmean - x(node2))
          ry     = second*(ymean - y(node2))
          rz     = second*(zmean - z(node2))
-         pR   = qnode(1,node2) + gradx(1,node2)*rx                         &
+         pR   = qnod(1,node2) + gradx(1,node2)*rx                         &
      &                         + grady(1,node2)*ry                         &
      &                         + gradz(1,node2)*rz
-         uR   = qnode(2,node2) + gradx(2,node2)*rx                         &
+         uR   = qnod(2,node2) + gradx(2,node2)*rx                         &
      &                         + grady(2,node2)*ry                         &
      &                         + gradz(2,node2)*rz
-         vR   = qnode(3,node2) + gradx(3,node2)*rx                         &
+         vR   = qnod(3,node2) + gradx(3,node2)*rx                         &
      &                         + grady(3,node2)*ry                         &
      &                         + gradz(3,node2)*rz
-         wR   = qnode(4,node2) + gradx(4,node2)*rx                         &
+         wR   = qnod(4,node2) + gradx(4,node2)*rx                         &
      &                         + grady(4,node2)*ry                         &
      &                         + gradz(4,node2)*rz
          ubarR  = xnorm*uR + ynorm*vR + znorm*wR
@@ -1366,10 +1366,10 @@
 ! Modify to calculate .5(fl +fr) from nodes
 ! instead of extrapolated ones
 !
-!         pL    = qnode(1,node1)
-!         uL    = qnode(2,node1)
-!         vL    = qnode(3,node1)
-!         wL    = qnode(4,node1)
+!         pL    = qnod(1,node1)
+!         uL    = qnod(2,node1)
+!         vL    = qnod(3,node1)
+!         wL    = qnod(4,node1)
 !         ubarL = xnorm*uL + ynorm*vL + znorm*wL
 !
           fluxp1 = rlen*beta*ubarL
@@ -1379,10 +1379,10 @@
 !
 ! Now the right side
 !
-!         pR    = qnode(1,node2)
-!         uR    = qnode(2,node2)
-!         vR    = qnode(3,node2)
-!         wR    = qnode(4,node2)
+!         pR    = qnod(1,node2)
+!         uR    = qnod(2,node2)
+!         vR    = qnod(3,node2)
+!         wR    = qnod(4,node2)
 !         ubarR = xnorm*uR + ynorm*vR + znorm*wR
 !
           fluxm1 = rlen*beta*ubarR
@@ -1471,17 +1471,17 @@
                x1 = x(node1)
                y1 = y(node1)
                z1 = z(node1)
-               p1 = qnode(1,node1)
+               p1 = qnod(1,node1)
 
                x2 = x(node2)
                y2 = y(node2)
                z2 = z(node2)
-               p2 = qnode(1,node2)
+               p2 = qnod(1,node2)
 
                x3 = x(node3)
                y3 = y(node3)
                z3 = z(node3)
-               p3 = qnode(1,node3)
+               p3 = qnod(1,node3)
 
                ax = x2 - x1
                ay = y2 - y1
@@ -1536,17 +1536,17 @@
                x1 = x(node1)
                y1 = y(node1)
                z1 = z(node1)
-               p1 = qnode(1,node1)
+               p1 = qnod(1,node1)
 
                x2 = x(node2)
                y2 = y(node2)
                z2 = z(node2)
-               p2 = qnode(1,node2)
+               p2 = qnod(1,node2)
 
                x3 = x(node3)
                y3 = y(node3)
                z3 = z(node3)
-               p3 = qnode(1,node3)
+               p3 = qnod(1,node3)
 
                ax = x2 - x1
                ay = y2 - y1
@@ -1610,7 +1610,7 @@
 !       ynorm = syn(i)
 !       znorm = szn(i)
 !
-!       p = qnode(1,inode)
+!       p = qnod(1,inode)
 !
 !       if (inode .le. nnodes) then
 !        res(2,inode) = res(2,inode) + xnorm*p
@@ -1629,7 +1629,7 @@
 !       ynorm = vyn(i)
 !       znorm = vzn(i)
 !
-!       p = qnode(1,inode)
+!       p = qnod(1,inode)
 !
 !       if (inode .le. nnodes) then
 !        res(2,inode) = res(2,inode) + xnorm*p
@@ -1731,10 +1731,10 @@
 !
 ! Now, get the variables on the "inside"
 !
-         pi      = qnode(1,inode)
-         ui      = qnode(2,inode)
-         vi      = qnode(3,inode)
-         wi      = qnode(4,inode)
+         pi      = qnod(1,inode)
+         ui      = qnod(2,inode)
+         vi      = qnod(3,inode)
+         wi      = qnod(4,inode)
          unorm   = xnorm*ui + ynorm*vi + znorm*wi
 !
 ! If ubar is negative, take the reference condition from outside
@@ -1800,7 +1800,7 @@
       subroutine SUMGS(nnodes,nedge,evec,xyz,rxy,irank,nvertices)
 
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       integer nnodes,nedge,irank,nvertices
 #if defined(INTERLACING)
       PetscScalar xyz(3,nvertices)
@@ -2051,7 +2051,7 @@
      &                 rxy,irank,nvertices)
 !
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       integer nnodes,nedge,irank,nvertices
 !
 #if defined(INTERLACING)
@@ -2060,7 +2060,7 @@
       PetscScalar rxy(7,nnodes)
       PetscScalar grad(3,4,nnodes)
       integer evec(2,nedge)
-#define qnode(i,j) qvec(i,j)
+#define qnod(i,j) qvec(i,j)
 #define gradx(i,j) grad(1,i,j)
 #define grady(i,j) grad(2,i,j)
 #define gradz(i,j) grad(3,i,j)
@@ -2081,7 +2081,7 @@
       PetscScalar rxy(nnodes,7)
       PetscScalar grad(nnodes,4,3)
       integer evec(nedge,2)
-#define qnode(i,j) qvec(j,i)
+#define qnod(i,j) qvec(j,i)
 #define gradx(i,j) grad(j,i,1)
 #define grady(i,j) grad(j,i,2)
 #define gradz(i,j) grad(j,i,3)
@@ -2139,11 +2139,11 @@
 !     do 1001 i = 1,nnodes
 !     write(6,800)i,x(i),y(i),z(i)
 ! 800 format(1h ,'i x y z=',i5,3(f10.5,1x))
-!       qnode(1,i) = 1.0*x(i) +  2.0*y(i) + 3.0*z(i)
-!       qnode(2,i) = 3.0*x(i) +  4.0*y(i) + 6.0*z(i)
-!       qnode(3,i) = 5.0*x(i) +  6.0*y(i) + 9.0*z(i)
-!       qnode(4,i) = 7.0*x(i) +  8.0*y(i) + 12.0*z(i)
-!       qnode(i,5) = 9.0*x(i) + 10.0*y(i) + 15.0*z(i)
+!       qnod(1,i) = 1.0*x(i) +  2.0*y(i) + 3.0*z(i)
+!       qnod(2,i) = 3.0*x(i) +  4.0*y(i) + 6.0*z(i)
+!       qnod(3,i) = 5.0*x(i) +  6.0*y(i) + 9.0*z(i)
+!       qnod(4,i) = 7.0*x(i) +  8.0*y(i) + 12.0*z(i)
+!       qnod(i,5) = 9.0*x(i) + 10.0*y(i) + 15.0*z(i)
 !1001 continue
 !
 ! Zero out the gradients
@@ -2192,10 +2192,10 @@
 !
 !         call PetscLogEventBegin(node1_event,0,0,0,0,ierr)
           if (node1 .le. nnodes) then
-           dq1 = weight*(qnode(1,node2) - qnode(1,node1))
-           dq2 = weight*(qnode(2,node2) - qnode(2,node1))
-           dq3 = weight*(qnode(3,node2) - qnode(3,node1))
-           dq4 = weight*(qnode(4,node2) - qnode(4,node1))
+           dq1 = weight*(qnod(1,node2) - qnod(1,node1))
+           dq2 = weight*(qnod(2,node2) - qnod(2,node1))
+           dq3 = weight*(qnod(3,node2) - qnod(3,node1))
+           dq4 = weight*(qnod(4,node2) - qnod(4,node1))
 !
 !          w11 = 1./(r11(node1)*r11(node1))
 !          w22 = 1./(r22(node1)*r22(node1))
@@ -2248,10 +2248,10 @@
            dy2 = -dy1
            dz2 = -dz1
 !
-           dq1 = weight*(qnode(1,node1) - qnode(1,node2))
-           dq2 = weight*(qnode(2,node1) - qnode(2,node2))
-           dq3 = weight*(qnode(3,node1) - qnode(3,node2))
-           dq4 = weight*(qnode(4,node1) - qnode(4,node2))
+           dq1 = weight*(qnod(1,node1) - qnod(1,node2))
+           dq2 = weight*(qnod(2,node1) - qnod(2,node2))
+           dq3 = weight*(qnod(3,node1) - qnod(3,node2))
+           dq4 = weight*(qnod(4,node1) - qnod(4,node2))
 !
 !          w11 = 1./(r11(node2)*r11(node2))
 !          w22 = 1./(r22(node2)*r22(node2))
@@ -2374,7 +2374,7 @@
 #endif
 !
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 !
       integer nnodes, ncell, nedge,                                         &
      &        nbface,ileast,ires,                                           &
@@ -2482,13 +2482,13 @@
 !     if (ileast.eq.0) then
 !        call GETGRAD(nnodes,ncell,nedge,nsface,nvface,nfface,
 !    &                isface,ivface,ifface,eptr,ncolor,ncount,
-!    &                qnode,gradx,grady,x,y,
+!    &                qnod,gradx,grady,x,y,
 !    &                area,wx,wy,xn,yn,rl)
 !
 !     else if (ileast.eq.4) then
 !     if (ileast.eq.4) then
 !        call LSTGS(nnodes,nedge,eptr,
-!    &              qnode,gradx,grady,gradz,xyz,
+!    &              qnod,gradx,grady,gradz,xyz,
 !    &              r11,r12,r13,r22,r23,r33,irank,nvertices)
 !     end if
 !
@@ -2511,7 +2511,7 @@
 ! If not doing Newton-Krylov and iflim=1 call the Flux Limiter
 !
 !     if(iflim.eq.1.and.ifcn.ne.1)then
-!      call TIMLIM(nnodes,nedge,qnode,res,dq,phi,ncolor,ncount,
+!      call TIMLIM(nnodes,nedge,qnod,res,dq,phi,ncolor,ncount,
 !    &             gradx,grady,gradz,x,y,z,eptr)
 !
 ! If we used the limiter we need to zero out the residual again
@@ -2595,7 +2595,7 @@
 !    &                  eptr,c2n,c2e,
 !    &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
 !    &                  x,y,z,gradx,grady,gradz,
-!    &                  qnode,amut,res,phi)
+!    &                  qnod,amut,res,phi)
 !     end if
 !*/
 ! End of subroutine GETRES
@@ -2663,7 +2663,7 @@
 #define __FUNCT__ "GETIA"
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       integer nnodes,nedge,irank
       integer ia(1),ideg(1)
 #if defined(INTERLACING)
@@ -2714,7 +2714,7 @@
 #define __FUNCT__ "GETJA"
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       integer nnodes,nedge,irank
       integer ia(1),ja(1),iwork(1)
 #if defined(INTERLACING)
@@ -2833,7 +2833,7 @@
 #define __FUNCT__ "SORTER"
       subroutine SORTER(istart,iend,ja,inode)
       implicit none
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       integer istart,iend,inode
       integer ja(1)
 !

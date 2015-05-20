@@ -30,6 +30,7 @@ Use the options
      -da_processors_y <MY> number of processors in x direction
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -44,16 +45,20 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   Vec              local,global;
   PetscScalar      value;
-  DMDABoundaryType bx    = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx    = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscViewer mviewer;
+  PetscViewer      mviewer;
+  PetscMPIInt      size;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
+  }
 #endif
 
   ierr = PetscOptionsGetBool(NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
@@ -83,13 +88,17 @@ int main(int argc,char **argv)
   ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = DMView(da,mviewer);CHKERRQ(ierr);
-  ierr = VecView(global,mviewer);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = DMView(da,mviewer);CHKERRQ(ierr);
+    ierr = VecView(global,mviewer);CHKERRQ(ierr);
+  }
 #endif
 
   /* Free memory */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr);
+  }
 #endif
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);

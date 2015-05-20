@@ -3,10 +3,9 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
-PetscClassId  ADDA_CLASSID;
 PetscLogEvent DMDA_LocalADFunction;
 
 #undef __FUNCT__
@@ -46,7 +45,6 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
     ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmapb);CHKERRQ(ierr);
 
   *done = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -69,14 +67,13 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = PetscFree(dd->startin[i]);CHKERRQ(ierr);
   }
 
-  ierr = VecScatterDestroy(&dd->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->ltol);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->natural);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->gton);CHKERRQ(ierr);
   ierr = AODestroy(&dd->ao);CHKERRQ(ierr);
+  ierr = PetscFree(dd->aotype);CHKERRQ(ierr);
 
-  ierr = PetscFree(dd->idx);CHKERRQ(ierr);
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
   ierr = PetscFree(dd->lz);CHKERRQ(ierr);
@@ -88,7 +85,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = PetscFree(dd->fieldname);CHKERRQ(ierr);
   }
   if (dd->coordinatename) {
-    for (i=0; i<dd->dim; i++) {
+    for (i=0; i<da->dim; i++) {
       ierr = PetscFree(dd->coordinatename[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dd->coordinatename);CHKERRQ(ierr);

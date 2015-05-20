@@ -66,7 +66,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid); if (numGroups < 0) SETERRQ(PETSC_COMM_SELF,numGroups, "Unable to count supplementary group IDs");
-  ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numGroups+1, &gid);CHKERRQ(ierr);
 #else
   numGroups = 0;
 #endif
@@ -119,6 +119,8 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *fileMode = 0;
+  *exists = PETSC_FALSE;
 #if defined(PETSC_HAVE_STAT_NO_CONST)
   ierr = stat((char*) fname, &statbuf);
 #else

@@ -38,12 +38,12 @@
             <li><a href="documentation/referencing.html">Citing PETSc</a></li>
             <li><a href="documentation/tutorials/index.html">Tutorials</a></li>
             <li><a href="documentation/installation.html">Installation</a></li>
-            <li><a href="documentation/ams.html">AMS</a></li>
+            <li><a href="documentation/saws.html">SAWs</a></li>
             <li><a href="documentation/changes/index.html">Changes</a></li>
             <li><a href="documentation/bugreporting.html">BugReporting</a></li>
             <li><a href="documentation/codemanagement.html">CodeManagement</a></li>
             <li><a href="documentation/faq.html">FAQ</a></li>
-            <li><a href="documentation/copyright.html">License</a></li>
+            <li><a href="documentation/license.html">License</a></li>
           </ul>
         </li>
         <li><a href="publications/index.html">Applications/Publications</a></li>
@@ -66,8 +66,15 @@
 
     <div id="main">
 
+     <div align="center">
+        <h1> News: PETSc <a href="http://www.mcs.anl.gov/petsc-20">workshop and tutorial,</a> June 15-18, 2015 </h1>
+      </div>
+
+      </p>
+      </p>
+
       <div align="center">
-        The current version of PETSc is <span class="version">3.4</span>; released <span class="date">May 13, 2013.</span>
+        The current version of PETSc is <span class="version">3.5</span>; released <span class="date">June 30, 2014.</span>
       </div>
 
       <p>
@@ -75,7 +82,7 @@
         structures and routines for the scalable (parallel) solution of
         scientific applications modeled by partial differential equations. It
         supports MPI, <a href="features/threads.html">shared memory pthreads</a>,
-        and <a href="features/gpus.html">NVIDIA GPUs</a>, as well as hybrid
+        and <a href="features/gpus.html">GPUs through CUDA or OpenCL</a>, as well as hybrid
         MPI-shared memory pthreads or MPI-GPU parallelism.
       </p>
 
@@ -92,22 +99,18 @@
         <li>
           Related packages that use PETSc
           <ul>
-            <li><a href="http://www.mcs.anl.gov/tao">TAO - Toolkit for Advanced Optimization</a></li>
-            <li><a href="http://www.grycap.upv.es/slepc">SLEPc - Scalable Library for Eigenvalue Problems</a></li>
+            <li><a href="http://mooseframework.org/">MOOSE - Multiphysics Object-Oriented Simulation Environment</a> finite element framework, built on top of libMesh and PETSc</li>
+            <li><a href="http://slepc.upv.es/">SLEPc - Scalable Library for Eigenvalue Problems</a></li>
+            <li><a href="https://github.com/andrealani/COOLFluiD">COOLFluiD - CFD, plasma and multi-physics simulation package</a></li>
             <li><a href="http://amcg.ese.ic.ac.uk/index.php?title=Modelling_Software">fluidity - a finite element/volume fluids code</a></li>
             <li><a href="http://openfvm.sourceforge.net/">OpenFVM - finite volume based CFD solver</a></li>
             <li><a href="http://www.oofem.org">OOFEM - object oriented finite element library</a></li>
-
-            <li>
-              <a href="http://libmesh.sourceforge.net/">libMesh - adaptive finite element library</a>
-              <ul>
-                <li><a href="https://inlportal.inl.gov/portal/server.pt?open=514&amp;objID=1269&amp;mode=2&amp;featurestory=DA_582160">MOOSE - Multiphysics Object-Oriented Simulation Environment developed at INL built on top of libmesh on top of PETSc</a></li>
-              </ul>
-            </li>
-
+            <li><a href="http://libmesh.sourceforge.net/">libMesh - adaptive finite element library</a></li>
+            <li><a href="http://www.fenicsproject.org">FEniCS - sophisticated Python based finite element simulation package</a></li>
             <li><a href="http://www.dealii.org">DEAL.II - sophisticated C++ based finite element simulation package</a></li>
             <li><a href="http://math.nist.gov/phaml/">PHAML - The Parallel Hierarchical Adaptive MultiLevel Project</a></li>
             <li><a href="http://www.cs.ox.ac.uk/chaste/">Chaste - Cancer, Heart and Soft Tissue Environment</a></li>
+            <li><a href="http://clawpack.github.io/doc/pyclaw/">PyClaw - A massively parallel, high order accurate, hyperbolic PDE solver</a></li>
             <li><a href="https://bitbucket.org/dalcinl/petiga/">PetIGA - A framework for high performance Isogeometric Analysis</a></li>
             <li>
               <b>Python Bindings</b>
@@ -126,7 +129,7 @@
         <li><a href="miscellaneous/external.html">Packages</a> that PETSc can optionally use</li>
       </ul>
 
-      PETSc is developed as <a href="documentation/copyright.html">open-source</a>,
+      PETSc is developed as <a href="documentation/license.html">open-source</a>,
       requests and <a href="developers/index.html">contributions</a> are welcome.
 
     </div>

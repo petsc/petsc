@@ -1,0 +1,17 @@
+#!/bin/sh
+
+export PETSC_DIR=$PWD
+export PETSC_ARCH=arch-fvpf
+
+./configure --with-shared-libraries=0
+make
+
+LOGFILE=visibleprivatefunctions.lst
+/bin/rm -f ${LOGFILE}
+
+echo ========================================== > ${LOGFILE}
+echo "Starting visibleprivatefunctions:" >> ${LOGFILE}
+echo "`date`, for `git describe`" >> ${LOGFILE}
+echo ========================================== >> ${LOGFILE}
+nm -o ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.a | cut -f 2,3 -d ":" -- | egrep ' (B|D|C|T) ' | sort | egrep -i -v '_(XXT|XYT|Xi|TetGen|Vec|Mat|Petsc|KSP|PC|SNES|DM|TS|PF|IS|AO|Characteristic|ClassPerf|EventPerfLog|EventRegLog|spbas_|f90array|mpifcmb|SPARSEPACK|MPIU_|MINPACK|admf_|TAO|TV_)' >> ${LOGFILE}
+

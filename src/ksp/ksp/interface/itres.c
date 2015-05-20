@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPInitialResidual"
@@ -38,7 +38,6 @@ $     b-Ax
 
 PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
-  MatStructure   pflag;
   Mat            Amat,Pmat;
   PetscErrorCode ierr;
 
@@ -48,7 +47,7 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
   PetscValidHeaderSpecific(vres,VEC_CLASSID,5);
   PetscValidHeaderSpecific(vb,VEC_CLASSID,6);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);

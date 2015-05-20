@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscdraw.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -9,8 +9,8 @@
 
 PETSC_EXTERN void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLDOUBLE(x);
-  CHKFORTRANNULLDOUBLE(y);
+  CHKFORTRANNULLREAL(x);
+  CHKFORTRANNULLREAL(y);
   *ierr = PetscDrawTensorContour(*win,*m,*n,x,y,V);
 }
 

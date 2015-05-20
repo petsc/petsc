@@ -19,78 +19,63 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMallocAlign"
-PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void **result)
+PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const char file[],void **result)
 {
+  if (!mem) { *result = NULL; return 0; }
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
 #elif defined(PETSC_HAVE_MEMALIGN)
   *result = memalign(PETSC_MEMALIGN,mem);
 #else
   {
-    int *ptr,shift;
     /*
       malloc space for two extra chunks and shift ptr 1 + enough to get it PetscScalar aligned
     */
-    ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
+    int *ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
     if (ptr) {
-      shift        = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
+      int shift    = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
       shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
       ptr[shift-1] = shift + SHIFT_CLASSID;
       ptr         += shift;
       *result      = (void*)ptr;
     } else {
-      *result      = 0;
+      *result      = NULL;
     }
   }
 #endif
-  if (!*result) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)mem);
+  if (!*result) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeAlign"
-PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
+PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char file[])
 {
+  if (!ptr) return 0;
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
-  int shift;
-  /*
-       Previous int tells us how many ints the pointer has been shifted from
-    the original address provided by the system malloc().
-  */
-  shift = *(((int*)ptr)-1) - SHIFT_CLASSID;
-  if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
-  if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
-  ptr = (void*)(((int*)ptr) - shift);
+  {
+    /*
+      Previous int tells us how many ints the pointer has been shifted from
+      the original address provided by the system malloc().
+    */
+    int shift = *(((int*)ptr)-1) - SHIFT_CLASSID;
+    if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
+    if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
+    ptr = (void*)(((int*)ptr) - shift);
+  }
 #endif
 
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr);
-  if (err) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
+  if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
 #else
   free(ptr);
 #endif
   return 0;
 }
 
-/*
-        We never use the system free directly because on many machines it
-    does not return an error code.
-*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeDefault"
-PetscErrorCode  PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
-{
-#if defined(PETSC_HAVE_FREE_RETURN_INT)
-  int err = free(ptr);
-  if (err) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
-#else
-  free(ptr);
-#endif
-  return 0;
-}
-
-PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
-PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[])           = PetscFreeAlign;
+PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
+PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[])           = PetscFreeAlign;
 
 PetscBool petscsetmallocvisited = PETSC_FALSE;
 
@@ -113,8 +98,8 @@ PetscBool petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation
 
 @*/
-PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
-                                              PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
+PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],void**),
+                                              PetscErrorCode (*ifree)(void*,int,const char[],const char[]))
 {
   PetscFunctionBegin;
   if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cannot call multiple times");
@@ -146,5 +131,23 @@ PetscErrorCode  PetscMallocClear(void)
   PetscTrMalloc         = PetscMallocAlign;
   PetscTrFree           = PetscFreeAlign;
   petscsetmallocvisited = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscMemoryTrace"
+PetscErrorCode PetscMemoryTrace(const char label[])
+{
+  PetscErrorCode        ierr;
+  PetscLogDouble        mem,mal;
+  static PetscLogDouble oldmem = 0,oldmal = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscMemoryGetCurrentUsage(&mem);CHKERRQ(ierr);
+  ierr = PetscMallocGetCurrentUsage(&mal);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s High water  %8.3f MB increase %8.3f MB Current %8.3f MB increase %8.3f MB\n",label,mem*1e-6,(mem - oldmem)*1e-6,mal*1e-6,(mal - oldmal)*1e-6);CHKERRQ(ierr);
+  oldmem = mem;
+  oldmal = mal;
   PetscFunctionReturn(0);
 }

@@ -2,7 +2,7 @@
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
+#include <petsc/private/pcimpl.h>            /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 /* Logging support */
@@ -116,8 +116,8 @@ PetscErrorCode  PCDestroy(PC *pc)
 
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*pc);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
@@ -318,6 +318,39 @@ PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCSetErrorIfFailure"
+/*@
+   PCSetErrorIfFailure - Causes PC to generate an error if a FPE, for example a zero pivot, is detected.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - iterative context obtained from PCCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Level: advanced
+
+   Notes:
+    Normally PETSc continues if a linear solver fails due to a failed setup of a preconditioner, you can call KSPGetConvergedReason() after a KSPSolve()
+    to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is 
+    detected.
+
+    This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
+
+.keywords: PC, set, initial guess, nonzero
+
+.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
+@*/
+PetscErrorCode  PCSetErrorIfFailure(PC pc,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  pc->erroriffailure = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGetUseAmat"
 /*@
    PCGetUseAmat - Gets a flag to indicate that when the preconditioner needs to apply (part of) the
@@ -379,11 +412,9 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscFunctionBegin;
   PetscValidPointer(newpc,1);
   *newpc = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PCInitializePackage();CHKERRQ(ierr);
-#endif
 
-  ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(pc,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
 
   pc->mat                  = 0;
   pc->pmat                 = 0;
@@ -427,21 +458,31 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  PetscInt       m,n,mv,nv;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
+  ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
+  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);CHKERRQ(ierr);
+  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);CHKERRQ(ierr);
+  VecLocked(y,3);
+
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->apply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -477,15 +518,17 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applysymmetricleft) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -521,15 +564,17 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applysymmetricright) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -566,15 +611,17 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applytranspose) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -642,9 +689,9 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   if (pc->diagonalscale && side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
+  if (pc->erroriffailure) {ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);}
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -686,7 +733,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     }
   }
-  ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -728,10 +775,10 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->ops->applyBAtranspose) {
     ierr = (*pc->ops->applyBAtranspose)(pc,side,x,y,work);CHKERRQ(ierr);
-    ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
+    if (pc->erroriffailure) {ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
@@ -748,7 +795,7 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
     ierr = PCApplyTranspose(pc,work,y);CHKERRQ(ierr);
   }
   /* add support for PC_SYMMETRIC */
-  ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -839,10 +886,38 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCGetSetUpFailedReason"
+/*@
+   PCGetSetUpFailedReason - Gets the reason a PCSetUp() failed or 0 if it did not fail
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  reason - the reason it failed, currently only -1 
+
+   Level: advanced
+
+.keywords: PC, setup
+
+.seealso: PCCreate(), PCApply(), PCDestroy()
+@*/
+PetscErrorCode  PCGetSetUpFailedReason(PC pc,PetscInt *reason)
+{
+  PetscFunctionBegin;
+  if (pc->setupcalled < 0) *reason = pc->setupcalled;
+  else *reason = 0;
+  PetscFunctionReturn(0);
+}
+
+
 /*
       a setupcall of 0 indicates never setup,
-                     1 needs to be resetup,
-                     2 does not need any changes.
+                     1 indicates has been previously setup
+                    -1 indicates a PCSetUp() was attempted and failed
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp"
@@ -862,36 +937,52 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 @*/
 PetscErrorCode  PCSetUp(PC pc)
 {
-  PetscErrorCode ierr;
-  const char     *def;
+  PetscErrorCode   ierr;
+  const char       *def;
+  PetscObjectState matstate, matnonzerostate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!pc->mat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");
 
-  if (pc->setupcalled > 1) {
-    ierr = PetscInfo(pc,"Setting PC with identical preconditioner\n");CHKERRQ(ierr);
+  if (pc->setupcalled && pc->reusepreconditioner) {
+    ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since reuse preconditioner is set\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (!pc->setupcalled) {
-    ierr = PetscInfo(pc,"Setting up new PC\n");CHKERRQ(ierr);
-  } else if (pc->flag == SAME_NONZERO_PATTERN) {
-    ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
+
+  ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
+  ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
+  if (!pc->setupcalled) {
+    ierr            = PetscInfo(pc,"Setting up PC for first time\n");CHKERRQ(ierr);
+    pc->flag        = DIFFERENT_NONZERO_PATTERN;
+  } else if (matstate == pc->matstate) {
+    ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else {
+    if (matnonzerostate > pc->matnonzerostate) {
+       ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
+       pc->flag            = DIFFERENT_NONZERO_PATTERN;
+    } else {
+      ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
+      pc->flag            = SAME_NONZERO_PATTERN;
+    }
+  }
+  pc->matstate        = matstate;
+  pc->matnonzerostate = matnonzerostate;
 
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
+  ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFPE(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
-  pc->setupcalled = 2;
-
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  if (!pc->setupcalled) pc->setupcalled = 1;
   PetscFunctionReturn(0);
 }
 
@@ -1039,44 +1130,14 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    Input Parameters:
 +  pc - the preconditioner context
 .  Amat - the matrix that defines the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
--  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves.  This flag is ignored the first time a
-   linear system is solved, and thus is irrelevant when solving just one linear
-   system.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Notes:
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-+    SAME_PRECONDITIONER -
-       Pmat is identical during successive linear solves.
-       This option is intended for folks who are using
-       different Amat and Pmat matrices and wish to reuse the
-       same preconditioner matrix.  For example, this option
-       saves work by not recomputing incomplete factorization
-       for ILU/ICC preconditioners.
-.     SAME_NONZERO_PATTERN -
-       Pmat has the same nonzero structure during
-       successive linear solves.
--     DIFFERENT_NONZERO_PATTERN -
-       Pmat does not have the same nonzero structure.
-
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
     on it and then pass it back in in your call to KSPSetOperators().
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    More Notes about Repeated Solution of Linear Systems:
    PETSc does NOT reset the matrix entries of either Amat or Pmat
@@ -1090,10 +1151,10 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
-PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
 {
-  PetscErrorCode ierr;
-  PetscInt       m1,n1,m2,n2;
+  PetscErrorCode   ierr;
+  PetscInt         m1,n1,m2,n2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1101,13 +1162,19 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_CLASSID,3);
   if (Amat) PetscCheckSameComm(pc,1,Amat,2);
   if (Pmat) PetscCheckSameComm(pc,1,Pmat,3);
-  if (pc->setupcalled && Amat && Pmat) {
+  if (pc->setupcalled && pc->mat && pc->pmat && Amat && Pmat) {
     ierr = MatGetLocalSize(Amat,&m1,&n1);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m2,&n2);CHKERRQ(ierr);
     if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
     ierr = MatGetLocalSize(Pmat,&m1,&n1);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->pmat,&m2,&n2);CHKERRQ(ierr);
     if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
+  }
+
+  if (Pmat != pc->pmat) {
+    /* changing the operator that defines the preconditioner thus reneed to clear current states so new preconditioner is built */
+    pc->matnonzerostate = -1;
+    pc->matstate        = -1;
   }
 
   /* reference first in case the matrices are the same */
@@ -1117,11 +1184,52 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   ierr     = MatDestroy(&pc->pmat);CHKERRQ(ierr);
   pc->mat  = Amat;
   pc->pmat = Pmat;
+  PetscFunctionReturn(0);
+}
 
-  if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
-    pc->setupcalled = 1;
-  }
-  pc->flag = flag;
+#undef __FUNCT__
+#define __FUNCT__ "PCSetReusePreconditioner"
+/*@
+   PCSetReusePreconditioner - reuse the current preconditioner even if the operator in the preconditioner has changed.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+    Level: intermediate
+
+.seealso: PCGetOperators(), MatZeroEntries(), PCGetReusePreconditioner(), KSPSetReusePreconditioner()
+ @*/
+PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->reusepreconditioner = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetReusePreconditioner"
+/*@
+   PCGetReusePreconditioner - Determines if the PC reuses the current preconditioner even if the operator in the preconditioner has changed.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+.seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
+ @*/
+PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *flag = pc->reusepreconditioner;
   PetscFunctionReturn(0);
 }
 
@@ -1138,9 +1246,7 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
    Output Parameters:
 +  Amat - the matrix defining the linear system
-.  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
--  flag - flag indicating information about the preconditioner
-          matrix structure.  See PCSetOperators() for details.
+-  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
 
    Level: intermediate
 
@@ -1154,22 +1260,22 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&Amat,NULL,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&Amat,NULL); is equivalent to
 $           set size, type, etc of Amat
 
 $         MatCreate(comm,&mat);
-$         KSP/PCSetOperators(ksp/pc,Amat,Amat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Amat);
 $         PetscObjectDereference((PetscObject)mat);
 $           set size, type, etc of Amat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat); is equivalent to
 $           set size, type, etc of Amat and Pmat
 
 $         MatCreate(comm,&Amat);
 $         MatCreate(comm,&Pmat);
-$         KSP/PCSetOperators(ksp/pc,Amat,Pmat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Pmat);
 $         PetscObjectDereference((PetscObject)Amat);
 $         PetscObjectDereference((PetscObject)Pmat);
 $           set size, type, etc of Amat and Pmat
@@ -1188,7 +1294,7 @@ $           set size, type, etc of Amat and Pmat
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
-PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
+PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
 {
   PetscErrorCode ierr;
 
@@ -1224,7 +1330,6 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
     }
     *Pmat = pc->pmat;
   }
-  if (flag) *flag = pc->flag;
   PetscFunctionReturn(0);
 }
 
@@ -1529,9 +1634,9 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (classid != PC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = PCSetType(newdm, type);CHKERRQ(ierr);
   if (newdm->ops->load) {
     ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
@@ -1540,8 +1645,8 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "PCView"
@@ -1577,8 +1682,8 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_AMS)
-  PetscBool         isams;
+#if defined(PETSC_HAVE_SAWS)
+  PetscBool         issaws;
 #endif
 
   PetscFunctionBegin;
@@ -1593,13 +1698,13 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
 
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer,"PC Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n");CHKERRQ(ierr);
     }
@@ -1662,17 +1767,21 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscSNPrintf(str,25,"PC: %s",((PetscObject)pc)->type_name);CHKERRQ(ierr);
     }
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (pc->ops->view) {
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  } else if (isams) {
-    if (((PetscObject)pc)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  } else if (issaws) {
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)pc)->amsmem && !rank) {
+      ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
     if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
@@ -1700,7 +1809,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
    Notes:
     This is a weird function. Since PC's are linear operators on the right hand side they
     CANNOT use an initial guess. This function is for the "pass-through" preconditioners
-    PCKSP, PCREDUNDANT and PCHMPI and causes the inner KSP object to use the nonzero
+    PCKSP and PCREDUNDANT  and causes the inner KSP object to use the nonzero
     initial guess. Not currently working for PCREDUNDANT, that has to be rewritten to use KSP.
 
 
@@ -1713,6 +1822,34 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBool(pc,flg,2);
   pc->nonzero_guess = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetInitialGuessNonzero"
+/*@
+   PCGetInitialGuessNonzero - Determines if the iterative solver assumes that the
+   initial guess is nonzero; otherwise PC assumes the initial guess
+   is to be zero (and thus zeros it out before solving).
+
+   Logically Collective on PC
+
+   Input Parameter:
+.   pc - iterative context obtained from PCCreate()
+
+   Output Parameter:
+.  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
+
+   Level: Developer
+
+.keywords: PC, set, initial guess, nonzero
+
+.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll(), PCSetInitialGuessNonzero()
+@*/
+PetscErrorCode  PCGetInitialGuessNonzero(PC pc,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  *flg = pc->nonzero_guess;
   PetscFunctionReturn(0);
 }
 
@@ -1800,12 +1937,12 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   if (!pc->pmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
-  ierr = MatGetVecs(pc->pmat,&in,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&in,0);CHKERRQ(ierr);
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
@@ -1817,6 +1954,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
 

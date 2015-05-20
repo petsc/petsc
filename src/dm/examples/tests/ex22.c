@@ -2,6 +2,7 @@
 static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -32,16 +33,17 @@ int main(int argc,char **argv)
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,
                       0,0,0,&da);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(da,MATMPIBAIJ,&mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&mat);CHKERRQ(ierr);
 
   idx[0].i = 1;   idx[0].j = 1; idx[0].k = 0;
   idx[1].i = 2;   idx[1].j = 1; idx[1].k = 0;
   idy[0].i = 1;   idy[0].j = 2; idy[0].k = 0;
   idy[1].i = 2;   idy[1].j = 2; idy[1].k = 0;
-  ierr     = PetscMalloc(2*2*w*w*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(2*2*w*w,&values);CHKERRQ(ierr);
   for (i=0; i<2*2*w*w; i++) values[i] = i;
   ierr = MatSetValuesBlockedStencil(mat,2,idx,2,idy,values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

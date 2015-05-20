@@ -5,7 +5,7 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    '--download-viennacl=yes',
+    '--download-viennacl',
     '--with-opencl-include=/usr/local/cuda-5.0/include',
     '--with-opencl-lib=/usr/lib/libOpenCL.so'
   ]

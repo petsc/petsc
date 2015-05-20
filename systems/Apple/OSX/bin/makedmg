@@ -1,15 +1,28 @@
 #!/bin/sh
 #
-# This script makes a Apple Mac OS X dmg from the PETSc framework
+# This script makes a Apple Mac OS X dmg from the PETSc framework and docset, see ./makeall
 #
 # Make sure that "Enable access for assistive devices" is checked in System Preferences>>Universal Access. It is required for the AppleScript to work.
 #
-#  Before runningt this script follow the directions in ./systems/Apple/OSX/bin/makeframework  to make the Apple PETSc Framework 
+hdiutil detach /Volumes/PETSc
 #
-echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework"
-rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+echo "Creating ${PETSC_DIR}/PETSc-OSX.dmg from frameworks in ${PETSC_DIR}/arch-osx-release and debug/PETSc-OSX and ${PETSC_DIR}/PETSc.docset"
+echo "  and examples in ${PETSC_DIR}/systems/Apple/OSX/examples"
+
+rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/PETSc-OSX.dmg
 mkdir tempsource
-cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework tempsource
+cp -r ${PETSC_DIR}/arch-osx-release/PETSc-OSX tempsource
+cp -r ${PETSC_DIR}/arch-osx-debug/PETSc-OSX tempsource
+cp -r ${PETSC_DIR}/PETSc.docset tempsource
+cp -r  ${PETSC_DIR}/systems/Apple/OSX/examples tempsource/PETSc-OSX.examples
+
+# copy the PETSc source for the examples into the example directories and modify the include to point to them 
+# in the PETSc tree the examples point to the original source elsewhere in the PETSc tree
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example
+sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example/main.c
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example
+sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example/AppDelegate.m
+
 let size=`du  -c tempsource | tail -1 | cut -f1`
 let size=2*$size
 
@@ -17,6 +30,7 @@ hdiutil create -srcfolder tempsource -volname PETSc -fs HFS+ -fsargs "-c c=64,a=
 sleep 5
 device=`hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | head -1 | cut -f1`
 echo Created device $device
+sleep 5
 echo '
    tell application "Finder"
      tell disk "PETSc"
@@ -24,15 +38,9 @@ echo '
            set current view of container window to icon view
            set toolbar visible of container window to false
            set statusbar visible of container window to false
-           set the bounds of container window to {400, 100, 685, 430}
-           set theViewOptions to the icon view options of container window
-           set arrangement of theViewOptions to not arranged
-           set icon size of theViewOptions to 72
-           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Frameworks"}
-           set position of item "'PETSc.framework'" of container window to {100, 100}
-           set position of item "Frameworks" of container window to {375, 100}
-           update without registering applications
-           delay 5
+           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc-OSX"}
+           make new alias file at container window to POSIX file "/Applications/Xcode.app/Contents/Developer/Documentation/DocSets" with properties {name:"Copy in PETSc.docset"}
+           make new alias file at container window to (path to home folder) with properties {name:"Copy in PETSc-OSX.examples"}
            eject
      end tell
    end tell
@@ -40,6 +48,15 @@ echo '
 sleep 8
 sync
 sync
+echo 'Completed osascript'
 #hdiutil detach ${device}
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/PETSc-OSX.dmg
 rm -rf pack.temp.dmg tempsource
+sync
+sleep 2
+hdiutil detach /Volumes/PETSc
+
+#           set the bounds of container window to {400, 100, 885, 630}
+#           set theViewOptions to the icon view options of container window
+#           set icon size of theViewOptions to 72
+#           set arrangement of theViewOptions to not arranged

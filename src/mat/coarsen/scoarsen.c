@@ -1,5 +1,6 @@
 
 #include <petscmat.h>
+#include <petsc/private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
@@ -33,6 +34,7 @@ PetscErrorCode  MatCoarsenRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatCoarsenRegisterAllCalled) PetscFunctionReturn(0);
   MatCoarsenRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatCoarsenRegister(MATCOARSENMIS,MatCoarsenCreate_MIS);CHKERRQ(ierr);

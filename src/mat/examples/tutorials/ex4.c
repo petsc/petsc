@@ -90,7 +90,7 @@ int main(int argc,char **args)
 }
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "LowRankUpdate"
@@ -119,7 +119,7 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
   /* Form the sum of all the local multiplies : this is work2 = U'*x = sum_{all processors} work1 */
   ierr = VecGetArray(work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(work2,&w2);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(w1,w2,nwork,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(w1,w2,nwork,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = VecRestoreArray(work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(work2,&w2);CHKERRQ(ierr);
 

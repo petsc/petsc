@@ -2,7 +2,7 @@
 #define _matcliqueimpl_h
 
 #include <clique.hpp>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 #if defined(PETSC_USE_COMPLEX)
 typedef cliq::Complex<PetscReal> PetscCliqScalar;
@@ -22,8 +22,8 @@ typedef struct {
   cliq::DistMap                            *inverseMap;
   cliq::DistSymmInfo                       *info;
   cliq::DistSymmFrontTree<PetscCliqScalar> *frontTree;
-  cliq::DistVector<PetscCliqScalar>        *rhs;
-  cliq::DistNodalVector<PetscCliqScalar>   *xNodal;
+  cliq::DistMultiVec<PetscCliqScalar>        *rhs;
+  cliq::DistNodalMultiVec<PetscCliqScalar>   *xNodal;
 
   PetscErrorCode (*Destroy)(Mat);
 } Mat_Clique;

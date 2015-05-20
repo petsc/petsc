@@ -1,0 +1,33 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:12, bmx:4, bmy:10, height:0.1
+iter =   0, Function value 1.58854, Residual: 0.311154 
+iter =   1, Function value 1.53676, Residual: 0.224993 
+iter =   2, Function value 1.51111, Residual: 0.173006 
+iter =   3, Function value 1.50514, Residual: 0.201147 
+iter =   4, Function value 1.50047, Residual: 0.112089 
+iter =   5, Function value 1.49849, Residual: 0.0680446 
+iter =   6, Function value 1.49667, Residual: 0.0587404 
+iter =   7, Function value 1.49606, Residual: 0.123834 
+iter =   8, Function value 1.49479, Residual: 0.0403637 
+iter =   9, Function value 1.49453, Residual: 0.0284402 
+iter =  10, Function value 1.4943, Residual: 0.0235433 
+iter =  11, Function value 1.49422, Residual: 0.0222582 
+iter =  12, Function value 1.49416, Residual: 0.0127717 
+iter =  13, Function value 1.49412, Residual: 0.00948284 
+Tao Object: 3 MPI processes
+  type: blmvm
+      Gradient steps: 0
+  TaoLineSearch Object:   3 MPI processes
+    type: more-thuente
+  Active Set subset type: matrixfree
+  convergence tolerances: fatol=0.0001,   frtol=0.0001
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  Residual in Function/Gradient:=0.00948284
+  Objective value=1.49412
+  total number of iterations=13,                          (max: 2000)
+  total number of function/gradient evaluations=17,      (max: 4000)
+  Solution converged:   estimated f(x)-f(X*) <= fatol
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-pc_type value: none

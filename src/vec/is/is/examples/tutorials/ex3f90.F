@@ -17,9 +17,9 @@
       program main
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscis.h90>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscis.h90>
 
       PetscErrorCode ierr
       PetscInt n,bs,issize

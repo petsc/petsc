@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/sbaij/seq/sbstream/sbstream.h"
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/sbaij/seq/sbstream/sbstream.h>
 
 extern PetscErrorCode MatDestroy_SeqSBSTRM(Mat A);
 
@@ -585,8 +585,8 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
   if (sbstrm->as) {
     ierr = PetscFree(sbstrm->as);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(bs2*ai[m]*sizeof(MatScalar), &sbstrm->as);CHKERRQ(ierr);
-  ierr = PetscMalloc(rbs*sizeof(MatScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs2*ai[m], &sbstrm->as);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   asu = sbstrm->as;
   for (i=0; i<m*bs2; i++) asu[i] = aa[i];
@@ -710,7 +710,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType fty
   B->assembled    = PETSC_TRUE;                  /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
-  ierr = PetscNewLog(B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&sbstrm);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqsbaij_sbstrm);CHKERRQ(ierr);
 

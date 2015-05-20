@@ -1,10 +1,9 @@
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petsclogview_             PETSCLOGVIEW
-#define petsclogprintDetailed_    PETSCLOGPRINTDETAILED
 #define petsclogallbegin_         PETSCLOGALLBEGIN
 #define petsclogdestroy_          PETSCLOGDESTROY
 #define petsclogbegin_            PETSCLOGBEGIN
@@ -21,7 +20,6 @@
 #define petsclogflops_            PETSCLOGFLOPS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogview_             petsclogview
-#define petsclogprintDetailed_    petsclogprintDetailed
 #define petsclogallbegin_         petsclogallbegin
 #define petsclogdestroy_          petsclogdestroy
 #define petsclogbegin_            petsclogbegin
@@ -59,17 +57,6 @@ PETSC_EXTERN void PETSC_STDCALL petsclogview_(PetscViewer *viewer,PetscErrorCode
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscLogView(v);
 }
-
-PETSC_EXTERN void PETSC_STDCALL petsclogprintDetailed_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-#if defined(PETSC_USE_LOG)
-  char *t;
-  FIXCHAR(filename,len,t);
-  *ierr = PetscLogPrintDetailed(MPI_Comm_f2c(*(MPI_Fint*)&*comm),t);
-  FREECHAR(filename,t);
-#endif
-}
-
 
 PETSC_EXTERN void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {

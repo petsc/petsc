@@ -1,6 +1,6 @@
 
 #include <petscsys.h>
-#include <petsc-private/viewerimpl.h>
+#include <petsc/private/viewerimpl.h>
 
 struct _n_PetscViewers {
   MPI_Comm    comm;
@@ -63,12 +63,11 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr       = PetscNew(struct _n_PetscViewers,v);CHKERRQ(ierr);
+  ierr       = PetscNew(v);CHKERRQ(ierr);
   (*v)->n    = 64;
   (*v)->comm = comm;
 
-  ierr = PetscMalloc(64*sizeof(PetscViewer),&(*v)->viewer);CHKERRQ(ierr);
-  ierr = PetscMemzero((*v)->viewer,64*sizeof(PetscViewer));CHKERRQ(ierr);
+  ierr = PetscCalloc1(64,&(*v)->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,8 +102,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
     PetscViewer *v;
     int         newn = n + 64; /* add 64 new ones at a time */
 
-    ierr = PetscMalloc(newn*sizeof(PetscViewer),&v);CHKERRQ(ierr);
-    ierr = PetscMemzero(v,newn*sizeof(PetscViewer));CHKERRQ(ierr);
+    ierr = PetscCalloc1(newn,&v);CHKERRQ(ierr);
     ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(PetscViewer));CHKERRQ(ierr);
     ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
 

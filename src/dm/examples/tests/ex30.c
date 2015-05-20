@@ -49,7 +49,7 @@ int main(int argc,char *argv[])
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;
 
-  ierr = PetscMalloc2(n,PetscInt,&d_nnz,n,PetscInt,&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&d_nnz,n,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (size > 1 && (i==0 || i==n-1)) {
       d_nnz[i] = 2;
@@ -62,7 +62,8 @@ int main(int argc,char *argv[])
   ierr = DMSlicedCreate(comm,bs,n,2,ghosts,d_nnz,o_nnz,&slice);CHKERRQ(ierr); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
 
   if (!useblock) {ierr = DMSlicedSetBlockFills(slice,dfill,ofill);CHKERRQ(ierr);} /* Irrelevant for baij formats */
-  ierr = DMCreateMatrix(slice,mat_type,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(slice,mat_type);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(slice,&A);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -85,7 +86,7 @@ int main(int argc,char *argv[])
       col[0] = im;         col[1] = i;        col[2] = ip;
       v[0]   = -h;           v[1] = 2*h;        v[2] = -h;
       ierr   = MatSetValuesLocal(A,1,&i,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      xx[i]  = sin(xref*PETSC_PI);
+      xx[i]  = PetscSinReal(xref*PETSC_PI);
       break;
     case 2:                     /* Linear acoustic wave operator in variables [rho, u], central differences, periodic, timestep 1/alpha */
       v[0] = -0.5*u0;   v[1] = -0.5*K;      v[2] = alpha; v[3] = 0;       v[4] = 0.5*u0;    v[5] = 0.5*K;
@@ -103,7 +104,7 @@ int main(int argc,char *argv[])
         ierr   = MatSetValuesLocal(A,1,row+1,5,col,v+6,INSERT_VALUES);CHKERRQ(ierr);
       }
       /* Set current state (gaussian density perturbation) */
-      xx[2*i]   = 0.2*exp(-PetscSqr(xref)/(2*PetscSqr(sigma)));
+      xx[2*i]   = 0.2*PetscExpReal(-PetscSqr(xref)/(2*PetscSqr(sigma)));
       xx[2*i+1] = 0;
       break;
     default: SETERRQ1(PETSC_COMM_SELF,1,"not implemented for block size %D",bs);

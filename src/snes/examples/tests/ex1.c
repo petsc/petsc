@@ -56,7 +56,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
@@ -142,20 +142,24 @@ int main(int argc,char **argv)
 
   if (fd_coloring) {
     ISColoring   iscoloring;
-    MatStructure str;
+    MatColoring  mc;
 
     /*
       This initializes the nonzero structure of the Jacobian. This is artificial
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
     */
-    ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRQ(ierr);
+    ierr = FormJacobian(snes,x,J,J,&user);CHKERRQ(ierr);
 
     /*
        Color the matrix, i.e. determine groups of columns that share no common
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
-    ierr = MatGetColoring(J,MATCOLORINGNATURAL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(J,&mc);CHKERRQ(ierr);
+    ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+    ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     /*
        Create the data structure that SNESComputeJacobianDefaultColor() uses
        to compute the actual Jacobians via finite differences.
@@ -163,6 +167,7 @@ int main(int argc,char **argv)
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(J,iscoloring,fdcoloring);CHKERRQ(ierr);
     /*
         Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.
@@ -227,7 +232,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %G\n",i,hist_its[i],history[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %g\n",i,hist_its[i],(double)history[i]);CHKERRQ(ierr);
     }
   }
 
@@ -319,11 +324,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
  */
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscInt       i,j,row,mx,my;
-  PetscErrorCode ierr;
-  PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
-  PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscInt          i,j,row,mx,my;
+  PetscErrorCode    ierr;
+  PetscReal         two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
+  PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc,*f;
+  const PetscScalar *x;
 
   mx     = user->mx;
   my     = user->my;
@@ -337,7 +343,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
@@ -364,7 +370,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   return 0;
 }
@@ -384,14 +390,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat            jac   = *B;             /* Jacobian matrix */
-  PetscInt       i,j,row,mx,my,col[5];
-  PetscErrorCode ierr;
-  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  PetscReal      hx,hy,hxdhy,hydhx;
+  AppCtx            *user = (AppCtx*)ptr;   /* user-defined applicatin context */
+  PetscInt          i,j,row,mx,my,col[5];
+  PetscErrorCode    ierr;
+  PetscScalar       two = 2.0,one = 1.0,lambda,v[5],sc;
+  const PetscScalar *x;
+  PetscReal         hx,hy,hxdhy,hydhx;
 
   mx     = user->mx;
   my     = user->my;
@@ -405,7 +411,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /*
      Compute entries of the Jacobian
@@ -429,7 +435,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /*
      Assemble matrix
@@ -437,29 +443,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (jac != *J) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != J) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
 

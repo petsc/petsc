@@ -6,7 +6,7 @@
     complex numbers version, so most probably some are incorrect.
 */
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
 #undef __FUNCT__
@@ -182,8 +182,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->data                = (void*)0;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;

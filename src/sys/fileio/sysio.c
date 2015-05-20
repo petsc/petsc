@@ -220,6 +220,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   size_t            m = (size_t) n,maxblock = 65536;
   char              *pp = (char*)p;
 #if defined(PETSC_USE_REAL___FLOAT128)
+  PetscBool         readdouble = PETSC_FALSE;
   double            *ppp;
 #endif
 #if !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_REAL___FLOAT128)
@@ -228,17 +229,17 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 #if !defined(PETSC_WORDS_BIGENDIAN)
   void              *ptmp = p;
 #endif
-  char              fname[64];
-  PetscBool         functionload = PETSC_FALSE;
+  char              *fname = NULL;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
-    functionload = PETSC_TRUE;
     m            = 64;
     type         = PETSC_CHAR;
+    fname        = (char*) malloc(m*sizeof(char));
+    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
     pp           = (char*)fname;
 #if !defined(PETSC_WORDS_BIGENDIAN)
     ptmp         = (void*)fname;
@@ -257,10 +258,11 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if defined(PETSC_USE_REAL___FLOAT128)
+  ierr = PetscOptionsGetBool(NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still read in doubles from file */
-  if (type == PETSC_SCALAR) {
+  if (type == PETSC_SCALAR && readdouble) {
     m    = m/2;
-    ierr = PetscMalloc(n*sizeof(double),&ppp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pp   = (char*)ppp;
   }
 #endif
@@ -276,7 +278,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   }
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if (type == PETSC_SCALAR) {
+  if (type == PETSC_SCALAR && readdouble) {
     PetscScalar *pv = (PetscScalar*) p;
     PetscInt    i;
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -292,12 +294,13 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
 #endif
 
-  if (functionload) {
+  if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLSym(NULL,fname,(void**)p);CHKERRQ(ierr);
 #else
     *(void**)p = NULL;
 #endif
+    free(fname);
   }
   PetscFunctionReturn(0);
 }
@@ -353,7 +356,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 #if !defined(PETSC_WORDS_BIGENDIAN)
   void           *ptmp = p;
 #endif
-  char           fname[64];
+  char           *fname = NULL;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
@@ -362,14 +365,17 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     const char *fnametmp;
-
-    if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
-    ierr = PetscFPTFind(p,&fnametmp);CHKERRQ(ierr);
-    ierr = PetscStrncpy(fname,fnametmp,64);CHKERRQ(ierr);
-#else
-    ierr = PetscStrncpy(fname,"",64);CHKERRQ(ierr);
 #endif
-    m    = 64;
+    m     = 64;
+    fname = (char*)malloc(m*sizeof(char));
+    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+    if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
+    ierr = PetscFPTFind(*(void**)p,&fnametmp);CHKERRQ(ierr);
+    ierr = PetscStrncpy(fname,fnametmp,m);CHKERRQ(ierr);
+#else
+    ierr = PetscStrncpy(fname,"",m);CHKERRQ(ierr);
+#endif
     type = PETSC_CHAR;
     pp   = (char*)fname;
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -396,7 +402,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     wsize = (m < maxblock) ? m : maxblock;
     err   = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file.");
+    if (err != wsize) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file total size %d err %d wsize %d",(int)n,(int)err,(int)wsize);
     m  -= wsize;
     pp += wsize;
   }
@@ -406,6 +412,9 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
   }
 #endif
+  if (type == PETSC_FUNCTION) {
+    free(fname);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -575,18 +584,16 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   MPI_Datatype   mtype;
-  char           *fname;
-  PetscBool      functionload = PETSC_FALSE;
-  void           *ptmp        = NULL;
+  char           *fname = NULL;
+  void           *ptmp = NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
-    functionload = PETSC_TRUE;
     n            = 64;
     type         = PETSC_CHAR;
     ptmp         = p;
-    /* warning memory leak */
-    fname        = (char*)malloc(64*sizeof(char));
+    fname        = (char*)malloc(n*sizeof(char));
+    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
     p            = (void*)fname;
   }
 
@@ -597,12 +604,13 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
   ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
 
-  if (functionload) {
+  if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,fname,(void**)ptmp);CHKERRQ(ierr);
 #else
     *(void**)ptmp = NULL;
 #endif
+    free(fname);
   }
   PetscFunctionReturn(0);
 }

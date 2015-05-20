@@ -1,0 +1,12 @@
+ex125: nrhs 2
+ MUMPS LU:
+ 0-the LU numfactorization 
+   0-the MatMatSolve 
+   1-the MatMatSolve 
+   0-the MatSolve 
+   1-the MatSolve 
+ 1-the LU numfactorization 
+   0-the MatMatSolve 
+   1-the MatMatSolve 
+   0-the MatSolve 
+   1-the MatSolve 

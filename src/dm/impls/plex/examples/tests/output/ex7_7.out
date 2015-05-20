@@ -1,3 +1,5 @@
+DM Object:Parallel Mesh 2 MPI processes
+  type: plex
 Mesh 'Parallel Mesh':
 Max sizes cone: 6 support: 3
 orientation is missing
@@ -240,7 +242,7 @@ Process 1:
   (   6) dim  3 offset  15 0.5 1 0
   (   7) dim  3 offset  18 0.5 0 1
   (   8) dim  3 offset  21 0.5 1 1
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=27, leaves=9, remote ranks=1
@@ -266,6 +268,8 @@ Star Forest Object: 2 MPI processes
   [0]    23 <- 17
   [0]    26 <- 18
   [1] Roots referenced by my leaves, by rank
+DM Object:Interpolated Mesh 2 MPI processes
+  type: plex
 Mesh 'Interpolated Mesh':
 Max sizes cone: 6 support: 3
 orientation is missing
@@ -508,7 +512,7 @@ Process 1:
   (   6) dim  3 offset  15 0.5 1 0
   (   7) dim  3 offset  18 0.5 0 1
   (   8) dim  3 offset  21 0.5 1 1
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=27, leaves=9, remote ranks=1

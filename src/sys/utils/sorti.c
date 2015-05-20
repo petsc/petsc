@@ -2,7 +2,7 @@
 /*
    This file contains routines for sorting integers. Values are sorted in place.
  */
-#include <petsc-private/petscimpl.h>                /*I  "petscsys.h"  I*/
+#include <petsc/private/petscimpl.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
@@ -564,12 +564,155 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   PetscFunctionReturn(0);
 }
 
+#define SWAP2IntData(a,b,c,d,t,td,siz)          \
+  do {                                          \
+  PetscErrorCode _ierr;                         \
+  t=a;a=b;b=t;                                  \
+  _ierr = PetscMemcpy(td,c,siz);CHKERRQ(_ierr); \
+  _ierr = PetscMemcpy(c,d,siz);CHKERRQ(_ierr);  \
+  _ierr = PetscMemcpy(d,td,siz);CHKERRQ(_ierr); \
+} while(0)
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSortIntWithDataArray_Private"
+/*
+   Modified from PetscSortIntWithArray_Private().
+*/
+static PetscErrorCode PetscSortIntWithDataArray_Private(PetscInt *v,char *V,PetscInt right,size_t size,void *work)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,vl,last,tmp;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP2IntData(v[0],v[1],V,V+size,tmp,work,size);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP2IntData(v[0],v[right/2],V,V+size*(right/2),tmp,work,size);
+  vl   = v[0];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    if (v[i] < vl) {last++; SWAP2IntData(v[last],v[i],V+size*last,V+size*i,tmp,work,size);}
+  }
+  SWAP2IntData(v[0],v[last],V,V + size*last,tmp,work,size);
+  ierr = PetscSortIntWithDataArray_Private(v,V,last-1,size,work);CHKERRQ(ierr);
+  ierr = PetscSortIntWithDataArray_Private(v+last+1,V+size*(last+1),right-(last+1),size,work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSortIntWithDataArray"
+/*@
+   PetscSortIntWithDataArray - Sorts an array of integers in place in increasing order;
+       changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
+       provide workspace (the size of an element in the data array) to use when sorting.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  i  - array of integers
+.  Ii - second array of data
+.  size - sizeof elements in the data array in bytes
+-  work - workspace of "size" bytes used when sorting
+
+   Level: intermediate
+
+   Concepts: sorting^ints with array
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_t size,void *work)
+{
+  char           *V = (char *) Ii;
+  PetscErrorCode ierr;
+  PetscInt       j,k,tmp,ik;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[k];
+      for (j=k+1; j<n; j++) {
+        if (ik > i[j]) {
+          SWAP2IntData(i[k],i[j],V+size*k,V+size*j,tmp,work,size);
+          ik = i[k];
+        }
+      }
+    }
+  } else {
+    ierr = PetscSortIntWithDataArray_Private(i,V,n-1,size,work);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscMergeIntArray"
+/*@
+   PetscMergeIntArray -     Merges two SORTED integer arrays, removes duplicate elements.
+
+   Not Collective
+
+   Input Parameters:
++  an  - number of values in the first array
+.  aI  - first sorted array of integers
+.  bn  - number of values in the second array
+-  bI  - second array of integers
+
+   Output Parameters:
++  n   - number of values in the merged array
+-  I   - merged sorted array, this is allocated if an array is not provided 
+
+   Level: intermediate
+
+   Concepts: merging^arrays
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, const PetscInt *bI,  PetscInt *n, PetscInt **L)
+{
+  PetscErrorCode ierr;
+  PetscInt       *L_ = *L, ak, bk, k;
+
+  if (!L_) {
+    ierr = PetscMalloc1(an+bn, L);CHKERRQ(ierr);
+    L_   = *L;
+  }
+  k = ak = bk = 0;
+  while (ak < an && bk < bn) {
+    if (aI[ak] == bI[bk]) {
+      L_[k] = aI[ak];
+      ++ak;
+      ++bk;
+      ++k;
+    } else if (aI[ak] < bI[bk]) {
+      L_[k] = aI[ak];
+      ++ak;
+      ++k;
+    } else {
+      L_[k] = bI[bk];
+      ++bk;
+      ++k;
+    }
+  }
+  if (ak < an) {
+    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
+    k   += (an-ak);
+  }
+  if (bk < bn) {
+    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
+    k   += (bn-bk);
+  }
+  *n = k;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMergeIntArrayPair"
 /*@
-   PetscMergeIntArrayPair -     Merges two SORTED integer arrays along with an additional array of integers.
+   PetscMergeIntArrayPair -     Merges two SORTED integer arrays that share NO common values along with an additional array of integers.
                                 The additional arrays are the same length as sorted arrays and are merged
                                 in the order determined by the merging of the sorted pair.
 
@@ -602,11 +745,11 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   n_ = an + bn;
   *n = n_;
   if (!L_) {
-    ierr = PetscMalloc(n_*sizeof(PetscInt), L);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_, L);CHKERRQ(ierr);
     L_   = *L;
   }
   if (!J_) {
-    ierr = PetscMalloc(n_*sizeof(PetscInt), &J_);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_, &J_);CHKERRQ(ierr);
     J_   = *J;
   }
   k = ak = bk = 0;
@@ -679,8 +822,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* determine the level in the tree of each node */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&level);CHKERRQ(ierr);
-  ierr = PetscMemzero(level,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&level);CHKERRQ(ierr);
 
   level[0] = 1;
   while (!done) {
@@ -697,8 +839,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* count the number of nodes on each level and its max */
-  ierr = PetscMalloc(nlevels*sizeof(PetscInt),&levelcnt);CHKERRQ(ierr);
-  ierr = PetscMemzero(levelcnt,nlevels*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(nlevels,&levelcnt);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (mask[i]) continue;
     levelcnt[level[i]-1]++;
@@ -706,8 +847,8 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   for (i=0; i<nlevels;i++) levelmax = PetscMax(levelmax,levelcnt[i]);
 
   /* for each level sort the ids by the parent id */
-  ierr = PetscMalloc2(levelmax,PetscInt,&workid,levelmax,PetscInt,&workparentid);CHKERRQ(ierr);
-  ierr = PetscMalloc(nmask*sizeof(PetscInt),&idbylevel);CHKERRQ(ierr);
+  ierr = PetscMalloc2(levelmax,&workid,levelmax,&workparentid);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmask,&idbylevel);CHKERRQ(ierr);
   for (j=1; j<=nlevels;j++) {
     cnt = 0;
     for (i=0; i<n; i++) {
@@ -728,7 +869,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   ierr = PetscFree2(workid,workparentid);CHKERRQ(ierr);
 
   /* for each node list its column */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&column);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&column);CHKERRQ(ierr);
   cnt = 0;
   for (j=0; j<nlevels; j++) {
     for (i=0; i<levelcnt[j]; i++) {

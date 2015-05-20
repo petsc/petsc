@@ -1,6 +1,6 @@
 
 #include <petscsys.h>
-#include <petsc-private/drawimpl.h>
+#include <petsc/private/drawimpl.h>
 #include <../src/sys/classes/draw/impls/win32/win32draw.h>
 
 #define IDC_FOUR       109
@@ -269,7 +269,7 @@ static PetscErrorCode PetscDrawLineSetWidth_Win32(PetscDraw draw,PetscReal width
   PetscFunctionBegin;
   GetClientRect(windraw->hWnd,&rect);
   averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
-  finalwidth  = (int)floor(averagesize*width);
+  finalwidth  = (int)PetscFloorReal(averagesize*width);
   if (finalwidth < 1) finalwidth = 1; /* minimum size PetscDrawLine can except */
 
   windraw->linewidth = finalwidth;
@@ -331,7 +331,7 @@ static PetscErrorCode PetscDrawPointSetSize_Win32(PetscDraw draw,PetscReal width
   PetscFunctionBegin;
   GetClientRect(windraw->hWnd,&rect);
   averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
-  diameter    = (int)floor(averagesize*width);
+  diameter    = (int)PetscFloorReal(averagesize*width);
   if (diameter < 1) diameter = 1;
   windraw->pointdiameter = diameter;
   PetscFunctionReturn(0);
@@ -640,7 +640,7 @@ static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
 
   PetscFunctionBegin;
   SendMessage(windraw->hWnd,WM_DESTROY,0,0);
-  PetscFree(windraw);
+  PetscFree(draw->data);
   PetscFunctionReturn(0);
 }
 
@@ -768,7 +768,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PetscDraw_Win32,&pop);CHKERRQ(ierr);
+  ierr = PetscNew(&pop);CHKERRQ(ierr);
 
   (*popdraw)->data = pop;
 
@@ -777,14 +777,14 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   ierr = PetscMemcpy((*popdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   pop->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,(unsigned long*)hThread);
+  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,(LPDWORD)hThread);
   CloseHandle(hThread);
   WaitForSingleObject(pop->hReadyEvent, INFINITE);
   CloseHandle(pop->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
 
   draw->popup            = (*popdraw);
-  ierr                   = PetscNew(struct _p_WindowNode,&newnode);CHKERRQ(ierr);
+  ierr                   = PetscNew(&newnode);CHKERRQ(ierr);
   newnode->MouseListHead = NULL;
   newnode->MouseListTail = NULL;
   newnode->wnext         = WindowListHead;
@@ -818,10 +818,9 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_Win32"
-PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
@@ -829,7 +828,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   WindowNode      newnode;
 
   PetscFunctionBegin;
-  ierr       = PetscNew(PetscDraw_Win32,&windraw);CHKERRQ(ierr);
+  ierr       = PetscNew(&windraw);CHKERRQ(ierr);
   draw->data = windraw;
 
   /* the following is temporary fix for initializing a global datastructure */
@@ -838,13 +837,13 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 
   windraw->hReadyEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */
-  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,(unsigned long*)hThread);
+  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,(LPDWORD)hThread);
   CloseHandle(hThread);
   WaitForSingleObject(windraw->hReadyEvent,INFINITE);
   CloseHandle(windraw->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex,INFINITE);
 
-  ierr                   = PetscNew(struct _p_WindowNode,&newnode);CHKERRQ(ierr);
+  ierr                   = PetscNew(&newnode);CHKERRQ(ierr);
   newnode->MouseListHead = NULL;
   newnode->MouseListTail = NULL;
   newnode->wnext         = WindowListHead;
@@ -878,7 +877,6 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   ReleaseMutex(g_hWindowListMutex);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /* FUNCTION: PetscWndProc(HWND, unsigned, WORD, LONG)
@@ -975,7 +973,7 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
     while (current != NULL) {
       if (current->hWnd == hWnd) {
 
-        ierr            = PetscNew(struct _p_MouseNode,&newnode);CHKERRQ(ierr);
+        ierr            = PetscNew(&newnode);CHKERRQ(ierr);
         newnode->Button = button;
         GetCursorPos(&mousepos);
         newnode->user.x = mousepos.x;

@@ -2,6 +2,8 @@
 /*
    This file contains routines for Parallel vector operations.
  */
+#define PETSC_SKIP_COMPLEX
+
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
@@ -99,7 +101,7 @@ PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_SeqCUSP(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
@@ -143,7 +145,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep);CHKERRQ(ierr);
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
       ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
@@ -159,7 +161,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  (*v)->map->bs   = win->map->bs;
+  (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }
@@ -191,31 +193,35 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec vv)
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUSP);CHKERRQ(ierr);
 
-  vv->ops->dotnorm2        = VecDotNorm2_MPICUSP;
-  vv->ops->waxpy           = VecWAXPY_SeqCUSP;
-  vv->ops->duplicate       = VecDuplicate_MPICUSP;
-  vv->ops->dot             = VecDot_MPICUSP;
-  vv->ops->mdot            = VecMDot_MPICUSP;
-  vv->ops->tdot            = VecTDot_MPICUSP;
-  vv->ops->norm            = VecNorm_MPICUSP;
-  vv->ops->scale           = VecScale_SeqCUSP;
-  vv->ops->copy            = VecCopy_SeqCUSP;
-  vv->ops->set             = VecSet_SeqCUSP;
-  vv->ops->swap            = VecSwap_SeqCUSP;
-  vv->ops->axpy            = VecAXPY_SeqCUSP;
-  vv->ops->axpby           = VecAXPBY_SeqCUSP;
-  vv->ops->maxpy           = VecMAXPY_SeqCUSP;
-  vv->ops->aypx            = VecAYPX_SeqCUSP;
-  vv->ops->axpbypcz        = VecAXPBYPCZ_SeqCUSP;
-  vv->ops->pointwisemult   = VecPointwiseMult_SeqCUSP;
-  vv->ops->setrandom       = VecSetRandom_SeqCUSP;
-  vv->ops->replacearray    = VecReplaceArray_SeqCUSP;
-  vv->ops->dot_local       = VecDot_SeqCUSP;
-  vv->ops->tdot_local      = VecTDot_SeqCUSP;
-  vv->ops->norm_local      = VecNorm_SeqCUSP;
-  vv->ops->mdot_local      = VecMDot_SeqCUSP;
-  vv->ops->destroy         = VecDestroy_MPICUSP;
-  vv->ops->pointwisedivide = VecPointwiseDivide_SeqCUSP;
+  vv->ops->dotnorm2               = VecDotNorm2_MPICUSP;
+  vv->ops->waxpy                  = VecWAXPY_SeqCUSP;
+  vv->ops->duplicate              = VecDuplicate_MPICUSP;
+  vv->ops->dot                    = VecDot_MPICUSP;
+  vv->ops->mdot                   = VecMDot_MPICUSP;
+  vv->ops->tdot                   = VecTDot_MPICUSP;
+  vv->ops->norm                   = VecNorm_MPICUSP;
+  vv->ops->scale                  = VecScale_SeqCUSP;
+  vv->ops->copy                   = VecCopy_SeqCUSP;
+  vv->ops->set                    = VecSet_SeqCUSP;
+  vv->ops->swap                   = VecSwap_SeqCUSP;
+  vv->ops->axpy                   = VecAXPY_SeqCUSP;
+  vv->ops->axpby                  = VecAXPBY_SeqCUSP;
+  vv->ops->maxpy                  = VecMAXPY_SeqCUSP;
+  vv->ops->aypx                   = VecAYPX_SeqCUSP;
+  vv->ops->axpbypcz               = VecAXPBYPCZ_SeqCUSP;
+  vv->ops->pointwisemult          = VecPointwiseMult_SeqCUSP;
+  vv->ops->setrandom              = VecSetRandom_SeqCUSP;
+  vv->ops->replacearray           = VecReplaceArray_SeqCUSP;
+  vv->ops->dot_local              = VecDot_SeqCUSP;
+  vv->ops->tdot_local             = VecTDot_SeqCUSP;
+  vv->ops->norm_local             = VecNorm_SeqCUSP;
+  vv->ops->mdot_local             = VecMDot_SeqCUSP;
+  vv->ops->destroy                = VecDestroy_MPICUSP;
+  vv->ops->pointwisedivide        = VecPointwiseDivide_SeqCUSP;
+  vv->ops->getlocalvector         = VecGetLocalVector_SeqCUSP;
+  vv->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUSP;
+  vv->ops->getlocalvectorread     = VecGetLocalVector_SeqCUSP;
+  vv->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUSP;
   /* place array?
      reset array?
      get values?

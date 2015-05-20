@@ -67,7 +67,7 @@ vectors even for the uniprocess case.
 
 We emphasize that all processes in \trl{comm} {\em must} call the
 vector creation routines, since these routines are collective over all
-processes in the communicator. If you are not familar with MPI communicators,
+processes in the communicator. If you are not familiar with MPI communicators,
 see the discussion in Section \ref{sec_writing} on page \pageref{sec_writing}.
 In addition, if a sequence of \trl{
 VecCreateXXX()} routines is used, they must be called in the same
@@ -439,7 +439,7 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to
 the PETSc global numbering scheme. This is done via the following routines
 \begin{tabbing}
-  ISLocalToGlobalMappingCreate(MPI\_Comm comm,int N,int* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);\\
+  ISLocalToGlobalMappingCreate(MPI\_Comm comm,int bs,int N,int* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);\\
   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);\\
   ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);\\
   ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *ctx);
@@ -463,9 +463,9 @@ with a local numbering scheme that includes ghost points.  The mapping from this
 numbering scheme back to the global PETSc numbering can be handled with the
 ISLocalToGlobalMapping routines.
 
-If one is given a list of indices in a global numbering, the routine
+If one is given a list of block indices in a global numbering, the routine
 \begin{tabbing}
-  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,\\
+  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,\\
                               ISGlobalToLocalMappingType type,int nin,int idxin[],int *nout,int idxout[]);
 \end{tabbing}
 \sindex{global to local mapping} will provide
@@ -480,10 +480,10 @@ are replaced by -1. When \trl{type} is set to \trl{IS_GTOLM_DROP},
 represented locally in the mapping are not included in \trl{idxout}, so that
 potentially \trl{nout} is smaller than \trl{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
-ISGlobalToLocalMappingApply() with \trl{idxout} equal to
+ISGlobalToLocalMappingApplyBlock() with \trl{idxout} equal to
 PETSC\_NULL to determine the required length (returned in
 \trl{nout}) and then allocate the required space and call
-ISGlobalToLocalMappingApply() a second time to set the values.
+ISGlobalToLocalMappingApplyBlock() a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node
 numbering rather than the global node numbering (e.g.,  each process may
@@ -535,7 +535,7 @@ a parallel array are shown in gray.
 
 The PETSc DMDA object manages the parallel communication required
 while working with data stored in regular arrays. The actual data
-is stored in approriately sized vector objects; the DMDA object
+is stored in appropriately sized vector objects; the DMDA object
 only contains the parallel data layout information and communication
 information, however it may be used to create vectors and matrices with the
 proper layout.
@@ -555,10 +555,11 @@ Instead of specifying the process layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n}
 so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by \trl{xperiod} and \trl{yperiod}, which can be
-DMDA\_BOUNDARY\_NONE \findex{DMDA_BOUNDARY_NONE} (no periodicity),
-DMDA\_BOUNDARY\_PERIODIC \findex{DMDA_BOUNDARY_PERIODIC} (periodic in that direction),
-DMDA\_BOUNDARY\_GHOSTED \findex{DMDA_BOUNDARY_GHOSTED},
-or DMDA\_BOUNDARY\_MIRROR.\findex{DMDA_BOUNDARY_MIRROR}  The argument \trl{dof}
+DMDA\_BOUNDARY\_NONE \findex{DM_BOUNDARY_NONE} (no periodicity),
+DMDA\_BOUNDARY\_PERIODIC \findex{DM_BOUNDARY_PERIODIC} (periodic in that direction),
+DMDA\_BOUNDARY\_TWIST \findex{DM_BOUNDARY_TWIST} (periodic in that direction, but identified in reverse order),
+DMDA\_BOUNDARY\_GHOSTED \findex{DM_BOUNDARY_GHOSTED},
+or DMDA\_BOUNDARY\_MIRROR.\findex{DM_BOUNDARY_MIRROR}  The argument \trl{dof}
 indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes
@@ -656,8 +657,8 @@ with the command
   DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
   DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
 \end{tabbing}
-Note that this function is not
-subdivided into beginning and ending phases, since it is purely local.
+In general this is used with an InsertMode of  ADD\_VALUES, because if one wishes to insert values into the global vector they should
+just access the global vector directly and put in the values.
 
 A third type of distributed array scatter is from a local
 vector (including ghost points that contain irrelevant values) to
@@ -702,6 +703,20 @@ the natural grid indexing. This is done with the routines
    ... use the array indexing it with 1 or 2 or 3 dimensions \\
    ... depending on the dimension of the DMDA\\
   DMDAVecRestoreArray(DM da,Vec l,void *array);
+  DMDAVecGetArrayRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
+\end{tabbing}
+\begin{tabbing}
+  DMDAVecGetArrayDOF(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
+  DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
 \end{tabbing}
 where {\tt array} is a multidimensional C array with the same dimension as
 {\tt da}. The vector l can be either a global vector or a local vector.
@@ -771,21 +786,9 @@ To assemble global stiffness matrices, one needs either
 \begin{itemize}
 \item
 the global node number of each local node
-including the ghost nodes. This number may be determined by using the
-command
+including the ghost nodes cqn be obtained by first calling
 \begin{tabbing}
-  DMDAGetGlobalIndices(DM da,int *n,int *idx[]);
-\end{tabbing}
-The output argument \trl{n} contains the number of
-local nodes, including ghost nodes, while \trl{idx} contains a list of length
-\trl{n} containing the global indices that correspond to the local nodes. Either
-parameter may be omitted by passing PETSC\_NULL. Note that the Fortran
-interface differs slightly; see Section~\ref{sec_fortranarrays} for details.
-\item
-or to set up the vectors and matrices so that their entries may be
-added using the local numbering. This is done by first calling
-\begin{tabbing}
-  DMDAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
+  DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 \end{tabbing}
 followed by
 \begin{tabbing}
@@ -801,7 +804,7 @@ Since the global ordering that PETSc uses to manage its parallel vectors
 of a two- or three-dimensional array, the DMDA structure provides
 an application ordering AO (see Section \ref{sec_ao}) that maps
 between the natural ordering on a rectangular grid and the ordering PETSc
-uses to parallize. This ordering context can be obtained with the command
+uses to parallelize. This ordering context can be obtained with the command
 \begin{tabbing}
   DMDAGetAO(DM da,AO *ao);
 \end{tabbing}
@@ -1236,8 +1239,8 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
-\end{tabbing}
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
+\end{tabbing} \findex{MAT_NEW_NONZERO_LOCATIONS}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
@@ -1595,7 +1598,7 @@ To do this, we introduce the four spaces shown in Figure~\ref{fig_localspaces}.
 \begin{itemize}
 \item The monolithic global space is the space in which the Krylov and Newton solvers operate, with collective semantics across the entire block system.
 \item The split global space splits the blocks apart, but each split still has collective semantics.
-\item The split local space adds ghost points and sperates the blocks.
+\item The split local space adds ghost points and separates the blocks.
   Operations in this space can be performed with no parallel communication.
   This is often the most natural, and certainly the most powerful, space for matrix assembly code.
 \item The monolithic local space can be thought of as adding ghost points to the monolithic global space, but it is often more natural to use it simply as a concatenation of split local spaces on each process.
@@ -1668,7 +1671,7 @@ command
   MatView(Mat mat,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
 Other viewers can be used as well. For instance, one can draw the
-nonzero stucture of the matrix into the default X-window with the
+nonzero structure of the matrix into the default X-window with the
 command
 \begin{tabbing}
   MatView(Mat mat,PETSC\_VIEWER\_DRAW\_WORLD);
@@ -2049,7 +2052,7 @@ Before actually solving a linear system with KSP, the user must call
 the following routine to set the matrices associated with the linear
 system:
 \begin{tabbing}
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
 \end{tabbing}
 The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.
@@ -2058,28 +2061,12 @@ In particular, KSP {\em does} support matrix-free methods.
 The routine MatCreateShell()
 in Section~\ref{sec_matrixfree} provides further information regarding
 matrix-free methods.
-Typically the the matrix from which the
+Typically the matrix from which the
 preconditioner is to be constructed, \trl{Pmat}, is the same as
 the matrix that defines the linear system, \trl{Amat}; however,
 occasionally these matrices differ (for instance, \sindex{preconditioning}
 when a preconditioning matrix is obtained from a lower order method than
 that employed to form the linear system matrix).
-The argument \trl{flag} can be used to eliminate unnecessary work when
-repeatedly solving linear systems of the same size with the same
-preconditioning method; when solving just one linear system, this flag is
-ignored.  The user can set \trl{flag} as follows:
-\begin{itemize}
-\item \trl{SAME_NONZERO_PATTERN} - the preconditioning matrix has the
-    same \findex{SAME_NONZERO_PATTERN} nonzero structure during successive
-    linear solves,
-\item \trl{DIFFERENT_NONZERO_PATTERN} - the preconditioning matrix does
-     not have the same nonzero structure during successive linear solves,
-   \findex{DIFFERENT_NONZERO_PATTERN}
-\item \trl{SAME_PRECONDITIONER} - the preconditioner matrix is identical
-   to that of the previous linear solve. \findex{SAME_PRECONDITIONER}
-\end{itemize}
-If the structure of a matrix is not known a priori, one should use
-the flag \trl{DIFFERENT_NONZERO_PATTERN}.
 
 Much of the power of KSP can be accessed through the single routine
 \begin{tabbing}
@@ -2230,10 +2217,10 @@ The values for KSPGMRESCGSRefinementType are \trl{KSP_GMRES_CGS_REFINEMENT_NONE}
 \findex{KSP_GMRES_CGS_REFINEMENT_IFNEEDED} \findex{KSP_GMRES_CGS_REFINEMENT_ALWAYS}
 
 One can also use
-modifed Gram-Schmidt,
+modified Gram-Schmidt,
 by setting the orthogonalization routine,
 KSPGMRESModifiedGramSchmidtOrthogonalization(), by using the command line option
-\trl{-ksp_gmres_modifiedgram-schmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
+\trl{-ksp_gmres_modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is
@@ -2342,7 +2329,7 @@ be used. \sindex{Bi-conjugate gradient}
 \subsection{Convergence Tests}
 \label{section_convergencetests}
 
-The default convergence test, KSPDefaultConverged(), is
+The default convergence test, KSPConvergedDefault(), is
 based on the $l_2$-norm of the residual. Convergence
 (or divergence) is decided by three quantities:
 the decrease of the residual norm relative to the norm of the right hand side, \trl{rtol}, the absolute
@@ -2360,7 +2347,7 @@ The user can retain the default value of any of these parameters by
 specifying PETSC\_DEFAULT as the
 corresponding tolerance; the
 defaults are \trl{rtol}=$10^{-5}$, \trl{atol}=$10^{-50}$,
-\trl{dtol}=$10^{5}$, and \trl{maxits}=$10^5$.
+\trl{dtol}=$10^{5}$, and \trl{maxits}=$10^4$.
 These parameters can also be set from the options database with the
 commands \trl{-ksp_rtol} \trl{<rtol>}, \trl{-ksp_atol} \trl{<atol>}, \trl{-ksp_divtol} \trl{<dtol>},
 \findex{-ksp_rtol} \findex{-ksp_atol} \findex{-ksp_divtol}
@@ -2457,7 +2444,7 @@ Unless the Krylov method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-ksp_monitor}
 option are meaningless. Worse, they are different on different
 machines; due to different round-off rules used by, say, the IBM RS6000
-and the Sun Sparc. This makes testing between different machines
+and the Sun SPARC. This makes testing between different machines
 difficult. The option \trl{-ksp_monitor_short} \findex{-ksp_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm
 as it gets smaller; thus on most of the machines it will always
@@ -2561,7 +2548,7 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
-Algebraic Multigrid                    & PCGAMG         & gamg\\
+Algebraic Multigrid                  & PCGAMG         & gamg\\
 Linear solver                        & PCKSP         & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
@@ -2592,8 +2579,8 @@ Some of the options for ILU preconditioner are
   PCFactorSetReuseOrdering(PC pc,PetscBool  flag);\\
   PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCFactorSetReuseFill(PC pc,PetscBool  flag);\\
-  PCFactorSetUseInPlace(PC pc); \\
-  PCFactorSetAllowDiagonalFill(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg); \\
+  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 \end{tabbing}
 
 When repeatedly solving linear systems with the same KSP
@@ -2689,7 +2676,7 @@ By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations
 for conventional SSOR. The option
 \trl{-pc_eisenstat_no_diagonal_scaling})
-(or the routine PCEisenstatNoDiagonalScaling())
+(or the routine PCEisenstatSetNoDiagonalScaling())
 turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
 the option \trl{-pc_eisenstat_omega <omega>} (or the routine
 PCEisenstatSetOmega(PC pc,double omega))
@@ -2705,7 +2692,7 @@ The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
 command  \sindex{in-place solvers}
 \begin{tabbing}
-  PCFactorSetUseInPlace(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg);
 \end{tabbing}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
@@ -2757,7 +2744,7 @@ eliminates the considerable overhead for dynamic memory allocation.
 The block Jacobi and overlapping additive Schwarz methods in PETSc are
 supported in parallel; however, only the uniprocess
 version of the block Gauss-Seidel method is currently in place.
-By default, the PETSc implentations of these methods
+By default, the PETSc implementations of these methods
 employ ILU(0) factorization on each individual block ( that is, the default solver on each
 subblock is PCType=PCILU, KSPType=KSPPREONLY); the user can set alternative linear solvers via the options
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
@@ -2783,7 +2770,7 @@ user {\em must} explicitly call KSPSetUp()
 before calling PCBJacobiGetSubKSP() or
 PCASMGetSubKSP().
 For further details, see the
-example \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex7.c}.
+examples \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex7.c} or \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex8.c}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user
@@ -2794,7 +2781,7 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks}
 \begin{tabbing}
   PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetTotalSubdomains(PC pc,int n,IS *is);\\
+  PCASMSetTotalSubdomains(PC pc,int n,IS *is,IS *islocal);\\
   PCASMSetType(PC pc,PCASMType type);
 \end{tabbing}
 The
@@ -2820,7 +2807,7 @@ restriction operator, but during the interpolation process ignores the off-proce
 values.
 Similarly, \trl{PC_ASM_INTERPOLATE} (or \trl{-pc_asm_type} \trl{interpolate}) uses a limited
 restriction process in conjunction with a full interpolation, while
-\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-process valies
+\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-process values
 for both restriction and interpolation.
 The ASM types with limited restriction or interpolation were suggested by
 Xiao-Chuan Cai and Marcus Sarkis \cite{cs97a}.  \sindex{Cai, Xiao-Chuan}  \sindex{Sarkis, Marcus}
@@ -2832,7 +2819,7 @@ The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 \begin{tabbing}
   PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetLocalSubdomains(PC pc,int N,IS *is);
+  PCASMSetLocalSubdomains(PC pc,int N,IS *is,IS *islocal);
 \end{tabbing}
 
 For the ASM preconditioner one can use the following command to set
@@ -2852,14 +2839,59 @@ PCASMSetLocalSubdomains(); the routine PCASMSetOverlap()
 merely allows PETSc to extend that overlap further if desired.
 
 %----------------------------------------------------------------------
-\subsection{Algebraic Multigrid Preconditioners}
+\subsection{Algebraic Multigrid (AMG) Preconditioners}
 
-PETSc provides a framework and tools for developing algebraic multigrid (AMG) methods.
-Developers can write a preconditioner (PC) class and an application can select this PC as a command line argument or explicitly in the code.
-PETSc provides interfaces to two external AMG packages have been imported into PETSc as external, downloaded packages: {\it hypre} and {\it ML}.
-These packages are monolithic in that they implement one class of algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed aggregation for {\it ML}.
-The PETSc AMG framework provides one basic aggregation AMG method (\trl{-pc_gamg_type agg}) and the popular variant smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1}).
-Smoothed aggregation is recommended for symmetric positive definite systems;  unsmoothed aggregation can be useful for unsymmetric problems.
+PETSc provides a native algebraic multigrid preconditioner PCGAMG -- {\it ``gamg''} -- and interfaces to two
+external AMG packages: {\it hypre} and {\it ML}.
+
+PETSc provides a (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  PCSetType(pc,PCGAMG) and PCGAMGSetType(pc,PCGAMGAgg).
+There are also less developed implementations of a classical AMG method (\trl{-pc_gamg_type classical})  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo}).
+
+GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths(pc,1)).
+Smoothed aggregation is recommended for symmetric positive definite
+systems;  unsmoothed aggregation can be useful for asymmetric
+problems and problems where highest eigen estimates are problematic. Try \trl{-pc_gamg_agg_nsmooths 0}  if poor convergence rates are observed using the smoothed version.
+AMG methods requires knowledge of the number of degrees of
+freedom per vertex, the default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately with MatSetBlockSize(mat,bs).
+Smoothed aggregation relies an explicit representation of the (near) null space of the operator.
+One can provide this with MatSetNearNullSpace().
+For elasticity, where rotational rigid body modes define the near null space you can call PCSetCoordinates() instead of MatSetNearNullSpace() and it will set the near null space for you.
+
+Other options for GAMG include PCGAMGSetProcEqLim(),
+PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(),
+PCGAMGRegister(), PCGAMGSetReuseInterpolation(),
+PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(),
+PCGAMGSetThreshold(), and PCGAMGGetType().
+
+
+{\bf Trouble shooting algebraic multigrid methods:}  If GAMG, ML, or hypre does not perform well the
+first thing to try is the other methods.
+You can also try  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}.
+AMG methods are sensitive to coarsening rates and methods; for GAMG use
+\trl{-pc_gamg_threshold} $x$ to regulate coarsening rates (PCGAMGSetThreshold()).
+A high threshold (eg, $x=0.08$) will result in an expensive but potentially
+powerful preconditioner; a low threshold (eg, $x=0.0$) will result in
+faster coarsening, fewer levels, cheaper solves, and generally worse
+convergence rates.
+\trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
+this is not obvious) and is recommended if poor convergence rates are
+observed, at least until the source of the problem is discovered.
+
+Finally, there are several sources of poor performance of
+AMG solvers and often special purpose methods must be developed to
+achieve the full potential of multigrid.
+To name just a few sources of performance degradation that
+may not be fixed with parameters or bug fixes in PETSc currently: non-elliptic
+operators, curl/curl operators, highly stretched grids or highly anisotropic problems,
+large jumps in material coefficients with complex geometry (AMG is
+particularly well suited to jumps in coefficients but it is not a
+perfect solution), highly incompressible elasticity, not to mention
+ill-posed problems, and many others.
+
+PETSc's AMG solver is constructed as a framework for developers to
+easily add AMG capabilities, like a new AMG algorithm or a new matrix
+triple product, etc. Contact us directly if you are interested in extending/improving PETSc's algebraic multigrid solvers.
+
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
@@ -2884,8 +2916,8 @@ to retrieve it in \trl{apply}.  The three routine arguments of
 respectively.
 
 For a preconditioner that requires some sort of ``setup'' before being used,
-that requires a new setup everytime the operator is changed, one can
-provide a ``setup'' routine that is called everytime the operator is
+that requires a new setup every time the operator is changed, one can
+provide a ``setup'' routine that is called every time the operator is
 changed (usually via KSPSetOperators()).
 \begin{tabbing}
   PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC));
@@ -2895,7 +2927,7 @@ can be used to obtain the operators with PCGetOperators() and the
 application-provided data structure that was set with PCShellSetContext().
 
 %----------------------------------------------------------------------
-\subsection{Combining Preconditioners} \sindex{combining preconditioners}
+\subsection{Combining Preconditioners\label{sec:combining-pcs}} \sindex{combining preconditioners}
 
 The PC type PCCOMPOSITE  allows one to form
 new preconditioners by combining already defined preconditioners and
@@ -2935,7 +2967,7 @@ $ B_2$; $ y = B x $ is obtained from
   w_1  = x - A y \\
   y    = y + B_2 w_1
 \end{eqnarray*}
-Loosely, this corresponds to a Gauss-Siedel iteration, while
+Loosely, this corresponds to a Gauss-Seidel iteration, while
 additive corresponds to a Jacobi iteration.
 
 Under most circumstances the multiplicative form requires one-half the number of
@@ -2970,8 +3002,8 @@ two preconditioners: Jacobi and ILU. The option \trl{-pc_composite_type} \trl{mu
 \findex{-pc_composite_type} initiates the multiplicative version of the algorithm,
 while \trl{-pc_composite_type} \trl{additive} the additive version. Using the \trl{Amat}
 matrix is obtained with the option \trl{-pc_use_amat}.
-\findex{-pc_use_amat} One sets options for the subpreconditioners with the
-extra prefix \trl{-sub_N_} where \trl{N} is the number of the subpreconditioner.
+\findex{-pc_use_amat} One sets options for the sub-preconditioners with the
+extra prefix \trl{-sub_N_} where \trl{N} is the number of the sub-preconditioner.
 For example, \trl{-sub_0_pc_ifactor_fill} \trl{0}.
 
 
@@ -3063,11 +3095,24 @@ call
   PCMGGetCoarseSolve(PC pc,KSP *ksp);
 \end{tabbing}
 and set the appropriate options in \trl{ksp}. Similarly, the
-smoothers are set by calling
+smoothers are setcontrolled by first calling
 \begin{tabbing}
   PCMGGetSmoother(PC pc,int level,KSP *ksp);
 \end{tabbing}
-and setting the various options in \trl{ksp.}
+and then setting the various options in the \trl{ksp.} For example,
+\begin{tabbing}
+  PCMGGetSmoother(pc,1,\&ksp);
+  KSPSetOperators(ksp,A1,A1);
+\end{tabbing}
+sets the matrix that defines the smoother on level 1 of the multigrid. While
+\begin{tabbing}
+  PCMGGetSmoother(pc,1,\&ksp);
+  KSPGetPC(ksp,\&pc);
+  PCSetType(pc,PCSOR);
+\end{tabbing}
+sets SOR as the smoother to use on level 1.
+
+
 To use a different pre- and postsmoother, one should call the following
 routines instead.
 \begin{tabbing}
@@ -3133,7 +3178,7 @@ Or
 \begin{tabbing}
   -mg\_levels\_pc\_type ilu -mg\_levels\_pc\_factor\_levels 2
 \end{tabbing}
-will cause the the ILU preconditioner to be used on each level with
+will cause the ILU preconditioner to be used on each level with
 two levels of fill in the incomplete factorization.
 
 \section{Solving Block Matrices}
@@ -3293,7 +3338,14 @@ A_{00}^{-1}   & 0 \\
 0 & I \\
 \end{array} \right).
 \]
-These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
+These can be accessed with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
+
+By default blocks $A_{00}, A_{01}$ and so on are extracted out of \trl{Pmat}, the matrix that the KSP uses to build the preconditioner,
+and not out of \trl{Amat} (i.e., $A$ itself). As discussed above in Sec.~\ref{sec:combining-pcs}, however, it is possible to use \trl{Amat}
+instead of \trl{Pmat} by calling PCSetUseAmat(pc) or using \trl{-pc_use_amat} on the command line.  Alternatively, you can have PCFieldSplit
+extract the diagonal blocks $A_{00}, A_{11}$ etc. out of \trl{Amat} by calling PCFieldSplitSetDiagUseAmat(pc,\trl{PETSC_TRUE}) or supplying
+command-line argument \trl{-pc_fieldsplit_diag_use_amat}.  Similarly, PCFieldSplitSetOffDiagUseAmat(pc,\trl{PETSC_TRUE}) or \trl{-pc_fieldsplit_off_diag_use_amat}
+will cause the off-diagonal blocks $A_{01},A_{10}$ etc. to be extracted out of \trl{Amat}.
 
 For two by two blocks only there are another family of solvers, based on Schur complements. The inverse of the Schur complement factorization is
 \[
@@ -3385,18 +3437,40 @@ I   & 0 \\
 -A_{10} ksp(A_{00},Ap_{00}) & I \\
 \end{array} \right).
 \]
-Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$
+Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement.
 
 There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_fact_type <diag,lower,upper,full>} or the function PCFieldSplitSetSchurFactType(). Note that the \trl{diag} form uses the preconditioner
 \[
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\
 0 & -ksp(\hat{S},\hat{S}p) \\
-\end{array} \right)
+\end{array} \right).
 \]
-since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
+This is done to ensure the preconditioner is positive definite for a common class of problems, saddle points with a positive definite $A_{00}$:
+for these the Schur complement is negative definite. SHOULD THERE BE A FLAG TO SET THE SIGN?
 
-You can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
+The effectiveness of the Schur complement preconditioner depends on the availability of a good preconditioner $\hat Sp$ for the Schur complement matrix.
+In general, you are responsible for supplying $\hat Sp$ via
+PCFieldSplitSchurPrecondition(pc,\trl{PC_FIELDSPLIT_SCHUR_PRE_USER},Sp).
+In the absence of a good
+problem-specific $\hat Sp$, you can use some of the built-in options.
+
+Using \trl{-pc_fieldsplit_schur_precondition user} on the command line activates
+the matrix supplied programmatically as explained above.
+
+With \trl{-pc_fieldsplit_schur_precondition a11} (default) $\hat Sp = A_{11}$ is used to build a
+preconditioner for $\hat S$.
+
+Otherwise, \trl{-pc_fieldsplit_schur_precondition self} will set $\hat Sp = \hat S$ and use the Schur complement matrix itself to build the preconditioner.
+
+The problem with the last approach is that $\hat S$ is used in unassembled, matrix-free form, and many preconditioners (e.g., ILU) cannot be built out of
+such matrices. Instead, you can \emph{assemble}  an approximation to $\hat S$ by inverting $A_{00}$, but only approximately, so as to ensure the sparsity of $\hat Sp$ as much as possible.
+Specifically, using \trl{-pc_fieldsplit_schur_precondition selfp} will assemble $\hat Sp = A_{11} - A_{10} inv(A_{00}) A_{01}$.
+
+By default $inv(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will lump $A_{00}$ first.  Option \trl{-mat_schur_complement_ainv_type}
+applies to any matrix of MatSchurComplement type and here it is used with the prefix \trl{-fieldsplit_1} of the linear system in the second split.
+
+Finally, you can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
 \[
  ksp(A_{10} A_{01},A_{10} A_{01}) A_{10} A_{00} A_{01} ksp(A_{10} A_{01},A_{10} A_{01})
 \]
@@ -3427,15 +3501,17 @@ functions you do not need to include it in the \trl{basis} vectors you provide).
 
 One then tells the KSP object you are using what the null space is with the call
 \begin{tabbing}
-KSPSetNullSpace(KSP ksp,MatNullSpace nsp);
+MatSetNullSpace(Mat mat,MatNullSpace nsp);
+MatSetTransposeNullSpace(Mat mat,MatNullSpace nsp);
 \end{tabbing}
 The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options \trl{-pc_factor_shift_nonzero <dampingfactor>}
-\findex{-pc_factor_shift_nonzero} or \trl{-pc_factor_shift_nonzero <dampingfactor>} \findex{-pc_factor_sshift_nonzero} to
-prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
+You can run with the additional options \trl{-pc_factor_shift_type <shifttype>}
+\findex{-pc_factor_shift_type} or 
+\trl{-pc_factor_shift_type NONZERO}  \trl{-pc_factor_shift_amount  <dampingfactor>} \findex{-pc_factor_shift_amount} to
+prevent the zero pivot. A good choice for the \trl{dampingfactor} is 1.e-10.
 \sindex{damping}
 
 % ---------------------------------------------------------------
@@ -3544,15 +3620,16 @@ The SNES class includes methods for solving systems of nonlinear equations of th
 where $\F: \, \Re^n \to \Re^n$.
 Newton-like methods provide the core of the package, including
 \sindex{Newton-like methods} both line search \sindex{line search}
-and trust region \sindex{trust region} techniques, which are discussed
-further in Section~\ref{sec_nlsolvers}. Following the
-PETSc design philosophy, the interfaces to the various solvers are all
-virtually identical. In addition, the SNES software is completely
-flexible, so that the user can at runtime change any facet of the
-solution process.
+and trust region \sindex{trust region} techniques.  A suite of nonlinear Krylov
+methods and methods based upon problem decomposition are also included.  The
+solvers are discussed further in Section~\ref{sec_nlsolvers}. Following the
+PETSc design philosophy, the interfaces to the various solvers are all virtually
+identical. In addition, the SNES software is completely flexible, so that the
+user can at runtime change any facet of the solution process.
 
-The general form of the $n$-dimensional Newton's method for solving
-(\ref{eq_F=0}) is
+PETSc's default method for solving the nonlinear equation is Newton's method. The general form of the $n$-dimensional
+Newton's method for solving (\ref{eq_F=0}) is
+
 \begin{equation}
      \x_{k+1} = \x_k - \J(\x_k)^{-1} \F(\x_k), \;\; k=0,1, \ldots,
 \label{eq_n1}
@@ -3604,7 +3681,7 @@ call
 \begin{tabbing}
   SNESSetType(SNES snes,SNESType method);
 \end{tabbing}
-or use the the option \trl{-snes_type <method>}, \findex{-snes_type}
+or use the option \trl{-snes_type <method>}, \findex{-snes_type}
 where details regarding the available methods are presented in
 Section~\ref{sec_nlsolvers}.
 The application code can take complete control of the linear and
@@ -3667,7 +3744,7 @@ Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{tabbing}
   SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,\\
-          Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
+          Vec x,Mat A,Mat B,void *ctx),void *ctx);
 \end{tabbing}
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
@@ -3722,21 +3799,6 @@ entries to zero by calling MatZeroEntries().  See
 Section~\ref{sec_othermat} for details on the reuse of the matrix
 context.
 
-If the preconditioning matrix retains identical nonzero structure
-during successive nonlinear iterations, setting the parameter, \trl{flag},
-in the \trl{FormJacobian()} routine to be \trl{SAME_NONZERO_PATTERN}
-\findex{SAME_NONZERO_PATTERN} and reusing the matrix context can save
-considerable overhead.  For example, when one is using a parallel
-preconditioner such as incomplete factorization in solving the
-linearized Newton systems for such problems, matrix colorings and
-communication patterns can be determined a single time and then reused
-repeatedly throughout the solution process.  In addition, if using
-different matrices for the actual Jacobian and the preconditioner, the
-user can hold the preconditioner matrix fixed for multiple iterations
-by setting \trl{flag} to \trl{SAME_PRECONDITIONER}.  See the
-discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-details.
-
 The directory \trl{${PETSC_DIR}/src/snes/examples/tutorials} provides
 a variety of examples.
 
@@ -3744,9 +3806,9 @@ a variety of examples.
 \section{The Nonlinear Solvers}
 \label{sec_nlsolvers}
 
-As summarized in Table~\ref{tab_snesdefaults}, SNES includes several
-Newton-like nonlinear solvers based on line search techniques and
-trust region methods.
+As summarized in Table~\ref{tab_snesdefaults}, SNES includes several Newton-like nonlinear solvers based on line search
+techniques and trust region methods.  Also provided are several nonlinear Krylov methods, as well as nonlinear
+methods involving decompositions of the problem.
 
 Each solver may have associated with it a set of options, which can be
 set with routines and options database commands provided for this
@@ -3756,12 +3818,22 @@ few in the sections below.
 
 \begin{table}
 \begin{center}
-\begin{tabular}{llll}
-{\bf Method}    &{\bf SNESType}& {\bf Options Name}    &{\bf Default Convergence Test}\\
+\begin{tabular}{lllll}
+{\bf Method}    &{\bf SNESType}& {\bf Options Name}          & {\bf Default Line Search} \\
 \hline
-Line search     & SNESNEWTONLS   & newtonls    & SNESConverged\_NEWTONLS()\\
-Trust region    & SNESNEWTONTR   & newtontr   & SNESConverged\_NEWTONTR()\\
-Test Jacobian   & SNESTEST        & test  & \\
+Line search Newton           & SNESNEWTONLS    & newtonls    & SNESLINESEARCHBT  \\
+Trust region Newton          & SNESNEWTONTR    & newtontr    & --                \\
+Test Jacobian                & SNESTEST        & test        & --                \\
+Nonlinear Richardson         & SNESNRICHARDSON & nrichardson & SNESLINESEARCHL2  \\
+Nonlinear CG                 & SNESNCG         & ncg         & SNESLINESEARCHCP  \\
+Nonlinear GMRES              & SNESNGMRES      & ngmres      & SNESLINESEARCHL2  \\
+Quasi-Newton                 & SNESQN          & qn          & see Table~\ref{tab_qndefaults} \\
+FAS                          & SNESFAS         & fas         & --                \\
+Nonlinear ASM                & SNESNASM        & nasm        & --                \\
+Composite                    & SNESCOMPOSITE   & composite   & --                \\
+Nonlinear Gauss-Seidel       & SNESGS          & ngs         & --                \\
+Anderson Mixing              & SNESAnderson    & anderson    & --                \\
+Shell                        & SNESSHELL       & shell       & --                \\
 \hline
 \end{tabular}
 \end{center}
@@ -3769,28 +3841,65 @@ Test Jacobian   & SNESTEST        & test  & \\
 \label{tab_snesdefaults}
 \end{table}
 
-\subsection{Line Search Techniques} \sindex{line search}
+\subsection{Line Search Newton} \sindex{line search}
 
-The method SNESNEWTONLS (\trl{-snes_type} \trl{newtonls}) provides a line
-search Newton method for solving systems of nonlinear equations.  By
-default, this technique employs cubic backtracking \cite{dennis:83}.
-An alternative line search routine can be set with the command
+The method SNESNEWTONLS (\trl{-snes_type} \trl{newtonls}) provides a line search Newton method for solving systems of
+nonlinear equations.  By default, this technique employs cubic backtracking \cite{dennis:83}.  Alternative line search
+techniques are listed in Table~\ref{tab_linesearches}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{lll}
+{\bf Line Search}      &{\bf SNESLineSearchType}& {\bf Options Name} \\
+\hline
+Backtracking           & SNESLINESEARCHBT       & bt                 \\
+(damped) step          & SNESLINESEARCHBASIC    & basic              \\
+L2-norm  Minimization  & SNESLINESEARCHL2       & l2                 \\
+Critical point         & SNESLINESEARCHCP       & cp                 \\
+Shell                  & SNESLINESEARCHSHELL    & shell              \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc Line Search Methods}
+\label{tab_linesearches}
+\end{table}
+
+Every SNES has a line search context of type SNESLineSearch that may be retrieved using
 \begin{tabbing}
-  SNESSetLineSearch\=(SNES snes,PetscErrorCode (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),\\
-                   \>void *lsctx);
+SNESGetLineSearch(SNES snes,SNESLineSearch *ls);.
 \end{tabbing}
-Other line search methods provided by PETSc are
-SNESSearchQuadraticLine(), SNESLineSearchNo(), and SNESLineSearchNoNorms(),
-which can be set with the option \findex{-snes_ls}
+
+There are several default options for the line searches.  The order of polynomial approximation may be set
+with \trl{-snes_linesearch_order} or
 \begin{tabbing}
-  \trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}
+SNESLineSearchSetOrder(SNESLineSearch ls, PetscInt order);
 \end{tabbing}
-The line search routines involve several parameters, which are set
-to defaults that are reasonable for many applications.  The user
-can override the defaults by using the options
-\trl{-snes_ls_alpha <alpha>}, \findex{-snes_ls_alpha}
-\trl{-snes_ls_maxstep <max>}, and \findex{-snes_ls_maxstep}
-\trl{-snes_ls_steptol <tol>}. \findex{-snes_ls_steptol}
+for instance, 2 for quadratic or 3 for cubic. Sometimes, it may not be necessary to monitor the progress of the
+nonlinear iteration.  In this case, \trl{-snes_linesearch_norms} or
+\begin{tabbing}
+SNESLineSearchSetNorms(SNESLineSearch ls,PetscBool norms);
+\end{tabbing}
+may be used to turn off function, step, and solution norm computation at the end of the linesearch.
+
+The default line search for the line search Newton method, SNESLINESEARCHBT involves several parameters, which are set
+to defaults that are reasonable for many applications.  The user can override the defaults by using the options
+
+\trl{-snes_linesearch_alpha <alpha>}, \findex{-snes_linesearch_alpha}
+\trl{-snes_linesearch_maxstep <max>}, and \findex{-snes_linesearch_maxstep}
+\trl{-snes_linesearch_minlambda <tol>}. \findex{-snes_linesearch_minlambda}
+
+Besides the backtracking linesearch, there are SNESLINESEARCHL2, which uses a polynomial secant minimization of
+$||F(x)||_2$, and SNESLINESEARCHCP, which minimizes $F(x) \cdot Y$ where Y is the search direction.  These are both
+potentially iterative line searches, which may be used to find a better-fitted steplength in the case where a single
+secant search is not sufficient.  The number of iterations may be set with \trl{-snes_linesearch_max_it}.  In addition,
+the convergence criteria of the iterative line searches may be set using function tolerances \trl{-snes_linesearch_rtol}
+and \trl{-snes_linesearch_atol}, and steplength tolerance \trl{snes_linesearch_ltol}.
+
+Custom line search types may either be defined using SNESLineSearchShell, or by creating a custom user line search type
+in the model of the preexisting ones and register it using
+\begin{tabbing}
+SNESLineSearchRegister(const char sname[],PetscErrorCode (*function)(SNESLineSearch));.
+\end{tabbing}
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
@@ -3806,6 +3915,133 @@ radius, computed by
 by setting $ \Delta_0 $ via the option
 \trl{-snes_tr_delta0 <delta0>}.
 
+\subsection{Nonlinear Krylov Methods}
+
+A number of nonlinear Krylov methods are provided, including Nonlinear richardson, conjugate gradient, GMRES, and
+Anderson Mixing.  These methods are described individually below.  They are all instrumental to PETSc's nonlinear
+preconditioning.
+
+\textbf{Nonlinear Richardson.}
+The nonlinear Richardson iteration merely takes the form of a line search-damped fixed-point iteration of the form
+\begin{equation}
+     \x_{k+1} = \x_k - \lambda \F(\x_k), \;\; k=0,1, \ldots,
+\label{eq_nrich}
+\end{equation}
+\noindent where the default linesearch is SNESLINESEARCHL2.  This simple solver is mostly useful as a nonlinear smoother, or to
+provide line search stabilization to an inner method.
+
+\textbf{Nonlinear Conjugate Gradients.}
+Nonlinear CG is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
+default).  Five variants (Fletcher-Reed, Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent) are
+implemented in PETSc and may be chosen using
+\begin{tabbing}
+SNESNCGSetType(SNES snes, SNESNCGType btype);.
+\end{tabbing}
+
+\textbf{Anderson Mixing and Nonlinear GMRES Methods.}
+Nonlinear GMRES and Anderson Mixing methods combine the last $m$ iterates, plus a new fixed-point iteration iterate,
+into a residual-minimizing new iterate.
+
+\subsection{Quasi-Newton Methods}
+
+Quasi-Newton methods store iterative rank-one updates to the Jacobian instead of computing it directly.  Three
+limited-memory quasi-Newton methods are provided, L-BFGS, which are described in Table~\ref{tab_qndefaults}.  These all are
+encapsulated under \trl{-snes_type qn} and may be changed with \trl{snes_qn_type}.  The default is L-BFGS, which
+provides symmetric updates to an approximate Jacobian.  This iteration is similar to the line search Newton methods.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{llll}
+{\bf QN Method}    &{\bf SNESQNType}& {\bf Options Name}    &{\bf Default Line Search}\\
+\hline
+L-BFGS            & \trl{SNES_QN_LBFGS}       & lbfgs             & SNESLINESEARCHCP     \\
+``Good'' Broyden  & \trl{SNES_QN_BROYDEN}     & broyden           & SNESLINESEARCHBASIC  \\
+``Bad'' Broyden   & \trl{SNES_QN_BADBROYEN}   & badbroyden        & SNESLINESEARCHL2     \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc quasi-Newton solvers}
+\label{tab_qndefaults}
+\end{table}
+
+One may also control the form of the initial Jacobian approximation with
+\begin{tabbing}
+SNESQNSetScaleType(SNES snes, SNESQNScaleType stype);
+\end{tabbing}
+and the restart type with
+\begin{tabbing}
+SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype);.
+\end{tabbing}
+
+\subsection{The Full Approximation Scheme}
+
+The Full Approximation Scheme is a nonlinear multigrid correction.  At each
+level, there is a recursive cycle control SNES instance, and either one or two
+nonlinear solvers as smoothers (up and down).  Problems set up using the SNES
+DMDA interface are automatically coarsened.  FAS differs slightly from PCMG, in
+that the hierarchy is constructed recursively.  However, much of the interface
+is a one-to-one map.  We describe the ``get'' operations here, and it can be
+assumed that each has a corresponding ``set'' operation.  For instance, the
+number of levels in the hierarchy may be retrieved using
+\begin{tabbing}
+SNESFASGetLevels(SNES snes, PetscInt *levels);
+\end{tabbing}
+
+There are four SNESFAS cycle
+types, \trl{SNES_FAS_MULTIPLICATIVE}, \trl{SNES_FAS_ADDITIVE}, \trl{SNES_FAS_FULL},
+or \trl{SNES_FAS_KASKADE}, The type may be set with
+\begin{tabbing}
+SNESFASSetType(SNES snes,SNESFASType fastype);.
+\end{tabbing}
+\noindent and the cycle type, 1 for V, 2 for W, may be set with
+\begin{tabbing}
+SNESFASSetCycles(SNES snes, PetscInt cycles);.
+\end{tabbing}
+Much like the interface to PCMG described in Section~\ref{sec_mg}, there are
+interfaces to recover the various levels' cycles and smoothers. The level
+smoothers may be accessed with
+\begin{tabbing}
+SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth);\\
+SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth);\\
+SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth);
+\end{tabbing}
+\noindent and the level cycles with
+\begin{tabbing}
+SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes);.
+\end{tabbing}
+Much like PCMG, the restriction and prolongation at a level may be acquired with
+\begin{tabbing}
+SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat);
+SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat);.
+\end{tabbing}
+In addition, FAS requires special restriction for solution-like variables,
+called injection.  This may be set with
+\begin{tabbing}
+SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat);.
+\end{tabbing}
+The coarse solve context may be acquired with
+\begin{tabbing}
+SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
+\end{tabbing}
+
+\subsection{Nonlinear Additive Schwarz}
+
+Nonlinear Additive Schwarz methods (NASM) take a number of local nonlinear
+subproblems, solves them independently in parallel, and combines those solutions
+into a new approximate solution.
+\begin{tabbing}
+SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[]);
+\end{tabbing}
+ allows for the user to create these local subdomains.  Problems set up using the SNES DMDA interface are automatically
+decomposed.  To begin, the type of subdomain updates to the whole solution are limited to two types borrowed from
+PCASM: \trl{PC_ASM_BASIC}, in which the overlapping updates added.  \trl{PC_ASM_RESTRICT} updates in a nonoverlapping
+fashion.  This may be set with
+\begin{tabbing}
+        SNESNASMSetType(SNES snes,PCASMType type);.
+\end{tabbing}
+SNESASPIN is a helper SNES type that sets up a nonlinearly preconditioned Newton's
+method using NASM as the preconditioner.
+
 \section{General Options}
 
 This section discusses options and routines that apply to all SNES
@@ -3816,15 +4052,13 @@ computations.
 \subsection{Convergence Tests}
 \label{sec_snesconvergence}
 
-Convergence of the nonlinear solvers can be detected in a variety of
-ways; the user can even specify a customized test, as discussed
-below. \sindex{convergence tests} The default convergence routines for
-the various nonlinear solvers within SNES are listed in
-Table~\ref{tab_snesdefaults}; see the corresponding manual pages for
-detailed descriptions.  Each of these convergence tests involves
-several parameters, which are set by default to values that should be
-reasonable for a wide range of problems.  The user can customize the
-parameters to the problem at hand by using some of the following
+Convergence of the nonlinear solvers can be detected in a variety of ways; the
+user can even specify a customized test, as discussed below. \sindex{convergence
+tests} Most of the nonlinear solvers use SNESConvergenceTestDefault(), however,
+SNESNEWTONTR uses a method-specific additional convergence test as well.  The
+ convergence tests involves several parameters, which are set by default
+to values that should be reasonable for a wide range of problems.  The user can
+customize the parameters to the problem at hand by using some of the following
 routines and options.
 
 One method of convergence testing is
@@ -3849,7 +4083,7 @@ are \trl{-snes_atol <atol>}, \trl{-snes_rtol <rtol>}, \trl{-snes_stol <stol>},
 A related routine is SNESGetTolerances().
 
 Convergence tests for trust regions methods often use an additional
-parameter that indicates the minimium allowable trust region radius.
+parameter that indicates the minimum allowable trust region radius.
 The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 \findex{-snes_trtol} or with the routine
 \begin{tabbing}
@@ -3903,7 +4137,7 @@ As the Newton method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-snes_monitor}
 option are meaningless. Worse, they are different on different
 machines; due to different round-off rules used by, say, the IBM RS6000
-and the Sun Sparc. This makes testing between different machines
+and the Sun SPARC. This makes testing between different machines
 difficult. The option \trl{-snes_monitor_short} \findex{-snes_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm
 as it gets smaller; thus on most of the machines it will always
@@ -4092,7 +4326,7 @@ or
 \end{tabbing}
 This information is used to eliminate the redundant computation of these parameters,
 therefor reducing the number of collective operations and improving the efficiency of the
-application code.
+         application code.
 
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
@@ -4178,27 +4412,31 @@ A code fragment that demonstrates this process is given below.
 \begin{tabbing}
    ISColoring    iscoloring;\\
    MatFDColoring fdcoloring;\\
-   MatStructure  str;\\
+   MatColoring   coloring;\\
 
    \trl{/*}\\
       This initializes the nonzero structure of the Jacobian. This is artificial\\
       because clearly if we had a routine to compute the Jacobian we wouldn't\\
       need to use finite differences.\\
    \trl{*/}\\
-   FormJacobian(snes,x,\&J,\&J,\&str,\&user);\\
+   FormJacobian(snes,x,\&J,\&J,\&user);\\
 
    \trl{/*}\\
        Color the matrix, i.e. determine groups of columns that share no common \\
-      rows. These columns in the Jacobian can all be computed simulataneously.\\
+      rows. These columns in the Jacobian can all be computed simultaneously.\\
    \trl{*/}\\
-   MatGetColoring(J,MATCOLORINGSL,\&iscoloring);\\
-
+   MatColoringCreate(J,\&coloring);\\
+   MatColoringSetType(coloring,MATCOLORINGSL);\\
+   MatColoringSetFromOptions(coloring);\\
+   MatColoringApply(coloring,\&iscoloring);\\
+   MatColoringDestroy(\&coloring);\\
    \trl{/*}\\
        Create the data structure that SNESComputeJacobianDefaultColor() uses\\
        to compute the actual Jacobians via finite differences.\\
    \trl{*/}\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring);\\
    ISColoringDestroy(\&iscoloring);\\
+   MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,\&user);\\
    MatFDColoringSetFromOptions(fdcoloring);\\
 
    \trl{/*}\\
@@ -4219,24 +4457,24 @@ fairly easily obtain an estimate of the location of nonzeros in
 the matrix. This is harder in the unstructured case, and has not yet
 been implemented in general.
 
-One need not necessarily use the routine MatGetColoring() to
+One need not necessarily use a MatColoring object to
 determine a coloring.  For example, if a grid can be colored directly
 (without using the associated matrix), then that coloring can be provided
 to MatFDColoringCreate().  Note that the user must always
 preset the nonzero structure in the matrix regardless of which
 coloring routine is used.
 
-For sequential matrices PETSc provides three matrix coloring routines from the
-MINPACK package \cite{more84}: smallest-last (\trl{sl}), largest-first (\trl{lf}),
-and incidence-degree (\trl{id}).  These colorings, as well as the ``natural'' coloring
-for which each column has its own unique color, may be accessed with the command line options
+For sequential matrices PETSc provides three matrix coloring routines on from the MINPACK package \cite{more84}:
+smallest-last (\trl{sl}), largest-first (\trl{lf}), and incidence-degree (\trl{id}).  In addition, two implementations
+of parallel colorings are in PETSc, greedy (\trl{greedy}) and Jones-Plassmann (\trl{jp}). These colorings, as well as the
+``natural'' coloring for which each column has its own unique color, may be accessed with the command line options
 \begin{tabbing}
-   -mat\_coloring\_type \trl{<}sl,id,lf,natural\trl{>}
+   -mat\_coloring\_type \trl{<}sl,id,lf,natural,greedy,jp\trl{> }
 \end{tabbing}
-Alternatively, one can set a coloring type of \trl{MATCOLORINGSL}, \trl{
-MATCOLORINGID}, \trl{MATCOLORINGLF}, or \trl{MATCOLORINGNATURAL}
-when calling MatGetColoring(). \findex{-mat_coloring} \findex{MATCOLORINGSL} \findex{MATCOLORINGID}
-\findex{MATCOLORINGLF} \findex{MATCOLORINGNATURAL}
+Alternatively, one can set a coloring type of \trl{MATCOLORINGGREEDY} or \trl{MATCOLORINGJP} for parallel algorithms,
+or \trl{MATCOLORINGSL}, \trl{ MATCOLORINGID}, \trl{MATCOLORINGLF}, \trl{MATCOLORINGNATURAL} for sequential algorithms
+when calling MatColoringSetType(). \findex{-mat_coloring_type} \findex{MATCOLORINGSL} \findex{MATCOLORINGID}
+\findex{MATCOLORINGLF} \findex{MATCOLORINGNATURAL} \findex{MATCOLORINGGREEDY} \findex{MATCOLORINGJP}
 
 As for the matrix-free computation of Jacobians (see Section
 \ref{sec_nlmatrixfree}), two parameters affect the accuracy of the
@@ -4265,10 +4503,11 @@ These parameters may be set from the options database with
 \end{tabbing}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
-Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
-Extensions may be forthcoming.
-However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
-An example of this for 2D distributed arrays is given below that uses the utility routine DMCreateColoring().
+Note that MatColoring type MATCOLORINGSL, MATCOLORINGLF, and MATCOLORINGID are sequential algorithms.  MATCOLORINGJP and
+MATCOLORINGGREEDY are parallel algorithms, although in practice they may create more colors than the sequential
+algorithms.  If one computes the coloring \trl{iscoloring} reasonably with a parallel algorithm or by knowledge of the
+discretization, the routine MatFDColoringCreate() is scalable.  An example of this for 2D distributed arrays is given
+below that uses the utility routine DMCreateColoring().
 
 \begin{tabbing}
    DMCreateColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
@@ -4287,7 +4526,45 @@ Some or all of the lower bounds may be negative infinity (indicated to PETSc wit
 \begin{tabbing}
    SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
 \end{tabbing}
-is \findex{SNESVISetVariableBounds} used to indicate that one is solving a variational inequality. The option \trl{-snes_vi_monitor} \findex{-snes_vi_monitor} turns on extra monitoring of the active set associated with the bounds and \trl{-snes_vi_type} \findex{-snes_vi_type} allows selecting from several VI solvers, the default is prefered.
+is \findex{SNESVISetVariableBounds} used to indicate that one is solving a variational inequality. The option \trl{-snes_vi_monitor} \findex{-snes_vi_monitor} turns on extra monitoring of the active set associated with the bounds and \trl{-snes_vi_type} \findex{-snes_vi_type} allows selecting from several VI solvers, the default is preferred.
+
+\section{Nonlinear Preconditioning}
+
+Nonlinear preconditioning in PETSc involves the use of an inner SNES instance to define the step for an outer SNES
+instance.  The inner instance may be extracted using
+\begin{tabbing}
+SNESGetNPC(SNES snes,SNES *npc);
+\end{tabbing}
+and passed run-time options using the \trl{-npc_}
+prefix. Nonlinear preconditioning comes in two flavors: left and right.  The side may be changed
+using \trl{-snes_npc_side} or SNESSetNPCSide(). Left nonlinear preconditioning redefines the nonlinear function as the action of the
+nonlinear preconditioner $\mathbf{M}$;
+\begin{equation}
+        \F_{M}(x) = \mathbf{M}(\x,\mathbf{b}) - \x.
+\end{equation}
+\noindent Right nonlinear preconditioning redefines the nonlinear function as the function on the action of the
+nonlinear preconditioner;
+\begin{equation}
+        \F(\mathbf{M}(\x,\mathbf{b})) = \mathbf{b},
+\end{equation}
+\noindent  which can be interpreted as putting the preconditioner into ``striking distance'' of the solution by outer acceleration.
+
+In addition, basic patterns of solver composition are available with the SNESType SNESCOMPOSITE.  This allows for two or
+more SNES instances to be combined additively or multiplicatively.  By command line, a set of SNES types may be given by
+comma separated list argument to \trl{-snes_composite_sneses}.  There are additive (\trl{SNES_COMPOSITE_ADDITIVE}),
+additive with optimal damping (\trl{SNES_COMPOSITE_ADDITIVEOPTIMAL}), and multiplicative
+(\trl{SNES_COMPOSITE_MULTIPLICATIVE}) variants which may be set with
+\begin{tabbing}
+SNESCompositeSetType(SNES,SNESCompositeType);
+\end{tabbing}
+New subsolvers may be added to the composite solver with
+\begin{tabbing}
+SNESCompositeAddSNES(SNES,SNESType);
+\end{tabbing}
+and accessed with
+\begin{tabbing}
+SNESCompositeGetSNES(SNES,PetscInt,SNES *);.
+\end{tabbing}
 
 % ---------------------------------------------------------------
 \cleardoublepage
@@ -4318,7 +4595,7 @@ $ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yielding the  semi-discrete equation
 \]
 Now applying the backward Euler method results in
 \[
-        ( B - dt^n A  ) u^{n+1} = A u^n,
+        ( B - dt^n A  ) u^{n+1} = B u^n,
 \]
 in which
 \[
@@ -4354,7 +4631,7 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
   The vector \trl{R} is an optional location to store the residual.
   The arguments to the function \trl{f()} are the
-  timestep contex, current time, input state $u$, input time derivative
+  timestep context, current time, input state $u$, input time derivative
   $\dot{u}$, and the (optional) user-provided context \trl{funP}. If    $F(t,u,\dot{u}) = \dot{u} $ then
   one need not call this function.
 
@@ -4363,41 +4640,52 @@ To solve an ODE or DAE one uses:
     TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *funP);
   \end{tabbing}
 
-\item Jacobian $F_u + (shift)F_{\dot{u}}$ \\
-  If using a fully implicit or semi-implict (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
+\item Jacobian $ (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n) $ \\
+  If using a fully implicit or semi-implicit (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
-  are the timestep contex, current time, input state $u$, input
-  derivative $\dot{u}$, $shift$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
-  This form for Jacobian arises because for all implicit and semi-implicit time integrator in PETSc $\dot{u}^n$ is approximated by $(shift) u^n + g(u^{n-1},...)$
-  where the $shift$ is positive and $ g(u^{n-1},...)$ depends on previous iterations;
-  for example for backward Euler $\dot{u} = (u^n - u^{n-1})/\delta t = u^n/\delta t - u^{n-1}/\delta t.$  Hence
+  are the timestep context, current time, input state $u$, input
+  derivative $\dot{u}$, input $shift$, matrix $A$, preconditioning matrix
+  $B$, and the (optional) user-provided context \trl{jacP}.
+
+  The Jacobian needed for the nonlinear system is, by the chain rule,
 \begin{eqnarray*}
-    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}\frac{\partial \dot{u}}{\partial u} + \frac{\partial F}{\partial u}\\
-                      & = &   (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^t,u^n,\dot{u}^n).
+    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}|_{u^n} \frac{\partial \dot{u}}{\partial u}|_{u^n} + \frac{\partial F}{\partial u}|_{u^n}.
 \end{eqnarray*}
-  For example, again with the backwards Euler method, one obtains
+For any ODE integration method the approximation of $ \dot{u} $ is linear in $ u^n$ hence $ \frac{\partial \dot{u}}{\partial u}|_{u^n} = (shift) $, where shift depends on the
+ODE integrator and time step but not on the function being integrated. Thus
 \begin{eqnarray*}
-    \frac{d F}{d u^n} & = &   u^n/\delta t + F_u(t^t,u^n,\dot{u}^n).
+    \frac{d F}{d u^n} &  = &    (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n).
 \end{eqnarray*}
+This explains why the user provide Jacobian is in the given form for all integration methods. An equivalent way to derive the formula is to note that
+\[
+   F(t^n,u^n,\dot{u}^n) = F(t^n,u^n,w+shift*u^n)
+\]
+where $ w $ is some linear combination of previous time solutions of $u$ so that
+\[
+\frac{d F}{d u^n} = (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n)
+\]
+again by the chain rule.
+
+  For example, consider backward Euler's method applied to the ODE $ F(t, u, \dot{u}) = \dot{u} - f(t, u) $ with $ \dot{u} = (u^n - u^{n-1})/\delta t$ and
+$ \frac{\partial \dot{u}}{\partial u}|_{u^n} = 1/\delta t $ resulting in
+\begin{eqnarray*}
+    \frac{d F}{d u^n} & = &   (1/\delta t)F_{\dot{u}} + F_u(t^n,u^n,\dot{u}^n).
+\end{eqnarray*}
+But $ F_{\dot{u}} = 1 $, in this special case, resulting in the expected Jacobian $ I/\delta t - f_u(t,u^n)$.
 
 \item Jacobian $G_u$ \\
   If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
   \begin{tabbing}
     TS\=SetRHSJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
-  are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
+  are the timestep context, current time, input state $u$, matrix $A$, preconditioning matrix
+  $B$, and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
 Providing appropriate $ F() $ and $G() $ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit method.
@@ -4428,9 +4716,52 @@ Currently supported types are TSEULER, TSRK (Runge-Kutta), \sindex{generalized l
 TSBEULER, TSCN (Crank-Nicolson), TSTHETA, TSGL (generalized linear), TSPSEUDO, and \sindex{Crank-Nicolson} \sindex{Runge-Kutta}
 TSSUNDIALS (only if the Sundials package is installed), \sindex{backward Euler} \sindex{Euler, backward}
 or the command line option \\
-\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials}.
+\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials,eimex,arkimex,rosw}.
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
+
+A list of available methods is given in Table \ref{tab:TSPET}.
+
+%
+\begin{table}
+\caption{Time integration schemes.}
+\centering
+%{   \scriptsize
+%\tiny
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS Name}&{\bf Reference}&{\bf Class}& {\bf Type}&{\bf Order}\\
+\hline
+euler&forward Euler&one-step&explicit&1\\
+\hline
+ssp&multistage SSP \cite{Ketcheson_2008}&Runge-Kutta&explicit&$\le$ 4\\
+\hline
+rk*&multistage&Runge-Kutta&explicit&$\ge$ 1\\
+\hline
+beuler&backward Euler&one-step&implicit&1\\
+\hline
+cn&Crank-Nicolson&one-step&implicit&2\\
+\hline
+theta*&theta-method&one-step&implicit&$\le$2\\
+\hline
+alpha&alpha-method \cite{Jansen_2000}&one-step&implicit&2\\
+\hline
+gl&general linear
+\cite{Butcher_2007}&multistep-multistage&implicit& $\le$ 3\\
+\hline
+eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
+1$, adaptive&\\
+\hline
+arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
+\hline
+rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly implicit&$1-4$\\
+\hline
+\end{tabular}%}
+\label{tab:TSPET} 
+\end{table}
+%
+
+
 
 
 \noindent Set the initial time and timestep with the command
@@ -4475,7 +4806,7 @@ In place of TSSolve(), a single step can be taken using
 TSStep(TS ts);
 \end{tabbing}
 
-\subsection{Using Implicit-Explicit (IMEX) methods for multi-rate problems}
+\subsection{Using Implicit-Explicit (IMEX) methods for stiff problems}
 \label{sec_imex}
 For problems with multiple time scales
 $F()$ will be treated implicitly using a method suitable for stiff problems and $G()$ will be treated explicitly when using an IMEX method like TSARKIMEX.
@@ -4486,6 +4817,165 @@ The user provides three pieces of information, the APIs for which have been desc
 \item ``Stiff'' part $F(t,u,\dot u)$ using TSSetIFunction().
 \item Jacobian $F_u + (shift) F_{\dot u}$ using TSSetIJacobian().
 \end{itemize}
+
+The user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher if the problem is implicit; e.g.,
+$F(t,u,\dot u) = M \dot u - f(t,u)$, where M is not the identity matrix: 
+\begin{itemize}
+\item the problem is an implicit ODE (defined implicitly through TSSetIFunction())
+or
+\item a DAE is being solved.
+\end{itemize}
+An IMEX problem representation can be made
+implicit by setting TSARKIMEXSetFullyImplicit().
+
+Some use-case examples for TSARKIMEX are listed in Table \ref{tab:DE:forms} and a
+list of methods with a summary of their properties is given in
+Table \ref{tab:IMEX:RK:PETSc}. 
+
+%
+\begin{table}
+\centering
+\caption{\label{tab:DE:forms}In PETSc the DAEs and ODEs are formulated
+as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
+implicitly and $G()$ explicitly. An IMEX formulation such as
+$M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
+solve  $g(t,y) - M x=0$ in place of $g(t,u)$. General cases such as
+$f(t,y,\dot{y})=g(t,y)$ are 
+not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
+%
+\begin{tabular}{|l|c|p{3in}|}
+\hline
+$\dot{y}=g(t,y)$ & nonstiff ODE & $f(t,y,\dot{y}) = \dot{y}$,
+$G(t,y)=g(t,y)$\\
+\hline
+$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+\hline
+$M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+\hline
+$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$,
+$G(t,y)=g(t,y)$\\
+\hline
+$M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
+$G(t,y)=M^{-1}g(t,y)$\\
+\hline
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $f(t,y,\dot{y}) = f(t,y,\dot{y})$,
+$F(t,y)=0$; the user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher\\
+\hline
+\end{tabular}
+\end{table}
+%
+
+%
+\begin{table}
+\centering
+\caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
+IMEX Runge-Kutta schemes.  For each method we listed the reference, the
+  total number 
+  of stages/implicit stages, the order/stage-order,
+  the implicit stability properties, stiff accuracy (SA), the
+  existence of an embedded scheme, and dense output.} 
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+{\bf Name} &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+\hline
+a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
+\hline
+l2&SSP2(2,2,2)\cite{Pareschi_2005}
+&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
+\hline
+ars122&ARS122,
+\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
+\hline
+2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+prssp2&PRS(3,3,2)
+\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
+\hline
+3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
+\hline
+bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
+\hline
+ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
+\hline
+4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
+\hline
+5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
+\hline
+\end{tabular}
+\end{table}
+%
+
+ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
+W-methods. They can accommodate inexact Jacobian matrices in their
+formulation. A series of methods are available in PETSc listed in
+Table \ref{tab:IMEX:RosW:PETSc}.
+
+%
+\begin{table}
+\centering
+
+\caption{\label{tab:IMEX:RosW:PETSc}List
+of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
+  of stages and implicit stages, the scheme order and stage-order,
+  the implicit stability properties, stiff accuracy (SA), the
+  existence of an embedded scheme, dense output, the capacity to use
+  inexact Jacobian matrices (-W), and high order integration of differential
+  algebraic equations (PDAE).} 
+{\scriptsize
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
+Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
+\hline
+theta1& classical&
+1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
+\hline
+theta2& classical&
+1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
+\hline
+2m             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+\hline
+2p             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+\hline
+ra3pw          &\cite{Rang_2005}&
+3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
+\hline
+ra34pw2        &\cite{Rang_2005}&
+4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
+\hline
+rodas3         &\cite{Sandu_1997}&
+4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
+\hline
+sandu3         &\cite{Sandu_1997}&
+3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
+\hline
+assp3p3s1c &unpublished&
+3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
+\hline
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+\hline
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+\hline
+ark3       &unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
+\hline
+\end{tabular}}
+\end{table}
+%
+
 
 \subsection{Using fully implicit methods}
 Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a DM that provides a coloring so the Jacobian can be computed efficiently via finite differences.
@@ -4504,33 +4994,15 @@ $ \dot{u} + \tilde{F}(t,u) $) but
 the Jacobians need not be provided.\footnote{PETSc will automatically translate the function provided to the appropriate form.}
 
 The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
-implementation of standard Runge-Kutta using Dormand-Prince \sindex{Dorman-Prince}
-5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
-``TSSetInitialTimeStep()'' function is not used.
-
-Setting the tolerance with
-\begin{tabbing}
-TSRKSetTolerance(TS ts,double tolerance)
-\end{tabbing}
-or \trl{-ts_rk_tol} \findex{-ts_rk_tol}
-defines the global tolerance, for the whole time
-period. The tolerance for each timestep is calculated relatively to
-the size of the timestep.
-
-The error in each timestep is calculated using the two solutions given
-from Dormand-Prince 5(4). The local error is calculated from the
-2-norm from the difference of the two solutions.
-
-Other timestep features:
-\begin{itemize}
-  \item The next timestep can be maximum 5 times the present timestep
-  \item The smallest timestep can be 1e-14 (to avoid machine precision
-  errors)
-\end{itemize}
-
-More details about the solver and code examples can be found at
-\trl{http://www.parallab.uib.no/projects/molecul/matrix/}.
-
+implementation of the standard Runge-Kutta with an embedded method. The error in each
+timestep is calculated using the solutions from the Runge-Kutta method and its embedded
+method (the 2-norm of the difference is used). The default method is the \sindex{Bogacki-Shampine}
+$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS).
+Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded
+method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method
+(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded
+method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme,
+TSRK3 - $3$rd-order, $3$-stage RK scheme, TSRK4 - $4$-th order, $4$-stage RK scheme).
 
 \subsection{Special Cases}
 
@@ -4570,7 +5042,7 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \item  -ts\_monitor - prints the time and timestep at each iteration.
 \item  -ts\_adapt\_monitor - prints information about the timestep adaption calculation at each iteration.
 \item  -ts\_monitor\_lg\_timestep - plots the size of each timestep, TSMonitorLGTimeStep().
-\item  -ts\_monitor\_lg\_solution - for ODEs with only a few components (not arising from the descretization of a PDE) plots the solution as a function of time, TSMonitorLGSolution().
+\item  -ts\_monitor\_lg\_solution - for ODEs with only a few components (not arising from the discretization of a PDE) plots the solution as a function of time, TSMonitorLGSolution().
 \item  -ts\_monitor\_lg\_error - for ODEs with only a few components plots the error as a function of time, only if TSSetSolutionFunction() is provided, TSMonitorLGError().
 \item  -ts\_monitor\_draw\_solution - plots the solution at each iteration, TSMonitorDrawSolution().
 \item  -ts\_monitor\_draw\_error - plots the error at each iteration only if TSSetSolutionFunction() is provided, TSMonitorDrawSolution().
@@ -4579,6 +5051,31 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \end{itemize}
 
 \subsection{Error control via variable time-stepping}
+
+\subsection{Handling of discontinuities}
+
+For problems that involve discontinuous right hand sides, one can set an ``event'' function 
+$ g(t,u) $ for PETSc to detect and locate the times of discontinuities (zeros of $g(t,u)$). Events can be defined through the
+event monitoring routine
+\begin{tabbing}
+     TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
+     ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
+     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
+\end{tabbing}
+Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for 
+an event (+1 for positive zero-crossing, -1 for negative zero-crossing, and 0 for both), \trl{terminate} conveys whether 
+the time-stepping should continue or halt when an event is located, \trl{eventmonitor} is a user-
+defined routine that specifies the event description, \trl{postevent} is an optional user-defined routine to take
+specific actions following an event.
+
+The arguments to \trl{eventmonitor()} are the timestep context, current time, input state $u$, array of event function
+value, and the (optional) user-provided context \trl{eventP}. 
+
+The arguments to \trl{posteventmonitor()} routine are
+the timestep context, number of events occured, indices of events occured, current time, input state $u$, a boolean flag indicating forward solve (1) or adjoint solve (0), and the (optional)
+user-provided context \trl{eventP}. 
+
+The event monitoring functionality is only available with PETSc's implicit time-stepping solvers TSTHETA, TSARKIMEX, and TSROSW.
 
 \subsection{Debugging ODE solvers}
 
@@ -4643,8 +5140,142 @@ sets the number of vectors in the Krylov subpspace used by GMRES.
 This may be set in the options
 database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
+% ---------------------------------------------------------------
+\cleardoublepage
+\chapter{Performing sensitivity analysis in PETSc}
+\label{chapter_sa}
+The TS library provides a framework based on discrete adjoint models
+for sensitivity analysis for ODEs and DAEs.  The ODE/DAE solution
+process (henceforth called the forward run) can be obtained by using
+either explicit or implicit solvers in TS, depending on the problem
+properties. Currently supported method types are TSRK (Runge-Kutta) explicit
+methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
 
-\chapter{Solving Steady-State Problems with Pseudo-Timestepping}
+Consider the ODE/DAE
+\[
+    F(t,y,\dot{y},p) = 0, \quad y(t_0)=y_0(p) \quad t_0 \le t \le t_F
+\]
+and the cost function(s)
+\[
+   \Psi_i(y_0,p) = \Phi_i(y_F,p) + \int_{t_0}^{t_F} r_i(y(t),p,t)dt \quad i=1,...,numcost.
+\]
+The TSAdjoint routines of PETSc provide
+\[
+ \frac{\partial \Psi_i}{\partial y_0} = \lambda_i
+\]
+and
+\[
+ \frac{\partial \Psi_i}{\partial p} = \mu_i + \lambda_i (\frac{\partial y_0}{\partial p}).
+\]
+
+To perform the discrete adjoint sensitivity analysis one first sets up the TS object for a regular forward run but with one extra function call
+\begin{tabbing}
+TSSetSaveTrajectory(TS ts),
+\end{tabbing}
+then calls TSSolve() in the usual manner.
+
+One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
+\begin{tabbing}
+TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
+\end{tabbing}
+
+If $F()$ is a function of $p$ one needs to also provide the Jacobian $F_p$ with 
+\begin{tabbing}
+TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+\end{tabbing}
+The arguments for the function \trl{fp()} 
+are the timestep context, current time, $y$, and the (optional) user-provided context. 
+
+If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
+\begin{tabbing}
+TSSetCostIntegrand(\=TS ts,PetscInt numcost,\\
+                          \>PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),\\
+                          \>PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
+                          \>PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+\end{tabbing}
+where $\mathrm{drdyf}= dr /dy$, $\mathrm{drdpf} = dr /dp$. 
+
+Lastly one starts the backward run by calling
+\begin{tabbing}
+TSAdjointSolve(TS ts).
+\end{tabbing}
+
+One can get the value of the integral term by calling 
+\begin{tabbing}
+TSGetCostIntegral(TS ts,Vec *q). 
+\end{tabbing}
+If TSSetCostGradients() and TSSetCostIntegrand() are called before TSSolve(), the integral term will be evaluated in the forward run. 
+Otherwise, the computation will take place in the backward run (inside TSAdjointSolve()). 
+Note that this allows the evaluation of the integral term in the cost function without having to run the adjoint solvers.  
+
+To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}.
+The problem is to study dynamic security of power system when there are credible contingencies such as short-circuits or loss of generators, transmission lines, or loads. 
+The dynamic security constraints are incorporated as equality constraints in the form of discretized differential equations and inequality constraints for bounds on the trajectory. 
+The governing ODE system is
+\begin{eqnarray*}
+    \phi' &= &\omega_B (\omega - \omega_S)  \\
+    2H/\omega_S \, \omega' & =& p_m - p_{max} sin(\phi) -D (\omega - \omega_S), \quad t_0 \leq t \leq t_F,  
+\end{eqnarray*}
+where $\phi$ is the phase angle and $\omega$ is the frequency. 
+
+The initial conditions at time $t_0$ are 
+%
+\begin{eqnarray*}
+\phi(t_0) &=& \arcsin \left( p_m / p_{max} \right), \\
+w(t_0) & =& 1.
+\end{eqnarray*}
+%
+$p_{max}$ is a positive number when the system operates normally. At an event such as fault incidence/removal, $p_{max}$ will change to $0$ temporarily and back to the original value after the fault is fixed. 
+The objective is to maximize $p_m$ subject to the above ODE constraints and $\phi<\phi_S$ during all times. 
+To accommodate the inequality constraint, we want to compute the sensitivity of the cost function
+%
+\[
+\Psi(p_m,\phi) = -p_m + c \int_{t_0}^{t_F} \left( \max(0, \phi - \phi_S ) \right)^2 dt
+\]
+%
+with respect to the parameter $p_m$. $numcost$ is $1$ since it is a scalar function. 
+
+For ODE solution, PETSc requires user-provided functions to evaluate the system $F(t,y,\dot{y},p)$ (set by TSSetIFunction() )
+and its corresponding Jacobian $F_y + (shift) F_{\dot y}$ (set by TSSetIJacobian()).  
+Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here. 
+For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using TSAdjointSetRHSJacobian(),
+and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using TSSetCostIntegrand(). 
+
+In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$. 
+After TSAdjointSolve(), the sensitivity of the cost function w.r.t. to initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly. 
+And the sensitivity of the cost function w.r.t. to the parameter $p_m$ can be computed (by users) as 
+%
+\[
+\frac{\mathrm{d} \Psi}{\mathrm{d} p_m} = \mu(t_0) + \lambda(t_0)  \frac{\mathrm{d} \left[ \phi(t_0) \; \omega(t_0) \right]^T}{\mathrm{d} p_m}  .
+\]
+
+For explicit methods where one does not need to provide the the
+Jacobian $F_u$ for the forward solve one still does need it for the
+backward solve and thus must call
+\begin{tabbing}
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
+                  \>        void*),void *fP);
+\end{tabbing}
+
+
+Examples
+include:
+\begin{itemize}
+\item a discrete adjoint sensitivity using explicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16adj.c},
+\item a discrete adjoint sensitivity using implicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c},
+\item an optimization using the discrete adjoint models of ERK
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for stiff DAEs
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}.
+\end{itemize}
+\vspace{.2cm}
+
+ \chapter{Solving Steady-State Problems with Pseudo-Timestepping}
 
 \vspace{.2cm}
 
@@ -4696,8 +5327,8 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{G(u)} and a
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
-                  \>        MatStructure*,void*),void *fP);
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
+                  \>        void*),void *fP);
 \end{tabbing}
 The  arguments for the function \trl{f()} are
 the timestep context, the current time, the location where the
@@ -4761,7 +5392,7 @@ This chapter needs to be written.
 \chapter{Using ADIFOR with PETSc}
 
 Automatic differentiation is an incredible technique to generate code
-that computes Jacobians and other differentives directly from code
+that computes Jacobians and other derivatives directly from code
 that only evaluates the function.
 
 First one indicates the functions for which one needs Jacobians by adding
@@ -4852,7 +5483,7 @@ One creates a viewer to MATLAB via
 \begin{tabbing}
 PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
 \end{tabbing}
-(port is usally set to \trl{PETSC_DEFAULT}, use PETSC\_NULL for the machine if the
+(port is usually set to \trl{PETSC_DEFAULT}, use PETSC\_NULL for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{tabbing}
@@ -4863,7 +5494,7 @@ One can also send arrays or integer arrays via PetscIntView(), PetscRealView() a
 One may start the MATLAB program manually or use the PETSc command
 PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be PETSC\_NULL.
 
-To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
+To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
 is in your MATLAB path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
 your call to PetscViewerSocketOpen()), then \trl{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
 PetscBinaryRead() may be called any number of times. Each call should correspond on the PETSc side with
@@ -4922,10 +5553,12 @@ with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
 \section{Using PETSc objects directly in MATLAB}
 
+This code is not currently supported due to lack of interest and usage. If you really want to use this and are interested in maintaining it please contact us.
+
 PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
 You can build with or without MPI, but cannot run on more than one process
-There is currently no MPI in the API, the MPI_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
-Add \trl{${PETSC_DIR}/bin/matlab/classes} to your MATLAB path.
+There is currently no MPI in the API, the MPI\_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
+Add \trl{${PETSC_DIR}/share/petsc/matlab/classes} to your MATLAB path.
 
 In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
 
@@ -4970,10 +5603,10 @@ Section \ref{sec_fortran_exceptions}.
 \label{sec_fortran_includes}
 
 The Fortran include files for PETSc are located in the directory
-\trl{${PETSC_DIR}/include/finclude} and should be used via statements
+\trl{${PETSC_DIR}/include/petsc/finclude} and should be used via statements
 such as the following:
 \begin{tabbing}
-    \#include "finclude/includefile.h"
+    \#include "petsc/finclude/includefile.h"
 \end{tabbing}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
@@ -4987,7 +5620,7 @@ each} of the include files. One must employ
 the Fortran file suffix \trl{.F}
 rather than \trl{.f}.  This convention enables use of the CPP
 preprocessor, which allows the use of the {\em \#include} statements
-that define PETSc objects and variables. (Familarity with the CPP
+that define PETSc objects and variables. (Familiarity with the CPP
 preprocessor is not needed for writing PETSc Fortran code; one can simply
 begin by copying a PETSc Fortran example and its corresponding
 makefile.)
@@ -4995,8 +5628,8 @@ makefile.)
 For some of the Fortran 90 functionality of PETSc and type checking
 of PETSc function calls you can use
 \begin{tabbing}
-    \#include "finclude/includefile.h
-    \#include "finclude/includefile.h90"
+    \#include "petsc/finclude/includefile.h
+    \#include "petsc/finclude/includefile.h90"
 \end{tabbing}
 See the manual page UsingFortran for how you can use PETSc Fortran
 module files in your code.
@@ -5044,7 +5677,7 @@ final \trl{ierr} argument.
 Since Fortran 77 does not allow arrays to be returned in routine
 arguments, all PETSc routines that return arrays, such as
 VecGetArray(), MatDenseGetArray(),
-ISGetIndices(), and DMDAGetGlobalIndices()
+and ISGetIndices(), 
 are defined slightly differently in Fortran than in C.
 Instead of returning the array itself, these routines
 accept as input a user-specified array of dimension one and return an
@@ -5063,7 +5696,6 @@ The Fortran interface for several routines is as follows:
    call VecGetArray(x,xx\_v,xx\_i,ierr)\\
    call MatDenseGetArray(A,aa\_v,aa\_i,ierr)\\
    call ISGetIndices(s,ss\_v,ss\_i,ierr)\\
-   call DMDAGetGlobalIndices(d,nloc,dd\_v,dd\_i,ierr)
 \end{tabbing}
 
 To access array elements directly, both the user-specified array and
@@ -5095,8 +5727,7 @@ indexing begins with 1, not 0 (unless the array is declared as \trl{xx_v(0:1)}).
 This is different from the use of VecSetValues()
 where, indexing always starts with 0.
 
-{\em Note}: If using VecGetArray(), MatDenseGetArray(), ISGetIndices(),
-or DMDAGetGlobalIndices()
+{\em Note}: If using VecGetArray(), MatDenseGetArray(), or ISGetIndices(),
 from Fortran, the user {\em must not} compile the Fortran code with options
 to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
 is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
@@ -5216,7 +5847,7 @@ manual pages and previous discussion in this chapter for details:
  PetscInitialize(char *filename,int \trl{ierr)}\\
  PetscError(MPI\_COMM,int err,char *message,int \trl{ierr)}\\
  VecGetArray(), MatDenseGetArray()\\
- ISGetIndices(), DMDAGetGlobalIndices()\\
+ ISGetIndices(), \\
  VecDuplicateVecs(), VecDestroyVecs()\\
  PetscOptionsGetString()
 \end{tabbing}
@@ -5239,7 +5870,7 @@ Current routines include:
 \begin{tabbing}
  VecGetArrayF90(), VecRestoreArrayF90()\\
  VecDuplicateVecsF90(), VecDestroyVecsF90()\\
- DMDAVecGetArrayF90(), DMDAGetGlobalIndicesF90()\\
+ DMDAVecGetArrayF90(), ISLocalToGlobalMappingGetIndicesF90()\\
  MatDenseGetArrayF90(), MatDenseRestoreArrayF90()\\
  ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{tabbing}
@@ -5248,7 +5879,7 @@ use the routines VecGetArrayF90(), VecRestoreArrayF90()
 VecDuplicateVecsF90(), and VecDestroyVecsF90(), one must
 use the Fortran90 vector include file,
 \begin{tabbing}
-    \#include "finclude/petscvec.h90"
+    \#include "petsc/finclude/petscvec.h90"
 \end{tabbing}
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
@@ -5346,7 +5977,7 @@ activated at runtime.  The profiling options include the following:
      without running in the debugger.
 \end{itemize}
  As discussed in Section~\ref{sec_mpelogs},
-additional profilng can be done with MPE.
+additional profiling can be done with MPE.
 
 \subsection{Interpreting {\tt -log\_summary} Output: The Basics}
 \label{sec_ploginfo}
@@ -5619,7 +6250,7 @@ suggestions about achieving good performance with PETSc codes.
 \label{sec_mpelogs}
 
 It is also possible to use the {\em Jumpshot}) package
-\cite{upshot} \sindex{Jumppshot} to visualize PETSc events.
+\cite{upshot} \sindex{Jumpshot} to visualize PETSc events.
 This package comes with the MPE software, which is part of the MPICH
 \cite{mpich-web-page} implementation of MPI.
 The option \findex{-log_mpe}
@@ -5671,7 +6302,7 @@ The basic steps involved in logging a
 user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{tabbing}
-    \#include "petsclog.h"\\
+    \#include <petsclog.h>\\
     int USER\_EVENT;\\
     PetscLogEventRegister("User event name",0,\&USER\_EVENT);\\
     PetscLogEventBegin(USER\_EVENT,0,0,0,0);\\
@@ -5722,7 +6353,7 @@ entire program.
 By default, the profiling produces a single set of statistics for all
 code between the PetscInitialize() and PetscFinalize()
 calls within a program.  One can independently monitor up to ten
-stages of code by switching among the various stages with the comands
+stages of code by switching among the various stages with the commands
 \begin{tabbing}
    PetscLogStagePush(PetscLogStage stage);\\
    PetscLogStagePop();
@@ -5887,11 +6518,11 @@ standard \trl{printf()} and \trl{fprintf()} statements.
 One factor that often plays a significant role in profiling a code is
 paging by the operating system.  Generally, when running a program
 only a few pages required to start it are loaded into memory rather
-than the entire executable.  When the execution procedes to code
+than the entire executable.  When the execution proceeds to code
 segments that are not in memory, a pagefault occurs, prompting the
 required pages to be loaded from the disk (a very slow process).  This
 activity distorts the results significantly. (The paging effects are
-noticeable in the the log files generated by \trl{-log_mpe}, which is
+noticeable in the log files generated by \trl{-log_mpe}, which is
 described in Section~\ref{sec_mpelogs}.)
 
 To eliminate the effects of paging when profiling the performance of a
@@ -5899,7 +6530,7 @@ program, we have found an effective procedure is to run the {\bf exact same
 code} on a small dummy problem before running it on the actual problem
 of interest. We thus ensure that all code required by a solver is
 loaded into memory during solution of the small problem.  When the
-code procedes to the actual (larger) problem of interest, all required
+code proceeds to the actual (larger) problem of interest, all required
 pages have already been loaded into main memory, so that the
 performance numbers are not distorted.
 
@@ -6103,7 +6734,7 @@ We briefly describe these below.
 \item The PETSc memory allocation (which collects statistics and
 performs error checking), is employed by default for codes compiled in
 a debug-mode (configured with \trl{--with-debugging=1}).  PETSc memory
-allocation can be activated for optimixed-mode (configured with
+allocation can be activated for optimized-mode (configured with
 \trl{--with-debugging=0}) using the option \trl{-malloc}. The option
 \trl{-malloc=0} forces the use of conventional memory allocation when
 debugging is enabled.  When running timing tests, one should build
@@ -6169,7 +6800,7 @@ overcoming them.
       even calling the system clock in order to time routines is
       slow; this skews all of the flop rates and timing results. The file
       \trl{${PETSC_DIR}/src/benchmarks/PetscTime.c} contains a
-      simple test problem that will approximate the ammount of time
+      simple test problem that will approximate the amount of time
       required to get the current time in a running program. On good
       systems it will on the order of 1.e-6 seconds or less.
 \item {\bf Problem too large for good cache performance}: Certain machines
@@ -6244,7 +6875,7 @@ The remainder of this section discusses details of runtime options.
 
 Each PETSc process maintains a database of option names and values
 (stored as text strings). This database is generated with the command
-PETScInitialize(), which is listed below in its C/C++ and
+PetscInitialize(), which is listed below in its C/C++ and
 Fortran variants, respectively:
 \begin{tabbing}
   PetscInitialize(int *argc,char ***args,const char *file,const char *help);\\
@@ -6291,8 +6922,7 @@ For example,
    alias -kspt -ksp\_type\\
    alias -sd -start\_in\_debugger
 \end{tabbing}
-Comments can be placed in the .petscrc file by using one of the
-following symbols in the first column of a line: \trl{#, %}, or \trl{!}.
+Comments can be placed in the .petscrc file by using \trl{#} in the first column of a line.
 
 \subsection{User-Defined PetscOptions}
 
@@ -6526,7 +7156,7 @@ command
 The default handler PetscSignalHandlerDefault()
 calls
 PetscError() and then terminates. In general, a signal in PETSc
-indicates a catastrophic failure.  Any error hander that the user provides
+indicates a catastrophic failure.  Any error handler that the user provides
 should try to clean up only before exiting.  By default all PETSc programs
 use the default signal handler, although the user can turn this off
 at runtime with the
@@ -6561,7 +7191,7 @@ possibly user-defined routines as well) with
 \end{tabbing}
 Likewise, all memory allocations should be checked with
 \begin{tabbing}
-  ierr = PetscMalloc(n*sizeof(double),\&ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,\&ptr);CHKERRQ(ierr);
 \end{tabbing}
 If this procedure is followed throughout all of the user's libraries
 and codes, any error will by default generate a clean traceback of
@@ -6769,8 +7399,8 @@ m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread,
 
 To make PETSc an Eclipse package
 \begin{itemize}
-\item Install the Mecurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item elected New->Convert to C/C++ project and selected shared library. After this point you can perform searchs in the code.
+\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
+\item elected New->Convert to C/C++ project and selected shared library. After this point you can perform searches in the code.
 \end{itemize}
 
   A PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code without compiling PETSc source into their project.
@@ -6789,7 +7419,7 @@ To make PETSc an Eclipse package
 \item Qt Creator supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems. What this means, is that, starting from a handful set of options, Qt Creator is able to generate makefiles that are used to compile and run your application package on Linux, Windows and Mac systems.
 \item Qt Creator makes the task of linking PETSc library to your application package easy.
 \item Qt Creator has visual debugger and supports both GNU's GDB and Microsoft's CDB (on Windows).
-\item Qt Creator (as of version 2.3) has interface to memory profiling softwares such as valgrind.
+\item Qt Creator (as of version 2.3) has interface to memory profiling software such as valgrind.
 \item Qt Creator has built-in auto-completion and function look-up. This feature of editor, makes it possible for the user to easily browse inside huge packages like PETSc and easily find relevant functions and objects.
 \item Qt Creator has inline error/warning messages. This feature of the editor greatly reduces programming bugs by informing the user of potential error/warning as the code is being written and even before the compile step.
 \item Qt Creator is an excellent environment for doing GUI programming using Qt framework. This means you can easily generate a nice GUI for you application package as well!
@@ -6828,11 +7458,11 @@ SOURCES += \
 	$$APP_DIR/src/main.cpp
 HEADERS += \
 	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h 	
+	$$APP_DIR/src/source2.h
 OTHER_FILES += \
 	$$APP_DIR/src/some_file.cpp \
 	$$APP_DIR/dir/another_file.xyz
-	
+
 \end{lstlisting}
 
 In this example, there are different keywords used. These include:
@@ -6857,9 +7487,9 @@ To use PETSc from MS Visual Studio - one would have to compile a PETSc example w
 
 \subsection{Mac OSX}
 
-Follow the instructions in systems/Apple/OSX/bin/makeframework to build the PETSc framework.
+Follow the instructions in systems/Apple/OSX/bin/makeall to build the PETSc framework and documentation suitable for use in Xcode.
 
-You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple framworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
+You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple frameworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
 
 \subsection{iPhone/iPad iOS}
 
@@ -6977,17 +7607,19 @@ to pause \trl{n} seconds at each PetscDrawPause(). A time of \trl{-1}
 indicates that the application should pause until receiving mouse
 input from the user.
 
-Text can be drawn with either of the two
+Text can be drawn with 
 commands \sindex{text, drawing}
 \begin{tabbing}
-  PetscDrawString(PetscDraw win,double x,double y,int color,char *text);\\
-  PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
+  PetscDrawString(PetscDraw win,PetscReal x,PetscReal y,int color,char *text);\\
+  PetscDrawStringVertical(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
+  PetscDrawStringCentered(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
+  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h);
 \end{tabbing}
 The user can set the text font size or determine it with the
 commands
 \begin{tabbing}
-  PetscDrawStringSetSize(PetscDraw win,double width,double height);\\
-  PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
+  PetscDrawStringSetSize(PetscDraw win,PetscReal width,PetscReal height);\\
+  PetscDrawStringGetSize(PetscDraw win,PetscReal *width,PetscReal *height);
 \end{tabbing}
 
 \subsection{Line Graphs}
@@ -7004,13 +7636,13 @@ The argument \trl{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the
 command
 \begin{tabbing}
-  PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
+  PetscDrawLGAddPoint(PetscDrawLG ctx,PetscReal *x,PetscReal *y);
 \end{tabbing}
 The arguments \trl{x} and \trl{y} are arrays containing the next
 point value for each curve.
 Several points for each curve may be added with
 \begin{tabbing}
-  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
+  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,PetscReal **x,PetscReal **y);
 \end{tabbing}
 
 The line graph is drawn (or redrawn) with the command
@@ -7031,7 +7663,7 @@ The line graph automatically determines the range of values to
 display on the two axes.  The user can change these defaults with the
 command
 \begin{tabbing}
-  PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
+  PetscDrawLGSetLimits(PetscDrawLG ctx,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax);
 \end{tabbing}
 
 It is also possible to change the display of the axes and to label
@@ -7175,11 +7807,11 @@ ${PETSC_DIR}/${PETSC_ARCH}/conf}, discussed in Section
 Maintaining portable PETSc makefiles is very simple.
 
 The first is a ``minimum'' makefile for maintaining
-a single program that uses the PETSc libraires.
+a single program that uses the PETSc libraries.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include  \$\trl{{PETSC_DIR}/conf/variables}
-   include \$\trl{{PETSC_DIR}/conf/rules}
+   include  \$\trl{{PETSC_DIR}/lib/petsc/conf/variables}
+   include \$\trl{{PETSC_DIR}/lib/petsc/conf/rules}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -7200,8 +7832,8 @@ within the makefile.
    FPPFLAGS   =
    CLEANFILES = ex2
 
-   include ${PETSC_DIR}/conf/variables
-   include ${PETSC_DIR}/conf/rules
+   include ${PETSC_DIR}/lib/petsc/conf/variables
+   include ${PETSC_DIR}/lib/petsc/conf/rules
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -7223,7 +7855,7 @@ include variables instead of base. That is, use something like
    CFLAGS   = ${PETSC_CC_INCLUDES}
    FFLAGS   = ${PETSC_FC_INCLUDES}
 
-   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/lib/petsc/conf/variables
 
    ex2: ex2.o
            mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
@@ -7233,7 +7865,7 @@ include variables instead of base. That is, use something like
 \label{fig_make1var}
 \end{figure}
 The variables \trl{${PETSC_CC_INCLUDES}}, \trl{${PETSC_FC_INCLUDES}}
-and \trl{${PETSC_LIB}} are defined by the included conf/variables file.
+and \trl{${PETSC_LIB}} are defined by the included petsc/conf/variables file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
 you can use the commands (run in the PETSc root directory) to get the information
@@ -7266,8 +7898,8 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/conf/variables
-   include ${PETSC_DIR}/conf/rules
+   include ${PETSC_DIR}/lib/petsc/conf/variables
+   include ${PETSC_DIR}/lib/petsc/conf/rules
 
    ex1: ex1.o
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -7300,7 +7932,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/conf/test
+   include ${PETSC_DIR}/lib/petsc/conf/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -7315,7 +7947,7 @@ as follows:
 \item \trl{CFLAGS, FFLAGS} User specified additional options for the C compiler and
         fortran compiler.
 \item \trl{CPPFLAGS, FPPFLAGS} User specified additional flags for the C preprocessor
-        and fortran preprocesor.
+        and fortran preprocessor.
 \item \trl{CLINKER, FLINKER} the C and Fortran linkers.
 \item \trl{RM} the remove command for deleting files.
 \end{itemize}
@@ -7350,8 +7982,8 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \${PETSC\_DIR}/conf/variables
-   include \${PETSC\_DIR}/conf/rules
+   include \${PETSC\_DIR}/lib/petsc/conf/variables
+   include \${PETSC\_DIR}/lib/petsc/conf/rules
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
@@ -7569,7 +8201,7 @@ Before using the Krylov context, one must set the matrix-vector multiplication r
 the preconditioner with the
 commands
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat);\\
   KSPSetPC(KSP ksp,PC pc);
 \end{tabbing}
 In addition, the KSP solver must be initialized with
@@ -7628,13 +8260,13 @@ The routine
 sets the preconditioner method to be used.
 The routine
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat);\\
 \end{tabbing}
 set the matrices that are to be used with
 the preconditioner.
 The routine
 \begin{tabbing}
-  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag);
+  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat);
 \end{tabbing}
 returns the values set with PCSetOperators().
 
@@ -7646,7 +8278,7 @@ and are given, respectively, by
   PCApplyTranspose(PC pc,Vec x,Vec y);
 \end{tabbing}
 In particular, for a preconditioner matrix, \trl{B}, that has
-been set via PCSetOperators(pc,Amat,Pmat,flag),
+been set via PCSetOperators(pc,Amat,Pmat),
 the routine PCApply(pc,x,y) computes $y = B^{-1} x$
 by solving the linear system $By = x$ with the specified preconditioner
 method.
@@ -7680,8 +8312,8 @@ command
 
 This chapter introduces the DMPlex subclass of DM, which allows the user to handle unstructured grids using the generic
 DM interface for hierarchy and multi-physics. DMPlex was created to remedy a huge problem in all current PDE
-simulation codes, namely that the discretization was so closely tied to the data layout and solver that switiching
-discretizations in the same code was not possible. Not only does this preclude the kind of comparsion that is necessary
+simulation codes, namely that the discretization was so closely tied to the data layout and solver that switching
+discretizations in the same code was not possible. Not only does this preclude the kind of comparison that is necessary
 for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
 
 \medskip \medskip
@@ -7770,7 +8402,7 @@ which can also be represented as the DAG
 \caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
 \label{fig:doubletSieve}
 \end{figure}
-To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to numbers first cells,
+To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to number first cells,
 then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
 points present in a mesh,
 \begin{tabbing}
@@ -7819,7 +8451,7 @@ The strongest links between solvers and discretizations are,
   \item ordering of unknowns.
 \end{itemize}
 To enable modularity, we encode the operations above in simple data structures that can be understood by the linear
-algebra engine in PETSc without any reference to the mesh (toplology) or discretization (analysis).
+algebra engine in PETSc without any reference to the mesh (topology) or discretization (analysis).
 
 \subsection{Data Layout}
 
@@ -7827,7 +8459,7 @@ Data is associated to a mesh using the PetscSection object. A PetscSection can b
 PetscLayout, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
 algebra. With PetscLayout, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
 between processes. Using PetscSection, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
-though our points must be contiguous liek PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
+though our points must be contiguous like PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
 
 The sequence for setting up any PetscSection is the following:
 \begin{enumerate}
@@ -7856,14 +8488,14 @@ element method,
 Now a PETSc local vector can be created manually using this layout,
 \begin{tabbing}
   PetscSectionGetStorageSize(s, \&n);\\
-  VecSetSizes(localVec, n, PETSC_DETERMINE);\\
+  VecSetSizes(localVec, n, PETSC\_DETERMINE);\\
   VecSetFromOptions(localVec);
 \end{tabbing}
 however it is usually easier to use the DM directly, which also provides global vectors,
 \begin{tabbing}
   DMSetDefaultSection(dm, s);\\
-  DMGetLocalVector(s, \&localVec);\\
-  DMGetGlobalVector(s, \&globalVec);
+  DMGetLocalVector(dm, \&localVec);\\
+  DMGetGlobalVector(dm, \&globalVec);
 \end{tabbing}
 
 \subsection{Partitioning and Ordering}
@@ -7873,7 +8505,7 @@ IS. However, the graph we are dealing with now is not the adjacency graph of the
 itself. Once the mesh is partitioned and reordered, we used the data layout from a PetscSection to automatically derive
 a problem partitioning/ordering.
 
-\section{Evaluating Residuals} \sindex{Residual Evaulation}
+\section{Evaluating Residuals} \sindex{Residual Evaluation}
 
 The evaluation of a residual, or Jacobian, for most discretizations has the following general form:
 \begin{itemize}
@@ -7945,6 +8577,110 @@ methods where we want the data from neighboring cells for each face
 \end{tabbing}
 This kind of calculation is used in TS ex11.
 
+\section{Networks}
+Built on top of \trl{DMPlex}, the \trl{DMNetwork} subclass provides abstractions for representing general unstructured 
+networks such as communication networks, power grid, computer networks, transportation networks, electrical circuits, graphs, and others. 
+
+\subsection{Application flow}
+The general flow of an application code using \trl{DMNetwork} is as follows:
+
+\begin{enumerate}
+  \item Create a network object and a ``component'' library:
+  \begin{tabbing}
+  DMNetworkCreate(MPI\_Comm, DM*);
+  \end{tabbing}
+  creates an empty network object. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
+  \begin{tabbing}
+    DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
+  \end{tabbing}
+  Here, \trl{name} is the component name,\trl{size} is the size of component data type, and \trl{compkey} is an integer key that can be used for
+  setting/getting the component at a node or an edge.
+  \item Set network size (number of nodes, edges), edge connectivity.
+  \item Set the bare layout (graph) of the network
+  \begin{tabbing}
+    DMNetworkLayoutSetUp(DM dm);
+  \end{tabbing}   
+  \begin{tabbing}
+    DMNetworkSetSizes(DM dm, PetscInt nnodes, PetscInt nedges, PetscInt Nnodes, PetscInt Nedges);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkSetEdgeList(DM dm, int edgeconns[]);
+  \end{tabbing}  
+  \item Set components and number of variables for nodes/edges.
+  \begin{tabbing}
+    DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
+  \end{tabbing}
+  Multiple components can be added at a node/edge.
+  \begin{tabbing}
+    DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
+   \end{tabbing}
+  \item Signal network ready to be distributed.
+  \begin{tabbing}
+    DMSetUp(DM dm);
+  \end{tabbing}
+  \item Distribute the network (also moves components attached with nodes/edges)
+  \begin{tabbing}
+    DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
+  \end{tabbing}  
+  \item Hook up the DM with the solver: KSPSetDM, SNESSetDM, TSSetDM
+\end{enumerate}
+
+\subsection{Utility functions}
+  \trl{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost'' 
+  status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting 
+  elements in vectors/matrices.
+  \begin{tabbing}
+    DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
+  \end{tabbing}
+  In network applications, one frequently needs to find the supporting edges for a node or
+  the connecting nodes covering an edge. These can be obtained by the following two routines.
+  \begin{tabbing}
+    DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
+  \end{tabbing}  
+
+\subsection{Retrieving components}
+The components set at nodes/edges are stored in a container that can be accessed by
+\begin{tabbing}
+   DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
+\end{tabbing}
+  Using \trl{componentdataarray}, individual components set at a node/edge can be retrieved by
+\begin{tabbing}
+ DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+\end{tabbing}
+\trl{compkey} is the key set by DMNetworkRegisterComponent. An example of accessing and retrieving the components at nodes is:
+
+\begin{tabbing}
+DMNetworkComponentGenericDataType *arr; \\
+PetscInt Start, End, numcomps,offset,key,v,compnum; \\
+\\
+DMNetworkGetComponentDataArray(dm, \&arr); \\
+DMNetworkGetVertexRange(dm,\&Start,\&End); \\
+for(v=Start; v \trl{<} End; v++) \{ \\
+~~DMNetworkGetNumComponents(dm,v,\&numcomps); \\
+~~for(compnum=0; compnum \trl{<} numcomps;compnum++) \{ \\
+~~~~DMNetworkGetComponentTypeOffset(dm,v,compnum,\&key,\&offset); \\
+~~~~compdata = (UserCompDataType)(arr+offset); \\
+~~\} \\
+\}
+\end{tabbing}
 %------------------------------------------------------------------
 
 \cleardoublepage
@@ -7954,3 +8690,10 @@ This kind of calculation is used in TS ex11.
 \label{ch_index}
 \end{theindex}
 
+
+%%  LocalWords:  IMEX TSARKIMEX nonlinearities PDE APIs Jacobian DAE
+%%  LocalWords:  TSSetRHSFunction TSSetIFunction TSSetIJacobian EQ IM
+%%  LocalWords:  TSSetEquationType TSARKIMEXSetFullyImplicit PETSc CN
+%%  LocalWords:  DAEs ODEs Runge Kutta nonstiff SSP SDIRK ars ARS PRS
+%%  LocalWords:  prssp nonSDIRK bpr ROSW linearized Rosenbrock PDAE
+%%  LocalWords:  Zoltan ra pw rodas sandu assp lassp RK

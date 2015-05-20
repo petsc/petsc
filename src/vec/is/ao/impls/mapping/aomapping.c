@@ -237,7 +237,7 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
 . aoout   - the new application mapping
 
   Options Database Key:
-$ -ao_view : call AOView() at the conclusion of AOCreateMapping()
+. -ao_view : call AOView() at the conclusion of AOCreateMapping()
 
   Level: beginner
 
@@ -257,25 +257,22 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscMPIInt    size, rank,*lens, *disp,nnapp;
   PetscInt       N, start;
   PetscInt       i;
-  PetscBool      opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(aoout,5);
   *aoout = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage();CHKERRQ(ierr);
-#endif
 
-  ierr     = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr     = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
+  ierr     = PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr     = PetscNewLog(ao,&aomap);CHKERRQ(ierr);
   ierr     = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N     = 0;
@@ -290,21 +287,21 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(napp+1, &petsc);CHKERRQ(ierr);
     for (i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt*)mypetsc;
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc4(N,PetscInt, &allapp,N,PetscInt,&appPerm,N,PetscInt,&allpetsc,N,PetscInt,&petscPerm);CHKERRQ(ierr);
+  ierr = PetscMalloc4(N, &allapp,N,&appPerm,N,&allpetsc,N,&petscPerm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc4(N, &aomap->app,N,&aomap->appPerm,N,&aomap->petsc,N,&aomap->petscPerm);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
@@ -340,11 +337,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   }
   ierr = PetscFree4(allapp,appPerm,allpetsc,petscPerm);CHKERRQ(ierr);
 
-  opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-ao_view", &opt,NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  }
+  ierr = AOViewFromOptions(ao,NULL,"-ao_view");CHKERRQ(ierr);
 
   *aoout = ao;
   PetscFunctionReturn(0);
@@ -364,7 +357,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 . aoout   - the new application ordering
 
   Options Database Key:
-$ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
+. -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 
   Level: beginner
 

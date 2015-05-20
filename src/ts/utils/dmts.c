@@ -1,5 +1,5 @@
-#include <petsc-private/tsimpl.h>     /*I "petscts.h" I*/
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/dmimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSDestroy"
@@ -23,15 +23,15 @@ PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,1,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionview,1,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionload,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionview,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionload,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
   if (kdm->ops->ifunctionload) {
     ierr = (*kdm->ops->ifunctionload)(&kdm->ifunctionctx,viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,1,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianview,1,PETSC_FUNCTION);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianload,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianview,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianload,1,NULL,PETSC_FUNCTION);CHKERRQ(ierr);
   if (kdm->ops->ijacobianload) {
     ierr = (*kdm->ops->ijacobianload)(&kdm->ijacobianctx,viewer);CHKERRQ(ierr);
   }
@@ -64,24 +64,38 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
   } else if (isbinary) {
     struct {
       TSIFunction ifunction;
+    } funcstruct;
+    struct {
       PetscErrorCode (*ifunctionview)(void*,PetscViewer);
+    } funcviewstruct;
+    struct {
       PetscErrorCode (*ifunctionload)(void**,PetscViewer);
-    } funcstruct = {kdm->ops->ifunction,
-                    kdm->ops->ifunctionview,
-                    kdm->ops->ifunctionload};
+    } funcloadstruct;
     struct {
       TSIJacobian ijacobian;
+    } jacstruct;
+    struct {
       PetscErrorCode (*ijacobianview)(void*,PetscViewer);
+    } jacviewstruct;
+    struct {
       PetscErrorCode (*ijacobianload)(void**,PetscViewer);
-    } jacstruct = {kdm->ops->ijacobian,
-                   kdm->ops->ijacobianview,
-                   kdm->ops->ijacobianload};
+    } jacloadstruct;
 
-    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,3,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    funcstruct.ifunction         = kdm->ops->ifunction;
+    funcviewstruct.ifunctionview = kdm->ops->ifunctionview;
+    funcloadstruct.ifunctionload = kdm->ops->ifunctionload;
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcviewstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcloadstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ifunctionview) {
       ierr = (*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,3,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    jacstruct.ijacobian = kdm->ops->ijacobian;
+    jacviewstruct.ijacobianview = kdm->ops->ijacobianview;
+    jacloadstruct.ijacobianload = kdm->ops->ijacobianload;
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacviewstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacloadstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ijacobianview) {
       ierr = (*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer);CHKERRQ(ierr);
     }
@@ -96,11 +110,8 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSInitializePackage();CHKERRQ(ierr);
-#endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
-  ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +496,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 
    Input Arguments:
 +  dm - DM to be used with TS
-.  TSForcingFunction - forcing function evaluation function
+.  f - forcing function evaluation function; see TSForcingFunction
 -  ctx - context for solution evaluation
 
    Level: advanced
@@ -497,7 +508,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 
 .seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void *ctx)
+PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -505,7 +516,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (TSForcingFunction) tsdm->ops->forcing = TSForcingFunction;
+  if (f) tsdm->ops->forcing = f;
   if (ctx)  tsdm->forcingctx   = ctx;
   PetscFunctionReturn(0);
 }
@@ -522,7 +533,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(
 .   dm - DM to be used with TS
 
    Output Arguments:
-+  TSForcingFunction - forcing function evaluation function
++  f - forcing function evaluation function; see TSForcingFunction for details
 -  ctx - context for solution evaluation
 
    Level: advanced
@@ -534,7 +545,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(
 
 .seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
 @*/
-PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**TSForcingFunction)(TS,PetscReal,Vec,void*),void **ctx)
+PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**f)(TS,PetscReal,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -542,7 +553,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**TSForcingFunction)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (TSForcingFunction) *TSForcingFunction = tsdm->ops->forcing;
+  if (f) *f = tsdm->ops->forcing;
   if (ctx) *ctx = tsdm->forcingctx;
   PetscFunctionReturn(0);
 }

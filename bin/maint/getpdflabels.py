@@ -24,10 +24,10 @@ def main():
 #
     lines = sys.stdin.readlines()
 #
-    regchapter    = re.compile('(chapter{)([A-Z_a-z0-9: ]*)(})')
-    regsection    = re.compile('(section{)([A-Z_a-z0-9: ]*)(})')
-    regsubsection = re.compile('(subsection{)([A-Z_a-z0-9: ]*)(})')
-    reglabel      = re.compile(r'(label{)([A-Z_a-z0-9]*)(})')
+    regchapter    = re.compile('(chapter{)([^}]*)(})')
+    regsection    = re.compile('(section{)([^}]*)(})')
+    regsubsection = re.compile('(subsection{)([^}]*)(})')
+    reglabel      = re.compile(r'(label{)([^}]*)(})')
 
     chapter    = 1
     section    = 0

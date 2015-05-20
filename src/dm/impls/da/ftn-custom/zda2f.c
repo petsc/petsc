@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/dmdaimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdacreate2d_                  DMDACREATE2D
@@ -7,7 +7,7 @@
 #define dmdacreate2d_                  dmdacreate2d
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundaryType *by,DMDAStencilType
+PETSC_EXTERN void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMBoundaryType *bx,DMBoundaryType *by,DMDAStencilType
                   *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
                   PetscInt *s,PetscInt *lx,PetscInt *ly,DM *inra,PetscErrorCode *ierr)
 {

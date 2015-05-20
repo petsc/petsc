@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     Mat                    B[9];
 
     l2gind[0] = (rank-1+size)%size; l2gind[1] = rank; l2gind[2] = (rank+1)%size;
-    ierr      = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,3,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
+    ierr      = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,3,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
     for (i=0; i<9; i++) {
       ierr = MatCreateAIJ(PETSC_COMM_WORLD,1,1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&B[i]);CHKERRQ(ierr);
       ierr = MatSetUp(B[i]);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     ISLocalToGlobalMapping l2g;
     PetscInt               l2gind[9];
     for (i=0; i<3; i++) for (j=0; j<3; j++) l2gind[3*i+j] = ((rank-1+j+size) % size)*3 + i;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,9,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,9,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
     ierr = MatCreateAIJ(PETSC_COMM_WORLD,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(A,l2g,l2g);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);

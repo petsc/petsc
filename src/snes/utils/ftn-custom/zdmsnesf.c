@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/snesimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmsnessetjacobian_      DMSNESSETJACOBIAN
 #define dmsnessetfunction_      DMSNESSETFUNCTION
@@ -15,10 +15,10 @@ static struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ourj"
-static PetscErrorCode ourj(SNES snes, Vec X, Mat *J, Mat *P, MatStructure *str, void *ptr)
+static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
 {
   PetscErrorCode ierr;
-  void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),*ctx;
+  void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DM dm;
   DMSNES sdm;
 
@@ -26,11 +26,11 @@ static PetscErrorCode ourj(SNES snes, Vec X, Mat *J, Mat *P, MatStructure *str, 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm, &sdm);CHKERRQ(ierr);
   ierr = PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx);CHKERRQ(ierr);
-  (*func)(&snes, &X, J, P, str, ctx, &ierr);CHKERRQ(ierr);
+  (*func)(&snes, &X, &J, &P, ctx, &ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmsnessetjacobian_(DM *dm, void (PETSC_STDCALL *jac)(DM*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmsnessetjacobian_(DM *dm, void (PETSC_STDCALL *jac)(DM*,Vec*,Mat*,Mat*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)
 {
   DMSNES sdm;
 

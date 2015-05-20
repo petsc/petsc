@@ -1,9 +1,9 @@
 
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIGetInactiveSet"
@@ -15,7 +15,7 @@
 .  snes - the SNES context
 
    Output parameter
-.  ISact - active set index set
+.  inact - inactive set index set
 
  */
 PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
@@ -108,7 +108,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   DM_SNESVI      *dmsnesvi1;
   Vec            finemarked,coarsemarked;
   IS             inactive;
-  VecScatter     inject;
+  Mat            inject;
   const PetscInt *index;
   PetscInt       n,k,cnt = 0,rstart,*coarseindex;
   PetscScalar    *marked;
@@ -122,7 +122,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
 
   /* not sure why this extra reference is needed, but without the dm2 disappears too early */
-  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);
+  /* Updating the KSPCreateVecs() to avoid using DMGetGlobalVector() when matrix is available removes the need for this reference? */
+  /*  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);*/
 
   /* need to set back global vectors in order to use the original injection */
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
@@ -145,9 +146,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = VecAssemblyEnd(finemarked);CHKERRQ(ierr);
 
   ierr = DMCreateInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+  ierr = MatRestrict(inject,finemarked,coarsemarked);CHKERRQ(ierr);
+  ierr = MatDestroy(&inject);CHKERRQ(ierr);
 
   /*
      create index set list of coarse inactive points from coarsemarked
@@ -158,7 +158,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) cnt++;
   }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&coarseindex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cnt,&coarseindex);CHKERRQ(ierr);
   cnt  = 0;
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) coarseindex[cnt++] = k + rstart;
@@ -220,7 +220,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
   if (!isnes) {
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVI);CHKERRQ(ierr);
-    ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
+    ierr = PetscNew(&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
@@ -287,7 +287,7 @@ PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes,PetscInt n,Vec *newv)
   PetscFunctionBegin;
   ierr  = VecCreate(PetscObjectComm((PetscObject)snes),&v);CHKERRQ(ierr);
   ierr  = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr  = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr  = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
   *newv = v;
   PetscFunctionReturn(0);
 }
@@ -318,12 +318,12 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
   ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
   ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
-  ierr = PCSetOperators(kspnew->pc,Amat,Pmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetOperators(kspnew->pc,Amat,Pmat);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
   ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
-  ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)kspnew);CHKERRQ(ierr);
    ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
@@ -335,16 +335,22 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
 #define __FUNCT__ "SNESSolve_VINEWTONRSLS"
 PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 {
-  SNES_VINEWTONRSLS  *vi = (SNES_VINEWTONRSLS*)snes->data;
-  PetscErrorCode     ierr;
-  PetscInt           maxits,i,lits;
-  PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal          fnorm,gnorm,xnorm=0,ynorm;
-  Vec                Y,X,F;
-  KSPConvergedReason kspreason;
+  SNES_VINEWTONRSLS    *vi = (SNES_VINEWTONRSLS*)snes->data;
+  PetscErrorCode       ierr;
+  PetscInt             maxits,i,lits;
+  SNESLineSearchReason lssucceed;
+  PetscReal            fnorm,gnorm,xnorm=0,ynorm;
+  Vec                  Y,X,F;
+  KSPConvergedReason   kspreason;
+  KSP                  ksp;
+  PC                   pc;
 
   PetscFunctionBegin;
+  /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
@@ -358,30 +364,23 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   ierr = SNESLineSearchSetVecs(snes->linesearch, X, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = SNESLineSearchSetUp(snes->linesearch);CHKERRQ(ierr);
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    PetscFunctionReturn(0);
-  }
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  SNESCheckFunctionNorm(snes,fnorm);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -401,7 +400,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
 
 
     /* Create active and inactive index sets */
@@ -442,7 +441,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
         ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
         ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
         ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
-        ierr = PetscMalloc(cnt*sizeof(PetscInt),&nrows);CHKERRQ(ierr);
+        ierr = PetscMalloc1(cnt,&nrows);CHKERRQ(ierr);
         for (k=0; k<cnt; k++) nrows[k] = inact[krows[k]-rstart];
         ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
         ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
@@ -497,7 +496,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
-      flg  = DIFFERENT_NONZERO_PATTERN;
     }
 
     /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
@@ -506,7 +504,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
 
 
-    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     {
       PC        pc;
@@ -587,6 +585,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
     ierr  = SNESLineSearchApply(snes->linesearch, X, F, &gnorm, Y);CHKERRQ(ierr);
+    ierr  = SNESLineSearchGetReason(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     ierr  = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr  = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -595,9 +594,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       ierr         = DMDestroyVI(snes->dm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
-
-    if (!lssucceed) {
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -605,21 +602,23 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
-    }
+   }
+   ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
     /* Update function and solution vectors */
     fnorm = gnorm;
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
+  /* make sure that the VI information attached to the DM is removed if the for loop above was broken early due to some exceptional conditional */
   ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
@@ -694,7 +693,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr      = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr      = PetscNew(&sctx);CHKERRQ(ierr);
   ierr      = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   sctx->ctx = mxDuplicateArray(ctx);
   ierr      = SNESVISetRedundancyCheck(snes,SNESVIRedundancyCheck_Matlab,sctx);CHKERRQ(ierr);
@@ -710,7 +709,6 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 
@@ -737,7 +735,7 @@ PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 
   ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
   for (i=0; i < n; i++) indices[i] = rstart + i;
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);CHKERRQ(ierr);
 
@@ -767,18 +765,16 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
       SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
++   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner
 
    References:
-   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
+  - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
-           SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
 #undef __FUNCT__
@@ -800,7 +796,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_VINEWTONRSLS,&vi);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;
   vi->checkredundancy = NULL;
 

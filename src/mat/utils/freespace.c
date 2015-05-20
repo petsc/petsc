@@ -10,7 +10,7 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(struct _Space),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&(a->array_head));CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&(a->array_head));CHKERRQ(ierr);
 
   a->array            = a->array_head;
   a->local_remaining  = n;

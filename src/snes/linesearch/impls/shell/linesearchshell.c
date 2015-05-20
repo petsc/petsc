@@ -1,5 +1,5 @@
-#include <petsc-private/linesearchimpl.h>
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h>
+#include <petsc/private/snesimpl.h>
 
 
 typedef struct {
@@ -25,17 +25,17 @@ typedef struct {
 
    Usage:
 
-$  PetscErrorCode shellfunc(SNESLineSearch linesearch, void * ctx)
+$  PetscErrorCode shellfunc(SNESLineSearch linesearch,void * ctx)
 $  {
-$     Vec  X, Y, F, W, G;
+$     Vec  X,Y,F,W,G;
 $     SNES snes;
 $     PetscFunctionBegin;
-$     ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-$     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
-$     ierr = SNESLineSearchGetVecs(linesearch, X, Y, F, W, G);CHKERRQ(ierr);
+$     ierr = SNESLineSearchGetSNES(linesearch,&snes);CHKERRQ(ierr);
+$     ierr = SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
+$     ierr = SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G);CHKERRQ(ierr);
 $     .. determine lambda using W and G as work vecs..
-$     ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr);
-$     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+$     ierr = VecAXPY(X,-lambda,Y);CHKERRQ(ierr);
+$     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 $     ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
 $     PetscFunctionReturn(0);
 $  }
@@ -157,7 +157,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
   linesearch->ops->view           = NULL;
   linesearch->ops->setup          = NULL;
 
-  ierr = PetscNewLog(linesearch, SNESLineSearch_Shell, &shell);CHKERRQ(ierr);
+  ierr = PetscNewLog(linesearch,&shell);CHKERRQ(ierr);
 
   linesearch->data = (void*) shell;
   PetscFunctionReturn(0);

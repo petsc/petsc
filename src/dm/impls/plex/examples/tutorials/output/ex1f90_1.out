@@ -1,4 +1,6 @@
-PetscSection with 3 fields
+PetscSection Object: 1 MPI processes
+  type not yet set
+3 fields
   field 0 with 1 components
 Process 0:
   (   0) dim  0 offset   0

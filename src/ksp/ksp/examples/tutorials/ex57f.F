@@ -13,7 +13,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/finclude.  This
+!  PETSc include files in the directory petsc/include/petsc/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
@@ -39,11 +39,11 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -67,8 +67,8 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
       PetscReal       norm
-      PetscInt        i,j,II,JJ,m,n,its,icntl,ival
-      PetscInt        Istart,Iend,ione
+      PetscInt i,j,II,JJ,m,n,its,icntl,ival
+      PetscInt Istart,Iend,ione
       PetscErrorCode  ierr
       PetscMPIInt     rank,size
       PetscBool       flg
@@ -167,7 +167,7 @@
 !   Check if A is symmetric
       if (size == 1) then
         call MatIsSymmetric(A,0.0,flg,ierr)
-        if (flg .eq. PETSC_FALSE) then
+        if (flg .eqv. PETSC_FALSE) then
           write(6,120)
         endif
       endif
@@ -223,7 +223,7 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
 
 #ifdef PETSC_HAVE_MUMPS
       call KSPSetType(ksp,KSPPREONLY,ierr);
@@ -312,16 +312,16 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscksp.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscksp.h>
 
       KSP              ksp
       Vec              x
       PetscErrorCode ierr
       PetscInt n,dummy
       PetscMPIInt rank
-      double precision rnorm
+      PetscReal rnorm
 
 !  Build the solution vector
 
@@ -357,15 +357,15 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscksp.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscksp.h>
 
       KSP              ksp
       PetscErrorCode ierr
       PetscInt n,dummy
       KSPConvergedReason flag
-      double precision rnorm
+      PetscReal rnorm
 
       if (rnorm .le. .05) then
         flag = 1

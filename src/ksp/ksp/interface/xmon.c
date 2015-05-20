@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>              /*I  "petscksp.h"   I*/
+#include <petsc/private/kspimpl.h>              /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
 #undef __FUNCT__
@@ -32,34 +32,39 @@
 
 .seealso: KSPMonitorLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorLGTrueResidualCreate()
 @*/
-PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
   PetscDrawAxis  axis;
+  PetscDrawLG    draw;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,1,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norm");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
+  (*objs)[0] = (PetscObject)draw;
+  (*objs)[1] = (PetscObject)win;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorLGResidualNorm"
-PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
 {
-  PetscDrawLG    lg = (PetscDrawLG)monctx;
   PetscErrorCode ierr;
   PetscReal      x,y;
+  PetscDrawLG    lg = (PetscDrawLG) objs[0];
 
   PetscFunctionBegin;
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x = (PetscReal) n;
-  if (rnorm > 0.0) y = log10(rnorm);
+  if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || !(n % 5)) {
@@ -85,15 +90,16 @@ PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void
 
 .seealso: KSPMonitorLGResidualNormCreate(), KSPMonitorLGTrueResidualDestroy(), KSPMonitorSet()
 @*/
-PetscErrorCode  KSPMonitorLGResidualNormDestroy(PetscDrawLG *drawlg)
+PetscErrorCode  KSPMonitorLGResidualNormDestroy(PetscObject **objs)
 {
-  PetscDraw      draw;
   PetscErrorCode ierr;
+  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[0];
+  PetscDraw      draw = (PetscDraw) (*objs)[1];
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(*drawlg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscFree(*objs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -115,7 +121,7 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetTitle(draw,"Residual norm");CHKERRQ(ierr);
   x    = (PetscReal) n;
-  if (rnorm > 0.0) y = log10(rnorm);
+  if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || !(n % 5)) {
@@ -195,31 +201,32 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
 
 .seealso: KSPMonitorLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorDefault()
 @*/
-PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
   PetscDrawAxis  axis;
+  PetscDrawLG    draw;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (rank) { *draw = 0; PetscFunctionReturn(0);}
-
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,2,draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,2,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norms");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
+  (*objs)[0] = (PetscObject)draw;
+  (*objs)[1] = (PetscObject)win;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorLGTrueResidualNorm"
-PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
 {
-  PetscDrawLG    lg = (PetscDrawLG) monctx;
+  PetscDrawLG    lg = (PetscDrawLG) objs[0];
   PetscReal      x[2],y[2],scnorm;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -230,7 +237,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   if (!rank) {
     if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
     x[0] = x[1] = (PetscReal) n;
-    if (rnorm > 0.0) y[0] = log10(rnorm);
+    if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
     else y[0] = -15.0;
   }
 
@@ -240,7 +247,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = VecDestroy(&work);CHKERRQ(ierr);
 
   if (!rank) {
-    if (scnorm > 0.0) y[1] = log10(scnorm);
+    if (scnorm > 0.0) y[1] = PetscLog10Real(scnorm);
     else y[1] = -15.0;
     ierr = PetscDrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
     if (n <= 20 || (n % 3)) {
@@ -267,15 +274,16 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 
 .seealso: KSPMonitorLGTrueResidualNormCreate(), KSPMonitorSet()
 @*/
-PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG *drawlg)
+PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscObject **objs)
 {
   PetscErrorCode ierr;
-  PetscDraw      draw;
+  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[0];
+  PetscDraw      draw = (PetscDraw) (*objs)[1];
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(*drawlg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscFree(*objs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

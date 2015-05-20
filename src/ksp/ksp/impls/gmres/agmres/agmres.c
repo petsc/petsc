@@ -59,20 +59,16 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   hes             = (N + 1) * (N + 1);
 
   /* Data for the Newton basis GMRES */
-  ierr = PetscMalloc4(max_k,PetscScalar,&agmres->Rshift,max_k,PetscScalar,&agmres->Ishift,hes,PetscScalar,&agmres->Rloc,((N+1)*4),PetscScalar,&agmres->wbufptr);CHKERRQ(ierr);
-  ierr = PetscMalloc7((N+1),PetscScalar,&agmres->Scale,(N+1),PetscScalar,&agmres->sgn,(N+1),PetscScalar,&agmres->tloc,(N+1),PetscScalar,&agmres->temp,(N+1),PetscScalar,&agmres->tau,lwork,PetscScalar,&agmres->work,(N+1),PetscScalar,&agmres->nrs);CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rshift, max_k*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Ishift, max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,((N+1)*4),&agmres->wbufptr);CHKERRQ(ierr);
+  ierr = PetscMalloc7((N+1),&agmres->Scale,(N+1),&agmres->sgn,(N+1),&agmres->tloc,(N+1),&agmres->temp,(N+1),&agmres->tau,lwork,&agmres->work,(N+1),&agmres->nrs);CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->Scale, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rloc, (N+1)*(N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->sgn, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->tloc, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->temp, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->wbufptr, (N+1)*4*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* Allocate space for the vectors in the orthogonalized basis*/
   ierr = VecGetLocalSize(agmres->vecs[0], &nloc);CHKERRQ(ierr);
-  ierr = PetscMalloc(nloc*(N+1)*sizeof(PetscScalar), &agmres->Qloc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc*(N+1), &agmres->Qloc);CHKERRQ(ierr);
 
   /* Init the ring of processors for the roddec orthogonalization */
   ierr = KSPAGMRESRoddecInitNeighboor(ksp);CHKERRQ(ierr);
@@ -80,12 +76,12 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   if (agmres->neig < 1) PetscFunctionReturn(0);
 
   /* Allocate space for the deflation */
-  ierr = PetscMalloc(N*sizeof(PetscScalar), &agmres->select);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N, &agmres->select);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(VEC_V(0), N, &agmres->TmpU);CHKERRQ(ierr);
-  ierr = PetscMalloc2(N*N, PetscScalar, &agmres->MatEigL, N*N, PetscScalar, &agmres->MatEigR);CHKERRQ(ierr);
-  /*  ierr = PetscMalloc6(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->wr, N, PetscScalar, &agmres->wi, N, PetscScalar, &agmres->beta, N, PetscScalar, &agmres->modul);CHKERRQ(ierr); */
-  ierr = PetscMalloc3(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->beta);CHKERRQ(ierr);
-  ierr = PetscMalloc2((N+1),PetscInt,&agmres->perm,(2*neig*N),PetscInt,&agmres->iwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N*N, &agmres->MatEigL, N*N, &agmres->MatEigR);CHKERRQ(ierr);
+  /*  ierr = PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul);CHKERRQ(ierr); */
+  ierr = PetscMalloc3(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->beta);CHKERRQ(ierr);
+  ierr = PetscMalloc2((N+1),&agmres->perm,(2*neig*N),&agmres->iwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +101,7 @@ PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
     if (!agmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&agmres->sol_temp);CHKERRQ(ierr);
       ierr = VecCopy(ksp->vec_sol,agmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,agmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)agmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = agmres->sol_temp;
   } else {
@@ -133,7 +129,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   PC             pc;
   PetscInt       m;
   PetscScalar    *Rshift, *Ishift;
-  PetscBool      flg;
+
 
   PetscFunctionBegin;
   /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
@@ -141,8 +137,8 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
    linear system have been set in this ksp */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres);CHKERRQ(ierr);
   if (!ksp->pc) { ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr); }
-  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat, &flag);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspgmres, Amat, Pmat, flag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat);CHKERRQ(ierr);
+  ierr = KSPSetOperators(kspgmres, Amat, Pmat);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL, "-ksp_view", &flg);CHKERRQ(ierr);
   if (flag) { ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }
@@ -169,7 +165,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
     PetscFunctionReturn(0);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
   /* Now, compute the Shifts values */
-  ierr = PetscMalloc2(max_k,PetscScalar,&Rshift,max_k,PetscScalar,&Ishift);CHKERRQ(ierr);
+  ierr = PetscMalloc2(max_k,&Rshift,max_k,&Ishift);CHKERRQ(ierr);
   ierr = KSPComputeEigenvalues(kspgmres, max_k, Rshift, Ishift, &m);CHKERRQ(ierr);
   if (m < max_k) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Unable to compute the Shifts for the Newton basis");
   else {
@@ -233,7 +229,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   } else { /* Perform another cycle of DGMRES to find another set of eigenvalues */
     PetscInt    i;
     PetscScalar *wr, *wi,*Rshift, *Ishift;
-    ierr = PetscMalloc4(2*max_k, PetscScalar, &wr, 2*max_k, PetscScalar, &wi, 2*max_k, PetscScalar, &Rshift, 2*max_k, PetscScalar, &Ishift);CHKERRQ(ierr);
+    ierr = PetscMalloc4(2*max_k, &wr, 2*max_k, &wi, 2*max_k, &Rshift, 2*max_k, &Ishift);CHKERRQ(ierr);
     for (i = 0; i < max_k; i++) {
       wr[i] = agmres->wr[i];
       wi[i] = agmres->wi[i];
@@ -579,9 +575,9 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   PetscInt       test;
 
   PetscFunctionBegin;
-  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */
@@ -610,7 +606,7 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     /* compute the eigenvectors to augment the subspace : use an adaptive strategy */
     res = ksp->rnorm;
     if (!ksp->reason && agmres->neig > 0) {
-      test = agmres->max_k * log(ksp->rtol/res) / log(res/res_old); /* estimate the remaining number of steps */
+      test = agmres->max_k * PetscLogReal(ksp->rtol/res) / PetscLogReal(res/res_old); /* estimate the remaining number of steps */
       if ((test > agmres->smv*(ksp->max_it-ksp->its)) || agmres->force) {
         if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) {
           agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */
@@ -708,16 +704,16 @@ PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_AGMRES"
-PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       neig;
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
-  PetscBool      flg, Set;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_DGMRES(ksp);  /* Set common options from DGMRES and GMRES */
-  ierr = PetscOptionsHead("KSP AGMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp);  /* Set common options from DGMRES and GMRES */
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP AGMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr      = KSPDGMRESSetEigen_DGMRES(ksp, neig);CHKERRQ(ierr);
@@ -726,14 +722,10 @@ PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp)
   ierr = PetscOptionsInt("-ksp_agmres_maxeigen", "Maximum number of eigenvalues to deflate", "KSPDGMRESSetMaxEigen", agmres->max_neig, &neig, &flg);CHKERRQ(ierr);
   if (flg) agmres->max_neig = neig+EIG_OFFSET;
   else agmres->max_neig = agmres->neig+EIG_OFFSET;
-  ierr                = PetscOptionsBool("-ksp_agmres_DeflPrecond", "Determine if the deflation should be applied as a preconditioner -- similar to KSP DGMRES", "KSPGMRESDeflPrecond", PETSC_FALSE, &Set, &flg);
-  agmres->DeflPrecond = flg;
-  ierr                = PetscOptionsBool("-ksp_agmres_ritz", "Compute the Ritz vectors instead of the Harmonic Ritz vectors ", "KSPGMRESHarmonic", PETSC_FALSE, &Set, &flg);
-  agmres->ritz        = flg;
-  ierr                = PetscOptionsReal("-ksp_agmres_MinRatio", "Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed", "KSPGMRESSetMinRatio", 1, &(agmres->smv), &flg);
-  CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_agmres_MaxRatio", "Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed", "KSPGMRESSetMaxRatio", 1, &(agmres->bgv), &flg);
-  CHKERRQ(ierr);
+  ierr                = PetscOptionsBool("-ksp_agmres_DeflPrecond", "Determine if the deflation should be applied as a preconditioner -- similar to KSP DGMRES", "KSPGMRESDeflPrecond",agmres->DeflPrecond,&agmres->DeflPrecond,NULL);CHKERRQ(ierr);
+  ierr                = PetscOptionsBool("-ksp_agmres_ritz", "Compute the Ritz vectors instead of the Harmonic Ritz vectors ", "KSPGMRESHarmonic",agmres->ritz,&agmres->ritz ,&flg);CHKERRQ(ierr);
+  ierr                = PetscOptionsReal("-ksp_agmres_MinRatio", "Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed", "KSPGMRESSetMinRatio", agrmes->smv, &agmres->smv, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_agmres_MaxRatio", "Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed", "KSPGMRESSetMaxRatio",agmres->bgv,&agmres->bgv, &flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -771,7 +763,7 @@ There are  many ongoing work that aim at avoiding (or minimizing) the communicat
  .  [2] D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids, In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
  .  [3] B. Philippe and L. Reichel, On the generation of Krylov subspace bases, Applied Numerical
 Mathematics, 62(9), pp. 1171-1186, 2012
- .  [4] J. Demmel, L. Grigori, M. F. Hoemmen, and J. Langou, Communication-optimal parallel and sequential QR and LU factorizations, SIAM journal on Scientific Computing, 34(1), A206–A239, 2012
+ .  [4] J. Demmel, L. Grigori, M. F. Hoemmen, and J. Langou, Communication-optimal parallel and sequential QR and LU factorizations, SIAM journal on Scientific Computing, 34(1), A206-A239, 2012
  .  [5] M. Mohiyuddin, M. Hoemmen, J. Demmel, and K. Yelick, Minimizing communication in sparse matrix solvers, in SC '09: Proceedings of the Conference on High Performance Computing Networking, Storage and Analysis, New York, NY, USA, 2009, ACM, pp. 1154-1171.
  .    Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331
 
@@ -789,12 +781,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_AGMRES,&agmres);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&agmres);CHKERRQ(ierr);
   ksp->data = (void*)agmres;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);
   CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);
   CHKERRQ(ierr);
   ksp->ops->buildsolution                = KSPBuildSolution_AGMRES;
   ksp->ops->setup                        = KSPSetUp_AGMRES;

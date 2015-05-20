@@ -2,7 +2,7 @@
 #if !defined(__pcis_h)
 #define __pcis_h
 
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/pcimpl.h>
 #include <../src/mat/impls/is/matis.h>
 #include <petscksp.h>
 
@@ -38,6 +38,7 @@ typedef struct {
       vec1_D,
       vec2_D,
       vec3_D,
+      vec4_D,
       vec1_B,
       vec2_B,
       vec3_B,
@@ -47,11 +48,12 @@ typedef struct {
   VecScatter  global_to_D;        /* scattering context from global to local interior nodes */
   VecScatter  N_to_B;             /* scattering context from all local nodes to local interface nodes */
   VecScatter  global_to_B;        /* scattering context from global to local interface nodes */
+  PetscBool   computesolvers;
   PetscBool   pure_neumann;
   PetscScalar scaling_factor;
   PetscBool   use_stiffness_scaling;
 
-  PetscBool ISLocalToGlobalMappingGetInfoWasCalled;
+  ISLocalToGlobalMapping mapping;
   PetscInt  n_neigh;     /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
                          /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
   PetscInt *neigh;       /* list of neighbouring subdomains                                                          */

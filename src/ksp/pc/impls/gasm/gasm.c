@@ -8,7 +8,7 @@
        n    - actual number of local subdomains on this processor (set in PCGASMSetSubdomains() or calculated in PCGASMSetTotalSubdomains())
        nmax - maximum number of local subdomains per processor    (calculated in PCGASMSetTotalSubdomains() or in PCSetUp_GASM())
 */
-#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdm.h>
 
 typedef struct {
@@ -51,7 +51,7 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
    in case nidx == 0. That will take care of the space for the trailing '\0' as well.
    For nidx == 0, the whole string 16 '\0'.
    */
-  ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(nidx+1)+1, &cidx);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_SELF, cidx, 16*(nidx+1)+1, &sviewer);CHKERRQ(ierr);
   ierr = ISGetIndices(osm->iis[i], &idx);CHKERRQ(ierr);
   for (j = 0; j < nidx; ++j) {
@@ -76,7 +76,7 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
    in case nidx == 0. That will take care of the space for the trailing '\0' as well.
    For nidx == 0, the whole string 16 '\0'.
    */
-  ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16*(nidx+1)+1, &cidx);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_SELF, cidx, 16*(nidx+1)+1, &sviewer);CHKERRQ(ierr);
   ierr = ISGetIndices(osm->ois[i], &idx);CHKERRQ(ierr);
   for (j = 0; j < nidx; ++j) {
@@ -109,7 +109,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(osm->n, PetscInt, &permutation, osm->n, PetscInt, &numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc2(osm->n, &permutation, osm->n, &numbering);CHKERRQ(ierr);
   for (i = 0; i < osm->n; ++i) permutation[i] = i;
   ierr = PetscObjectsGetGlobalNumbering(PetscObjectComm((PetscObject)pc), osm->n, (PetscObject*)osm->ois, &gcount, numbering);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(osm->n, numbering, permutation);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(osm->n, PetscInt, &permutation, osm->n, PetscInt, &numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc2(osm->n, &permutation, osm->n, &numbering);CHKERRQ(ierr);
   for (i = 0; i < osm->n; ++i) permutation[i] = i;
   ierr = PetscObjectsGetGlobalNumbering(PetscObjectComm((PetscObject)pc), osm->n, (PetscObject*)osm->ois, &gcount, numbering);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(osm->n, numbering, permutation);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"%s\n",lsubdomains);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%s\n",msubdomains);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d:%d] number of locally-supported subdomains = %D\n",(int)rank,(int)size,osm->n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d:%d] number of locally-supported subdomains = %D\n",rank,size,osm->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     /* Cannot take advantage of osm->same_subdomain_solvers without a global numbering of subdomains. */
@@ -217,7 +217,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
           ierr = PetscViewerGetSubcomm(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ierr = ISGetLocalSize(osm->ois[d],&bsz);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_TRUE);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%D:%D] (subcomm [%D:%D]) local subdomain number %D, local size = %D\n",(int)rank,(int)size,(int)srank,(int)ssize,d,bsz);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d:%d] (subcomm [%d:%d]) local subdomain number %D, local size = %D\n",rank,size,srank,ssize,d,bsz);CHKERRQ(ierr);
           ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_FALSE);CHKERRQ(ierr);
           if (view_subdomains) {
@@ -350,7 +350,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
       on  += oni;
     }
-    ierr = PetscMalloc(on*sizeof(PetscInt), &oidx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(on, &oidx);CHKERRQ(ierr);
     on   = 0;
     for (i=0; i<osm->n; i++) {
       ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
@@ -360,7 +360,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       on  += oni;
     }
     ierr = ISCreateGeneral(((PetscObject)(pc))->comm, on, oidx, PETSC_OWN_POINTER, &gois);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
     ierr = VecCreateMPI(PetscObjectComm((PetscObject)pc), on, PETSC_DECIDE, &osm->gx);CHKERRQ(ierr);
     ierr = VecDuplicate(osm->gx,&osm->gy);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(osm->gx, &gofirst, NULL);CHKERRQ(ierr);
@@ -383,8 +383,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         ierr = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
         in  += ini;
       }
-      ierr = PetscMalloc(in*sizeof(PetscInt), &iidx);CHKERRQ(ierr);
-      ierr = PetscMalloc(in*sizeof(PetscInt), &ioidx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(in, &iidx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(in, &ioidx);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(osm->gx,&gofirst, NULL);CHKERRQ(ierr);
       in   = 0;
       on   = 0;
@@ -418,8 +418,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = ISDestroy(&goid);CHKERRQ(ierr);
 
     /* Create the subdomain work vectors. */
-    ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->x);CHKERRQ(ierr);
-    ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->y);CHKERRQ(ierr);
+    ierr = PetscMalloc1(osm->n,&osm->x);CHKERRQ(ierr);
+    ierr = PetscMalloc1(osm->n,&osm->y);CHKERRQ(ierr);
     ierr = VecGetArray(osm->gx, &gxarray);CHKERRQ(ierr);
     ierr = VecGetArray(osm->gy, &gyarray);CHKERRQ(ierr);
     for (i=0, on=0; i<osm->n; ++i, on += oni) {
@@ -432,10 +432,10 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecRestoreArray(osm->gx, &gxarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(osm->gy, &gyarray);CHKERRQ(ierr);
     /* Create the local solvers */
-    ierr = PetscMalloc(osm->n*sizeof(KSP*),&osm->ksp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(osm->n,&osm->ksp);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) { /* KSPs are local */
       ierr        = KSPCreate(((PetscObject)(osm->ois[i]))->comm,&ksp);CHKERRQ(ierr);
-      ierr        = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
+      ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
       ierr        = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr        = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr        = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
-      ierr = PetscLogObjectParent(pc,osm->pmat[i]);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     }
   }
@@ -480,7 +480,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
      Loop over submatrices putting them into local ksps
   */
   for (i=0; i<osm->n; i++) {
-    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }
@@ -649,7 +649,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GASM"
-static PetscErrorCode PCSetFromOptions_GASM(PC pc)
+static PetscErrorCode PCSetFromOptions_GASM(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -663,7 +663,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
     ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
     if (symset && flg) osm->type = PC_GASM_BASIC;
   }
-  ierr = PetscOptionsHead("Generalized additive Schwarz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Generalized additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_gasm_dm_subdomains","Use DMCreateDomainDecomposition() to define subdomains","PCGASMSetDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_gasm_total_subdomains","Total number of subdomains across communicator","PCGASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -679,7 +679,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
   }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsEnum("-pc_gasm_type","Type of restriction/extension","PCGASMSetType",PCGASMTypes,(PetscEnum)osm->type,(PetscEnum*)&gasmtype,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCGASMSetType(pc,gasmtype);CHKERRQ(ierr); }
+  if (flg) {ierr = PCGASMSetType(pc,gasmtype);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -710,28 +710,26 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
     }
     ierr = PCGASMDestroySubdomains(osm->n,osm->iis,osm->ois);CHKERRQ(ierr);
     if (ois) {
-      ierr = PetscMalloc(n*sizeof(IS),&osm->ois);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&osm->ois);CHKERRQ(ierr);
       for (i=0; i<n; i++) osm->ois[i] = ois[i];
       /* Flag indicating that the user has set outer subdomains, so PCGASM should not increase their size. */
       osm->overlap = -1;
       if (!iis) {
-        ierr = PetscMalloc(n*sizeof(IS),&osm->iis);CHKERRQ(ierr);
+        ierr = PetscMalloc1(n,&osm->iis);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)ois[i]);CHKERRQ(ierr);}
+          ierr = PetscObjectReference((PetscObject)ois[i]);CHKERRQ(ierr);
           osm->iis[i] = ois[i];
         }
       }
     }
     if (iis) {
-      ierr = PetscMalloc(n*sizeof(IS),&osm->iis);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&osm->iis);CHKERRQ(ierr);
       for (i=0; i<n; i++) osm->iis[i] = iis[i];
       if (!ois) {
-        ierr = PetscMalloc(n*sizeof(IS),&osm->ois);CHKERRQ(ierr);
+        ierr = PetscMalloc1(n,&osm->ois);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          for (i=0; i<n; i++) {
-            ierr = PetscObjectReference((PetscObject)iis[i]);CHKERRQ(ierr);
-            osm->ois[i] = iis[i];
-          }
+	  ierr = PetscObjectReference((PetscObject)iis[i]);CHKERRQ(ierr);
+	  osm->ois[i] = iis[i];
         }
         if (osm->overlap > 0) {
           /* Extend the "overlapping" regions by a number of steps */
@@ -756,8 +754,8 @@ static PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool
   PetscFunctionBegin;
   if (!create_local) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No suppor for autocreation of nonlocal subdomains.");
   if (N < 1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Total number of subdomains must be > 0, N = %D",N);
-  ierr = MPI_Allreduce(&N,&Nmin,1,MPIU_INT,MPIU_MIN,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&N,&Nmax,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&N,&Nmin,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&N,&Nmax,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   if (Nmin != Nmax) SETERRQ2(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "All processors must use the same number of subdomains.  min(N) = %D != %D = max(N)", Nmin, Nmax);
 
   osm->create_local = create_local;
@@ -1147,7 +1145,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   PC_GASM        *osm;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_GASM,&osm);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&osm);CHKERRQ(ierr);
 
   osm->N                      = PETSC_DECIDE;
   osm->n                      = PETSC_DECIDE;
@@ -1285,8 +1283,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
           }
           nnz += len;
         }
-        ierr   = PetscMalloc((na+1)*sizeof(PetscInt),&iia);CHKERRQ(ierr);
-        ierr   = PetscMalloc((nnz)*sizeof(PetscInt),&jja);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(na+1,&iia);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(nnz,&jja);CHKERRQ(ierr);
         nnz    = 0;
         iia[0] = 0;
         for (i=0; i<na; i++) { /* fill adjacency */
@@ -1312,7 +1310,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
     }
     ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(n*sizeof(IS),&is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&is);CHKERRQ(ierr);
   if (!foundpart) {
 
     /* Partitioning by contiguous chunks of rows */
@@ -1332,20 +1330,20 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
     const PetscInt *numbering;
     PetscInt       *count,nidx,*indices,*newidx,start=0;
     /* Get node count in each partition */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&count);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&count);CHKERRQ(ierr);
     ierr = ISPartitioningCount(ispart,n,count);CHKERRQ(ierr);
     if (isbaij && bs > 1) { /* adjust for the block-aij case */
       for (i=0; i<n; i++) count[i] *= bs;
     }
     /* Build indices from node numbering */
     ierr = ISGetLocalSize(isnumb,&nidx);CHKERRQ(ierr);
-    ierr = PetscMalloc(nidx*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nidx,&indices);CHKERRQ(ierr);
     for (i=0; i<nidx; i++) indices[i] = i; /* needs to be initialized */
     ierr = ISGetIndices(isnumb,&numbering);CHKERRQ(ierr);
     ierr = PetscSortIntWithPermutation(nidx,numbering,indices);CHKERRQ(ierr);
     ierr = ISRestoreIndices(isnumb,&numbering);CHKERRQ(ierr);
     if (isbaij && bs > 1) { /* adjust for the block-aij case */
-      ierr = PetscMalloc(nidx*bs*sizeof(PetscInt),&newidx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nidx*bs,&newidx);CHKERRQ(ierr);
       for (i=0; i<nidx; i++) {
         for (j=0; j<bs; j++) newidx[i*bs+j] = indices[i]*bs + j;
       }
@@ -1363,8 +1361,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
       start += count[i];
     }
 
-    ierr = PetscFree(count);
-    ierr = PetscFree(indices);
+    ierr = PetscFree(count);CHKERRQ(ierr);
+    ierr = PetscFree(indices);CHKERRQ(ierr);
     ierr = ISDestroy(&isnumb);CHKERRQ(ierr);
     ierr = ISDestroy(&ispart);CHKERRQ(ierr);
   }
@@ -1374,7 +1372,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
    Initially make outer subdomains the same as inner subdomains. If nonzero additional overlap
    has been requested, copy the inner subdomains over so they can be modified.
    */
-  ierr = PetscMalloc(n*sizeof(IS),ois);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,ois);CHKERRQ(ierr);
   for (i=0; i<n; ++i) {
     if (overlap > 0) { /* With positive overlap, (*iis)[i] will be modified */
       ierr = ISDuplicate((*iis)[i],(*ois)+i);CHKERRQ(ierr);
@@ -1548,8 +1546,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
 
   /* Now we can allocate the necessary number of ISs. */
   *nsub  = s;
-  ierr   = PetscMalloc((*nsub)*sizeof(IS*),is);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*nsub)*sizeof(IS*),is_local);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(*nsub,is);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(*nsub,is_local);CHKERRQ(ierr);
   s      = 0;
   ystart = 0;
   for (j=0; j<Ndomains; ++j) {
@@ -1619,7 +1617,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
             }
           } /* if (q == 1) */
           idx  = NULL;
-          ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nidx,&idx);CHKERRQ(ierr);
           if (nidx) {
             k = 0;
             for (jj=ylow_loc; jj<yhigh_loc; ++jj) {
@@ -1686,10 +1684,10 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
   osm = (PC_GASM*)pc->data;
   if (n) *n = osm->n;
   if (iis) {
-    ierr = PetscMalloc(osm->n*sizeof(IS), iis);CHKERRQ(ierr);
+    ierr = PetscMalloc1(osm->n, iis);CHKERRQ(ierr);
   }
   if (ois) {
-    ierr = PetscMalloc(osm->n*sizeof(IS), ois);CHKERRQ(ierr);
+    ierr = PetscMalloc1(osm->n, ois);CHKERRQ(ierr);
   }
   if (iis || ois) {
     for (i = 0; i < osm->n; ++i) {

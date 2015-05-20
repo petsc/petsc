@@ -1,5 +1,6 @@
 
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscpf.h>
 #include <petscsf.h>
 #include <petscao.h>
@@ -164,6 +165,10 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUSPCopyToGPUSome);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUSPCopyFromGPUSome);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscLogEventRegister("VecViennaCLCopyTo",     VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecViennaCLCopyFrom",   VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
+#endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_DotNormBarrier, PETSC_FALSE);CHKERRQ(ierr);
@@ -242,7 +247,7 @@ PetscErrorCode  VecFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscvec"
 /*
@@ -264,4 +269,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void)
   PetscFunctionReturn(0);
 }
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

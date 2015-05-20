@@ -2,7 +2,7 @@
 /*
   This file defines a "solve the problem redistributely on each subgroup of processor" preconditioner.
 */
-#include <petsc-private/pcimpl.h>     /*I "petscksp.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscksp.h" I*/
 #include <petscksp.h>
 
 typedef struct {
@@ -51,7 +51,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscLayout       map,nmap;
   PetscMPIInt       size,imdex,tag,n;
   PetscInt          *source = NULL;
-  PetscMPIInt       *nprocs = NULL,nrecvs;
+  PetscMPIInt       *sizes = NULL,nrecvs;
   PetscInt          j,nsends;
   PetscInt          *owner = NULL,*starts = NULL,count,slen;
   PetscInt          *rvalues,*svalues,recvtotal;
@@ -64,9 +64,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
   PetscFunctionBegin;
   if (pc->setupcalled) {
-    ierr = KSPGetOperators(red->ksp,NULL,&tmat,NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(red->ksp,NULL,&tmat);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
-    ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);
   } else {
     PetscInt NN;
 
@@ -82,8 +82,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       if (nz > 1) cnt++;
       ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-    ierr = PetscMalloc((rend - rstart - cnt)*sizeof(PetscInt),&drows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend - rstart - cnt,&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
     cnt = 0; dcnt = 0;
@@ -117,28 +117,28 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
         load balance the non-diagonal rows
     */
     /*  count number of contributors to each processor */
-    ierr   = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
-    ierr   = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+    ierr   = PetscMalloc2(size,&sizes,cnt,&owner);CHKERRQ(ierr);
+    ierr   = PetscMemzero(sizes,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
     j      = 0;
     nsends = 0;
     for (i=rstart; i<rend; i++) {
       if (i < nmap->range[j]) j = 0;
       for (; j<size; j++) {
         if (i < nmap->range[j+1]) {
-          if (!nprocs[j]++) nsends++;
+          if (!sizes[j]++) nsends++;
           owner[i-rstart] = j;
           break;
         }
       }
     }
     /* inform other processors of number of messages and max length*/
-    ierr      = PetscGatherNumberOfMessages(comm,NULL,nprocs,&nrecvs);CHKERRQ(ierr);
-    ierr      = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
+    ierr      = PetscGatherNumberOfMessages(comm,NULL,sizes,&nrecvs);CHKERRQ(ierr);
+    ierr      = PetscGatherMessageLengths(comm,nsends,nrecvs,sizes,&onodes1,&olengths1);CHKERRQ(ierr);
     ierr      = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
     recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
     /* post receives:  rvalues - rows I will own; count - nu */
-    ierr  = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
+    ierr  = PetscMalloc3(recvtotal,&rvalues,nrecvs,&source,nrecvs,&recv_waits);CHKERRQ(ierr);
     count = 0;
     for (i=0; i<nrecvs; i++) {
       ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
@@ -149,9 +149,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
        1) starts[i] gives the starting index in svalues for stuff going to
        the ith processor
     */
-    ierr      = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
+    ierr      = PetscMalloc3(cnt,&svalues,nsends,&send_waits,size,&starts);CHKERRQ(ierr);
     starts[0] = 0;
-    for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[i-1];
+    for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[i-1];
     for (i=0; i<cnt; i++)  svalues[starts[owner[i]]++] = rows[i];
     for (i=0; i<cnt; i++)  rows[i] = rows[i] - rstart;
     red->drows = drows;
@@ -159,11 +159,11 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr       = PetscFree(rows);CHKERRQ(ierr);
 
     starts[0] = 0;
-    for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[i-1];
+    for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[i-1];
     count = 0;
     for (i=0; i<size; i++) {
-      if (nprocs[i]) {
-        ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+      if (sizes[i]) {
+        ierr = MPI_Isend(svalues+starts[i],sizes[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
       }
     }
 
@@ -185,9 +185,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscFree(olengths1);CHKERRQ(ierr);
     ierr = PetscFree(onodes1);CHKERRQ(ierr);
     ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
-    ierr = PetscFree2(nprocs,owner);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,owner);CHKERRQ(ierr);
     if (nsends) {   /* wait on sends */
-      ierr = PetscMalloc(nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
       ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
       ierr = PetscFree(send_status);CHKERRQ(ierr);
     }
@@ -197,17 +197,18 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
     ierr = VecScatterCreate(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
-    ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
 
   /* get diagonal portion of matrix */
-  ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
+  ierr = PetscFree(red->diag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(red->dcnt,&red->diag);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
   ierr = VecGetArrayRead(diag,&d);CHKERRQ(ierr);
   for (i=0; i<red->dcnt; i++) red->diag[i] = 1.0/d[red->drows[i]];
@@ -274,7 +275,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redistribute"
-static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
+static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red = (PC_Redistribute*)pc->data;
@@ -341,7 +342,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   const char      *prefix;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_Redistribute,&red);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&red);CHKERRQ(ierr);
   pc->data = (void*)red;
 
   pc->ops->apply          = PCApply_Redistribute;
@@ -352,8 +353,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   pc->ops->view           = PCView_Redistribute;
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&red->ksp);CHKERRQ(ierr);
+  ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr); 
   ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr);

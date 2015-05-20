@@ -478,7 +478,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Copy<<<dimGrid,dimBlock>>>(d_a, d_c, N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[0][k] = cpuTimer;
     else {
@@ -491,7 +491,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Copy_Optimized<<<dimGrid,dimBlock>>>(d_a, d_c, N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[1][k] = cpuTimer;
     else {
@@ -504,7 +504,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Scale<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[2][k] = cpuTimer;
     else {
@@ -517,7 +517,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Scale_Optimized<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[3][k] = cpuTimer;
     else {
@@ -530,7 +530,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Add<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[4][k] = cpuTimer;
     else {
@@ -543,7 +543,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Add_Optimized<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[5][k] = cpuTimer;
     else {
@@ -556,7 +556,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Triad<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[6][k] = cpuTimer;
     else {
@@ -569,7 +569,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
     STREAM_Triad_Optimized<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[7][k] = cpuTimer;
     else {
@@ -739,7 +739,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Copy_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     if (bDontUseGPUTiming) {
       PetscTimeAdd(&cpuTimer);
       times[0][k] = cpuTimer;
@@ -753,7 +753,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Copy_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     if (bDontUseGPUTiming) {
       PetscTimeAdd(&cpuTimer);
       times[1][k] = cpuTimer;
@@ -767,7 +767,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Scale_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[2][k] = cpuTimer;
     else {
@@ -780,7 +780,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Scale_Optimized_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[3][k] = cpuTimer;
     else {
@@ -793,7 +793,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Add_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[4][k] = cpuTimer;
     else {
@@ -806,7 +806,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Add_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[5][k] = cpuTimer;
     else {
@@ -819,7 +819,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Triad_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[6][k] = cpuTimer;
     else {
@@ -832,7 +832,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
     STREAM_Triad_Optimized_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
     ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
-    //get the the total elapsed time in ms
+    //get the total elapsed time in ms
     PetscTimeAdd(&cpuTimer);
     if (bDontUseGPUTiming) times[7][k] = cpuTimer;
     else {

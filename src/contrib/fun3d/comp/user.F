@@ -827,7 +827,7 @@
 !
 !=====================================================================72
       subroutine ETOH(nvertices, qvec)
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       integer ierr
@@ -993,7 +993,7 @@
 !  I have eliminated dq - D. K. Kaushik (1/23/97)
 !=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1073,7 +1073,7 @@
 !     write(*,*) 'I am in L2NORM just before Reduce op'
 !     write(*,*) 'Local res. norm on processor ',irank,' is ',sqrt(sum)
       call MPI_ALLREDUCE(sum,sumglo,icount,
-     >                   MPIU_SCALAR, MPI_SUM,
+     >                   MPIU_SCALAR, MPIU_SUM,
      >                   MPI_COMM_WORLD,ierr)
 !     write(*,*) 'In L2NORM - residual norm is', sqrt(sumglo)
       rms(ntt) = sqrt(sumglo/t1)
@@ -1138,7 +1138,7 @@
      &                 amut,
      &                 sface_bit,vface_bit,
      &                 clift, cdrag, cmom,irank,nvertices)
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1472,7 +1472,7 @@
       coef_loc(7) = cmy_loc
       coef_loc(8) = cmz_loc
       call MPI_ALLREDUCE(coef_loc,coef_glo,icount,
-     >                   MPIU_SCALAR, MPI_SUM,
+     >                   MPIU_SCALAR, MPIU_SUM,
      >                   MPI_COMM_WORLD,ierr)
 !     call MPI_ALLREDUCE(cd_loc,cd_glo,icount,
 !    >                   MPI_DOUBLE_PRECISION, MPI_SUM,

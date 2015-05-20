@@ -9,7 +9,7 @@ configure_options = [
   '--with-cxx=win32fe cl',
   'CXXFLAGS=-DMPICH_SKIP_MPICXX -MT -GR -EHsc',
   '--with-mpiexec=mpiexec --localonly',
-  'DATAFILESPATH=/home/sbalay/datafiles',
+  'DATAFILESPATH=c:/cygwin/home/sbalay/datafiles',
   ]
 
 if __name__ == '__main__':

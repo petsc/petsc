@@ -1,0 +1,93 @@
+  0 SNES Function norm 0.690597 
+      Line search: norm of Newton step: 1.199125536188e+01
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 2.077473081791e+01
+      Line search: monotonicity check failed, ratio: 1.732490068050e+00
+      Line search: entering iteration with lambda: 2.886019430766e-01
+      Line search: norm of simplified Newton update: 5.052079187203e+00
+  1 SNES Function norm 0.27875 
+      Line search: norm of Newton step: 9.166776123383e-01
+      Line search: Lipschitz estimate: 4.610151815134e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 1.971918103133e+00
+      Line search: monotonicity check failed, ratio: 2.151157698837e+00
+      Line search: entering iteration with lambda: 2.324329826076e-01
+      Line search: norm of simplified Newton update: 6.450639477350e-01
+  2 SNES Function norm 0.188657 
+      Line search: norm of Newton step: 3.822877630826e-01
+      Line search: Lipschitz estimate: 1.367676990197e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 9.468283778815e-01
+      Line search: monotonicity check failed, ratio: 2.476742572785e+00
+      Line search: entering iteration with lambda: 2.018780657684e-01
+      Line search: norm of simplified Newton update: 2.911337807266e-01
+  3 SNES Function norm 0.140394 
+      Line search: norm of Newton step: 2.051831558908e-01
+      Line search: Lipschitz estimate: 1.273457981665e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 5.726410854930e-01
+      Line search: monotonicity check failed, ratio: 2.790877657608e+00
+      Line search: entering iteration with lambda: 1.791551122411e-01
+      Line search: norm of simplified Newton update: 1.636164244675e-01
+  4 SNES Function norm 0.110247 
+      Line search: norm of Newton step: 1.268215376927e-01
+      Line search: Lipschitz estimate: 1.288208589631e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 3.904210699617e-01
+      Line search: monotonicity check failed, ratio: 3.078507618381e+00
+      Line search: entering iteration with lambda: 1.624163594771e-01
+      Line search: norm of simplified Newton update: 1.041648183314e-01
+  5 SNES Function norm 0.0895554 
+      Line search: norm of Newton step: 8.564413303429e-02
+      Line search: Lipschitz estimate: 1.351843839650e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 2.829679065078e-01
+      Line search: monotonicity check failed, ratio: 3.303996391609e+00
+      Line search: entering iteration with lambda: 1.513318844021e-01
+      Line search: norm of simplified Newton update: 7.164294268879e-02
+  6 SNES Function norm 0.0742704 
+      Line search: norm of Newton step: 6.118380131755e-02
+      Line search: Lipschitz estimate: 1.450028154499e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 2.044328044376e-01
+      Line search: monotonicity check failed, ratio: 3.341289688370e+00
+      Line search: entering iteration with lambda: 1.496428165868e-01
+      Line search: norm of simplified Newton update: 5.139107902554e-02
+  7 SNES Function norm 0.0618964 
+      Line search: norm of Newton step: 4.481016882009e-02
+      Line search: Lipschitz estimate: 1.594387528762e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 1.179164525594e-01
+      Line search: monotonicity check failed, ratio: 2.631466376143e+00
+      Line search: entering iteration with lambda: 1.900081279902e-01
+      Line search: norm of simplified Newton update: 3.561802190241e-02
+  8 SNES Function norm 0.0485525 
+      Line search: norm of Newton step: 3.046177992570e-02
+      Line search: Lipschitz estimate: 1.929107355580e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 3.397125187899e-02
+      Line search: monotonicity check failed, ratio: 1.115209024616e+00
+      Line search: entering iteration with lambda: 4.483464435488e-01
+      Line search: norm of simplified Newton update: 1.425799296999e-02
+  9 SNES Function norm 0.0192261 
+      Line search: norm of Newton step: 1.000635439152e-02
+      Line search: Lipschitz estimate: 4.571288481469e+00; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 2.386750434890e-03
+ 10 SNES Function norm 0.00953973 
+      Line search: norm of Newton step: 1.471192404086e-03
+      Line search: Lipschitz estimate: 1.769453762091e+01; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 7.339330630564e-05
+ 11 SNES Function norm 0.00139796 
+      Line search: norm of Newton step: 8.372453466859e-05
+      Line search: Lipschitz estimate: 1.228558065315e+02; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 5.581797282375e-07
+ 12 SNES Function norm 3.48054e-05 
+      Line search: norm of Newton step: 5.767656291896e-07
+      Line search: Lipschitz estimate: 4.304158589080e+03; lambda: 1.000000000000e+00
+      Line search: entering iteration with lambda: 1.000000000000e+00
+      Line search: norm of simplified Newton update: 2.006640104939e-10
+ 13 SNES Function norm 7.619e-11 
+CONVERGED_FNORM_RELATIVE Number of nonlinear iterations = 13

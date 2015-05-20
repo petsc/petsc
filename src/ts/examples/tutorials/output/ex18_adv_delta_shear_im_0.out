@@ -1,0 +1,42 @@
+0  time        0  |x| (       0,        1) |x|_1 (       0,        1)  
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  1  time   0.3333  |x| (  0.4115,   0.8061) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  2  time   0.6667  |x| (  0.4115,   0.6497) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
+  3  time        1  |x| (  0.4115,   0.5237) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
+  4  time    1.333  |x| (  0.4115,   0.4222) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+  5  time    1.667  |x| (  0.4115,   0.4094) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+  6  time        2  |x| (  0.4115,    0.396) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+  7  time    2.333  |x| (  0.4115,   0.3724) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+  8  time    2.667  |x| (  0.4115,    0.343) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+  9  time        3  |x| (  0.4115,   0.3111) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 10  time    3.333  |x| (  0.4115,   0.3016) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 11  time    3.667  |x| (  0.4115,   0.2972) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 12  time        4  |x| (  0.4115,   0.2874) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 13  time    4.333  |x| (  0.4115,   0.2738) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 14  time    4.667  |x| (  0.4115,   0.2575) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 15  time        5  |x| (  0.4115,   0.2497) |x|_1 (   29.29,        1)  
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
+ 16  time    5.333  |x| (  0.4115,   0.2477) |x|_1 (   29.29,        1)  
+TS Object: 1 MPI processes
+  type: mimex
+  maximum steps=20
+  maximum time=5
+  total number of nonlinear solver iterations=0
+  total number of nonlinear solve failures=0
+  total number of linear solver iterations=0
+  total number of rejected steps=0
+CONVERGED_TIME at time 5.33333 after 16 steps

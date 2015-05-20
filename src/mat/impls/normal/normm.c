@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 
 typedef struct {
   Mat         A;
@@ -189,7 +189,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   const PetscScalar *mvalues;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(A->cmap->N,PetscScalar,&diag,A->cmap->N,PetscScalar,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work);CHKERRQ(ierr);
   ierr = PetscMemzero(work,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -241,7 +241,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
 
-  ierr       = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;

@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #if defined(PETSC_HAVE_EXODUSII)
 #include <netcdf.h>
@@ -7,9 +7,54 @@
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateExodusFromFile"
+/*@C
+  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
+
+  Collective on comm
+
+  Input Parameters:
++ comm  - The MPI communicator
+. filename - The name of the ExodusII file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The DM object representing the mesh
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: DMPLEX, DMCreate(), DMPlexCreateExodus()
+@*/
+PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+#if defined(PETSC_HAVE_EXODUSII)
+  int   CPU_word_size = 0, IO_word_size = 0, exoid = -1;
+  float version;
+#endif
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(filename, 2);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_EXODUSII)
+  if (!rank) {
+    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
+  }
+  ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
+  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+#else
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateExodus"
 /*@
-  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
+  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
 
   Collective on comm
 
@@ -49,6 +94,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
+    ierr = PetscMemzero(title,(PETSC_MAX_PATH_LEN+1)*sizeof(char));CHKERRQ(ierr);
     ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
     if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ExodusII ex_get_init() failed with error code %D\n",ierr);
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
@@ -56,7 +102,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, title);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
 
   /* Read cell sets information */
@@ -72,7 +118,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int *cs_connect;
 
     /* Get cell sets IDs */
-    ierr = PetscMalloc(num_cs * sizeof(int), &cs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_cs, &cs_id);CHKERRQ(ierr);
     ierr = ex_get_elem_blk_ids(exoid, cs_id);CHKERRQ(ierr);
     /* Read the cell set connectivity table and build mesh topology
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
@@ -86,7 +132,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (cs = 0, c = 0; cs < num_cs; cs++) {
       ierr = ex_get_elem_block(exoid, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, &num_attr);CHKERRQ(ierr);
-      ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,int,&cs_connect,num_vertex_per_cell,PetscInt,&cone);CHKERRQ(ierr);
+      ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,&cs_connect,num_vertex_per_cell,&cone);CHKERRQ(ierr);
       ierr = ex_get_elem_conn(exoid, cs_id[cs], cs_connect);CHKERRQ(ierr);
       /* EXO uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
@@ -117,7 +163,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm;
+    DM idm = NULL;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     /* Maintain Cell Sets label */
@@ -142,11 +188,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int *vs_vertex_list;
 
     /* Get vertex set ids */
-    ierr = PetscMalloc(num_vs * sizeof(int), &vs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_vs, &vs_id);CHKERRQ(ierr);
     ierr = ex_get_node_set_ids(exoid, vs_id);CHKERRQ(ierr);
     for (vs = 0; vs < num_vs; ++vs) {
       ierr = ex_get_node_set_param(exoid, vs_id[vs], &num_vertex_in_set, &num_attr);CHKERRQ(ierr);
-      ierr = PetscMalloc(num_vertex_in_set * sizeof(int), &vs_vertex_list);CHKERRQ(ierr);
+      ierr = PetscMalloc1(num_vertex_in_set, &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
       for (v = 0; v < num_vertex_in_set; ++v) {
         ierr = DMPlexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
@@ -156,7 +202,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     ierr = PetscFree(vs_id);CHKERRQ(ierr);
   }
   /* Read coordinates */
-  ierr = DMPlexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
@@ -169,12 +215,13 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {
     float *x, *y, *z;
 
-    ierr = PetscMalloc3(numVertices,float,&x,numVertices,float,&y,numVertices,float,&z);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numVertices,&x,numVertices,&y,numVertices,&z);CHKERRQ(ierr);
     ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
     if (dim > 0) {
       for (v = 0; v < numVertices; ++v) coords[v*dim+0] = x[v];
@@ -202,11 +249,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int *fs_vertex_count_list, *fs_vertex_list;
 
     /* Get side set ids */
-    ierr = PetscMalloc(num_fs * sizeof(int), &fs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_fs, &fs_id);CHKERRQ(ierr);
     ierr = ex_get_side_set_ids(exoid, fs_id);CHKERRQ(ierr);
     for (fs = 0; fs < num_fs; ++fs) {
       ierr = ex_get_side_set_param(exoid, fs_id[fs], &num_side_in_set, &num_dist_fact_in_set);CHKERRQ(ierr);
-      ierr = PetscMalloc2(num_side_in_set,int,&fs_vertex_count_list,num_side_in_set*4,int,&fs_vertex_list);CHKERRQ(ierr);
+      ierr = PetscMalloc2(num_side_in_set,&fs_vertex_count_list,num_side_in_set*4,&fs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces   = NULL;

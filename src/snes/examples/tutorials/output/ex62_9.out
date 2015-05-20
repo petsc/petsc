@@ -1,5 +1,5 @@
 Initial guess
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 0.5
@@ -16,7 +16,7 @@ Process [1]
 0
 L_2 Error: 0.200308
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -36,7 +36,7 @@ Vector Object: 1 MPI processes
 0
 0
 -0.0208333
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -57,7 +57,7 @@ Vector Object: 1 MPI processes
 0
 0.0208333
 Initial Residual
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 -0.0208333
@@ -74,7 +74,7 @@ Process [1]
 0
 L_2 Residual: 0.051031
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 2 MPI processes
   type: mpiaij
 row 0: (0, 0)  (1, 0)  (2, 0)  (5, 0)  (7, -0.166667)  (8, -0.0833333)  (9, 0) 
 row 1: (0, 0)  (1, 0)  (2, 0)  (7, -0.0833333)  (8, -0.166667)  (9, 0)  (10, 0) 
@@ -88,7 +88,7 @@ row 8: (0, 0.0833333)  (1, 0.166667)  (4, -0.166667)  (5, -0.0833333)  (6, -0.08
 row 9: (0, 0)  (1, 0)  (4, 0)  (5, 0)  (6, 0)  (7, 0)  (8, 0)  (9, 0)  (10, 0) 
 row 10: (1, 0)  (6, 0)  (7, 0.0833333)  (8, -0.0833333)  (9, 0)  (10, 0) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -108,7 +108,7 @@ Vector Object: 1 MPI processes
 0
 0
 -0.0208333
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -129,7 +129,7 @@ Vector Object: 1 MPI processes
 0
 -0.0208333
 Au - b = Au + F(0)
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 -0.0208333

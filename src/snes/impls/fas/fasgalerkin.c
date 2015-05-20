@@ -1,4 +1,4 @@
-#include "../src/snes/impls/fas/fasimpls.h" /*I  "petscsnesfas.h"  I*/
+#include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASGetGalerkin"

@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
 typedef struct {
@@ -90,7 +90,7 @@ PetscErrorCode  MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
 
-  ierr       = PetscNewLog(*N,Mat_LRC,&Na);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   Na->A      = A;
 

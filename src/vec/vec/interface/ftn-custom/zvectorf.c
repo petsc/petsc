@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -8,13 +8,16 @@
 #define vecload_                  VECLOAD
 #define vecview_                  VECVIEW
 #define vecgetarray_              VECGETARRAY
+#define vecgetarrayread_          VECGETARRAYREAD
 #define vecgetarrayaligned_       VECGETARRAYALIGNED
 #define vecrestorearray_          VECRESTOREARRAY
+#define vecrestorearrayread_      VECRESTOREARRAYREAD
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecdestroyvecs_           VECDESTROYVECS
 #define vecmax_                   VECMAX
 #define vecgetownershiprange_     VECGETOWNERSHIPRANGE
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
+#define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
@@ -23,11 +26,15 @@
 #define vecview_                  vecview
 #define vecgetarray_              vecgetarray
 #define vecrestorearray_          vecrestorearray
+#define vecgetarrayaligned_       vecgetarrayaligned
+#define vecgetarrayread_          vecgetarrayread
+#define vecrestorearrayread_      vecrestorearrayread
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecdestroyvecs_           vecdestroyvecs
 #define vecmax_                   vecmax
 #define vecgetownershiprange_     vecgetownershiprange
 #define vecgetownershipranges_    vecgetownershipranges
+#define vecsetoptionsprefix_      vecsetoptionsprefix
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
@@ -120,6 +127,31 @@ PETSC_EXTERN void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
 }
 
+PETSC_EXTERN void PETSC_STDCALL vecgetarrayread_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscScalar *lx;
+  PetscInt          m,bs;
+
+  *ierr = VecGetArrayRead(*x,&lx); if (*ierr) return;
+  *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
+  bs    = 1;
+  if (VecGetArrayAligned) {
+    *ierr = VecGetBlockSize(*x,&bs);if (*ierr) return;
+  }
+  *ierr = PetscScalarAddressToFortran((PetscObject)*x,bs,fa,(PetscScalar*)lx,m,ia);
+}
+
+/* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
+PETSC_EXTERN void PETSC_STDCALL vecrestorearrayread_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  PetscInt          m;
+  const PetscScalar *lx;
+
+  *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
+  *ierr = PetscScalarAddressFromFortran((PetscObject)*x,fa,*ia,m,(PetscScalar**)&lx);if (*ierr) return;
+  *ierr = VecRestoreArrayRead(*x,&lx);if (*ierr) return;
+}
+
 /*
       vecduplicatevecs() and vecdestroyvecs() are slightly different from C since the
     Fortran provides the array to hold the vector objects,while in C that
@@ -165,3 +197,11 @@ PETSC_EXTERN void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,Pe
   *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
 }
 
+PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(prefix,len,t);
+  *ierr = VecSetOptionsPrefix(*v,t);
+  FREECHAR(prefix,t);
+}

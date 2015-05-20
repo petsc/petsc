@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h>
+#include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
 #undef __FUNCT__
@@ -19,7 +19,6 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscReal      steptol, maxstep, rtol, atol, ltol;
 
   PetscViewer monitor;
-  PetscBool   domainerror;
   PetscReal   lambda, lambda_old, lambda_mid, lambda_update, delLambda;
   PetscReal   fnrm, fnrm_old, fnrm_mid;
   PetscReal   delFnrm, delFnrm_old, del2Fnrm;
@@ -32,7 +31,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
   ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
@@ -57,14 +56,13 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
     if (!objective) {
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       if (linesearch->ops->vinorm) {
         fnrm_mid = gnorm;
         ierr     = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
       } else {
-        ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
       }
-      fnrm_mid = fnrm_mid*fnrm_mid;
 
       /* compute the norm at lambda */
       ierr = VecCopy(X, W);CHKERRQ(ierr);
@@ -72,13 +70,14 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       if (linesearch->ops->vinorm) {
         fnrm = gnorm;
         ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
       } else {
-        ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnrm);CHKERRQ(ierr);
       }
+      fnrm_mid = fnrm_mid*fnrm_mid;
       fnrm = fnrm*fnrm;
     } else {
       /* compute the objective at the midpoint */
@@ -136,7 +135,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     if (lambda_update < steptol) lambda_update = 0.5*(lambda + lambda_old);
 
-    if (PetscIsInfOrNanScalar(lambda_update)) break;
+    if (PetscIsInfOrNanReal(lambda_update)) break;
 
     if (lambda_update > maxstep) break;
 
@@ -163,12 +162,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   } else {
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-  if (domainerror) {
-    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  ierr = (*linesearch->ops->snesfunc)(snes,X,F);CHKERRQ(ierr);
 
   ierr = SNESLineSearchSetLambda(linesearch, lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
@@ -180,7 +174,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
   }
   if (lambda <= steptol) {
-    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -188,7 +182,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_L2"
 /*MC
-   SNESLINESEARCHL2 - Secant search in the L2 norm of the function.
+   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function if it is provided with SNESSetObjective().
 
    The function norm is evaluated at points in [0, damping] to construct
    a polynomial fitting.  This fitting is used to construct a new lambda
@@ -196,9 +190,10 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
    interval, [lambda, lambda_old], max_it - 1 times.
 
    Options Database Keys:
-+  -snes_linesearch_max_it<1> - maximum number of iterations
-.  -snes_linesearch_damping<1.0> - initial steplength
--  -snes_linesearch_minlambda - minimum allowable lambda
++  -snes_linesearch_max_it <maxit> - maximum number of iterations, default is 1
+.  -snes_linesearch_maxstep <length> - the algorithm insures that a step length is never longer than this value
+.  -snes_linesearch_damping <damping> - initial step is scaled back by this factor, default is 1.0
+-  -snes_linesearch_minlambda <minlambda> - minimum allowable lambda
 
    Level: advanced
 

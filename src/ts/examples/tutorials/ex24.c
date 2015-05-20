@@ -2,7 +2,7 @@ static char help[] = "Pseudotransient continuation to solve a many-variable syst
 
 #include <petscts.h>
 
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode MonitorObjective(TS,PetscInt,PetscReal,Vec,void*);
 
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,ctx.n,ctx.n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
-  ierr = MatGetVecs(J,&X,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(J,&X,NULL);CHKERRQ(ierr);
 
   /* Create time integration context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&lits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%D,%D,%D) iterations to reach final time %G\n",steps,nits,lits,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%D,%D,%D) iterations to reach final time %g\n",steps,nits,lits,(double)ftime);CHKERRQ(ierr);
   if (view_final) {
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -209,7 +209,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *J,Mat *B,MatStructure *flag,void *ictx)
+static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat J,Mat B,void *ictx)
 {
   const PetscScalar *x;
   PetscErrorCode    ierr;
@@ -217,7 +217,7 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
   Ctx               *ctx = (Ctx*)ictx;
 
   PetscFunctionBeginUser;
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatZeroEntries(B);CHKERRQ(ierr);
   /*
      Get pointer to vector data
   */
@@ -242,10 +242,10 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
     v[0][1]   = 200.*(a*a01 + a1*a0);
     v[1][0]   = 200.*(a*a10 + a0*a1);
     v[1][1]   = 200.*(a*a11 + a1*a1);
-    ierr      = MatSetValues(*B,2,rowcol,2,rowcol,&v[0][0],ADD_VALUES);CHKERRQ(ierr);
+    ierr      = MatSetValues(B,2,rowcol,2,rowcol,&v[0][0],ADD_VALUES);CHKERRQ(ierr);
   }
   for (i=0; i<ctx->n; i++) {
-    ierr = MatSetValue(*B,i,i,(PetscScalar)shift,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(B,i,i,(PetscScalar)shift,ADD_VALUES);CHKERRQ(ierr);
   }
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
@@ -253,11 +253,11 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *B) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != B) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

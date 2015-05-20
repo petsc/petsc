@@ -7,9 +7,9 @@
 #if !defined(__PETSCSUNDIALS_H)
 #define __PETSCSUNDIALS_H
 
-#include <petsc-private/tsimpl.h>       /*I   "petscts.h"   I*/
-#include <petsc-private/pcimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/tsimpl.h>       /*I   "petscts.h"   I*/
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/matimpl.h>
 
 /*
    Include files specific for SUNDIALS

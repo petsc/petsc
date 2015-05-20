@@ -1,25 +1,26 @@
 #!/bin/sh
 #
-# This script makes a Apple Mac OS X framework for PETSc 
+# makeframework release or debug
 #
-#  ./systems/Apple/OSX/bin/arch-OSX.py
-#  make cmake test
-#  ./systems/Apple/OSX/bin/makeframework
+# This script makes a Apple Mac OS X framework for PETSc see ./makeall
 #
 # To use the framework:
 #
 #    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
-#    2a) compile in src/snes/examples/tutorials, cc -v ex19.c -o ex19 -DPETSC_APPLE_FRAMEWORK=1 -F ${PETSC_DIR}/${PETSC_ARCH} -framework PETSc  or 
-#    2b) copy ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework to /System/Library/Frameworks/ then you do not need the -F option or
-#    3) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
+#    2a) compile, for example, in src/snes/examples/tutorials, with cc -v ex19.c -o ex19 -DPETSC_APPLE_FRAMEWORK=1 -F ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release or debug -framework PETSc  or
+#    2b) Run the installer or sudo mv -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX to /Library/Frameworks/ then use
+#        cc -v ex19.c -o ex19 -DPETSC_APPLE_FRAMEWORK=1 -F /Library/Frameworks/PETSc-OSX/release or debug -framework PETSc
+#    2c) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located in /Library/Frameworks/PETSc-OSX/release or debug
 #
 #
-rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX
 
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/A
-cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1/PETSc.framework
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1/PETSc.framework/Versions
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1/PETSc.framework/Versions/A
+cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1/PETSc.framework/Versions/
 ln -s A Current
 
 cd A 
@@ -33,7 +34,11 @@ sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
 sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc-private/*.h
 cd ..
 
+echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map
+
 cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.dylib PETSc
+install_name_tool -id /Library/Frameworks/PETSc-OSX/$1/PETSc.Framework/PETSc PETSc
+
 mkdir Resources
 cd Resources
 cat <<EOF > Info.plist
@@ -81,8 +86,8 @@ cat <<EOF > Info.plist
 </plist>
 EOF
 
-cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1/PETSc.framework
 ln -s Versions/Current/Headers Headers
 ln -s Versions/Current/PETSc PETSc
 ln -s Versions/Current/Resources Resources
-
+ln -s Versions/Current/module.map module.map

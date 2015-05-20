@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <link href="../../style.css" rel="stylesheet" type="text/css">
-    <title>PETSc: Documentation: Changes: Development</title>
+    <title>PETSc: Documentation: Changes: 3.4</title>
   </head>
   <body>
 
@@ -12,7 +12,7 @@
     </div>
 
     <div id="header">
-      <h1><!--begin-->Documentation: Changes: Development<!--end--></h1>
+      <h1><!--begin-->Documentation: Changes: 3.4<!--end--></h1>
     </div>
 
     <hr>
@@ -29,11 +29,12 @@
             <li><a href="../referencing.html">Citing PETSc</a></li>
             <li><a href="../tutorials/index.html">Tutorials</a></li>
             <li><a href="../installation.html">Installation</a></li>
-            <li><a href="../ams.html">AMS</a></li>
+            <li><a href="../saws.html">SAWs</a></li>
             <li>
               <a href="index.html">Changes</a>
               <ul>
                 <li><a href="dev.html">dev</a></li>
+                <li><a href="35.html">3.5</a></li>
                 <li><span class="current">3.4</span></li>
                 <li><a href="33.html">3.3</a></li>
                 <li><a href="32.html">3.2</a></li>
@@ -64,7 +65,7 @@
             <li><a href="../bugreporting.html">Bug Reporting</a></li>
             <li><a href="../codemanagement.html">Code Management</a></li>
             <li><a href="../faq.html">FAQ</a></li>
-            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../license.html">License</a></li>
             <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -91,13 +92,13 @@
     <div id="main">
 
       <div align="center">
-        <h2><a name="CHANGES">CHANGES in the PETSc Development Version</a></h2>
+        <h2><a name="CHANGES">CHANGES in the PETSc 3.4 Version</a></h2>
       </div>
 
       <h4>General:</h4>
       <ul>
         <li>PetscGetTime() is replaced with PetscTime(), in C you must include petsctime.h to use</li>
-        <li>PetscViewerBinaryMatlabOpen() and friends are all removed, simply use PetscViewerBinaryOpen() followed by PetscViewerSetFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)</li>
+        <li>PetscViewerBinaryMatlabOpen() and friends are all removed, simply use PetscViewerBinaryOpen() followed by PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)</li>
         <li>Users should use new <tt>PetscFunctionBeginUser</tt> in there code instead of <tt>PetscFunctionBegin</tt> to get more relevant diagnostics.</li>
         <li>Replaced the hodge-podge of -xxx_view -xxx_view_yyy with a single consistent scheme: -xxx_view [ascii,binary,draw,socket,matlab,vtk][:filename][:ascii_info,ascii_info_detail,ascii_matlab,draw_contour,etc].</li>
         <li>In PETSc options files, the comment characters <tt>!</tt> and <tt>%</tt> are no longer supported, use <tt>#</tt>.</li>
@@ -147,7 +148,7 @@
         <li>VecDotNorm2() now returns the square of the norm in a real number (PetscReal) rather than the real part of a complex number (PetscScalar)</li>
         <li>Added VecDotRealPart()</li>
         <li>
-          The private header <tt>petsc-private/vecimpl.h</tt> is no longer included by <tt>petscvec.h</tt>.
+          The private header <tt>petsc/private/vecimpl.h</tt> is no longer included by <tt>petscvec.h</tt>.
           Users requiring direct access to internal members of Vec may need to include the private header, but may want to explain their use case to <tt>petsc-maint@mcs.anl.gov</tt> so that we can provide a stable API.
         </li>
         <li>
@@ -164,6 +165,7 @@
         <li><tt>MatGetArray()/MatRestoreArray()</tt> have been remove d. Use <tt>MatDenseGetArray()/MatDenseRestoreArray()</tt> or <tt>MatSeqAIJGetArray()/MatSeqAIJRestoreArray()</tt></li>
         <li>PLAPACK interface has been removed.</li>
         <li>MatGetRowIJ() and MatGetColumnIJ() have been made const-correct; the index arrays have always been read-only.</li>
+        <li>MatRestoreRow() and MatRestoreRowIJ() now zero their arguments.  They should never have been accessed after restoring.</li>
         <li>MatPermute() can now be used for MPIAIJ, but contrary to prior documentation, the column IS should be parallel and contain only owned columns.</li>
       </ul>
 
@@ -207,11 +209,11 @@
       <ul>
         <li>
           Option <tt>-ts_monitor_solution</tt> changed to <tt>-ts_monitor_draw_solution</tt>.
-          See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/TS/TSSetFromOptions.html">TSSetFromOptions</a> for additional monitoring options.
+          See <a href="http://www.mcs.anl.gov/petsc-master/docs/manualpages/TS/TSSetFromOptions.html">TSSetFromOptions</a> for additional monitoring options.
         </li>
         <li>
           TSSetExactFinalTime() now takes an enum instead of PetscBool, which includes a new feature <tt>TS_EXACTFINALTIME_MATCHSTEP</tt> that adjusts time step sizes to match an exact final time.
-          See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/TS/TSExactFinalTimeOption.html">TSExactFinalTimeOption</a>.
+          See <a href="http://www.mcs.anl.gov/petsc-master/docs/manualpages/TS/TSExactFinalTimeOption.html">TSExactFinalTimeOption</a>.
         </li>
       </ul>
       <h4>DM/DA:</h4>

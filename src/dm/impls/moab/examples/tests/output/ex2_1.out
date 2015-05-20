@@ -1,0 +1,8 @@
+Total number of fields: 3.
+Creating a 2-dimensional structured regular mesh of 5x5x5 in memory and creating a DM object.
+Setting field names to DM: 
+	 Field{0} = v1.
+	 Field{1} = v2.
+	 Field{2} = v3.
+Creating a global vector defined on DM and setting random data.
+Creating a global matrix defined on DM with the right block structure.

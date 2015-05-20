@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 void *PETSCNULLPOINTERADDRESS = NULL;
 
@@ -36,7 +36,7 @@ EXTERN_C_BEGIN
 void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
 
-size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
+size_t PetscIntAddressToFortran(const PetscInt *base,const PetscInt *addr)
 {
   size_t tmp1 = (size_t) base,tmp2 = 0;
   size_t tmp3 = (size_t) addr;
@@ -69,9 +69,9 @@ size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
   return itmp2;
 }
 
-PetscInt *PetscIntAddressFromFortran(PetscInt *base,size_t addr)
+PetscInt *PetscIntAddressFromFortran(const PetscInt *base,size_t addr)
 {
-  return base + addr;
+  return (PetscInt *)(base + addr);
 }
 
 /*
@@ -86,7 +86,7 @@ PetscInt *PetscIntAddressFromFortran(PetscInt *base,size_t addr)
 */
 PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscScalar *base,PetscScalar *addr,PetscInt N,size_t *res)
 {
-  size_t   tmp1 = (size_t) base,tmp2 = tmp1/sizeof(PetscScalar);
+  size_t   tmp1 = (size_t) base,tmp2;
   size_t   tmp3 = (size_t) addr;
   size_t   itmp2;
   PetscInt shift;
@@ -121,7 +121,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     PetscScalar    *work;
     PetscContainer container;
 
-    ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N+align,&work);CHKERRQ(ierr);
 
     /* recompute shift for newly allocated space */
     tmp3 = (size_t) work;

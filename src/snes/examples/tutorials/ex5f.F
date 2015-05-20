@@ -101,8 +101,8 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
-     &     DMDA_BOUNDARY_NONE,                                          &
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,              &
+     &     DM_BOUNDARY_NONE,                                            &
      &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
@@ -213,7 +213,6 @@
 !  Declarations for use with local arrays:
       PetscScalar lx_v(0:1)
       PetscOffset lx_i
-      Vec         localX
 
       ierr = 0
 
@@ -225,8 +224,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call DMGetLocalVector(da,localX,ierr)
-      call VecGetArray(localX,lx_v,lx_i,ierr)
+      call VecGetArray(X,lx_v,lx_i,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
@@ -234,13 +232,8 @@
 
 !  Restore vector
 
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
+      call VecRestoreArray(X,lx_v,lx_i,ierr)
 
-!  Insert values into global vector
-
-      call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
-      call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
-      call DMRestoreLocalVector(da,localX,ierr)
       return
       end
 
@@ -265,7 +258,7 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      PetscScalar  x(gxs:gxe,gys:gye)
+      PetscScalar    x(xs:xe,ys:ye)
       PetscErrorCode ierr
 
 !  Local variables:
@@ -387,7 +380,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
+!  global numbering with the "ltog" mapping
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -395,10 +388,6 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DMDAGetGlobalIndices() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
-!        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
 !        - Use DMDAGetGlobalIndices() to extract the local-to-global map
@@ -408,7 +397,7 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobianLocal(info,x,A,jac,ctx,str,ierr)
+      subroutine FormJacobianLocal(info,x,A,jac,ctx,ierr)
       implicit none
 
 #include "ex5f.h"
@@ -416,7 +405,6 @@
 !  Input/output variables:
       PetscScalar x(gxs:gxe,gys:gye)
       Mat         A,jac
-      MatStructure str
       PetscErrorCode  ierr
       integer ctx
       DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
@@ -487,7 +475,6 @@
          call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
       endif
-      str = SAME_NONZERO_PATTERN
       return
       end
 

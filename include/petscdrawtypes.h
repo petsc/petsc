@@ -1,6 +1,21 @@
 #ifndef _PETSCDRAWTYPES_H
 #define _PETSCDRAWTYPES_H
 
+/*J
+    PetscDrawType - String with the name of a PetscDraw
+
+   Level: beginner
+
+.seealso: PetscDrawSetType(), PetscDraw, PetscViewer, PetscDrawCreate()
+J*/
+typedef const char* PetscDrawType;
+#define PETSC_DRAW_X          "x"
+#define PETSC_DRAW_GLUT       "glut"
+#define PETSC_DRAW_OPENGLES   "opengles"
+#define PETSC_DRAW_NULL       "null"
+#define PETSC_DRAW_WIN32      "win32"
+#define PETSC_DRAW_TIKZ       "tikz"
+
 /*S
      PetscDraw - Abstract PETSc object for graphics
 
@@ -55,5 +70,16 @@ typedef struct _p_PetscDrawSP*   PetscDrawSP;
 .seealso:  PetscDrawHGCreate()
 S*/
 typedef struct _p_PetscDrawHG*   PetscDrawHG;
+
+/*S
+     PetscDrawBar - Manages drawing bar graphs
+
+   Level: advanced
+
+  Concepts: graphics, histograms
+
+.seealso:  PetscDrawBarCreate()
+S*/
+typedef struct _p_PetscDrawBar*   PetscDrawBar;
 
 #endif

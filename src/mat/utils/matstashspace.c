@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 /* Get new PetscMatStashSpace into the existing space */
 #undef __FUNCT__
@@ -13,7 +13,7 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2,PetscInt n,PetscMatStashSpace 
   if (!n) PetscFunctionReturn(0);
 
   ierr = PetscMalloc(sizeof(struct _MatStashSpace),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc3(n*bs2,PetscScalar,&(a->space_head),n,PetscInt,&a->idx,n,PetscInt,&a->idy);CHKERRQ(ierr);
+  ierr = PetscMalloc3(n*bs2,&(a->space_head),n,&a->idx,n,&a->idy);CHKERRQ(ierr);
 
   a->val              = a->space_head;
   a->local_remaining  = n;

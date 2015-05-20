@@ -47,6 +47,8 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ao));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ao,viewer);CHKERRQ(ierr);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -75,8 +77,8 @@ PetscErrorCode  AODestroy(AO *ao)
   if (!*ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
   if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*ao);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ao);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
     ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);
@@ -450,16 +452,12 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)ao);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = AOSetType(ao,type);CHKERRQ(ierr);
   } else if (!((PetscObject)ao)->type_name) {
     ierr = AOSetType(ao,def);CHKERRQ(ierr);
   }
-
-  /* not used here, but called so will go into help messaage */
-  ierr = PetscOptionsName("-ao_view","Print detailed information on AO used","AOView",0);CHKERRQ(ierr);
-
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -529,23 +527,13 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
 {
   PetscErrorCode ierr;
   AO             aonew;
-  PetscBool      opt;
 
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
   *ao = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage();CHKERRQ(ierr);
-#endif
 
-  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
-  ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(aonew,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   *ao  = aonew;
-
-  opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-ao_view", &opt,NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = AOView(aonew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }

@@ -155,8 +155,8 @@ def main(args):
 
     fd = open('matlab/makefile','w')
     fd.write('LOCDIR   = 0\n')
-    fd.write('include ${PETSC_DIR}/conf/base\n')
-    fd.write('include ${PETSC_DIR}/conf/test\n')
+    fd.write('include ${PETSC_DIR}/lib/petsc/conf/base\n')
+    fd.write('include ${PETSC_DIR}/lib/petsc/conf/test\n')
     fd.write("mexs:\n\t${MATLAB_MEX} -output PetscMex *.c -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' ${PETSC_TS_LIB}\n")
     fd.close()
 

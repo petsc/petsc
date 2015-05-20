@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <../src/mat/order/order.h>
+#include <petsc/private/matorderimpl.h>
 
 /*
     MatGetOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc5(nrow,PetscInt,&mask,nrow+1,PetscInt,&xls,nrow,PetscInt,&ls,nrow+1,PetscInt,&xblk,nrow,PetscInt,&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc5(nrow,&mask,nrow+1,&xls,nrow,&ls,nrow+1,&xblk,nrow,&perm);CHKERRQ(ierr);
   SPARSEPACKgen1wd(&nrow,ia,ja,mask,&nblks,xblk,perm,xls,ls);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 

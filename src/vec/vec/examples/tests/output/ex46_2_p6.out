@@ -1,0 +1,11 @@
+*** PetscViewer[write] using MPI-IO ***
+*** PetscViewer[write] skipping header ***
+*** PetscViewer[load] skipping header ***
+*** PetscViewer[load] using MPI-IO ***
+VecCompare
+  min(a)   = +8.40e-04 [loc 8]
+  max(a)   = +9.95e+03 [loc 3]
+  min(b)   = +8.40e-04 [loc 8]
+  max(b)   = +9.95e+03 [loc 3]
+  min(a-b) < 1.0e-10
+Headerless read of data verified

@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 
 typedef struct {
   PetscBool allocated;
@@ -21,14 +21,15 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL);CHKERRQ(ierr);
+  ierr = KSPSetErrorIfNotConverged(lsc->kspL,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = KSPSetType(lsc->kspL,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
-  ierr = MatSchurComplementGetSubmatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
   if (lsc->scalediag) {
     ierr = VecDuplicate(lsc->x0,&lsc->scale);CHKERRQ(ierr);
   }
@@ -51,7 +52,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);
   if (!Lp) {ierr = PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);}
   if (!L) {
-    ierr = MatSchurComplementGetSubmatrices(pc->mat,NULL,NULL,&B,&C,NULL);CHKERRQ(ierr);
+    ierr = MatSchurComplementGetSubMatrices(pc->mat,NULL,NULL,&B,&C,NULL);CHKERRQ(ierr);
     if (!lsc->L) {
       ierr = MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L);CHKERRQ(ierr);
     } else {
@@ -61,11 +62,11 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   }
   if (lsc->scale) {
     Mat Ap;
-    ierr = MatSchurComplementGetSubmatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatSchurComplementGetSubMatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = MatGetDiagonal(Ap,lsc->scale);CHKERRQ(ierr); /* Should be the mass matrix, but we don't have plumbing for that yet */
     ierr = VecReciprocal(lsc->scale);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(lsc->kspL,L,Lp,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(lsc->kspL,L,Lp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +79,7 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSchurComplementGetSubmatrices(pc->mat,&A,NULL,&B,&C,NULL);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL);CHKERRQ(ierr);
   ierr = KSPSolve(lsc->kspL,x,lsc->x1);CHKERRQ(ierr);
   ierr = MatMult(B,lsc->x1,lsc->x0);CHKERRQ(ierr);
   if (lsc->scale) {
@@ -124,13 +125,13 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LSC"
-static PetscErrorCode PCSetFromOptions_LSC(PC pc)
+static PetscErrorCode PCSetFromOptions_LSC(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("LSC options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"LSC options");CHKERRQ(ierr);
   {
     ierr = PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL);CHKERRQ(ierr);
   }
@@ -183,7 +184,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
    usually more efficient anyway).  In the case of incompressible flow, A10 A10 is a Laplacian, call it L.  The current
    interface is to hang L and a preconditioning matrix Lp on the preconditioning matrix.
 
-   If you had called KSPSetOperators(ksp,S,Sp,flg), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
+   If you had called KSPSetOperators(ksp,S,Sp), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
    like (PCLSC doesn't use it directly) but should have matrices composed with it, under the names "LSC_L" and "LSC_Lp".
    For example, you might have setup code like this
 
@@ -216,7 +217,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
    Concepts: physics based preconditioners, block preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCFIELDSPLIT,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition(),
+           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
            MatCreateSchurComplement()
 M*/
 
@@ -228,7 +229,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_LSC,&lsc);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&lsc);CHKERRQ(ierr);
   pc->data = (void*)lsc;
 
   pc->ops->apply           = PCApply_LSC;

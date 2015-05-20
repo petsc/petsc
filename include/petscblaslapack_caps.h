@@ -1,15 +1,16 @@
 /*
-     This file deals with CAPS Fortran 77 naming convention.
+     This file deals with CAPS BLAS/LAPACK naming convention.
 */
 #if !defined(_BLASLAPACK_CAPS_H)
 #define _BLASLAPACK_CAPS_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USES_FORTRAN_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_BLASLAPACK_SINGLEISDOUBLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR
 #  define LAPACKgetrf_ SGETRF
+#  define LAPACKgetri_ SGETRI
 #  define BLASdot_     SDOT
 #  define BLASdotu_    SDOT
 #  define BLASnrm2_    SNRM2
@@ -28,6 +29,10 @@
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_ SPOTRF
 #  define LAPACKpotrs_ SPOTRS
+#  define LAPACKpotri_ SPOTRI
+#  define LAPACKsytrf_ SSYTRF
+#  define LAPACKsytrs_ SSYTRS
+#  define LAPACKsytri_ SSYTRI
 #  define BLASgemv_    SGEMV
 #  define LAPACKgetrs_ SGETRS
 #  define BLAStrmv_    STRMV
@@ -38,6 +43,7 @@
 #  define LAPACKsygv_  SSYGV
 #  define LAPACKsygvx_ SSYGVX
 #  define BLASgemm_    SGEMM
+#  define BLASsymm_    SSYMM
 #  define BLAStrsm_    STRSM
 #  define LAPACKstebz_ SSTEBZ
 #  define LAPACKsteqr_ SSTEQR  /* eigenvalues of symm tridiagonal matrix */
@@ -52,6 +58,7 @@
 #  define LAPACKgeqrf_ DGEQRF
 #  define LAPACKungqr_ DORGQR
 #  define LAPACKgetrf_ DGETRF
+#  define LAPACKgetri_ DGETRI
 #  define BLASdot_     DDOT
 #  define BLASdotu_    DDOT
 #  define BLASnrm2_    DNRM2
@@ -70,6 +77,10 @@
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_ DPOTRF
 #  define LAPACKpotrs_ DPOTRS
+#  define LAPACKpotri_ DPOTRI
+#  define LAPACKsytrf_ DSYTRF
+#  define LAPACKsytrs_ DSYTRS
+#  define LAPACKsytri_ DSYTRI
 #  define BLASgemv_    DGEMV
 #  define LAPACKgetrs_ DGETRS
 #  define BLAStrmv_    DTRMV
@@ -80,6 +91,7 @@
 #  define LAPACKsygv_  DSYGV
 #  define LAPACKsygvx_ DSYGVX
 #  define BLASgemm_    DGEMM
+#  define BLASsymm_    DSYMM
 #  define BLAStrsm_    DTRSM
 #  define LAPACKstebz_ DSTEBZ
 #  define LAPACKsteqr_ DSTEQR
@@ -92,11 +104,12 @@
 # endif
 
 #else
-# if defined(PETSC_USES_FORTRAN_SINGLE)
+# if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE)
 /* Complex single precision with no character string arguments */
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR
 #  define LAPACKgetrf_ CGETRF
+#  define LAPACKgetri_ CGETRI
 /* #  define BLASdot_     CDOTC */
 /* #  define BLASdotu_    CDOTU */
 #  define BLASnrm2_    SCNRM2
@@ -114,10 +127,15 @@
 /* Complex single precision with character string arguments */
 #  define LAPACKpotrf_ CPOTRF
 #  define LAPACKpotrs_ CPOTRS
+#  define LAPACKpotri_ CPOTRI
+#  define LAPACKsytrf_ CSYTRF
+#  define LAPACKsytrs_ CSYTRS
+#  define LAPACKsytri_ CSYTRI
 #  define BLASgemv_    CGEMV
 #  define LAPACKgetrs_ CGETRS
 #  define BLAStrmv_    CTRMV
 #  define BLASgemm_    CGEMM
+#  define BLASsymm_    CSYMM
 #  define BLAStrsm_    CTRSM
 #  define LAPACKgesvd_ CGESVD
 #  define LAPACKgeev_  CGEEV
@@ -139,6 +157,7 @@
 #  define LAPACKgeqrf_ ZGEQRF
 #  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
+#  define LAPACKgetri_ ZGETRI
 /* #  define BLASdot_     ZDOTC */
 /* #  define BLASdotu_    ZDOTU */
 #  define BLASnrm2_    DZNRM2
@@ -156,10 +175,15 @@
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_ ZPOTRF
 #  define LAPACKpotrs_ ZPOTRS
+#  define LAPACKpotri_ ZPOTRI
+#  define LAPACKsytrf_ ZSYTRF
+#  define LAPACKsytrs_ ZSYTRS
+#  define LAPACKsytri_ ZSYTRI
 #  define BLASgemv_    ZGEMV
 #  define LAPACKgetrs_ ZGETRS
 #  define BLAStrmv_    ZTRMV
 #  define BLASgemm_    ZGEMM
+#  define BLASsymm_    ZSYMM
 #  define BLAStrsm_    ZTRSM
 #  define LAPACKgesvd_ ZGESVD
 #  define LAPACKgeev_  ZGEEV

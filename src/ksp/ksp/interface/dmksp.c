@@ -1,5 +1,5 @@
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/kspimpl.h> /*I "petscksp.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -24,11 +24,8 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
-#endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMKSP, struct _DMKSPOps, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
-  ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMKSPOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +229,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 
 .seealso: DMKSPSetContext(), DMKSPGetComputeOperators(), KSPSetOperators()
 @*/
-PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMKSP          kdm;
@@ -263,7 +260,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat
 
 .seealso: DMKSPSetContext(), KSPSetComputeOperators(), DMKSPSetComputeOperators()
 @*/
-PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMKSP          kdm;

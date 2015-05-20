@@ -1,8 +1,8 @@
 /*
    This file contains routines for section object operations on Vecs
 */
-#include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
-#include <petsc-private/vecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionVecView_ASCII"
@@ -14,28 +14,27 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (s->atlasLayout.numDof != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle %d dof in a uniform section", s->atlasLayout.numDof);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
-  for (p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
+  for (p = 0; p < s->pEnd - s->pStart; ++p) {
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for (i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(v) > 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G + %G i", PetscRealPart(v), PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(v) < 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G - %G i", PetscRealPart(v),-PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)(-PetscImaginaryPart(v)));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", PetscRealPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)v);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, " constrained");CHKERRQ(ierr);
@@ -44,19 +43,19 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->atlasLayout.pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for (i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(v) > 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G + %G i", PetscRealPart(v), PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(v) < 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G - %G i", PetscRealPart(v),-PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)(-PetscImaginaryPart(v)));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", PetscRealPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)v);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -103,7 +102,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values)
 {
   PetscScalar    *baseArray;
-  const PetscInt p = point - s->atlasLayout.pStart;
+  const PetscInt p = point - s->pStart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -129,7 +128,10 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 
   Level: developer
 
-  Note: This is similar to MatSetValuesStencil()
+  Note: This is similar to MatSetValuesStencil(). The Fortran binding is
+$
+$   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
+$
 
 .seealso: PetscSection, PetscSectionCreate()
 @*/
@@ -139,13 +141,13 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   const PetscBool doInsert    = mode == INSERT_VALUES     || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES                          ? PETSC_TRUE : PETSC_FALSE;
   const PetscBool doInterior  = mode == INSERT_ALL_VALUES || mode == ADD_ALL_VALUES    || mode == INSERT_VALUES    || mode == ADD_VALUES    ? PETSC_TRUE : PETSC_FALSE;
   const PetscBool doBC        = mode == INSERT_ALL_VALUES || mode == ADD_ALL_VALUES    || mode == INSERT_BC_VALUES || mode == ADD_BC_VALUES ? PETSC_TRUE : PETSC_FALSE;
-  const PetscInt  p           = point - s->atlasLayout.pStart;
+  const PetscInt  p           = point - s->pStart;
   const PetscInt  orientation = 0; /* Needs to be included for use in closure operations */
   PetscInt        cDim        = 0;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr  = PetscSectionGetConstraintDof(s, p, &cDim);CHKERRQ(ierr);
+  ierr  = PetscSectionGetConstraintDof(s, point, &cDim);CHKERRQ(ierr);
   ierr  = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   array = &baseArray[s->atlasOff[p]];
   if (!cDim && doInterior) {
@@ -219,5 +221,102 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
     }
   }
   ierr = VecRestoreArray(v, &baseArray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetField_Internal"
+PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
+  PetscInt      *subIndices;
+  PetscInt       Nc, subSize = 0, subOff = 0, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, fdof = 0;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);}
+    subSize += fdof;
+  }
+  ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, goff;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {
+      PetscInt fdof, fc, f2, poff = 0;
+
+      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+      /* Can get rid of this loop by storing field information in the global section */
+      for (f2 = 0; f2 < field; ++f2) {
+        ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+        poff += fdof;
+      }
+      ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);
+      for (fc = 0; fc < fdof; ++fc, ++subOff) subIndices[subOff] = goff+poff+fc;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) v), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+  ierr = VecGetSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*subv, Nc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionRestoreField_Internal"
+PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionVecNorm"
+/*@C
+  PetscSectionVecNorm - Computes the vector norm, separated into field components.
+
+  Input Parameters:
++ s    - the local Section
+. gs   - the global section
+. x    - the vector
+- type - one of NORM_1, NORM_2, NORM_INFINITY.
+
+  Output Parameter:
+. val  - the array of norms
+
+  Level: intermediate
+
+.seealso: VecNorm(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormType type, PetscReal val[])
+{
+  PetscInt       Nf, f, pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(gs, PETSC_SECTION_CLASSID, 2);
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
+  PetscValidPointer(val, 5);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  if (Nf < 2) {ierr = VecNorm(x, type, val);CHKERRQ(ierr);}
+  else {
+    ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      Vec subv;
+      IS  is;
+
+      ierr = PetscSectionGetField_Internal(s, gs, x, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      ierr = VecNorm(subv, type, &val[f]);CHKERRQ(ierr);
+      ierr = PetscSectionRestoreField_Internal(s, gs, x, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }

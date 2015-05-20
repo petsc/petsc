@@ -226,7 +226,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_PTScotch"
-PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode           ierr;
   PetscBool                flag;
@@ -235,8 +235,9 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part)
   MPPTScotchStrategyType   strat;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PTScotch partitioning options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)MP_PTSCOTCH_QUALITY,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
+  ierr = MatPartitioningPTScotchGetStrategy(part,&strat);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PTScotch partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)strat,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningPTScotchSetStrategy(part,strat);CHKERRQ(ierr); }
   ierr = PetscOptionsReal("-mat_partitioning_ptscotch_imbalance","Load imbalance ratio","MatPartitioningPTScotchSetImbalance",scotch->imbalance,&r,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningPTScotchSetImbalance(part,r);CHKERRQ(ierr); }
@@ -274,15 +275,15 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     adj  = (Mat_MPIAdj*)mat->data;
   }
 
-  ierr = PetscMalloc((mat->rmap->n+1)*sizeof(SCOTCH_Num),&locals);CHKERRQ(ierr);
-  ierr = PetscMalloc(nparts*sizeof(PetscReal),&vwgttab);CHKERRQ(ierr);
-  ierr = PetscMalloc(nparts*sizeof(SCOTCH_Num),&velotab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->n+1,&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nparts,&vwgttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nparts,&velotab);CHKERRQ(ierr);
   for (j=0; j<nparts; j++) {
     if (part->part_weights) vwgttab[j] = part->part_weights[j]*nparts;
     else vwgttab[j] = 1.0;
   }
   for (i=0; i<nparts; i++) {
-    deltval = PetscAbsReal(vwgttab[i]-floor(vwgttab[i]+0.5));
+    deltval = PetscAbsReal(vwgttab[i]-PetscFloorReal(vwgttab[i]+0.5));
     if (deltval>0.01) {
       for (j=0; j<nparts; j++) vwgttab[j] /= deltval;
     }
@@ -320,7 +321,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
 
   if (bs > 1) {
     PetscInt *newlocals;
-    ierr = PetscMalloc(bs*mat->rmap->n*sizeof(PetscInt),&newlocals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bs*mat->rmap->n,&newlocals);CHKERRQ(ierr);
     for (i=0;i<mat->rmap->n;i++) {
       for (j=0;j<bs;j++) {
         newlocals[bs*i+j] = locals[i];
@@ -375,7 +376,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   MatPartitioning_PTScotch *scotch;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_PTScotch,&scotch);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&scotch);CHKERRQ(ierr);
   part->data = (void*)scotch;
 
   scotch->imbalance = 0.01;

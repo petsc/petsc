@@ -142,20 +142,20 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   if (s < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,4);
   *inscheme = 0;
-  ierr      = PetscNew(struct _TSGLScheme,&scheme);CHKERRQ(ierr);
+  ierr      = PetscNew(&scheme);CHKERRQ(ierr);
   scheme->p = p;
   scheme->q = q;
   scheme->r = r;
   scheme->s = s;
 
-  ierr = PetscMalloc5(s,PetscScalar,&scheme->c,s*s,PetscScalar,&scheme->a,r*s,PetscScalar,&scheme->b,r*s,PetscScalar,&scheme->u,r*r,PetscScalar,&scheme->v);CHKERRQ(ierr);
+  ierr = PetscMalloc5(s,&scheme->c,s*s,&scheme->a,r*s,&scheme->b,r*s,&scheme->u,r*r,&scheme->v);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->c,c,s*sizeof(PetscScalar));CHKERRQ(ierr);
   for (j=0; j<s*s; j++) scheme->a[j] = (PetscAbsScalar(a[j]) < 1e-12) ? 0 : a[j];
   for (j=0; j<r*s; j++) scheme->b[j] = (PetscAbsScalar(b[j]) < 1e-12) ? 0 : b[j];
   for (j=0; j<s*r; j++) scheme->u[j] = (PetscAbsScalar(u[j]) < 1e-12) ? 0 : u[j];
   for (j=0; j<r*r; j++) scheme->v[j] = (PetscAbsScalar(v[j]) < 1e-12) ? 0 : v[j];
 
-  ierr = PetscMalloc6(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*s,PetscScalar,&scheme->phi,3*r,PetscScalar,&scheme->psi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
+  ierr = PetscMalloc6(r,&scheme->alpha,r,&scheme->beta,r,&scheme->gamma,3*s,&scheme->phi,3*r,&scheme->psi,r,&scheme->stage_error);CHKERRQ(ierr);
   {
     PetscInt     i,j,k,ss=s+2;
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,ldb;
@@ -164,7 +164,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 #if !defined(PETSC_MISSING_LAPACK_GELSS)
     PetscBLASInt rank;
 #endif
-    ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
+    ierr = PetscMalloc7(PetscSqr(r),&ImV,3*s,&H,3*ss,&bmat,lwork,&workscalar,5*(3+r),&workreal,r+s,&sing,r+s,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
     for (i=0; i<r-1; i++) {
@@ -495,7 +495,7 @@ PETSC_EXTERN PetscErrorCode TSGLCreate_IRKS(TS ts)
   gl->Destroy               = TSGLDestroy_Default;
   gl->EstimateHigherMoments = TSGLEstimateHigherMoments_Default;
   gl->CompleteStep          = TSGLCompleteStep_RescaleAndModify;
-  ierr = PetscMalloc(10*sizeof(TSGLScheme),&gl->schemes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(10,&gl->schemes);CHKERRQ(ierr);
   gl->nschemes = 0;
 
   {
@@ -829,7 +829,7 @@ PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
   if (!gl->adapt) {
     ierr = TSGLAdaptCreate(PetscObjectComm((PetscObject)ts),&gl->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)gl->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ts,gl->adapt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)gl->adapt);CHKERRQ(ierr);
   }
   *adapt = gl->adapt;
   PetscFunctionReturn(0);
@@ -1131,7 +1131,7 @@ static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_GL"
-static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat A,Mat B,TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -1144,7 +1144,7 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
   dmsave = ts->dm;
   ts->dm = dm;
   /* gl->Xdot will have already been computed in SNESTSFormFunction_GL */
-  ierr   = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->scoeff/ts->time_step,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr   = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->scoeff/ts->time_step,A,B,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr   = TSGLRestoreVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1194,17 +1194,17 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_GL"
-static PetscErrorCode TSSetFromOptions_GL(TS ts)
+static PetscErrorCode TSSetFromOptions_GL(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_GL          *gl        = (TS_GL*)ts->data;
   char           tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("General Linear ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"General Linear ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
-    ierr = PetscOptionsList("-ts_gl_type","Type of GL method","TSGLSetType",TSGLList,gl->type_name[0] ? gl->type_name : tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-ts_gl_type","Type of GL method","TSGLSetType",TSGLList,gl->type_name[0] ? gl->type_name : tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
     if (flg || !gl->type_name[0]) {
       ierr = TSGLSetType(ts,tname);CHKERRQ(ierr);
     }
@@ -1227,7 +1227,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     }
     {
       char type[256] = TSGLACCEPT_ALWAYS;
-      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0] ? gl->accept_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsFList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0] ? gl->accept_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
       if (flg || !gl->accept_name[0]) {
         ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
       }
@@ -1236,7 +1236,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     {
       TSGLAdapt adapt;
       ierr = TSGLGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSGLAdaptSetFromOptions(adapt);CHKERRQ(ierr);
+      ierr = TSGLAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -1532,11 +1532,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
-#endif
 
-  ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&gl);CHKERRQ(ierr);
   ts->data = (void*)gl;
 
   ts->ops->reset          = TSReset_GL;

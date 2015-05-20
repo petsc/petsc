@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h>
 
 static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal,PetscReal*,PetscReal*);
@@ -110,7 +110,6 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
  */
 
   KSP_QCG        *pcgP = (KSP_QCG*)ksp->data;
-  MatStructure   pflag;
   Mat            Amat,Pmat;
   Vec            W,WA,WA2,R,P,ASP,BS,X,B;
   PetscScalar    scal,beta,rntrn,step;
@@ -147,16 +146,16 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   /* Initialize variables */
   ierr = VecSet(W,0.0);CHKERRQ(ierr);  /* W = 0 */
   ierr = VecSet(X,0.0);CHKERRQ(ierr);  /* X = 0 */
-  ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
 
   ierr       = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = bsnrm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,bsnrm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,bsnrm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -169,13 +168,13 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecDotRealPart(R,R,&rtr);CHKERRQ(ierr);
 
   for (i=0; i<=maxit; i++) {
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA);CHKERRQ(ierr);
-    ierr = MatMult(Amat,WA,WA2);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,WA,WA2);CHKERRQ(ierr);
     ierr = PCApplySymmetricLeft(pc,WA2,ASP);CHKERRQ(ierr);
 
     /* Check for negative curvature */
@@ -207,9 +206,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
       if (!i) {
-        ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
+        ierr = PetscInfo1(ksp,"negative curvature: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
       } else {
-        ierr = PetscInfo3(ksp,"negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
+        ierr = PetscInfo3(ksp,"negative curvature: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
       }
 
     } else {
@@ -236,9 +235,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         pcgP->ltsnrm = pcgP->delta;
         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
         if (!i) {
-          ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo1(ksp,"constrained step: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
         } else {
-          ierr = PetscInfo3(ksp,"constrained step: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo3(ksp,"constrained step: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
         }
 
       } else {
@@ -247,14 +246,14 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
         ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
-        ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
         ksp->rnorm = rnrm;
-        ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
         ierr = KSPLogResidualHistory(ksp,rnrm);CHKERRQ(ierr);
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) {                 /* convergence for */
-          ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo3(ksp,"truncated step: step=%g, rnrm=%g, delta=%g\n",(double)PetscRealPart(step),(double)rnrm,(double)pcgP->delta);CHKERRQ(ierr);
         }
       }
     }
@@ -272,7 +271,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecCopy(X,WA2);CHKERRQ(ierr);
   ierr = PCApplySymmetricRight(pc,WA2,X);CHKERRQ(ierr);
 
-  ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,Amat,X,WA);CHKERRQ(ierr);
   ierr = VecDotRealPart(B,X,&btx);CHKERRQ(ierr);
   ierr = VecDotRealPart(X,WA,&xtax);CHKERRQ(ierr);
 
@@ -341,7 +340,7 @@ static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_QCG"
-PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_QCG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscReal      delta;
@@ -349,7 +348,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP QCG Options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -412,8 +411,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   KSP_QCG        *cgP;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,2);CHKERRQ(ierr);
-  ierr = PetscNewLog(ksp,KSP_QCG,&cgP);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,3);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cgP);CHKERRQ(ierr);
 
   ksp->data                = (void*)cgP;
   ksp->ops->setup          = KSPSetUp_QCG;

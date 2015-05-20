@@ -2,12 +2,12 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetBoundingBox"
 /*@
-   PetscDrawGetBoundingBox - Gets the bounding box of all PetscDrawBoxedString() commands
+   PetscDrawGetBoundingBox - Gets the bounding box of all PetscDrawStringBoxed() commands
 
    Not collective
 
@@ -101,7 +101,7 @@ PetscErrorCode  PetscDrawPushCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->currentpoint > 9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
+  if (draw->currentpoint > 19) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
   draw->currentpoint_x[++draw->currentpoint] = x;
   draw->currentpoint_y[draw->currentpoint]   = y;
   PetscFunctionReturn(0);

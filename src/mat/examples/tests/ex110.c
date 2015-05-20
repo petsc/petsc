@@ -51,7 +51,7 @@ int main(int argc,char **argv)
 
   oi   = oaij->i;
   oa   = oaij->a;
-  ierr = PetscMalloc(oi[5]*sizeof(PetscInt),&oj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(oi[5],&oj);CHKERRQ(ierr);
   ierr = PetscMemcpy(oj,oaij->j,oi[5]*sizeof(PetscInt));CHKERRQ(ierr);
   /* modify the column entries in the non-diagonal portion back to global numbering */
   for (i=0; i<oi[5]; i++) {

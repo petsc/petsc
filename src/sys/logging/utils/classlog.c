@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscClassRegLogCreate"
@@ -28,12 +28,12 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscClassRegLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(&l);CHKERRQ(ierr);
 
   l->numClasses = 0;
   l->maxClasses = 100;
 
-  ierr = PetscMalloc(l->maxClasses * sizeof(PetscClassRegInfo), &l->classInfo);CHKERRQ(ierr);
+  ierr = PetscMalloc1(l->maxClasses, &l->classInfo);CHKERRQ(ierr);
 
   *classLog = l;
   PetscFunctionReturn(0);
@@ -113,12 +113,12 @@ PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *classLog)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscClassPerfLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(&l);CHKERRQ(ierr);
 
   l->numClasses = 0;
   l->maxClasses = 100;
 
-  ierr = PetscMalloc(l->maxClasses * sizeof(PetscClassPerfInfo), &l->classInfo);CHKERRQ(ierr);
+  ierr = PetscMalloc1(l->maxClasses, &l->classInfo);CHKERRQ(ierr);
 
   *classLog = l;
   PetscFunctionReturn(0);
@@ -199,7 +199,7 @@ PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 
   PetscFunctionBegin;
   while (size > classLog->maxClasses) {
-    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(PetscClassPerfInfo), &classInfo);CHKERRQ(ierr);
+    ierr = PetscMalloc1(classLog->maxClasses*2, &classInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(PetscClassPerfInfo));CHKERRQ(ierr);
     ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
 
@@ -243,7 +243,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
   PetscValidCharPointer(cname,2);
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
-    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(PetscClassRegInfo), &classInfo);CHKERRQ(ierr);
+    ierr = PetscMalloc1(classLog->maxClasses*2, &classInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(PetscClassRegInfo));CHKERRQ(ierr);
     ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
 
@@ -287,7 +287,7 @@ PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId 
     /* Could do bisection here */
     if (classLog->classInfo[c].classid == classid) break;
   }
-  if (c >= classLog->numClasses) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid object classid %d\nThis often happens if you compile with PETSC_USE_DYNAMIC_LIBRARIES, but link with static libraries.", classid);
+  if (c >= classLog->numClasses) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid object classid %d\nThis could happen if you compile with PETSC_HAVE_DYNAMIC_LIBRARIES, but link with static libraries.", classid);
   *oclass = c;
   PetscFunctionReturn(0);
 }
@@ -319,7 +319,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMalloc1(petsc_maxActions*2, &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
@@ -356,7 +356,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     /* Dynamically enlarge logging structures */
     if (petsc_numObjects >= petsc_maxObjects) {
       PetscTime(&start);
-      ierr = PetscMalloc(petsc_maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
+      ierr = PetscMalloc1(petsc_maxObjects*2, &tmpObjects);CHKERRQ(ierr);
       ierr = PetscMemcpy(tmpObjects, petsc_objects, petsc_maxObjects * sizeof(Object));CHKERRQ(ierr);
       ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
 
@@ -400,7 +400,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMalloc1(petsc_maxActions*2, &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 

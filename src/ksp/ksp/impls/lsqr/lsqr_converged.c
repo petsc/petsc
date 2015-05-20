@@ -1,4 +1,4 @@
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 extern PetscErrorCode  KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
@@ -20,10 +20,7 @@ PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt iter,PetscReal rnorm,KSPConv
   *reason = KSP_CONVERGED_ITERATING;
   if (iter == 0) PetscFunctionReturn(0);
 
-  if (PetscIsInfOrNanScalar(rnorm)) {
-    *reason = KSP_DIVERGED_NANORINF;
-    PetscFunctionReturn(0);
-  }
+  KSPCheckNorm(solksp,rnorm);
 
   ierr = KSPGetTolerances(solksp, &rtol, &atol, &dtol, &mxiter);CHKERRQ(ierr);
   if (iter > mxiter) {

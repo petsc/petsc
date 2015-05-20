@@ -24,7 +24,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateFFT"
-/*@
+/*@C
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
 
    Collective on MPI_Comm
@@ -57,7 +57,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   ierr      = MatCreate(comm,&FFT);CHKERRQ(ierr);
-  ierr      = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
+  ierr      = PetscNewLog(FFT,&fft);CHKERRQ(ierr);
   FFT->data = (void*)fft;
   N         = 1;
   for (i=0; i<ndim; i++) {
@@ -65,7 +65,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
     N *= dim[i];
   }
 
-  ierr = PetscMalloc(ndim*sizeof(PetscInt),&fft->dim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ndim,&fft->dim);CHKERRQ(ierr);
   ierr = PetscMemcpy(fft->dim,dim,ndim*sizeof(PetscInt));CHKERRQ(ierr);
 
   fft->ndim = ndim;

@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I     "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>  /*I     "petscsys.h"   I*/
 
 #define QUEUESTRINGSIZE 1024
 
@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(viewer,PetscViewer_VU, &vu);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,&vu);CHKERRQ(ierr);
   viewer->data = (void*) vu;
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;
@@ -295,7 +295,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _PrintfQueue, &next);CHKERRQ(ierr);
+  ierr = PetscNew(&next);CHKERRQ(ierr);
   if (vu->queue) {
     vu->queue->next = next;
     vu->queue       = next;

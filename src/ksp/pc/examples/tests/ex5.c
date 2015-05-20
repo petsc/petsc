@@ -55,7 +55,7 @@ int main(int Argc,char **Args)
   ierr = PetscOptionsHasName(NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) use_jacobi = 1;
 
-  ierr = PetscMalloc(levels*sizeof(PetscInt),&N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(levels,&N);CHKERRQ(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
@@ -72,7 +72,7 @@ int main(int Argc,char **Args)
   ierr = PCMGSetType(pcmg,am);CHKERRQ(ierr);
 
   ierr = PCMGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(cksp,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(cksp,cmat,cmat);CHKERRQ(ierr);
   ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetType(cksp,KSPPREONLY);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int Argc,char **Args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%D, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
 
     /* this is a dummy! since KSP requires a matrix passed in  */
-    ierr = KSPSetOperators(ksp[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp[i],mat[i],mat[i]);CHKERRQ(ierr);
     /*
         We override the matrix passed in by forcing it to use Richardson with
         a user provided application. This is non-standard and this practice
@@ -137,7 +137,7 @@ int main(int Argc,char **Args)
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void*)0,&fmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void (*)(void))amult);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(kspmg,fmat,fmat);CHKERRQ(ierr);
 
   ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);
   ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
@@ -145,13 +145,13 @@ int main(int Argc,char **Args)
 
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %G max error %G resi %G\n",e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
 
   ierr = KSPSolve(kspmg,B[levels-1],X[levels-1]);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(kspmg,&its);CHKERRQ(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %G max error %G resi %G\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
 
   ierr = PetscFree(N);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);
@@ -178,20 +178,21 @@ int main(int Argc,char **Args)
 #define __FUNCT__ "residual"
 PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
-  PetscInt       i,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *b,*x,*r;
+  PetscInt          i,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *x,*r;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
   n1--;
   r[0]  = b[0] + x[1] - 2.0*x[0];
   r[n1] = b[n1] + x[n1-1] - 2.0*x[n1];
   for (i=1; i<n1; i++) r[i] = b[i] + x[i+1] + x[i-1] - 2.0*x[i];
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -200,19 +201,20 @@ PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 #define __FUNCT__ "amult"
 PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 {
-  PetscInt       i,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *y,*x;
+  PetscInt          i,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   n1--;
   y[0] =  -x[1] + 2.0*x[0];
   y[n1] = -x[n1-1] + 2.0*x[n1];
   for (i=1; i<n1; i++) y[i] = -x[i+1] - x[i-1] + 2.0*x[i];
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -221,15 +223,16 @@ PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 #define __FUNCT__ "gauss_seidel"
 PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
-  PetscInt       i,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*b;
+  PetscInt          i,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   *its    = m;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   ierr    = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
-  ierr    = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
   while (m--) {
     x[0] =  .5*(x[1] + b[0]);
@@ -238,7 +241,7 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
     for (i=n1-1; i>0; i--) x[i] = .5*(x[i+1] + x[i-1] + b[i]);
     x[0] =  .5*(x[1] + b[0]);
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -247,15 +250,16 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
 #define __FUNCT__ "jacobi"
 PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
-  PetscInt       i,n,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *r,*b,*x;
+  PetscInt          i,n,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *r,*x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   *its    = m;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   ierr    = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
-  ierr    = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr    = VecGetArray(w,&r);CHKERRQ(ierr);
 
@@ -265,7 +269,7 @@ PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,
     r[n1] = .5*(x[n1-1] + b[n1]);
     for (i=0; i<n; i++) x[i] = (2.0*r[i] + x[i])/3.0;
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(w,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -278,13 +282,14 @@ PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,
 #define __FUNCT__ "interpolate"
 PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  PetscInt       i,n,N,i2;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
+  PetscInt          i,n,N,i2;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   n    = N/2;
   for (i=0; i<n; i++) {
@@ -293,7 +298,7 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
     y[i2+1] +=    x[i];
     y[i2+2] += .5*x[i];
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -302,13 +307,14 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "restrct"
 PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
 {
-  PetscInt       i,n,N,i2;
-  PetscErrorCode ierr;
-  PetscScalar    *r,*b;
+  PetscInt          i,n,N,i2;
+  PetscErrorCode    ierr;
+  PetscScalar       *b;
+  const PetscScalar *r;
 
   PetscFunctionBegin;
   ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   n    = N/2;
 
@@ -316,7 +322,7 @@ PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
     i2   = 2*i;
     b[i] = (r[i2] + 2.0*r[i2+1] + r[i2+2]);
   }
-  ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

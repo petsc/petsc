@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mat.h>   /* MATLAB include file */
@@ -16,7 +16,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   PetscMPIInt      rank;
   PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   mxArray          *mx;
   const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","bx","by","bz","stencil_type"};
 
@@ -51,7 +51,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   PetscMPIInt      rank;
   PetscInt         dim,m,n,p,dof,swidth,M,N,P;
   DMDAStencilType  stencil;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   MPI_Comm         comm;
   PetscBool        coors = PETSC_FALSE;
 
@@ -132,8 +132,8 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 .  m, n, p  - corresponding number of procs in each dimension
 .  dof      - number of degrees of freedom per node
 .  s        - stencil width
-.  bx,by,bz - type of ghost nodes at boundary, one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED,
-              DMDA_BOUNDARY_MIRROR, DMDA_BOUNDARY_PERIODIC
+.  bx,by,bz - type of ghost nodes at boundary, one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED,
+              DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC
 -  st       - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
 
    Level: beginner
@@ -145,13 +145,13 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
 .seealso: DMView(), DMDAGetCorners(), DMDAGetLocalInfo()
 @*/
-PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDABoundaryType *bx,DMDABoundaryType *by,DMDABoundaryType *bz,DMDAStencilType *st)
+PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMBoundaryType *bx,DMBoundaryType *by,DMBoundaryType *bz,DMDAStencilType *st)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (dim) *dim = dd->dim;
+  if (dim) *dim = da->dim;
   if (M) {
     if (dd->Mo < 0) *M = dd->M;
     else *M = dd->Mo;
@@ -204,7 +204,7 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(info,2);
   info->da  = da;
-  info->dim = dd->dim;
+  info->dim = da->dim;
   if (dd->Mo < 0) info->mx = dd->M;
   else info->mx = dd->Mo;
   if (dd->No < 0) info->my = dd->N;

@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawEllipse"

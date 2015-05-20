@@ -1,5 +1,5 @@
 CONVERGED_TIME at time 10.1607 after 46 steps
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: mpi
 Process [0]
 1

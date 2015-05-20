@@ -46,13 +46,14 @@ F*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
 /* These functions _should_ be internal, but currently have a reverse dependency so cannot be set with
  * DMDASNESSetPicardLocal.  This hack needs to be fixed in PETSc. */
 PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
 typedef enum {JAC_BRATU,JAC_PICARD,JAC_STAR,JAC_NEWTON} JacType;
 static const char *const JacTypes[] = {"BRATU","PICARD","STAR","NEWTON","JacType","JAC_",0};
@@ -81,7 +82,7 @@ static PetscErrorCode FormRHS(AppCtx*,DM,Vec);
 static PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,AppCtx*);
 static PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
 typedef struct _n_PreCheck *PreCheck;
@@ -164,9 +165,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                       1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                       1,1,NULL,NULL,&dastar);CHKERRQ(ierr);
 
 
@@ -191,7 +192,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* B can be type of MATAIJ,MATBAIJ or MATSBAIJ */
-  ierr = DMCreateMatrix(alloc_star ? dastar : da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(alloc_star ? dastar : da,&B);CHKERRQ(ierr);
   A    = B;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -205,12 +206,12 @@ int main(int argc,char **argv)
         the SNES to set it
     */
     ierr = DMDASNESSetPicardLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionPicardLocal,
-                                  (PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+                                  (PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,NULL,NULL,SNESPicardComputeJacobian,&user);CHKERRQ(ierr);
   } else {
     ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
-    ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
   }
 
 
@@ -218,7 +219,7 @@ int main(int argc,char **argv)
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
   ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
   /* Set up the precheck context if requested */
   if (use_precheck == 1) {      /* Use the precheck routines in this file */
@@ -333,7 +334,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
       } else {
         if (user->initial == -1) {
           if (user->lambda != 0) {
-            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           } else {
             /* The solution above is an exact solution for lambda=0, this avoids "accidentally" starting
              * with an exact solution. */
@@ -351,9 +352,9 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
           x[j][i] = (1 - xx*xx) * (1-yy*yy) * xx * yy;
         } else {
           if (user->lambda != 0) {
-            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           } else {
-            x[j][i] = 0.5*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = 0.5*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           }
         }
       }
@@ -519,7 +520,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat J,Mat B,MatStructure *str,AppCtx *user)
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat J,Mat B,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -661,7 +662,6 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *str = SAME_NONZERO_PATTERN;
 
   /*
      Tell the matrix we will never add a new nonzero location to the
@@ -727,7 +727,7 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
   ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
   ierr = VecNorm(Ylast,NORM_2,&ylastnorm);CHKERRQ(ierr);
   /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
-  theta         = acos((double)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
+  theta         = PetscAcosReal((PetscReal)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
   angle_radians = precheck->angle * PETSC_PI / 180.;
   if (PetscAbsReal(theta) < angle_radians || PetscAbsReal(theta - PETSC_PI) < angle_radians) {
     /* Modify the step Y */
@@ -738,13 +738,13 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
     ierr  = VecCopy(Y,Ylast);CHKERRQ(ierr);
     ierr  = VecScale(Y,alpha);CHKERRQ(ierr);
     if (precheck->monitor) {
-      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %G, corrected step by alpha=%G\n",theta*180./PETSC_PI,precheck->angle,alpha);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %g, corrected step by alpha=%g\n",(double)(theta*180./PETSC_PI),(double)precheck->angle,(double)alpha);CHKERRQ(ierr);
     }
   } else {
     ierr     = VecCopy(Y,Ylast);CHKERRQ(ierr);
     *changed = PETSC_FALSE;
     if (precheck->monitor) {
-      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %G, no correction applied\n",theta*180./PETSC_PI,precheck->angle);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %g, no correction applied\n",(double)(theta*180./PETSC_PI),(double)precheck->angle);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -810,8 +810,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   hydhx  = hy/hx;
 
   tot_its = 0;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr    = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
     ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);
@@ -820,7 +820,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
     ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
   }
-  if (B) ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+  if (B) ierr = DMDAVecGetArrayRead(da,localB,&b);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
@@ -904,7 +904,7 @@ x     Restore vector
   ierr = PetscLogFlops(tot_its*(118.0));CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
-    ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,localB,&b);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -38,6 +38,7 @@ T*/
 */
 #include <petscsys.h>
 #include <petscbag.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -91,7 +92,7 @@ static PetscScalar quadWeights[4] = {0.15902069,  0.09097931,  0.15902069,  0.09
 extern PetscErrorCode CreateNullSpace(DM, Vec*);
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,Field**,Mat,Mat,MatStructure*,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,Field**,Mat,Mat,AppCtx*);
 extern PetscErrorCode L_2Error(DM, Vec, PetscReal*, AppCtx*);
 
 #undef __FUNCT__
@@ -127,7 +128,7 @@ int main(int argc,char **argv)
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-alpha",&user->alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-lambda",&user->lambda,NULL);CHKERRQ(ierr);
-  if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
+  if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %g is out of range [%g, %g]", (double)user->lambda, (double)lambda_min, (double)lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create multilevel DM data structure (SNES) to manage hierarchical solvers
@@ -137,16 +138,16 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, (DM) da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set the discretization functions
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
-  ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,user);CHKERRQ(ierr);
+  ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = SNESSetComputeInitialGuess(snes, FormInitialGuess,NULL);CHKERRQ(ierr);
@@ -274,8 +275,8 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
         ierr = ExactSolution(i*hx, j*hy, &x[j][i]);CHKERRQ(ierr);
       } else {
         PetscReal temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
-        x[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
-        x[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i].u = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i].v = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         x[j][i].p = 1.0;
       }
 #endif
@@ -293,13 +294,15 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 #define __FUNCT__ "constantResidual"
 PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int j, PetscReal hx, PetscReal hy, Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
-  PetscScalar phi[3]    = {0.0, 0.0, 0.0};
-  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy;
-  Field       res;
-  PetscInt    q, k;
+  PetscErrorCode ierr;
+  Field          rLocal[3];
+  PetscScalar    phi[3]    = {0.0, 0.0, 0.0};
+  PetscReal      xI = i*hx, yI = j*hy, hxhy = hx*hy;
+  Field          res;
+  PetscInt       q, k;
 
   PetscFunctionBeginUser;
+  ierr = PetscMemzero(&rLocal,sizeof(rLocal));CHKERRQ(ierr);
   for (q = 0; q < 4; q++) {
     PETSC_UNUSED PetscReal x, y;
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
@@ -334,12 +337,14 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
 #define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
-  PetscScalar phi[3]    = {0.0, 0.0, 0.0};
-  Field       res;
-  PetscInt    q;
+  PetscErrorCode ierr;
+  Field          rLocal[3];
+  PetscScalar    phi[3]    = {0.0, 0.0, 0.0};
+  Field          res;
+  PetscInt       q;
 
   PetscFunctionBeginUser;
+  ierr = PetscMemzero(&rLocal,sizeof(rLocal));CHKERRQ(ierr);
   for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
@@ -568,7 +573,7 @@ PetscErrorCode nonlinearJacobian(PetscReal lambda, Field u[], PetscScalar J[])
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, MatStructure *str,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, AppCtx *user)
 {
   Field          uLocal[4];
   PetscScalar    JLocal[144];
@@ -865,7 +870,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *str = SAME_NONZERO_PATTERN;
 
   /*
      Tell the matrix we will never add a new nonzero location to the
@@ -949,8 +953,6 @@ PetscErrorCode L_2Error(DM da, Vec fVec, PetscReal *error, AppCtx *user)
   }
 
   ierr = DMDAVecRestoreArray(da, fLocalVec, &f);CHKERRQ(ierr);
-  /* ierr = DMLocalToGlobalBegin(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
-  /* ierr = DMLocalToGlobalEnd(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
   ierr = DMRestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

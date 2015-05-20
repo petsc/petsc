@@ -1,5 +1,5 @@
 /*
-      This file deals with unmangled Fortran 77 naming convention on systems that do not modify Fortran systems by
+      This file deals with unmangled BLAS/LAPACK naming convention on systems that do not modify BLAS/LAPACK function names
       adding an underscore at the end or changing to CAPS. IBM is one such compiler.
 */
 #if !defined(_BLASLAPACK_C_H)
@@ -11,6 +11,7 @@
 #  define LAPACKgeqrf_ sgeqrf
 #  define LAPACKungqr_ sorgqr
 #  define LAPACKgetrf_ sgetrf
+#  define LAPACKgetri_ sgetri
 #  define BLASdot_     sdot
 #  define BLASdotu_    sdot
 #  define BLASnrm2_    snrm2
@@ -29,10 +30,15 @@
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_ spotrf
 #  define LAPACKpotrs_ spotrs
+#  define LAPACKpotri_ spotri
+#  define LAPACKsytrf_ ssytrf
+#  define LAPACKsytrs_ ssytrs
+#  define LAPACKsytri_ ssytri
 #  define BLASgemv_    sgemv
 #  define LAPACKgetrs_ sgetrs
 #  define BLAStrmv_    strmv
 #  define BLASgemm_    sgemm
+#  define BLASsymm_    ssymm
 #  define BLAStrsm_    strsm
 #  define LAPACKgesvd_ sgesvd
 #  define LAPACKgeev_  sgeev
@@ -53,6 +59,7 @@
 #  define LAPACKgeqrf_ dgeqrf
 #  define LAPACKungqr_ dorgqr
 #  define LAPACKgetrf_ dgetrf
+#  define LAPACKgetri_ dgetri
 #  define BLASdot_     ddot
 #  define BLASdotu_    ddot
 #  define BLASnrm2_    dnrm2
@@ -71,10 +78,15 @@
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_ dpotrf
 #  define LAPACKpotrs_ dpotrs
+#  define LAPACKpotri_ dpotri
+#  define LAPACKsytrf_ dsytrf
+#  define LAPACKsytrs_ dsytrs
+#  define LAPACKsytri_ dsytri
 #  define BLASgemv_    dgemv
 #  define LAPACKgetrs_ dgetrs
 #  define BLAStrmv_    dtrmv
 #  define BLASgemm_    dgemm
+#  define BLASsymm_    dsymm
 #  define BLAStrsm_    dtrsm
 #  define LAPACKgesvd_ dgesvd
 #  define LAPACKgeev_  dgeev
@@ -97,6 +109,7 @@
 #  define LAPACKgeqrf_ cgeqrf
 #  define LAPACKungqr_ cungqr
 #  define LAPACKgetrf_ cgetrf
+#  define LAPACKgetri_ cgetri
 /* #  define BLASdot_     cdotc */
 /* #  define BLASdotu_    cdotu */
 #  define BLASnrm2_    scnrm2
@@ -113,10 +126,15 @@
 /* Complex single precision with character string arguments */
 #  define LAPACKpotrf_ cpotrf
 #  define LAPACKpotrs_ cpotrs
+#  define LAPACKpotri_ cpotri
+#  define LAPACKsytrf_ csytrf
+#  define LAPACKsytrs_ csytrs
+#  define LAPACKsytri_ csytri
 #  define BLASgemv_    cgemv
 #  define LAPACKgetrs_ cgetrs
 #  define BLAStrmv_    ctrmv
 #  define BLASgemm_    cgemm
+#  define BLASsymm_    csymm
 #  define BLAStrsm_    ctrsm
 #  define LAPACKgesvd_ cgesvd
 #  define LAPACKgesv_  cgesv
@@ -139,6 +157,7 @@
 #  define LAPACKgeqrf_ zgeqrf
 #  define LAPACKungqr_ zungqr
 #  define LAPACKgetrf_ zgetrf
+#  define LAPACKgetri_ zgetri
 /* #  define BLASdot_     zdotc */
 /* #  define BLASdotu_    zdotu */
 #  define BLASnrm2_    dznrm2
@@ -156,10 +175,15 @@
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_ zpotrf
 #  define LAPACKpotrs_ zpotrs
+#  define LAPACKpotri_ zpotri
+#  define LAPACKsytrf_ zsytrf
+#  define LAPACKsytrs_ zsytrs
+#  define LAPACKsytri_ zsytri
 #  define BLASgemv_    zgemv
 #  define LAPACKgetrs_ zgetrs
 #  define BLAStrmv_    ztrmv
 #  define BLASgemm_    zgemm
+#  define BLASsymm_    zsymm
 #  define BLAStrsm_    ztrsm
 #  define LAPACKgesvd_ zgesvd
 #  define LAPACKgeev_  zgeev

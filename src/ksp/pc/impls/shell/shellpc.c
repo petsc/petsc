@@ -4,8 +4,8 @@
   create their own preconditioner without writing much interface code.
 */
 
-#include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <petsc/private/vecimpl.h>
 
 typedef struct {
   void *ctx;                     /* user provided contexts for preconditioner */
@@ -812,7 +812,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   PC_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_Shell,&shell);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&shell);CHKERRQ(ierr);
   pc->data = (void*)shell;
 
   pc->ops->destroy         = PCDestroy_Shell;

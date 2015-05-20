@@ -73,6 +73,43 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSortRemoveDupsReal"
+/*@
+   PetscSortRemoveDupsReal - Sorts an array of doubles in place in increasing order removes all duplicate entries
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  v  - array of doubles
+
+   Output Parameter:
+.  n - number of non-redundant values
+
+   Level: intermediate
+
+   Concepts: sorting^doubles
+
+.seealso: PetscSortReal(), PetscSortRemoveDupsInt()
+@*/
+PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,s = 0,N = *n, b = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscSortReal(N,v);CHKERRQ(ierr);
+  for (i=0; i<N-1; i++) {
+    if (v[b+s+1] != v[b]) {
+      v[b+1] = v[b+s+1]; b++;
+    } else s++;
+  }
+  *n = N - s;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSortSplit"
 /*@

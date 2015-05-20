@@ -6,7 +6,7 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
 #include <cusp/krylov/bicgstab.h>
@@ -162,6 +162,10 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+    cusp::monitor<PetscReal> monitor(*xarray,bicg->maxits,bicg->rtol);
+    cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,monitor);
+#else
     cusp::default_monitor<PetscReal> monitor(*xarray,bicg->maxits,bicg->rtol);
     if (bicg->monitorverbose) {
       cusp::verbose_monitor<PetscReal> verbosemonitor(*xarray,bicg->maxits,bicg->rtol);
@@ -169,6 +173,7 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
     } else {
       cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,monitor);
     }
+#endif
   } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
@@ -203,13 +208,13 @@ static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BiCGStabCUSP"
-static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("BiCGStabCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"BiCGStabCUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_bicgstabcusp_rtol","relative tolerance for BiCGStabCUSP preconditioner","PCBiCGStabCUSPSetTolerance",bicg->rtol,&bicg->rtol,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bicgstabcusp_max_it","maximum iterations for BiCGStabCUSP preconditioner","PCBiCGStabCUSPSetIterations",bicg->maxits,&bicg->maxits,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bicgstabcusp_monitor_verbose","Print information about GPU BiCGStabCUSP iterations","PCBiCGStabCUSPSetUseVerboseMonitor",bicg->monitorverbose,&bicg->monitorverbose,0);CHKERRQ(ierr);
@@ -231,7 +236,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr = PetscNewLog(pc,PC_BiCGStabCUSP,&bicg);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&bicg);CHKERRQ(ierr);
   /*
      Set default values.  We don't actually want to set max iterations as far as I know, but the Cusp monitor requires them so we use a large number.
    */

@@ -4,7 +4,7 @@
   between Fortran and C.
 */
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -23,6 +23,7 @@
 #define petscoptionsclear_                 PETSCOPTIONSCLEAR
 #define petscoptionsinsertstring_          PETSCOPTIONSINSERTSTRING
 #define petscoptionsview_                  PETSCOPTIONSVIEW
+#define petscobjectviewfromoptions_        PETSCOBJECTVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscoptionsgetenumprivate_        petscoptionsgetenumprivate
 #define petscoptionsgetbool_               petscoptionsgetbool
@@ -39,6 +40,7 @@
 #define petscoptionsclear_                 petscoptionsclear
 #define petscoptionsinsertstring_          petscoptionsinsertstring
 #define petscoptionsview_                  petscoptionsview
+#define petscobjectviewfromoptions_        petscobjectviewfromoptions
 #endif
 
 /* ---------------------------------------------------------------------*/
@@ -221,3 +223,13 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsview_(PetscViewer *vin,PetscErrorCod
   *ierr = PetscOptionsView(v);
 }
 
+PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(lprefix),CHAR option PETSC_MIXED_LEN(loption),PetscErrorCode *ierr PETSC_END_LEN(lprefix) PETSC_END_LEN(loption))
+{
+  char *p, *o;
+
+  FIXCHAR(prefix, lprefix, p);
+  FIXCHAR(option, loption, o);
+  *ierr = PetscObjectViewFromOptions(*obj, p, o);
+  FREECHAR(prefix, p);
+  FREECHAR(option, o);
+}

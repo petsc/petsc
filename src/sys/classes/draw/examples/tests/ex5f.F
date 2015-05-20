@@ -1,8 +1,8 @@
 !
 !
       program main
-#include <finclude/petscsys.h>
-#include <finclude/petscdraw.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdraw.h>
 !
 !  This example demonstrates basic use of the Fortran interface for
 !  PetscDraw routines.
@@ -50,7 +50,7 @@
         call PetscDrawLGAddPoint(lg,xd,yd,ierr)
  10   continue
 
-      call PetscDrawLGIndicateDataPoints(lg,ierr)
+      call PetscDrawLGSetUseMarkers(lg,PETSC_TRUE,ierr)
       call PetscDrawLGDraw(lg,ierr)
       call PetscDrawFlush(draw,ierr)
 

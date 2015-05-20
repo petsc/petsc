@@ -15,10 +15,11 @@ with boundary conditions
 
 static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
-static PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+static PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 static PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
 typedef struct {
@@ -47,21 +48,21 @@ int main(int argc,char **argv)
   ierr   = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-3,1,1,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-3,1,1,0,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&b2);CHKERRQ(ierr);
   ierr = MatMult(A,x,b2);CHKERRQ(ierr);
   ierr = VecAXPY(b2,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b2,NORM_MAX,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",nrm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)nrm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&b2);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -95,7 +96,7 @@ static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
+static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;
   PetscErrorCode ierr;

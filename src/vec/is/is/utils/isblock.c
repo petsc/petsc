@@ -1,12 +1,12 @@
 
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
-#include <petscis.h>
+#include <petscis.h>                       /*I "petscis.h"  I*/
 #include <petscbt.h>
 #include <petscctable.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCompressIndicesGeneral"
-/*@C
+/*@
    ISCompressIndicesGeneral - convert the indices into block indices
    Input Parameters:
 +  n - maximum possible length of the index set
@@ -42,7 +42,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
   Nkbs = nkeys/bs;
   ierr = PetscTableCreate(Nkbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
-  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nbs,&nidx);CHKERRQ(ierr);
   ierr = PetscBTCreate(Nbs,&table);CHKERRQ(ierr);
 #endif
   for (i=0; i<imax; i++) {
@@ -70,7 +70,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_CTABLE)
-    ierr = PetscMalloc(isz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(isz,&nidx);CHKERRQ(ierr);
     ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
     j    = 0;
     while (tpos) {
@@ -122,9 +122,9 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
     len = len/bs; /* The reduced index size */
     if (len > maxsz) maxsz = len;
   }
-  ierr = PetscMalloc(maxsz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxsz,&nidx);CHKERRQ(ierr);
 #else
-  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nbs,&nidx);CHKERRQ(ierr);
 #endif
   /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
@@ -195,7 +195,7 @@ PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,Pet
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     if (len > maxsz) maxsz = len;
   }
-  ierr = PetscMalloc(maxsz*bs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxsz*bs,&nidx);CHKERRQ(ierr);
 
   for (i=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);

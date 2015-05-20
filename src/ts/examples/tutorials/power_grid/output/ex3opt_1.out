@@ -1,0 +1,5 @@
+iter =   0, Function value: -1.06062,  Residual: 0.0014333 
+iter =   1, Function value: -1.06062,  Residual: 3.35394e-09 
+Vec Object: 1 MPI processes
+  type: seq
+1.06161

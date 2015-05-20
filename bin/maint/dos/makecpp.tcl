@@ -55,7 +55,6 @@ proc updatemakefile { makefile } {
         #
         regsub  -all  "\ninclude" $databuff  "\n!include" databuff
         #
-        # Change -D__SDIR__='"${LOCDIR}"' to /D__SDIR__="\"${LOCDIR}\""
         # Change -DPETSC_DIR='"${PETSC_DIR}"' to /DPETSC_DIR="\"${PETSC_DIR}\""
         #
         regsub -all  "\\\-D" $databuff "/D" databuff

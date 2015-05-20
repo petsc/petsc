@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>  /*I   "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultEqual"
@@ -42,13 +42,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 #endif
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&s1);CHKERRQ(ierr);
-  ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
 
   *flg = PETSC_TRUE;
@@ -66,7 +60,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(A,"Error: %D-th MatMult() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %D-th MatMult() %g\n",k,(double)r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -112,13 +106,7 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscCheckSameComm(A,1,B,2);
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&s1);CHKERRQ(ierr);
-  ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&y);CHKERRQ(ierr);
 
@@ -138,7 +126,7 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(A,"Error: %d-th MatMultAdd() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultAdd() %g\n",k,(double)r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -185,13 +173,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscCheckSameComm(A,1,B,2);
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,am,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&s1);CHKERRQ(ierr);
-  ierr = VecSetSizes(s1,an,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&s1,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
 
   *flg = PETSC_TRUE;
@@ -209,7 +191,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(A,"Error: %d-th MatMultTranspose() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultTranspose() %g\n",k,(double)r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -255,13 +237,7 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscCheckSameComm(A,1,B,2);
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,am,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
-  ierr = VecCreate(PetscObjectComm((PetscObject)A),&s1);CHKERRQ(ierr);
-  ierr = VecSetSizes(s1,an,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&s1,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&y);CHKERRQ(ierr);
 
@@ -281,7 +257,7 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(A,"Error: %d-th MatMultTransposeAdd() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultTransposeAdd() %g\n",k,(double)r1);CHKERRQ(ierr);
       break;
     }
   }

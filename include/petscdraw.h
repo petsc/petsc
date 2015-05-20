@@ -1,5 +1,5 @@
 /*
-  Interface to the PETSc graphics (currently only support for X-windows
+  Interface to the PETSc graphics
 */
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
@@ -8,23 +8,7 @@
 
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
-/*J
-    PetscDrawType - String with the name of a PetscDraw
-
-   Level: beginner
-
-.seealso: PetscDrawSetType(), PetscDraw, PetscViewer
-J*/
-typedef const char* PetscDrawType;
-#define PETSC_DRAW_X          "x"
-#define PETSC_DRAW_GLUT       "glut"
-#define PETSC_DRAW_OPENGLES   "opengles"
-#define PETSC_DRAW_NULL       "null"
-#define PETSC_DRAW_WIN32      "win32"
-#define PETSC_DRAW_TIKZ       "tikz"
-
 PETSC_EXTERN PetscFunctionList PetscDrawList;
-PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(PetscDraw));
 
@@ -33,6 +17,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,PetscDrawType);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char*);
+PETSC_EXTERN PetscErrorCode PetscDrawView(PetscDraw,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 /*
    Number of basic colors in the draw routines, the others are used
@@ -104,6 +91,25 @@ PETSC_EXTERN PetscErrorCode PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscRe
 PETSC_EXTERN PetscErrorCode PetscDrawLineSetWidth(PetscDraw,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
+/*E
+    PetscDrawMarkerType - How a "mark" is indicate in a figure
+
+   Level: intermediate
+
+$  PETSC_MARKER_CROSS - a small pixel based x symbol or the character x if that is not available
+$  PETSC_MARKER_PLUS - a small pixel based + symbol or the character + if that is not available
+$  PETSC_MARKER_CIRCLE - a small pixel based circle symbol or the character o if that is not available
+$  PETSC_MARKER_POINT - the make obtained with PetscDrawPoint()
+
+.seealso: PetscDrawMarker(), PetscDrawSetMarkerType()
+E*/
+typedef enum {PETSC_DRAW_MARKER_CROSS, PETSC_DRAW_MARKER_POINT,PETSC_DRAW_MARKER_PLUS,PETSC_DRAW_MARKER_CIRCLE} PetscDrawMarkerType;
+PETSC_EXTERN const char *const PetscDrawMarkerTypes[];
+
+PETSC_EXTERN PetscErrorCode PetscDrawMarker(PetscDraw,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawSetMarkerType(PetscDraw,PetscDrawMarkerType);
+PETSC_EXTERN PetscErrorCode PetscDrawGetMarkerType(PetscDraw,PetscDrawMarkerType*);
+
 PETSC_EXTERN PetscErrorCode PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointPixel(PetscDraw,PetscInt,PetscInt,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointSetSize(PetscDraw,PetscReal);
@@ -115,8 +121,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawTensorContourPatch(PetscDraw,int,int,PetscR
 PETSC_EXTERN PetscErrorCode PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PetscDrawString(PetscDraw,PetscReal,PetscReal,int,const char[]);
-PETSC_EXTERN PetscErrorCode PetscDrawBoxedString(PetscDraw,PetscReal,PetscReal,int,int,const char[],PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscDrawBoxedStringSize(PetscDraw,const char[],PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawStringCentered(PetscDraw,PetscReal,PetscReal,int,const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawStringBoxed(PetscDraw,PetscReal,PetscReal,int,int,const char[],PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawStringBoxedSize(PetscDraw,const char[],PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
@@ -218,9 +225,10 @@ PETSC_EXTERN PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
-PETSC_EXTERN PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetColors(PetscDrawLG,const int*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetFromOptions(PetscDrawLG);
 
 PETSC_EXTERN PetscClassId PETSC_DRAWSP_CLASSID;
 
@@ -251,6 +259,19 @@ PETSC_EXTERN PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG,int);
 PETSC_EXTERN PetscErrorCode PetscDrawHGSetColor(PetscDrawHG,int);
 PETSC_EXTERN PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG, PetscBool );
 PETSC_EXTERN PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG, PetscBool );
+
+PETSC_EXTERN PetscClassId PETSC_DRAWBAR_CLASSID;
+
+PETSC_EXTERN PetscErrorCode PetscDrawBarCreate(PetscDraw,PetscDrawBar*);
+PETSC_EXTERN PetscErrorCode PetscDrawBarSetData(PetscDrawBar,PetscInt,const PetscReal[],const char *const *);
+PETSC_EXTERN PetscErrorCode PetscDrawBarDestroy(PetscDrawBar*);
+PETSC_EXTERN PetscErrorCode PetscDrawBarDraw(PetscDrawBar);
+PETSC_EXTERN PetscErrorCode PetscDrawBarSetColor(PetscDrawBar,int);
+PETSC_EXTERN PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawBarSort(PetscDrawBar,PetscBool,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawBarSetFromOptions(PetscDrawBar);
+PETSC_EXTERN PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar,PetscDrawAxis*);
+PETSC_EXTERN PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar,PetscDraw*);
 
 /*
     PetscViewer routines that allow you to access underlying PetscDraw objects

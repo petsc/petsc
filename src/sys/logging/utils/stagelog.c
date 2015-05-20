@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
 PetscStageLog petsc_stageLog = 0;
 
@@ -205,7 +205,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   }
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(PetscStageInfo), &stageInfo);CHKERRQ(ierr);
+    ierr = PetscMalloc1(stageLog->maxStages*2, &stageInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(PetscStageInfo));CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
 
@@ -626,14 +626,14 @@ PetscErrorCode  PetscStageLogCreate(PetscStageLog *stageLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscStageLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(&l);CHKERRQ(ierr);
 
   l->numStages = 0;
   l->maxStages = 10;
   l->curStage  = -1;
 
   ierr = PetscIntStackCreate(&l->stack);CHKERRQ(ierr);
-  ierr = PetscMalloc(l->maxStages * sizeof(PetscStageInfo), &l->stageInfo);CHKERRQ(ierr);
+  ierr = PetscMalloc1(l->maxStages, &l->stageInfo);CHKERRQ(ierr);
   ierr = EventRegLogCreate(&l->eventLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogCreate(&l->classLog);CHKERRQ(ierr);
 

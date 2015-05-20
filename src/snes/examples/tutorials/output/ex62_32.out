@@ -1,27 +1,28 @@
-  0 SNES Function norm 27.5941 
+0 SNES Function norm 27.5941 
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm 0.0157297 
     2 KSP Residual norm 0.00555887 
     3 KSP Residual norm 0.00240459 
     4 KSP Residual norm 0.00131775 
-    5 KSP Residual norm 0.000643859 
-    6 KSP Residual norm 0.000633078 
-    7 KSP Residual norm 0.000355479 
-    8 KSP Residual norm 0.000232607 
+    5 KSP Residual norm 0.000644714 
+    6 KSP Residual norm 0.000633075 
+    7 KSP Residual norm 0.000355481 
+    8 KSP Residual norm 0.000232608 
     9 KSP Residual norm 0.000182536 
    10 KSP Residual norm 0.000128418 
-   11 KSP Residual norm 8.96795e-05 
-   12 KSP Residual norm 8.9379e-05 
-   13 KSP Residual norm 4.50222e-05 
+   11 KSP Residual norm 8.96828e-05 
+   12 KSP Residual norm 8.9406e-05 
+   13 KSP Residual norm 4.50224e-05 
    14 KSP Residual norm 1.96312e-05 
-   15 KSP Residual norm 5.69146e-06 
-   16 KSP Residual norm 2.9384e-06 
-   17 KSP Residual norm 1.15383e-06 
-   18 KSP Residual norm 1.14782e-06 
-   19 KSP Residual norm 5.77907e-07 
-   20 KSP Residual norm 1.69636e-07 
-   21 KSP Residual norm 7.01746e-08 
+   15 KSP Residual norm 5.69145e-06 
+   16 KSP Residual norm 2.93839e-06 
+   17 KSP Residual norm 1.15637e-06 
+   18 KSP Residual norm 1.14821e-06 
+   19 KSP Residual norm 5.77909e-07 
+   20 KSP Residual norm 1.69637e-07 
+   21 KSP Residual norm 7.01731e-08 
    22 KSP Residual norm 2.02303e-08 
+  Linear solve converged due to CONVERGED_RTOL iterations 22
   1 SNES Function norm 2.02303e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
@@ -30,6 +31,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=22
   total number of function evaluations=2
+  norm schedule ALWAYS
   SNESLineSearch Object:   1 MPI processes
     type: bt
       interpolation: cubic
@@ -64,7 +66,7 @@ SNES Object: 1 MPI processes
           matrix ordering: nd
           factor fill ratio given 5, needed 3.45047
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=962, cols=962
                 package used to perform factorization: petsc
@@ -72,7 +74,7 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 456 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:        (fieldsplit_velocity_)         1 MPI processes
           type: seqaij
           rows=962, cols=962
           total: nonzeros=19908, allocated nonzeros=19908
@@ -89,18 +91,20 @@ SNES Object: 1 MPI processes
       PC Object:      (fieldsplit_pressure_)       1 MPI processes
         type: jacobi
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:        (fieldsplit_pressure_)         1 MPI processes
           type: seqaij
           rows=145, cols=145
           total: nonzeros=945, allocated nonzeros=945
           total number of mallocs used during MatSetValues calls =0
+            has attached null space
             not using I-node routines
     linear system matrix = precond matrix:
-    Matrix Object:     1 MPI processes
+    Mat Object:     1 MPI processes
       type: seqaij
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 6.47e-07
+L_2 Error: 6.47e-07 [1.5e-08, 6.47e-07]

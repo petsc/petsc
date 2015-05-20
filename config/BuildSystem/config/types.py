@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
 
   def check(self, typeName, defaultType = None, includes = []):
     '''Checks that "typeName" exists, and if not defines it to "defaultType" if given'''
-    self.framework.log.write('Checking for type: '+typeName+'\n')
+    self.log.write('Checking for type: '+typeName+'\n')
     include = '''
 #include <sys/types.h>
 #if STDC_HEADERS
@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
     if not found and defaultType:
       self.addTypedef(defaultType, typeName)
     else:
-      self.framework.log.write(typeName+' found\n')
+      self.log.write(typeName+' found\n')
     return found
 
   def check_siginfo_t(self):
@@ -104,9 +104,11 @@ void (*signal())();
     return
 
   def checkC99Complex(self):
-    '''Check for complex numbers in in C99 std'''
+    '''Check for complex numbers in in C99 std
+       Note that since PETSc source code uses _Complex we test specifically for that, not complex'''
     includes = '#include <complex.h>\n'
-    body     = 'double complex x;\n x = I;\n'
+    body     = 'double _Complex x;\n x = I;\n'
+    if not self.checkCompile(includes, body): return    # checkLink can succeed even if checkCompile fails
     if self.checkLink(includes, body):
       self.addDefine('HAVE_C99_COMPLEX', 1)
       self.c99_complex = 1
@@ -142,14 +144,6 @@ void (*signal())();
 '''
     if self.checkCompile('', body):
       self.addDefine('USE_FORTRANKIND', 1)
-    self.popLanguage()
-    return
-
-  def checkFortranDReal(self):
-    '''Checks whether dreal is provided in Fortran, and if not defines MISSING_DREAL'''
-    self.pushLanguage('FC')
-    if not self.checkLink('', '      double precision d\n      d = dreal(3.0)'):
-      self.addDefine('MISSING_DREAL', 1)
     self.popLanguage()
     return
 
@@ -211,8 +205,8 @@ void (*signal())();
 
   def checkEndian(self):
     '''If the machine is big endian, defines WORDS_BIGENDIAN'''
-    if 'known-endian' in self.framework.argDB:
-      endian = self.framework.argDB['known-endian']
+    if 'known-endian' in self.argDB:
+      endian = self.argDB['known-endian']
     else:
       # See if sys/param.h defines the BYTE_ORDER macro
       includes = '#include <sys/types.h>\n#ifdef HAVE_SYS_PARAM_H\n  #include <sys/param.h>\n#endif\n'
@@ -233,7 +227,7 @@ void (*signal())();
         else:
           endian = 'little'
       else:
-        if not self.framework.argDB['with-batch']:
+        if not self.argDB['with-batch']:
           body = '''
           /* Are we little or big endian?  From Harbison&Steele. */
           union
@@ -264,7 +258,7 @@ void (*signal())();
 
   def checkSizeof(self, typeName, otherInclude = None):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
-    self.framework.log.write('Checking for size of type: '+typeName+'\n')
+    self.log.write('Checking for size of type: '+typeName+'\n')
     filename = 'conftestval'
     includes = '''
 #include <sys/types.h>
@@ -283,8 +277,8 @@ void (*signal())();
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
     typename = typeName.replace(' ', '-').replace('*', 'p')
-    if not 'known-sizeof-'+typename in self.framework.argDB:
-      if not self.framework.argDB['with-batch']:
+    if not 'known-sizeof-'+typename in self.argDB:
+      if not self.argDB['with-batch']:
         self.pushLanguage('C')
         if self.checkRun(includes, body) and os.path.exists(filename):
           f    = file(filename)
@@ -295,7 +289,7 @@ void (*signal())();
           msg = 'Cannot run executable to determine size of '+typeName+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
           raise RuntimeError(msg)
         else:
-          self.framework.log.write('Compiler does not support long long\n')
+          self.log.write('Compiler does not support long long\n')
           size = 0
         self.popLanguage()
       else:
@@ -308,7 +302,7 @@ void (*signal())();
         # dummy value
         size = 4
     else:
-      size = self.framework.argDB['known-sizeof-'+typename]
+      size = self.argDB['known-sizeof-'+typename]
     self.sizes['known-sizeof-'+typename] = int(size)
     self.addDefine('SIZEOF_'+typeName.replace(' ', '_').replace('*', 'p').upper(), size)
     return size
@@ -331,9 +325,9 @@ void (*signal())();
     while(val[0]) {val[0] <<= 1; i++;}
     fprintf(f, "%d\\n", i);\n
     '''
-    if 'known-bits-per-byte' in self.framework.argDB:
-      bits = self.framework.argDB['known-bits-per-byte']
-    elif not self.framework.argDB['with-batch']:
+    if 'known-bits-per-byte' in self.argDB:
+      bits = self.argDB['known-bits-per-byte']
+    elif not self.argDB['with-batch']:
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
         bits = int(f.read())
@@ -360,7 +354,7 @@ void (*signal())();
 
 
   def checkVisibility(self):
-    if self.framework.argDB['with-visibility']:
+    if self.argDB['with-visibility']:
       if not self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
         raise RuntimeError('Cannot use visibility attributes')
       self.addDefine('USE_VISIBILITY',1)
@@ -380,7 +374,6 @@ void (*signal())();
     if hasattr(self.compilers, 'FC'):
       #self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranKind)
-      self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
     map(lambda type: self.executeTest(self.checkSizeof, type), ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t'])

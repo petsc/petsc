@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h>
+#include <petsc/private/sfimpl.h>
 
 PetscClassId PETSCSF_CLASSID;
 
@@ -25,8 +25,15 @@ PetscErrorCode PetscSFInitializePackage(void)
   if (PetscSFPackageInitialized) PetscFunctionReturn(0);
   PetscSFPackageInitialized = PETSC_TRUE;
 
-  ierr = PetscClassIdRegister("Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Star Forest Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
   ierr = PetscSFRegisterAll();CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFSetGraph"     , PETSCSF_CLASSID, &PETSCSF_SetGraph);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFBcastBegin"   , PETSCSF_CLASSID, &PETSCSF_BcastBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFBcastEnd"     , PETSCSF_CLASSID, &PETSCSF_BcastEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFReduceBegin"  , PETSCSF_CLASSID, &PETSCSF_ReduceBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFReduceEnd"    , PETSCSF_CLASSID, &PETSCSF_ReduceEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFFetchOpBegin" , PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SFFetchOpEnd"   , PETSCSF_CLASSID, &PETSCSF_FetchAndOpEnd);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscSFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

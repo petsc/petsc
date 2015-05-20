@@ -1,0 +1,12 @@
+!
+!
+!  Additional KSP include file for use of PETSc with Fortran 90/HPF
+!
+#include "petsc/finclude/ftn-custom/petscpc.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "petsc/finclude/petscpcdef.h"
+#include "petsc/finclude/ftn-auto/petscpc.h90"
+      end interface
+#endif
+

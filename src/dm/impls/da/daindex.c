@@ -3,64 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetGlobalIndices"
-/*@C
-   DMDAGetGlobalIndices - Returns the global node number of all local nodes,
-   including ghost nodes.
-
-   Not Collective
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameters:
-+  n - the number of local elements, including ghost nodes (or NULL)
--  idx - the global indices
-
-   Level: intermediate
-
-   Note:
-   For DMDA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
-   in the list of local indices (even though those nodes are not updated
-   during calls to DMDAXXXToXXX().
-
-   Essentially the same data is returned in the form of a local-to-global mapping
-   with the routine DMDAGetISLocalToGlobalMapping();
-
-   Fortran Note:
-   This routine is used differently from Fortran
-.vb
-        DM          da
-        integer     n,da_array(1)
-        PetscOffset i_da
-        integer     ierr
-        call DMDAGetGlobalIndices(da,n,da_array,i_da,ierr)
-
-   C Access first local entry in list
-        value = da_array(i_da + 1)
-.ve
-
-   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
-
-.keywords: distributed array, get, global, indices, local-to-global
-
-.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobalBegin()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
-          DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMDALocalToLocalEnd(), DMDAGetOwnershipRanges()
-@*/
-PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
-{
-  DM_DA *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (n) *n = dd->Nl;
-  if (idx) *idx = dd->idx;
-  PetscFunctionReturn(0);
-}
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetNatural_Private"
@@ -72,29 +15,29 @@ PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 {
   PetscErrorCode ierr;
-  PetscInt       Nlocal,i,j,k,*lidx,lict = 0;
+  PetscInt       Nlocal,i,j,k,*lidx,lict = 0,dim = da->dim;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   Nlocal = (dd->xe-dd->xs);
-  if (dd->dim > 1) Nlocal *= (dd->ye-dd->ys);
-  if (dd->dim > 2) Nlocal *= (dd->ze-dd->zs);
+  if (dim > 1) Nlocal *= (dd->ye-dd->ys);
+  if (dim > 2) Nlocal *= (dd->ze-dd->zs);
 
-  ierr = PetscMalloc(Nlocal*sizeof(PetscInt),&lidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nlocal,&lidx);CHKERRQ(ierr);
 
-  if (dd->dim == 1) {
+  if (dim == 1) {
     for (i=dd->xs; i<dd->xe; i++) {
       /*  global number in natural ordering */
       lidx[lict++] = i;
     }
-  } else if (dd->dim == 2) {
+  } else if (dim == 2) {
     for (j=dd->ys; j<dd->ye; j++) {
       for (i=dd->xs; i<dd->xe; i++) {
         /*  global number in natural ordering */
         lidx[lict++] = i + j*dd->M*dd->w;
       }
     }
-  } else if (dd->dim == 3) {
+  } else if (dim == 3) {
     for (k=dd->zs; k<dd->ze; k++) {
       for (j=dd->ys; j<dd->ye; j++) {
         for (i=dd->xs; i<dd->xe; i++) {
@@ -105,6 +48,53 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   }
   *outNlocal = Nlocal;
   ierr       = ISCreateGeneral(PetscObjectComm((PetscObject)da),Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetAOType"
+/*@
+   DMDASetAOType - Sets the type of application ordering for a distributed array.
+
+   Collective on DMDA
+
+   Input Parameter:
+.  da - the distributed array
+.  aotype - type of AO
+
+   Output Parameters:
+
+   Level: intermediate
+
+   Notes:
+   It will generate and error if an AO has already been obtained with a call to DMDAGetAO and the user sets a different AOType
+
+.keywords: distributed array, get, global, indices, local-to-global
+
+.seealso: DMDACreate2d(), DMDAGetAO(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
+          AO, AOPetscToApplication(), AOApplicationToPetsc()
+@*/
+PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
+{
+  DM_DA          *dd;
+  PetscBool      isdmda;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
+  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  /* now we can safely dereference */
+  dd = (DM_DA*)da->data;
+  if (dd->ao) { /* check if the already computed AO has the same type as requested */
+    PetscBool match;
+    ierr = PetscObjectTypeCompare((PetscObject)dd->ao,aotype,&match);CHKERRQ(ierr);
+    if (!match) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot change AO type");
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscFree(dd->aotype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(aotype,(char**)&dd->aotype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,17 +122,23 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
+.seealso: DMDACreate2d(), DMDASetAOType(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(),  DMDAGetOwnershipRanges(),
           AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  DM_DA          *dd;
+  PetscBool      isdmda;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(ao,2);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
+  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  /* now we can safely dereference */
+  dd = (DM_DA*)da->data;
 
   /*
      Build the natural ordering to PETSc ordering mappings.
@@ -154,8 +150,10 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 
     ierr = DMDAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
-    ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(da,dd->ao);CHKERRQ(ierr);
+    ierr = AOCreate(PetscObjectComm((PetscObject)da),&dd->ao);CHKERRQ(ierr);
+    ierr = AOSetIS(dd->ao,isnatural,ispetsc);CHKERRQ(ierr);
+    ierr = AOSetType(dd->ao,dd->aotype);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ao);CHKERRQ(ierr);
     ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(&isnatural);CHKERRQ(ierr);
   }
@@ -163,30 +161,4 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
   PetscFunctionReturn(0);
 }
 
-/*MC
-    DMDAGetGlobalIndicesF90 - Returns a Fortran90 pointer to the list of
-    global indices (global node number of all local nodes, including
-    ghost nodes).
 
-    Synopsis:
-    DMDAGetGlobalIndicesF90(DM da,integer n,{integer, pointer :: idx(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameter:
-.   da - the distributed array
-
-    Output Parameters:
-+   n - the number of local elements, including ghost nodes (or NULL)
-.   idx - the Fortran90 pointer to the global indices
--   ierr - error code
-
-    Level: intermediate
-
-    Notes:
-     Not yet supported for all F90 compilers
-
-.keywords: distributed array, get, global, indices, local-to-global, f90
-
-.seealso: DMDAGetGlobalIndices()
-M*/

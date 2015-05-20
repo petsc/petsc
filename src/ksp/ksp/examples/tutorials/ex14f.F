@@ -57,23 +57,24 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       MPI_Comm comm
-      Vec      X,Y,F,localX,localF
+      Vec      X,Y,F,localX
       Mat      J,B
       DM       da
       KSP      ksp
 
       PetscInt  Nx,Ny,N,mx,my,ifive,ithree
       PetscBool  flg,nooutput,usemf
-      common   /mycommon/ mx,my,B,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,da
 !
 !
 !      This is the routine to use for matrix-free approach
@@ -81,8 +82,8 @@
       external mymult
 
 !     --------------- Data to define nonlinear solver --------------
-      double precision   rtol,ttol
-      double precision   fnorm,ynorm,xnorm
+      PetscReal   rtol,ttol
+      PetscReal   fnorm,ynorm,xnorm
       PetscInt            max_nonlin_its,one
       PetscInt            lin_its
       PetscInt           i,m
@@ -129,7 +130,7 @@
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,      &
+      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,         &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
@@ -141,7 +142,6 @@
        call DMCreateLocalVector(da,localX,ierr)
        call VecDuplicate(X,F,ierr)
        call VecDuplicate(X,Y,ierr)
-       call VecDuplicate(localX,localF,ierr)
 
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -228,7 +228,7 @@
 !      matrix.
 !    - Then solve the Newton system.
 
-         call KSPSetOperators(ksp,J,B,SAME_NONZERO_PATTERN,ierr)
+         call KSPSetOperators(ksp,J,B,ierr)
          call KSPSolve(ksp,F,Y,ierr)
 
 !  Compute updated iterate
@@ -277,7 +277,6 @@
        call VecDestroy(localX,ierr)
        call VecDestroy(X,ierr)
        call VecDestroy(Y,ierr)
-       call VecDestroy(localF,ierr)
        call VecDestroy(F,ierr)
        call KSPDestroy(ksp,ierr)
        call DMDestroy(da,ierr)
@@ -302,24 +301,25 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
-      Vec       X,localX,localF
+      Vec       X,localX
       PetscInt  i,j,row,mx
       PetscInt  my, xs,ys,xm
-      PetscInt  ym,gxm,gym,gxs,gys
-      double precision one,lambda,temp1,temp,hx,hy
+      PetscInt  ym
+      PetscReal one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(1)
       DM               da
       Mat              B
-      common   /mycommon/ mx,my,B,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,da
 
       one    = 1.d0
       lambda = 6.d0
@@ -331,17 +331,13 @@
 !    - VecGetArray() returns a pointer to the data array.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
-       call VecGetArray(localX,xx,idx,ierr)
+       call VecGetArray(X,xx,idx,ierr)
 
 !  Get local grid boundaries (for 2-dimensional DMDA):
 !    xs, ys   - starting grid indices (no ghost points)
 !    xm, ym   - widths of local grid (no ghost points)
-!    gxs, gys - starting grid indices (including ghost points)
-!    gxm, gym - widths of local grid (including ghost points)
 
        call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
-     &      PETSC_NULL_INTEGER,ierr)
-       call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
      &      PETSC_NULL_INTEGER,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -349,7 +345,7 @@
       do 30 j=ys,ys+ym-1
         temp = (min(j,my-j-1))*hy
         do 40 i=xs,xs+xm-1
-          row = i - gxs + (j - gys)*gxm + 1
+          row = i - xs + (j - ys)*xm + 1
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
      &        j .eq. my-1) then
             xx(idx+row) = 0.d0
@@ -361,12 +357,7 @@
 
 !     Restore vector
 
-       call VecRestoreArray(localX,xx,idx,ierr)
-
-!     Insert values into global vector
-
-       call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
-       call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
+       call VecRestoreArray(X,xx,idx,ierr)
        return
        end
 
@@ -388,25 +379,27 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
-      Vec              X,F,localX,localF
+      Vec              X,F,localX
       PetscInt         gys,gxm,gym
       PetscOffset      idx,idf
       PetscErrorCode ierr
       PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs
-      double precision two,one,lambda,hx
-      double precision hy,hxdhy,hydhx,sc
+      PetscInt rowf
+      PetscReal two,one,lambda,hx
+      PetscReal hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
       DM               da
       Mat              B
-      common   /mycommon/ mx,my,B,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,da
 
       two    = 2.d0
       one    = 1.d0
@@ -429,7 +422,7 @@
 !  Get pointers to vector data
 
       call VecGetArray(localX,xx,idx,ierr)
-      call VecGetArray(localF,ff,idf,ierr)
+      call VecGetArray(F,ff,idf,ierr)
 
 !  Get local grid boundaries
 
@@ -439,34 +432,30 @@
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Compute function over the locally owned part of the grid
-
+      rowf = 0
       do 50 j=ys,ys+ym-1
 
-        row = (j - gys)*gxm + xs - gxs
+        row  = (j - gys)*gxm + xs - gxs
         do 60 i=xs,xs+xm-1
-          row = row + 1
+          row  = row + 1
+          rowf = rowf + 1
 
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
      &        j .eq. my-1) then
-            ff(idf+row) = xx(idx+row)
+            ff(idf+rowf) = xx(idx+row)
             goto 60
           endif
           u   = xx(idx+row)
           uxx = (two*u - xx(idx+row-1) - xx(idx+row+1))*hydhx
           uyy = (two*u - xx(idx+row-gxm) - xx(idx+row+gxm))*hxdhy
-          ff(idf+row) = uxx + uyy - sc*exp(u)
+          ff(idf+rowf) = uxx + uyy - sc*exp(u)
  60     continue
  50   continue
 
 !  Restore vectors
 
        call VecRestoreArray(localX,xx,idx,ierr)
-       call VecRestoreArray(localF,ff,idf,ierr)
-
-!  Insert values into global vector
-
-       call DMLocalToGlobalBegin(da,localF,INSERT_VALUES,F,ierr)
-       call DMLocalToGlobalEnd(da,localF,INSERT_VALUES,F,ierr)
+       call VecRestoreArray(F,ff,idf,ierr)
        return
        end
 
@@ -484,7 +473,7 @@
 !   Notes:
 !   Due to grid point reordering with DMDAs, we must always work
 !   with the local grid points, and then transform them to the new
-!   global numbering with the 'ltog' mapping (via DMDAGetGlobalIndices()).
+!   global numbering with the 'ltog' mapping 
 !   We cannot work directly with the global numbers for the original
 !   uniprocessor grid!
 !
@@ -496,22 +485,23 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <finclude/petscsys.h>
-#include <finclude/petscis.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       Vec         X
       Mat         jac
-      Vec         localX,localF
+      Vec         localX
       DM          da
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
-      PetscInt nloc,xs,ys,xm,ym
+      PetscInt xs,ys,xm,ym
       PetscInt gxs,gys,gxm,gym
       PetscInt grow(1),i,j
       PetscInt row,mx,my,ione
@@ -520,7 +510,8 @@
       PetscScalar v(5),hx,hy,hxdhy
       PetscScalar hydhx,sc,xx(1)
       Mat         B
-      common   /mycommon/ mx,my,B,localX,localF,da
+      ISLocalToGlobalMapping ltogm
+      common   /mycommon/ mx,my,B,localX,da
 
       ione   = 1
       ifive  = 5
@@ -554,7 +545,8 @@
 
 !  Get the global node numbers for all local nodes, including ghost points
 
-      call DMDAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call DMGetLocalToGlobalMapping(da,ltogm,ierr)
+      call ISLocalToGlobalMappingGetIndices(ltogm,ltog,idltog,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -593,6 +585,8 @@
  20     continue
  10   continue
 
+      call ISLocalToGlobalMappingRestoreIndices(ltogm,ltog,idltog,ierr)
+
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().
 !  By placing code between these two statements, computations can be
@@ -622,9 +616,9 @@
       PetscErrorCode ierr
       PetscInt mx,my
       DM      da
-      Vec     localX,localF
+      Vec     localX
 
-      common   /mycommon/ mx,my,B,localX,localF,da
+      common   /mycommon/ mx,my,B,localX,da
 !
 !       Here we use the actual formed matrix B; users would
 !     instead write their own matrix vector product routine

@@ -1,0 +1,4 @@
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscpcdef.h90"
+#endif
+#include "petsc/finclude/ftn-custom/petscpchide.h90"

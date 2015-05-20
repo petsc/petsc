@@ -1,5 +1,5 @@
 #include <../src/mat/utils/petscheap.h>
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 #include <petscviewer.h>
 
 typedef struct {
@@ -69,11 +69,11 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize,PetscHeap *heap)
 
   PetscFunctionBegin;
   *heap            = NULL;
-  ierr             = PetscMalloc(sizeof(*h),&h);CHKERRQ(ierr);
+  ierr             = PetscMalloc1(1,&h);CHKERRQ(ierr);
   h->end           = 1;
   h->alloc         = maxsize+ARITY; /* We waste all but one slot (loc=1) in the first ARITY slots */
   h->stash         = h->alloc;
-  ierr             = PetscMalloc(h->alloc*sizeof(HeapNode),&h->base);CHKERRQ(ierr);
+  ierr             = PetscMalloc1(h->alloc,&h->base);CHKERRQ(ierr);
   ierr             = PetscMemzero(h->base,h->alloc*sizeof(HeapNode));CHKERRQ(ierr);
   h->base[0].id    = -1;
   h->base[0].value = PETSC_MIN_INT;

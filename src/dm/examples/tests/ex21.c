@@ -2,6 +2,7 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 
 #include <petscvec.h>
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -13,22 +14,22 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   PetscViewer      vv;
   Vec              ac,af;
   PetscInt         periodicity;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
 
   PetscFunctionBeginUser;
-  bx = DMDA_BOUNDARY_NONE;
-  by = DMDA_BOUNDARY_NONE;
-  bz = DMDA_BOUNDARY_NONE;
+  bx = DM_BOUNDARY_NONE;
+  by = DM_BOUNDARY_NONE;
+  bz = DM_BOUNDARY_NONE;
 
   periodicity = 0;
 
   ierr = PetscOptionsGetInt(NULL,"-periodic", &periodicity, NULL);CHKERRQ(ierr);
   if (periodicity==1) {
-    bx = DMDA_BOUNDARY_PERIODIC;
+    bx = DM_BOUNDARY_PERIODIC;
   } else if (periodicity==2) {
-    by = DMDA_BOUNDARY_PERIODIC;
+    by = DM_BOUNDARY_PERIODIC;
   } else if (periodicity==3) {
-    bz = DMDA_BOUNDARY_PERIODIC;
+    bz = DM_BOUNDARY_PERIODIC;
   }
 
   ierr = DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,
@@ -49,7 +50,8 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   {
     DM         cdaf,cdac;
     Vec        coordsc,coordsf,coordsf2;
-    VecScatter inject;
+    Mat        inject;
+    VecScatter vscat;
     Mat        interp;
     PetscReal  norm;
 
@@ -60,10 +62,10 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-
-    ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+    ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
 
     ierr = DMCreateInterpolation(cdac,cdaf,&interp,NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(coordsf,&coordsf2);CHKERRQ(ierr);
@@ -71,7 +73,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     ierr = VecAXPY(coordsf2,-1.0,coordsf);CHKERRQ(ierr);
     ierr = VecNorm(coordsf2,NORM_MAX,&norm);CHKERRQ(ierr);
     /* The fine coordinates are only reproduced in certain cases */
-    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %G\n",norm);CHKERRQ(ierr);}
+    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm);CHKERRQ(ierr);}
     ierr = VecDestroy(&coordsf2);CHKERRQ(ierr);
     ierr = MatDestroy(&interp);CHKERRQ(ierr);
   }

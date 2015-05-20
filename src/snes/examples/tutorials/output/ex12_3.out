@@ -1,4 +1,6 @@
-Mesh 'DM_0x84000000_0':
+DM Object:Mesh 1 MPI processes
+  type: plex
+Mesh 'Mesh':
 Max sizes cone: 3 support: 6
 orientation is missing
 cap --> base:
@@ -149,8 +151,8 @@ Label 'marker':
 [0]: 23 (-1)
 [0]: 26 (-1)
 [0]: 31 (-1)
-Local function
-Vector Object: 1 MPI processes
+Local function:
+Vec Object: 1 MPI processes
   type: seq
 0
 0.25
@@ -162,7 +164,7 @@ Vector Object: 1 MPI processes
 1.25
 2
 Initial guess
-Vector Object: 1 MPI processes
+Vec Object:potential 1 MPI processes
   type: seq
 0
 0.25
@@ -175,7 +177,7 @@ Vector Object: 1 MPI processes
 2
 L_2 Error: 0.111111
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -0.0833333
 0
@@ -187,7 +189,7 @@ Vector Object: 1 MPI processes
 0
 -0.0833333
 Initial Residual
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -0.0833333
 0
@@ -200,7 +202,7 @@ Vector Object: 1 MPI processes
 -0.0833333
 L_2 Residual: 0.166667
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 1)  (1, -0.5)  (3, -0.5) 
 row 1: (0, -0.5)  (1, 2)  (2, -0.5)  (3, 0)  (4, -1) 
@@ -212,7 +214,7 @@ row 6: (3, -0.5)  (4, 0)  (6, 1)  (7, -0.5)
 row 7: (4, -1)  (5, 0)  (6, -0.5)  (7, 2)  (8, -0.5) 
 row 8: (5, -0.5)  (7, -0.5)  (8, 1) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0.166667
 0.5
@@ -224,7 +226,7 @@ Vector Object: 1 MPI processes
 -0.5
 -0.833333
 Au - b = Au + F(0)
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -0.0833333
 0

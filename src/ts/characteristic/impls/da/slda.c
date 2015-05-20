@@ -58,17 +58,17 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 
   /* Initialize the local queue for char foot values */
   ierr = VecGetLocalSize(c->velocity, &c->queueMax);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->queueMax * sizeof(CharacteristicPointDA2D), &c->queue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->queueMax, &c->queue);CHKERRQ(ierr);
   c->queueSize = 0;
 
   /* Allocate communication structures */
   if (c->numNeighbors <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->needCount);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->localOffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->fillCount);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->remoteOffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc((c->numNeighbors-1) * sizeof(MPI_Request), &c->request);CHKERRQ(ierr);
-  ierr = PetscMalloc((c->numNeighbors-1) * sizeof(MPI_Status),  &c->status);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors, &c->needCount);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors, &c->localOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors, &c->fillCount);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors, &c->remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors-1, &c->request);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors-1,  &c->status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,9 +80,9 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNew(Characteristic_DA, &da);CHKERRQ(ierr);
+  ierr    = PetscNew(&da);CHKERRQ(ierr);
   ierr    = PetscMemzero(da, sizeof(Characteristic_DA));CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(c, sizeof(Characteristic_DA));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)c, sizeof(Characteristic_DA));CHKERRQ(ierr);
   c->data = (void*) da;
 
   c->ops->setup   = CharacteristicSetUp_DA;
@@ -101,18 +101,18 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
    ----------------------------------------------------------------------------------------*/
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
-  DMDABoundaryType bx, by;
-  PetscInt         dim, gx, gy;
-  PetscErrorCode   ierr;
+  DMBoundaryType bx, by;
+  PetscInt       dim, gx, gy;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
       while (*x >= (PetscScalar)gx) *x -= (PetscScalar)gx;
       while (*x < 0.0)              *x += (PetscScalar)gx;
     }
-    if (by == DMDA_BOUNDARY_PERIODIC) {
+    if (by == DM_BOUNDARY_PERIODIC) {
       while (*y >= (PetscScalar)gy) *y -= (PetscScalar)gy;
       while (*y < 0.0)              *y += (PetscScalar)gy;
     }

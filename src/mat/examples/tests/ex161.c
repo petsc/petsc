@@ -1,7 +1,7 @@
 static char help[] = "Test MatTransposeColoring for SeqAIJ matrices. Used for '-matmattransmult_color' on  MatMatTransposeMult \n\n";
 
 #include <petscmat.h>
-#include <petsc-private/matimpl.h> /* Need struct _p_MatTransposeColoring for this test. */
+#include <petsc/private/matimpl.h> /* Need struct _p_MatTransposeColoring for this test. */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   PetscInt             row,col,m,n;
   PetscErrorCode       ierr;
   MatScalar            one         =1.0,val;
+  MatColoring          mc;
   MatTransposeColoring matcoloring = 0;
   ISColoring           iscoloring;
   PetscBool            equal;
@@ -61,7 +62,12 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   /* Create MatTransposeColoring from symbolic C=A*R^T */
-  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringCreate(C,&mc);CHKERRQ(ierr);
+  ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
+  /* ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr); */
+  ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+  ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
   ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
@@ -106,6 +112,7 @@ int main(int argc,char **argv)
 
   /* Test C = RARt */
   ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
+  ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&equal);CHKERRQ(ierr);
   if (!equal) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: PtAP != RARt");CHKERRQ(ierr);

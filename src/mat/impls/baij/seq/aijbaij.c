@@ -13,7 +13,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   MatScalar      *aa = a->a;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(n*bs*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*bs,&rowlengths);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
     for (j=0; j<bs; j++) {
@@ -27,8 +27,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*maxlen*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs*maxlen,&cols);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) {
       rows[j] = i*bs+j;
@@ -72,8 +72,12 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatR
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (A->rmap->bs > 1) {
+    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
-  ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - ai[i];
   }

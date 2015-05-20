@@ -2,28 +2,29 @@
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
       subroutine GenerateErr(line,ierr)
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscErrorCode  ierr
-      PetscInt line
+      integer line
 
       call PetscError(PETSC_COMM_SELF,1,line,1,'Error message',ierr)
 
       return
       end
 
-      subroutine MyErrHandler(line,fun,file,dir,n,p,mess,ctx,ierr)
-#include <finclude/petscsys.h>
+      subroutine MyErrHandler(comm,line,fun,file,n,p,mess,ctx,ierr)
+#include <petsc/finclude/petscsys.h>
       integer line,n,p
       PetscInt ctx
       PetscErrorCode ierr
-      character*(*) fun,file,dir,mess
+      MPI_Comm comm
+      character*(*) fun,file,mess
 
       print*,'My error handler ',mess
       return
       end
 
       program main
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscErrorCode ierr
       external       MyErrHandler
 

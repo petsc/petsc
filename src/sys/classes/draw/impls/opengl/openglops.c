@@ -10,7 +10,7 @@
        --  Apple  CGLContextObj http://developer.apple.com/library/mac/#documentation/graphicsimaging/Reference/CGL_OpenGL/Reference/reference.html#//apple_ref/doc/uid/TP40001186
 */
 
-#include <petsc-private/drawimpl.h>  /*I  "petscsys.h" I*/
+#include <petsc/private/drawimpl.h>  /*I  "petscsys.h" I*/
 #if defined(PETSC_HAVE_OPENGLES)
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
@@ -201,7 +201,7 @@ static PetscErrorCode InitializeShader(void)
     int            maxLength;
     char           *vertexInfoLog;
     glGetShaderiv(vertexshader, GL_INFO_LOG_LENGTH, &maxLength);
-    ierr = PetscMalloc(maxLength*sizeof(char),&vertexInfoLog);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxLength,&vertexInfoLog);CHKERRQ(ierr);
     glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile vertex shader %s",vertexInfoLog);
   }
@@ -222,7 +222,7 @@ static PetscErrorCode InitializeShader(void)
     int            maxLength;
     char           *fragmentInfoLog;
     glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
-    ierr = PetscMalloc(maxLength*sizeof(char),&fragmentInfoLog);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxLength,&fragmentInfoLog);CHKERRQ(ierr);
     glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile fragment shader %s",fragmentInfoLog);
   }
@@ -426,7 +426,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   glutDestroyWindow(win->win);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -455,8 +455,8 @@ static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
   w    = glutBitmapWidth(GLUT_BITMAP_8_BY_13,'W');
-  *x   = w*(draw->coor_xr - draw->coor_xl)/((win->w)*(draw->port_xr - draw->port_xl));
-  *y   = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((win->h)*(draw->port_yr - draw->port_yl));
+  if (x) *x   = w*(draw->coor_xr - draw->coor_xl)/((win->w)*(draw->port_xr - draw->port_xl));
+  if (y) *y   = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((win->h)*(draw->port_yr - draw->port_yl));
   PetscFunctionReturn(0);
 }
 
@@ -522,11 +522,11 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
 typedef struct {
   GLint   win;    /* not currently used */
   int     w,h;    /* width and height in pixels */
-  GLKView *view;
+  int     view;
 } PetscDraw_OpenGL;
 
 static GLKView *globalGLKView[10] = {0,0,0,0,0,0,0,0,0,0};
-
+static int     globalGLKViewUsed[10]  = {0,0,0,0,0,0,0,0,0,0};
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 {
   return 0;
@@ -541,7 +541,7 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 
   PetscFunctionBegin;
   /* remove all UIText added to window */
-  for (UIView *view in [win->view subviews]) {[view removeFromSuperview];}
+  for (UIView *view in [globalGLKView[win->view] subviews]) {[view removeFromSuperview];}
   ierr = PetscDrawClear_OpenGL_Base(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -576,7 +576,7 @@ static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscRea
   [yourLabel setText: [[NSString alloc] initWithCString:chrs encoding:NSMacOSRomanStringEncoding]];
   [yourLabel setBackgroundColor:[UIColor clearColor]];
   /* [yourLabel setFont:[UIFont fontWithName: @"Trebuchet MS" size: 14.0f]]; */
-  [win->view addSubview:yourLabel];
+  [globalGLKView[win->view] addSubview:yourLabel];
   NSLog(@"Draw string end");
   PetscFunctionReturn(0);
 }
@@ -606,9 +606,9 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
   [yourLabel setTextColor:[UIColor colorWithRed:rcolor[c]/255.0 green:gcolor[c]/255.0 blue:rcolor[c]/255.0 alpha:1.0]];
   [yourLabel setText: [[NSString alloc] initWithCString:chrs encoding:NSMacOSRomanStringEncoding]];
   [yourLabel setBackgroundColor:[UIColor clearColor]];
-  [yourLabel setTransform:CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI / 2),-w/2.0-yy,-h+xx)];
+  [yourLabel setTransform:CGAffineTransformTranslate(CGAffineTransformMakeRotation(-PETSC_PI / 2),-w/2.0-yy,-h+xx)];
   /* [yourLabel setFont:[UIFont fontWithName: @"Trebuchet MS" size: 14.0f]]; */
-  [win->view addSubview:yourLabel];
+  [globalGLKView[win->view] addSubview:yourLabel];
   NSLog(@"Draw string vertical end");
   PetscFunctionReturn(0);
 }
@@ -628,15 +628,9 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   PetscInt         i;
 
   PetscFunctionBegin;
-  for (i=0; i<10; i++) {
-    if (!globalGLKView[i]) {
-      globalGLKView[i] = win->view;
-
-      ierr = PetscFree(win);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-  }
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate available GLKView slot");
+  globalGLKViewUsed[win->view] = 0;
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -652,7 +646,7 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
     NSLog(@"GL error detected glFlush()");
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
   }
-  [win->view display];
+  [globalGLKView[win->view] display];
   NSLog(@"Completed display in PetscDrawFlush()");
   return 0;
 }
@@ -661,8 +655,8 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   float w = .02;
-  *x = w*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
-  *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+  if (x) *x = w*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  if (y) *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
   return 0;
 }
 #undef __FUNCT__
@@ -1169,8 +1163,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
   if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
@@ -1287,21 +1281,22 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw draw)
   NSLog(@"Beginning PetscDrawCreate_OpenGLES()");
 
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   draw->data = win;
+  win->view  = -1;
   for (i=0; i<10; i++) {
-    if (globalGLKView[i]) {
-      win->view = globalGLKView[i];
-      win->w    = win->view.frame.size.width;
-      win->h    = win->view.frame.size.height;
-      [win->view bindDrawable];
-      globalGLKView[i] = 0;
+    if (!globalGLKViewUsed[i]) {
+      win->view = i;
+      win->w    = globalGLKView[win->view].frame.size.width;
+      win->h    = globalGLKView[win->view].frame.size.height;
+      [globalGLKView[win->view] bindDrawable];
+      globalGLKViewUsed[i] = 1;
       break;
     }
   }
-  if (!win->view) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Requested more OpenGL ES windows then provided with PetscDrawOpenGLRegisterGLKView()");
+  if (win->view == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Requested more OpenGL ES windows then provided with PetscDrawOpenGLRegisterGLKView()");
 
   if (!initialized) {
     initialized = PETSC_TRUE;

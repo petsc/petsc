@@ -1,0 +1,69 @@
+Mesh in 2 dimensions:
+  0-cells: 8 8
+  1-cells: 15 15
+  2-cells: 8 8
+Labels:
+  depth: 3 strata of sizes (8, 15, 8)
+  marker: 2 strata of sizes (9, 1)
+Mesh in 2 dimensions:
+  0-cells: 23 23
+  1-cells: 54 54
+  2-cells: 32 32
+Labels:
+  marker: 2 strata of sizes (17, 1)
+  depth: 3 strata of sizes (23, 54, 32)
+GPU layout grid(1,5,1) block(3,1,1) with 2 batches
+ N_t: 3, N_cb: 2
+GPU layout grid(1,5,1) block(3,1,1) with 2 batches
+ N_t: 3, N_cb: 2
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+-0.03125
+-0.0625
+0.21875
+0.09375
+0.1875
+0.34375
+-0.125
+-0.125
+-0.125
+-0.125
+-0.0625
+-0.125
+0.1875
+-0.125
+0.4375
+-0.125
+-0.125
+-0.0625
+0.1875
+-0.125
+-0.125
+-0.0625
+-0.125
+Vec Object: 1 MPI processes
+  type: seq
+-0.15625
+-0.3125
+0.09375
+0.21875
+0.4375
+0.46875
+-0.125
+-0.125
+-0.125
+-0.0625
+-0.125
+-0.3125
+-0.125
+0.4375
+-0.125
+-0.125
+-0.3125
+-0.125
+0.4375
+-0.125
+-0.125
+-0.125
+0.4375

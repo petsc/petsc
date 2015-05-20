@@ -17,15 +17,16 @@
    3) fix to set the block size based on the matrix block size
 
 */
+#define PETSC_SKIP_COMPLEX /* since spai uses I which conflicts with some complex implementations */
 
-#include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
-#include "petscspai.h"
+#include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/spai/petscspai.h>
 
 /*
     These are the SPAI include files
 */
 EXTERN_C_BEGIN
-#define MPI /* required for setting SPAI_Comm correctly in basics.h */
+#define SPAI_USE_MPI /* required for setting SPAI_Comm correctly in basics.h */
 #include <spai.h>
 #include <matrix.h>
 EXTERN_C_END
@@ -156,7 +157,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %G\n",   ispai->epsilon);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   (double)ispai->epsilon);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);
@@ -521,7 +522,7 @@ PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SPAI"
-static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
+static PetscErrorCode PCSetFromOptions_SPAI(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -530,7 +531,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SPAI options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCSPAISetEpsilon(pc,epsilon1);CHKERRQ(ierr);
@@ -603,7 +604,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&ispai);CHKERRQ(ierr);
   pc->data = ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
@@ -652,7 +653,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   PetscErrorCode          ierr;
   const int               *cols;
   const double            *vals;
-  int                     *num_ptr,n,mnl,nnl,nz,rstart,rend;
+  int                     n,mnl,nnl,nz,rstart,rend;
   PetscMPIInt             size,rank;
   struct compressed_lines *rows;
 
@@ -701,7 +702,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   rows = M->lines;
 
   /* Determine the mapping from global indices to pointers */
-  ierr       = PetscMalloc(M->n*sizeof(int),&mapping);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(M->n,&mapping);CHKERRQ(ierr);
   pe         = 0;
   local_indx = 0;
   for (i=0; i<M->n; i++) {
@@ -713,37 +714,18 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     local_indx++;
   }
 
-
-  ierr = PetscMalloc(mnl*sizeof(int),&num_ptr);CHKERRQ(ierr);
-
   /*********************************************************/
   /************** Set up the row structure *****************/
   /*********************************************************/
 
-  /* count number of nonzeros in every row */
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-  }
-
-  /* allocate buffers */
-  len = 0;
-  for (i=0; i<mnl; i++) {
-    if (len < num_ptr[i]) len = num_ptr[i];
-  }
-
-  for (i=rstart; i<rend; i++) {
-    row_indx             = i-rstart;
-    len                  = num_ptr[row_indx];
-    rows->ptrs[row_indx] = (int*)malloc(len*sizeof(int));
-    rows->A[row_indx]    = (double*)malloc(len*sizeof(double));
-  }
-
-  /* copy the matrix */
   for (i=rstart; i<rend; i++) {
     row_indx = i - rstart;
     ierr     = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    /* allocate buffers */
+    rows->ptrs[row_indx] = (int*)malloc(nz*sizeof(int));
+    rows->A[row_indx]    = (double*)malloc(nz*sizeof(double));
+    /* copy the matrix */
     for (j=0; j<nz; j++) {
       col = cols[j];
       len = rows->len[row_indx]++;
@@ -763,29 +745,12 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
   if (AT) {
 
-    /* count number of nonzeros in every column */
-    for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-      ierr = MatRestoreRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-    }
-
-    /* allocate buffers */
-    len = 0;
-    for (i=0; i<mnl; i++) {
-      if (len < num_ptr[i]) len = num_ptr[i];
-    }
-
-    for (i=rstart; i<rend; i++) {
-      row_indx = i-rstart;
-      len      = num_ptr[row_indx];
-
-      rows->rptrs[row_indx] = (int*)malloc(len*sizeof(int));
-    }
-
-    /* copy the matrix (i.e., the structure) */
     for (i=rstart; i<rend; i++) {
       row_indx = i - rstart;
       ierr     = MatGetRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
+      /* allocate buffers */
+      rows->rptrs[row_indx] = (int*)malloc(nz*sizeof(int));
+      /* copy the matrix (i.e., the structure) */
       for (j=0; j<nz; j++) {
         col = cols[j];
         len = rows->rlen[row_indx]++;
@@ -796,7 +761,6 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     }
   }
 
-  ierr = PetscFree(num_ptr);CHKERRQ(ierr);
   ierr = PetscFree(mapping);CHKERRQ(ierr);
 
   order_pointers(M);
@@ -809,7 +773,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
 /*
    Converts from an SPAI matrix B  to a PETSc matrix PB.
-   This assumes that the the SPAI matrix B is stored in
+   This assumes that the SPAI matrix B is stored in
    COMPRESSED-ROW format.
 */
 #undef __FUNCT__
@@ -832,8 +796,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  ierr = PetscMalloc(m*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col  = first_diag_col + B->mnls[rank];
@@ -894,15 +858,15 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 
   ierr = VecCreateMPI(comm,m,M,Pv);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(size*sizeof(int),&mnls);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&mnls);CHKERRQ(ierr);
   ierr = MPI_Allgather(&v->mnl,1,MPI_INT,mnls,1,MPI_INT,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(size*sizeof(int),&start_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&start_indices);CHKERRQ(ierr);
 
   start_indices[0] = 0;
   for (i=1; i<size; i++) start_indices[i] = start_indices[i-1] +mnls[i-1];
 
-  ierr = PetscMalloc(v->mnl*sizeof(int),&global_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(v->mnl,&global_indices);CHKERRQ(ierr);
   for (i=0; i<v->mnl; i++) global_indices[i] = start_indices[rank] + i;
 
   ierr = PetscFree(mnls);CHKERRQ(ierr);

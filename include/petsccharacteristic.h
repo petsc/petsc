@@ -21,9 +21,7 @@ S*/
 typedef struct _p_Characteristic *Characteristic;
 
 /*J
-    CharacteristicType - String with the name of a characteristics method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mymoccreate()
+    CharacteristicType - String with the name of a characteristics method.
 
    Level: beginner
 
@@ -42,9 +40,7 @@ PETSC_EXTERN PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteris
 PETSC_EXTERN PetscErrorCode CharacteristicSolve(Characteristic, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic*);
 
-PETSC_EXTERN PetscBool         CharacteristicRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList CharacteristicList;
-PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],PetscErrorCode (*)(Characteristic));
 

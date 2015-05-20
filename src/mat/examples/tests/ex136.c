@@ -12,11 +12,8 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscViewer    fd;
-  MatType        type = MATMPIBAIJ;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsHasName(NULL,"-aij",&flg);CHKERRQ(ierr);
-  if (flg) type = MATMPIAIJ;
 
   ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
@@ -31,13 +28,12 @@ int main(int argc,char **args)
      Load the matrix; then destroy the viewer.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,type);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /*
-     Open another binary file.  Note that we use FILE_MODE_WRITE to indicate
-     reading from this file.
+     Open another binary file.  Note that we use FILE_MODE_WRITE to indicate writing to the file
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fileoutput",FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
   ierr = PetscViewerBinarySetFlowControl(fd,3);CHKERRQ(ierr);
@@ -50,7 +46,7 @@ int main(int argc,char **args)
   /* load the new matrix */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fileoutput",FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,type);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatLoad(B,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 

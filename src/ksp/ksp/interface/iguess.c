@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /* ---------------------------------------Method 1------------------------------------------------------------*/
 typedef struct {
@@ -26,15 +26,15 @@ PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int maxl,KSPFischerGuess_M
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscMalloc(sizeof(KSPFischerGuess_Method1),&itg);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
+  ierr = PetscNew(&itg);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxl,&itg->alpha);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
-  ierr = KSPGetVecs(ksp,maxl,&itg->btilde,0,NULL);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,maxl,&itg->btilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->btilde);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ksp,itg->guess);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->guess);CHKERRQ(ierr);
   *ITG = itg;
   PetscFunctionReturn(0);
 }
@@ -75,7 +75,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Ve
   if (itg->monitor) {
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
@@ -120,7 +120,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method1(KSPFischerGuess_Method1 *itg,Vec x
       ierr = VecScale(itg->xtilde[curl],1.0/norm);CHKERRQ(ierr);
       itg->curl++;
     } else {
-      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous");CHKERRQ(ierr);
+      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -149,15 +149,15 @@ PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int maxl,KSPFischerGuess_M
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscMalloc(sizeof(KSPFischerGuess_Method2),&itg);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
+  ierr = PetscNew(&itg);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxl,&itg->alpha);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->Ax);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ksp,itg->Ax);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->Ax);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ksp,itg->guess);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->guess);CHKERRQ(ierr);
   *ITG = itg;
   PetscFunctionReturn(0);
 }
@@ -198,7 +198,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Ve
   if (itg->monitor) {
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
@@ -242,7 +242,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x
       ierr = VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
       itg->curl++;
     } else {
-      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous");CHKERRQ(ierr);
+      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -291,7 +291,7 @@ PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPF
   (*itg)->ksp    = ksp;
   (*itg)->refcnt = 1;
 
-  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess itg)
 
   PetscFunctionBegin;
   itg->curl = 0;
-  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL,NULL);CHKERRQ(ierr);
+  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

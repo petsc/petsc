@@ -40,32 +40,34 @@ def addFileNameTags(filename):
   g.close()
   return
 
-def createTags(etagfile,ctagfile,dirname,files):
-  import glob
+def createTags(flist,etagfile,ctagfile):
   # error check for each parameter?
-  (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+etagfile+' '+' '.join(files))
+  frlist = [os.path.relpath(path,os.getcwd()) for path in flist]
+
+  (status,output) = commands.getstatusoutput('etags -a -o '+etagfile+' '+' '.join(frlist))
   if status:
     raise RuntimeError("Error running etags "+output)
 
   # linux can use '--tag-relative=yes --langmap=c:+.cu'. For others [Mac,bsd] try running ctags in root directory - with relative path to file
   if ctagfile:
-    (status,output) = commands.getstatusoutput('cd '+dirname+';ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(files))
+    (status,output) = commands.getstatusoutput('ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(frlist))
     if status:
-       files= []
-       gfiles = glob.glob(os.path.join(dirname,'*'))
-       for file in gfiles:
-         if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
-           files.append(os.path.realpath(os.path.realpath(file)))
-       if files:
-         (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
-         if status:
-            raise RuntimeError("Error running ctags "+output)
-    return
+      (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(frlist))
+      if status:
+        raise RuntimeError("Error running ctags "+output)
+  return
 
 def endsWithSuffix(file,suffixes):
   # returns 1 if any of the suffixes match - else return 0
   for suffix in suffixes:
     if file.endswith(suffix):
+      return 1
+  return 0
+
+def startsWithPrefix(file,prefixes):
+  # returns 1 if any of the prefix match - else return 0
+  for prefix in prefixes:
+    if file.startswith(prefix):
       return 1
   return 0
 
@@ -78,20 +80,19 @@ def badWebIndex(dirname,file):
   else:
     return 1
 
-def processDir(tagfiles,dirname,names):
-  etagfile = tagfiles[0]
-  ctagfile = tagfiles[1]
+def processDir(flist,dirname,names):
   newls = []
   gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl']
+  bpfx = ['.#']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html','.cu.html','.cache.html']
   for l in names:
-    if endsWithSuffix(l,gsfx):
+    if endsWithSuffix(l,gsfx) and not startsWithPrefix(l,bpfx):
       newls.append(l)
     elif endsWithSuffix(l,hsfx)  and not endsWithSuffix(l,bsfx) and not badWebIndex(dirname,l):
       # if html - and not bad suffix - and not badWebIndex - then add to etags-list
       newls.append(l)
-  if newls: createTags(etagfile,ctagfile,dirname,newls)
+  if newls: flist.extend([os.path.join(dirname,name) for name in newls])
 
   # exclude 'docs' but not 'src/docs'
   for exname in ['docs']:
@@ -110,24 +111,24 @@ def processDir(tagfiles,dirname,names):
   # check for configure generated PETSC_ARCHes
   rmnames=[]
   for name in names:
-    if os.path.isdir(os.path.join(name,'conf')):
+    if os.path.isdir(os.path.join(dirname,name,'petsc','conf')):
       rmnames.append(name)
   for rmname in rmnames:
     names.remove(rmname)
   return
 
-def processFiles(dirname,etagfile,ctagfile):
+def processFiles(dirname,flist):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['conf/*','src/docs/website/documentation/changes/dev.html']
+  lists=['petsc/conf/*','src/docs/website/documentation/changes/dev.html']
 
   for glist in lists:
     gfiles = glob.glob(glist)
     for file in gfiles:
       if not (file.endswith('pyc') or file.endswith('/SCCS') or file.endswith('~')):
         files.append(file)
-  if files: createTags(etagfile,ctagfile,dirname,files)
+  if files: flist.extend([os.path.join(dirname,name) for name in files])
   return
 
 def main(ctags):
@@ -140,8 +141,14 @@ def main(ctags):
     ctagfile = os.path.join(os.getcwd(),'CTAGS')
   else:
     ctagfile = None
-  os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
-  processFiles(os.getcwd(),etagfile,ctagfile)
+  flist = []
+  (status,output) = commands.getstatusoutput('git ls-files| egrep -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\)$\)')
+  if not status:
+    flist = output.split('\n')
+  else:
+    os.path.walk(os.getcwd(),processDir,flist)
+    processFiles(os.getcwd(),flist)
+  createTags(flist,etagfile,ctagfile)
   addFileNameTags(etagfile)
   try: os.unlink('ETAGS')
   except: pass

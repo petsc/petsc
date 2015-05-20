@@ -1,26 +1,17 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_USE_DEBUG)
-
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-#if defined(PETSC_PTHREAD_LOCAL)
-PETSC_PTHREAD_LOCAL PetscStack *petscstack = 0;
-#endif
-#else
 PetscStack *petscstack = 0;
-#endif
 
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
-
-static AMS_Memory amsmemstack = -1;
+static PetscBool amsmemstack = PETSC_FALSE;
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSGrantAccess"
+#define __FUNCT__ "PetscStackSAWsGrantAccess"
 /*@C
-   PetscStackAMSGrantAccess - Grants access of the PETSc stack frames to the AMS publisher
+   PetscStackSAWsGrantAccess - Grants access of the PETSc stack frames to the SAWs publisher
 
    Collective on PETSC_COMM_WORLD?
 
@@ -28,22 +19,23 @@ static AMS_Memory amsmemstack = -1;
 
    Concepts: publishing object
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallAMS() since it may be used within those routines
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
 
 @*/
-void  PetscStackAMSGrantAccess(void)
+void  PetscStackSAWsGrantAccess(void)
 {
-  if (amsmemstack != -1) {
-    AMS_Memory_grant_access(amsmemstack);
+  if (amsmemstack) {
+    /* ignore any errors from SAWs */
+    SAWs_Unlock();
   }
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSTakeAccess"
+#define __FUNCT__ "PetscStackSAWsTakeAccess"
 /*@C
-   PetscStackAMSTakeAccess - Takes access of the PETSc stack frames to the AMS publisher
+   PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames to the SAWs publisher
 
    Collective on PETSC_COMM_WORLD?
 
@@ -51,66 +43,67 @@ void  PetscStackAMSGrantAccess(void)
 
    Concepts: publishing object
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallAMS() since it may be used within those routines
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
 
 @*/
-void  PetscStackAMSTakeAccess(void)
+void  PetscStackSAWsTakeAccess(void)
 {
-  if (amsmemstack != -1) {
-    AMS_Memory_take_access(amsmemstack);
+  if (amsmemstack) {
+    /* ignore any errors from SAWs */
+    SAWs_Lock();
   }
 }
 
-PetscErrorCode PetscStackViewAMS(void)
+PetscErrorCode PetscStackViewSAWs(void)
 {
-  AMS_Comm       acomm;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
-  AMS_Memory     mem;
-  PetscStack*    petscstackp;
 
-  petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
-  PetscStackCallAMS(AMS_Memory_create,(acomm,"Stack",&mem));
-  PetscStackCallAMS(AMS_Memory_take_access,(mem));
-  PetscStackCallAMS(AMS_Memory_add_field,(mem,"functions",petscstackp->function,10,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-  PetscStackCallAMS(AMS_Memory_add_field,(mem,"current size",&petscstackp->currentsize,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-  PetscStackCallAMS(AMS_Memory_publish,(mem));
-  PetscStackCallAMS(AMS_Memory_grant_access,(mem));
-  amsmemstack = mem;
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (rank) return 0;
+  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack->function,20,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstack->currentsize,1,SAWs_READ,SAWs_INT));
+  amsmemstack = PETSC_TRUE;
   return 0;
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSViewOff"
-PetscErrorCode PetscStackAMSViewOff(void)
+#define __FUNCT__ "PetscStackSAWsViewOff"
+PetscErrorCode PetscStackSAWsViewOff(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  if (amsmemstack == -1) PetscFunctionReturn(0);
-  ierr        = AMS_Memory_destroy(amsmemstack);CHKERRQ(ierr);
-  amsmemstack = -1;
+  if (!amsmemstack) PetscFunctionReturn(0);
+  PetscStackCallSAWs(SAWs_Delete,("/PETSc/Stack"));
+  amsmemstack = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#endif
+#  endif
+
 
 PetscErrorCode PetscStackCreate(void)
 {
   PetscStack *petscstack_in;
+  PetscInt   i;
+
   if (PetscStackActive()) return 0;
 
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
-  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  petscstack_in->hotdepth    = 0;
+  for (i=0; i<PETSCSTACKSIZE; i++) {
+    petscstack_in->function[i] = 0;
+    petscstack_in->file[i]     = 0;
+  }
+  petscstack = petscstack_in;
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   {
   PetscBool flg = PETSC_FALSE;
   PetscOptionsHasName(NULL,"-stack_view",&flg);
-  if (flg) PetscStackViewAMS();
+  if (flg) PetscStackViewSAWs();
   }
 #endif
   return 0;
@@ -122,21 +115,19 @@ PetscErrorCode PetscStackCreate(void)
 PetscErrorCode  PetscStackView(FILE *file)
 {
   int        i;
-  PetscStack *petscstackp;
 
-  petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
   if (!file) file = PETSC_STDOUT;
 
   if (file == PETSC_STDOUT) {
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
+    for (i=petscstack->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s\n",PetscGlobalRank,petscstack->function[i],petscstack->line[i],petscstack->file[i]);
   } else {
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
+    for (i=petscstack->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s\n",PetscGlobalRank,petscstack->function[i],petscstack->line[i],petscstack->file[i]);
   }
   return 0;
 }
@@ -144,11 +135,8 @@ PetscErrorCode  PetscStackView(FILE *file)
 PetscErrorCode PetscStackDestroy(void)
 {
   if (PetscStackActive()) {
-    PetscStack *petscstack_in;
-    petscstack_in = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-    free(petscstack_in);
-    PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,(PetscStack*)0);
-    PetscThreadLocalDestroy(petscstack); /* Deletes pthread_key if it was used */
+    free(petscstack);
+    petscstack = NULL;
   }
   return 0;
 }
@@ -165,7 +153,6 @@ PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
     for (i=0; i<sint->currentsize; i++) {
       sout->function[i]     = sint->function[i];
       sout->file[i]         = sint->file[i];
-      sout->directory[i]    = sint->directory[i];
       sout->line[i]         = sint->line[i];
       sout->petscroutine[i] = sint->petscroutine[i];
     }
@@ -182,51 +169,7 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
   int i;
 
   if (!sint) return(0);
-  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->directory[i],sint->file[i]);
+  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->file[i]);
   return 0;
 }
-
-#else
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackCreate"
-PetscErrorCode  PetscStackCreate(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackView"
-PetscErrorCode  PetscStackView(FILE *file)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackDestroy"
-PetscErrorCode  PetscStackDestroy(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#if defined(PETSC_HAVE_AMS)     /* AMS stack functions do nothing in optimized mode */
-void PetscStackAMSGrantAccess(void) {}
-void PetscStackAMSTakeAccess(void) {}
-
-PetscErrorCode PetscStackViewAMS(void)
-{
-  return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSViewOff"
-PetscErrorCode  PetscStackAMSViewOff(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
-#endif
 

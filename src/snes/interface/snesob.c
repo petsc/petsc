@@ -1,10 +1,10 @@
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 /*MC
     SNESObjectiveFunction - functional form used to convey the objective function to the nonlinear solver
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
        SNESObjectiveFunction(SNES snes,Vec x,PetscReal *obj,void *ctx);
 
      Input Parameters:
@@ -16,32 +16,34 @@
 
    Level: advanced
 
-.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective()
+.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective(), SNESJacobianFunction, SNESFunction
 M*/
 
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetObjective"
 /*@C
-   SNESSetObjective - Sets the objective function minimized by the SNES methods.
+   SNESSetObjective - Sets the objective function minimized by some of the SNES linesearch methods.
 
    Logically Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
-.  SNESObjectiveFunction - objective evaluation routine
+.  obj - objective evaluation routine; see SNESObjectiveFunction for details
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be NULL)
 
-   Level: beginner
+   Level: intermediate
 
-   Note: If not provided then this defaults to the two norm of the function evaluation (set with SNESSetFunction())
+   Note: This is not used in the SNESLINESEARCHCP line search.
+
+         If not provided then this defaults to the two norm of the function evaluation (set with SNESSetFunction())
 
 .keywords: SNES, nonlinear, set, objective
 
 .seealso: SNESGetObjective(), SNESComputeObjective(), SNESSetFunction(), SNESSetJacobian(), SNESObjectiveFunction
 @*/
-PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void *ctx)
+PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscReal*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -49,7 +51,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESSetObjective(dm,SNESObjectiveFunction,ctx);CHKERRQ(ierr);
+  ierr = DMSNESSetObjective(dm,obj,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +66,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 .  snes - the SNES context
 
    Output Parameter:
-+  SNESObjectiveFunction - objective evaluation routine (or NULL)
++  obj - objective evaluation routine (or NULL); see SNESObjectFunction for details
 -  ctx - the function context (or NULL)
 
    Level: advanced
@@ -73,7 +75,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 
 .seealso: SNESSetObjective(), SNESGetSolution()
 @*/
-PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void **ctx)
+PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscReal*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -81,7 +83,7 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunctio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetObjective(dm,SNESObjectiveFunction,ctx);CHKERRQ(ierr);
+  ierr = DMSNESGetObjective(dm,obj,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -168,7 +170,9 @@ PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes,Vec X,Vec F,void 
 
   PetscFunctionBegin;
   ierr = VecDuplicate(X,&Xh);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing parameters","SNES");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = VecSet(F,0.);CHKERRQ(ierr);
 
   ierr = VecNorm(X,NORM_2,&fob);CHKERRQ(ierr);

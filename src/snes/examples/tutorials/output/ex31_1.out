@@ -52,7 +52,7 @@ SNES Object: 1 MPI processes
                 matrix ordering: nd
                 factor fill ratio given 5, needed 1.17778
                   Factored matrix follows:
-                    Matrix Object:                     1 MPI processes
+                    Mat Object:                     1 MPI processes
                       type: seqaij
                       rows=18, cols=18
                       package used to perform factorization: petsc
@@ -60,7 +60,7 @@ SNES Object: 1 MPI processes
                       total number of mallocs used during MatSetValues calls =0
                         using I-node routines: found 8 nodes, limit used is 5
               linear system matrix = precond matrix:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=18, cols=18
                 total: nonzeros=180, allocated nonzeros=180
@@ -79,19 +79,19 @@ SNES Object: 1 MPI processes
             PC Object:            (fieldsplit_0_fieldsplit_pressure_)             1 MPI processes
               type: jacobi
               linear system matrix followed by preconditioner matrix:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: schurcomplement
                 rows=9, cols=9
                   Schur complement A11 - A10 inv(A00) A01
                   A11
-                    Matrix Object:                     1 MPI processes
+                    Mat Object:                     1 MPI processes
                       type: seqaij
                       rows=9, cols=9
                       total: nonzeros=41, allocated nonzeros=41
                       total number of mallocs used during MatSetValues calls =0
                         not using I-node routines
                   A10
-                    Matrix Object:                     1 MPI processes
+                    Mat Object:                     1 MPI processes
                       type: seqaij
                       rows=9, cols=18
                       total: nonzeros=78, allocated nonzeros=78
@@ -111,7 +111,7 @@ SNES Object: 1 MPI processes
                         matrix ordering: nd
                         factor fill ratio given 5, needed 1.17778
                           Factored matrix follows:
-                            Matrix Object:                             1 MPI processes
+                            Mat Object:                             1 MPI processes
                               type: seqaij
                               rows=18, cols=18
                               package used to perform factorization: petsc
@@ -119,27 +119,27 @@ SNES Object: 1 MPI processes
                               total number of mallocs used during MatSetValues calls =0
                                 using I-node routines: found 8 nodes, limit used is 5
                       linear system matrix = precond matrix:
-                      Matrix Object:                       1 MPI processes
+                      Mat Object:                       1 MPI processes
                         type: seqaij
                         rows=18, cols=18
                         total: nonzeros=180, allocated nonzeros=180
                         total number of mallocs used during MatSetValues calls =0
                           using I-node routines: found 9 nodes, limit used is 5
                   A01
-                    Matrix Object:                     1 MPI processes
+                    Mat Object:                     1 MPI processes
                       type: seqaij
                       rows=18, cols=9
                       total: nonzeros=78, allocated nonzeros=78
                       total number of mallocs used during MatSetValues calls =0
                         using I-node routines: found 9 nodes, limit used is 5
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=9, cols=9
                 total: nonzeros=41, allocated nonzeros=41
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=27, cols=27
           total: nonzeros=377, allocated nonzeros=377
@@ -159,7 +159,7 @@ SNES Object: 1 MPI processes
           matrix ordering: nd
           factor fill ratio given 5, needed 1
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=1, cols=1
                 package used to perform factorization: petsc
@@ -167,14 +167,14 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
-    Matrix Object:     1 MPI processes
+    Mat Object:     1 MPI processes
       type: seqaij
       rows=28, cols=28
       total: nonzeros=428, allocated nonzeros=428

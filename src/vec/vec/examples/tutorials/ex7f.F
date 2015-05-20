@@ -2,8 +2,8 @@
 !
        subroutine ex7f(vec,comm)
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
 !
 !  This routine demonstates how a computational module may be written
 !  in Fortran and called from a C routine, passing down PETSc objects.

@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscmat.h>
 
 #undef __FUNCT__
@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   if (!A->symmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
-  ierr = PetscMalloc2(lm,PetscInt,&d_nnz,lm,PetscInt,&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(lm,&d_nnz,lm,&o_nnz);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqAIJ(mpimat->A);CHKERRQ(ierr);
   for (i=0; i<lm; i++) {
@@ -79,7 +79,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,M
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
-  ierr = PetscMalloc2(lm/bs,PetscInt,&d_nnz,lm/bs,PetscInt,&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(lm/bs,&d_nnz,lm/bs,&o_nnz);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqBAIJ(mpimat->A);CHKERRQ(ierr);
   for (i=0; i<lm/bs; i++) {

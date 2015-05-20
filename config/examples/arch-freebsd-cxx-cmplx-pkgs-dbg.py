@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-cc=gcc46',
+  '--with-cxx=g++46', # default g++ segfaults with src/ts/examples/tutorials/ex10.c
+  '--with-fc=gfortran',
+  'LIBS=-lexecinfo', # for some reason gcc46 requires this library
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 
   '--useThreads=0', # for some reason cmake hangs when invoked from configure on bsd?
-  #'-download-f-blas-lapack=1',
+  #'-download-fblaslapack=1',
   '--download-mpich=1',
   '--download-cmake=1',
   '--download-metis=1',
@@ -15,11 +19,11 @@ configure_options = [
   #'--download-superlu_dist=1',
   '--download-scalapack=1',
   '--download-mumps=1',
-  '--download-elemental=1',
-  #'--download-hdf5',
+  '--download-hdf5',
+  # no with-cxx-dialect=C++11 support '--download-elemental=1',
   #'--download-sundials=1',
   #'--download-hypre=1',
-  #'--download-umfpack=1',
+  #'--download-suitesparse=1',
   #'--download-chaco=1',
   #'--download-spai=1',
 

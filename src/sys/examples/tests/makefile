@@ -5,13 +5,13 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
-                ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c
+                ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
+                ex22.c ex23.c ex24.c ex27.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -61,6 +61,10 @@ ex12: ex12.o chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_SYS_LIB}
 	${RM} -f ex12.o
 
+ex13: ex13.o chkopts
+	-${CLINKER} -o ex13 ex13.o  ${PETSC_SYS_LIB}
+	${RM} -f ex13.o
+
 ex14: ex14.o chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_SYS_LIB}
 	${RM} -f ex14.o
@@ -94,65 +98,95 @@ ex23: ex23.o chkopts
 ex24: ex24.o chkopts
 	-${CLINKER} -o ex24 ex24.o  ${PETSC_SYS_LIB}
 	${RM} -f ex24.o
+ex25: ex25.o chkopts
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_SYS_LIB}
+	${RM} -f ex25.o
+ex27: ex27.o chkopts
+	-${CLINKER} -o ex27 ex27.o  ${PETSC_SYS_LIB}
+	${RM} -f ex27.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1
-	-@echo "This is a contrived error to test error handling."
+	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(main|CreateError|Error Created)" ex1.tmp1 | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
+	if (${DIFF} output/ex1_1.out ex1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1.tmp1 ex1.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f
-	-@echo "This is a contrived error to test error handling."
+	-@${MPIEXEC} -n 1 ./ex1f  > ex1f.tmp1 2>&1; egrep "(PETSC ERROR)" ex1f.tmp1  > ex1f.tmp;\
+	if (${DIFF} output/ex1f_1.out ex1f.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1f.tmp1 ex1f.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2
-	-@echo "This is a contrived error to test error handling."
+	-@${MPIEXEC} -n 1 ./ex2 > ex2.tmp1 2>&1; egrep "(Caught signal number 11 SEGV)" ex2.tmp1  > ex2.tmp;\
+	if (${DIFF} output/ex2_1.out ex2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex2.tmp1 ex2.tmp
 
 runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -fp_trap
-	-@echo "This is a contrived error to test error handling of floating point exceptions."
+	-@${MPIEXEC} -n 1 ./ex3 -fp_trap > ex3.tmp1 2>&1; egrep "(PetscDefaultFPTrap|CreateError)" ex3.tmp1 | cut -f1,2,3,4 -d" " > ex3.tmp;\
+	if (${DIFF} output/ex3_1.out ex3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex3.tmp1 ex3.tmp
 
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7.tmp ex7.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo "Error in PetscMemmove."; fi; \
+	   else  printf "${PWD}\nPossible problem with ex10\n=========================================\n"; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
+
+runex13:
+	-@${MPIEXEC} -n 1 ./ex13 > ex13_1.tmp 2>&1;\
+	   ${DIFF} output/ex13_1.out ex13_1.tmp || printf "${PWD}\nPossible problem with ex13_1, diffs above\n=========================================\n"; \
+	   ${RM} ex13_1.tmp
+
+runex14:
+	-@${MPIEXEC} -n 1 ./ex14 -array 1.0,3.0,4.5+6.2i,4.5,6.8+4i -rarray 1,2,3 -a 1.5+2.1i > ex14.tmp 2>&1;\
+	   ${DIFF} output/ex14.out ex14.tmp || printf "${PWD}\nPossible problem with ex14, diffs above\n=========================================\n"; \
+	   ${RM} ex14.tmp
 
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex19_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with ex19_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex20:
 	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1;   \
-	   ${DIFF} output/ex20_1.out ex20_1.tmp || echo ${PWD} "\nPossible problem with ex20_1, diffs above \n========================================="; \
+	   ${DIFF} output/ex20_1.out ex20_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex20_1.tmp
 runex20_2:
 	-@${MPIEXEC} -n 1 ./ex20 -cl -prefix_push cl_ -zero 10 -prefix_push a_ -one 11 -prefix_push bb_ -two 12 -prefix_pop -three 13 -prefix_push cc_ -prefix_push ddd_ -four 14 -prefix_pop -prefix_pop -prefix_pop -five 15 -prefix_pop > ex20_2.tmp 2>&1;   \
-	   ${DIFF} output/ex20_2.out ex20_2.tmp || echo  ${PWD} "\nPossible problem with ex20_2, diffs above \n========================================="; \
+	   ${DIFF} output/ex20_2.out ex20_2.tmp || printf "${PWD}\nPossible problem with ex20_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex20_2.tmp
 runex20_3:
 	-@${MPIEXEC} -n 1 ./ex20 -str > ex20_3.tmp 2>&1;   \
-	   ${DIFF} output/ex20_3.out ex20_3.tmp || echo  ${PWD} "\nPossible problem with ex20_3, diffs above \n========================================="; \
+	   ${DIFF} output/ex20_3.out ex20_3.tmp || printf "${PWD}\nPossible problem with ex20_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex20_3.tmp
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 > ex22.tmp 2>&1;   \
-	   ${DIFF} output/ex22.out ex22.tmp || echo  ${PWD} "\nPossible problem with ex22, diffs above \n========================================="; \
+	   ${DIFF} output/ex22.out ex22.tmp || printf "${PWD}\nPossible problem with ex22, diffs above\n=========================================\n"; \
 	   ${RM} -f ex22.tmp
 runex23:
 	-@${MPIEXEC} -n 1 ./ex23 -options_file_yaml ex23options > ex23.tmp 2>&1;   \
-	   ${DIFF} output/ex23.out ex23.tmp || echo  ${PWD} "\nPossible problem with ex23, diffs above \n========================================="; \
+	   ${DIFF} output/ex23.out ex23.tmp || printf "${PWD}\nPossible problem with ex23, diffs above\n=========================================\n"; \
 	   ${RM} -f ex23.tmp
+runex25:
+	-@${MPIEXEC} -n 1 ./ex25 > ex25.tmp 2>&1;   \
+	   ${DIFF} output/ex25.out ex25.tmp || echo  ${PWD} "\nPossible problem with ex25, diffs above \n========================================="; \
+	   ${RM} -f ex25.tmp
 
 
-TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
-                                 ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm
+                                 ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
+                                 ex25.PETSc runex25 ex25.rm
+TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm
@@ -162,4 +196,4 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.r
 TESTEXAMPLES_13		       = ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
                                  ex14.PETSc ex14.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

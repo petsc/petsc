@@ -49,16 +49,15 @@ PETSC_EXTERN PetscErrorCode AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],c
 PETSC_EXTERN PetscErrorCode AOCreateMappingIS(IS,IS,AO*);
 
 PETSC_EXTERN PetscErrorCode AOView(AO,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode AOViewFromOptions(AO A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode AODestroy(AO*);
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList AOList;
-PETSC_EXTERN PetscBool         AORegisterAllCalled;
 PETSC_EXTERN PetscErrorCode AOSetType(AO, AOType);
 PETSC_EXTERN PetscErrorCode AOGetType(AO, AOType *);
 
 PETSC_EXTERN PetscErrorCode AORegister(const char [], PetscErrorCode (*)(AO));
-PETSC_EXTERN PetscErrorCode AORegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode AOPetscToApplication(AO,PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode AOApplicationToPetsc(AO,PetscInt,PetscInt[]);

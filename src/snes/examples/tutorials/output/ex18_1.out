@@ -4,6 +4,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=24
   total number of function evaluations=7
+  norm schedule ALWAYS
   SNESLineSearch Object:   1 MPI processes
     type: bt
       interpolation: cubic
@@ -35,11 +36,11 @@ SNES Object: 1 MPI processes
         type: lu
           LU: out-of-place factorization
           tolerance for zero pivot 2.22045e-14
-          using diagonal shift on blocks to prevent zero pivot
+          using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
           matrix ordering: nd
           factor fill ratio given 5, needed 1.59172
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=25, cols=25
                 package used to perform factorization: petsc
@@ -47,7 +48,7 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 17 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=25, cols=25
           total: nonzeros=169, allocated nonzeros=169
@@ -57,8 +58,8 @@ SNES Object: 1 MPI processes
       KSP Object:      (mg_levels_1_)       1 MPI processes
         type: chebyshev
           Chebyshev: eigenvalue estimates:  min = 0.0990377, max = 1.08941
-          Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:          (mg_levels_1_est_)           1 MPI processes
+          Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
+          KSP Object:          (mg_levels_1_esteig_)           1 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -67,16 +68,6 @@ SNES Object: 1 MPI processes
             left preconditioning
             using nonzero initial guess
             using NONE norm type for convergence test
-          PC Object:          (mg_levels_1_)           1 MPI processes
-            type: sor
-              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-            linear system matrix = precond matrix:
-            Matrix Object:             1 MPI processes
-              type: seqaij
-              rows=81, cols=81
-              total: nonzeros=625, allocated nonzeros=625
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
@@ -86,7 +77,7 @@ SNES Object: 1 MPI processes
         type: sor
           SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=81, cols=81
           total: nonzeros=625, allocated nonzeros=625
@@ -97,8 +88,8 @@ SNES Object: 1 MPI processes
       KSP Object:      (mg_levels_2_)       1 MPI processes
         type: chebyshev
           Chebyshev: eigenvalue estimates:  min = 0.0993333, max = 1.09267
-          Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:          (mg_levels_2_est_)           1 MPI processes
+          Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
+          KSP Object:          (mg_levels_2_esteig_)           1 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -107,16 +98,6 @@ SNES Object: 1 MPI processes
             left preconditioning
             using nonzero initial guess
             using NONE norm type for convergence test
-          PC Object:          (mg_levels_2_)           1 MPI processes
-            type: sor
-              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-            linear system matrix = precond matrix:
-            Matrix Object:             1 MPI processes
-              type: seqaij
-              rows=289, cols=289
-              total: nonzeros=1377, allocated nonzeros=1377
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
@@ -126,7 +107,7 @@ SNES Object: 1 MPI processes
         type: sor
           SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=289, cols=289
           total: nonzeros=1377, allocated nonzeros=1377
@@ -134,7 +115,7 @@ SNES Object: 1 MPI processes
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
-    Matrix Object:     1 MPI processes
+    Mat Object:     1 MPI processes
       type: seqaij
       rows=289, cols=289
       total: nonzeros=1377, allocated nonzeros=1377

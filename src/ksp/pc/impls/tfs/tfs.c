@@ -2,7 +2,7 @@
         Provides an interface to the Tufo-Fischer parallel direct solver
 */
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/ksp/pc/impls/tfs/tfs.h>
 
@@ -113,7 +113,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
   /* generate the local to global mapping */
   ncol = a->A->cmap->n + a->B->cmap->n;
-  ierr = PetscMalloc((ncol)*sizeof(PetscInt),&localtoglobal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncol,&localtoglobal);CHKERRQ(ierr);
   for (i=0; i<a->A->cmap->n; i++) localtoglobal[i] = A->cmap->rstart + i + 1;
   for (i=0; i<a->B->cmap->n; i++) localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
 
@@ -143,7 +143,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_TFS"
-static PetscErrorCode PCSetFromOptions_TFS(PC pc)
+static PetscErrorCode PCSetFromOptions_TFS(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   PetscFunctionBegin;
   ierr = MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp);CHKERRQ(ierr);
   if (cmp != MPI_IDENT && cmp != MPI_CONGRUENT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
-  ierr = PetscNewLog(pc,PC_TFS,&tfs);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&tfs);CHKERRQ(ierr);
 
   tfs->xxt = 0;
   tfs->xyt = 0;

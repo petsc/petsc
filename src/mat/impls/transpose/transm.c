@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 
 typedef struct {
   Mat A;
@@ -67,6 +67,24 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_Transpose"
+PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
+{
+  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (op == MAT_COPY_VALUES) {
+    ierr = MatTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
+  } else if (op == MAT_DO_NOT_COPY_VALUES) {
+    ierr = MatDuplicate(Na->A,MAT_DO_NOT_COPY_VALUES,m);CHKERRQ(ierr);
+    ierr = MatTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_SUP,"MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateTranspose"
 /*@
       MatCreateTranspose - Creates a new matrix object that behaves like A'
@@ -98,9 +116,11 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((*N)->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((*N)->cmap);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATTRANSPOSEMAT);CHKERRQ(ierr);
 
-  ierr       = PetscNewLog(*N,Mat_Transpose,&Na);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;
@@ -110,12 +130,10 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->multadd          = MatMultAdd_Transpose;
   (*N)->ops->multtranspose    = MatMultTranspose_Transpose;
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose;
+  (*N)->ops->duplicate        = MatDuplicate_Transpose;
   (*N)->assembled             = PETSC_TRUE;
 
-  ierr = PetscLayoutSetBlockSize((*N)->rmap,A->cmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize((*N)->cmap,A->rmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp((*N)->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp((*N)->cmap);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

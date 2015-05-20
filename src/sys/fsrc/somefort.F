@@ -7,7 +7,7 @@
       subroutine PetscSetCommonBlock(c1,c2)
       implicit none
 
-#include      <finclude/petscsys.h>
+#include      <petsc/finclude/petscsys.h>
 
       integer c1,c2
 
@@ -24,17 +24,54 @@
 
       subroutine PetscGetCommonCOMM(c1)
       implicit none
-#include      <finclude/petscsys.h>
+#include      <petsc/finclude/petscsys.h>
       integer c1
 
       c1 = PETSC_COMM_WORLD
       return
       end
 
+#if defined(PETSC_USE_REAL___FLOAT128)
+      subroutine PetscSetCommonBlockMPI(freal,fscalar,fsum)
+      implicit none
+
+#include      <petsc/finclude/petscsys.h>
+
+      integer freal,fscalar,fsum
+
+      MPIU_REAL   = freal
+      MPIU_SCALAR = fscalar
+      MPIU_SUM    = fsum
+      return
+      end
+#endif
+
+      subroutine PetscSetCommonBlockNumeric(pi,maxreal,minreal,eps,seps,    &
+     &                     small,pinf,pninf)
+      implicit none
+
+#include      <petsc/finclude/petscsys.h>
+
+      PetscReal pi,maxreal,minreal,eps,seps
+      PetscReal small,pinf,pninf
+
+      PETSC_PI = pi
+      PETSC_MAX_REAL = maxreal
+      PETSC_MIN_REAL = minreal
+      PETSC_MACHINE_EPSILON = eps
+      PETSC_SQRT_MACHINE_EPSILON = seps
+      PETSC_SMALL = small
+      PETSC_INFINITY = pinf
+      PETSC_NINFINITY = pninf
+
+      return
+      end
+
+
       block data PetscCommInit
       implicit none
 !
-!     this code is duplicated - because including finclude/petscsys.h here
+!     this code is duplicated - because including petsc/finclude/petscsys.h here
 !     gives compile errors.
 !
       MPI_Comm PETSC_COMM_WORLD

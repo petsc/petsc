@@ -3,8 +3,11 @@
 #define _PFIMPL
 
 #include <petscpf.h>
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 #include <petscviewer.h>
+
+PETSC_EXTERN PetscBool      PFRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
 
 typedef struct _PFOps *PFOps;
 struct _PFOps {
@@ -12,7 +15,7 @@ struct _PFOps {
   PetscErrorCode (*applyvec)(void*,Vec,Vec);
   PetscErrorCode (*destroy)(void*);
   PetscErrorCode (*view)(void*,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PF);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PF);
 };
 
 struct _p_PF {

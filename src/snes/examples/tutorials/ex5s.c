@@ -173,7 +173,7 @@ int main(int argc,char **argv)
 
   */
   ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rend-rstart,&colors);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
 
   ierr = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
@@ -220,6 +220,7 @@ int main(int argc,char **argv)
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fnc,&user);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(J,iscoloring,fdcoloring);CHKERRQ(ierr);
   /*
         Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.
@@ -326,7 +327,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
         x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -354,10 +355,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  int         ierr,i,j,row,mx,my;
-  PetscReal   two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar u,uxx,uyy,*x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  int               ierr,i,j,row,mx,my;
+  PetscReal         two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar       u,uxx,uyy,*f;
+  const PetscScalar *x;
 
   /*
       Process 0 has to wait for all other processes to get here
@@ -382,7 +384,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
@@ -406,14 +408,14 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       u      = x[row];
       uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy    = (two*u - x[row-mx] - x[row+mx])*hxdhy;
-      f[row] = uxx + uyy - sc*exp(u);
+      f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
 
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(11.0*(mx-2)*(my-2))CHKERRQ(ierr);
@@ -436,9 +438,10 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  int         ierr;
-  PetscScalar *x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  int               ierr;
+  PetscScalar       *f;
+  const PetscScalar *x;  
 
   /*
       Process 0 has to wait for all other processes to get here
@@ -446,10 +449,10 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = PetscBarrier((PetscObject)snes);CHKERRQ(ierr);
   if (!user->rank) {
-    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     ierr = VecGetArray(F,&f);CHKERRQ(ierr);
     applicationfunctionfortran_(&user->param,&user->mx,&user->my,x,f,&ierr);
-    ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
     ierr = PetscLogFlops(11.0*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
   }

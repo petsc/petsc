@@ -23,7 +23,7 @@ def portabilityCheck(filename,includes):
     # Check for use of system includes
     include = re.compile(r"""#\s*include\s*('|"|<)""")
     ok = re.compile(r"""#\s*include\s*('|"|<)petsc""")
-    okf = re.compile(r"""#\s*include\s*('|"|<)include/finclude/petsc""")
+    okf = re.compile(r"""#\s*include\s*('|"|<)include/petsc/finclude/petsc""")
     file = open(filename)
     for line in file.readlines():
       if include.search(line) and not ok.search(line) and not okf.search(line):

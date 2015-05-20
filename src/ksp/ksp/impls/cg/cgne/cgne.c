@@ -43,8 +43,8 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+    ierr = PetscMalloc4(maxit+1,&cgP->e,maxit+1,&cgP->d,maxit+1,&cgP->ee,maxit+1,&cgP->dd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -72,7 +72,6 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   Vec            X,B,Z,R,P,T;
   KSP_CG         *cg;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
@@ -93,10 +92,10 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; }
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
-  ierr     = MatMultTranspose(Amat,B,T);CHKERRQ(ierr);
+  ierr     = KSP_MatMultTranspose(ksp,Amat,B,T);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
@@ -152,8 +151,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);     /*     p <- z + b* p   */
     }
     betaold = beta;
-    ierr    = MatMult(Amat,P,T);CHKERRQ(ierr);
-    ierr    = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
+    ierr    = KSP_MatMult(ksp,Amat,P,T);CHKERRQ(ierr);
+    ierr    = KSP_MatMultTranspose(ksp,Amat,T,Z);CHKERRQ(ierr);
     ierr    = VecXDot(P,Z,&dpi);CHKERRQ(ierr);    /*     dpi <- z'p      */
     a       = beta/dpi;                            /*     a = beta/p'z    */
     if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
@@ -189,6 +188,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (eigs) cg->ned = ksp->its;
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the
        function pointers for all the routines it needs to call (KSPSolve_CGNE() etc)
 
-    It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 
 /*MC
@@ -237,7 +237,7 @@ M*/
 extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
-extern PetscErrorCode KSPSetFromOptions_CG(KSP);
+extern PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP);
 PETSC_EXTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 #undef __FUNCT__
@@ -248,16 +248,16 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   cg->type = KSP_CG_SYMMETRIC;
 #else
   cg->type = KSP_CG_HERMITIAN;
 #endif
   ksp->data = (void*)cg;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure
