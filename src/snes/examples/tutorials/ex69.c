@@ -72,7 +72,7 @@ static void stokes_momentum(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
-      f1[c*dim+d] = PetscExpReal(2.0*a[0]*x[0]) * 0.5*(u_x[c*dim+d] + u_x[d*dim+c]);
+      f1[c*dim+d] = PetscExpReal(2.0*a[0]*x[0]) * (u_x[c*dim+d] + u_x[d*dim+c]);
     }
     f1[c*dim+c] -= u[dim];
   }
