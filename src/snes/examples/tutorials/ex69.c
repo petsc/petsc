@@ -906,7 +906,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNu
   ierr = DMPlexProjectFunction(dm, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) vec, "Pressure Null Space");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(vec, NULL, "-null_space_vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(vec, "null_", "-space_vec_view");CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject) dm), PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
   if (v) {
     ierr = DMCreateGlobalVector(dm, v);CHKERRQ(ierr);
@@ -973,11 +973,15 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMPlexProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, "exact_", "-vec_view");CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", pint);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = DMPlexProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-inital_vec_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Initial Solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, "initial_", "-vec_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
