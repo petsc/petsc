@@ -3462,7 +3462,7 @@ typedef enum {MATDENSE_PRIVATE=0,MATAIJ_PRIVATE,MATBAIJ_PRIVATE,MATSBAIJ_PRIVATE
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSubassemble"
-PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, PetscBool restrict_comm, MatReuse reuse, Mat *mat_n, PetscInt nis, IS isarray[])
+PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, PetscBool restrict_comm, PetscBool restrict_full, MatReuse reuse, Mat *mat_n, PetscInt nis, IS isarray[])
 {
   Mat                    local_mat;
   Mat_IS                 *matis;
@@ -3550,7 +3550,11 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     PetscMPIInt color,subcommsize;
 
     color = 0;
-    if (!n_recvs && n_sends) color = 1; /* processes sending and not receiving anything will not partecipate in new comm */
+    if (restrict_full) {
+      if (!n_recvs) color = 1; /* processes not receiving anything will not partecipate in new comm (full restriction) */
+    } else {
+      if (!n_recvs && n_sends) color = 1; /* just those processes that are sending but not receiving anything will not partecipate in new comm */
+    }
     ierr = MPI_Allreduce(&color,&subcommsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     subcommsize = commsize - subcommsize;
     /* check if reuse has been requested */
@@ -3935,6 +3939,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     for (i=0;i<nis;i++) {
       ierr = ISDestroy(&isarray[i]);CHKERRQ(ierr);
     }
+    *mat_n = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -4219,7 +4224,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       }
     }
     /* get temporary coarse mat in IS format restricted on coarse procs (plus additional index sets of isarray) */
-    ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling_init,0,PETSC_TRUE,MAT_INITIAL_MATRIX,&coarse_mat_is,nis,isarray);CHKERRQ(ierr);
+    if (multilevel_allowed) { /* we need to keep tracking of void processes for future placements */
+      ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling_init,0,PETSC_TRUE,PETSC_FALSE,MAT_INITIAL_MATRIX,&coarse_mat_is,nis,isarray);CHKERRQ(ierr);
+    } else { /* this is the last level, so use just receiving processes in subcomm */
+      ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling_init,0,PETSC_TRUE,PETSC_TRUE,MAT_INITIAL_MATRIX,&coarse_mat_is,nis,isarray);CHKERRQ(ierr);
+    }
   } else {
     if (pcbddc->dbg_flag) {
       ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
@@ -4360,7 +4369,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
             ierr = PetscViewerFlush(dbg_viewer);CHKERRQ(ierr);
           }
         }
-        ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,0,PETSC_FALSE,coarse_mat_reuse,&coarse_mat,0,NULL);CHKERRQ(ierr);
+        ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,0,PETSC_FALSE,PETSC_FALSE,coarse_mat_reuse,&coarse_mat,0,NULL);CHKERRQ(ierr);
       } else {
         ierr = PetscObjectReference((PetscObject)coarse_mat_is);CHKERRQ(ierr);
         coarse_mat = coarse_mat_is;
