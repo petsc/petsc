@@ -3508,6 +3508,8 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
     PetscInt         Nq, q;
 
     ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*Nc*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
 #ifndef PETSC_USE_COMPLEX
@@ -3519,8 +3521,8 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &f0[q*Nc]);
-      f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, refSpaceDer);
       TransformF(dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -3579,6 +3581,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
     PetscInt         Nq, q;
 
     ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*Nc*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
 #ifndef PETSC_USE_COMPLEX
@@ -3590,8 +3594,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
       CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
       ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, &f0[q*Nc]);
-      f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, refSpaceDer);
       TransformF(dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(dim-1, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -4062,6 +4066,8 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, Pet
     PetscInt         Nq, q;
 
     ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*Nc*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       const PetscReal *v0   = geom[e*Nq+q].v0;
       const PetscReal *J    = geom[e*Nq+q].J;
@@ -4072,8 +4078,8 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, Pet
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &f0[q*Nc]);
-      f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, refSpaceDer);
       TransformF(dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -4127,6 +4133,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
     PetscInt         Nq, q;
 
     ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*Nc*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       const PetscReal *v0   = geom[e*Nq+q].v0;
       const PetscReal *n    = geom[e*Nq+q].n;
@@ -4138,8 +4146,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
       CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
       ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, &f0[q*Nc]);
-      f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, refSpaceDer);
       TransformF(dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);

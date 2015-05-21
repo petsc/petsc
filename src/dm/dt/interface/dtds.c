@@ -1107,8 +1107,8 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidFunction(f0, 3);
-  PetscValidFunction(f1, 4);
+  if (f0) PetscValidFunction(f0, 3);
+  if (f1) PetscValidFunction(f1, 4);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   prob->f[f*2+0] = f0;
