@@ -84,6 +84,10 @@ cdef inline ndarray empty_s(PetscInt size):
     cdef npy_intp s = <npy_intp> size
     return PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0)
 
+cdef inline ndarray empty_c(PetscInt size):
+    cdef npy_intp s = <npy_intp> size
+    return PyArray_EMPTY(1, &s, NPY_PETSC_COMPLEX, 0)
+
 cdef inline ndarray empty_p(PetscInt size):
     cdef npy_intp s = <npy_intp> size
     return PyArray_EMPTY(1, &s, NPY_INTP, 0)
