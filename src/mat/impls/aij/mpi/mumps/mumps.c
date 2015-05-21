@@ -2012,7 +2012,7 @@ PetscErrorCode MatMumpsInvertSchurComplement_MUMPS(Mat F)
   PetscFunctionBegin;
   if (!mumps->id.ICNTL(19)) { /* do nothing */
     PetscFunctionReturn(0);
-  } 
+  }
   if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
     SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
   } else if (!mumps->id.size_schur) {
