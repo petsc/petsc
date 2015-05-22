@@ -24,6 +24,7 @@ typedef struct {
   PetscBool convergence;       /* Test for order of convergence */
   PetscBool constraints;       /* Test local constraints */
   PetscBool tree;              /* Test tree routines */
+  PetscBool testFVgrad;        /* Test finite difference gradient routine */
   PetscInt  treeCell;          /* Cell to refine in tree test */
   PetscReal constants[3];      /* Constant values for each dimension */
 } AppCtx;
@@ -125,6 +126,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->constraints     = PETSC_FALSE;
   options->tree            = PETSC_FALSE;
   options->treeCell        = 0;
+  options->testFVgrad      = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -140,6 +142,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-fv_grad", "Test finite volume gradient", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -466,6 +469,31 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TestFVGrad"
+static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
+{
+  DM dmfv;
+  PetscFV fv;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  /* duplicate DM, give dup. a FV discretization */
+  ierr = PetscFVCreate(PetscObjectComm((PetscObject)dm),&fv);CHKERRQ(ierr);
+  ierr = PetscFVSetType(fv,PETSCFVLEASTSQUARES);CHKERRQ(ierr);
+  ierr = PetscFVSetNumComponents(fv,user->numComponents);CHKERRQ(ierr);
+  ierr = PetscFVSetSpatialDimension(fv,user->dim);CHKERRQ(ierr);
+  ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
+  ierr = PetscFVSetUp(fv);CHKERRQ(ierr);
+  ierr = DMClone(dm,&dmfv);CHKERRQ(ierr);
+  ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
+  ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
+  ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ComputeError_Plex"
 static PetscErrorCode ComputeError_Plex(DM dm, void (**exactFuncs)(const PetscReal[], PetscScalar *, void *), void (**exactFuncDers)(const PetscReal[], const PetscReal[], PetscScalar *, void *),
                                         void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
@@ -704,6 +732,9 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
+  if (user.testFVgrad) {
+    ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);
+  }
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
   if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
     ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
