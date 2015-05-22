@@ -301,6 +301,26 @@ cdef class KSP(Object):
         CHKERR( KSPGetNormType(self.ksp, &normtype) )
         return normtype
 
+    def setComputeEigenvalues(self, bint flag):
+        cdef PetscBool compute = PETSC_FALSE
+        if flag: compute = PETSC_TRUE
+        CHKERR( KSPSetComputeEigenvalues(self.ksp, compute) )
+
+    def getComputeEigenvalues(self):
+        cdef PetscBool compute = PETSC_FALSE
+        CHKERR( KSPGetComputeEigenvalues(self.ksp, &compute) )
+        return <bint>compute
+
+    def setComputeSingularValues(self, bint flag):
+        cdef PetscBool compute = PETSC_FALSE
+        if flag: compute = PETSC_TRUE
+        CHKERR( KSPSetComputeSingularValues(self.ksp, compute) )
+
+    def getComputeSingularValues(self):
+        cdef PetscBool compute = PETSC_FALSE
+        CHKERR( KSPGetComputeSingularValues(self.ksp, &compute) )
+        return <bint>compute
+
     # --- initial guess ---
 
     def setInitialGuessNonzero(self, bint flag):
@@ -425,6 +445,26 @@ cdef class KSP(Object):
             CHKERR( VecDuplicate(r.vec, &r.vec) )
         CHKERR( KSPBuildResidual(self.ksp , NULL, r.vec, &r.vec) )
         return r
+
+    def computeEigenvalues(self):
+        cdef PetscInt its = 0
+        cdef PetscInt neig = 0
+        cdef PetscReal *rdata = NULL
+        cdef PetscReal *idata = NULL
+        CHKERR( KSPGetIterationNumber(self.ksp, &its) )
+        cdef ndarray r = oarray_r(empty_r(its), NULL, &rdata)
+        cdef ndarray i = oarray_r(empty_r(its), NULL, &idata)
+        CHKERR( KSPComputeEigenvalues(self.ksp, its, rdata, idata, &neig) )
+        eigen = empty_c(neig)
+        eigen.real = r[:neig]
+        eigen.imag = i[:neig]
+        return eigen
+
+    def computeExtremeSingularValues(self):
+        cdef PetscReal smax = 0
+        cdef PetscReal smin = 0
+        CHKERR( KSPComputeExtremeSingularValues(self.ksp, &smax, &smin) )
+        return smax, smin
 
     # --- GMRES ---
 
