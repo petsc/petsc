@@ -351,7 +351,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 .seealso: MatPartitioningCreate(), ISPartitioningToNumbering(), ISPartitioningCount()
 
 @*/
-PetscErrorCode  ISBuildTwoSided(IS to, IS *fromindxIS)
+PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
 {
    const PetscInt       *to_indices;
    PetscInt             *send_indices,rstart,*recv_indices,nrecvs;
@@ -440,8 +440,8 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *fromindxIS)
    ierr = PetscFree(fromsizes);CHKERRQ(ierr);
    ierr = PetscFree(fromperm_newtoold);CHKERRQ(ierr);
    ierr = PetscFree(send_indices);CHKERRQ(ierr);
-   if(fromindxIS){
-     ierr = ISCreateGeneral(comm, nrecvs,recv_indices,PETSC_OWN_POINTER,fromindxIS);CHKERRQ(ierr);
+   if(rows){
+     ierr = ISCreateGeneral(comm, nrecvs,recv_indices,PETSC_OWN_POINTER,rows);CHKERRQ(ierr);
    }else{
 	 ierr = PetscFree(recv_indices);CHKERRQ(ierr);
    }
