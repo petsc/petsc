@@ -1164,7 +1164,10 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   ierr = PetscMalloc6(spdim,&v0,spdim,&v0parent,spdim,&vtmp,spdim*spdim,&J,spdim*spdim,&Jparent,spdim*spdim,&invJparent);CHKERRQ(ierr);
 
   for (f = 0; f < numFields; f++) {
-    PetscFE fe;
+    PetscObject disc;
+    PetscFE fe = NULL;
+    PetscFV fv = NULL;
+    PetscClassId id;
     PetscDualSpace space;
     PetscInt i, j, k, nPoints, offset;
     PetscInt fSize, fComp;
@@ -1172,10 +1175,22 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
     PetscReal *weights, *pointsRef, *pointsReal;
     Mat Amat, Bmat, Xmat;
 
-    ierr = PetscDSGetDiscretization(ds,f,(PetscObject *)(&fe));CHKERRQ(ierr);
-    ierr = PetscFEGetDualSpace(fe,&space);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetDimension(space,&fSize);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      fe = (PetscFE) disc;
+      ierr = PetscFEGetDualSpace(fe,&space);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(space,&fSize);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+    }
+    else if (id == PETSCFV_CLASSID) {
+      fv = (PetscFV) disc;
+      ierr = PetscFVGetDualSpace(fv,&space);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(space,&fSize);CHKERRQ(ierr);
+      ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+    }
+    else SETERRQ1(PetscObjectComm(disc),PETSC_ERR_ARG_UNKNOWN_TYPE, "PetscDS discretization id %d not recognized.", id);
+
     ierr = MatCreate(PETSC_COMM_SELF,&Amat);CHKERRQ(ierr);
     ierr = MatSetSizes(Amat,fSize,fSize,fSize,fSize);CHKERRQ(ierr);
     ierr = MatSetType(Amat,MATSEQDENSE);CHKERRQ(ierr);
@@ -1204,7 +1219,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = PetscMemcpy(pointsRef+spdim*offset,p,spdim*qPoints*sizeof(*p));CHKERRQ(ierr);
       offset += qPoints;
     }
-    ierr = PetscFEGetTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscFEGetTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscFVGetTabulation(fv,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
     offset = 0;
     for (i = 0; i < fSize; i++) {
       PetscInt        qPoints;
@@ -1222,7 +1242,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       }
       offset += qPoints;
     }
-    ierr = PetscFERestoreTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscFERestoreTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscFVRestoreTabulation(fv,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatLUFactor(Amat,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -1258,7 +1283,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         CoordinatesRefToReal(spdim, spdim, v0, J, &pointsRef[i*spdim],vtmp);CHKERRQ(ierr);
         CoordinatesRealToRef(spdim, spdim, v0parent, invJparent, vtmp, &pointsReal[i*spdim]);CHKERRQ(ierr);
       }
-      ierr = PetscFEGetTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        ierr = PetscFEGetTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscFVGetTabulation(fv,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
       offset = 0;
       for (i = 0; i < fSize; i++) {
         PetscInt        qPoints;
@@ -1276,7 +1306,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         }
         offset += qPoints;
       }
-      ierr = PetscFERestoreTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        ierr = PetscFERestoreTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscFVRestoreTabulation(fv,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
       ierr = MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(Bmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatMatSolve(Amat,Bmat,Xmat);CHKERRQ(ierr);
@@ -1440,10 +1475,22 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
     ierr = DMPlexGetTransitiveClosure(refTree,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     for (f = 0; f < numFields; f++) {
       PetscInt cDof, cOff, numCols, r, i, fComp;
-      PetscFE fe;
+      PetscObject disc;
+      PetscClassId id;
+      PetscFE fe = NULL;
+      PetscFV fv = NULL;
 
-      ierr = PetscDSGetDiscretization(ds,f,(PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        fe = (PetscFE) disc;
+        ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+      }
+      else if (id == PETSCFV_CLASSID) {
+        fv = (PetscFV) disc;
+        ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+      }
+      else SETERRQ1(PetscObjectComm(disc),PETSC_ERR_ARG_UNKNOWN_TYPE, "PetscDS discretization id %d not recognized.", id);
 
       if (numFields > 1) {
         ierr = PetscSectionGetFieldDof(refConSec,p,f,&cDof);CHKERRQ(ierr);
@@ -1554,10 +1601,21 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
       for (f = 0; f < numFields; f++) {
         PetscInt cDof, cOff, numCols, numFillCols, i, r, fComp, matOffset, offset;
         PetscScalar *pointMat;
-        PetscFE fe;
+        PetscObject disc;
+        PetscClassId id;
+        PetscFE fe = NULL;
+        PetscFV fv = NULL;
 
-        ierr = PetscDSGetDiscretization(ds,f,(PetscObject *) &fe);CHKERRQ(ierr);
-        ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+        ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          fe = (PetscFE) disc;
+          ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+        }
+        else if (id == PETSCFV_CLASSID) {
+          fv = (PetscFV) disc;
+          ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+        }
 
         if (numFields > 1) {
           ierr = PetscSectionGetFieldDof(conSec,point,f,&cDof);CHKERRQ(ierr);
