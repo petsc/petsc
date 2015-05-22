@@ -470,7 +470,7 @@ cdef class KSP(Object):
         eigen.imag = i[:neig]
         return eigen
 
-    def computeSingularValues(self):
+    def computeExtremeSingularValues(self):
         cdef PetscReal smax = 0
         cdef PetscReal smin = 0
         CHKERR( KSPComputeExtremeSingularValues(self.ksp, &smax, &smin) )
