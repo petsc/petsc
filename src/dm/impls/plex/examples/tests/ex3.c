@@ -472,22 +472,32 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "TestFVGrad"
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
+  MPI_Comm comm;
   DM dmfv;
   PetscFV fv;
+  const Vec *modes;
+  MatNullSpace nsp;
+  PetscInt nvecs;
+  PetscSection coordSection;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
+  comm = PetscObjectComm((PetscObject)dm);
   /* duplicate DM, give dup. a FV discretization */
-  ierr = PetscFVCreate(PetscObjectComm((PetscObject)dm),&fv);CHKERRQ(ierr);
+  ierr = PetscFVCreate(comm,&fv);CHKERRQ(ierr);
   ierr = PetscFVSetType(fv,PETSCFVLEASTSQUARES);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fv,user->numComponents);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fv,user->dim);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
   ierr = PetscFVSetUp(fv);CHKERRQ(ierr);
   ierr = DMClone(dm,&dmfv);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmfv,user->dim,coordSection);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
+  ierr = DMPlexCreateRigidBody(dmfv,&nsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceGetVecs(nsp,NULL,&nvecs,&modes);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
