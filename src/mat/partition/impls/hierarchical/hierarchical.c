@@ -207,6 +207,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 	remote[i].index = global_indices[i]-ranges[owners[i]];
   }
   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
+  /*not sure how to add prefix to sf*/
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,localsize,localsize,PETSC_NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPIU_REPLACE);CHKERRQ(ierr);
@@ -220,14 +221,15 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningHierarchPart_AssembleSubdomain"
 PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping)
 {
-  PetscInt        *rows_send,*adjncy_send,*roffsets,*coffsets,*rsizes,*csizes,i,j,mat_localsize;
+  PetscInt        *rows_send,*adjncy_send,*roffsets,*coffsets,*rowsizes,*colsizes,i,j,mat_localsize;
   PetscInt        rstart,rend,nto,*torsizes,*tocsizes,nfrom,*fromrsizes,*fromcsizes;
   PetscInt        *rows_recv,*adjncy_recv,nrows_recv,nzeros_recv,*ncols_send,*ncols_recv;
-  PetscInt        *localperm,*si,*si_sizes,*sj,sj_size,location,k,m,dest_localsize,*reverseperm,*localperm_tmp;
+  PetscInt        *perm_newtoold,*si,*si_sizes,*sj,sj_size,location,k,m,dest_localsize,*perm_oldtonew,*localperm_tmp;
   const PetscInt  *xadj, *adjncy,*dest_indices;
   MPI_Comm        comm;
   PetscMPIInt     size,rank,target_rank,*toranks,*fromranks,*fromperm;
@@ -245,7 +247,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = MatGetLayouts(adj,&rmap,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(rmap,&rstart,&rend);CHKERRQ(ierr);
   /*offsets, depends on the number of processors  */
-  ierr = PetscCalloc4(size+1,&roffsets,size+1,&coffsets,size,&rsizes,size,&csizes);CHKERRQ(ierr);
+  ierr = PetscCalloc4(size+1,&roffsets,size+1,&coffsets,size,&rowsizes,size,&colsizes);CHKERRQ(ierr);
   /*retrieve data*/
   ierr = MatGetRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&mat_localsize,&xadj,&adjncy,&done);CHKERRQ(ierr);
   ierr = ISGetLocalSize(destination,&dest_localsize);CHKERRQ(ierr);
@@ -255,25 +257,25 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   /*estimate the space*/
   for(i=0; i<mat_localsize; i++){
 	if(dest_indices[i]<0) continue;
-    rsizes[dest_indices[i]]++;
-    csizes[dest_indices[i]] += xadj[i+1]-xadj[i];
+    rowsizes[dest_indices[i]]++;
+    colsizes[dest_indices[i]] += xadj[i+1]-xadj[i];
   }
   /*offsets*/
   nto = 0;
   for(i=0; i<size; i++){
-    roffsets[i+1] = roffsets[i]+rsizes[i];
-    coffsets[i+1] = coffsets[i]+csizes[i];
-    if(rsizes[i]>0) nto++;
+    roffsets[i+1] = roffsets[i]+rowsizes[i];
+    coffsets[i+1] = coffsets[i]+colsizes[i];
+    if(rowsizes[i]>0) nto++;
   }
   ierr = PetscCalloc3(nto,&toranks,2*nto,&torsizes,2*nto,&tocsizes);CHKERRQ(ierr);
   /* send row and col sizes  */
   nto = 0;
   for(i=0; i<size; i++){
-    if(rsizes[i]>0){
+    if(rowsizes[i]>0){
       toranks[nto]      = i;
-      torsizes[2*nto]   = rsizes[i];
+      torsizes[2*nto]   = rowsizes[i];
       torsizes[2*nto+1] = roffsets[i];
-      tocsizes[2*nto]   = csizes[i];
+      tocsizes[2*nto]   = colsizes[i];
       tocsizes[2*nto+1] = coffsets[i];
       nto++;
     }
@@ -287,7 +289,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
     ierr = PetscMemcpy(adjncy_send+coffsets[target_rank],adjncy+xadj[i],sizeof(PetscInt)*(xadj[i+1]-xadj[i]));CHKERRQ(ierr);
     coffsets[target_rank] += xadj[i+1]-xadj[i];
   }
-  ierr = PetscFree4(roffsets,coffsets,rsizes,csizes);CHKERRQ(ierr);
+  ierr = PetscFree4(roffsets,coffsets,rowsizes,colsizes);CHKERRQ(ierr);
   /* rows */
   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,torsizes,&nfrom,&fromranks,&fromrsizes);CHKERRQ(ierr);
   ierr = PetscCalloc1(nfrom,&fromperm);CHKERRQ(ierr);
@@ -356,14 +358,14 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = PetscFree(fromranks);CHKERRQ(ierr);
   ierr = PetscFree(fromcsizes);CHKERRQ(ierr);
   ierr = PetscFree(fromperm);CHKERRQ(ierr);
-  ierr = PetscCalloc3(nrows_recv,&localperm,nrows_recv,&reverseperm,nrows_recv,&localperm_tmp);CHKERRQ(ierr);
+  ierr = PetscCalloc3(nrows_recv,&perm_newtoold,nrows_recv,&perm_oldtonew,nrows_recv,&localperm_tmp);CHKERRQ(ierr);
   for(i=0; i<nrows_recv; i++){
-	localperm[i] = i;
-	reverseperm[i] = i;
+	perm_newtoold[i] = i;
+	perm_oldtonew[i] = i;
   }
-  ierr = PetscSortIntWithArray(nrows_recv,rows_recv,localperm);CHKERRQ(ierr);
-  ierr = PetscMemcpy(localperm_tmp,localperm,sizeof(PetscInt)*nrows_recv);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(nrows_recv,localperm_tmp,reverseperm);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArray(nrows_recv,rows_recv,perm_newtoold);CHKERRQ(ierr);
+  ierr = PetscMemcpy(localperm_tmp,perm_newtoold,sizeof(PetscInt)*nrows_recv);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArray(nrows_recv,localperm_tmp,perm_oldtonew);CHKERRQ(ierr);
   /*create a mapping local to global */
   ierr = ISLocalToGlobalMappingCreate(comm,1,nrows_recv,rows_recv,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
   ierr = PetscCalloc1(nrows_recv+1,&si);CHKERRQ(ierr);
@@ -378,7 +380,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   ierr = PetscIntView(nrows_recv,si_sizes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscIntView(nrows_recv,reverseperm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscIntView(nrows_recv,perm_oldtonew,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 #endif
   k       = 0;
@@ -388,7 +390,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
 	   ierr = PetscFindInt(adjncy_recv[k],nrows_recv,rows_recv,&location);CHKERRQ(ierr);
 	   if(location<0){
 		 adjncy_recv[k]              = -1;
-		 si_sizes[reverseperm[i]]   -= 1;
+		 si_sizes[perm_oldtonew[i]]   -= 1;
 	   }else{
 		 adjncy_recv[k] = location;
 		 sj_size++;
@@ -411,7 +413,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   for(i=0; i<nrows_recv; i++){
     for(j=0,m=0; j<ncols_recv[i]; j++,k++){
       if(adjncy_recv[k] < 0) continue;
-      sj[si[reverseperm[i]]+m] = adjncy_recv[k];
+      sj[si[perm_oldtonew[i]]+m] = adjncy_recv[k];
       m++;
 	}
   }
@@ -427,7 +429,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = MatCreateMPIAdj(PETSC_COMM_SELF,nrows_recv,nrows_recv,si,sj,PETSC_NULL,sadj);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&mat_localsize,&xadj,&adjncy,&done);CHKERRQ(ierr);
   ierr = PetscFree2(rows_recv,ncols_recv);CHKERRQ(ierr);
-  ierr = PetscFree3(localperm,reverseperm,localperm_tmp);CHKERRQ(ierr);
+  ierr = PetscFree3(perm_newtoold,perm_oldtonew,localperm_tmp);CHKERRQ(ierr);
   ierr = PetscFree(adjncy_recv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
