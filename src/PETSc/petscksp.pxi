@@ -158,6 +158,8 @@ cdef extern from * nogil:
     int KSPGetDiagonalScaleFix(PetscKSP,PetscBool*)
 
     int KSPComputeExplicitOperator(PetscKSP,PetscMat*)
+    int KSPComputeEigenvalues(PetscKSP,PetscInt,PetscReal[],PetscReal[],PetscInt*)
+    int KSPComputeExtremeSingularValues(PetscKSP,PetscReal*,PetscReal*)
 
     int KSPGetVecs(PetscKSP,PetscInt,PetscVec**,PetscInt,PetscVec**)
 
