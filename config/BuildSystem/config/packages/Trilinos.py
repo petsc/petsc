@@ -48,13 +48,21 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTPL_ENABLE_MPI=ON')
     #  Below is the set of packages recommended by Mike H.
-    for p in ['Epetra','AztecOO','Ifpack','Amesos2','Tpetra','Sacado','Zoltan','Stratimikos','Thyra','Isorropia','ML','Belos','Anasazi','Zoltan2','Ifpack2','ShyLU','NOX','MueLu','Stokhos','ROL','Piro','Pike']:
+    for p in ['Epetra','AztecOO','Ifpack','Amesos2','Tpetra','Sacado','Zoltan','Stratimikos','Thyra','Isorropia','ML','Belos','Anasazi','Zoltan2','Ifpack2','ShyLU','NOX','MueLu','Stokhos','ROL','Piro','Pike','TrilinosCouplings','Panzer']:
       args.append('-DTrilinos_ENABLE_'+p+'=ON')
 
     args.append('-DTPL_ENABLE_GLM=OFF')
 
-    # I had failures when trying to compile the packages 'TrilinosCouplings' and 'Panzer' in fei even though I turned fei off
-    args.append('-DTrilinos_ENABLE_fei=OFF')
+    # FEI include files cause crashes on Apple with clang compilers
+    # args.append('-DTrilinos_ENABLE_fei=OFF')
+    # args.append('-DTrilinos_ENABLE_Fei=OFF')
+    args.append('-DTrilinos_ENABLE_FEI=OFF')
+
+    # FEI include files cause crashes on Apple with clang compilers
+    args.append('-DTrilinos_ENABLE_stk=OFF')
+    args.append('-DTrilinos_ENABLE_Stk=OFF')
+    args.append('-DTrilinos_ENABLE_STK=OFF')
+
 
     # The documentation specifically says:
     #     WARNING: Do not try to hack the system and set:
