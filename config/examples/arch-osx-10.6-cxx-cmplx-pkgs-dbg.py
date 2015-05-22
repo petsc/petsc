@@ -15,6 +15,7 @@ configure_options = [
   '--download-parmetis=1',
   '--download-ptscotch=1',
   '--download-triangle=1',
+  '--download-fftw=1',
   #'--download-superlu=1',
   #'--download-superlu_dist=1',
   '--download-scalapack=1',

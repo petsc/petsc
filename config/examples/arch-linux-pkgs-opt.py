@@ -26,6 +26,7 @@ configure_options = [
   '--download-parms=1',
   '--download-moab=1',
   '--download-chaco=1',
+  '--download-fftw=1',
   '--download-saws',
   ]
 
