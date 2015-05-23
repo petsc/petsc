@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadpath    = 'http://www.unidata.ucar.edu/downloads/netcdf/ftp/'
+    self.downloadpath    = 'ftp://ftp.unidata.ucar.edu/pub/netcdf/old/'
     self.downloadext     = 'tar.gz'
     self.downloadversion = '4.3.1.1'
     self.functions       = ['nccreate']
