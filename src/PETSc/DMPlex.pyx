@@ -516,7 +516,9 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexCreateCoarsePointIS(self.dm, &fpoint.iset) )
         return fpoint
 
-    def createSection(self, numComp, numDof, bcField=None, bcPoints=None, IS perm=None):
+    def createSection(self, numComp, numDof,
+                      bcField=None, bcComps=None, bcPoints=None,
+                      IS perm=None):
         # topological dimension
         cdef PetscInt dim = 0
         CHKERR( DMGetDimension(self.dm, &dim) )
@@ -529,25 +531,35 @@ cdef class DMPlex(DM):
         # boundary conditions
         cdef PetscInt nbc = 0, i = 0
         cdef PetscInt *bcfield = NULL
-        cdef PetscIS *bccomps = NULL
+        cdef PetscIS *bccomps  = NULL
         cdef PetscIS *bcpoints = NULL
         if bcField is not None:
-            assert bcPoints is not None
             bcField = iarray_i(bcField, &nbc, &bcfield)
-            assert nbc == len(bcPoints)
-            tmp = oarray_p(empty_p(nbc), NULL, <void**>&bcpoints)
-            for i from 0 <= i < nbc:
-                bcpoints[i] = (<IS?>bcPoints[<Py_ssize_t>i]).iset
+            if bcComps is not None:
+                bcComps = list(bcComps)
+                assert len(bcComps) == nbc 
+                tmp1 = oarray_p(empty_p(nbc), NULL, <void**>&bccomps)
+                for i from 0 <= i < nbc:
+                    bccomps[i] = (<IS?>bcComps[<Py_ssize_t>i]).iset
+            if bcPoints is not None:
+                bcPoints = list(bcPoints)
+                assert len(bcPoints) == nbc
+                tmp2 = oarray_p(empty_p(nbc), NULL, <void**>&bcpoints)
+                for i from 0 <= i < nbc:
+                    bcpoints[i] = (<IS?>bcPoints[<Py_ssize_t>i]).iset
+            else:
+                raise ValueError("bcPoints is a required argument")
         else:
+            assert bcComps  is None
             assert bcPoints is None
         # optional chart permutations
         cdef PetscIS cperm = NULL
-        if perm is not None:
-            cperm = perm.iset
+        if perm is not None: cperm = perm.iset
         # create section
         cdef Section sec = Section()
         CHKERR( DMPlexCreateSection(self.dm, dim, ncomp, icomp, idof,
-                                    nbc, bcfield, bccomps, bcpoints, cperm, &sec.sec) )
+                                    nbc, bcfield, bccomps, bcpoints,
+                                    cperm, &sec.sec) )
         return sec
 
     def setRefinementUniform(self, refinementUniform=True):
