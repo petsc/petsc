@@ -667,11 +667,11 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 {
   VecScatter     scatter_ctx;
   Vec            local_vec,local_vec2,global_vec;
-  IS             to,from;
+  IS             to,from,subset,subset_n;
   MPI_Comm       comm;
   PetscScalar    *array,*array2;
   const PetscInt *is_indices;
-  PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global,*subset_ref_node_global;
+  PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global;
   PetscInt       i,j,k,s,total_counts,nodes_touched,is_size;
   PetscMPIInt    size;
   PetscBool      same_set,mirrors_found;
@@ -1064,12 +1064,14 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   /* save information on subsets (needed if we have to adapt the connected components later) */
   /* For consistency reasons (among neighbours), I need to sort (by global ordering) each subset */
   /* Get a reference node (min index in global ordering) for each subset for tagging messages */
-  ierr = PetscMalloc2(graph->ncc,&subset_ref_node_global,graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
+  ierr = PetscMalloc1(graph->ncc,&graph->subset_ref_node);CHKERRQ(ierr);
+  ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_global);CHKERRQ(ierr);
   for (j=0;j<graph->ncc;j++) {
     ierr = PetscSortIntWithArray(graph->cptr[j+1]-graph->cptr[j],&queue_global[graph->cptr[j]],&graph->queue[graph->cptr[j]]);CHKERRQ(ierr);
-    subset_ref_node_global[j] = graph->queue[graph->cptr[j]];
+    graph->subset_ref_node[j] = graph->queue[graph->cptr[j]];
   }
+  ierr = PetscFree(queue_global);CHKERRQ(ierr);
   graph->queue_sorted = PETSC_TRUE;
   if (graph->ncc) {
     ierr = PetscMalloc2(graph->ncc,&graph->subsets_size,graph->ncc,&graph->subsets);CHKERRQ(ierr);
@@ -1085,10 +1087,21 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     }
   }
   /* renumber reference nodes */
-  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(graph->l2gmap)),graph->l2gmap,graph->ncc,subset_ref_node_global,NULL,&k,&graph->subset_ref_node);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)(graph->l2gmap)),graph->ncc,graph->subset_ref_node,PETSC_COPY_VALUES,&subset_n);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,subset_n,&subset);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
+  ierr = PCBDDCSubsetNumbering(subset,NULL,NULL,&subset_n);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(subset_n,&k);CHKERRQ(ierr);
+  if (k != graph->ncc) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %d != %d",k,graph->ncc);
+  }
+  ierr = ISGetIndices(subset_n,&is_indices);CHKERRQ(ierr);
+  ierr = PetscMemcpy(graph->subset_ref_node,is_indices,graph->ncc*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = ISRestoreIndices(subset_n,&is_indices);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
 
   /* free workspace */
-  ierr = PetscFree2(subset_ref_node_global,queue_global);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec2);CHKERRQ(ierr);
   ierr = VecDestroy(&global_vec);CHKERRQ(ierr);

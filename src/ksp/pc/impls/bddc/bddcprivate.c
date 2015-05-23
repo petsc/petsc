@@ -3177,133 +3177,131 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PetscFunctionReturn(0);
 }
 
+/* given an index sets possibly with holes, renumbers the indexes removing the holes */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubsetNumbering"
-PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap, PetscInt n_local_dofs, PetscInt local_dofs[], PetscInt local_dofs_mult[], PetscInt* n_global_subset, PetscInt* global_numbering_subset[])
+PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, IS *subset_n)
 {
-  Vec            local_vec,global_vec;
-  IS             seqis,paris;
-  VecScatter     scatter_ctx;
-  PetscScalar    *array;
-  PetscInt       *temp_global_dofs;
-  PetscScalar    globalsum;
-  PetscInt       i,j,s;
-  PetscInt       nlocals,first_index,old_index,max_local,max_global;
-  PetscMPIInt    rank_prec_comm,size_prec_comm;
-  PetscInt       *dof_sizes,*dof_displs;
+  PetscSF        sf;
+  PetscLayout    map;
+  const PetscInt *idxs;
+  PetscInt       *leaf_data,*root_data,*gidxs;
+  PetscInt       N,n,i,lbounds[2],gbounds[2],Nl;
+  PetscInt       n_n,nlocals,start,first_index;
+  PetscMPIInt    commsize;
   PetscBool      first_found;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* mpi buffers */
-  ierr = MPI_Comm_size(comm,&size_prec_comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank_prec_comm);CHKERRQ(ierr);
-  j = ( !rank_prec_comm ? size_prec_comm : 0);
-  ierr = PetscMalloc2(j,&dof_sizes,j,&dof_displs);CHKERRQ(ierr);
-  /* get maximum size of subset */
-  ierr = PetscMalloc1(n_local_dofs,&temp_global_dofs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(l2gmap,n_local_dofs,local_dofs,temp_global_dofs);CHKERRQ(ierr);
-  max_local = 0;
-  for (i=0;i<n_local_dofs;i++) {
-    if (max_local < temp_global_dofs[i] ) {
-      max_local = temp_global_dofs[i];
-    }
+  ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
+  if (subset_mult) {
+    PetscCheckSameComm(subset,1,subset_mult,2);
+    ierr = ISGetLocalSize(subset,&i);CHKERRQ(ierr);
+    if (i != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %d != %d",n,i);
   }
-  ierr = MPI_Allreduce(&max_local,&max_global,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  max_global++;
-  max_local = 0;
-  for (i=0;i<n_local_dofs;i++) {
-    if (max_local < local_dofs[i] ) {
-      max_local = local_dofs[i];
-    }
+  /* create workspace layout for computing global indices of subset */
+  ierr = ISGetIndices(subset,&idxs);CHKERRQ(ierr);
+  lbounds[0] = lbounds[1] = 0;
+  for (i=0;i<n;i++) {
+    if (idxs[i] < lbounds[0]) lbounds[0] = idxs[i];
+    else if (idxs[i] > lbounds[1]) lbounds[1] = idxs[i];
   }
-  max_local++;
-  /* allocate workspace */
-  ierr = VecCreate(PETSC_COMM_SELF,&local_vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(local_vec,PETSC_DECIDE,max_local);CHKERRQ(ierr);
-  ierr = VecSetType(local_vec,VECSEQ);CHKERRQ(ierr);
-  ierr = VecCreate(comm,&global_vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(global_vec,PETSC_DECIDE,max_global);CHKERRQ(ierr);
-  ierr = VecSetType(global_vec,VECMPI);CHKERRQ(ierr);
-  /* create scatter */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n_local_dofs,local_dofs,PETSC_COPY_VALUES,&seqis);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_local_dofs,temp_global_dofs,PETSC_COPY_VALUES,&paris);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local_vec,seqis,global_vec,paris,&scatter_ctx);CHKERRQ(ierr);
-  ierr = ISDestroy(&seqis);CHKERRQ(ierr);
-  ierr = ISDestroy(&paris);CHKERRQ(ierr);
-  /* init array */
-  ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
-  ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-  if (local_dofs_mult) {
-    for (i=0;i<n_local_dofs;i++) {
-      array[local_dofs[i]]=(PetscScalar)local_dofs_mult[i];
-    }
+  lbounds[0] = -lbounds[0];
+  ierr = MPI_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  gbounds[0] = -gbounds[0];
+  N = gbounds[1] - gbounds[0] + 1;
+  ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)subset),&map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(map,N);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(map,&Nl);CHKERRQ(ierr);
+
+  /* create sf : leaf_data == multiplicity of indexes, root data == global index in layout */
+  ierr = PetscMalloc2(n,&leaf_data,Nl,&root_data);CHKERRQ(ierr);
+  if (subset_mult) {
+    const PetscInt* idxs_mult;
+
+    ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
+    ierr = PetscMemcpy(leaf_data,idxs_mult,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
   } else {
-    for (i=0;i<n_local_dofs;i++) {
-      array[local_dofs[i]]=1.0;
-    }
+    for (i=0;i<n;i++) leaf_data[i] = 1;
   }
-  ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-  /* scatter into global vec and get total number of global dofs */
-  ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecSum(global_vec,&globalsum);CHKERRQ(ierr);
-  *n_global_subset = (PetscInt)PetscRealPart(globalsum);
-  /* Fill global_vec with cumulative function for global numbering */
-  ierr = VecGetArray(global_vec,&array);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(global_vec,&s);CHKERRQ(ierr);
+  /* local size of new subset */
+  n_n = 0;
+  for (i=0;i<n;i++) n_n += leaf_data[i];
+
+  /* global indexes in layout */
+  ierr = PetscMalloc1(n_n,&gidxs);CHKERRQ(ierr); /* allocating possibly extra space in gidxs which will be used later */
+  for (i=0;i<n;i++) gidxs[i] = idxs[i] - gbounds[0];
+  ierr = ISRestoreIndices(subset,&idxs);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)subset),&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,map,n,NULL,PETSC_COPY_VALUES,gidxs);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
+
+  /* reduce from leaves to roots */
+  ierr = PetscMemzero(root_data,Nl*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
+
+  /* count indexes in local part of layout */
   nlocals = 0;
   first_index = -1;
   first_found = PETSC_FALSE;
-  for (i=0;i<s;i++) {
-    if (!first_found && PetscRealPart(array[i]) > 0.1) {
+  for (i=0;i<Nl;i++) {
+    if (!first_found && root_data[i]) {
       first_found = PETSC_TRUE;
       first_index = i;
     }
-    nlocals += (PetscInt)PetscRealPart(array[i]);
+    nlocals += root_data[i];
   }
-  ierr = MPI_Gather(&nlocals,1,MPIU_INT,dof_sizes,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  if (!rank_prec_comm) {
-    dof_displs[0]=0;
-    for (i=1;i<size_prec_comm;i++) {
-      dof_displs[i] = dof_displs[i-1]+dof_sizes[i-1];
-    }
+
+  /* cumulative of number of indexes and size of subset without holes */
+  start = 0;
+  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  if (N_n) { /* compute total size of new subset if requested */
+    *N_n = start + nlocals;
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)subset),&commsize);CHKERRQ(ierr);
+    ierr = MPI_Bcast(N_n,1,MPIU_INT,commsize-1,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   }
-  ierr = MPI_Scatter(dof_displs,1,MPIU_INT,&nlocals,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  /* adapt roof data with cumulative */
   if (first_found) {
-    array[first_index] += (PetscScalar)nlocals;
+    PetscInt old_index;
+
+    root_data[first_index] += start;
     old_index = first_index;
-    for (i=first_index+1;i<s;i++) {
-      if (PetscRealPart(array[i]) > 0.1) {
-        array[i] += array[old_index];
+    for (i=first_index+1;i<Nl;i++) {
+      if (root_data[i]) {
+        root_data[i] += root_data[old_index];
         old_index = i;
       }
     }
   }
-  ierr = VecRestoreArray(global_vec,&array);CHKERRQ(ierr);
-  ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  /* get global ordering of local dofs */
-  ierr = VecGetArrayRead(local_vec,(const PetscScalar**)&array);CHKERRQ(ierr);
-  if (local_dofs_mult) {
-    for (i=0;i<n_local_dofs;i++) {
-      temp_global_dofs[i] = (PetscInt)PetscRealPart(array[local_dofs[i]])-local_dofs_mult[i];
+
+  /* from roots to leaves */
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,root_data,leaf_data);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,root_data,leaf_data);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+
+  /* create new IS with global indexes without holes */
+  if (subset_mult) {
+    const PetscInt* idxs_mult;
+    PetscInt        cum;
+
+    cum = 0;
+    ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      PetscInt j;
+      for (j=0;j<idxs_mult[i];j++) gidxs[cum++] = leaf_data[i] - idxs_mult[i] + j;
     }
+    ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
   } else {
-    for (i=0;i<n_local_dofs;i++) {
-      temp_global_dofs[i] = (PetscInt)PetscRealPart(array[local_dofs[i]])-1;
+    for (i=0;i<n;i++) {
+      gidxs[i] = leaf_data[i]-1;
     }
   }
-  ierr = VecRestoreArrayRead(local_vec,(const PetscScalar**)&array);CHKERRQ(ierr);
-  /* free workspace */
-  ierr = VecScatterDestroy(&scatter_ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
-  ierr = VecDestroy(&global_vec);CHKERRQ(ierr);
-  ierr = PetscFree2(dof_sizes,dof_displs);CHKERRQ(ierr);
-  /* return pointer to global ordering of local dofs */
-  *global_numbering_subset = temp_global_dofs;
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_OWN_POINTER,subset_n);CHKERRQ(ierr);
+  ierr = PetscFree2(leaf_data,root_data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4556,9 +4554,10 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   PC_IS*         pcis = (PC_IS*)pc->data;
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
-  PetscInt       i,local_size,coarse_size=0;
+  IS             subset,subset_mult,subset_n;
+  PetscInt       local_size,coarse_size=0;
   PetscInt       *local_primal_indices=NULL;
-  PetscInt       *t_local_primal_indices=NULL;
+  const PetscInt *t_local_primal_indices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4566,22 +4565,28 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
   if (pcbddc->local_primal_size && !pcbddc->local_primal_ref_node) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"BDDC ConstraintsSetUp should be called first");
   }
-  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(pc->pmat)),matis->mapping,pcbddc->local_primal_size_cc,pcbddc->local_primal_ref_node,pcbddc->local_primal_ref_mult,&coarse_size,&t_local_primal_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pcbddc->local_primal_size,&local_primal_indices);CHKERRQ(ierr);
-  local_size = 0;
-  for (i=0;i<pcbddc->local_primal_size_cc;i++) {
-    PetscInt j;
-    for (j=0;j<pcbddc->local_primal_ref_mult[i];j++) local_primal_indices[local_size++] = t_local_primal_indices[i] + j;
-  }
-  ierr = PetscFree(t_local_primal_indices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)(pc->pmat)),pcbddc->local_primal_size_cc,pcbddc->local_primal_ref_node,PETSC_COPY_VALUES,&subset_n);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(matis->mapping,subset_n,&subset);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)(pc->pmat)),pcbddc->local_primal_size_cc,pcbddc->local_primal_ref_mult,PETSC_COPY_VALUES,&subset_mult);CHKERRQ(ierr);
+  ierr = PCBDDCSubsetNumbering(subset,subset_mult,&coarse_size,&subset_n);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset_mult);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(subset_n,&local_size);CHKERRQ(ierr);
   if (local_size != pcbddc->local_primal_size) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid number of local primal indices computed %d != %d",local_size,pcbddc->local_primal_size);
   }
+  ierr = PetscMalloc1(local_size,&local_primal_indices);CHKERRQ(ierr);
+  ierr = ISGetIndices(subset_n,&t_local_primal_indices);CHKERRQ(ierr);
+  ierr = PetscMemcpy(local_primal_indices,t_local_primal_indices,local_size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = ISRestoreIndices(subset_n,&t_local_primal_indices);CHKERRQ(ierr);
+  ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
 
   /* check numbering */
   if (pcbddc->dbg_flag) {
     PetscScalar coarsesum,*array;
-    PetscBool set_error = PETSC_FALSE,set_error_reduced = PETSC_FALSE;
+    PetscInt    i;
+    PetscBool   set_error = PETSC_FALSE,set_error_reduced = PETSC_FALSE;
 
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
