@@ -252,9 +252,6 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
     onz[i] = onz[i*bs]/bs;
   }
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,dnz,0,onz);CHKERRQ(ierr);
-  for (i=0;i<lrows/bs;i++) {
-    dnz[i] = dnz[i]-i;
-  }
   ierr = MatMPISBAIJSetPreallocation(B,bs,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   if (issbaij) {
