@@ -529,6 +529,7 @@ cdef class DMPlex(DM):
         # boundary conditions
         cdef PetscInt nbc = 0, i = 0
         cdef PetscInt *bcfield = NULL
+        cdef PetscIS *bccomps = NULL
         cdef PetscIS *bcpoints = NULL
         if bcField is not None:
             assert bcPoints is not None
@@ -546,7 +547,7 @@ cdef class DMPlex(DM):
         # create section
         cdef Section sec = Section()
         CHKERR( DMPlexCreateSection(self.dm, dim, ncomp, icomp, idof,
-                                    nbc, bcfield, bcpoints, cperm, &sec.sec) )
+                                    nbc, bcfield, bccomps, bcpoints, cperm, &sec.sec) )
         return sec
 
     def setRefinementUniform(self, refinementUniform=True):
