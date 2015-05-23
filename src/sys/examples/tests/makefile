@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
                 ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c ex27.c
+                ex22.c ex23.c ex24.c ex27.c ex28.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -104,6 +104,9 @@ ex25: ex25.o chkopts
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o  ${PETSC_SYS_LIB}
 	${RM} -f ex27.o
+ex28: ex28.o chkopts
+	-${CLINKER} -o ex28 ex28.o  ${PETSC_SYS_LIB}
+	${RM} -f ex28.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(main|CreateError|Error Created)" ex1.tmp1 | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
@@ -175,12 +178,16 @@ runex25:
 	-@${MPIEXEC} -n 1 ./ex25 > ex25.tmp 2>&1;   \
 	   ${DIFF} output/ex25.out ex25.tmp || echo  ${PWD} "\nPossible problem with ex25, diffs above \n========================================="; \
 	   ${RM} -f ex25.tmp
+runex28:
+	-@${MPIEXEC} -n 1 ./ex28 > ex28.tmp 2>&1;   \
+	   ${DIFF} output/ex28.out ex28.tmp || echo  ${PWD} "\nPossible problem with ex28, diffs above \n========================================="; \
+	   ${RM} -f ex28.tmp
 
 
 TESTEXAMPLES_C		       = ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
-                                 ex25.PETSc runex25 ex25.rm
+                                 ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm
