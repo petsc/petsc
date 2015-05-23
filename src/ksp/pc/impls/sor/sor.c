@@ -33,7 +33,7 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
   PetscReal      fshift;
   
   PetscFunctionBegin;
-  fshift = (PetscAbsScalar(jac->fshift) ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
+  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
   ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -50,7 +50,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PetscFunctionBegin;
   ierr = PetscInfo1(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
   if (guesszero) stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS);
-  fshift = (PetscAbsScalar(jac->fshift) ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);  
+  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
   ierr = MatSOR(pc->pmat,b,jac->omega,stype,fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
   *outits = its;
   *reason = PCRICHARDSON_CONVERGED_ITS;
