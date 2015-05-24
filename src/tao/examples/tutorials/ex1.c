@@ -3,14 +3,19 @@ Using the Interior Point Method.\n\n\n";
 
 /*F
   We are solving the parameter estimation problem for the Laplacian. We will ask to minimize a Lagrangian
-function over $y$ and $u$, given by
+function over $a$ and $u$, given by
 \begin{align}
-  L(u, a, \lambda) = \frac{1}{2} || Qu - d ||^2 + \frac{1}{2} || L (u - u_r) ||^2 + \lambda F(u; a)
+  L(u, a, \lambda) = \frac{1}{2} || Qu - d ||^2 + \frac{1}{2} || L (a - a_r) ||^2 + \lambda F(u; a)
 \end{align}
 where $Q$ is a sampling operator, $L$ is a regularization operator, $F$ defines the PDE.
 
 Currently, we have perfect information, meaning $Q = I$, and then we need no regularization, $L = I$. We
-also give the exact control for the reference $u_r$.
+also give the exact control for the reference $a_r$.
+
+The PDE will be the Laplace equation with homogeneous boundary conditions
+\begin{align}
+  -nabla \cdot a \nabla u = f
+\end{align}
 
 F*/
 
@@ -178,9 +183,9 @@ PetscErrorCode linear_a_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, Petsc
   *a = x[0] + x[1];
   return 0;
 }
-PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
 {
-  *u = 0.0;
+  *l = 0.0;
   return 0;
 }
 
