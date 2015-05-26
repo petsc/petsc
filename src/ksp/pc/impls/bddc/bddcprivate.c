@@ -266,12 +266,12 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           }
         }
         if (pcbddc->dbg_flag) {
-          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Got %d eigs\n",B_neigs);
+          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Got %d eigs\n",B_neigs);CHKERRQ(ierr);
           for (j=0;j<B_neigs;j++) {
             if (eigs[j] == 0.0) {
-              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n");
+              ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n");CHKERRQ(ierr);
             } else {
-              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",eigs[j+eigs_start]);
+              ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",eigs[j+eigs_start]);CHKERRQ(ierr);
             }
           }
         }
@@ -287,9 +287,15 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       if (pcbddc->dbg_flag > 1) {
         PetscInt ii;
         for (ii=0;ii<B_neigs;ii++) {
-          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Eigenvector %d/%d (%d)\n",ii,B_neigs,B_N);
+          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Eigenvector %d/%d (%d)\n",ii,B_neigs,B_N);CHKERRQ(ierr);
           for (j=0;j<B_N;j++) {
-            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"       %1.4e\n",pcbddc->adaptive_constraints_data[ii*subset_size+j+pcbddc->adaptive_constraints_data_ptr[cum]]);
+#if defined(PETSC_USE_COMPLEX)
+            PetscReal r = PetscRealPart(pcbddc->adaptive_constraints_data[ii*subset_size+j+pcbddc->adaptive_constraints_data_ptr[cum]]);
+            PetscReal c = PetscImaginaryPart(pcbddc->adaptive_constraints_data[ii*subset_size+j+pcbddc->adaptive_constraints_data_ptr[cum]]);
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"       %1.4e + %1.4e i\n",r,c);CHKERRQ(ierr);
+#else
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"       %1.4e\n",pcbddc->adaptive_constraints_data[ii*subset_size+j+pcbddc->adaptive_constraints_data_ptr[cum]]);CHKERRQ(ierr);
+#endif
           }
         }
       }
