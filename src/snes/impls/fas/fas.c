@@ -857,6 +857,7 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
     } else {
+      /* The smoother on the coarse level is the coarse solver */
       ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
     }
     fas->full_stage = 1;
