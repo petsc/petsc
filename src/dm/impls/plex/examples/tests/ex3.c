@@ -6,6 +6,7 @@ static char help[] = "Check that a DM can accurately represent and interpolate f
 #include <petscfe.h>
 #include <petscds.h>
 #include <petscksp.h>
+#include <petscsnes.h>
 
 typedef struct {
   PetscInt  debug;             /* The debugging level */
@@ -473,11 +474,11 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm comm;
-  DM dmfv;
+  DM dmfv, dmgrad;
   PetscFV fv;
   const Vec *modes;
   MatNullSpace nsp;
-  PetscInt nvecs;
+  PetscInt nvecs, fstart, fend;
   PetscSection coordSection;
   PetscErrorCode ierr;
 
@@ -497,6 +498,9 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
   ierr = DMPlexCreateRigidBody(dmfv,&nsp);CHKERRQ(ierr);
   ierr = MatNullSpaceGetVecs(nsp,NULL,&nvecs,&modes);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmfv,1,&fstart,&fend);CHKERRQ(ierr);
+  ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmgrad);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
