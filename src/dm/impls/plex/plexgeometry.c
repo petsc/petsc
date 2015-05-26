@@ -1175,6 +1175,9 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   ierr = DMSetDefaultSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
+  if (cEndInterior < 0) {
+    cEndInterior = cEnd;
+  }
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; ++c) {
     PetscFVCellGeom *cg;
@@ -1210,15 +1213,22 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
     /* Flip face orientation if necessary to match ordering in support, and Update minimum radius */
     {
       PetscFVCellGeom *cL, *cR;
+      PetscInt         ncells;
       const PetscInt  *cells;
       PetscReal       *lcentroid, *rcentroid;
       PetscReal        l[3], r[3], v[3];
 
       ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
+      ierr = DMPlexGetSupportSize(dm, f, &ncells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
-      ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
       lcentroid = cells[0] >= cEndInterior ? fg->centroid : cL->centroid;
-      rcentroid = cells[1] >= cEndInterior ? fg->centroid : cR->centroid;
+      if (ncells > 1) {
+        ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
+        rcentroid = cells[1] >= cEndInterior ? fg->centroid : cR->centroid;
+      }
+      else {
+        rcentroid = fg->centroid;
+      }
       ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
       ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
       DMPlex_WaxpyD_Internal(dim, -1, l, r, v);
@@ -1234,7 +1244,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
         DMPlex_WaxpyD_Internal(dim, -1, fg->centroid, cL->centroid, v);
         minradius = PetscMin(minradius, DMPlex_NormD_Internal(dim, v));
       }
-      if (cells[1] < cEndInterior) {
+      if (ncells > 1 && cells[1] < cEndInterior) {
         DMPlex_WaxpyD_Internal(dim, -1, fg->centroid, cR->centroid, v);
         minradius = PetscMin(minradius, DMPlex_NormD_Internal(dim, v));
       }
@@ -1412,18 +1422,19 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscInt               ghost;
     PetscInt               numChildren, numCells, c;
 
-    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
     ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
     if ((ghost >= 0) || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
-    if (numCells != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "facet %d has %d support points: expected 2",f,numCells);
-    ierr  = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
-    for (c = 0; c < 2; c++) {
-      PetscInt cell = fcells[c];
+    if (numCells == 2) {
+      ierr = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
+      for (c = 0; c < 2; c++) {
+        PetscInt cell = fcells[c];
 
-      if (cell >= cStart && cell <= cEndInterior) {
-        ierr = PetscSectionAddDof(neighSec,cell,1);CHKERRQ(ierr);
+        if (cell >= cStart && cell <= cEndInterior) {
+          ierr = PetscSectionAddDof(neighSec,cell,1);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -1440,21 +1451,22 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscInt               ghost;
     PetscInt               numChildren, numCells, c;
 
-    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
     ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
     if ((ghost >= 0) || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
-    if (numCells != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "facet %d has %d support points: expected 2",f,numCells);
-    ierr  = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
-    for (c = 0; c < 2; c++) {
-      PetscInt cell = fcells[c], off;
+    if (numCells == 2) {
+      ierr  = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
+      for (c = 0; c < 2; c++) {
+        PetscInt cell = fcells[c], off;
 
-      if (cell >= cStart && cell <= cEndInterior) {
-        ierr = PetscSectionGetOffset(neighSec,cell,&off);CHKERRQ(ierr);
-        off += counter[cell - cStart]++;
-        neighbors[off][0] = f;
-        neighbors[off][1] = fcells[1 - c];
+        if (cell >= cStart && cell <= cEndInterior) {
+          ierr = PetscSectionGetOffset(neighSec,cell,&off);CHKERRQ(ierr);
+          off += counter[cell - cStart]++;
+          neighbors[off][0] = f;
+          neighbors[off][1] = fcells[1 - c];
+        }
       }
     }
   }
