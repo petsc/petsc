@@ -125,7 +125,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,con
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
-PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
 
 PETSC_EXTERN PetscErrorCode VecSetUp(Vec);
 PETSC_EXTERN PetscErrorCode VecDestroy(Vec*);
@@ -274,7 +274,7 @@ PETSC_EXTERN PetscErrorCode VecAssemblyBegin(Vec);
 PETSC_EXTERN PetscErrorCode VecAssemblyEnd(Vec);
 PETSC_EXTERN PetscErrorCode VecStashSetInitialSize(Vec,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode VecStashView(Vec,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 /*MC
@@ -326,7 +326,7 @@ PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterM
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
 

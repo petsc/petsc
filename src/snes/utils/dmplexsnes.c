@@ -2221,7 +2221,8 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
   ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) r, "Initial Residual");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(r, "res_", "-vec_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"res_");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
   /* Check Jacobian */
   ierr = SNESComputeJacobian(snes, u, M, M);CHKERRQ(ierr);
   ierr = MatGetNullSpace(J, &nullSpace);CHKERRQ(ierr);
@@ -2240,7 +2241,8 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
   ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) r, "Au - b = Au + F(0)");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(r, "linear_res_", "-vec_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"linear_res_");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);

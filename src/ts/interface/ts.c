@@ -3154,7 +3154,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts, "-ts_view_solution");CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
@@ -3308,7 +3308,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       solution = ts->vec_sol;
     }
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(solution, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(solution,(PetscObject) ts,"-ts_view_solution");CHKERRQ(ierr);
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
@@ -3380,7 +3380,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
 #endif
   }
   ts->solvetime = ts->ptime;
-  ierr = VecViewFromOptions(ts->vecs_sensi[0], ((PetscObject) ts)->prefix, "-ts_adjoint_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

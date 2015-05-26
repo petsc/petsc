@@ -3030,7 +3030,7 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
   PetscValidPointer(section, 2);
   if (!dm->defaultSection && dm->ops->createdefaultsection) {
     ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, "dm_", "-petscsection_view");CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, NULL, "-dm_petscsection_view");CHKERRQ(ierr);
   }
   *section = dm->defaultSection;
   PetscFunctionReturn(0);
@@ -3266,7 +3266,7 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
     ierr = PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&dm->map);CHKERRQ(ierr);
     ierr = PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->defaultGlobalSection, &dm->map);CHKERRQ(ierr);
-    ierr = PetscSectionViewFromOptions(dm->defaultGlobalSection, "global_", "-section_view");CHKERRQ(ierr);
+    ierr = PetscSectionViewFromOptions(dm->defaultGlobalSection, NULL, "-global_section_view");CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;
   PetscFunctionReturn(0);

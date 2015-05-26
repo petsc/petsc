@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, "orig_", "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, 0, &pointSF, &dmdist);CHKERRQ(ierr);
   if (dmdist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "dmdist.h5", FILE_MODE_READ, &v);CHKERRQ(ierr);
   ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dmnew, "new_", "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
 
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
   ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);

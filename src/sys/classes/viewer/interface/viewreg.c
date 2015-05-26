@@ -53,6 +53,8 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
 
+  /* ierr = (*PetscHelpPrintf)(comm,"  -%s%s xxx: %s (%s)\n",pre ? pre : "",name+1,"Triggers display of a PETSc object","PetscOptionsGetViewer");CHKERRQ(ierr);*/
+
   if (format) *format = PETSC_VIEWER_DEFAULT;
   if (set) *set = PETSC_FALSE;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
