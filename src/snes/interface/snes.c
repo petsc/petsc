@@ -3397,6 +3397,7 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,Petsc
   snes->monitor[snes->numbermonitors]          = f;
   snes->monitordestroy[snes->numbermonitors]   = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++] = (void*)mctx;
+  ierr = SNESSetNormSchedule(snes, SNES_NORM_ALWAYS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
