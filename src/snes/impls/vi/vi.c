@@ -524,7 +524,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to
-   PETSC_INFINITY and PETSC_NINFINITY respectively during SNESSetUp().
+   PETSC_NINFINITY and PETSC_INFINITY respectively during SNESSetUp().
 
    Level: advanced
 

@@ -5652,7 +5652,7 @@ Fortran programmers
 can check these error codes with
 \trl{CHKERRQ(ierr)}, which terminates all processes when an error is
 encountered.  Likewise, one can set error codes within Fortran programs by
-using \trl{SETERRQ(comm,ierr,p,' ')}, which again terminates all processes
+using \trl{SETERRQ(comm,p,' ',ierr)}, which again terminates all processes
 upon detection of an error.
 Note that complete error tracebacks with
 \trl{CHKERRQ()} and \trl{SETERRQ()}, as described in Section

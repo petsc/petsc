@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.giturls           = ['git@bitbucket.org:petsc/petsc4py.git']
-    self.gitcommit         = 'master'
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
+    self.giturls           = ['https://bitbucket.org/petsc/petsc4py']
+    self.gitcommit         = '5de4a59' # May 23 2015
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-5de4a59.tar.gz']
     self.functions         = []
     self.includes          = []
     self.skippackagewithoptions = 1
@@ -104,3 +104,11 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4py-build','')
     self.addMakeRule('petsc4py-install','')
 
+  def gitPreReqCheck(self):
+    ''' petsc4py git download requires Cython'''
+    flg = True
+    try:
+      import Cython
+    except:
+      flg = False
+    return flg

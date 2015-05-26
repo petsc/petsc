@@ -79,9 +79,12 @@ class Xdmf:
     if len(f[1].shape) > 2:
       dof = f[1].shape[1]
       bs  = f[1].shape[2]
-    else:
+    elif len(f[1].shape) > 1:
       dof = f[1].shape[0]
       bs  = f[1].shape[1]
+    else:
+      dof = f[1].shape[0]
+      bs  = 1
     fp.write('''\
 	<Attribute
 	   Name="%s"

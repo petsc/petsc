@@ -546,10 +546,14 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   if (D) {
-    MatInfo info;
+    MatInfo   info;
+    PetscReal norm;
 
     ierr = MatGetInfo(D, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
-    if (info.nz_used) SETERRQ(PetscObjectComm((PetscObject) M), PETSC_ERR_SUP, "Not yet implemented");
+    if (info.nz_used) {
+      ierr = MatNorm(D, NORM_INFINITY, &norm);CHKERRQ(ierr);
+      if (norm > PETSC_MACHINE_EPSILON) SETERRQ(PetscObjectComm((PetscObject) M), PETSC_ERR_SUP, "Not yet implemented for Schur complements with non-vanishing D");
+    }
   }
   PetscFunctionReturn(0);
 }

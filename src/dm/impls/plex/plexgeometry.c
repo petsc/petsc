@@ -1146,6 +1146,20 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeGeometryFVM"
+/*@
+  DMPlexComputeGeometryFVM - Computes the cell and face geometry for a finite volume method
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
++ cellgeom - A Vec of PetscFVCellGeom data
+. facegeom - A Vec of PetscFVFaceGeom data
+
+  Level: developer
+
+.seealso: PetscFVFaceGeom, PetscFVCellGeom, DMPlexComputeGeometryFEM()
+@*/
 PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 {
   DM             dmFace, dmCell;

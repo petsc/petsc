@@ -1162,7 +1162,7 @@ class Configure(config.base.Configure):
   } else {
     printf("pointers do not match! [%p %p] [%p]\\n",p1,p3,p2);
     fflush(stdout);
-    abort();
+    exit(111);
   }
   return;
 }\n'''
