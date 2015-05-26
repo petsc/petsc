@@ -3,6 +3,7 @@
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
 */
 #include <../src/mat/impls/adj/mpi/mpiadj.h>    /*I "petscmat.h" I*/
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MPIAdj_ASCII"
@@ -478,6 +479,86 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrix_MPIAdj_Single"
+static PetscErrorCode MatGetSubMatrix_MPIAdj_Single(Mat adj,IS rows, IS cols, Mat *adj)
+{
+  PetscInt        	 rows_localsize,cols_localsize,i,j,nroots,nleaves,owner,localindex,*ncols_send,*ncols_recv;
+  PetscInt           nlocalrows,*adjncy_recv,*cols_send,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
+  const PetscInt    *rows_indices,*cols_indices,*xadj, *adjncy;
+  Mat_MPIAdj        *a = (Mat_MPIAdj*)adj->data;
+  PetscMPIInt        rank;
+  PetscLayout        rmap;
+  MPI_Comm           comm;
+  PetscSF            sf;
+  PetscSFNode       *iremote;
+  PetscBool          done;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  /* communicator */
+  ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
+  /* Layouts */
+  ierr = MatGetLayouts(adj,&rmap,PETSC_NULL);CHKERRQ(ierr);
+  /* get rows information */
+  ierr = ISGetLocalSize(rows,&rows_localsize);CHKERRQ(ierr);
+  ierr = ISGetIndices(rows,&rows_indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(rows_localsize,&iremote);CHKERRQ(ierr);
+
+  nleaves = rows_localsize;
+  for(i=0; i<rows_localsize; i++){
+    ierr = PetscLayoutFindOwnerIndex(rmap,rows_indices[i],&owner,&localindex);CHKERRQ(ierr);
+    iremote[i].rank  = owner;
+    iremote[i].index = localindex;
+  }
+  ierr = MatGetRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&nlocalrows,&xadj,&adjncy,&done);CHKERRQ(ierr);
+  ierr = PetscCalloc3(nlocalrows,&ncols_send,rows_localsize,&xadj_recv,rows_localsize,&ncols_recv);CHKERRQ(ierr);
+  nroots = nlocalrows;
+  for(i=0; i<nlocalrows; i++){
+	ncols_send[i] = xadj[i+1]-xadj[i];
+  }
+  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,PETSC_NULL,PETSC_OWN_POINTER,&iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,ncols_send,ncols_recv);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,ncols_send,ncols_recv);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,xadj,xadj_recv);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,xadj,xadj_recv);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  Ncols_recv =0;
+  for(i=0; i<rows_localsize; i++){
+	 Ncols_recv += ncols_recv[i];
+  }
+  Ncols_send = 0;
+  for(i=0; i<nlocalrows; i++){
+	Ncols_send += ncols_send[i];
+  }
+  ierr = PetscCalloc1(Ncols_recv,&iremote);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Ncols_recv,&adjncy_recv,Ncols_recv,&values_recv);CHKERRQ(ierr);
+  nleaves = Ncols_recv;
+  for(i=0; i<rows_localsize; i++){
+    ierr = PetscLayoutFindOwner(rmap,rows_indices[i],&owner);CHKERRQ(ierr);
+    iremote[i].rank  = owner;
+    for(j=0; j<ncols_recv[i]; j++){
+      iremote[i].index =xadj_recv[i]+j;
+    }
+  }
+  nroots = Ncols_send;
+  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,PETSC_NULL,PETSC_OWN_POINTER,&iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,adjncy,adjncy_recv);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,adjncy,adjncy_recv);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&nlocalrows,&xadj,&adjncy,&done);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjCreateNonemptySubcommMat_MPIAdj"
