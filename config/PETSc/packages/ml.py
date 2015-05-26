@@ -3,9 +3,9 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.gitcommit = '9380ae2d6a87bc1f8d8b7adab65501dd9d784161'
+    self.gitcommit = '3edc7782780b5874ee4bfce3898436c7bca3fcc6'
     self.giturls   = ['https://bitbucket.org/petsc/pkg-ml.git']
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p1.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p2.tar.gz']
     self.functions = ['ML_Set_PrintLevel']
     self.includes  = ['ml_include.h']
     self.liblist   = [['libml.a']]
