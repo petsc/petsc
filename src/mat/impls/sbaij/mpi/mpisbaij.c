@@ -993,7 +993,8 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       nt,mbs=a->mbs,bs=A->rmap->bs;
-  PetscScalar    *x,*from;
+  PetscScalar    *from;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
@@ -1008,11 +1009,11 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
 
   /* copy x into the vec slvec0 */
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
 
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
