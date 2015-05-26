@@ -86,6 +86,27 @@ def chkenable():
         sys.argv[l] = head.replace('disable-fortran','with-fortran-interfaces')+'='+tail
       continue
 
+    if name.find('enable-cxx') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++')
+      else:
+        head, tail = name.split('=', 1)
+        if tail=='0':
+          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C')
+        else:
+          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C++')
+      continue
+    if name.find('disable-cxx') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-cxx','with-clanguage=C')
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '0':
+          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C++')
+        else:
+          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C')
+      continue
+
 
     if name.find('enable-') >= 0:
       if name.find('=') == -1:
