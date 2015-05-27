@@ -4334,7 +4334,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
       ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
-      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
       /* prefix */
       ierr = PetscStrcpy(prefix,"");CHKERRQ(ierr);
       ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
@@ -4378,9 +4377,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
       isbddc = PETSC_FALSE;
     }
+    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     if (isredundant) {
       KSP inner_ksp;
-      PC inner_pc;
+      PC  inner_pc;
       ierr = PCRedundantGetKSP(pc_temp,&inner_ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(inner_ksp,&inner_pc);CHKERRQ(ierr);
       ierr = PCFactorSetReuseFill(inner_pc,PETSC_TRUE);CHKERRQ(ierr);
