@@ -1,9 +1,14 @@
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = glee.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscts
 MANSEC   = TS
-LOCDIR   = src/ts/impls/explicit/
-DIRS     = euler glee rk ssp
+LOCDIR   = src/ts/impls/explicit/glee/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
