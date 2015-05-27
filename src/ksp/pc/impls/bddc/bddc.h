@@ -77,6 +77,7 @@ typedef struct {
   IS                  DirichletBoundariesLocal;
   PetscBool           switch_static;
   PetscInt            coarsening_ratio;
+  PetscInt            coarse_adj_red;
   PetscInt            current_level;
   PetscInt            max_levels;
   PetscInt            redistribute_coarse;
