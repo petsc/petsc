@@ -223,216 +223,34 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchPart_AssembleSubdomain"
+#define __FUNCT__ "MatPartitioningHierarchical_AssembleSubdomain"
 PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping)
 {
-  PetscInt        *rows_send,*adjncy_send,*roffsets,*coffsets,*rowsizes,*colsizes,i,j,mat_localsize;
-  PetscInt        rstart,rend,nto,*torsizes,*tocsizes,nfrom,*fromrsizes,*fromcsizes;
-  PetscInt        *rows_recv,*adjncy_recv,nrows_recv,nzeros_recv,*ncols_send,*ncols_recv;
-  PetscInt        *perm_newtoold,*si,*si_sizes,*sj,sj_size,location,k,m,dest_localsize,*perm_oldtonew,*localperm_tmp;
-  const PetscInt  *xadj, *adjncy,*dest_indices;
+  IS              irows,icols;
+  PetscInt        irows_ln;
+  const PetscInt *irows_indices;
   MPI_Comm        comm;
-  PetscMPIInt     size,rank,target_rank,*toranks,*fromranks,*fromperm;
-  PetscLayout     rmap;
-  PetscBool       done;
-  PetscSF         sf;
-  PetscSFNode     *iremote;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  /*communicator */
+  /*get comm*/
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MatGetLayouts(adj,&rmap,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(rmap,&rstart,&rend);CHKERRQ(ierr);
-  /*offsets, depends on the number of processors  */
-  ierr = PetscCalloc4(size+1,&roffsets,size+1,&coffsets,size,&rowsizes,size,&colsizes);CHKERRQ(ierr);
-  /*retrieve data*/
-  ierr = MatGetRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&mat_localsize,&xadj,&adjncy,&done);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(destination,&dest_localsize);CHKERRQ(ierr);
-  if(dest_localsize != mat_localsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"dest_localsize%d != mat_localsize %d \n",dest_localsize,mat_localsize);
-  /*get indices */
-  ierr = ISGetIndices(destination,&dest_indices);CHKERRQ(ierr);
-  /*estimate the space*/
-  for(i=0; i<mat_localsize; i++){
-	if(dest_indices[i]<0) continue;
-    rowsizes[dest_indices[i]]++;
-    colsizes[dest_indices[i]] += xadj[i+1]-xadj[i];
-  }
-  /*offsets*/
-  nto = 0;
-  for(i=0; i<size; i++){
-    roffsets[i+1] = roffsets[i]+rowsizes[i];
-    coffsets[i+1] = coffsets[i]+colsizes[i];
-    if(rowsizes[i]>0) nto++;
-  }
-  ierr = PetscCalloc3(nto,&toranks,2*nto,&torsizes,2*nto,&tocsizes);CHKERRQ(ierr);
-  /* send row and col sizes  */
-  nto = 0;
-  for(i=0; i<size; i++){
-    if(rowsizes[i]>0){
-      toranks[nto]      = i;
-      torsizes[2*nto]   = rowsizes[i];
-      torsizes[2*nto+1] = roffsets[i];
-      tocsizes[2*nto]   = colsizes[i];
-      tocsizes[2*nto+1] = coffsets[i];
-      nto++;
-    }
-  }
-  ierr = PetscCalloc3(roffsets[size],&rows_send,roffsets[size],&ncols_send,coffsets[size],&adjncy_send);CHKERRQ(ierr);
-  for(i=0; i<mat_localsize; i++){
-	if(dest_indices[i]<0) continue;
-    target_rank = dest_indices[i];
-    rows_send[roffsets[target_rank]]     = i+rstart;
-    ncols_send[roffsets[target_rank]++]  = xadj[i+1]-xadj[i];
-    ierr = PetscMemcpy(adjncy_send+coffsets[target_rank],adjncy+xadj[i],sizeof(PetscInt)*(xadj[i+1]-xadj[i]));CHKERRQ(ierr);
-    coffsets[target_rank] += xadj[i+1]-xadj[i];
-  }
-  ierr = PetscFree4(roffsets,coffsets,rowsizes,colsizes);CHKERRQ(ierr);
-  /* rows */
-  ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,torsizes,&nfrom,&fromranks,&fromrsizes);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nfrom,&fromperm);CHKERRQ(ierr);
-  for(i=0; i<nfrom; i++){
-	fromperm[i] = i;
-  }
-  /*order MPI ranks so that rows and columns are consistent*/
-  ierr = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm);CHKERRQ(ierr);
-  nrows_recv   = 0;
-  for(i=0; i<nfrom; i++){
-	nrows_recv += fromrsizes[i*2];
-  }
-  ierr = PetscCalloc2(nrows_recv,&rows_recv,nrows_recv,&ncols_recv);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nrows_recv,&iremote);CHKERRQ(ierr);
-  nrows_recv = 0;
-  for(i=0; i<nfrom; i++){
-    for(j=0; j<fromrsizes[2*fromperm[i]]; j++){
-      iremote[nrows_recv].rank    = fromranks[i];
-      iremote[nrows_recv++].index = fromrsizes[2*fromperm[i]+1]+j;
-    }
-  }
-  /*create a sf to exchange rows */
-  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,nrows_recv,nrows_recv,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,rows_send,rows_recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,rows_send,rows_recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,ncols_send,ncols_recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,ncols_send,ncols_recv);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = PetscFree(fromranks);CHKERRQ(ierr);
-  ierr = PetscFree(fromrsizes);CHKERRQ(ierr);
-  ierr = PetscFree(fromperm);CHKERRQ(ierr);
-  /*columns */
-  ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tocsizes,&nfrom,&fromranks,&fromcsizes);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nfrom,&fromperm);CHKERRQ(ierr);
-  for(i=0; i<nfrom; i++){
-  	fromperm[i] = i;
-  }
-  /*order these so that rows and columns consistent*/
-  ierr = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm);CHKERRQ(ierr);
-  nzeros_recv   = 0;
-  for(i=0; i<nfrom; i++){
-	nzeros_recv += fromcsizes[i*2];
-  }
-  ierr = PetscCalloc1(nzeros_recv,&adjncy_recv);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nzeros_recv,&iremote);CHKERRQ(ierr);
-  nzeros_recv = 0;
-  for(i=0; i<nfrom; i++){
-    for(j=0; j<fromcsizes[2*fromperm[i]]; j++){
-      iremote[nzeros_recv].rank    = fromranks[i];
-      iremote[nzeros_recv++].index = fromcsizes[2*fromperm[i]+1]+j;
-    }
-  }
-  /*create a sf to exchange columns */
-  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,nzeros_recv,nzeros_recv,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,adjncy_send,adjncy_recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,adjncy_send,adjncy_recv);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = PetscFree3(rows_send,ncols_send,adjncy_send);CHKERRQ(ierr);
-  ierr = PetscFree3(toranks,torsizes,tocsizes);CHKERRQ(ierr);
-  ierr = PetscFree(fromranks);CHKERRQ(ierr);
-  ierr = PetscFree(fromcsizes);CHKERRQ(ierr);
-  ierr = PetscFree(fromperm);CHKERRQ(ierr);
-  ierr = PetscCalloc3(nrows_recv,&perm_newtoold,nrows_recv,&perm_oldtonew,nrows_recv,&localperm_tmp);CHKERRQ(ierr);
-  for(i=0; i<nrows_recv; i++){
-	perm_newtoold[i] = i;
-	perm_oldtonew[i] = i;
-  }
-  ierr = PetscSortIntWithArray(nrows_recv,rows_recv,perm_newtoold);CHKERRQ(ierr);
-  ierr = PetscMemcpy(localperm_tmp,perm_newtoold,sizeof(PetscInt)*nrows_recv);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(nrows_recv,localperm_tmp,perm_oldtonew);CHKERRQ(ierr);
-  /*create a mapping local to global */
-  ierr = ISLocalToGlobalMappingCreate(comm,1,nrows_recv,rows_recv,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nrows_recv+1,&si);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nrows_recv,&si_sizes);CHKERRQ(ierr);
-  ierr = PetscMemcpy(si_sizes,ncols_recv,sizeof(PetscInt)*nrows_recv);CHKERRQ(ierr);
-#if 0
-  ierr = PetscIntView(nrows_recv,ncols_recv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscIntView(nrows_recv,rows_recv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscIntView(nzeros_recv,adjncy_recv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscIntView(nrows_recv,si_sizes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscIntView(nrows_recv,perm_oldtonew,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
-  k       = 0;
-  sj_size = 0;
-  for(i=0; i<nrows_recv; i++){
-	for(j=0; j<ncols_recv[i]; j++,k++){
-	   ierr = PetscFindInt(adjncy_recv[k],nrows_recv,rows_recv,&location);CHKERRQ(ierr);
-	   if(location<0){
-		 adjncy_recv[k]              = -1;
-		 si_sizes[perm_oldtonew[i]]   -= 1;
-	   }else{
-		 adjncy_recv[k] = location;
-		 sj_size++;
-	   }
-	}
-  }
-  for(i=0; i<nrows_recv; i++){
-	si[i+1] = si[i]+si_sizes[i];
-  }
-#if 0
-  ierr = PetscIntView(nrows_recv,si_sizes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"sj_size %D \n",sj_size);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
-  ierr = PetscFree(si_sizes);CHKERRQ(ierr);
-  ierr = PetscCalloc1(sj_size,&sj);CHKERRQ(ierr);
-  k = 0;
-  m = 0;
-  for(i=0; i<nrows_recv; i++){
-    for(j=0,m=0; j<ncols_recv[i]; j++,k++){
-      if(adjncy_recv[k] < 0) continue;
-      sj[si[perm_oldtonew[i]]+m] = adjncy_recv[k];
-      m++;
-	}
-  }
-#if 0
-  ierr = PetscIntView(nrows_recv+1,si,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscIntView(sj_size,sj,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"nrows_recv %D \n",nrows_recv);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
-  /* return the assembled submatrix */
-  ierr = MatCreateMPIAdj(PETSC_COMM_SELF,nrows_recv,nrows_recv,si,sj,PETSC_NULL,sadj);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&mat_localsize,&xadj,&adjncy,&done);CHKERRQ(ierr);
-  ierr = PetscFree2(rows_recv,ncols_recv);CHKERRQ(ierr);
-  ierr = PetscFree3(perm_newtoold,perm_oldtonew,localperm_tmp);CHKERRQ(ierr);
-  ierr = PetscFree(adjncy_recv);CHKERRQ(ierr);
+  /*get rows from remote and local */
+  ierr = ISBuildTwoSided(destination,&irows);CHKERRQ(ierr);
+  ierr = ISDuplicate(irows,&icols);CHKERRQ(ierr);
+  /*get rows information */
+  ierr = ISGetLocalSize(irows,&irows_ln);CHKERRQ(ierr);
+  ierr = ISGetIndices(irows,&irows_indices);CHKERRQ(ierr);
+  /* create a mapping from local to global */
+  ierr = ISLocalToGlobalMappingCreate(comm,1,irows_ln,irows_indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
+  /* extract a submatrix*/
+  ierr = MatGetSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
+  ierr = ISDestroy(&irows);CHKERRQ(ierr);
+  ierr = ISDestroy(&icols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningHierarchPart_DetermineDestination"
