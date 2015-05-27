@@ -159,42 +159,6 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLimiterViewFromOptions"
-/*
-  PetscLimiterViewFromOptions - Processes command line options to determine if/how a PetscLimiter is to be viewed.
-
-  Collective on PetscLimiter
-
-  Input Parameters:
-+ lim    - the PetscLimiter
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscLimiter, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter lim, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) lim), prefix,                      optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) lim), ((PetscObject) lim)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscLimiterView(lim, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscLimiterSetFromOptions"
 /*@
   PetscLimiterSetFromOptions - sets parameters in a PetscLimiter from the options database
@@ -1190,42 +1154,6 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fvm), &v);CHKERRQ(ierr);}
   if (fvm->ops->view) {ierr = (*fvm->ops->view)(fvm, v);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVViewFromOptions"
-/*
-  PetscFVViewFromOptions - Processes command line options to determine if/how a PetscFV is to be viewed.
-
-  Collective on PetscFV
-
-  Input Parameters:
-+ fvm    - the PetscFV
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscFV, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscFVViewFromOptions(PetscFV fvm, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fvm), prefix,                      optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fvm), ((PetscObject) fvm)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscFVView(fvm, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

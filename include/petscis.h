@@ -159,7 +159,7 @@ PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*
 PETSC_EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],PetscCopyMode,ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringDestroy(ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringView(ISColoring,PetscViewer);
-PETSC_EXTERN PetscErrorCode ISColoringViewFromOptions(ISColoring,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode ISColoringViewFromOptions(ISColoring,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
 PETSC_EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring,IS*[]);
 PETSC_EXTERN PetscErrorCode ISColoringReference(ISColoring);
