@@ -337,7 +337,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                 /*39*/ 0,
-                                       0,
+                                       MatGetSubMatrices_MPIAdj,
                                        0,
                                        0,
                                        0,
@@ -480,40 +480,40 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS rows, IS cols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values);
+static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrices_MPIAdj"
 PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
-  PetscInt           i,irow_localsize,icol_localsize,*sxadj,*sadjncy,*svalues;
-  PetscInt          *indices,nindices,j,k,loc;
+  PetscInt           i,irow_n,icol_n,*sxadj,*sadjncy,*svalues;
+  PetscInt          *indices,nindx,j,k,loc;
   const PetscInt    *irow_indices,*icol_indices;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  nindices = 0;
+  nindx = 0;
   for(i=0; i<n; i++){
-    ierr = ISGetLocalSize(irow[i],&irow_localsize);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(icol[i],&icol_localsize);CHKERRQ(ierr);
-    nindices = nindices>(irow_localsize+icol_localsize)? nindices:(irow_localsize+icol_localsize);
+    ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
+    nindx = nindx>(irow_n+icol_n)? nindx:(irow_n+icol_n);
   }
-  ierr = PetscCalloc1(nindices,&indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nindx,&indices);CHKERRQ(ierr);
   for(i=0; i<n; i++){
     ierr = MatGetSubMatrix_MPIAdj_data(mat,irow[i],icol[i],&sxadj,&sadjncy,&svalues);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(irow[i],&irow_localsize);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(icol[i],&icol_localsize);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
     ierr = ISGetIndices(irow[i],&irow_indices);CHKERRQ(ierr);
-    ierr = PetscMemcpy(indices,irow_indices,sizeof(PetscInt)*irow_localsize);CHKERRQ(ierr);
+    ierr = PetscMemcpy(indices,irow_indices,sizeof(PetscInt)*irow_n);CHKERRQ(ierr);
     ierr = ISRestoreIndices(irow[i],&irow_indices);CHKERRQ(ierr);
     ierr = ISGetIndices(icol[i],&icol_indices);CHKERRQ(ierr);
-    ierr = PetscMemcpy(indices+irow_localsize,icol_indices,sizeof(PetscInt)*icol_localsize);CHKERRQ(ierr);
+    ierr = PetscMemcpy(indices+irow_n,icol_indices,sizeof(PetscInt)*icol_n);CHKERRQ(ierr);
     ierr = ISRestoreIndices(icol[i],&icol_indices);CHKERRQ(ierr);
-    nindices = irow_localsize+icol_localsize;
-    ierr = PetscSortRemoveDupsInt(&nindices,indices);CHKERRQ(ierr);
-    for(j=0; j<irow_localsize; j++){
+    nindx = irow_n+icol_n;
+    ierr = PetscSortRemoveDupsInt(&nindx,indices);CHKERRQ(ierr);
+    for(j=0; j<irow_n; j++){
       for(k=sxadj[j]; k<sxadj[j]; k++){
-    	ierr = PetscFindInt(sadjncy[k],nindices,indices,&loc);CHKERRQ(ierr);
+    	ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
 #if PETSC_USE_DEBUG
     	if(loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %d \n",sadjncy[k]);
 #endif
@@ -521,30 +521,34 @@ PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const
       }
     }
     if(scall==MAT_INITIAL_MATRIX){
-      ierr = MatCreateMPIAdj(PETSC_COMM_SELF,irow_localsize,icol_localsize,sxadj,sadjncy,svalues,submat[i]);CHKERRQ(ierr);
+      ierr = MatCreateMPIAdj(PETSC_COMM_SELF,irow_n,icol_n,sxadj,sadjncy,svalues,submat[i]);CHKERRQ(ierr);
     }else{
        Mat                sadj = *(submat[i]);
        Mat_MPIAdj        *sa = (Mat_MPIAdj*)((sadj)->data);
-       ierr = PetscMemcpy(sa->i,sxadj,sizeof(PetscInt)*(irow_localsize+1));CHKERRQ(ierr);
-       ierr = PetscMemcpy(sa->j,sadjncy,sizeof(PetscInt)*sxadj[irow_localsize]);CHKERRQ(ierr);
-       ierr = PetscMemcpy(sa->values,svalues,sizeof(PetscInt)*sxadj[irow_localsize]);CHKERRQ(ierr);
+       ierr = PetscMemcpy(sa->i,sxadj,sizeof(PetscInt)*(irow_n+1));CHKERRQ(ierr);
+       ierr = PetscMemcpy(sa->j,sadjncy,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);
+       if(svalues){ierr = PetscMemcpy(sa->values,svalues,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);}
        ierr = PetscFree(sxadj);CHKERRQ(ierr);
        ierr = PetscFree(sadjncy);CHKERRQ(ierr);
-       ierr = PetscFree(svalues);CHKERRQ(ierr);
+       if(svalues) {ierr = PetscFree(svalues);CHKERRQ(ierr);}
     }
   }
+  ierr = PetscFree(indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_MPIAdj_data"
-static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS rows, IS cols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values)
+/*
+ * The interface should be easy to use for both MatGetSubMatrix (parallel sub-matrix) and MatGetSubMatrices (sequential sub-matrices)
+ * */
+static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values)
 {
-  PetscInt        	 rows_localsize,cols_localsize,i,j,nroots,nleaves,owner,localindex,*ncols_send,*ncols_recv;
-  PetscInt           nlocalrows,*adjncy_recv,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
-  PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues;
-  const PetscInt    *rows_indices,*cols_indices,*xadj, *adjncy;
+  PetscInt        	 nlrows_is,icols_n,i,j,nroots,nleaves,owner,rlocalindex,*ncols_send,*ncols_recv;
+  PetscInt           nlrows_mat,*adjncy_recv,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
+  PetscInt          *ncols_recv_offsets,loc,rnclos,*sadjncy,*sxadj,*svalues,isvalue;
+  const PetscInt    *irows_indices,*icols_indices,*xadj, *adjncy;
   Mat_MPIAdj        *a = (Mat_MPIAdj*)adj->data;
   PetscLayout        rmap;
   MPI_Comm           comm;
@@ -559,20 +563,20 @@ static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS rows, IS cols, Pets
   /* Layouts */
   ierr = MatGetLayouts(adj,&rmap,PETSC_NULL);CHKERRQ(ierr);
   /* get rows information */
-  ierr = ISGetLocalSize(rows,&rows_localsize);CHKERRQ(ierr);
-  ierr = ISGetIndices(rows,&rows_indices);CHKERRQ(ierr);
-  ierr = PetscCalloc1(rows_localsize,&iremote);CHKERRQ(ierr);
-
-  nleaves = rows_localsize;
-  for(i=0; i<rows_localsize; i++){
-    ierr = PetscLayoutFindOwnerIndex(rmap,rows_indices[i],&owner,&localindex);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(irows,&nlrows_is);CHKERRQ(ierr);
+  ierr = ISGetIndices(irows,&irows_indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nlrows_is,&iremote);CHKERRQ(ierr);
+  /* construct sf graph*/
+  nleaves = nlrows_is;
+  for(i=0; i<nlrows_is; i++){
+    ierr = PetscLayoutFindOwnerIndex(rmap,irows_indices[i],&owner,&rlocalindex);CHKERRQ(ierr);
     iremote[i].rank  = owner;
-    iremote[i].index = localindex;
+    iremote[i].index = rlocalindex;
   }
-  ierr = MatGetRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&nlocalrows,&xadj,&adjncy,&done);CHKERRQ(ierr);
-  ierr = PetscCalloc4(nlocalrows,&ncols_send,rows_localsize,&xadj_recv,rows_localsize+1,&ncols_recv_offsets,rows_localsize,&ncols_recv);CHKERRQ(ierr);
-  nroots = nlocalrows;
-  for(i=0; i<nlocalrows; i++){
+  ierr = MatGetRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&nlrows_mat,&xadj,&adjncy,&done);CHKERRQ(ierr);
+  ierr = PetscCalloc4(nlrows_mat,&ncols_send,nlrows_is,&xadj_recv,nlrows_is+1,&ncols_recv_offsets,nlrows_is,&ncols_recv);CHKERRQ(ierr);
+  nroots = nlrows_mat;
+  for(i=0; i<nlrows_mat; i++){
 	ncols_send[i] = xadj[i+1]-xadj[i];
   }
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
@@ -585,25 +589,31 @@ static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS rows, IS cols, Pets
   ierr = PetscSFBcastEnd(sf,MPIU_INT,xadj,xadj_recv);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   Ncols_recv =0;
-  for(i=0; i<rows_localsize; i++){
+  for(i=0; i<nlrows_is; i++){
 	 Ncols_recv             += ncols_recv[i];
 	 ncols_recv_offsets[i+1] = ncols_recv[i]+ncols_recv_offsets[i];
   }
   Ncols_send = 0;
-  for(i=0; i<nlocalrows; i++){
+  for(i=0; i<nlrows_mat; i++){
 	Ncols_send += ncols_send[i];
   }
   ierr = PetscCalloc1(Ncols_recv,&iremote);CHKERRQ(ierr);
-  ierr = PetscCalloc2(Ncols_recv,&adjncy_recv,Ncols_recv,&values_recv);CHKERRQ(ierr);
+  ierr = PetscCalloc1(Ncols_recv,&adjncy_recv);CHKERRQ(ierr);
   nleaves = Ncols_recv;
-  for(i=0; i<rows_localsize; i++){
-    ierr = PetscLayoutFindOwner(rmap,rows_indices[i],&owner);CHKERRQ(ierr);
-    iremote[i].rank  = owner;
+  Ncols_recv = 0;
+  for(i=0; i<nlrows_is; i++){
+    ierr = PetscLayoutFindOwner(rmap,irows_indices[i],&owner);CHKERRQ(ierr);
     for(j=0; j<ncols_recv[i]; j++){
-      iremote[i].index =xadj_recv[i]+j;
+      iremote[Ncols_recv].rank    = owner;
+      iremote[Ncols_recv++].index = xadj_recv[i]+j;
     }
   }
-  ierr = ISRestoreIndices(rows,&rows_indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
+  /*if we need to deal with edge weights */
+  if(a->values){isvalue=1;}else{isvalue=0;}
+  /*involve a global communication */
+  ierr = MPI_Allreduce(&isvalue,&isvalue,1,MPIU_INT,MPIU_SUM,comm);CHKERRQ(ierr);
+  if(isvalue){ierr = PetscCalloc1(Ncols_recv,&values_recv);CHKERRQ(ierr);}
   nroots = Ncols_send;
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,nroots,nleaves,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
@@ -611,46 +621,53 @@ static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS rows, IS cols, Pets
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf,MPIU_INT,adjncy,adjncy_recv);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,adjncy,adjncy_recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
+  if(isvalue){
+	ierr = PetscSFBcastBegin(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
+	ierr = PetscSFBcastEnd(sf,MPIU_INT,a->values,values_recv);CHKERRQ(ierr);
+  }
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&nlocalrows,&xadj,&adjncy,&done);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(cols,&cols_localsize);CHKERRQ(ierr);
-  ierr = ISGetIndices(cols,&cols_indices);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(adj,0,PETSC_FALSE,PETSC_FALSE,&nlrows_mat,&xadj,&adjncy,&done);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(icols,&icols_n);CHKERRQ(ierr);
+  ierr = ISGetIndices(icols,&icols_indices);CHKERRQ(ierr);
   rnclos = 0;
-  for(i=0; i<rows_localsize; i++){
+  for(i=0; i<nlrows_is; i++){
     for(j=ncols_recv_offsets[i]; j<ncols_recv_offsets[i+1]; j++){
-      ierr = PetscFindInt(adjncy_recv[j], cols_localsize, cols_indices, &loc);CHKERRQ(ierr);
+      ierr = PetscFindInt(adjncy_recv[j], icols_n, icols_indices, &loc);CHKERRQ(ierr);
       if(loc<0){
         adjncy_recv[j] = -1;
-        values_recv[j] = -1;
+        if(isvalue) values_recv[j] = -1;
         ncols_recv[i]--;
       }else{
     	rnclos++;
       }
     }
   }
-  ierr = ISRestoreIndices(cols,&cols_indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(icols,&icols_indices);CHKERRQ(ierr);
   ierr = PetscCalloc1(rnclos,&sadjncy);CHKERRQ(ierr);
-  ierr = PetscCalloc1(rnclos,&svalues);CHKERRQ(ierr);
-  ierr = PetscCalloc1(rows_localsize+1,&sxadj);CHKERRQ(ierr);
+  if(isvalue) {ierr = PetscCalloc1(rnclos,&svalues);CHKERRQ(ierr);}
+  ierr = PetscCalloc1(nlrows_is+1,&sxadj);CHKERRQ(ierr);
   rnclos = 0;
-  for(i=0; i<rows_localsize; i++){
+  for(i=0; i<nlrows_is; i++){
 	for(j=ncols_recv_offsets[i]; j<ncols_recv_offsets[i+1]; j++){
 	  if(adjncy_recv[j]<0) continue;
 	  sadjncy[rnclos] = adjncy_recv[j];
-	  svalues[rnclos] = values_recv[j];
+	  if(isvalue) svalues[rnclos] = values_recv[j];
 	  rnclos++;
 	}
   }
-  for(i=0; i<rows_localsize; i++){
+  for(i=0; i<nlrows_is; i++){
 	sxadj[i+1] = sxadj[i]+ncols_recv[i];
   }
   if(sadj_xadj)  { *sadj_xadj = sxadj;}else    { ierr = PetscFree(sxadj);CHKERRQ(ierr);}
   if(sadj_adjncy){ *sadj_adjncy = sadjncy;}else{ ierr = PetscFree(sadjncy);CHKERRQ(ierr);}
-  if(sadj_values){ *sadj_values = svalues;}else{ ierr = PetscFree(svalues);CHKERRQ(ierr);}
+  if(sadj_values){
+	if(isvalue) *sadj_values = svalues; else *sadj_values=0;
+  }else{
+	if(isvalue) {ierr = PetscFree(svalues);CHKERRQ(ierr);}
+  }
   ierr = PetscFree4(ncols_send,xadj_recv,ncols_recv_offsets,ncols_recv);CHKERRQ(ierr);
-  ierr = PetscFree2(adjncy_recv,values_recv);CHKERRQ(ierr);
+  ierr = PetscFree(adjncy_recv);CHKERRQ(ierr);
+  if(isvalue) {ierr = PetscFree(values_recv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
