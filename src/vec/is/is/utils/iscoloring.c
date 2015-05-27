@@ -344,20 +344,20 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 .   to - an IS describes where we will go. Negative target rank will be ignored
 
     Output Parameter:
-.   is - contains new numbers from remote or local
+.   rows - contains new numbers from remote or local
 
    Level: advanced
 
 .seealso: MatPartitioningCreate(), ISPartitioningToNumbering(), ISPartitioningCount()
 
 @*/
-PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
+PetscErrorCode  ISBuildTwoSided(IS ito, IS *rows)
 {
-   const PetscInt       *to_indices;
-   PetscInt             *send_indices,rstart,*recv_indices,nrecvs;
-   PetscInt              nto,*tosizes,nfrom,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,to_localsize;
+   const PetscInt       *ito_indices;
+   PetscInt             *send_indices,rstart,*recv_indices,nrecvs,nsends;
+   PetscInt              nto,*tosizes,nfrom,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
    PetscMPIInt          *toranks,*fromranks,size,target_rank,*fromperm_newtoold;
-   PetscLayout           ismap;
+   PetscLayout           isrmap;
    MPI_Comm              comm;
    PetscSF               sf;
    PetscSFNode          *iremote;
@@ -365,22 +365,24 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
 
    PetscFunctionBegin;
    /*communicator*/
-   ierr = PetscObjectGetComm((PetscObject)to,&comm);CHKERRQ(ierr);
+   ierr = PetscObjectGetComm((PetscObject)ito,&comm);CHKERRQ(ierr);
    /* size */
    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
    /* destination information */
-   ierr = ISGetLocalSize(to,&to_localsize);CHKERRQ(ierr);
-   /* why we do not have ISGetLayout*/
-   ismap = to->map;
-   ierr = PetscLayoutGetRange(ismap,&rstart,PETSC_NULL);CHKERRQ(ierr);
-   ierr = ISGetIndices(to,&to_indices);CHKERRQ(ierr);
+   ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
+   /* why we do not have ISGetLayout?*/
+   /* get Layout */
+   isrmap = ito->map;
+   /*get local start */
+   ierr = PetscLayoutGetRange(isrmap,&rstart,PETSC_NULL);CHKERRQ(ierr);
+   ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
-   for(i=0; i<to_localsize; i++){
-     if(to_indices[i]<0) continue;
+   for(i=0; i<ito_ln; i++){
+     if(ito_indices[i]<0) continue;
 #if defined(PETSC_USE_DEBUG)
-     if(to_indices[i]>=size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %d is larger than communicator size %d ",to_indices[i],size);
+     if(ito_indices[i]>=size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %d is larger than communicator size %d ",ito_indices[i],size);
 #endif
-     tosizes_tmp[to_indices[i]]++;
+     tosizes_tmp[ito_indices[i]]++;
    }
    /*offsets*/
    nto = 0;
@@ -389,6 +391,7 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
      if(tosizes_tmp[i]>0) nto++;
     }
    ierr = PetscCalloc2(nto,&toranks,2*nto,&tosizes);CHKERRQ(ierr);
+   /*toranks, tosizes*/
    nto = 0;
    for(i=0; i<size; i++){
      if(tosizes_tmp[i]>0){
@@ -398,14 +401,15 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
         nto++;
      }
    }
-   ierr = PetscCalloc1(tooffsets_tmp[size],&send_indices);CHKERRQ(ierr);
-   for(i=0; i<to_localsize; i++){
-	 if(to_indices[i]<0) continue;
-	 target_rank = to_indices[i];
+   nsends = tooffsets_tmp[size];
+   ierr = PetscCalloc1(nsends,&send_indices);CHKERRQ(ierr);
+   for(i=0; i<ito_ln; i++){
+	 if(ito_indices[i]<0) continue;
+	 target_rank = ito_indices[i];
 	 send_indices[tooffsets_tmp[target_rank]] = i+rstart;
 	 tooffsets_tmp[target_rank]++;
    }
-   ierr = ISRestoreIndices(to,&to_indices);CHKERRQ(ierr);
+   ierr = ISRestoreIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscFree2(tosizes_tmp,tooffsets_tmp);CHKERRQ(ierr);
    ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
    ierr = PetscFree2(toranks,tosizes);CHKERRQ(ierr);
@@ -413,6 +417,7 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
    for(i=0; i<nfrom; i++){
 	 fromperm_newtoold[i] = i;
    }
+   /*sort ranks */
    ierr = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold);CHKERRQ(ierr);
    nrecvs   = 0;
    for(i=0; i<nfrom; i++){
@@ -427,9 +432,10 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
        iremote[nrecvs++].index = fromsizes[2*fromperm_newtoold[i]+1]+j;
      }
    }
+
    /*create a sf to exchange indices */
    ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-   ierr = PetscSFSetGraph(sf,nrecvs,nrecvs,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+   ierr = PetscSFSetGraph(sf,nsends,nrecvs,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
    ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
    /* how to put a prefix ? */
    ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
@@ -441,6 +447,8 @@ PetscErrorCode  ISBuildTwoSided(IS to, IS *rows)
    ierr = PetscFree(fromperm_newtoold);CHKERRQ(ierr);
    ierr = PetscFree(send_indices);CHKERRQ(ierr);
    if(rows){
+	 /*sort indices */
+	 ierr = PetscSortInt(nrecvs,recv_indices);CHKERRQ(ierr);
      ierr = ISCreateGeneral(comm, nrecvs,recv_indices,PETSC_OWN_POINTER,rows);CHKERRQ(ierr);
    }else{
 	 ierr = PetscFree(recv_indices);CHKERRQ(ierr);
