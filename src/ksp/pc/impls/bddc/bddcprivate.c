@@ -3328,19 +3328,16 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 #define __FUNCT__ "MatISGetSubassemblingPattern"
 PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, PetscInt redprocs, IS* is_sends)
 {
-  Mat             subdomain_adj;
-  IS              new_ranks,ranks_send_to;
-  MatPartitioning partitioner;
-  Mat_IS          *matis;
-  PetscInt        n_neighs,*neighs,*n_shared,**shared;
-  PetscInt        prank;
-  PetscMPIInt     size,rank,color;
-  PetscInt        *xadj,*adjncy,*oldranks;
-  PetscInt        *adjncy_wgt,*v_wgt,*is_indices,*ranks_send_to_idx;
-  PetscInt        i,local_size,threshold=0;
-  PetscErrorCode  ierr;
-  PetscBool       use_vwgt=PETSC_FALSE,use_square=PETSC_FALSE;
-  PetscSubcomm    subcomm;
+  Mat_IS         *matis;
+  IS             ranks_send_to;
+  PetscInt       n_neighs,*neighs,*n_shared,**shared;
+  PetscMPIInt    size,rank,color;
+  PetscInt       *xadj,*adjncy;
+  PetscInt       *adjncy_wgt,*v_wgt,*ranks_send_to_idx;
+  PetscInt       i,local_size,threshold=0;
+  PetscBool      use_vwgt=PETSC_FALSE,use_square=PETSC_FALSE;
+  PetscSubcomm   subcomm;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(NULL,"-matis_partitioning_use_square",&use_square,NULL);CHKERRQ(ierr);
@@ -3398,8 +3395,12 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     ierr = PetscFree(adjncy);CHKERRQ(ierr);
     ierr = PetscFree(adjncy_wgt);CHKERRQ(ierr);
   } else {
-    PetscInt  rstart=0,rend=0;
-    PetscBool aggregate;
+    Mat             subdomain_adj;
+    IS              new_ranks,new_ranks_contig;
+    MatPartitioning partitioner;
+    PetscInt        prank,rstart=0,rend=0;
+    PetscInt        *is_indices,*oldranks;
+    PetscBool       aggregate;
 
     ierr = MPI_Comm_size(PetscSubcommChild(subcomm),&size);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&oldranks);CHKERRQ(ierr);
@@ -3438,6 +3439,9 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
       ierr = MatSetValues(subdomain_adj,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(subdomain_adj,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(subdomain_adj,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = PetscFree(xadj);CHKERRQ(ierr);
+      ierr = PetscFree(adjncy);CHKERRQ(ierr);
+      ierr = PetscFree(adjncy_wgt);CHKERRQ(ierr);
       ierr = PetscFree(vals);CHKERRQ(ierr);
     } else {
       ierr = MatCreateMPIAdj(PetscSubcommChild(subcomm),1,(PetscInt)size,xadj,adjncy,adjncy_wgt,&subdomain_adj);CHKERRQ(ierr);
@@ -3458,8 +3462,10 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     ierr = MatPartitioningApply(partitioner,&new_ranks);CHKERRQ(ierr);
     /* ierr = MatPartitioningView(partitioner,0);CHKERRQ(ierr); */
 
-    /* TODO: renumber new_ranks to avoid "holes" in recv processors */
-    ierr = ISGetIndices(new_ranks,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    /* renumber new_ranks to avoid "holes" in new set of processors */
+    ierr = PCBDDCSubsetNumbering(new_ranks,NULL,NULL,&new_ranks_contig);CHKERRQ(ierr);
+    ierr = ISDestroy(&new_ranks);CHKERRQ(ierr);
+    ierr = ISGetIndices(new_ranks_contig,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     if (!redprocs) {
       ranks_send_to_idx[0] = oldranks[is_indices[0]];
     } else {
@@ -3477,10 +3483,10 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
       ierr = PetscFree(reqs);CHKERRQ(ierr);
       ranks_send_to_idx[0] = oldranks[idxs[0]];
     }
-    ierr = ISRestoreIndices(new_ranks,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(new_ranks_contig,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     /* clean up */
     ierr = PetscFree(oldranks);CHKERRQ(ierr);
-    ierr = ISDestroy(&new_ranks);CHKERRQ(ierr);
+    ierr = ISDestroy(&new_ranks_contig);CHKERRQ(ierr);
     ierr = MatDestroy(&subdomain_adj);CHKERRQ(ierr);
     ierr = MatPartitioningDestroy(&partitioner);CHKERRQ(ierr);
   }
