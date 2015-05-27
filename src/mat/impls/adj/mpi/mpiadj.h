@@ -24,4 +24,8 @@ typedef struct {
   PetscInt    rowvalues_alloc;
 } Mat_MPIAdj;
 
+/*where should I put this declaration???*/
+PetscErrorCode MatGetSubMatrices_MPIAdj(Mat,PetscInt,const IS*,const IS*,MatReuse,Mat **);
+
+
 #endif
