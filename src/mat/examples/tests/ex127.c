@@ -9,7 +9,7 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,As;
   Vec            x,y,ys;
