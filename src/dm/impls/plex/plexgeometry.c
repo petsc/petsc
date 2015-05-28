@@ -1412,6 +1412,9 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (cEndInterior < 0) {
+    cEndInterior = cEnd;
+  }
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&neighSec);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(neighSec,cStart,cEndInterior);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -1419,7 +1422,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   for (f = fStart; f < fEnd; f++) {
     const PetscInt        *fcells;
     PetscBool              boundary;
-    PetscInt               ghost;
+    PetscInt               ghost = -1;
     PetscInt               numChildren, numCells, c;
 
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
@@ -1448,7 +1451,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   for (f = fStart; f < fEnd; f++) {
     const PetscInt        *fcells;
     PetscBool              boundary;
-    PetscInt               ghost;
+    PetscInt               ghost = -1;
     PetscInt               numChildren, numCells, c;
 
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
