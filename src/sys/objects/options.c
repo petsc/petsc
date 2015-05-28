@@ -1983,10 +1983,10 @@ PetscErrorCode  PetscOptionsGetScalarArray(const char pre[],const char name[],Pe
 
    Notes:
    The array can be passed as
-   a comma seperated list:                                 0,1,2,3,4,5,6,7
+   a comma separated list:                                 0,1,2,3,4,5,6,7
    a range (start-end+1):                                  0-8
    a range with given increment (start-end+1:inc):         0-7:2
-   a combination of values and ranges seperated by commas: 0,1-8,8-15:2
+   a combination of values and ranges separated by commas: 0,1-8,8-15:2
 
    There must be no intervening spaces between the values.
 

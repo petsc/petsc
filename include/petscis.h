@@ -144,7 +144,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMa
 $   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function
 $                        is called synchronously in parallel. This requires generating a "parallel coloring".
 $   IS_COLORING_GHOSTED - includes colors for ghost points, this is used when the function can be called
-$                         seperately on individual processes with the ghost points already filled in. Does not
+$                         separately on individual processes with the ghost points already filled in. Does not
 $                         require a "parallel coloring", rather each process colors its local + ghost part.
 $                         Using this can result in much less parallel communication. In the paradigm of
 $                         DMGetLocalVector() and DMGetGlobalVector() this could be called IS_COLORING_LOCAL

@@ -16,7 +16,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscStrToArray"
 /*@C
-   PetscStrToArray - Seperates a string by a charactor (for example ' ' or '\n') and creates an array of strings
+   PetscStrToArray - Separates a string by a charactor (for example ' ' or '\n') and creates an array of strings
 
    Not Collective
 
