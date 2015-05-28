@@ -88,6 +88,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       eigv = NULL;
       B_iwork = NULL;
       B_ifail = NULL;
+#if defined(PETSC_USE_COMPLEX)
+      rwork = NULL;
+#endif
       thresh = 1.0;
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
