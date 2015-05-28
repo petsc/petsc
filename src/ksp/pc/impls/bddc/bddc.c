@@ -1,15 +1,11 @@
 /* TODOLIST
 
-   ConstraintsSetup
-   - tolerances for constraints as an option (take care of single precision!)
-
    Solvers
    - Add support for cholesky for coarse solver (similar to local solvers)
    - Propagate ksp prefixes for solvers to mat objects?
-   - Propagate nearnullspace info among levels
 
    User interface
-   - ** DofSplitting and DM attached to pc?
+   - ** DM attached to pc?
 
    Debugging output
    - * Better management of verbosity levels of debugging output
@@ -25,11 +21,6 @@
    - Provide general case for subassembling
 
 */
-
-/* ----------------------------------------------------------------------------------------------------------------------------------------------
-   Implementation of BDDC preconditioner based on:
-   C. Dohrmann "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149-168, March 2007
-   ---------------------------------------------------------------------------------------------------------------------------------------------- */
 
 #include <../src/ksp/pc/impls/bddc/bddc.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
@@ -205,13 +196,15 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
 +  pc - the preconditioning context
 -  k - coarsening ratio (H/h at the coarser level)
 
-   Approximatively k subdomains at the finer level will be aggregated into a single subdomain at the coarser level
+   Options Database Keys:
+.    -pc_bddc_coarsening_ratio
 
    Level: intermediate
 
    Notes:
+     Approximatively k subdomains at the finer level will be aggregated into a single subdomain at the coarser level
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCSetLevels()
 @*/
 PetscErrorCode PCBDDCSetCoarseningRatio(PC pc,PetscInt k)
 {
@@ -295,13 +288,15 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
 +  pc - the preconditioning context
 -  levels - the maximum number of levels (max 9)
 
-   Default value is 0, i.e. traditional one-level BDDC
+   Options Database Keys:
+.    -pc_bddc_levels
 
    Level: intermediate
 
    Notes:
+     Default value is 0, i.e. traditional one-level BDDC
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCSetCoarseningRatio()
 @*/
 PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
 {
@@ -390,9 +385,10 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBounda
 
    Level: intermediate
 
-   Notes: Any process can list any global node
+   Notes:
+     Provide the information if you used MatZeroRows/Columns routines. Any process can list any global node
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCSetDirichletBoundariesLocal(), MatZeroRows(), MatZeroRowsColumns()
 @*/
 PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc,IS DirichletBoundaries)
 {
@@ -439,7 +435,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc,IS DirichletB
 
    Notes:
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCSetDirichletBoundaries(), MatZeroRows(), MatZeroRowsColumns()
 @*/
 PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC pc,IS DirichletBoundaries)
 {
@@ -484,9 +480,10 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
 
    Level: intermediate
 
-   Notes: Any process can list any global node
+   Notes:
+     Any process can list any global node
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCSetNeumannBoundariesLocal()
 @*/
 PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc,IS NeumannBoundaries)
 {
@@ -533,7 +530,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc,IS NeumannBound
 
    Notes:
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCSetNeumannBoundaries()
 @*/
 PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC pc,IS NeumannBoundaries)
 {
@@ -574,7 +571,8 @@ static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc,IS *DirichletBound
 
    Level: intermediate
 
-   Notes: The IS returned (if any) is the same passed in earlier by the user with PCBDDCSetDirichletBoundaries
+   Notes:
+     The IS returned (if any) is the same passed in earlier by the user with PCBDDCSetDirichletBoundaries
 
 .seealso: PCBDDC
 @*/
@@ -616,6 +614,8 @@ static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc,IS *Dirichlet
    Level: intermediate
 
    Notes:
+     The IS returned could be the same passed in earlier by the user (if provided with PCBDDCSetDirichletBoundariesLocal) or a global-to-local map of the global IS (if provided with PCBDDCSetDirichletBoundaries).
+          In the latter case, the IS will be available after PCSetUp.
 
 .seealso: PCBDDC
 @*/
@@ -656,7 +656,8 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundarie
 
    Level: intermediate
 
-   Notes: The IS returned (if any) is the same passed in earlier by the user with PCBDDCSetNeumannBoundaries
+   Notes:
+     The IS returned (if any) is the same passed in earlier by the user with PCBDDCSetNeumannBoundaries
 
 .seealso: PCBDDC
 @*/
@@ -698,6 +699,8 @@ static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc,IS *NeumannBoun
    Level: intermediate
 
    Notes:
+     The IS returned could be the same passed in earlier by the user (if provided with PCBDDCSetNeumannBoundariesLocal) or a global-to-local map of the global IS (if provided with PCBDDCSetNeumannBoundaries).
+          In the latter case, the IS will be available after PCSetUp.
 
 .seealso: PCBDDC
 @*/
@@ -741,13 +744,13 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph"
 /*@
- PCBDDCSetLocalAdjacencyGraph - Set adjacency structure (CSR graph) of the local Neumann matrix
+ PCBDDCSetLocalAdjacencyGraph - Set adjacency structure (CSR graph) of the local matrix
 
    Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
-.  nvtxs - number of local vertices of the graph (i.e., the local size of your problem)
+.  nvtxs - number of local vertices of the graph (i.e., the size of the local problem)
 .  xadj, adjncy - the CSR graph
 -  copymode - either PETSC_COPY_VALUES or PETSC_OWN_POINTER.
 
@@ -823,12 +826,13 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS I
 
    Input Parameters:
 +  pc - the preconditioning context
--  n_is - number of index sets defining the fields
-.  ISForDofs - array of IS describing the fields in local ordering
+.  n_is - number of index sets defining the fields
+-  ISForDofs - array of IS describing the fields in local ordering
 
    Level: intermediate
 
-   Notes: n_is should be the same among processes. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
+   Notes:
+     n_is should be the same among processes. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
 
 .seealso: PCBDDC
 @*/
@@ -892,12 +896,13 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
 
    Input Parameters:
 +  pc - the preconditioning context
--  n_is - number of index sets defining the fields
-.  ISForDofs - array of IS describing the fields in global ordering
+.  n_is - number of index sets defining the fields
+-  ISForDofs - array of IS describing the fields in global ordering
 
    Level: intermediate
 
-   Notes: Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
+   Notes:
+     Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
 
 .seealso: PCBDDC
 @*/
@@ -931,7 +936,7 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
    Application Interface Routine: PCPreSolve()
 
    Notes:
-   The interface routine PCPreSolve() is not usually called directly by
+     The interface routine PCPreSolve() is not usually called directly by
    the user, but instead is called by KSPSolve().
 */
 static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
@@ -1099,8 +1104,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
    Application Interface Routine: PCPostSolve()
 
    Notes:
-   The interface routine PCPostSolve() is not usually called directly by
-   the user, but instead is called by KSPSolve().
+     The interface routine PCPostSolve() is not usually called directly by
+     the user, but instead is called by KSPSolve().
 */
 static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
@@ -1158,8 +1163,8 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
    Application Interface Routine: PCSetUp()
 
    Notes:
-   The interface routine PCSetUp() is not usually called directly by
-   the user, but instead is called by PCApply() if necessary.
+     The interface routine PCSetUp() is not usually called directly by
+     the user, but instead is called by PCApply() if necessary.
 */
 PetscErrorCode PCSetUp_BDDC(PC pc)
 {
@@ -1354,8 +1359,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
    PCApply_BDDC - Applies the BDDC operator to a vector.
 
    Input Parameters:
-.  pc - the preconditioner context
-.  r - input vector (global)
++  pc - the preconditioner context
+-  r - input vector (global)
 
    Output Parameter:
 .  z - output vector (global)
@@ -1449,8 +1454,8 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    PCApplyTranspose_BDDC - Applies the transpose of the BDDC operator to a vector.
 
    Input Parameters:
-.  pc - the preconditioner context
-.  r - input vector (global)
++  pc - the preconditioner context
+-  r - input vector (global)
 
    Output Parameter:
 .  z - output vector (global)
@@ -1665,22 +1670,22 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetRHS"
 /*@
- PCBDDCMatFETIDPGetRHS - Compute the right-hand side for FETIDP linear system
+ PCBDDCMatFETIDPGetRHS - Compute the right-hand side for FETI-DP linear system using the physical right-hand side
 
    Collective
 
    Input Parameters:
-+  fetidp_mat   - the FETIDP matrix object obtained by calling PCBDDCCreateFETIDPOperators
-.  standard_rhs - the right-hand side for your linear system
++  fetidp_mat      - the FETI-DP matrix object obtained by a call to PCBDDCCreateFETIDPOperators
+-  standard_rhs    - the right-hand side of the original linear system
 
    Output Parameters:
--  fetidp_flux_rhs   - the right-hand side for the FETIDP linear system
+.  fetidp_flux_rhs - the right-hand side for the FETI-DP linear system
 
    Level: developer
 
    Notes:
 
-.seealso: PCBDDC,PCBDDCCreateFETIDPOperators
+.seealso: PCBDDC, PCBDDCCreateFETIDPOperators, PCBDDCMatFETIDPGetSolution
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
 {
@@ -1739,22 +1744,22 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetSolution"
 /*@
- PCBDDCMatFETIDPGetSolution - Compute the physical solution from the solution of the FETIDP linear system
+ PCBDDCMatFETIDPGetSolution - Compute the physical solution using the solution of the FETI-DP linear system
 
    Collective
 
    Input Parameters:
-+  fetidp_mat        - the FETIDP matrix obtained by calling PCBDDCCreateFETIDPOperators
-.  fetidp_flux_sol - the solution of the FETIDP linear system
++  fetidp_mat      - the FETI-DP matrix obtained by a call to PCBDDCCreateFETIDPOperators
+-  fetidp_flux_sol - the solution of the FETI-DP linear system
 
    Output Parameters:
--  standard_sol      - the solution defined on the physical domain
+.  standard_sol    - the solution defined on the physical domain
 
    Level: developer
 
    Notes:
 
-.seealso: PCBDDC,PCBDDCCreateFETIDPOperators
+.seealso: PCBDDC, PCBDDCCreateFETIDPOperators, PCBDDCMatFETIDPGetRHS
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, Vec standard_sol)
 {
@@ -1817,26 +1822,26 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators"
 /*@
- PCBDDCCreateFETIDPOperators - Create operators for FETIDP
+ PCBDDCCreateFETIDPOperators - Create FETI-DP operators
 
    Collective
 
    Input Parameters:
-+  pc - the BDDC preconditioning context already setup
+.  pc - the BDDC preconditioning context (setup should have been called before)
 
    Output Parameters:
-.  fetidp_mat - shell FETIDP matrix object
-.  fetidp_pc  - shell Dirichlet preconditioner for FETIDP matrix
++  fetidp_mat - shell FETI-DP matrix object
+-  fetidp_pc  - shell Dirichlet preconditioner for FETI-DP matrix
 
    Options Database Keys:
--    -fetidp_fullyredundant: use or not a fully redundant set of Lagrange multipliers
+.    -fetidp_fullyredundant <false> - use or not a fully redundant set of Lagrange multipliers
 
    Level: developer
 
    Notes:
-     Currently the only operation provided for FETIDP matrix is MatMult
+     Currently the only operations provided for FETI-DP matrix are MatMult and MatMultTranspose
 
-.seealso: PCBDDC
+.seealso: PCBDDC, PCBDDCMatFETIDPGetRHS, PCBDDCMatFETIDPGetSolution
 @*/
 PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc)
 {
@@ -1859,36 +1864,49 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
    [1] C. R. Dohrmann. "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149-168, March 2007
    [2] A. Klawonn and O. B. Widlund. "Dual-Primal FETI Methods for Linear Elasticity", http://cs.nyu.edu/csweb/Research/TechReports/TR2004-855/TR2004-855.pdf
    [3] J. Mandel, B. Sousedik, C. R. Dohrmann. "Multispace and Multilevel BDDC", http://arxiv.org/abs/0712.3977
+   [4] C. Pechstein and C. R. Dohrmann. "Modern domain decomposition methods BDDC, deluxe scaling, and an algebraic approach", Seminar talk, Linz, December 2013, http://people.ricam.oeaw.ac.at/c.pechstein/pechstein-bddc2013.pdf
 .ve
 
    The matrix to be preconditioned (Pmat) must be of type MATIS.
 
-   Currently works with MATIS matrices with local Neumann matrices of type MATSEQAIJ, MATSEQBAIJ or MATSEQSBAIJ, either with real or complex numbers.
+   Currently works with MATIS matrices with local matrices of type MATSEQAIJ, MATSEQBAIJ or MATSEQSBAIJ, either with real or complex numbers.
 
    It also works with unsymmetric and indefinite problems.
 
    Unlike 'conventional' interface preconditioners, PCBDDC iterates over all degrees of freedom, not just those on the interface. This allows the use of approximate solvers on the subdomains.
 
-   Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace
+   Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace()
 
-   Boundary nodes are split in vertices, edges and faces using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph()
+   Boundary nodes are split in vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph()
+   Additional information on dofs can be provided by using PCBDDCSetDofsSplitting(), PCBDDCSetDirichletBoundaries(), PCBDDCSetNeumannBoundaries(), and PCBDDCSetPrimalVerticesLocalIS()
 
-   Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace().
+   Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace(). Non-singular modes are retained via SVD.
 
-   Change of basis is performed similarly to [2] when requested. When more the one constraint is present on a single connected component (i.e. an edge or a face), a robust method based on local QR factorizations is used.
+   Change of basis is performed similarly to [2] when requested. When more than one constraint is present on a single connected component (i.e. an edge or a face), a robust method based on local QR factorizations is used.
+   User defined change of basis can be passed to PCBDDC by using PCBDDCSetChangeOfBasisMat()
 
-   The PETSc implementation also supports multilevel BDDC [3]. Coarse grids are partitioned using MatPartitioning object.
+   The PETSc implementation also supports multilevel BDDC [3]. Coarse grids are partitioned using a MatPartitioning object.
 
-   Options Database Keys:
+   Adaptive selection of primal constraints [4] is supported for SPD systems with high-contrast in the coefficients if MUMPS is present. Future versions of the code will also consider using MKL_PARDISO or PASTIX.
 
-.    -pc_bddc_use_vertices <1> - use or not vertices in primal space
-.    -pc_bddc_use_edges <1> - use or not edges in primal space
-.    -pc_bddc_use_faces <0> - use or not faces in primal space
-.    -pc_bddc_use_change_of_basis <0> - use change of basis approach (on edges only)
-.    -pc_bddc_use_change_on_faces <0> - use change of basis approach on faces if change of basis has been requested
-.    -pc_bddc_switch_static <0> - switches from M_2 to M_3 operator (see reference article [1])
+   An experimental interface to the FETI-DP method is available. FETI-DP operators could be created using PCBDDCCreateFETIDPOperators(). A stand-alone class for the FETI-DP method will be provided in the next releases.
+   Deluxe scaling is not supported yet for FETI-DP.
+
+   Options Database Keys (some of them, run with -h for a complete list):
+
+.    -pc_bddc_use_vertices <true> - use or not vertices in primal space
+.    -pc_bddc_use_edges <true> - use or not edges in primal space
+.    -pc_bddc_use_faces <false> - use or not faces in primal space
+.    -pc_bddc_symmetric <true> - symmetric computation of primal basis functions. Specify false for unsymmetric problems
+.    -pc_bddc_use_change_of_basis <false> - use change of basis approach (on edges only)
+.    -pc_bddc_use_change_on_faces <false> - use change of basis approach on faces if change of basis has been requested
+.    -pc_bddc_switch_static <false> - switches from M_2 (default) to M_3 operator (see reference article [1])
 .    -pc_bddc_levels <0> - maximum number of levels for multilevel
-.    -pc_bddc_coarsening_ratio - H/h ratio at the coarser level
+.    -pc_bddc_coarsening_ratio <8> - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
+.    -pc_bddc_redistribute <0> - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
+.    -pc_bddc_use_deluxe_scaling <false> - use deluxe scaling
+.    -pc_bddc_schur_layers <-1> - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
+.    -pc_bddc_adaptive_threshold <0.0> - when a value greater than one is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS installed)
 -    -pc_bddc_check_level <0> - set verbosity level of debugging output
 
    Options for Dirichlet, Neumann or coarse solver can be set with
@@ -1897,21 +1915,24 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
       -pc_bddc_neumann_
       -pc_bddc_coarse_
 .ve
-   e.g -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg
+   e.g -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg. PCBDDC uses by default KPSPREONLY and PCLU.
 
-   When using a multilevel approach, solvers' options at the N-th level can be specified as
+   When using a multilevel approach, solvers' options at the N-th level (N > 1) can be specified as
 .vb
       -pc_bddc_dirichlet_lN_
       -pc_bddc_neumann_lN_
       -pc_bddc_coarse_lN_
 .ve
-   Note that level number ranges from the finest 0 to the coarsest N.
+   Note that level number ranges from the finest (0) to the coarsest (N).
+   In order to specify options for the BDDC operators at the coarser levels (and not for the solvers), prepend -pc_bddc_coarse_ or -pc_bddc_coarse_l to the option, e.g.
+.vb
+     -pc_bddc_coarse_pc_bddc_adaptive_threshold 5 -pc_bddc_coarse_l1_pc_bddc_redistribute 3
+.ve
+   will use a threshold of 5 for constraints' selection at the first coarse level and will redistribute the coarse problem of the first coarse level on 3 processors
 
    Level: intermediate
 
    Developer notes:
-
-   New deluxe scaling operator will be available soon.
 
    Contributed by Stefano Zampini
 
