@@ -3259,14 +3259,21 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
   }
 
   /* cumulative of number of indexes and size of subset without holes */
+#if defined(PETSC_HAVE_MPI_EXSCAN)
   start = 0;
   ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+#else
+  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  start = start-nlocals;
+#endif
+
   if (N_n) { /* compute total size of new subset if requested */
     *N_n = start + nlocals;
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)subset),&commsize);CHKERRQ(ierr);
     ierr = MPI_Bcast(N_n,1,MPIU_INT,commsize-1,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   }
-  /* adapt roof data with cumulative */
+
+  /* adapt root data with cumulative */
   if (first_found) {
     PetscInt old_index;
 
@@ -3430,7 +3437,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
         lrows = size/redprocs;
         if (nrank<size%redprocs) lrows++;
       }
-      ierr = MatCreateAIJ(PetscSubcommChild(subcomm),lrows,lrows,size,size,100,NULL,100,NULL,&subdomain_adj);CHKERRQ(ierr);
+      ierr = MatCreateAIJ(PetscSubcommChild(subcomm),lrows,lrows,size,size,50,NULL,50,NULL,&subdomain_adj);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(subdomain_adj,&rstart,&rend);CHKERRQ(ierr);
       ierr = MatSetOption(subdomain_adj,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatSetOption(subdomain_adj,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
