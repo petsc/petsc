@@ -14,6 +14,10 @@ element method on an unstructured mesh. The weak form equations are
 
 Free slip conditions for velocity are enforced on every wall. The pressure is
 constrained to have zero integral over the domain.
+
+To produce nice output, use
+
+  -dm_refine 3 -show_error -dm_view hdf5:sol1.h5 -error_vec_view hdf5:sol1.h5::append -sol_vec_view hdf5:sol1.h5::append -exact_vec_view hdf5:sol1.h5::append
 */
 
 #include <petscdmplex.h>
@@ -61,7 +65,7 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  PetscReal t, const PetscReal x[], PetscScalar f0[])
 {
   f0[0] = 0.0;
-  f0[1] = sin(a[2]*PETSC_PI*x[1])*cos(a[1]*PETSC_PI*x[0]);
+  f0[1] = -sin(a[2]*PETSC_PI*x[1])*cos(a[1]*PETSC_PI*x[0]);
 }
 
 static void stokes_momentum(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -141,19 +145,17 @@ static void stokes_momentum_vel_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   SolKxSolution - Exact Stokes solutions for exponentially varying viscosity
 
  Input Parameters:
-+ x  - The x coordinate at which to evaluate the solution
-. z  - The z coordinate at which to evaluate the solution
-. kn - The constant defining the x-dependence of the forcing function
-. km - The constant defining the z-dependence of the forcing function
-- B  - The viscosity coefficient
++ pos   - The (x,z) coordinate at which to evaluate the solution
+. n     - The constant defining the x-dependence of the forcing function
+. m     - The constant defining the z-dependence of the forcing function
+- B     - The viscosity coefficient
 
   Output Parameters:
-+ vx - The x-velocity at (x,z)
-. vz - The z-velocity at (x,z)
-. p - The pressure at (x,z)
-. sxx - The stress sigma_xx at (x,z)
-. sxz - The stress sigma_xz at (x,z)
-- szz - The stress sigma_zz at (x,z)
++ vel   - The (x,z)-velocity at (x,z), or NULL
+. p     - The pressure at (x,z), or NULL
+. s     - The total stress (sigma_xx, sigma_xz, sigma_zz) at (x,z), or NULL
+. gamma - The strain rate, or NULL
+- nu    - The viscosity at (x,z), or NULL
 
   Note:
 $  The domain is the square 0 <= x,z <= 1. We solve the Stokes equation for incompressible flow with free-slip boundary
@@ -170,35 +172,42 @@ $
 $  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). Here we set sigma = 1.
 $  The viscosity eta is exp(2*B*x).
 */
-static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal km, PetscReal B, PetscScalar *vx, PetscScalar *vz, PetscScalar *p, PetscScalar *sxx, PetscScalar *sxz, PetscScalar *szz)
+static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, PetscReal B,
+                                    PetscScalar vel[], PetscScalar *p, PetscScalar s[], PetscScalar gamma[], PetscScalar *nu)
 {
-  PetscScalar sigma;
-  PetscScalar _C1,_C2,_C3,_C4;
-  PetscScalar Rp, UU, VV;
-  PetscScalar rho,a,b,r,_aa,_bb,AA,BB,Rm;
-  PetscScalar num1,num2,num3,num4,den1;
+  PetscReal sigma = 1.0;
+  PetscReal Z;
+  PetscReal u1,u2,u3,u4,u5,u6;
+  PetscReal sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  PetscReal kn,km,x,z;
+  PetscReal _C1,_C2,_C3,_C4;
+  PetscReal Rp, UU, VV;
+  PetscReal rho,a,b,r,_aa,_bb,AA,BB,Rm,SS;
+  PetscReal num1,num2,num3,num4,den1;
 
-  PetscScalar t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
-  PetscScalar t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21;
-  PetscScalar t22,t23,t24,t25,t26,t28,t29,t30,t31,t32;
-  PetscScalar t33,t34,t35,t36,t37,t38,t39,t40,t41,t42;
-  PetscScalar t44,t45,t46,t47,t48,t49,t51,t52,t53,t54;
-  PetscScalar t56,t58,t61,t62,t63,t64,t65,t66,t67,t68;
-  PetscScalar t69,t70,t71,t72,t73,t74,t75,t76,t77,t78;
-  PetscScalar t79,t80,t81,t82,t83,t84,t85,t86,t87,t88;
-  PetscScalar t89,t90,t91,t92,t93,t94,t95,t96,t97,t98;
-  PetscScalar t99,t100,t101,t103,t104,t105,t106,t107,t108,t109;
-  PetscScalar t110,t111,t112,t113,t114,t115,t116,t117,t118,t119;
-  PetscScalar t120,t121,t123,t125,t127,t128,t130,t131,t132,t133;
-  PetscScalar t135,t136,t138,t140,t141,t142,t143,t152,t160,t162;
+  PetscReal t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
+  PetscReal t11,t12,t13,t14,t15,t16,t17,t18,t19,t20;
+  PetscReal t21,t22,t23,t24,t25,t26,t27,t28,t29,t30;
+  PetscReal t31,t32,t33,t34,t35,t36,t37,t38,t39,t40;
+  PetscReal t41,t42,t43,t44,t45,t46,t47,t49,t51,t53;
+  PetscReal t56,t58,t61,t62,t63,t64,t65,t66,t67,t68;
+  PetscReal t69,t70,t71,t72,t73,t74,t75,t76,t77,t78;
+  PetscReal t79,t80,t81,t82,t83,t84,t85,t86,t87,t88;
+  PetscReal t89,t90,t91,t92,t93,t94,t95,t96,t97,t99;
+  PetscReal t100,t101,t103,t104,t105,t106,t107,t108,t109,t110;
+  PetscReal t111,t112,t113,t114,t115,t116,t117,t118,t119,t120;
+  PetscReal t121,t124,t125,t126,t127,t129,t130,t132,t133,t135;
+  PetscReal t136,t138,t140,t141,t142,t143,t152,t160,t162;
 
   PetscFunctionBegin;
   /*************************************************************************/
   /*************************************************************************/
   /* rho = -sin(km*z)*cos(kn*x) */
-  /* viscosity  Z= exp(2*B*z)  */
-  /* solution valid for km not zero -- should get trivial solution if km=0 */
-  sigma = 1.0;
+  x = pos[0];
+  z = pos[1];
+  Z = exp( 2.0 * B * x );
+  km = m*PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
+  kn = (PetscReal) n*PETSC_PI;
   /*************************************************************************/
   /*************************************************************************/
   a = B*B + km*km;
@@ -209,63 +218,72 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   UU  = Rp - B;
   VV = Rp + B;
 
+  sum1=0.0;
+  sum2=0.0;
+  sum3=0.0;
+  sum4=0.0;
+  sum5=0.0;
+  sum6=0.0;
+  sum7=0.0;
+
   /*******************************************/
   /*         calculate the constants         */
   /*******************************************/
+
   t1 = kn * kn;
   t4 = km * km;
-  t6 = t4 * t4;
-  t7 = B * B;
-  t9 = 0.4e1 * t7 * t4;
-  t12 = 0.8e1 * t7 * kn * km;
-  t14 = 0.4e1 * t7 * t1;
-  t16 = 0.2e1 * t4 * t1;
-  t17 = t1 * t1;
-  _aa = -0.4e1 * B * t1 * sigma * (t4 + t1) / (t6 + t9 + t12 + t14 + t16 + t17) / (t6 + t9 - t12 + t14 + t16 + t17);
+  t5 = t4 + t1;
+  t6 = t5 * t5;
+  t8 = pow(km + kn, 0.2e1);
+  t9 = B * B;
+  t16 = pow(km - kn, 0.2e1);
+  _aa = -0.4e1 * B * t1 * sigma * t5 / (t6 + 0.4e1 * t8 * t9) / (t6 + 0.4e1 * t16 * t9);
 
-  t2 = kn * kn;
-  t3 = t2 * t2;
-  t4 = B * B;
-  t6 = 0.4e1 * t4 * t2;
-  t7 = km * km;
-  t9 = 0.4e1 * t7 * t4;
-  t10 = t7 * t7;
-  t12 = 0.2e1 * t7 * t2;
-  t16 = 0.8e1 * t4 * kn * km;
-  _bb = sigma * kn * (t3 - t6 + t9 + t10 + t12) / (t10 + t9 + t16 + t6 + t12 + t3) / (t10 + t9 - t16 + t6 + t12 + t3);
+  t2 = km * km;
+  t3 = kn * kn;
+  t5 = pow(t2 + t3, 0.2e1);
+  t6 = km - kn;
+  t7 = km + kn;
+  t9 = B * B;
+  t13 = t7 * t7;
+  t19 = t6 * t6;
+  _bb = sigma * kn * (t5 + 0.4e1 * t6 * t7 * t9) / (t5 + 0.4e1 * t13 * t9) / (t5 + 0.4e1 * t19 * t9);
 
   AA = _aa;
   BB = _bb;
 
+  /*******************************************/
+  /*       calculate the velocities etc      */
+  /*******************************************/
   t1 = Rm * Rm;
   t2 = B - Rp;
   t4 = Rp + B;
   t6 = UU * x;
   t9 = exp(t6 - 0.4e1 * Rp);
-  t13 = kn * kn;
-  t15 = B * B;
+  t13 = B * B;
+  t16 = Rp * t1;
   t18 = Rp * Rp;
-  t19 = t18 * B;
-  t20 = t15 * Rp;
-  t22 = t1 * Rp;
+  t19 = B * t18;
+  t20 = t13 * Rp;
+  t22 = kn * kn;
   t24 = B * t1;
-  t32 = 0.8e1 * t15 * BB * kn * Rp;
+  t32 = 0.8e1 * t13 * BB * kn * Rp;
   t34 = 0.2e1 * Rm;
   t35 = cos(t34);
-  t37 = Rm * Rp;
+  t37 = Rp * Rm;
   t49 = sin(t34);
   t63 = exp(t6 - 0.2e1 * Rp);
   t65 = Rm * t2;
   t67 = 0.2e1 * B * kn;
   t68 = B * Rm;
   t69 = t67 + t68 + t37;
-  t73 = 0.3e1 * t15;
+  t73 = 0.3e1 * t13;
   t75 = 0.2e1 * B * Rp;
-  t76 = t73 - t75 + t1 - t13 - t18;
+  t76 = t73 - t75 + t1 - t22 - t18;
   t78 = t65 * t76 * BB;
   t80 = Rm - kn;
   t81 = cos(t80);
-  t83 = t68 - t67 + t37;
+  t83 = -t67 + t68 + t37;
   t88 = Rm + kn;
   t89 = cos(t88);
   t92 = t65 * t76 * AA;
@@ -274,12 +292,12 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t108 = exp(t6 - 0.3e1 * Rp - B);
   t110 = Rm * t4;
   t111 = t67 + t68 - t37;
-  t115 = t73 + t75 + t1 - t13 - t18;
+  t115 = t73 + t75 + t1 - t22 - t18;
   t117 = t110 * t115 * BB;
   t120 = -t67 + t68 - t37;
   t127 = t110 * t115 * AA;
   t140 = exp(t6 - Rp - B);
-  num1 = -0.4e1 * t1 * t2 * t4 * AA * t9 + ((0.2e1 * Rp * (-B * t13 + 0.3e1 * t15 * B - t19 - 0.2e1 * t20 - 0.2e1 * t22 - t24) * AA - t32) * t35 + (0.2e1 * t37 * (t1 - t13 + 0.5e1 * t15 - t18) * AA - 0.8e1 * B * BB * kn * Rm * Rp) * t49 - 0.2e1 * B * (0.3e1 * t20 - t18 * Rp - 0.2e1 * t19 - Rp * t13 - t22 - 0.2e1 * t24) * AA + t32) * t63 + ((0.2e1 * t65 * t69 * AA + t78) * t81 + (0.2e1 * t65 * t83 * AA - t78) * t89 + (t92 - 0.2e1 * t65 * t69 * BB) * t97 + (t92 + 0.2e1 * t65 * t83 * BB) * t103) * t108 + ((-0.2e1 * t110 * t111 * AA - t117) * t81 + (-0.2e1 * t110 * t120 * AA + t117) * t89 + (-t127 + 0.2e1 * t110 * t111 * BB) * t97 + (-t127 - 0.2e1 * t110 * t120 * BB) * t103) * t140;
+  num1 = -0.4e1 * t1 * t2 * t4 * AA * t9 + ((0.2e1 * Rp * (0.3e1 * t13 * B - 0.2e1 * t16 - t19 - 0.2e1 * t20 - B * t22 - t24) * AA - t32) * t35 + (0.2e1 * t37 * (t1 + 0.5e1 * t13 - t22 - t18) * AA - 0.8e1 * B * BB * kn * Rm * Rp) * t49 - 0.2e1 * B * (0.3e1 * t20 - Rp * t22 - t18 * Rp - 0.2e1 * t19 - t16 - 0.2e1 * t24) * AA + t32) * t63 + ((0.2e1 * t65 * t69 * AA + t78) * t81 + (0.2e1 * t65 * t83 * AA - t78) * t89 + (t92 - 0.2e1 * t65 * t69 * BB) * t97 + (t92 + 0.2e1 * t65 * t83 * BB) * t103) * t108 + ((-0.2e1 * t110 * t111 * AA - t117) * t81 + (-0.2e1 * t110 * t120 * AA + t117) * t89 + (-t127 + 0.2e1 * t110 * t111 * BB) * t97 + (-t127 - 0.2e1 * t110 * t120 * BB) * t103) * t140;
 
   t1 = Rp + B;
   t2 = Rm * t1;
@@ -294,44 +312,42 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t14 = B * Rm;
   t20 = UU * x;
   t23 = exp(t20 - 0.4e1 * Rp);
-  t25 = Rm * Rp;
+  t25 = Rp * Rm;
   t32 = Rm * kn;
   t37 = 0.2e1 * Rm;
   t38 = cos(t37);
-  t41 = t3 * B;
-  t44 = t3 * Rp;
-  t48 = B * t7;
+  t40 = t3 * B;
+  t44 = B * t9;
+  t45 = t3 * Rp;
   t53 = t3 * BB;
-  t54 = kn * Rp;
   t58 = sin(t37);
   t69 = exp(t20 - 0.2e1 * Rp);
-  t71 = t9 * Rp;
-  t72 = Rm * t71;
-  t73 = t3 * Rm;
-  t75 = 0.5e1 * t73 * Rp;
-  t77 = 0.8e1 * t44 * kn;
-  t78 = t25 * t8;
-  t79 = t7 * Rm;
-  t80 = B * t79;
-  t81 = t14 * t8;
-  t82 = t79 * Rp;
-  t84 = 0.3e1 * t41 * Rm;
-  t85 = t14 * t9;
-  t86 = -t72 + t75 + t77 - t78 + t80 - t81 + t82 + t84 + t85;
-  t88 = t7 * t9;
-  t89 = t5 * t8;
-  t90 = t7 * t3;
-  t91 = B * t71;
-  t92 = t48 * Rp;
-  t94 = 0.2e1 * t14 * t54;
-  t96 = 0.3e1 * Rp * t41;
-  t98 = 0.2e1 * t73 * kn;
-  t100 = 0.2e1 * t9 * t3;
-  t101 = -t88 - t89 - t90 - t91 - t92 - t94 + t96 - t98 - t100;
+  t72 = 0.3e1 * t40 * Rm;
+  t73 = t9 * Rp;
+  t74 = t73 * Rm;
+  t75 = t7 * Rm;
+  t76 = B * t75;
+  t77 = t14 * t8;
+  t78 = Rp * t75;
+  t80 = 0.8e1 * t45 * kn;
+  t81 = t25 * t8;
+  t83 = 0.5e1 * t45 * Rm;
+  t84 = t44 * Rm;
+  t85 = t72 - t74 + t76 - t77 + t78 + t80 - t81 + t83 + t84;
+  t88 = 0.2e1 * t9 * t3;
+  t90 = 0.3e1 * t40 * Rp;
+  t91 = t7 * t3;
+  t93 = 0.2e1 * t5 * t32;
+  t94 = t5 * t7;
+  t95 = t5 * t8;
+  t96 = B * t73;
+  t97 = t7 * t9;
+  t100 = 0.2e1 * t3 * Rm * kn;
+  t101 = -t88 + t90 - t91 - t93 - t94 - t95 - t96 - t97 - t100;
   t105 = Rm - kn;
   t106 = cos(t105);
-  t108 = t75 - t77 - t78 + t85 - t72 - t81 + t80 + t84 + t82;
-  t110 = -t100 + t96 - t91 + t94 + t98 - t92 - t89 - t88 - t90;
+  t108 = t72 - t80 + t83 + t76 + t84 - t81 - t74 + t78 - t77;
+  t110 = -t97 - t96 - t88 + t100 + t90 - t95 + t93 - t91 - t94;
   t114 = Rm + kn;
   t115 = cos(t114);
   t121 = sin(t105);
@@ -342,37 +358,37 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t142 = -t135 + t14 - t25;
   t152 = t2 * t10 * BB;
   t162 = exp(t20 - Rp - B);
-  num2 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t23 + ((-0.2e1 * t25 * (t7 - t8 + 0.5e1 * t3 - t9) * AA + 0.8e1 * B * BB * t32 * Rp) * t38 + (0.2e1 * Rp * (-B * t8 + 0.3e1 * t41 - t9 * B - 0.2e1 * t44 - 0.2e1 * t7 * Rp - t48) * AA - 0.8e1 * t53 * t54) * t58 - 0.2e1 * t14 * (t4 + t9 - t8 + t7) * AA + 0.8e1 * t53 * t32) * t69 + ((-t86 * AA - 0.2e1 * t101 * BB) * t106 + (-t108 * AA + 0.2e1 * t110 * BB) * t115 + (-0.2e1 * t101 * AA + t86 * BB) * t121 + (-0.2e1 * t110 * AA - t108 * BB) * t127) * t132 + ((t12 - 0.2e1 * t2 * t136 * BB) * t106 + (t12 + 0.2e1 * t2 * t142 * BB) * t115 + (-0.2e1 * t2 * t136 * AA - t152) * t121 + (-0.2e1 * t2 * t142 * AA + t152) * t127) * t162;
+  num2 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t23 + ((-0.2e1 * t25 * (t7 + 0.5e1 * t3 - t8 - t9) * AA + 0.8e1 * B * BB * t32 * Rp) * t38 + (0.2e1 * Rp * (0.3e1 * t40 - 0.2e1 * Rp * t7 - t44 - 0.2e1 * t45 - B * t8 - B * t7) * AA - 0.8e1 * t53 * kn * Rp) * t58 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t53 * t32) * t69 + ((-t85 * AA - 0.2e1 * t101 * BB) * t106 + (-t108 * AA + 0.2e1 * t110 * BB) * t115 + (-0.2e1 * t101 * AA + t85 * BB) * t121 + (-0.2e1 * t110 * AA - t108 * BB) * t127) * t132 + ((t12 - 0.2e1 * t2 * t136 * BB) * t106 + (t12 + 0.2e1 * t2 * t142 * BB) * t115 + (-0.2e1 * t2 * t136 * AA - t152) * t121 + (-0.2e1 * t2 * t142 * AA + t152) * t127) * t162;
 
   t1 = Rm * Rm;
   t2 = B - Rp;
   t4 = Rp + B;
   t6 = VV * x;
   t7 = exp(-t6);
-  t11 = B * t1;
-  t12 = Rp * Rp;
-  t13 = t12 * B;
-  t14 = B * B;
-  t15 = t14 * Rp;
-  t19 = kn * kn;
-  t21 = t1 * Rp;
-  t30 = 0.8e1 * t14 * BB * kn * Rp;
+  t11 = kn * kn;
+  t13 = B * t1;
+  t14 = Rp * Rp;
+  t15 = B * t14;
+  t16 = B * B;
+  t17 = t16 * Rp;
+  t21 = Rp * t1;
+  t30 = 0.8e1 * t16 * BB * kn * Rp;
   t32 = 0.2e1 * Rm;
   t33 = cos(t32);
-  t35 = Rm * Rp;
+  t35 = Rp * Rm;
   t47 = sin(t32);
   t61 = exp(-t6 - 0.2e1 * Rp);
   t63 = Rm * t2;
   t65 = 0.2e1 * B * kn;
   t66 = B * Rm;
   t67 = t65 + t66 + t35;
-  t71 = 0.3e1 * t14;
+  t71 = 0.3e1 * t16;
   t73 = 0.2e1 * B * Rp;
-  t74 = t71 - t73 + t1 - t19 - t12;
+  t74 = t71 - t73 + t1 - t11 - t14;
   t76 = t63 * t74 * BB;
   t78 = Rm - kn;
   t79 = cos(t78);
-  t81 = t66 - t65 + t35;
+  t81 = -t65 + t66 + t35;
   t86 = Rm + kn;
   t87 = cos(t86);
   t90 = t63 * t74 * AA;
@@ -381,12 +397,12 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t106 = exp(-t6 - 0.3e1 * Rp - B);
   t108 = Rm * t4;
   t109 = t65 + t66 - t35;
-  t113 = t71 + t73 + t1 - t19 - t12;
+  t113 = t71 + t73 + t1 - t11 - t14;
   t115 = t108 * t113 * BB;
   t118 = -t65 + t66 - t35;
   t125 = t108 * t113 * AA;
   t138 = exp(-t6 - Rp - B);
-  num3 = -0.4e1 * t1 * t2 * t4 * AA * t7 + ((-0.2e1 * Rp * (-t11 - t13 + 0.2e1 * t15 + 0.3e1 * t14 * B - B * t19 + 0.2e1 * t21) * AA + t30) * t33 + (-0.2e1 * t35 * (t1 - t19 + 0.5e1 * t14 - t12) * AA + 0.8e1 * B * BB * kn * Rm * Rp) * t47 + 0.2e1 * B * (-t12 * Rp + 0.2e1 * t11 + 0.3e1 * t15 + 0.2e1 * t13 - t21 - Rp * t19) * AA - t30) * t61 + ((-0.2e1 * t63 * t67 * AA - t76) * t79 + (-0.2e1 * t63 * t81 * AA + t76) * t87 + (-t90 + 0.2e1 * t63 * t67 * BB) * t95 + (-t90 - 0.2e1 * t63 * t81 * BB) * t101) * t106 + ((0.2e1 * t108 * t109 * AA + t115) * t79 + (0.2e1 * t108 * t118 * AA - t115) * t87 + (t125 - 0.2e1 * t108 * t109 * BB) * t95 + (t125 + 0.2e1 * t108 * t118 * BB) * t101) * t138;
+  num3 = -0.4e1 * t1 * t2 * t4 * AA * t7 + ((-0.2e1 * Rp * (-B * t11 - t13 - t15 + 0.2e1 * t17 + 0.3e1 * t16 * B + 0.2e1 * t21) * AA + t30) * t33 + (-0.2e1 * t35 * (t1 + 0.5e1 * t16 - t11 - t14) * AA + 0.8e1 * B * BB * kn * Rm * Rp) * t47 + 0.2e1 * B * (0.3e1 * t17 - t21 + 0.2e1 * t15 + 0.2e1 * t13 - Rp * t11 - t14 * Rp) * AA - t30) * t61 + ((-0.2e1 * t63 * t67 * AA - t76) * t79 + (-0.2e1 * t63 * t81 * AA + t76) * t87 + (-t90 + 0.2e1 * t63 * t67 * BB) * t95 + (-t90 - 0.2e1 * t63 * t81 * BB) * t101) * t106 + ((0.2e1 * t108 * t109 * AA + t115) * t79 + (0.2e1 * t108 * t118 * AA - t115) * t87 + (t125 - 0.2e1 * t108 * t109 * BB) * t95 + (t125 + 0.2e1 * t108 * t118 * BB) * t101) * t138;
 
   t1 = B - Rp;
   t2 = Rm * t1;
@@ -401,55 +417,53 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t14 = B * Rm;
   t20 = VV * x;
   t21 = exp(-t20);
-  t23 = Rm * Rp;
+  t23 = Rp * Rm;
   t30 = Rm * kn;
   t35 = 0.2e1 * Rm;
   t36 = cos(t35);
-  t38 = B * t7;
-  t40 = t3 * Rp;
-  t42 = t3 * B;
+  t40 = B * t9;
+  t41 = t3 * Rp;
+  t43 = t3 * B;
   t51 = t3 * BB;
-  t52 = kn * Rp;
   t56 = sin(t35);
   t67 = exp(-t20 - 0.2e1 * Rp);
   t70 = 0.2e1 * B * kn;
   t71 = t70 + t14 + t23;
   t76 = Rm - kn;
   t77 = cos(t76);
-  t79 = t14 - t70 + t23;
+  t79 = -t70 + t14 + t23;
   t84 = Rm + kn;
   t85 = cos(t84);
   t91 = t2 * t10 * BB;
   t93 = sin(t76);
   t99 = sin(t84);
   t104 = exp(-t20 - 0.3e1 * Rp - B);
-  t106 = t9 * Rp;
-  t107 = Rm * t106;
-  t108 = t3 * Rm;
-  t110 = 0.5e1 * t108 * Rp;
-  t112 = 0.8e1 * t40 * kn;
-  t113 = t23 * t8;
-  t114 = t7 * Rm;
-  t115 = B * t114;
-  t116 = t14 * t8;
-  t117 = t114 * Rp;
-  t119 = 0.3e1 * t42 * Rm;
-  t120 = t14 * t9;
-  t121 = t107 - t110 - t112 + t113 + t115 - t116 - t117 + t119 + t120;
-  t123 = t38 * Rp;
-  t125 = 0.2e1 * t14 * t52;
-  t127 = 0.3e1 * Rp * t42;
-  t128 = t7 * t3;
-  t130 = 0.2e1 * t9 * t3;
-  t131 = t7 * t9;
-  t132 = B * t106;
-  t133 = t5 * t8;
-  t135 = 0.2e1 * t108 * kn;
-  t136 = -t123 - t125 + t127 + t128 + t130 + t131 - t132 - t133 + t135;
-  t141 = -t110 + t112 + t113 + t120 + t107 - t116 + t115 + t119 - t117;
-  t143 = t125 - t132 + t130 - t135 + t127 + t131 - t123 + t128 - t133;
+  t107 = 0.3e1 * t43 * Rm;
+  t108 = t9 * Rp;
+  t109 = t108 * Rm;
+  t110 = t7 * Rm;
+  t111 = B * t110;
+  t112 = t14 * t8;
+  t113 = Rp * t110;
+  t115 = 0.8e1 * t41 * kn;
+  t116 = t23 * t8;
+  t118 = 0.5e1 * t41 * Rm;
+  t119 = t40 * Rm;
+  t120 = t107 + t109 + t111 - t112 - t113 - t115 + t116 - t118 + t119;
+  t124 = 0.2e1 * t3 * Rm * kn;
+  t125 = t5 * t8;
+  t126 = B * t108;
+  t127 = t7 * t9;
+  t129 = 0.2e1 * t9 * t3;
+  t130 = t5 * t7;
+  t132 = 0.3e1 * t43 * Rp;
+  t133 = t7 * t3;
+  t135 = 0.2e1 * t5 * t30;
+  t136 = t124 - t125 - t126 + t127 + t129 - t130 + t132 + t133 - t135;
+  t141 = t107 + t115 - t118 + t111 + t119 + t116 + t109 - t113 - t112;
+  t143 = t132 + t129 - t125 + t133 + t127 - t124 - t130 - t126 + t135;
   t160 = exp(-t20 - Rp - B);
-  num4 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t21 + ((0.2e1 * t23 * (t7 - t8 + 0.5e1 * t3 - t9) * AA - 0.8e1 * B * BB * t30 * Rp) * t36 + (-0.2e1 * Rp * (-t38 - t9 * B + 0.2e1 * t40 + 0.3e1 * t42 - B * t8 + 0.2e1 * t7 * Rp) * AA + 0.8e1 * t51 * t52) * t56 - 0.2e1 * t14 * (t4 + t9 - t8 + t7) * AA + 0.8e1 * t51 * t30) * t67 + ((t12 - 0.2e1 * t2 * t71 * BB) * t77 + (t12 + 0.2e1 * t2 * t79 * BB) * t85 + (-0.2e1 * t2 * t71 * AA - t91) * t93 + (-0.2e1 * t2 * t79 * AA + t91) * t99) * t104 + ((-t121 * AA + 0.2e1 * t136 * BB) * t77 + (-t141 * AA - 0.2e1 * t143 * BB) * t85 + (0.2e1 * t136 * AA + t121 * BB) * t93 + (0.2e1 * t143 * AA - t141 * BB) * t99) * t160;
+  num4 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t21 + ((0.2e1 * t23 * (t7 + 0.5e1 * t3 - t8 - t9) * AA - 0.8e1 * B * BB * t30 * Rp) * t36 + (-0.2e1 * Rp * (-B * t8 - B * t7 - t40 + 0.2e1 * t41 + 0.3e1 * t43 + 0.2e1 * Rp * t7) * AA + 0.8e1 * t51 * kn * Rp) * t56 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t51 * t30) * t67 + ((t12 - 0.2e1 * t2 * t71 * BB) * t77 + (t12 + 0.2e1 * t2 * t79 * BB) * t85 + (-0.2e1 * t2 * t71 * AA - t91) * t93 + (-0.2e1 * t2 * t79 * AA + t91) * t99) * t104 + ((-t120 * AA + 0.2e1 * t136 * BB) * t77 + (-t141 * AA - 0.2e1 * t143 * BB) * t85 + (0.2e1 * t136 * AA + t120 * BB) * t93 + (0.2e1 * t143 * AA - t141 * BB) * t99) * t160;
 
 
   t1 = Rm * Rm;
@@ -464,9 +478,6 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
 
   _C1=num1/den1; _C2=num2/den1; _C3=num3/den1; _C4=num4/den1;
 
-  /*******************************************/
-  /*         calculate solution         */
-  /*******************************************/
   t1 = Rm * x;
   t2 = cos(t1);
   t4 = sin(t1);
@@ -474,7 +485,7 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t12 = kn * x;
   t13 = cos(t12);
   t16 = sin(t12);
-  *vx = -km * (_C1 * t2 + _C2 * t4 + _C3 * t2 + _C4 * t4 + t10 * AA * t13 + t10 * BB * t16);
+  u1 = -km * (_C1 * t2 + _C2 * t4 + _C3 * t2 + _C4 * t4 + t10 * AA * t13 + t10 * BB * t16);
 
   t2 = Rm * x;
   t3 = cos(t2);
@@ -484,7 +495,7 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t24 = kn * x;
   t25 = cos(t24);
   t29 = sin(t24);
-  *vz = UU * _C1 * t3 + UU * _C2 * t6 - _C1 * t6 * Rm + _C2 * t3 * Rm - VV * _C3 * t3 - VV * _C4 * t6 - _C3 * t6 * Rm + _C4 * t3 * Rm - 0.2e1 * t23 * AA * t25 - 0.2e1 * t23 * BB * t29 - t22 * AA * t29 * kn + t22 * BB * t25 * kn;
+  u2 = UU * _C1 * t3 + UU * _C2 * t6 - _C1 * t6 * Rm + _C2 * t3 * Rm - VV * _C3 * t3 - VV * _C4 * t6 - _C3 * t6 * Rm + _C4 * t3 * Rm - 0.2e1 * t23 * AA * t25 - 0.2e1 * t23 * BB * t29 - t22 * AA * t29 * kn + t22 * BB * t25 * kn;
 
   t3 = exp(0.2e1 * x * B);
   t4 = t3 * B;
@@ -497,21 +508,21 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t19 = 0.4e1 * t4 * UU * Rm - t11 - t14 + 0.3e1 * t3 * t15 * Rm;
   t20 = Rm * x;
   t21 = sin(t20);
-  t26 = 0.2e1 * t9 * B;
+  t27 = 0.2e1 * B * t9;
   t33 = 0.2e1 * t4 * t12;
-  t36 = -t3 * t15 * UU - t26 + 0.3e1 * t9 * UU + 0.3e1 * t3 * UU * t12 + t33 - 0.2e1 * t4 * t15;
+  t36 = 0.3e1 * t3 * UU * t12 - t27 - 0.2e1 * t4 * t15 + 0.3e1 * t9 * UU + t33 - t3 * t15 * UU;
   t37 = cos(t20);
-  t46 = VV * VV;
-  t53 = -t11 - t14 + 0.3e1 * t3 * t46 * Rm - 0.4e1 * t4 * VV * Rm;
-  t64 = -t26 + t33 + t3 * t46 * VV - 0.3e1 * t9 * VV - 0.2e1 * t4 * t46 - 0.3e1 * t3 * VV * t12;
-  t73 = kn * kn;
-  t74 = t73 * kn;
-  t79 = B * B;
-  t86 = B * t8;
+  t49 = VV * VV;
+  t53 = -0.4e1 * t4 * VV * Rm - t11 + 0.3e1 * t3 * t49 * Rm - t14;
+  t64 = t3 * t49 * VV + t33 - 0.3e1 * t9 * VV - 0.2e1 * t4 * t49 - t27 - 0.3e1 * t3 * VV * t12;
+  t76 = B * t8;
+  t80 = kn * kn;
+  t83 = B * B;
+  t87 = t80 * kn;
   t90 = kn * x;
   t91 = sin(t90);
   t106 = cos(t90);
-  *sxx = -((t19 * t21 + t36 * t37) * _C1 + (t36 * t21 - t19 * t37) * _C2 + (t53 * t21 + t64 * t37) * _C3 + (t64 * t21 - t53 * t37) * _C4 + (-AA * t74 - 0.4e1 * BB * t73 * B + 0.4e1 * t79 * AA * kn - 0.3e1 * t8 * AA * kn - 0.8e1 * t86 * BB) * t91 + (-0.8e1 * t86 * AA - 0.4e1 * AA * t73 * B - 0.4e1 * t79 * BB * kn + 0.3e1 * t8 * BB * kn + BB * t74) * t106) / km;
+  u3 = -((t19 * t21 + t36 * t37) * _C1 + (t36 * t21 - t19 * t37) * _C2 + (t53 * t21 + t64 * t37) * _C3 + (t64 * t21 - t53 * t37) * _C4 + (-0.3e1 * t8 * AA * kn - 0.8e1 * t76 * BB - 0.4e1 * BB * B * t80 + 0.4e1 * AA * t83 * kn - AA * t87) * t91 + (-0.4e1 * AA * t80 * B - 0.4e1 * t83 * BB * kn + 0.3e1 * t8 * BB * kn - sigma + BB * t87 - 0.8e1 * t76 * AA) * t106) / km;
 
   t3 = exp(0.2e1 * x * B);
   t4 = km * km;
@@ -539,7 +550,7 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t62 = B * B;
   t78 = kn * kn;
   t82 = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _C3 * t10 * Rm - 0.2e1 * t49 * _C4 * t7 * Rm - t3 * _C3 * t39 - t3 * _C4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
-  *sxz = t44 + t82;
+  u4 = t44 + t82;
 
   t3 = exp(0.2e1 * x * B);
   t4 = t3 * B;
@@ -552,21 +563,21 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t18 = 0.4e1 * t4 * UU * Rm - t10 - t13 + 0.3e1 * t3 * t14 * Rm;
   t19 = Rm * x;
   t20 = sin(t19);
-  t25 = 0.2e1 * t9 * B;
+  t26 = 0.2e1 * B * t9;
   t31 = 0.2e1 * t4 * t11;
-  t34 = -t3 * t14 * UU - t25 + t9 * UU + 0.3e1 * t3 * UU * t11 + t31 - 0.2e1 * t4 * t14;
+  t34 = 0.3e1 * t3 * UU * t11 - t26 - 0.2e1 * t4 * t14 + t9 * UU + t31 - t3 * t14 * UU;
   t35 = cos(t19);
-  t44 = VV * VV;
-  t51 = -t10 - t13 + 0.3e1 * t3 * t44 * Rm - 0.4e1 * t4 * VV * Rm;
-  t61 = -t25 + t31 + t3 * t44 * VV - t9 * VV - 0.2e1 * t4 * t44 - 0.3e1 * t3 * VV * t11;
-  t70 = kn * kn;
-  t71 = t70 * kn;
-  t76 = B * B;
-  t82 = B * t8;
+  t47 = VV * VV;
+  t51 = -0.4e1 * t4 * VV * Rm - t10 + 0.3e1 * t3 * t47 * Rm - t13;
+  t61 = t3 * t47 * VV + t31 - t9 * VV - 0.2e1 * t4 * t47 - t26 - 0.3e1 * t3 * VV * t11;
+  t72 = B * t8;
+  t76 = kn * kn;
+  t79 = B * B;
+  t83 = t76 * kn;
   t86 = kn * x;
   t87 = sin(t86);
   t101 = cos(t86);
-  *p = ((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-AA * t71 - 0.4e1 * BB * t70 * B + 0.4e1 * t76 * AA * kn - t8 * AA * kn - 0.4e1 * t82 * BB) * t87 + (-0.4e1 * t82 * AA - 0.4e1 * AA * t70 * B - 0.4e1 * t76 * BB * kn + t8 * BB * kn + BB * t71) * t101) / km;
+  u5 = ((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-t8 * AA * kn - 0.4e1 * t72 * BB - 0.4e1 * BB * B * t76 + 0.4e1 * AA * t79 * kn - AA * t83) * t87 + (-0.4e1 * AA * t76 * B - 0.4e1 * t79 * BB * kn + t8 * BB * kn - sigma + BB * t83 - 0.4e1 * t72 * AA) * t101) / km;
 
   t3 = exp(0.2e1 * x * B);
   t4 = UU * UU;
@@ -579,30 +590,63 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
   t18 = 0.3e1 * t3 * t4 * Rm + t10 - t13 + 0.4e1 * t14 * UU * Rm;
   t19 = Rm * x;
   t20 = sin(t19);
-  t23 = 0.2e1 * t9 * B;
+  t28 = 0.2e1 * B * t9;
   t33 = 0.2e1 * t14 * t11;
-  t34 = -t23 + 0.3e1 * t3 * UU * t11 - t9 * UU - t3 * t4 * UU - 0.2e1 * t4 * t14 + t33;
+  t34 = -0.2e1 * t4 * t14 + 0.3e1 * t3 * UU * t11 - t28 - t3 * t4 * UU - t9 * UU + t33;
   t35 = cos(t19);
   t47 = VV * VV;
-  t51 = t10 - 0.4e1 * t14 * VV * Rm + 0.3e1 * t3 * t47 * Rm - t13;
-  t61 = t9 * VV - t23 + t3 * t47 * VV - 0.2e1 * t14 * t47 + t33 - 0.3e1 * t3 * VV * t11;
-  t70 = B * B;
-  t74 = kn * kn;
-  t75 = t74 * kn;
+  t51 = -0.4e1 * t14 * VV * Rm - t13 + t10 + 0.3e1 * t3 * t47 * Rm;
+  t61 = -0.3e1 * t3 * VV * t11 + t33 + t3 * t47 * VV + t9 * VV - 0.2e1 * t14 * t47 - t28;
+  t71 = kn * kn;
+  t74 = B * B;
+  t80 = t71 * kn;
   t83 = kn * x;
   t84 = sin(t83);
   t96 = cos(t83);
-  *szz = -((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (0.4e1 * t70 * AA * kn - AA * t75 - 0.4e1 * BB * t74 * B + t8 * AA * kn) * t84 + (-t8 * BB * kn - 0.4e1 * AA * t74 * B - 0.4e1 * t70 * BB * kn + BB * t75) * t96) / km;
+  u6 = -((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
 
-  /* vx = Vx, vz = Vz, sxx = xx-component of stress tensor, sxz = xz-component of stress tensor, p = pressure, szz = zz-component of stress tensor */
-  *vx  *= cos(km*z); /* Vx */
-  *vz  *= sin(km*z); /* Vz */
-  *p   *= cos(km*z); /* p */
-  *sxx *= cos(km*z); /* sxx total stress */
-  *sxz *= sin(km*z); /* tzx stress */
-  *szz *= cos(km*z); /* szz total stress */
+  SS = sin(km*z)*(exp(UU*x)*(_C1*cos(Rm*x)+_C2*sin(Rm*x)) + exp(-VV*x)*(_C3*cos(Rm*x)+_C4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));
 
-  rho = -sigma*sin(km*z)*cos(kn*x); /* density */
+  /* u1 = Vx, u2 = Vz, u3 = txx, u4 = tzx, u5 = pressure, u6 = tzz */
+
+  sum5 += u5*cos(km*z);  /* pressure */
+  sum6 += u6*cos(km*z);  /* zz total stress */
+
+  u1 *= cos(km*z); /* x velocity */
+  sum1 += u1;
+  u2 *= sin(km*z); /* z velocity */
+  sum2 += u2;
+
+  u3 *= cos(km*z); /* xx total stress */
+  sum3 += u3;
+  u4 *= sin(km*z); /* zx stress */
+  sum4 += u4;
+
+  //rho = -sigma*sin(km*z)*cos(kn*x); /* density */
+  //sum7 += rho;
+
+  /* Output */
+  if (nu != NULL) {
+    *nu = Z;
+  }
+  if (vel != NULL) {
+    vel[0] = sum1;
+    vel[1] = sum2;
+  }
+  if (p != NULL) {
+    (*p) = sum5;
+  }
+  if (s != NULL) {
+    s[0] = sum3;
+    s[1] = sum6;
+    s[2] = sum4;
+  }
+  if (gamma != NULL) {
+    /* sigma = tau - p, tau = sigma + p, tau[] = 2*eta*gamma[] */
+    gamma[0] = (sum3+sum5)/(2.0*Z);
+    gamma[1] = (sum6+sum5)/(2.0*Z);
+    gamma[2] = (sum4)/(2.0*Z);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -610,28 +654,24 @@ static PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, Pets
 #define __FUNCT__ "SolKxSolutionVelocity"
 static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
-  Parameter      *s  = (Parameter *) ctx;
-  const PetscReal kn = s->n*PETSC_PI;
-  const PetscReal km = s->m*PETSC_PI;
-  PetscScalar     p, sxx, sxz, szz;
-  PetscErrorCode  ierr;
+  Parameter     *s = (Parameter *) ctx;
+  PetscErrorCode ierr;
 
-  ierr = SolKxSolution(x[0], x[1], kn, km, s->B, &v[0], &v[1], &p, &sxx, &sxz, &szz);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionBegin;
+  ierr = SolKxSolution(x, s->m, s->n, s->B, v, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SolKxSolutionPressure"
 static PetscErrorCode SolKxSolutionPressure(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
 {
-  Parameter      *s  = (Parameter *) ctx;
-  const PetscReal kn = s->n*PETSC_PI;
-  const PetscReal km = s->m*PETSC_PI;
-  PetscScalar     vx, vz, sxx, sxz, szz;
-  PetscErrorCode  ierr;
+  Parameter     *s = (Parameter *) ctx;
+  PetscErrorCode ierr;
 
-  ierr = SolKxSolution(x[0], x[1], kn, km, s->B, &vx, &vz, p, &sxx, &sxz, &szz);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionBegin;
+  ierr = SolKxSolution(x, s->m, s->n, s->B, NULL, p, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
