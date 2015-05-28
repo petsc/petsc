@@ -500,7 +500,6 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = MatNullSpaceGetVecs(nsp,NULL,&nvecs,&modes);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,1,&fstart,&fend);CHKERRQ(ierr);
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmgrad);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
