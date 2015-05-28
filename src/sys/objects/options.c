@@ -2601,24 +2601,25 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 
   Input Parameters:
 + obj   - the object
-. prefix - prefix to use for viewing, or NULL to use the prefix of obj
+. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
 - optionname - option to activate viewing
 
   Level: intermediate
 
 @*/
-PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  if (!prefix) prefix = ((PetscObject)obj)->prefix;
+  prefix = bobj ? bobj->prefix : obj->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQI(incall,ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);

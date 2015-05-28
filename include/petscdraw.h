@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char*);
 PETSC_EXTERN PetscErrorCode PetscDrawView(PetscDraw,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 /*
    Number of basic colors in the draw routines, the others are used
