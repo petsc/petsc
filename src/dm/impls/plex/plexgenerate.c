@@ -1197,16 +1197,3 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
   }
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_Plex"
-PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
-{
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject) mesh->coarseMesh);CHKERRQ(ierr);
-  *dmCoarsened = mesh->coarseMesh;
-  PetscFunctionReturn(0);
-}
