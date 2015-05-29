@@ -13,8 +13,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v;
   IS             isrow;
+  PetscBool      detect_bug = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscOptionsHasName(NULL,"-detect_bug",&detect_bug);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
@@ -46,7 +48,11 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
  
   /* Create parallel IS with the rows we want on THIS processor */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isrow);CHKERRQ(ierr);
+  if (detect_bug && !rank) {
+    ierr = ISCreateStride(PETSC_COMM_WORLD,1,rstart,1,&isrow);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isrow);CHKERRQ(ierr);
+  }
   ierr = MatGetSubMatrix(C,isrow,NULL,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
 
   /* Change C to test the case MAT_REUSE_MATRIX */

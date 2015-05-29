@@ -7575,7 +7575,8 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
 
   if (!iscol || isrow == iscol) {
-    PetscBool stride;
+    PetscBool   stride;
+    PetscMPIInt grabentirematrix = 0,grab;
     ierr = PetscObjectTypeCompare((PetscObject)isrow,ISSTRIDE,&stride);CHKERRQ(ierr);
     if (stride) {
       PetscInt first,step,n,rstart,rend;
@@ -7585,15 +7586,19 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
         if (rstart == first) {
           ierr = ISGetLocalSize(isrow,&n);CHKERRQ(ierr);
           if (n == rend-rstart) {
-            /* special case grabbing all rows; NEED to do a global reduction to make sure all processes are doing this */
-            if (cll == MAT_INITIAL_MATRIX) {
-              *newmat = mat;
-              ierr    = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-            }
-            PetscFunctionReturn(0);
+            grabentirematrix = 1;
           }
         }
       }
+    }
+    ierr = MPI_Allreduce(&grabentirematrix,&grab,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    if (grab) {
+      ierr = PetscInfo(mat,"Getting entire matrix as submatrix\n");CHKERRQ(ierr);
+      if (cll == MAT_INITIAL_MATRIX) {
+        *newmat = mat;
+        ierr    = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+      }
+      PetscFunctionReturn(0);
     }
   }
 

@@ -2278,6 +2278,11 @@ runex181:
 	   ${DIFF} output/ex181.out ex181.tmp || printf "${PWD}\nPossible problem with ex181, diffs above\n=========================================\n"; \
 	   ${RM} -f ex181.tmp
 
+runex181_2:
+	-@${MPIEXEC} -n 3 ./ex181 -detect_bug |grep -v "Mat Object" > ex181.tmp 2>&1; \
+	   ${DIFF} output/ex181_2.out ex181.tmp || printf "${PWD}\nPossible problem with ex181_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex181.tmp
+
 runex182:
 	-@${MPIEXEC} -n 1 ./ex182 -info | grep malloc | sort  > ex182.tmp 2>&1; \
 	   ${DIFF} output/ex182_1.out ex182.tmp || printf "${PWD}\nPossible problem with ex182, diffs above\n=========================================\n"; \
@@ -2361,7 +2366,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
                                  ex164.PETSc runex164 ex164.rm ex172.PETSc runex172 runex172_2 runex172_3 runex172_4 \
-                                 runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 ex181.rm\
+                                 runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 runex181_2 ex181.rm\
                                  ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm ex191.PETSc runex191 ex191.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
