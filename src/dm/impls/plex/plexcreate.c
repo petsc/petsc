@@ -1124,7 +1124,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
 PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscInt       refine = 0, r;
-  PetscBool      isHierarchy;
+  PetscBool      isHierarchy, coarsen;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1149,7 +1149,7 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     }
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
-      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
@@ -1157,14 +1157,26 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     for (r = 0; r < refine; ++r) {
       DM refinedMesh;
 
-      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
       ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+  /* Handle DMPlex coarsening */
+  ierr = PetscOptionsBool("-dm_coarsen", "Coarsen the mesh", "DMCreate", coarsen, &coarsen, NULL);CHKERRQ(ierr);
+  if (coarsen) {
+    DM coarseMesh;
+
+    ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+    ierr = DMCoarsen(dm, PetscObjectComm((PetscObject) dm), &coarseMesh);CHKERRQ(ierr);
+    /* Total hack since we do not pass in a pointer */
+    ierr = DMPlexReplace_Static(dm, coarseMesh);CHKERRQ(ierr);
+    ierr = DMDestroy(&coarseMesh);CHKERRQ(ierr);
+  }
+  /* Handle */
+  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
