@@ -993,6 +993,7 @@ extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened);
 extern PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[]);
+extern PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]);
 extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
@@ -1123,8 +1124,8 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
 #define __FUNCT__ "DMSetFromOptions_Plex"
 PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
-  PetscInt       refine = 0, r;
-  PetscBool      isHierarchy, coarsen;
+  PetscInt       refine = 0, coarsen = 0, r;
+  PetscBool      isHierarchy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1165,15 +1166,29 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     }
   }
   /* Handle DMPlex coarsening */
-  ierr = PetscOptionsBool("-dm_coarsen", "Coarsen the mesh", "DMCreate", coarsen, &coarsen, NULL);CHKERRQ(ierr);
-  if (coarsen) {
-    DM coarseMesh;
+  ierr = PetscOptionsInt("-dm_coarsen", "Coarsen the mesh", "DMCreate", coarsen, &coarsen, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_coarsen_hierarchy", "The number of coarsenings", "DMCreate", coarsen, &coarsen, &isHierarchy);CHKERRQ(ierr);
+  if (coarsen && isHierarchy) {
+    DM *dms;
 
-    ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
-    ierr = DMCoarsen(dm, PetscObjectComm((PetscObject) dm), &coarseMesh);CHKERRQ(ierr);
-    /* Total hack since we do not pass in a pointer */
-    ierr = DMPlexReplace_Static(dm, coarseMesh);CHKERRQ(ierr);
-    ierr = DMDestroy(&coarseMesh);CHKERRQ(ierr);
+    ierr = PetscMalloc1(coarsen, &dms);CHKERRQ(ierr);
+    ierr = DMCoarsenHierarchy(dm, coarsen, dms);CHKERRQ(ierr);
+    /* Free DMs */
+    for (r = 0; r < coarsen; ++r) {
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dms);CHKERRQ(ierr);
+  } else {
+    for (r = 0; r < coarsen; ++r) {
+      DM coarseMesh;
+
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      ierr = DMCoarsen(dm, PetscObjectComm((PetscObject) dm), &coarseMesh);CHKERRQ(ierr);
+      /* Total hack since we do not pass in a pointer */
+      ierr = DMPlexReplace_Static(dm, coarseMesh);CHKERRQ(ierr);
+      ierr = DMDestroy(&coarseMesh);CHKERRQ(ierr);
+    }
   }
   /* Handle */
   ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
@@ -1253,7 +1268,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->refine                          = DMRefine_Plex;
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;
-  dm->ops->coarsenhierarchy                = NULL;
+  dm->ops->coarsenhierarchy                = DMCoarsenHierarchy_Plex;
   dm->ops->globaltolocalbegin              = NULL;
   dm->ops->globaltolocalend                = NULL;
   dm->ops->localtoglobalbegin              = NULL;

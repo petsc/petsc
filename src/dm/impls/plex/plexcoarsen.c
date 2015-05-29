@@ -209,3 +209,23 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   *dmCoarsened = mesh->coarseMesh;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHierarchy_Plex"
+PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[])
+{
+  DM             rdm = dm;
+  PetscInt       c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (c = nlevels-1; c >= 0; --c) {
+    CellRefiner cellRefiner;
+
+    ierr = DMCoarsen(rdm, PetscObjectComm((PetscObject) dm), &dmCoarsened[c]);CHKERRQ(ierr);
+    ierr = DMPlexCopyBoundary(rdm, dmCoarsened[c]);CHKERRQ(ierr);
+    ierr = DMPlexSetCoarseDM(rdm, dmCoarsened[c]);CHKERRQ(ierr);
+    rdm  = dmCoarsened[c];
+  }
+  PetscFunctionReturn(0);
+}
