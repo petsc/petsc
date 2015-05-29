@@ -111,12 +111,16 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
   Vec            locF;
+  PetscInt       cStart, cEnd, cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locF);CHKERRQ(ierr);
-  ierr = DMPlexComputeResidual_Internal(dm, time, locX, NULL, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeResidual_Internal(dm, cStart, cEnd, time, locX, NULL, locF, user);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
@@ -144,10 +148,14 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
+  PetscInt       cStart, cEnd, cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeResidual_Internal(dm, time, locX, locX_t, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexComputeResidual_Internal(dm, cStart, cEnd, time, locX, locX_t, locF, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
