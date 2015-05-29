@@ -667,8 +667,6 @@ static PetscErrorCode PCReset_GASM(PC pc)
     ierr      = PCGASMDestroySubdomains(osm->n,&osm->ois,&osm->iis);CHKERRQ(ierr);
     osm->N    = PETSC_DETERMINE;
     osm->nmax = PETSC_DETERMINE;
-    osm->ois = 0;
-    osm->iis = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -683,6 +681,10 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_GASM(pc);CHKERRQ(ierr);
+
+  /* PCReset will not destroy subdomains, if user_subdomains is true. */
+  ierr = PCGASMDestroySubdomains(osm->n,&osm->ois,&osm->iis);CHKERRQ(ierr);
+
   if (osm->ksp) {
     for (i=0; i<osm->n; i++) {
       ierr = KSPDestroy(&osm->ksp[i]);CHKERRQ(ierr);
@@ -1460,7 +1462,7 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
       for (i=0; i<n; i++) {
         ierr = ISDestroy(&(*ois)[i]);CHKERRQ(ierr);
       }
-      ierr = PetscFree(*ois);CHKERRQ(ierr);
+      ierr = PetscFree((*ois));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
