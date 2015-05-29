@@ -34,15 +34,15 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
     numCells    = cEnd - cStart;
     numVertices = vEnd - vStart;
-    ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices, &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
+    ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-    for (v = 0; v < numVertices; ++v) {
+    for (v = vStart; v < vEnd; ++v) {
       PetscInt off;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      x[v] = coords[off+0];
-      y[v] = coords[off+1];
-      if (dim > 2) z[v] = coords[off+2];
+      x[v-vStart] = coords[off+0];
+      y[v-vStart] = coords[off+1];
+      if (dim > 2) z[v-vStart] = coords[off+2];
     }
     ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
     for (c = 0, coff = 0; c < numCells; ++c) {
@@ -51,7 +51,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 
       ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
-      for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl];
+      for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl] - vStart;
     }
     switch (dim) {
     case 2:
@@ -74,7 +74,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       PetscInt *closure = NULL;
       PetscInt  closureSize, cl;
 
-      ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(dm, faces[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (cl = 0; cl < closureSize*2; cl += 2) {
         if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
       }
@@ -85,23 +85,25 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       PetscInt *closure = NULL;
       PetscInt  closureSize, cl;
 
-      ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(dm, faces[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (cl = 0; cl < closureSize*2; cl += 2) {
-        if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl];
+        if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
       }
       /* TODO Fix */
       bdFaceIds[f] = 1;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&bd);CHKERRQ(ierr);
     pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
     /* Create metric */
-    if (dim == 2) {for (v = 0; v < numVertices; ++v) metric[v*4+0] = metric[v*4+3] = 1.0;}
-    else          {for (v = 0; v < numVertices; ++v) metric[v*9+0] = metric[v*9+4] = metric[v*9+8] = 1.0;}
+    if (dim == 2) {for (v = 0; v < numVertices; ++v) metric[v*4+0] = metric[v*4+3] = 0.5;}
+    else          {for (v = 0; v < numVertices; ++v) metric[v*9+0] = metric[v*9+4] = metric[v*9+8] = 0.5;}
     pragmatic_set_metric(metric);
     pragmatic_adapt();
     /* Read out mesh */
     pragmatic_get_info(&numCoarseVertices, &numCoarseCells);
+    ierr = PetscMalloc1(numCoarseVertices*dim, &coarseCoords);CHKERRQ(ierr);
     switch (dim) {
     case 2:
       pragmatic_get_coords_2d(x, y);
@@ -118,10 +120,9 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     }
     pragmatic_get_elements(cells);
     /* TODO Read out markers for boundary */
-    ierr = PetscMalloc1(numCoarseVertices*dim, &coarseCoords);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCoarseCells, numCoarseVertices, numCorners, PETSC_TRUE, cells, dim, coarseCoords, &mesh->coarseMesh);CHKERRQ(ierr);
     pragmatic_finalize();
-    ierr = PetscFree4(x, y, z, metric);CHKERRQ(ierr);
+    ierr = PetscFree5(x, y, z, metric, cells);CHKERRQ(ierr);
     ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
     ierr = PetscFree(coarseCoords);CHKERRQ(ierr);
   }
