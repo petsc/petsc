@@ -1983,10 +1983,10 @@ PetscErrorCode  PetscOptionsGetScalarArray(const char pre[],const char name[],Pe
 
    Notes:
    The array can be passed as
-   a comma seperated list:                                 0,1,2,3,4,5,6,7
+   a comma separated list:                                 0,1,2,3,4,5,6,7
    a range (start-end+1):                                  0-8
    a range with given increment (start-end+1:inc):         0-7:2
-   a combination of values and ranges seperated by commas: 0,1-8,8-15:2
+   a combination of values and ranges separated by commas: 0,1-8,8-15:2
 
    There must be no intervening spaces between the values.
 
@@ -2601,24 +2601,25 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 
   Input Parameters:
 + obj   - the object
-. prefix - prefix to use for viewing, or NULL to use the prefix of obj
+. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
 - optionname - option to activate viewing
 
   Level: intermediate
 
 @*/
-PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  if (!prefix) prefix = ((PetscObject)obj)->prefix;
+  prefix = bobj ? bobj->prefix : obj->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQI(incall,ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);

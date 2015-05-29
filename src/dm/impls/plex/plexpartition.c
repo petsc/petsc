@@ -455,41 +455,6 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscPartitionerViewFromOptions"
-/*
-  PetscPartitionerViewFromOptions - Processes command line options to determine if/how a PetscPartitioner is to be viewed.
-
-  Collective on PetscPartitioner
-
-  Input Parameters:
-+ part   - the PetscPartitioner
-. prefix - prefix to use for viewing, or NULL
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscPartitioner, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner part, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) part), prefix,                       optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) part), ((PetscObject) part)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscPartitionerView(part, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerSetTypeFromOptions_Internal"
 PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part)
 {

@@ -3259,7 +3259,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ"
 /*
-    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */
 PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
@@ -3507,7 +3507,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactorSymbolic_SeqAIJ"
 /*
-    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */
 
 PetscErrorCode  MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
@@ -3526,7 +3526,7 @@ PetscErrorCode  MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS row,IS col,const
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactorNumeric_SeqAIJ"
 /*
-    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */
 
 PetscErrorCode  MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,const MatFactorInfo *info)

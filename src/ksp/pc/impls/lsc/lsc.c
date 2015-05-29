@@ -26,7 +26,6 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   ierr = KSPSetType(lsc->kspL,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
   ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
@@ -67,6 +66,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
     ierr = VecReciprocal(lsc->scale);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(lsc->kspL,L,Lp);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
