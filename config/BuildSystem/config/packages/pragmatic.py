@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
     import os
     config.package.CMakePackage.__init__(self, framework)
     self.download          = ['GitOnly']
-    self.gitcommit         = 'f7b05b034ba14a869d08033c0ae361ba7d3bdb55'
+    self.gitcommit         = 'd6533f6925d772e9b56b4bea99416f2cd864b606'
     self.giturls           = ['https://github.com/pefarrell/pragmatic.git']
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic.h']
@@ -29,6 +29,7 @@ class Configure(config.package.CMakePackage):
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DMETIS_DIR='+self.metis.getInstallDir())
+    args.append('-DPRAGMATIC_ENABLE_VTK=OFF')
     if self.indexTypes.integerSize == 64:
       raise RuntimeError('Pragmatic cannot be built with 64-bit integers')
     if self.scalartypes.precision == 'single':
