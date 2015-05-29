@@ -147,7 +147,7 @@ runex13:
 	   ${RM} ex13_1.tmp
 
 runex14:
-	-@${MPIEXEC} -n 1 ./ex14 -array 1.0,3.0,4.5+6.2i,4.5,6.8+4i -rarray 1,2,3 -a 1.5+2.1i > ex14.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex14 -array 1.0,-2-3i,4.5+6.2i,4.5,6.8+4i,i,-i,-1.2i -rarray 1,2,3 -a 1.5+2.1i > ex14.tmp 2>&1;\
 	   ${DIFF} output/ex14.out ex14.tmp || printf "${PWD}\nPossible problem with ex14, diffs above\n=========================================\n"; \
 	   ${RM} ex14.tmp
 
