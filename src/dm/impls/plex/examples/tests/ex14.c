@@ -3,10 +3,11 @@ static char help[] = "Tests for coarsening\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  PetscInt  debug;         /* The debugging level */
-  PetscInt  dim;           /* The topological mesh dimension */
-  PetscInt  testNum;       /* The particular mesh to test */
-  PetscBool uninterpolate; /* Uninterpolate the mesh at the end */
+  PetscInt  debug;          /* The debugging level */
+  PetscInt  dim;            /* The topological mesh dimension */
+  PetscInt  testNum;        /* The particular mesh to test */
+  PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
+  char      filename[2048]; /* The optional mesh file */
 } AppCtx;
 
 #undef __FUNCT__
@@ -20,12 +21,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim            = 2;
   options->testNum        = 0;
   options->uninterpolate  = PETSC_FALSE;
+  options->filename[0]    = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex14.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex14.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex14.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex14.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-f", "Filename to read", "ex14.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -34,11 +37,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim = user->dim;
+  const char    *filename = user->filename;
+  PetscInt       dim      = user->dim;
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  if (!len) {ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  else      {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
   ierr = DMViewFromOptions(*dm, "orig_", "-dm_view");CHKERRQ(ierr);
   {
     DM distributedMesh = NULL;
