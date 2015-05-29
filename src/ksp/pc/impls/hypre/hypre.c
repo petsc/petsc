@@ -506,7 +506,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOption
   ierr = PetscOptionsBool("-pc_hypre_boomeramg_eu_bj", "Use Block Jacobi for ILU in Euclid smoother?", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
   if (flg && (jac->smoothtype == 3)) {
     jac->eu_bj = tmp_truth;
-    PetscStackCallStandard(HYPRE_BoomerAMGSetEuLevel,(jac->hsolver,jac->eu_bj));
+    PetscStackCallStandard(HYPRE_BoomerAMGSetEuBJ,(jac->hsolver,jac->eu_bj));
   }
 
   /* Relax type */
