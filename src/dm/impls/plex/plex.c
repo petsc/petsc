@@ -5553,7 +5553,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   }
   /* Add ghost cell boundaries for FVM */
   for (f = 0; f < numFields; ++f) if (!isFE[f] && cEndInterior >= 0) ++numBC;
-  ierr = PetscMalloc3(numBC,&bcFields,numBC,&bcPoints,numBC,&bcComps);CHKERRQ(ierr);
+  ierr = PetscCalloc3(numBC,&bcFields,numBC,&bcPoints,numBC,&bcComps);CHKERRQ(ierr);
   /* Constrain ghost cells for FV */
   for (f = 0; f < numFields; ++f) {
     PetscInt *newidx, c;
@@ -5573,7 +5573,6 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscInt        bd2, field, numComps, numValues;
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
-    bcComps[bc] = NULL;
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (!isFE[field]) continue;
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
