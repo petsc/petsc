@@ -27,6 +27,10 @@ ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} -f ex3.o
 
+ex14: ex14.o chkopts
+	-${CLINKER} -o ex14 ex14.o ${PETSC_DM_LIB}
+	${RM} -f ex14.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info -info_exclude null > ex1_0.tmp 2>&1;\
