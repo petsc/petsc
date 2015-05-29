@@ -135,10 +135,8 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       ierr = MatSetUnfactored(A);CHKERRQ(ierr);
       ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, NULL, &cellCoords);CHKERRQ(ierr);
       ierr = MatLUFactor(A, NULL, NULL, NULL);CHKERRQ(ierr);
-      ierr = DMPrintCellMatrix(c, "Metric", size, size, eqns);CHKERRQ(ierr);
       ierr = MatSolve(A, mb, mx);CHKERRQ(ierr);
       ierr = VecGetArrayRead(mx, &sol);CHKERRQ(ierr);
-      ierr = DMPrintCellVector(c, "Metric", size, sol);CHKERRQ(ierr);
       ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
       ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
@@ -173,7 +171,6 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       ierr = DMPlexGetSupportSize(udm, v+vStart, &supportSize);CHKERRQ(ierr);
       for (s = 0; s < supportSize; ++s) {ierr = DMPlexComputeCellGeometryFVM(dm, support[s], &vol, NULL, NULL);CHKERRQ(ierr); totVol += vol;}
       for (s = 0; s < PetscSqr(dim); ++s) metric[v*PetscSqr(dim)+s] /= totVol;
-      ierr = DMPrintCellMatrix(v, "Metric", dim, dim, &metric[v*PetscSqr(dim)]);CHKERRQ(ierr);
     }
     ierr = VecDestroy(&mx);CHKERRQ(ierr);
     ierr = VecDestroy(&mb);CHKERRQ(ierr);
