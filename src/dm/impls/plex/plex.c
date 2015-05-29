@@ -555,6 +555,12 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
       ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     }
+    ierr = DMPlexGetCoarseDM(dm, &cdm);CHKERRQ(ierr);
+    if (cdm) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = DMPlexView_Ascii(cdm, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
