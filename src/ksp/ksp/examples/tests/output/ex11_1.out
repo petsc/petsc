@@ -152,7 +152,6 @@ PC Object:(fc_) 1 MPI processes
         maximum iterations=100, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        has attached null space
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fc_fieldsplit_pressure_)       1 MPI processes
         type: lsc
@@ -161,7 +160,6 @@ PC Object:(fc_) 1 MPI processes
             maximum iterations=100, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
             left preconditioning
-            has attached null space
             using PRECONDITIONED norm type for convergence test
           PC Object:          (fc_fieldsplit_pressure_lsc_)           1 MPI processes
             type: icc
@@ -184,6 +182,7 @@ PC Object:(fc_) 1 MPI processes
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
               total number of mallocs used during MatSetValues calls =0
+                 has attached null space
                 not using I-node routines
         linear system matrix followed by preconditioner matrix:
         Mat Object:        (fc_fieldsplit_pressure_)         1 MPI processes
@@ -196,6 +195,7 @@ PC Object:(fc_) 1 MPI processes
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
                 total number of mallocs used during MatSetValues calls =0
+                  has attached null space
                   not using I-node routines
             A10
               Mat Object:               1 MPI processes
@@ -244,6 +244,7 @@ PC Object:(fc_) 1 MPI processes
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
           total number of mallocs used during MatSetValues calls =0
+            has attached null space
             not using I-node routines
   linear system matrix = precond matrix:
   Mat Object:   1 MPI processes

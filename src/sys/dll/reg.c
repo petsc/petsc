@@ -468,10 +468,9 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 
 .seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
+ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {
   PetscErrorCode ierr;
-  PetscInt       count = 0;
   char           p[64];
 
   PetscFunctionBegin;
@@ -484,8 +483,6 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
     list = list->next;
-    count++;
-    if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
   ierr = PetscFPrintf(comm,fd," (%s)\n",man);CHKERRQ(ierr);
   PetscFunctionReturn(0);

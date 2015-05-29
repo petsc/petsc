@@ -67,6 +67,7 @@ testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
 testexamples_MOAB: ${TESTEXAMPLES_MOAB}
 testexamples_MOAB_HDF5: ${TESTEXAMPLES_MOAB_HDF5}
+testexamples_TRILINOS: ${TESTEXAMPLES_TRILINOS}
 testexamples_X:
 testexamples_OPENGL:
 testexamples_MPE:

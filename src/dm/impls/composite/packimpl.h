@@ -24,7 +24,7 @@ struct DMCompositeLink {
 typedef struct {
   PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
   PetscInt               nghost;               /* number of all local entries (includes DMDA ghost points) */
-  PetscInt               nDM,nmine;            /* how many DM's and seperate redundant arrays used to build DM(nmine is ones on this process) */
+  PetscInt               nDM,nmine;            /* how many DM's and separate redundant arrays used to build DM(nmine is ones on this process) */
   PetscBool              setup;                /* after this is set, cannot add new links to the DM*/
   struct DMCompositeLink *next;
 

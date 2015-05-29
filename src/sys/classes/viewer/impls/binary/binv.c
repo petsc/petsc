@@ -1312,7 +1312,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
   /*
       try to open info file: all processors open this file if read only
 
-      Below is identical code to the code for Binary above, should be put in seperate routine
+      Below is identical code to the code for Binary above, should be put in separate routine
   */
   if (!vbinary->skipinfo && (!rank || type == FILE_MODE_READ)) {
     char infoname[PETSC_MAX_PATH_LEN],iname[PETSC_MAX_PATH_LEN];

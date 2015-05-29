@@ -4,7 +4,8 @@ import os, sys
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download = ['http://launchpad.net/fiat/0.x/0.9.9/+download/fiat-0.9.9.tar.gz'] # 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz'
+    self.download = ['http://launchpad.net/fiat/0.x/0.9.9/+download/fiat-0.9.9.tar.gz',
+                     'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-0.9.9.tar.gz']
     self.downloadonWindows = 1
     self.liblist           = [['Lagrange.py']]
     self.libdir            = os.path.join('lib', 'python', 'site-packages')

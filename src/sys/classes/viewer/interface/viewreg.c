@@ -30,7 +30,7 @@ $       ascii[:[filename][:[format][:append]]]    defaults to stdout - format ca
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-$       draw[:drawtype}                           for example, draw:tikz  or draw:x
+$       draw[:drawtype]                           for example, draw:tikz  or draw:x
 $       socket[:port]                             defaults to the standard output port
 $       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
@@ -48,10 +48,19 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscBool      flag;
+  PetscBool      flag,hashelp;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
+
+  ierr = PetscOptionsHasName(NULL,"-help",&hashelp);CHKERRQ(ierr);
+  if (hashelp) {
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers display of a PETSc object to screen or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers saving of a PETSc object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s draw[:drawtype]: %s (%s)\n",pre ? pre : "",name+1,"Triggers drawing of a PETSc object","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Triggers push of a PETSc object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s saws[:communicatorname]: %s (%s)\n",pre ? pre : "",name+1,"Triggers publishing of a PETSc object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
+  }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
   if (set) *set = PETSC_FALSE;

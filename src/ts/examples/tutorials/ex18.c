@@ -886,8 +886,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) ts, &prefix);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(X, prefix, "-view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(X, (PetscObject) ts, "-view_solution");CHKERRQ(ierr);
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -1016,7 +1015,8 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       ierr = PetscMalloc1(len+2,&prefix);CHKERRQ(ierr);
       ierr = PetscStrcpy(prefix, func->name);CHKERRQ(ierr);
       ierr = PetscStrcat(prefix, "_");CHKERRQ(ierr);
-      ierr = VecViewFromOptions(fv[f], prefix, "-vec_view");CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)fv[f], prefix);CHKERRQ(ierr);
+      ierr = VecViewFromOptions(fv[f], NULL, "-vec_view");CHKERRQ(ierr);
       ierr = PetscFree(prefix);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
       ierr = DMDestroy(&fdm[f]);CHKERRQ(ierr);
@@ -1086,14 +1086,14 @@ int main(int argc, char **argv)
   ierr = DMPlexProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMPlexProjectFunction(dm, user.initialGuess, ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
   if (user.useFV) {ierr = SetInitialConditionFVM(dm, u, 1, user.initialGuess[1], ctxs[1]);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(u, "init_", "-vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-init_vec_view");CHKERRQ(ierr);
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
   t0   = t;
   ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
   if (t > t0) {ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs, ctxs);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(u, "sol_", "-vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
   {
     PetscReal ftime;
     PetscInt  nsteps;
