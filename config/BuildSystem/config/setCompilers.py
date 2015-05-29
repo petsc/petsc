@@ -1548,7 +1548,7 @@ if (dlclose(handle)) {
           del os.environ[envVal]
         elif self.framework.argDB['with-environment-variables']:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
-        elif self.framework.argDB['with-xsdk-defaults']:
+        elif self.framework.argDB['with-xsdk-defaults'] and not self.framework.clArgDB.has_key('with-environment-variables'):
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n because --with-xsdk-defaults was selected. Add --disable-environment-variables \n to NOT use the environmental variables ******')
 
         else:
