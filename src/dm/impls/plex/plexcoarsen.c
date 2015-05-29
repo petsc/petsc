@@ -3,6 +3,8 @@
 #include <pragmatic/cpragmatic.h>
 #endif
 
+#include <petscksp.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsen_Plex"
 PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
@@ -10,15 +12,17 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   DM             udm, coordDM;
   DMLabel        bd;
-  Vec            coordinates;
+  Mat            A;
+  Vec            coordinates, mb, mx;
   PetscSection   coordSection;
   const PetscScalar *coords;
   double        *coarseCoords;
   IS             bdIS;
-  PetscReal     *x, *y, *z, *metric;
+  PetscReal     *x, *y, *z, *eqns, *metric;
+  PetscReal      coarseRatio = PetscSqr(0.5);
   const PetscInt *faces;
   PetscInt      *cells, *bdFaces, *bdFaceIds;
-  PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, numCoarseBdFaces, f, maxConeSize, bdSize, coff;
+  PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, numCoarseBdFaces, f, maxConeSize, size, bdSize, coff;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -63,7 +67,6 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     default:
       SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic coarsening defined for dimension %d", dim);
     }
-    ierr = DMDestroy(&udm);CHKERRQ(ierr);
     /* Create boundary mesh */
     ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);
@@ -97,8 +100,86 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     ierr = DMLabelDestroy(&bd);CHKERRQ(ierr);
     pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
     /* Create metric */
-    if (dim == 2) {for (v = 0; v < numVertices; ++v) metric[v*4+0] = metric[v*4+3] = 0.5;}
-    else          {for (v = 0; v < numVertices; ++v) metric[v*9+0] = metric[v*9+4] = metric[v*9+8] = 0.5;}
+    size = (dim*(dim+1))/2;
+    ierr = PetscMalloc1(PetscSqr(size), &eqns);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF, size, size, eqns, &A);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A, &mx, &mb);CHKERRQ(ierr);
+    ierr = VecSet(mb, 1.0);CHKERRQ(ierr);
+    for (c = 0; c < numCells; ++c) {
+      const PetscScalar *sol;
+      PetscScalar       *cellCoords = NULL;
+      PetscReal          e[3], vol;
+      const PetscInt    *cone;
+      PetscInt           coneSize, cl, i, j, d, r;
+
+      ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, NULL, &cellCoords);CHKERRQ(ierr);
+      /* Only works for simplices */
+      for (i = 0, r = 0; i < dim+1; ++i) {
+        for (j = 0; j < i; ++j, ++r) {
+          for (d = 0; d < dim; ++d) e[d] = cellCoords[i*dim+d] - cellCoords[j*dim+d];
+          /* FORTRAN ORDERING */
+          if (dim == 2) {
+            eqns[0*size+r] = PetscSqr(e[0]);
+            eqns[1*size+r] = 2.0*e[0]*e[1];
+            eqns[2*size+r] = PetscSqr(e[1]);
+          } else {
+            eqns[0*size+r] = PetscSqr(e[0]);
+            eqns[1*size+r] = 2.0*e[0]*e[1];
+            eqns[2*size+r] = 2.0*e[0]*e[2];
+            eqns[3*size+r] = PetscSqr(e[1]);
+            eqns[4*size+r] = 2.0*e[1]*e[2];
+            eqns[5*size+r] = PetscSqr(e[2]);
+          }
+        }
+      }
+      ierr = MatSetUnfactored(A);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, NULL, &cellCoords);CHKERRQ(ierr);
+      ierr = MatLUFactor(A, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMPrintCellMatrix(c, "Metric", size, size, eqns);CHKERRQ(ierr);
+      ierr = MatSolve(A, mb, mx);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(mx, &sol);CHKERRQ(ierr);
+      ierr = DMPrintCellVector(c, "Metric", size, sol);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
+      for (cl = 0; cl < coneSize; ++cl) {
+        const PetscInt v = cone[cl] - vStart;
+
+        if (dim == 2) {
+          metric[v*4+0] += vol*coarseRatio*sol[0];
+          metric[v*4+1] += vol*coarseRatio*sol[1];
+          metric[v*4+2] += vol*coarseRatio*sol[1];
+          metric[v*4+3] += vol*coarseRatio*sol[2];
+        } else {
+          metric[v*9+0] += vol*coarseRatio*sol[0];
+          metric[v*9+1] += vol*coarseRatio*sol[1];
+          metric[v*9+3] += vol*coarseRatio*sol[1];
+          metric[v*9+2] += vol*coarseRatio*sol[2];
+          metric[v*9+6] += vol*coarseRatio*sol[2];
+          metric[v*9+4] += vol*coarseRatio*sol[3];
+          metric[v*9+5] += vol*coarseRatio*sol[4];
+          metric[v*9+7] += vol*coarseRatio*sol[4];
+          metric[v*9+8] += vol*coarseRatio*sol[5];
+        }
+      }
+      ierr = VecRestoreArrayRead(mx, &sol);CHKERRQ(ierr);
+    }
+    for (v = 0; v < numVertices; ++v) {
+      const PetscInt *support;
+      PetscInt        supportSize, s;
+      PetscReal       vol, totVol = 0.0;
+
+      ierr = DMPlexGetSupport(udm, v+vStart, &support);CHKERRQ(ierr);
+      ierr = DMPlexGetSupportSize(udm, v+vStart, &supportSize);CHKERRQ(ierr);
+      for (s = 0; s < supportSize; ++s) {ierr = DMPlexComputeCellGeometryFVM(dm, support[s], &vol, NULL, NULL);CHKERRQ(ierr); totVol += vol;}
+      for (s = 0; s < PetscSqr(dim); ++s) metric[v*PetscSqr(dim)+s] /= totVol;
+      ierr = DMPrintCellMatrix(v, "Metric", dim, dim, &metric[v*PetscSqr(dim)]);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&mx);CHKERRQ(ierr);
+    ierr = VecDestroy(&mb);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = DMDestroy(&udm);CHKERRQ(ierr);
+    ierr = PetscFree(eqns);CHKERRQ(ierr);
     pragmatic_set_metric(metric);
     pragmatic_adapt();
     /* Read out mesh */
