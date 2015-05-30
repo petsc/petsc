@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
     import os
     config.package.CMakePackage.__init__(self, framework)
     self.download          = ['GitOnly']
-    self.gitcommit         = '02d86b0974c2ce45fa6dc7b709c8f25ef5ef0112'
+    self.gitcommit         = '22e2964f63329f827201d9d84c58bdcc109e3186'
     self.giturls           = ['https://github.com/pefarrell/pragmatic.git']
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic.h']
