@@ -4176,13 +4176,11 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
     }
   }
   if (!anyConstrained) {
-    *outNumPoints  = 0;
-    *outNumIndices = 0;
-    *outPoints     = NULL;
-    *outValues     = NULL;
-    if (aSec) {
-      ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
-    }
+    if (outNumPoints)  *outNumPoints  = 0;
+    if (outNumIndices) *outNumIndices = 0;
+    if (outPoints)     *outPoints     = NULL;
+    if (outValues)     *outValues     = NULL;
+    if (aSec) {ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 
