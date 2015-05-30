@@ -5576,31 +5576,26 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   PetscSection   gsc, gsf;
   PetscInt       m, n;
   void          *ctx;
+  DM             cdm;
+  PetscBool      regular;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /*
-  Loop over coarse cells
-    Loop over coarse basis functions
-      Loop over fine cells in coarse cell
-        Loop over fine dual basis functions
-          Evaluate coarse basis on fine dual basis quad points
-          Sum
-          Update local element matrix
-    Accumulate to interpolation matrix
-
-   Can extend PetscFEIntegrateJacobian_Basic() to do a specialized cell loop
-  */
   ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
-  /* We need to preallocate properly */
+
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), interpolation);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
-  ierr = DMPlexComputeInterpolatorFEM(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);
+
+  ierr = DMPlexGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
+  ierr = DMPlexGetRegularRefinement(dmFine, &regular);CHKERRQ(ierr);
+  if (regular && cdm == dmCoarse) {ierr = DMPlexComputeInterpolatorNested(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);}
+  else                            {ierr = DMPlexComputeInterpolatorGeneral(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);}
+  ierr = MatViewFromOptions(*interpolation, NULL, "-interp_mat_view");CHKERRQ(ierr);
   /* Use naive scaling */
   ierr = DMCreateInterpolationScale(dmCoarse, dmFine, *interpolation, scaling);CHKERRQ(ierr);
   PetscFunctionReturn(0);
