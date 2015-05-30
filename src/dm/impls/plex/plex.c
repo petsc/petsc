@@ -5836,6 +5836,53 @@ PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetRegularRefinement"
+/*@
+  DMPlexGetRegularRefinement - Get the flag indicating that this mesh was obtained by regular refinement from its coarse mesh
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameter:
+. regular - The flag
+
+  Level: intermediate
+
+.seealso: DMPlexSetRegularRefinement()
+@*/
+PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(regular, 2);
+  *regular = ((DM_Plex *) dm->data)->regularRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetRegularRefinement"
+/*@
+  DMPlexSetRegularRefinement - Set the flag indicating that this mesh was obtained by regular refinement from its coarse mesh
+
+  Input Parameters:
++ dm - The DMPlex object
+- regular - The flag
+
+  Level: intermediate
+
+.seealso: DMPlexGetRegularRefinement()
+@*/
+PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ((DM_Plex *) dm->data)->regularRefinement = regular;
+  PetscFunctionReturn(0);
+}
+
 /* anchors */
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAnchors"

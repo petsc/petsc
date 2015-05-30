@@ -237,6 +237,8 @@ PETSC_EXTERN PetscErrorCode DMPlexSetRefinementUniform(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetCoarseDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexSetCoarseDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCoarsePointIS(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexGetRegularRefinement(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexSetRegularRefinement(DM, PetscBool);
 
 /* Support for cell-vertex meshes */
 PETSC_EXTERN PetscErrorCode DMPlexGetNumFaceVertices(DM, PetscInt, PetscInt, PetscInt *);

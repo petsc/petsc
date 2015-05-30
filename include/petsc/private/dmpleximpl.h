@@ -143,6 +143,7 @@ typedef struct {
 
   /* Hierarchy */
   DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
+  PetscBool            regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
 
   /* Generation */
   char                *tetgenOpts;

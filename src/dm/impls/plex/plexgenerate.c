@@ -1193,6 +1193,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
     ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
     ierr = DMPlexCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
     ierr = DMPlexSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
+    ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
     cdm  = dmRefined[r];
   }
   PetscFunctionReturn(0);
