@@ -22,7 +22,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   PetscReal      coarseRatio = PetscSqr(0.5);
   const PetscInt *faces;
   PetscInt      *cells, *bdFaces, *bdFaceIds;
-  PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, numCoarseBdFaces, f, maxConeSize, size, bdSize, coff;
+  PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, f, maxConeSize, size, bdSize, coff;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -220,8 +220,6 @@ PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]
 
   PetscFunctionBegin;
   for (c = nlevels-1; c >= 0; --c) {
-    CellRefiner cellRefiner;
-
     ierr = DMCoarsen(rdm, PetscObjectComm((PetscObject) dm), &dmCoarsened[c]);CHKERRQ(ierr);
     ierr = DMPlexCopyBoundary(rdm, dmCoarsened[c]);CHKERRQ(ierr);
     ierr = DMPlexSetCoarseDM(rdm, dmCoarsened[c]);CHKERRQ(ierr);
