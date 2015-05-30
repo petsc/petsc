@@ -613,7 +613,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
   ierr = DMPlexSetCoarseDM(rdm, dm);CHKERRQ(ierr);
-  ierr = DMPlexSetRegularRefinement(rdm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
   if (user->tree && isPlex) {
     DM refTree;
     ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
@@ -683,14 +683,22 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {trig};
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx) = {trigDer};
   void            *exactCtxs[3] = {user, user, user};
-  PetscInt         r, c;
-  PetscReal        errorOld, errorDerOld, error, errorDer;
+  PetscInt         r, c, cStart, cEnd;
+  PetscReal        errorOld, errorDerOld, error, errorDer, rel, len, lenOld;
   double           p;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!user->convergence) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject) odm);CHKERRQ(ierr);
+  if (!user->convRefine) {
+    for (r = 0; r < Nr; ++r) {
+      ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
+      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      odm  = rdm;
+    }
+    ierr = SetupSection(odm, user);CHKERRQ(ierr);
+  }
   ierr = ComputeError(odm, exactFuncs, exactFuncDers, exactCtxs, &errorOld, &errorDerOld, user);CHKERRQ(ierr);
   if (user->convRefine) {
     for (r = 0; r < Nr; ++r) {
@@ -708,19 +716,28 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
       errorDerOld = errorDer;
     }
   } else {
+    /* ierr = ComputeLongestEdge(dm, &lenOld);CHKERRQ(ierr); */
+    ierr = DMPlexGetHeightStratum(odm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    lenOld = cEnd - cStart;
     for (c = 0; c < Nr; ++c) {
       ierr = DMCoarsen(odm, PetscObjectComm((PetscObject) dm), &cdm);CHKERRQ(ierr);
       if (!user->simplex) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
       ierr = SetupSection(cdm, user);CHKERRQ(ierr);
       ierr = ComputeError(cdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
-      p    = PetscLog2Real(error/errorOld);
+      /* ierr = ComputeLongestEdge(cdm, &len);CHKERRQ(ierr); */
+      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+      len  = cEnd - cStart;
+      rel  = error/errorOld;
+      p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
       ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
-      p    = PetscLog2Real(errorDer/errorDerOld);
+      rel  = errorDer/errorDerOld;
+      p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
       ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
       ierr = DMDestroy(&odm);CHKERRQ(ierr);
       odm         = cdm;
       errorOld    = error;
       errorDerOld = errorDer;
+      lenOld      = len;
     }
   }
   ierr = DMDestroy(&odm);CHKERRQ(ierr);
