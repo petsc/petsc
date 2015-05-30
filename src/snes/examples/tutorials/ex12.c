@@ -19,7 +19,6 @@ typedef struct {
   PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent createMeshEvent;
   PetscBool     showInitial, showSolution, restart, check;
-  PetscViewer   checkpoint;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   char          filename[2048];    /* The optional ExodusII file */
@@ -292,7 +291,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showSolution        = PETSC_FALSE;
   options->restart             = PETSC_FALSE;
   options->check               = PETSC_FALSE;
-  options->checkpoint          = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -323,13 +321,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
-
-  if (options->restart) {
-    ierr = PetscViewerCreate(comm, &options->checkpoint);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(options->checkpoint, PETSCVIEWERHDF5);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(options->checkpoint, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(options->checkpoint, options->filename);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -350,15 +341,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (!len) {
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  } else if (user->checkpoint) {
-    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMLoad(*dm, user->checkpoint);CHKERRQ(ierr);
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   } else {
-    PetscMPIInt rank;
-
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -614,14 +597,20 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMPlexProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  if (user.checkpoint) {
+  if (user.restart) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = PetscViewerHDF5PushGroup(user.checkpoint, "/fields");CHKERRQ(ierr);
-    ierr = VecLoad(u, user.checkpoint);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5PopGroup(user.checkpoint);CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, user.filename);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+    ierr = VecLoad(u, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 #endif
   }
-  ierr = PetscViewerDestroy(&user.checkpoint);CHKERRQ(ierr);
   if (user.showInitial) {
     Vec lv;
     ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
