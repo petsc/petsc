@@ -46,7 +46,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else      {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  ierr = DMViewFromOptions(*dm, "orig_", "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   {
     DM distributedMesh = NULL;
 
@@ -54,7 +54,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
-      ierr = DMViewFromOptions(*dm, "dist_", "-dm_view");CHKERRQ(ierr);
+      ierr = DMViewFromOptions(*dm, NULL, "-dist_dm_view");CHKERRQ(ierr);
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexUninterpolate(*dm, &udm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = udm;
-    ierr = DMViewFromOptions(*dm, "un_", "-dm_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-un_dm_view");CHKERRQ(ierr);
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Test Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
