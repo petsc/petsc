@@ -1663,8 +1663,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extCGNS   = ".cgns";
   const char    *extExodus = ".exo";
   const char    *extFluent = ".cas";
+  const char    *extHDF5   = ".h5";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isFluent;
+  PetscBool      isGmsh, isCGNS, isExodus, isFluent, isHDF5;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -1678,6 +1679,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,   5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent, 4, &isFluent);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,   3, &isHDF5);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
@@ -1686,6 +1688,17 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isFluent) {
     ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+  } else if (isHDF5) {
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscFunctionReturn(0);
 }
