@@ -1624,7 +1624,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         for (ccell = 0; ccell < numCoarseCells; ++ccell) {
           ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
           /* Transform points from real space to coarse reference space */
-          ierr = DMPlexComputeCellGeometryFEM(dmc, ccell, NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
+          ierr = DMPlexComputeCellGeometryFEM(dmc, coarseCells[ccell], NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
           CoordinatesRealToRef(dim, dim, v0c, invJc, &pV[ccell*dim], x);
 
           if (id == PETSCFE_CLASSID) {
