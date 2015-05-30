@@ -361,7 +361,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    /* Must have boundary marker for Dirichlet conditions */
   }
   {
     DM refinedMesh     = NULL;
@@ -393,6 +392,26 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  /* Must have boundary marker for Dirichlet conditions */
+  {
+    DM cdm = *dm;
+
+    while (cdm) {
+      PetscBool hasBdLabel;
+
+      ierr = DMPlexHasLabel(cdm, "marker", &hasBdLabel);CHKERRQ(ierr);
+      if (!hasBdLabel) {
+        DMLabel label;
+
+        ierr = DMPlexCreateLabel(cdm, "marker");CHKERRQ(ierr);
+        ierr = DMPlexGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
+        ierr = DMPlexMarkBoundaryFaces(cdm, label);CHKERRQ(ierr);
+        ierr = DMPlexLabelComplete(cdm, label);CHKERRQ(ierr);
+      }
+      ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    }
+  }
+
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
