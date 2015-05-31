@@ -2888,8 +2888,12 @@ large jumps in material coefficients with complex geometry (AMG is
 particularly well suited to jumps in coefficients but it is not a
 perfect solution), highly incompressible elasticity, not to mention
 ill-posed problems, and many others. For div/div and curl/curl operators,
-you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hypre_set_type ams}) or the Auxilary Divergence
-Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
+you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hypre_set_type ams})
+or the Auxilary Divergence Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
+These solvers need some additional information on the underlying mesh;
+specifically, AMS needs the so-called discrete gradient operator, which can be specified via
+PCHYPRESetDiscreteGradient(). In addition to the the discrete gradient, ADS also needs the
+specification of the discrete curl operator, which can be set using PCHYPRESetDiscreteCurl().
 
 PETSc's AMG solver is constructed as a framework for developers to
 easily add AMG capabilities, like a new AMG algorithm or a new matrix
@@ -2899,51 +2903,68 @@ triple product, etc. Contact us directly if you are interested in extending/impr
 \subsection{Balancing Domain Decomposition by Constraints}
 
 PETSc provides the Balancing Domain Decomposition by Constraints (BDDC) method for preconditioning
-parallel finite element problems stored in unassembled format (see MATIS). BDDC is a 2-level non-overlapping domain decomposition method
-which can be easily adapted to different problems and discretizations by means of few user customizations. The application of the
-preconditioner to a vector consists in the static condensation of the residual at the interior of the subdomains by means of local Dirichet solves, followed by an
-additive combination of Neumann local corrections and the solution of a global coupled coarse problem. Command line options for the underlying KSP objects
-are prefixed by \trl{-pc_bddc_dirichlet}, \trl{-pc_bddc_neumann}, and \trl{-pc_bddc_coarse} respectively.
+parallel finite element problems stored in unassembled format (see MATIS). BDDC is a 2-level
+non-overlapping domain decomposition method which can be easily adapted to different problems
+and discretizations by means of few user customizations. The application of the preconditioner to a vector consists
+in the static condensation of the residual at the interior of the subdomains by means of local Dirichet solves, followed by an
+additive combination of Neumann local corrections and the solution of a global coupled coarse problem.
+Command line options for the underlying KSP objects are prefixed by \trl{-pc_bddc_dirichlet}, \trl{-pc_bddc_neumann},
+and \trl{-pc_bddc_coarse} respectively.
 
-The current implementation supports any kind of linear system (use \trl{-pc_bddc_symmetric 0} for non-symmetric problems),
-and assumes a one-to-one mapping between subdomains and MPI processes. Complex numbers are supported as well.
+The current implementation supports any kind of linear system, and assumes a one-to-one mapping between subdomains and
+MPI processes. Complex numbers are supported as well. For non-symmetric problems, use the runtime option \trl{-pc_bddc_symmetric 0}.
 
 Unlike conventional non-overlapping methods that iterates just on the degrees of freedom at the interface between subdomain,
 PCBDDC iterates on the whole set of degrees of freedom allowing the use of approximate subdomain solvers.
-When using approximate solvers with singular problems, the nullspace of the operator should be provided using PCBDDCSetNullSpace.
+When using approximate solvers with singular problems, the nullspace of the operator should be provided using PCBDDCSetNullSpace().
 
-At the basis of the method there's the analysis of the connected components of the interface which detects vertices, edges and faces equivalence classes.
-Additional information on the degrees of freedom can be supplied to PCBDDC by using the following functions:
-PCBDDCSetDofsSplitting, PCBDDCSetLocalAdjacencyGraph, PCBDDCSetPrimalVerticesLocalIS, PCBDDCSetNeumannBoundaries, PCBDDCSetDirichletBoundaries,
-PCBDDCSetNeumannBoundariesLocal, PCBDDCSetDirichletBoundariesLocal.
+At the basis of the method there's the analysis of the connected components of the interface for the detection of vertices,
+edges and faces equivalence classes. Additional information on the degrees of freedom can be supplied to PCBDDC by using
+the following functions: PCBDDCSetDofsSplitting(), PCBDDCSetLocalAdjacencyGraph(), PCBDDCSetPrimalVerticesLocalIS(),
+PCBDDCSetNeumannBoundaries(), PCBDDCSetDirichletBoundaries(), PCBDDCSetNeumannBoundariesLocal(), PCBDDCSetDirichletBoundariesLocal().
 
-Crucial for the convergence of the iterative process is the specification of the primal constraints to be imposed at the interface between subdomains.
-PCBDDC uses by default vertex continuities and edge arithmetic averages, which are enough for the three-dimensional Poisson problem with constant coeffcients.
-The user can customize the constraints by attaching a MatNullSpace object to
-the preconditioning matrix via MatSetNearNullSpace. The vectors of the MatNullSpace object should represent the constraints in the form of quadrature rules, where quadrature rules
-for different classes of the interface can be listed in the same vector; the number of vectors of the MatNullSpace object correspond to the maximum number of constraints that could be imposed for each class.
+Crucial for the convergence of the iterative process is the specification of the primal constraints to be imposed at the interface
+between subdomains. PCBDDC uses by default vertex continuities and edge arithmetic averages, which are enough for the three-dimensional
+Poisson problem with constant coeffcients. The user can switch on and off the usage of vertices, edges or face constraints by using the command line
+switches \trl{-pc_bddc_use_vertices}, \trl{-pc_bddc_use_edges}, \trl{-pc_bddc_use_faces}. A customization of the constraints is available
+by attaching a MatNullSpace object to
+the preconditioning matrix via MatSetNearNullSpace(). The vectors of the MatNullSpace object should represent the constraints
+in the form of quadrature rules; quadrature rules for different classes of the interface can be listed in the same vector.
+The number of vectors of the MatNullSpace object corresponds to the maximum number of constraints that can be imposed for each class.
 Once all the quadrature rules for a given interface class have been extracted, an SVD operation is performed to retain the non-singular modes.
-As an example, the rigid body modes represent an effective choice for elasticity, even in the almost incompressible case.
-The user can switch on and off the usage of vertices, edges or face constraints by using the command line switches \trl{-pc_bddc_use_vertices}, \trl{-pc_bddc_use_edges}, \trl{-pc_bddc_use_faces}.
+As an example, the rigid body modes represent an effective choice for elasticity, even in the almost incompressible case. For particular problems,
+like e.g. edge-based discretization with Nedelec elements, a user defined change of basis of the degrees of
+freedom can be beneficial for PCBDDC; use PCBDDCSetChangeOfBasisMat() to customize the change of basis.
 
-For particular problems, like e.g. edge-based discretization with Nedelec elements, a user defined change of basis of the degrees of freedom can be beneficial for PCBDDC; such information can be supplied via PCBDDCSetChangeOfBasisMat.
+The BDDC method is usually robust with respect to jumps in the material parameters aligned with the interface;
+for PDEs with more than one material parameter you may also consider to use the so-called deluxe scaling,
+available via the command line switch \trl{-pc_bddc_use_deluxe_scaling}. Other scalings are available,
+see PCISSetSubdomainScalingFactor(), PCISSetSubdomainDiagonalScaling() or PCISSetUseStiffnessScaling().
+However, the convergence properties of the BDDC method degrades in presence of large jumps in the material coefficients
+not aligned with the interface; for such cases, PETSc has the capability of adaptively computing the primal constraints.
+Adaptive selection of constraints could be requested by specifying a threshold value at command line by using
+\trl{-pc_bddc_adaptive_threshold x}. Valid values for the threshold \trl{x} ranges from 1 to infinity,
+with smaller values corresponding to more robust preconditioners. For SPD problems in 2D, or in 3D with only face degrees of freedom
+(like in the case of Raviart-Thomas or Brezzi-Douglas-Marini elements), such a threshold is a very accurate estimator
+of the condition number of the resulting preconditioned operator. Since the adaptive selection of constraints for BDDC methods is still
+an active topic of research, its implementation is currently limited to SPD problems; moreover, because the technique requires the
+explicit knowledge of the local Schur complements, it needs the external package MUMPS.
 
-The BDDC method is usually robust with respect to possible jumps in the material parameters aligned with interface;
-for PDEs with more than one material parameter you may also consider to use the so-called deluxe scaling
-via \trl{-pc_bddc_use_deluxe_scaling}. Other scalings are available, see PCISSetSubdomainScalingFactor, PCISSetSubdomainDiagonalScaling or PCISSetUseStiffnessScaling.
-However, the convergence properties of the BDDC method degrades in presence of large jumps in the material coefficients not aligned with the interface; for such cases, PETSc implements a very recent technique
-for adaptively computing the primal constraints. Adaptive selection of constraints could be requested by specifying a threshold value at command line by using \trl{-pc_bddc_adaptive_threshold x}. Valid values for the threshold ranges from 1 to infinity,
-with smaller values corresponding to more robust preconditioners. For SPD problems in 2D, or in 3D with only face degrees of freedom like in the case of Raviart-Thomas or Brezzi-Douglas-Marini elements, such a threshold is a very accurate estimator
-of the condition number of the resulting preconditioned operator. Since the adaptive selection of constraints is still an active topic of research, its implementation is currently limited to SPD problems; moreover, because the technique requires the explicit knowledge of the local Schur complements, it needs the external package MUMPS.
-
-When solving problems decomposed in thousands of subdomains or more, the solution of the BDDC coarse problem could become a bottleneck; in order to overcome this issue, the user could either consider to solve the parallel coarse problem on a subset of the communicator associated with PCBDDC (by using the command line switch \trl{-pc_bddc_coarse_redistribute}), or instead use a multilevel approach. The latter can be requested by specifying the number of requested level at command line (\trl{-pc_bddc_levels}) or using PCBDDCSetLevels. An additional parameter (see PCBDDCSetCoarseningRatio) will control the number of subdomains that will be generated at the next level; the larger the ratio, the lower the number of coarser subdomains.
+When solving problems decomposed in thousands of subdomains or more, the solution of the BDDC coarse problem could become a bottleneck;
+in order to overcome this issue, the user could either consider to solve the parallel coarse problem on a subset of the communicator
+associated with PCBDDC by using the command line switch \trl{-pc_bddc_coarse_redistribute}, or instead use a multilevel approach.
+The latter can be requested by specifying the number of requested level at command line (\trl{-pc_bddc_levels}) or by using PCBDDCSetLevels().
+An additional parameter (see PCBDDCSetCoarseningRatio()) controls the number of subdomains that will be generated at the next level;
+the larger the coarsening ratio, the lower the number of coarser subdomains.
 
 PETSc currently provides an experimental interface to the FETI-DP method, which is the dual method of BDDC. Users interested in
-experimenting with FETI-DP should use PCBDDCCreateFETIDPOperators, after having called PCSetUp on the PCBDDC object, in order access
-the Mat and PC objects needed by the FETI-DP method. PCBDDCMatFETIDPGetRHS maps the original right-hand side to a suitable right-hand side for the FETI-DP solver.
-The physical solution can be recovered using PCBDDCMatFETIDPGetSolution. A stand-alone class for FETI-DP will be provided in future releases.
+experimenting with FETI-DP should use PCBDDCCreateFETIDPOperators() in order access
+the Mat and PC objects needed by the FETI-DP method. The latter call should be performed after having called PCSetUp() on the PCBDDC object.
+PCBDDCMatFETIDPGetRHS() maps the original right-hand side to a suitable right-hand side for the FETI-DP solver.
+The physical solution can be recovered by using PCBDDCMatFETIDPGetSolution().
+A stand-alone class for FETI-DP will be provided in future releases.
 
-For further details, see the example \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c}
+For further details, see the example \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c} and the online documentation for PCBDDC.
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
