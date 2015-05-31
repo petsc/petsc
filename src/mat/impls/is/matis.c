@@ -38,7 +38,7 @@ static PetscErrorCode MatISComputeSF_Private(Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetPreallocation"
-/*
+/*@
    MatISSetPreallocation - Preallocates memory for a MATIS parallel matrix.
 
    Collective on MPI_Comm
@@ -426,7 +426,7 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
 
   Level: developer
 
-  Notes:
+  Notes: mat and *newmat cannot be the same object when MAT_REUSE_MATRIX is requested.
 
 .seealso: MATIS
 @*/
@@ -441,6 +441,9 @@ PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
   if (reuse != MAT_INITIAL_MATRIX) {
     PetscValidHeaderSpecific(*newmat,MAT_CLASSID,3);
     PetscCheckSameComm(mat,1,*newmat,3);
+    if (mat == *newmat) {
+      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse the same matrix");
+    }
   }
   ierr = PetscUseMethod(mat,"MatISGetMPIXAIJ_C",(Mat,MatReuse,Mat*),(mat,reuse,newmat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -841,7 +844,7 @@ PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
 .  mat - the matrix
 
   Output Parameter:
-.  local - the local matrix usually MATSEQAIJ
+.  local - the local matrix
 
   Level: advanced
 
@@ -886,11 +889,11 @@ PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat"
 /*@
-    MatISSetLocalMat - Set the local matrix stored inside a MATIS matrix.
+    MatISSetLocalMat - Replace the local matrix stored inside a MATIS object.
 
   Input Parameter:
 .  mat - the matrix
-.  local - the local matrix usually MATSEQAIJ
+.  local - the local matrix
 
   Output Parameter:
 
@@ -1006,7 +1009,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 }
 
 /*MC
-   MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners, see PCBDDC.
+   MATIS - MATIS = "is" - A matrix type to be used for using the non-overlapping domain decomposition type preconditioners (e.g. PCBDDC).
    This stores the matrices in globally unassembled form. Each processor
    assembles only its local Neumann problem and the parallel matrix vector
    product is handled "implicitly".
@@ -1034,11 +1037,11 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
           You must call MatSetLocalToGlobalMapping() before using this matrix type.
 
           You can do matrix preallocation on the local matrix after you obtain it with
-          MatISGetLocalMat()
+          MatISGetLocalMat(); otherwise, you could use MatISSetPreallocation()
 
   Level: advanced
 
-.seealso: PC, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), PCBDDC
+.seealso: Mat, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), MatISSetPreallocation(), PCBDDC
 
 M*/
 
