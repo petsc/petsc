@@ -3508,7 +3508,7 @@ The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options \trl{-pc_factor_shift_type <shifttype>}
+You can run with the additional options
 \findex{-pc_factor_shift_type} or 
 \trl{-pc_factor_shift_type NONZERO}  \trl{-pc_factor_shift_amount  <dampingfactor>} \findex{-pc_factor_shift_amount} to
 prevent the zero pivot. A good choice for the \trl{dampingfactor} is 1.e-10.

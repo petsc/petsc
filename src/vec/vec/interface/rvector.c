@@ -1635,7 +1635,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d()
 @*/
 PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 {
@@ -1843,7 +1843,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    petsc/src/snes/examples/tutorials/ex5f.F for details.
    For Fortran 90 see VecRestoreArrayF90()
 
-.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
+.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecRestoreArrayReadF90(), VecPlaceArray(), VecRestoreArray2d()
 @*/
 PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 {
@@ -2038,13 +2038,13 @@ M*/
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
+    xx_v(3) = a
     call VecRestoreArrayF90(x,xx_v,ierr)
 .ve
 
     Level: beginner
 
-.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran
+.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran, VecRestoreArrayReadF90()
 
 M*/
 
@@ -2095,16 +2095,83 @@ M*/
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
+    xx_v(3) = a
     call VecRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    If you ONLY intend to read entries from the array and not change any entries you should use VecGetArrayReadF90().
+
+    Level: beginner
+
+.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), VecGetArrayReadF90(), UsingFortran
+
+M*/
+
+ /*MC
+    VecGetArrayReadF90 - Accesses a read only array from Fortran90. For default PETSc
+    vectors, VecGetArrayF90() returns a pointer to the local data array. Otherwise,
+    this routine is implementation dependent. You MUST call VecRestoreArrayReadF90()
+    when you no longer need access to the array.
+
+    Synopsis:
+    VecGetArrayReadF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Logically Collective on Vec
+
+    Input Parameter:
+.   x - vector
+
+    Output Parameters:
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
+
+    Example of Usage:
+.vb
+    PetscScalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayReadF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayReadF90(x,xx_v,ierr)
+.ve
+
+    If you intend to write entries into the array you must use VecGetArrayF90().
+
+    Level: beginner
+
+.seealso:  VecRestoreArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(), VecGetArrayF90(), UsingFortran
+
+M*/
+
+/*MC
+    VecRestoreArrayReadF90 - Restores a readonly vector to a usable state after a call to
+    VecGetArrayReadF90().
+
+    Synopsis:
+    VecRestoreArrayReadF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Logically Collective on Vec
+
+    Input Parameters:
++   x - vector
+-   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Example of Usage:
+.vb
+    PetscScalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayReadF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayReadF90(x,xx_v,ierr)
 .ve
 
     Level: beginner
 
-.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran
+.seealso:  VecGetArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(),UsingFortran, VecRestoreArrayF90()
 
 M*/
-
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArray2d"

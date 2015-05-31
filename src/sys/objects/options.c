@@ -166,7 +166,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 #endif
   } else {
     PetscToken token;
-    char       *tvalue;
+    char       *tvalue1,*tvalue2;
     PetscBool  neg = PETSC_FALSE, negim = PETSC_FALSE;
     PetscReal  re = 0.0,im = 0.0;
 
@@ -185,34 +185,37 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
     }
 
     ierr = PetscTokenCreate(name,'+',&token);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-    if (!tvalue) {
-      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
-      ierr = PetscTokenCreate(name,'-',&token);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&tvalue1);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&tvalue2);CHKERRQ(ierr);
+    if (!tvalue2) {
+      negim = PETSC_TRUE;
+      ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
+      ierr  = PetscTokenCreate(name,'-',&token);CHKERRQ(ierr);
+      ierr  = PetscTokenFind(token,&tvalue1);CHKERRQ(ierr);
+      ierr  = PetscTokenFind(token,&tvalue2);CHKERRQ(ierr);
     }
-    if (tvalue) {
-      ierr = PetscOptionsStringToReal(tvalue,&re);CHKERRQ(ierr);
-      if (neg) re = -re;
-      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-      if (!tvalue) {
-        *a = re;
-        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
+    if (!tvalue2) {
+      PetscBool isim;
+      ierr = PetscStrendswith(tvalue1,"i",&isim);CHKERRQ(ierr);
+      if (isim) {
+        tvalue2 = tvalue1;
+        tvalue1 = NULL;
+        negim   = neg;
       }
-      ierr = PetscStrlen(tvalue,&len);CHKERRQ(ierr);
-      if (tvalue[len-1] != 'i') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
-      tvalue[len-1] = 0;
-      ierr = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
-      if (negim) im = -im;
     } else {
-      ierr = PetscStrstr(name,"i",&tvalue);CHKERRQ(ierr);
-      if (tvalue) {
-        tvalue[0] = 0;
-        ierr = PetscOptionsStringToReal(name,&im);CHKERRQ(ierr);
-      } else {
-        ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
-      }
+      PetscBool isim;
+      ierr = PetscStrendswith(tvalue2,"i",&isim);CHKERRQ(ierr);
+      if (!isim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+    }
+    if (tvalue1) {
+      ierr = PetscOptionsStringToReal(tvalue1,&re);CHKERRQ(ierr);
+      if (neg) re = -re;
+    }
+    if (tvalue2) {
+      ierr = PetscStrlen(tvalue2,&len);CHKERRQ(ierr);
+      tvalue2[len-1] = 0;
+      ierr = PetscOptionsStringToReal(tvalue2,&im);CHKERRQ(ierr);
+      if (negim) im = -im;
     }
     ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)

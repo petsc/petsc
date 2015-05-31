@@ -942,6 +942,11 @@ struct _p_PetscToken {char token;char *array;char *current;};
      This version also treats all characters etc. inside a double quote "
    as a single token.
 
+     For example if the separator character is + and the string is xxxx+y then the first fine will return a pointer to a null terminated xxxx and the 
+   second will return a null terminated y
+
+     If the separator character is + and the string is xxxx then the first and only token found will be a pointer to a null terminated xxxx
+
     Not for use in Fortran
 
    Level: intermediate
@@ -983,10 +988,10 @@ PetscErrorCode  PetscTokenFind(PetscToken a,char *result[])
 
    Input Parameters:
 +  string - the string to look in
--  token - the character to look for
+-  b - the separator character
 
    Output Parameter:
-.  a - pointer to token
+.  t- the token object
 
    Notes:
 
