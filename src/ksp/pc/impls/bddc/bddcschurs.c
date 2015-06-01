@@ -872,7 +872,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
 #endif
 
-    if (compute_Stilda && local_size) {
+    if (compute_Stilda && size_active_schur) {
       if (sub_schurs->n_subs == 1 && size_schur == size_active_schur) { /* we already computed the inverse */
         PetscInt j;
         for (j=0;j<size_schur;j++) dummy_idx[j] = j;
