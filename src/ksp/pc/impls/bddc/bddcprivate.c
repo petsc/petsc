@@ -4035,6 +4035,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     /* see if we can avoid some work */
     if (pcbddc->coarse_ksp) { /* coarse ksp has already been created */
       if (ocoarse_size != pcbddc->coarse_size) { /* ...but with different size, so reset it and set reuse flag to false */
+        PC        pc;
+        PetscBool isbddc;
+
+        /* temporary workaround since PCBDDC does not have a reset method so far */
+        ierr = KSPGetPC(pcbddc->coarse_ksp,&pc);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
+        if (isbddc) {
+          ierr = PCDestroy(&pc);CHKERRQ(ierr);
+        }
         ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
         coarse_reuse = PETSC_FALSE;
       } else { /* we can safely reuse already computed coarse matrix */
