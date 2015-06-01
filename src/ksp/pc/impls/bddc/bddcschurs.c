@@ -385,6 +385,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = PetscCommDestroy(&comm_n);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  /* ierr = PetscCommDuplicate(PetscObjectComm((PetscObject)sub_schurs->l2gmap),&comm_n,NULL);CHKERRQ(ierr); */
 
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
@@ -497,7 +498,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* Work arrays for local indices */
   extra = 0;
-  if (sub_schurs->use_mumps) {
+  if (sub_schurs->use_mumps && is_I_layer) {
     ierr = ISGetLocalSize(is_I_layer,&extra);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(local_size+extra,&all_local_idx_N);CHKERRQ(ierr);
@@ -532,7 +533,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   /* allocate extra workspace needed only for GETRI */
   Bwork = NULL;
   pivots = NULL;
-  if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
+  if (local_size && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
     PetscScalar lwork;
 
     B_lwork = -1;
@@ -679,7 +680,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscBool   mumps_S;
 
     /* get working mat */
-    ierr = ISGetLocalSize(is_I_layer,&n_I);CHKERRQ(ierr);
+    n_I = 0;
+    if (is_I_layer) {
+      ierr = ISGetLocalSize(is_I_layer,&n_I);CHKERRQ(ierr);
+    }
     if (!sub_schurs->is_dir) {
       ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size+n_I,all_local_idx_N,PETSC_COPY_VALUES,&is_A_all);CHKERRQ(ierr);
       size_schur = local_size;
@@ -868,7 +872,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
 #endif
 
-    if (compute_Stilda) {
+    if (compute_Stilda && local_size) {
       if (sub_schurs->n_subs == 1 && size_schur == size_active_schur) { /* we already computed the inverse */
         PetscInt j;
         for (j=0;j<size_schur;j++) dummy_idx[j] = j;
