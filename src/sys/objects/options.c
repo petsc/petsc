@@ -2598,7 +2598,7 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectViewFromOptions"
 /*@C
-  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed. 
+  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed.
 
   Collective on PetscObject
 

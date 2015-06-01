@@ -1,18 +1,11 @@
 
 static char help[] = "Illustrates use of the preconditioner GASM.\n\
 The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
-code indicates the procedure for setting user-defined subdomains.  Input\n\
-parameters include:\n\
-  -M:                           Number of mesh points in the x direction\n\
-  -N:                           Number of mesh points in the y direction\n\
-  -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\
-  -user_set_subdomains:         Use the user-provided subdomain partitioning routine\n\
-With -user_set_subdomains on, the following options are meaningful:\n\
-  -Mdomains:                    Number of subdomains in the x direction \n\
-  -Ndomains:                    Number of subdomains in the y direction \n\
-  -overlap:                     Size of domain overlap in terms of the number of mesh lines in x and y\n\
-General useful options:\n\
-  -pc_gasm_print_subdomains:    Print the index sets defining the subdomains\n\
+code indicates the procedure for setting user-defined subdomains.\n\
+See section 'ex62' below for command-line options.\n\
+Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
+  -pc_gasm_total_subdomains\n\
+  -pc_gasm_print_subdomains\n\
 \n";
 
 /*
@@ -40,8 +33,8 @@ T*/
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
+     petscsys.h    - base PETSc routines   petscvec.h - vectors
+     petscmat.h    - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
@@ -58,26 +51,34 @@ int main(int argc,char **args)
   KSP            ksp;                    /* linear solver context */
   PC             pc;                     /* PC context */
   IS             *inneris,*outeris;      /* array of index sets that define the subdomains */
-  PetscInt       overlap = 1;            /* width of subdomain overlap */
+  PetscInt       overlap;                /* width of subdomain overlap */
   PetscInt       Nsub;                   /* number of subdomains */
-  PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
-  PetscInt       M = 2,N = 1;            /* number of subdomains in x- and y- directions */
+  PetscInt       m,n;                    /* mesh dimensions in x- and y- directions */
+  PetscInt       M,N;                    /* number of subdomains in x- and y- directions */
   PetscInt       i,j,Ii,J,Istart,Iend;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscBool      flg;
-  PetscBool      user_set_subdomains = PETSC_FALSE;
+  PetscBool      user_set_subdomains;
   PetscScalar    v, one = 1.0;
   PetscReal      e;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-M",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-user_set_subdomains",&user_set_subdomains,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Mdomains",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Ndomains",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-overlap",&overlap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");CHKERRQ(ierr);
+  m = 15;
+  ierr = PetscOptionsInt("-M", "Number of mesh points in the x-direction","PCGASMCreateSubdomains2D",m,&m,NULL);CHKERRQ(ierr);
+  n = 17;
+  ierr = PetscOptionsInt("-N","Number of mesh points in the y-direction","PCGASMCreateSubdomains2D",n,&n,NULL);CHKERRQ(ierr);
+  user_set_subdomains = PETSC_FALSE;
+  ierr = PetscOptionsBool("-user_set_subdomains","Use the user-specified 2D tiling of mesh by subdomains","PCGASMCreateSubdomains2D",user_set_subdomains,&user_set_subdomains,NULL);CHKERRQ(ierr);
+  M = 2;
+  ierr = PetscOptionsInt("-Mdomains","Number of subdomain tiles in the x-direction","PCGASMSetSubdomains2D",M,&M,NULL);CHKERRQ(ierr);
+  N = 1;
+  ierr = PetscOptionsInt("-Ndomains","Number of subdomain tiles in the y-direction","PCGASMSetSubdomains2D",N,&N,NULL);CHKERRQ(ierr);
+  overlap = 1;
+  ierr = PetscOptionsInt("-overlap","Size of tile overlap.","PCGASMSetSubdomains2D",overlap,&overlap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -163,11 +164,10 @@ int main(int argc,char **args)
      to set the subdomains for the GASM preconditioner.
   */
 
-  if (!user_set_subdomains) { /* basic version */
-    ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
-  } else { /* advanced version */
+  if (user_set_subdomains) { /* user-control version */
     ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris);CHKERRQ(ierr);
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
+    ierr = PCGASMDestroySubdomains(Nsub,&inneris,&outeris);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
@@ -183,6 +183,8 @@ int main(int argc,char **args)
         ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
+  } else { /* basic setup */
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------
@@ -287,9 +289,6 @@ int main(int argc,char **args)
      are no longer needed.
   */
 
-  if (user_set_subdomains) {
-    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris);CHKERRQ(ierr);
-  }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
