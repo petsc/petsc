@@ -577,5 +577,7 @@ PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal []);
 
+PETSC_EXTERN PetscErrorCode PetscSFCreateFromZero(MPI_Comm,Vec,PetscSF*);
+
 #endif
 
