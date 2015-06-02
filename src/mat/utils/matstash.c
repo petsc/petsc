@@ -886,7 +886,8 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   ierr = PetscSegBufferGetSize(stash->segsendblocks,&nblocks);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(stash->segsendblocks,&sendblocks);CHKERRQ(ierr);
   if (stash->subset_off_proc && mat->subsetoffprocentries) { /* Set up sendhdrs and sendframes for each rank that we sent before */
-    PetscInt i,b;
+    PetscInt i;
+    size_t b;
     for (i=0,b=0; i<stash->nsendranks; i++) {
       stash->sendframes[i].buffer = &sendblocks[b*stash->blocktype_size];
       /* sendhdr is never actually sent, but the count is used by MatStashBTSSend_Private */
@@ -899,7 +900,8 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       }
     }
   } else {                      /* Dynamically count and pack (first time) */
-    PetscInt i,rowstart,sendno;
+    PetscInt sendno;
+    size_t i,rowstart;
 
     /* Count number of send ranks and allocate for sends */
     stash->nsendranks = 0;
@@ -941,7 +943,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   /* Encode insertmode on the outgoing messages. If we want to support more than two options, we would need a new
    * message or a dummy entry of some sort. */
   if (mat->insertmode == INSERT_VALUES) {
-    PetscInt i;
+    size_t i;
     for (i=0; i<nblocks; i++) {
       MatStashBlock *sendblock_i = (MatStashBlock*)&sendblocks[i*stash->blocktype_size];
       sendblock_i->row = -(sendblock_i->row+1);
