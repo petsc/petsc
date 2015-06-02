@@ -1278,7 +1278,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateSubDM"
-/*@C
+/*@
   DMCreateSubDM - Returns an IS and DM encapsulating a subproblem defined by the fields passed in.
                   The fields are defined by DMCreateFieldIS().
 
