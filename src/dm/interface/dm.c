@@ -526,6 +526,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
 
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
@@ -4382,5 +4383,55 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
     *val = PetscRealPart(value);
 #endif
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetUseNatural"
+/*@
+  DMGetUseNatural - Get the flag for creating a mapping to the natural order on distribution
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. useNatural - The flag to build the mapping to a natural order during distribution
+
+  Level: beginner
+
+.seealso: DMSetUseNatural(), DMCreate()
+@*/
+PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(useNatural, 2);
+  *useNatural = dm->useNatural;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetUseNatural"
+/*@
+  DMSetUseNatural - Set the flag for creating a mapping to the natural order on distribution
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The DM
+- useNatural - The flag to build the mapping to a natural order during distribution
+
+  Level: beginner
+
+.seealso: DMGetUseNatural(), DMCreate()
+@*/
+PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, useNatural, 2);
+  dm->useNatural = useNatural;
   PetscFunctionReturn(0);
 }
