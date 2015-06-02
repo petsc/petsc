@@ -105,6 +105,7 @@ int main(int argc,char *argv[])
   IS             is0,is1;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
 
   /* Test the Schur complement one way */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
