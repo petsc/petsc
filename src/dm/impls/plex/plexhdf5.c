@@ -171,6 +171,22 @@ PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecView_Plex_HDF5_Native"
+PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
+{
+  PetscBool      isseq;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+  if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+  else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_Plex_HDF5"
 PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
 {
@@ -193,6 +209,24 @@ PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
   ierr = DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex_HDF5_Native"
+PetscErrorCode VecLoad_Plex_HDF5_Native(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscInt       seqnum;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetOutputSequenceNumber(dm, &seqnum, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+  ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

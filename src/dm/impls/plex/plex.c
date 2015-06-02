@@ -135,6 +135,62 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecView_Plex_Native"
+PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
+{
+  DM                dm;
+  MPI_Comm          comm;
+  PetscViewerFormat format;
+  Vec               v;
+  PetscBool         isvtk, ishdf5;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(originalv, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectGetComm((PetscObject) originalv, &comm);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_NATIVE) {
+    const char *vecname;
+    PetscInt    n, nroots;
+
+    if (dm->sfNatural) {
+      ierr = VecGetLocalSize(originalv, &n);
+      ierr = PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+      if (n == nroots) {
+        ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+        ierr = DMPlexGlobalToNaturalBegin(dm, originalv, v);CHKERRQ(ierr);
+        ierr = DMPlexGlobalToNaturalEnd(dm, originalv, v);CHKERRQ(ierr);
+        ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
+      } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "DM global to natural SF only handles global vectors");
+    } else SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created");
+  } else {
+    /* we are viewing a natural DMPlex vec. */
+    v = originalv;
+  }
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = VecView_Plex_HDF5_Native(v, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(comm, PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else if (isvtk) {
+    SETERRQ(comm, PETSC_ERR_SUP, "VTK format does not support viewing in natural order. Please switch to HDF5.");
+  } else {
+    PetscBool isseq;
+
+    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+  }
+  if (format == PETSC_VIEWER_NATIVE) {ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_Plex_Local"
 PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
 {
@@ -185,6 +241,43 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 #endif
   } else {
     ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex_Native"
+PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
+{
+  DM                dm;
+  PetscViewerFormat format;
+  PetscBool         ishdf5;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(originalv, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject) originalv), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_NATIVE) {
+    if (dm->sfNatural) {
+      if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+        Vec         v;
+        const char *vecname;
+
+        ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+        ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
+        ierr = VecLoad_Plex_HDF5_Native(v, viewer);CHKERRQ(ierr);
+        ierr = DMPlexNaturalToGlobalBegin(dm, v, originalv);CHKERRQ(ierr);
+        ierr = DMPlexNaturalToGlobalEnd(dm, v, originalv);CHKERRQ(ierr);
+        ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
+#else
+        SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Reading in natural order is not supported for anything but HDF5.");
+    }
   }
   PetscFunctionReturn(0);
 }

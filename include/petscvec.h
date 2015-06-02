@@ -472,7 +472,7 @@ PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
     These numbers need to match the entries in
   the function table in vecimpl.h
 */
-typedef enum { VECOP_VIEW = 33, VECOP_LOAD = 41, VECOP_DUPLICATE = 0} VecOperation;
+typedef enum { VECOP_DUPLICATE = 0, VECOP_VIEW = 33, VECOP_LOAD = 41, VECOP_VIEWNATIVE = 68, VECOP_LOADNATIVE = 68 } VecOperation;
 PETSC_EXTERN PetscErrorCode VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*
