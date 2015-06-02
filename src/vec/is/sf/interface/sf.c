@@ -1305,3 +1305,42 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFCompose"
+/*@
+  PetscSFCompose - Compose a new PetscSF equivalent to action to PetscSFs
+
+  Input Parameters:
++ sfA - The first PetscSF
+- sfB - The second PetscSF
+
+  Output Parameters:
+. sfBA - equvalent PetscSF for applying A then B
+
+  Level: developer
+
+.seealso: PetscSF, PetscSFGetGraph(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
+{
+  MPI_Comm           comm;
+  const PetscSFNode *remotePointsA, *remotePointsB;
+  PetscSFNode       *remotePointsBA;
+  const PetscInt    *localPointsA, *localPointsB;
+  PetscInt           numRootsA, numLeavesA, numRootsB, numLeavesB;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfA, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 1);
+  ierr = PetscObjectGetComm((PetscObject) sfA, &comm);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesB, &remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA, numRootsA, numLeavesB, localPointsB, PETSC_COPY_VALUES, remotePointsBA, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

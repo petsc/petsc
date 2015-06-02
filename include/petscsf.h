@@ -109,6 +109,8 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF,MPI_Datatype,const void 
 PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 
+PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF,PetscSF,PetscSF*);
+
 #if defined(MPI_REPLACE)
 #  define MPIU_REPLACE MPI_REPLACE
 #else
