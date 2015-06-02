@@ -894,6 +894,50 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateEmbeddedLeafSF"
+/*@C
+  PetscSFCreateEmbeddedLeafSF - removes edges from all but the selected leaves, does not remap indices
+
+  Collective
+
+  Input Arguments:
++ sf - original star forest
+. nleaves - number of leaves to select on this process
+- selected - selected leaves on this process
+
+  Output Arguments:
+.  newsf - new star forest
+
+  Level: advanced
+
+.seealso: PetscSFCreateEmbeddedSF(), PetscSFSetGraph(), PetscSFGetGraph()
+@*/
+PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nleaves, const PetscInt *selected, PetscSF *newsf)
+{
+  PetscSFNode   *iremote;
+  PetscInt      *ilocal;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  if (nleaves) PetscValidPointer(selected, 3);
+  PetscValidPointer(newsf, 4);
+  ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves, &iremote);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; ++i) {
+    const PetscInt l = selected[i];
+
+    ilocal[i]        = sf->mine ? sf->mine[l] : l;
+    iremote[i].rank  = sf->remote[l].rank;
+    iremote[i].index = sf->remote[l].index;
+  }
+  ierr = PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, newsf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*newsf, sf->nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFBcastBegin"
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()

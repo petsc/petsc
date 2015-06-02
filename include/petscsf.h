@@ -74,6 +74,7 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const Pets
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt *nroots,PetscInt *nleaves,const PetscInt **ilocal,const PetscSFNode **iremote);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt nroots,const PetscInt *selected,PetscSF *newsf);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt *, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
