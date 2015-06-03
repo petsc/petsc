@@ -320,10 +320,9 @@ class Package(config.base.Configure):
     return os.path.join(prefix, includeDir)
 
   def generateGuesses(self):
-    libdirs = list(set([self.libdir, self.altlibdir, '']))
     d = self.checkDownload()
     if d:
-      for libdir in libdirs:
+      for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': Downloaded DirPath not found.. skipping: '+libdirpath)
@@ -359,7 +358,7 @@ class Package(config.base.Configure):
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
 
-      for libdir in libdirs:
+      for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': UserSpecified DirPath not found.. skipping: '+libdirpath)
@@ -406,7 +405,7 @@ class Package(config.base.Configure):
           self.logPrint(self.PACKAGE+': SearchDir DirPath not found.. skipping: '+d)
           continue
         includedir = self.getIncludeDirs(d, self.includedir)
-        for libdir in libdirs:
+        for libdir in [self.libdir, self.altlibdir]:
           libdirpath = os.path.join(d, libdir)
           if not os.path.isdir(libdirpath):
             self.logPrint(self.PACKAGE+': DirPath not found.. skipping: '+libdirpath)
