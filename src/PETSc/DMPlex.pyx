@@ -343,6 +343,19 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetLabelIdIS(self.dm, cname, &lis.iset) )
         return lis
 
+    def setLabelOutput(self, name, output):
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef PetscBool coutput = output
+        CHKERR( DMPlexSetLabelOutput(self.dm, cname, coutput) )
+
+    def getLabelOutput(self, name):
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef PetscBool coutput = PETSC_FALSE
+        CHKERR( DMPlexGetLabelOutput(self.dm, cname, &coutput) )
+        return coutput
+
     def getStratumSize(self, name, value):
         cdef PetscInt size = 0
         cdef PetscInt cvalue = asInt(value)

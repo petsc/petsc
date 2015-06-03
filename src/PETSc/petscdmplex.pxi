@@ -56,6 +56,8 @@ cdef extern from * nogil:
     int DMPlexGetStratumSize(PetscDM,const_char[],PetscInt,PetscInt*)
     int DMPlexGetStratumIS(PetscDM,const_char[],PetscInt,PetscIS*)
     int DMPlexClearLabelStratum(PetscDM,const_char[],PetscInt)
+    int DMPlexSetLabelOutput(PetscDM,const_char[],PetscBool)
+    int DMPlexGetLabelOutput(PetscDM,const_char[],PetscBool*)
     #int PetscSectionCreateGlobalSectionLabel(PetscSection,PetscSF,PetscBool,PetscDMLabel,PetscInt,PetscSection*)
 
     int DMPlexGetNumLabels(PetscDM,PetscInt*)
