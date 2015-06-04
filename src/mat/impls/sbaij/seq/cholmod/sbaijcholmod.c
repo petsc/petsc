@@ -381,7 +381,9 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverP
   MATSOLVERCHOLMOD = "cholmod" - A matrix type providing direct solvers (Cholesky) for sequential matrices
   via the external package CHOLMOD.
 
-  ./configure --download-suitesparse to install PETSc to use CHOLMOD
+  Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
+
+  Use -pc_type lu -pc_factor_mat_solver_package cholmod to use this direct solver
 
   Consult CHOLMOD documentation for more information about the Common parameters
   which correspond to the options database keys below.

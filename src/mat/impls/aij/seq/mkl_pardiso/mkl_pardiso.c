@@ -692,6 +692,8 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
   Works with MATSEQAIJ matrices
 
+  Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to us this direct solver
+
   Options Database Keys:
 + -mat_mkl_pardiso_65 - Number of thrads to use
 . -mat_mkl_pardiso_66 - Maximum number of factors with identical sparsity structure that must be kept in memory at the same time

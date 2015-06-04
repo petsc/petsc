@@ -90,9 +90,7 @@ typedef const char* MatType;
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
 
-    For example: "petsc" indicates what PETSc provides, "superlu" indicates either
-       SuperLU or SuperLU_Dist etc.
-
+    For example: "petsc" indicates what PETSc provides, "superlu_dist" the parallel SuperLU_DIST package etc
 
    Level: beginner
 
