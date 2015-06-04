@@ -22,6 +22,11 @@ cdef extern from * nogil:
                                                                  char***,
                                                                  PetscIS**,
                                                                  PetscDM**) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscDMShellCreateSubDM)(PetscDM,
+                                            PetscInt,
+                                            PetscInt[],
+                                            PetscIS*,
+                                            PetscDM*) except PETSC_ERR_PYTHON
     int DMShellCreate(MPI_Comm,PetscDM*)
     int DMShellSetMatrix(PetscDM,PetscMat)
     int DMShellSetGlobalVector(PetscDM,PetscVec)
@@ -40,6 +45,7 @@ cdef extern from * nogil:
     int DMShellSetCreateInterpolation(PetscDM,PetscDMShellCreateInterpolationFunction)
     int DMShellSetCreateInjection(PetscDM,PetscDMShellCreateInjectionFunction)
     int DMShellSetCreateFieldDecomposition(PetscDM,PetscDMShellCreateFieldDecompositionFunction)
+    int DMShellSetCreateSubDM(PetscDM,PetscDMShellCreateSubDM)
 
 cdef int DMSHELL_CreateGlobalVector(
     PetscDM dm,
@@ -306,3 +312,27 @@ cdef int DMSHELL_CreateFieldDecomposition(
             dmlist[0][i] = (<DM?>dms[i]).dm
             PetscINCREF((<DM?>dms[i]).obj)
     return 0
+
+cdef int DMSHELL_CreateSubDM(
+    PetscDM cdm,
+    PetscInt numFields,
+    PetscInt cfields[],
+    PetscIS *ciset,
+    PetscDM *csubdm) except PETSC_ERR_PYTHON with gil:
+    cdef DM dm = subtype_DM(cdm)()
+    cdef IS iset
+    cdef DM subdm
+    dm.dm = cdm
+    PetscINCREF(dm.obj)
+    context = dm.get_attr('__create_subdm__')
+    assert context is not None and type(context) is tuple
+    (create_subdm, args, kargs) = context
+
+    fields = array_i(numFields, cfields)
+
+    iset, subdm = create_subdm(dm, fields, *args, **kargs)
+
+    PetscINCREF(iset.obj)
+    PetscINCREF(subdm.obj)
+    ciset[0] = iset.iset
+    csubdm[0] = subdm.dm
