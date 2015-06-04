@@ -29,6 +29,7 @@
 #  define LAPACKtgsen_ stgsen
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_ spotrf
+#  define LAPACKpotri_ spotri
 #  define LAPACKpotrs_ spotrs
 #  define LAPACKpotri_ spotri
 #  define LAPACKsytrf_ ssytrf
@@ -77,6 +78,7 @@
 #  define LAPACKtgsen_ dtgsen
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_ dpotrf
+#  define LAPACKpotri_ dpotri
 #  define LAPACKpotrs_ dpotrs
 #  define LAPACKpotri_ dpotri
 #  define LAPACKsytrf_ dsytrf
@@ -125,6 +127,7 @@
 #  define LAPACKtgsen_ ctgsen
 /* Complex single precision with character string arguments */
 #  define LAPACKpotrf_ cpotrf
+#  define LAPACKpotri_ cpotri
 #  define LAPACKpotrs_ cpotrs
 #  define LAPACKpotri_ cpotri
 #  define LAPACKsytrf_ csytrf
@@ -174,6 +177,7 @@
 #  define LAPACKtgsen_ ztgsen
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_ zpotrf
+#  define LAPACKpotri_ zpotri
 #  define LAPACKpotrs_ zpotrs
 #  define LAPACKpotri_ zpotri
 #  define LAPACKsytrf_ zsytrf
