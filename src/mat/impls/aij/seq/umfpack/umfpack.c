@@ -404,6 +404,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;
   B->ops->destroy          = MatDestroy_UMFPACK;
   B->ops->view             = MatView_UMFPACK;
+  B->ops->matsolve         = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_umfpack);CHKERRQ(ierr);
 

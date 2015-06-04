@@ -234,7 +234,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   lu->flg                = SAME_NONZERO_PATTERN;
   F->ops->solve          = MatSolve_SuperLU;
   F->ops->solvetranspose = MatSolveTranspose_SuperLU;
-  F->ops->matsolve       = MatMatSolve_SuperLU;
+  F->ops->matsolve       = NULL;
   PetscFunctionReturn(0);
 }
 
