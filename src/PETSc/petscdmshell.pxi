@@ -289,7 +289,7 @@ cdef int DMSHELL_CreateFieldDecomposition(
             clen[0] = 0
 
     if namelist != NULL and names is not None:
-        CHKERR( PetscMalloc(len(names), namelist) )
+        CHKERR( PetscMalloc(len(names)*sizeof(char**), namelist) )
         for i in range(len(names)):
             names[i] = str2bytes(names[i], &cname)
             CHKERR( PetscStrallocpy(cname, &(namelist[0][i])) )
