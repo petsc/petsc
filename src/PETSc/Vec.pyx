@@ -356,8 +356,11 @@ cdef class Vec(Object):
         CHKERR( MPI_Comm_size(comm, &size) )
         return array_i(size+1, rng)
 
-    def getArray(self):
-        return vec_getarray(self)
+    def getArray(self, readonly=False):
+        if readonly:
+            return vec_getarray_r(self)
+        else:
+            return vec_getarray_w(self)
 
     def setArray(self, array):
         vec_setarray(self, array)

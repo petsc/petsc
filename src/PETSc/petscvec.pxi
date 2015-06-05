@@ -52,6 +52,8 @@ cdef extern from * nogil:
     int VecGetOwnershipRange(PetscVec,PetscInt*,PetscInt*)
     int VecGetOwnershipRanges(PetscVec,const_PetscInt*[])
 
+    int VecGetArrayRead(PetscVec,const_PetscScalar*[])
+    int VecRestoreArrayRead(PetscVec,const_PetscScalar*[])
     int VecGetArray(PetscVec,PetscScalar*[])
     int VecRestoreArray(PetscVec,PetscScalar*[])
     int VecPlaceArray(PetscVec,PetscScalar[])
@@ -326,8 +328,15 @@ cdef object vecgetvalues(PetscVec vec, object oindices, object values):
 
 # --------------------------------------------------------------------
 
-cdef inline object vec_getarray(Vec self):
-    return asarray(self)
+cdef inline object vec_getarray_r(Vec self):
+    cdef _Vec_buffer buf = _Vec_buffer(self)
+    buf.readonly = 1
+    return asarray(buf)
+
+cdef inline object vec_getarray_w(Vec self):
+    cdef _Vec_buffer buf = _Vec_buffer(self)
+    buf.readonly = 0
+    return asarray(buf)
 
 cdef inline int vec_setarray(Vec self, object o) except -1:
     cdef PetscInt na=0, nv=0, i=0
@@ -379,11 +388,22 @@ cdef extern from "pep3118.h":
 
 # --------------------------------------------------------------------
 
+cdef int Vec_AcquireArray(PetscVec v, PetscScalar *a[], int ro) nogil except -1:
+    if ro: CHKERR( VecGetArrayRead(v, <const_PetscScalar**>a) )
+    else:  CHKERR( VecGetArray(v, a) )
+    return 0
+
+cdef int Vec_ReleaseArray(PetscVec v, PetscScalar *a[], int ro) nogil except -1:
+    if ro: CHKERR( VecRestoreArrayRead(v, <const_PetscScalar**>a) )
+    else:  CHKERR( VecRestoreArray(v, a) )
+    return 0
+
 cdef class _Vec_buffer:
 
     cdef PetscVec vec
     cdef PetscInt size
     cdef PetscScalar *data
+    cdef bint readonly
 
     def __cinit__(self, Vec vec not None):
         cdef PetscVec v = vec.vec
@@ -391,10 +411,11 @@ cdef class _Vec_buffer:
         self.vec = v
         self.size = 0
         self.data = NULL
+        self.readonly = 0
 
     def __dealloc__(self):
         if self.vec != NULL and self.data != NULL:
-            CHKERR( VecRestoreArray(self.vec, &self.data) )
+            Vec_ReleaseArray(self.vec, &self.data, self.readonly)
         CHKERR( VecDestroy(&self.vec) )
 
     #
@@ -402,12 +423,12 @@ cdef class _Vec_buffer:
     cdef int acquire(self) except -1:
         if self.vec != NULL and self.data == NULL:
             CHKERR( VecGetLocalSize(self.vec, &self.size) )
-            CHKERR( VecGetArray(self.vec, &self.data) )
+            Vec_AcquireArray(self.vec, &self.data, self.readonly)
         return 0
 
     cdef int release(self) except -1:
         if self.vec != NULL and self.data != NULL:
-            CHKERR( VecRestoreArray(self.vec, &self.data) )
+            Vec_ReleaseArray(self.vec, &self.data, self.readonly)
             self.size = 0
             self.data = NULL
         return 0
@@ -417,7 +438,7 @@ cdef class _Vec_buffer:
     cdef int acquirebuffer(self, Py_buffer *view, int flags) except -1:
         self.acquire()
         PyPetscBuffer_FillInfo(view, <void*>self.data,
-                               self.size, c's', 0, flags)
+                               self.size, c's', self.readonly, flags)
         view.obj = self
         return 0
 
@@ -457,7 +478,7 @@ cdef class _Vec_buffer:
             CHKERR( VecGetLocalSize(self.vec, &self.size) )
         if p != NULL:
             if self.vec != NULL and self.data == NULL:
-                CHKERR( VecGetArray(self.vec, &self.data) )
+                Vec_AcquireArray(self.vec, &self.data, self.readonly)
             p[0] = <void*>self.data
         return <Py_ssize_t>(<size_t>self.size*sizeof(PetscScalar))
 

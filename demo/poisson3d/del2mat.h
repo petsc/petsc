@@ -9,7 +9,7 @@
 
 /* external Fortran 90 subroutine */
 #define Del2Apply del2apply_
-extern void Del2Apply(int*,double*,double*,double*);
+extern void Del2Apply(int*,double*,const double*,double*);
 
 /* user data structure and routines 
  * defining the matrix-free operator */
@@ -25,17 +25,18 @@ typedef struct {
 PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y) 
 {
   Del2Mat *ctx;
-  PetscScalar *xx,*yy;
+  const PetscScalar *xx;
+  PetscScalar *yy;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
   /* get raw vector arrays */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
   /* call external Fortran subroutine */
   Del2Apply(&ctx->N,ctx->F,xx,yy);
   /* restore raw vector arrays */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -25,14 +25,14 @@ class AppCtx:
         self._formInitial = formInitial
 
     def formInitial(self, t, X):
-        xx = X[...].reshape(self.n, order='f')
-        self._formInitial(self.h, t,xx)
+        xx = X.getArray(readonly=0).reshape(self.n, order='f')
+        self._formInitial(self.h, t, xx)
 
     def formFunction(self, ts, t, X, Xdot, F):
         n = self.n
         h = self.h
-        x = X[...].reshape(n, order='f')
-        xdot = Xdot[...].reshape(n, order='f')
+        x = X.getArray(readonly=1).reshape(n, order='f')
+        xdot = Xdot.getArray(readonly=1).reshape(n, order='f')
         f = F[...].reshape(n, order='f')
         self._formFunction(h, t, x, xdot, f)
 
@@ -40,7 +40,7 @@ class AppCtx:
         nx, ny, nz = self.n
         from numpy import mgrid
         #
-        U = x[...].reshape(nx,ny,nz, order='f')
+        U = x.getArray(readonly=1).reshape(nx,ny,nz, order='f')
         #
         X, Y =  mgrid[0:1:1j*nx,0:1:1j*ny]
         Z = U[:,:,nz//2]
