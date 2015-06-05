@@ -25,7 +25,7 @@ int main(int argc,char **args)
   PetscMPIInt     rank,size;
   PetscInt        *ia,*ja;
   MatPartitioning part;
-  IS              is,isn;
+  IS              is,isn,isrows;
   IS              coarseparts,fineparts;
   MPI_Comm        comm;
 
@@ -54,12 +54,10 @@ int main(int argc,char **args)
     ja[8] = 11; ja[9] = 14;
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
-
   ierr = MatCreateMPIAdj(comm,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   /*
-       Partition the graph of the matrix
+   Partition the graph of the matrix
   */
   ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
@@ -80,20 +78,19 @@ int main(int argc,char **args)
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(is,&isrows);CHKERRQ(ierr);
+  ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
   ierr = ISDestroy(&fineparts);CHKERRQ(ierr);
-
+  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&isn);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
-
   /*
-       Free work space.  All PETSc objects should be destroyed when they
-       are no longer needed.
+    Free work space.  All PETSc objects should be destroyed when they
+    are no longer needed.
   */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-
-
   ierr = PetscFinalize();
   return 0;
 }
