@@ -19,7 +19,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 typedef struct {
   char*                fineparttype; /* partitioner on fine level */
   char*                coarseparttype; /* partitioner on coarse level */
-  PetscInt             Nfineparts; /* number of fine parts on each coarse subdomain*/
+  PetscInt             Nfineparts; /* number of fine parts on each coarse subdomain */
   PetscInt             Ncoarseparts; /* number of coarse parts */
   IS                   coarseparts; /* partitioning on coarse level */
   IS                   fineparts; /* partitioning on fine level */
@@ -102,23 +102,13 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   }*/
   ierr = MatPartitioningApply(coarsePart,&hpart->coarseparts);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&coarsePart);CHKERRQ(ierr);
-#if 0
-  ierr = ISView(hpart->coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
   /* In the current implementation, destination should be the same as hpart->coarseparts,
    * and this interface is preserved to deal with the case hpart->coarseparts>size in the
    * future.
    * */
   ierr = MatPartitioningHierarchical_DetermineDestination(part,hpart->coarseparts,0,hpart->Ncoarseparts,&destination);CHKERRQ(ierr);
-#if 0
-  ierr = ISView(destination,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
   /* create a sub-matrix*/
   ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,destination,&sadj,&mapping);CHKERRQ(ierr);
-#if 0
-  ierr = MatView(sadj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
   ierr = ISDestroy(&destination);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sadj,&scomm);CHKERRQ(ierr);
   /*create a fine partitioner */
@@ -134,16 +124,8 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
   ierr = MatDestroy(&sadj);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
-#if 0
-  ierr = ISView(fineparts_temp,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
   ierr = MatPartitioningHierarchical_ReassembleFineparts(adj,fineparts_temp,mapping,&hpart->fineparts);CHKERRQ(ierr);
   ierr = ISDestroy(&fineparts_temp);CHKERRQ(ierr);
-#if 0
-  ierr = ISView(hpart->fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-#endif
   ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
 
   ierr = ISGetIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
@@ -155,18 +137,13 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     }
   }
   ierr = ISCreateGeneral(comm,bs*adj->rmap->n,parts_indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
-#if 0
-  ierr = ISView(*partitioning,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  /*SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"stop stop stop here \n");*/
-#endif
   ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchPart_ReassembleFineparts"
+#define __FUNCT__ "MatPartitioningHierarchical_ReassembleFineparts"
 PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
 {
   PetscInt            *local_indices, *global_indices,*owners,*sfineparts_indices,localsize,i;;
@@ -228,6 +205,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
 {
   IS              irows,icols;
   PetscInt        irows_ln;
+  PetscMPIInt     rank;
   const PetscInt *irows_indices;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -235,6 +213,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   PetscFunctionBegin;
   /*get comm*/
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   /*get rows from remote and local */
   ierr = ISBuildTwoSided(destination,&irows);CHKERRQ(ierr);
   ierr = ISDuplicate(irows,&icols);CHKERRQ(ierr);
@@ -253,7 +232,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchPart_DetermineDestination"
+#define __FUNCT__ "MatPartitioningHierarchical_DetermineDestination"
 PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
 {
   MPI_Comm            comm;
