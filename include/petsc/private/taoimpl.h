@@ -112,6 +112,7 @@ struct _p_Tao {
     PetscInt  nfuncgrads;
     PetscInt  nhess;
     PetscInt  niter;
+    PetscInt  ntotalits;
     PetscInt  nconstraints;
     PetscInt  niconstraints;
     PetscInt  neconstraints;
@@ -138,10 +139,20 @@ struct _p_Tao {
     PetscReal gttol;
     PetscReal catol;
     PetscReal crtol;
-    PetscReal xtol;
     PetscReal steptol;
     PetscReal fmin;
-
+    PetscBool max_funcs_changed;
+    PetscBool max_it_changed;
+    PetscBool fatol_changed;
+    PetscBool frtol_changed;
+    PetscBool gatol_changed;
+    PetscBool grtol_changed;
+    PetscBool gttol_changed;
+    PetscBool fmin_changed;
+    PetscBool catol_changed;
+    PetscBool crtol_changed;
+    PetscBool steptol_changed;
+    PetscBool trust0_changed;
     PetscBool printreason;
     PetscBool viewsolution;
     PetscBool viewgradient;

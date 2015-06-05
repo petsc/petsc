@@ -318,6 +318,39 @@ PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCSetErrorIfFailure"
+/*@
+   PCSetErrorIfFailure - Causes PC to generate an error if a FPE, for example a zero pivot, is detected.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - iterative context obtained from PCCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Level: advanced
+
+   Notes:
+    Normally PETSc continues if a linear solver fails due to a failed setup of a preconditioner, you can call KSPGetConvergedReason() after a KSPSolve()
+    to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is 
+    detected.
+
+    This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
+
+.keywords: PC, set, initial guess, nonzero
+
+.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
+@*/
+PetscErrorCode  PCSetErrorIfFailure(PC pc,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  pc->erroriffailure = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGetUseAmat"
 /*@
    PCGetUseAmat - Gets a flag to indicate that when the preconditioner needs to apply (part of) the
@@ -432,7 +465,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
@@ -448,8 +481,8 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   ierr = VecLockPop(x);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +518,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -495,7 +528,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = VecLockPop(x);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -531,7 +564,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -541,7 +574,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = VecLockPop(x);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -578,7 +611,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -588,7 +621,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = VecLockPop(x);CHKERRQ(ierr);
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -656,9 +689,9 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   if (pc->diagonalscale && side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
+  if (pc->erroriffailure) {ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);}
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -700,7 +733,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     }
   }
-  ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -742,10 +775,10 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);}
   if (pc->ops->applyBAtranspose) {
     ierr = (*pc->ops->applyBAtranspose)(pc,side,x,y,work);CHKERRQ(ierr);
-    ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
+    if (pc->erroriffailure) {ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
@@ -762,7 +795,7 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
     ierr = PCApplyTranspose(pc,work,y);CHKERRQ(ierr);
   }
   /* add support for PC_SYMMETRIC */
-  ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
+  if (pc->erroriffailure) {ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -853,9 +886,38 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCGetSetUpFailedReason"
+/*@
+   PCGetSetUpFailedReason - Gets the reason a PCSetUp() failed or 0 if it did not fail
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  reason - the reason it failed, currently only -1 
+
+   Level: advanced
+
+.keywords: PC, setup
+
+.seealso: PCCreate(), PCApply(), PCDestroy()
+@*/
+PetscErrorCode  PCGetSetUpFailedReason(PC pc,PetscInt *reason)
+{
+  PetscFunctionBegin;
+  if (pc->setupcalled < 0) *reason = pc->setupcalled;
+  else *reason = 0;
+  PetscFunctionReturn(0);
+}
+
+
 /*
       a setupcall of 0 indicates never setup,
                      1 indicates has been previously setup
+                    -1 indicates a PCSetUp() was attempted and failed
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp"
@@ -913,12 +975,14 @@ PetscErrorCode  PCSetUp(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
+  ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFPE(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
-  pc->setupcalled = 1;
+  if (!pc->setupcalled) pc->setupcalled = 1;
   PetscFunctionReturn(0);
 }
 
@@ -1158,6 +1222,8 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 
    Output Parameter:
 .  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+   Level: intermediate
 
 .seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
  @*/

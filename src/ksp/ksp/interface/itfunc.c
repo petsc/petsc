@@ -241,7 +241,9 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
   Mat            A,B;
-
+  Mat            mat,pmat;
+  MatNullSpace   nullsp;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
 
@@ -296,14 +298,13 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   default: break;
   }
 
+  ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* scale the matrix if requested */
   if (ksp->dscale) {
-    Mat         mat,pmat;
     PetscScalar *xx;
     PetscInt    i,n;
     PetscBool   zeroflag = PETSC_FALSE;
     if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-    ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
     if (!ksp->diagonal) { /* allocate vector to hold diagonal */
       ierr = MatCreateVecs(pmat,&ksp->diagonal,0);CHKERRQ(ierr);
     }
@@ -327,14 +328,14 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+  ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
-  if (ksp->nullsp) {
+  ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  if (nullsp) {
     PetscBool test = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
-      Mat mat;
-      ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(ksp->nullsp,mat,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullsp,pmat,NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
@@ -500,8 +501,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  Mat               mat,premat;
+  Mat               mat,pmat;
   MPI_Comm          comm;
+  PetscInt          pcreason;
+  MatNullSpace      nullsp;
+  Vec               btmp,vec_rhs=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -540,9 +544,15 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+    goto skipsolve;
+  }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   VecLocked(ksp->vec_sol,3);
 
+  ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->vec_rhs,ksp->vec_rhs,ksp->diagonal);CHKERRQ(ierr);
@@ -582,12 +592,29 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecNormAvailable(ksp->vec_sol,NORM_2,&flg,&norm);CHKERRQ(ierr);
     if (flg && !norm) ksp->guess_zero = PETSC_TRUE;
   }
+  ierr = MatGetTransposeNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  if (nullsp) {
+    ierr = VecDuplicate(ksp->vec_rhs,&btmp);CHKERRQ(ierr);
+    ierr = VecCopy(ksp->vec_rhs,btmp);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullsp,btmp);CHKERRQ(ierr);
+    vec_rhs      = ksp->vec_rhs;
+    ksp->vec_rhs = btmp;
+  }
   ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
   ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
+  if (nullsp) {
+    ksp->vec_rhs = vec_rhs;
+    ierr = VecDestroy(&btmp);CHKERRQ(ierr);
+  }
+
   ksp->guess_zero = guess_zero;
 
+
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  ksp->totalits += ksp->its;
+
+  skipsolve:
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
@@ -618,10 +645,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PCGetOperators(ksp->pc,&mat,&premat);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(mat,((PetscObject)ksp)->prefix,"-ksp_view_mat");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(premat,((PetscObject)ksp)->prefix,"-ksp_view_pmat");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ksp->vec_rhs,((PetscObject)ksp)->prefix,"-ksp_view_rhs");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,(PetscObject)ksp,"-ksp_view_rhs");CHKERRQ(ierr);
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
@@ -735,14 +761,14 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,(PetscObject)ksp,"-ksp_view_mat_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,(PetscObject)ksp,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view");CHKERRQ(ierr);
@@ -762,7 +788,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&t);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"KSP final norm of residual %g\n",(double)norm);CHKERRQ(ierr);
   }
-  ierr = VecViewFromOptions(ksp->vec_sol,((PetscObject)ksp)->prefix,"-ksp_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_sol,(PetscObject)ksp,"-ksp_view_solution");CHKERRQ(ierr);
 
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
@@ -865,7 +891,6 @@ PetscErrorCode  KSPReset(KSP ksp)
   ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->truediagonal);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr);
 
   ksp->setupstage = KSP_SETUP_NEW;
   PetscFunctionReturn(0);

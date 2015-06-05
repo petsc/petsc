@@ -448,7 +448,7 @@ static PetscErrorCode MatGetDiagonal_Nest(Mat A,Vec v)
     if (bA->m[i][i]) {
       ierr = MatGetDiagonal(bA->m[i][i],bv);CHKERRQ(ierr);
     } else {
-      ierr = VecSet(bv,1.0);CHKERRQ(ierr);
+      ierr = VecSet(bv,0.0);CHKERRQ(ierr);
     }
     ierr = VecRestoreSubVector(v,bA->isglobal.row[i],&bv);CHKERRQ(ierr);
   }
@@ -907,7 +907,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetISs"
-/*@
+/*@C
  MatNestGetISs - Returns the index sets partitioning the row and column spaces
 
  Not collective

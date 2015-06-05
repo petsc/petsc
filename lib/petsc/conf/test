@@ -34,6 +34,7 @@ testexamples_METIS: ${TESTEXAMPLES_METIS}
 testexamples_SPAI: ${TESTEXAMPLES_SPAI}
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR}
 testexamples_FFTW: ${TESTEXAMPLES_FFTW}
+testexamples_FFTW_COMPLEX: ${TESTEXAMPLES_FFTW_COMPLEX}
 testexamples_SAWS: ${TESTEXAMPLES_SAWS}
 testexamples_VALGRIND: ${TESTEXAMPLES_VALGRIND}
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB}
@@ -66,6 +67,7 @@ testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
 testexamples_MOAB: ${TESTEXAMPLES_MOAB}
 testexamples_MOAB_HDF5: ${TESTEXAMPLES_MOAB_HDF5}
+testexamples_TRILINOS: ${TESTEXAMPLES_TRILINOS}
 testexamples_X:
 testexamples_OPENGL:
 testexamples_MPE:
@@ -78,7 +80,6 @@ testexamples_BLACS:
 testexamples_SCALAPACK:
 testexamples_CMAKE:
 testexamples_AFTERIMAGE:
-testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
 testexamples_NETCDF:
 testexamples_EXODUSII:
@@ -136,6 +137,8 @@ buildexamples_ADIFOR:
 	-@${OMAKE} testexamples_ADIFOR TESTEXAMPLES_ADIFOR=`echo ${TESTEXAMPLES_ADIFOR} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_FFTW:
 	-@${OMAKE} testexamples_FFTW TESTEXAMPLES_FFTW=`echo ${TESTEXAMPLES_FFTW} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_FFTW_COMPLEX:
+	-@${OMAKE} testexamples_FFTW_COMPLEX TESTEXAMPLES_FFTW_COMPLEX=`echo ${TESTEXAMPLES_FFTW_COMPLEX} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SAWS:
 	-@${OMAKE} testexamples_SAWS TESTEXAMPLES_SAWS=`echo ${TESTEXAMPLES_SAWS} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_VALGRIND:
@@ -199,7 +202,6 @@ buildexamples_BLACS:
 buildexamples_SCALAPACK:
 buildexamples_CMAKE:
 buildexamples_AFTERIMAGE:
-buildexamples_PTHREADCLASSES:
 buildexamples_OPENMP:
 
 TESTMODE = testexamples

@@ -37,12 +37,12 @@ PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], 
 #define __FUNCT__ "DMPlexCreateFluent_ReadString"
 PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim)
 {
-  PetscInt i = 0;
+  PetscInt ret, i = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  do {ierr = PetscViewerRead(viewer, &(buffer[i++]), 1, NULL, PETSC_CHAR);CHKERRQ(ierr);}
-  while (buffer[i-1] != '\0' && buffer[i-1] != delim);
+  do {ierr = PetscViewerRead(viewer, &(buffer[i++]), 1, &ret, PETSC_CHAR);CHKERRQ(ierr);}
+  while (ret > 0 && buffer[i-1] != '\0' && buffer[i-1] != delim);
   buffer[i] = '\0';
   PetscFunctionReturn(0);
 }

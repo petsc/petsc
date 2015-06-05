@@ -54,7 +54,7 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*view)(TSTrajectory,PetscViewer);
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
-  PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal);
+  PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
 };
 
 struct _p_TSTrajectory {
@@ -81,8 +81,6 @@ struct _p_TS {
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
 
-  IS is_diff; /* Index set containing indices corresponding to differential equations in DAE */
-
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
   Vec       *vecs_sensi;             /* one vector for each cost function */
@@ -92,6 +90,7 @@ struct _p_TS {
   PetscInt  adjointsetupcalled;
   PetscInt  adjoint_max_steps;
   PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
+  PetscBool costintegralfwd;        /* cost integral is evaluated in the forward run if true */
   /* workspace for Adjoint computations */
   Vec       vec_costintegrand;
   Mat       Jacp;
@@ -274,10 +273,11 @@ struct _p_TSEvent {
   PetscInt        nevents_zero;     /* Number of event zero detected */
   PetscInt        *events_zero;      /* List of events that have reached zero */
   void           *monitorcontext;
-  PetscReal       tol;              /* Tolerance for event zero check */
+  PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
   PetscReal       tstepend;         /* End time of step */
   PetscReal       initial_timestep; /* Initial time step */
+  PetscViewer     mon;
   /* Struct to record the events */
   struct {
     PetscInt  ctr;                          /* recorder counter */

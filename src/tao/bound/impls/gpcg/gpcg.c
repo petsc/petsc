@@ -146,7 +146,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 {
   TAO_GPCG                     *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode               ierr;
-  PetscInt                     iter=0,its;
+  PetscInt                     its;
   PetscReal                    actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal                    xtHx;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
@@ -182,7 +182,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   gpcg->f = f;
 
     /* Check Stopping Condition      */
-  ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
+  ierr=TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
@@ -241,8 +241,8 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       /* if there were no free variables, no cg method */
     }
 
-    iter++;
-    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
     if (reason!=TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */
@@ -347,15 +347,19 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   ierr = PetscNewLog(tao,&gpcg);CHKERRQ(ierr);
   tao->data = (void*)gpcg;
 
-  tao->max_it = 500;
-  tao->max_funcs = 100000;
-
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it=500;
+  if (!tao->max_funcs_changed) tao->max_funcs = 100000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-6;
-  tao->frtol = 1e-6;
+  if (!tao->fatol_changed) tao->fatol=1e-6;
+  if (!tao->frtol_changed) tao->frtol=1e-6;
+  if (!tao->gatol_changed) tao->grtol=1e-6;
+  if (!tao->grtol_changed) tao->grtol=1e-6;
 #else
-  tao->fatol = 1e-12;
-  tao->frtol = 1e-12;
+  if (!tao->fatol_changed) tao->fatol=1e-12;
+  if (!tao->frtol_changed) tao->frtol=1e-12;
+  if (!tao->gatol_changed) tao->grtol=1e-12;
+  if (!tao->grtol_changed) tao->grtol=1e-12;
 #endif
 
   /* Initialize pointers and variables */
@@ -375,11 +379,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   /* gpcg->ksp_type = GPCG_KSP_STCG; */
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

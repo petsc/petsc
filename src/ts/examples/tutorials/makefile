@@ -191,6 +191,18 @@ ex34: ex34.o chkopts
 	-${CLINKER} -o ex34 ex34.o ${PETSC_TS_LIB}
 	${RM} ex34.o
 
+ex36: ex36.o chkopts
+	-${CLINKER} -o ex36 ex36.o ${PETSC_TS_LIB}
+	${RM} ex36.o
+
+ex36SE: ex36SE.o chkopts
+	-${CLINKER} -o ex36SE ex36SE.o ${PETSC_TS_LIB}
+	${RM} ex36SE.o
+
+ex36A: ex36A.o chkopts
+	-${CLINKER} -o ex36A ex36A.o ${PETSC_TS_LIB}
+	${RM} ex36A.o
+
 extchem: extchem.o chkopts
 	-${CLINKER} -o extchem extchem.o ${PETSC_TS_LIB}
 	${RM} extchem.o
@@ -558,6 +570,16 @@ runex35_2:
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
+runex40:
+	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1;	  \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex41:
+	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1;	  \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
@@ -571,7 +593,9 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex19.PETSc ex19.rm \
                             ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
-                            ex31.PETSc ex31.rm
+                            ex31.PETSc ex31.rm \
+                            ex40.PETSc runex40 ex40.rm \
+                            ex41.PETSc runex41 ex41.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \

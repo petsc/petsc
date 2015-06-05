@@ -532,6 +532,35 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelInsertIS"
+/*@
+  DMLabelInsertIS - Set all points in the IS to a value
+
+  Input Parameters:
++ label - the DMLabel
+. is    - the point IS
+- value - The point value
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
+PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
+{
+  const PetscInt *points;
+  PetscInt        n, p;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is, &points);CHKERRQ(ierr);
+  for (p = 0; p < n; ++p) {ierr = DMLabelSetValue(label, points[p], value);CHKERRQ(ierr);}
+  ierr = ISRestoreIndices(is, &points);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelGetNumValues"
 PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 {

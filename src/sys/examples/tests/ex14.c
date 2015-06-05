@@ -30,7 +30,11 @@ int main(int argc,char **argv)
   if (n) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar rarray of length %d\n",n);CHKERRQ(ierr);
     for (i=0; i<n; i++){
-      ierr = PetscPrintf(PETSC_COMM_SELF," %g + %gi\n",(double)PetscRealPart(array[i]),(double)PetscImaginaryPart(array[i]));CHKERRQ(ierr);
+      if (PetscImaginaryPart(array[i]) < 0.0) {
+        ierr = PetscPrintf(PETSC_COMM_SELF," %g - %gi\n",(double)PetscRealPart(array[i]),(double)PetscAbsReal(PetscImaginaryPart(array[i])));CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_SELF," %g + %gi\n",(double)PetscRealPart(array[i]),(double)PetscImaginaryPart(array[i]));CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

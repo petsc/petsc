@@ -159,42 +159,6 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLimiterViewFromOptions"
-/*
-  PetscLimiterViewFromOptions - Processes command line options to determine if/how a PetscLimiter is to be viewed.
-
-  Collective on PetscLimiter
-
-  Input Parameters:
-+ lim    - the PetscLimiter
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscLimiter, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter lim, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) lim), prefix,                      optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) lim), ((PetscObject) lim)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscLimiterView(lim, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscLimiterSetFromOptions"
 /*@
   PetscLimiterSetFromOptions - sets parameters in a PetscLimiter from the options database
@@ -1194,42 +1158,6 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFVViewFromOptions"
-/*
-  PetscFVViewFromOptions - Processes command line options to determine if/how a PetscFV is to be viewed.
-
-  Collective on PetscFV
-
-  Input Parameters:
-+ fvm    - the PetscFV
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscFV, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscFVViewFromOptions(PetscFV fvm, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fvm), prefix,                      optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fvm), ((PetscObject) fvm)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscFVView(fvm, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscFVSetFromOptions"
 /*@
   PetscFVSetFromOptions - sets parameters in a PetscFV from the options database
@@ -1971,7 +1899,7 @@ PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
 PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                   PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
+  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
   void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
   PetscInt       dim, pdim, totDim, Nc, off, f, d;
@@ -1986,7 +1914,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, Pet
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
@@ -2283,7 +2211,7 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
 PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                         PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
+  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
   void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
   PetscInt       dim, pdim, Nc, totDim, off, f, d;
@@ -2298,7 +2226,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS pro
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];

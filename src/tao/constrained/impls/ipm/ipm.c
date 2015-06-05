@@ -37,7 +37,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   PetscErrorCode     ierr;
   TAO_IPM            *ipmP = (TAO_IPM*)tao->data;
   TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
-  PetscInt           iter = 0,its,i;
+  PetscInt           its,i;
   PetscScalar        stepsize=1.0;
   PetscScalar        step_s,step_l,alpha,tau,sigma,phi_target;
 
@@ -48,7 +48,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   ierr = VecCopy(tao->solution,ipmP->rhs_x);CHKERRQ(ierr);
   ierr = IPMEvaluate(tao);CHKERRQ(ierr);
   ierr = IPMComputeKKT(tao);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,iter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
     tao->ksp_its=0;
@@ -189,8 +189,8 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
       alpha /= 2.0;
     }
 
-    ierr = TaoMonitor(tao,iter,ipmP->kkt_f,ipmP->phi,0.0,stepsize,&reason);CHKERRQ(ierr);
-    iter++;
+    ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,stepsize,&reason);CHKERRQ(ierr);
+    tao->niter++;
   }
   PetscFunctionReturn(0);
 }
@@ -1114,16 +1114,20 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
 
   ierr = PetscNewLog(tao,&ipmP);CHKERRQ(ierr);
   tao->data = (void*)ipmP;
-  tao->max_it = 200;
-  tao->max_funcs = 500;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 200;
+  if (!tao->max_funcs_changed) tao->max_funcs = 500;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
+
   ipmP->dec = 10000; /* line search critera */
   ipmP->taumin = 0.995;
   ipmP->monitorkkt = PETSC_FALSE;
   ipmP->pushs = 100;
   ipmP->pushnu = 100;
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

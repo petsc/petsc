@@ -83,6 +83,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->constraints_equality=NULL;
   tao->constraints_inequality=NULL;
   tao->stepdirection=NULL;
+  tao->niter=0;
+  tao->ntotalits=0;
   tao->XL = NULL;
   tao->XU = NULL;
   tao->IL = NULL;
@@ -118,11 +120,10 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->gatol       = 1e-8;
   tao->grtol       = 1e-8;
 #endif
-  tao->gttol       = 0.0;
-  tao->catol       = 0.0;
   tao->crtol       = 0.0;
-  tao->xtol        = 0.0;
+  tao->catol       = 0.0;
   tao->steptol     = 0.0;
+  tao->gttol       = 0.0;
   tao->trust0      = PETSC_INFINITY;
   tao->fmin        = PETSC_NINFINITY;
   tao->hist_malloc = PETSC_FALSE;
@@ -141,6 +142,19 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewjacobian=PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
 
+  /* These flags prevents algorithms from overriding user options */
+  tao->max_it_changed   =PETSC_FALSE;
+  tao->max_funcs_changed=PETSC_FALSE;
+  tao->fatol_changed    =PETSC_FALSE;
+  tao->frtol_changed    =PETSC_FALSE;
+  tao->gatol_changed    =PETSC_FALSE;
+  tao->grtol_changed    =PETSC_FALSE;
+  tao->gttol_changed    =PETSC_FALSE;
+  tao->steptol_changed  =PETSC_FALSE;
+  tao->trust0_changed   =PETSC_FALSE;
+  tao->fmin_changed     =PETSC_FALSE;
+  tao->catol_changed    =PETSC_FALSE;
+  tao->crtol_changed    =PETSC_FALSE;
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
   *newtao = tao;
   PetscFunctionReturn(0);
@@ -190,13 +204,14 @@ PetscErrorCode TaoSolve(Tao tao)
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
 
+  tao->ntotalits += tao->niter;
   ierr = TaoViewFromOptions(tao,NULL,"-tao_view");CHKERRQ(ierr);
 
   if (tao->printreason) {
     if (tao->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoConvergedReasons[tao->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s iterations %D\n",TaoConvergedReasons[tao->reason],tao->niter);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoConvergedReasons[tao->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s iteration %D\n",TaoConvergedReasons[tao->reason],tao->niter);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -387,19 +402,30 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetType(tao,default_type);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,NULL);CHKERRQ(ierr);
-
+    ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
+    if (flg) tao->fatol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
+    if (flg) tao->frtol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
+    if (flg) tao->catol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
+    if (flg) tao->crtol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
+    if (flg) tao->gatol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr);
+    if (flg) tao->grtol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr);
+    if (flg) tao->gttol_changed=PETSC_TRUE;
+    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,&flg);CHKERRQ(ierr);
+    if (flg) tao->max_it_changed=PETSC_TRUE;
+    ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg);CHKERRQ(ierr);
+    if (flg) tao->max_funcs_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg);CHKERRQ(ierr);
+    if (flg) tao->fmin_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,&flg);CHKERRQ(ierr);
+    if (flg) tao->steptol_changed=PETSC_TRUE;
+    ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg);CHKERRQ(ierr);
+    if (flg) tao->trust0_changed=PETSC_TRUE;
     ierr = PetscOptionsString("-tao_view_solution","view solution vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
@@ -711,6 +737,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->fatol = PetscMax(0,fatol);
+      tao->fatol_changed=PETSC_TRUE;
     }
   }
   if (frtol != PETSC_DEFAULT) {
@@ -718,6 +745,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->frtol = PetscMax(0,frtol);
+      tao->frtol_changed=PETSC_TRUE;
     }
   }
 
@@ -726,6 +754,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gatol = PetscMax(0,gatol);
+      tao->gatol_changed=PETSC_TRUE;
     }
   }
 
@@ -734,6 +763,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->grtol = PetscMax(0,grtol);
+      tao->grtol_changed=PETSC_TRUE;
     }
   }
 
@@ -742,6 +772,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
       ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gttol = PetscMax(0,gttol);
+      tao->gttol_changed=PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);
@@ -763,6 +794,9 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 + -tao_catol <catol> - Sets catol
 - -tao_crtol <crtol> - Sets crtol
 
+  Notes:
+  Use PETSC_DEFAULT to leave any tolerance unchanged.
+
   Level: intermediate
 
 .seealso: TaoGetTolerances(), TaoGetConstraintTolerances(), TaoSetTolerances()
@@ -780,6 +814,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
       ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->catol = PetscMax(0,catol);
+      tao->catol_changed=PETSC_TRUE;
     }
   }
 
@@ -788,6 +823,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
       ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->crtol = PetscMax(0,crtol);
+      tao->crtol_changed=PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);
@@ -846,6 +882,7 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao,PetscReal fmin)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->fmin = fmin;
+  tao->fmin_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -901,6 +938,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao,PetscInt nfcn)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->max_funcs = PetscMax(0,nfcn);
+  tao->max_funcs_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -981,6 +1019,7 @@ PetscErrorCode TaoSetMaximumIterations(Tao tao,PetscInt maxits)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->max_it = PetscMax(0,maxits);
+  tao->max_it_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1032,6 +1071,7 @@ PetscErrorCode TaoSetInitialTrustRegionRadius(Tao tao, PetscReal radius)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->trust0 = PetscMax(0.0,radius);
+  tao->trust0_changed=PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -2183,6 +2223,131 @@ PetscErrorCode TaoRegisterDestroy(void)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoGetIterationNumber"
+/*@
+   TaoGetIterationNumber - Gets the number of Tao iterations completed
+   at this time.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+
+   Output Parameter:
+.  iter - iteration number
+
+   Notes:
+   For example, during the computation of iteration 2 this would return 1.
+
+
+   Level: intermediate
+
+.keywords: Tao, nonlinear, get, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations()
+@*/
+PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidIntPointer(iter,2);
+  *iter = tao->niter;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetIterationNumber"
+/*@
+   TaoSetIterationNumber - Sets the current iteration number.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+.  iter - iteration number
+
+   Level: developer
+
+.keywords: Tao, nonlinear, set, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations()
+@*/
+PetscErrorCode  TaoSetIterationNumber(Tao tao,PetscInt iter)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)tao);CHKERRQ(ierr);
+  tao->niter = iter;
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)tao);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetTotalIterationNumber"
+/*@
+   TaoGetTotalIterationNumber - Gets the total number of Tao iterations
+   completed. This number keeps accumulating if multiple solves
+   are called with the Tao object.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+
+   Output Parameter:
+.  iter - iteration number
+
+   Notes:
+   The total iteration count is updated after each solve, if there is a current
+   TaoSolve() in progress then those iterations are not yet counted.
+
+   Level: intermediate
+
+.keywords: Tao, nonlinear, get, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations()
+@*/
+PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidIntPointer(iter,2);
+  *iter = tao->ntotalits;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetTotalIterationNumber"
+/*@
+   TaoSetTotalIterationNumber - Sets the current total iteration number.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+.  iter - iteration number
+
+   Level: developer
+
+.keywords: Tao, nonlinear, set, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations()
+@*/
+PetscErrorCode  TaoSetTotalIterationNumber(Tao tao,PetscInt iter)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)tao);CHKERRQ(ierr);
+  tao->ntotalits = iter;
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)tao);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetConvergedReason"
 /*@
   TaoSetConvergedReason - Sets the termination flag on a Tao object
@@ -2373,7 +2538,6 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   tao->residual = res;
   tao->cnorm = cnorm;
   tao->step = steplength;
-  tao->niter=its;
   if (its == 0) {
     tao->cnorm0 = cnorm; tao->gnorm0 = res;
   }

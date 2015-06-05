@@ -184,8 +184,8 @@ $ 12--0-13--1--14
 @*/
 PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
-  PetscInt       numVertices    = (edges[0]+1)*(edges[1]+1);
-  PetscInt       numEdges       = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
+  const PetscInt numVertices    = (edges[0]+1)*(edges[1]+1);
+  const PetscInt numEdges       = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
   PetscInt       markerRight    = 1;
@@ -202,10 +202,10 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
-    markerTop    = 1;
-    markerBottom = 0;
-    markerRight  = 0;
-    markerLeft   = 0;
+    markerTop    = 3;
+    markerBottom = 1;
+    markerRight  = 2;
+    markerLeft   = 4;
   }
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   if (!rank) {
@@ -1098,6 +1098,15 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
       ierr = PetscFree(b->ids);CHKERRQ(ierr);
       ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
       ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+    }
+    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
+    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
+    if (flg) {
+      b->numcomps = len;
+      ierr = PetscFree(b->comps);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
+      ierr = PetscMemcpy(b->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

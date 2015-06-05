@@ -7,7 +7,7 @@
 #define __FUNCT__ "DMCompositeSetCoupling"
 /*@C
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
-      seperate components (DMs) in a DMto build the correct matrix nonzero structure.
+      separate components (DMs) in a DMto build the correct matrix nonzero structure.
 
 
     Logically Collective on MPI_Comm

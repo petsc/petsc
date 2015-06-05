@@ -97,27 +97,27 @@ runex3_9:
 	   else printf "${PWD}\nPossible problem with runex3_9, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_8.tmp
 runex3_constraints:
-	-@${MPIEXEC} -n 1 ./ex3 -simplex 0 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -constraints > ex3_constraints.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex3 -simplex 0 -num_comp 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -constraints > ex3_constraints.tmp 2>&1;\
 	   if (${DIFF} output/ex3_constraints.out ex3_constraints.tmp) then true ;  \
 	   else printf "${PWD}\nPossible problem with with runex3_constraints, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_constraints.tmp
 runex3_nonconforming_simplex_2:
-	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_simplex_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -simplex 1 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_simplex_2.tmp 2>&1;\
 	   if (${DIFF} output/ex3_nonconforming_simplex_2.out ex3_nonconforming_simplex_2.tmp) then true ;\
 	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_simplex_2, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_nonconforming_simplex_2.tmp ex3_nonconforming_simplex_2.vtk
 runex3_nonconforming_simplex_3:
-	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_simplex_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_simplex_3.tmp 2>&1;\
 	   if (${DIFF} output/ex3_nonconforming_simplex_3.out ex3_nonconforming_simplex_3.tmp) then true ;\
 	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_simplex_3, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_nonconforming_simplex_3.tmp ex3_nonconforming_simplex_3.vtk
 runex3_nonconforming_tensor_2:
-	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_tensor_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_tensor_2.tmp 2>&1;\
 	   if (${DIFF} output/ex3_nonconforming_tensor_2.out ex3_nonconforming_tensor_2.tmp) then true ;\
 	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_tensor_2, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_nonconforming_tensor_2.tmp ex3_nonconforming_tensor_2.vtk
 runex3_nonconforming_tensor_3:
-	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_tensor_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_tensor_3.tmp 2>&1;\
 	   if (${DIFF} output/ex3_nonconforming_tensor_3.out ex3_nonconforming_tensor_3.tmp) then true ;\
 	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_tensor_3, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_nonconforming_tensor_3.tmp ex3_nonconforming_tensor_3.vtk

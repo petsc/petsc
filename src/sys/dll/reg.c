@@ -40,8 +40,6 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-#include <petscthreadcomm.h>
-extern PetscErrorCode PetscThreadCommWorldInitialize(void);
 extern PetscErrorCode AOInitializePackage(void);
 extern PetscErrorCode PetscSFInitializePackage(void);
 extern PetscErrorCode CharacteristicInitializePackage(void);
@@ -123,8 +121,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 
 #if defined(PETSC_HAVE_THREADSAFETY)
   /* These must be done here because it is not safe for individual threads to call these initialize routines */
-  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
-  ierr = PetscThreadCommWorldInitialize();CHKERRQ(ierr);
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
@@ -472,10 +468,9 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 
 .seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
+ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {
   PetscErrorCode ierr;
-  PetscInt       count = 0;
   char           p[64];
 
   PetscFunctionBegin;
@@ -488,8 +483,6 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
     list = list->next;
-    count++;
-    if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
   ierr = PetscFPrintf(comm,fd," (%s)\n",man);CHKERRQ(ierr);
   PetscFunctionReturn(0);

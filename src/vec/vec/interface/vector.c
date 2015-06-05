@@ -1751,7 +1751,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 
   Input Parameters:
 + obj   - the VecStash object
-. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+. bobj - optional other object that provides the prefix
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -1759,14 +1759,16 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   Developer Note: This cannot use PetscObjectViewFromOptions() because it takes a Vec as an argument but does not use VecView
 
 */
-PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char optionname[])
+PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
+  prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -1928,5 +1930,21 @@ PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetInf"
+PetscErrorCode VecSetInf(Vec xin)
+{
+  PetscInt       i,n = xin->map->n;
+  PetscScalar    *xx;
+  PetscScalar    zero=0.0,one=1.0,inf=one/zero;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  for (i=0; i<n; i++) xx[i] = inf;
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

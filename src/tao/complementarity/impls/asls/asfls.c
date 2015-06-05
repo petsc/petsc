@@ -138,7 +138,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 {
   TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
   PetscReal                    psi,ndpsi, normd, innerd, t=0;
-  PetscInt                     iter=0, nf;
+  PetscInt                     nf;
   PetscErrorCode               ierr;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
@@ -161,9 +161,10 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 
   while (1) {
     /* Check the converged criteria */
-    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",iter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, iter++, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
+    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter,(double)asls->merit,(double)ndpsi);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
     if (TAO_CONTINUE_ITERATING != reason) break;
+    tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to
        set the tolerances for the solve so that we maintain an asymptotic
@@ -267,7 +268,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 
     if (innerd >= -asls->delta*PetscPowReal(normd, asls->rho)) {
       ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", iter);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(asls->dpsi, tao->stepdirection, &innerd);CHKERRQ(ierr);
     }
@@ -329,22 +330,26 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, armijo_type);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 0;
-  tao->frtol = 0;
-  tao->gttol = 0;
-  tao->grtol = 0;
+
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 0;
+  if (!tao->frtol_changed) tao->frtol = 0;
+  if (!tao->gttol_changed) tao->gttol = 0;
+  if (!tao->grtol_changed) tao->grtol = 0;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->gatol = 1.0e-6;
-  tao->fmin = 1.0e-4;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-6;
+  if (!tao->fmin_changed)  tao->fmin = 1.0e-4;
 #else
-  tao->gatol = 1.0e-16;
-  tao->fmin = 1.0e-8;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-16;
+  if (!tao->fmin_changed)  tao->fmin = 1.0e-8;
 #endif
   PetscFunctionReturn(0);
 }

@@ -84,7 +84,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
     ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);              /*     w <- Au   */
     ierr = VecDotEnd(R,U,&gamma);CHKERRQ(ierr);
-    if (PetscIsInfOrNanScalar(gamma)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    KSPCheckDot(ksp,gamma);
     dp = PetscSqrtReal(PetscAbsScalar(gamma));                  /*     dp <- r'*u = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:

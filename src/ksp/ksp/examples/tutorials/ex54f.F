@@ -201,6 +201,7 @@ c     Compute tangent
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,bvec,xvec,ierr)
+      CHKERRQ(ierr)
 
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

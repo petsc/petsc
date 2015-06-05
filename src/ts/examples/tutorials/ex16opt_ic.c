@@ -330,7 +330,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);   
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetCostGradients(ts,1,user->lambda,NULL);CHKERRQ(ierr);
+  ierr = TSSetCostGradients(ts,1,user->lambda,NULL);CHKERRQ(ierr);
 
   /*   Set RHS Jacobian  for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);

@@ -54,7 +54,7 @@ PETSC_EXTERN PetscErrorCode PFSetFromOptions(PF);
 PETSC_EXTERN PetscErrorCode PFGetType(PF,PFType*);
 
 PETSC_EXTERN PetscErrorCode PFView(PF,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PFViewFromOptions(PF A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode PFViewFromOptions(PF A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 #define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
 

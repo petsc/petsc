@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz']
+    self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
     return

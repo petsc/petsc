@@ -56,7 +56,8 @@ const PetscInt gbus[3] = {0,1,2}; /* Buses at which generators are incident */
 const PetscInt lbus[3] = {4,5,7}; /* Buses at which loads are incident */
 
 /* Generator real and reactive powers (found via loadflow) */
-PetscScalar PG[3] = {0.716786142395021,1.630000000000000,0.850000000000000};
+PetscScalar PG[3] = { 0.69,1.59,0.69};
+/* PetscScalar PG[3] = {0.716786142395021,1.630000000000000,0.850000000000000};*/
 const PetscScalar QG[3] = {0.270702180178785,0.066120127797275,-0.108402221791588};
 /* Generator constants */
 const PetscScalar H[3]    = {23.64,6.4,3.01};   /* Inertia constant */
@@ -836,6 +837,7 @@ int main(int argc,char **argv)
   PetscInt           *idx2;
   Tao                tao;
   TaoConvergedReason reason;
+  Vec                lowerb,upperb;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   PetscFunctionBeginUser;
@@ -911,7 +913,6 @@ int main(int argc,char **argv)
   ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
-  Vec lowerb,upperb;
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(p,&upperb);CHKERRQ(ierr);
   ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);

@@ -12,7 +12,10 @@ PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory jac,TS ts,PetscInt stepnu
   TSTrajectory_Singlefile *sf = (TSTrajectory_Singlefile*)jac->data;
   PetscInt                ns,i;
   Vec                     *Y;
-  PetscReal               tprev;
+  /* tprev is only needed for the adjoint run */
+  /*
+  PetscReal               tprev; 
+   */
   PetscErrorCode          ierr;
   const char              *filename;
 
@@ -24,15 +27,22 @@ PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory jac,TS ts,PetscInt stepnu
     ierr = PetscObjectGetName((PetscObject)jac,&filename);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(sf->viewer, filename);CHKERRQ(ierr);
   }
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
   ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-  ierr = VecView(X,sf->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(sf->viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
 
+  ierr = VecView(X,sf->viewer);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
   for (i=0;i<ns;i++) {
     ierr = VecView(Y[i],sf->viewer);CHKERRQ(ierr);
   }
+
+  /* tprev is only needed for the adjoint run */
+  /*
+  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(sf->viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  */
   PetscFunctionReturn(0);
 }
 

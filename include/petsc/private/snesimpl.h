@@ -149,6 +149,7 @@ struct _p_SNES {
   PetscBool   mf_operator;      /* -snes_mf_operator was used on this snes */
   PetscInt    mf_version;       /* The version of snes_mf used */
 
+  PetscReal   vizerotolerance;   /* tolerance for considering an x[] value to be on the bound */
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
@@ -246,10 +247,48 @@ PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve;
 
 extern PetscBool SNEScite;
 extern const char SNESCitation[];
+
+/*
+    Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf
+*/
+#define SNESCheckFunctionNorm(snes,beta)           \
+  if (PetscIsInfOrNanReal(beta)) { \
+    if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
+  else {\
+    PetscBool domainerror;\
+    PetscErrorCode ierr = MPI_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr); \
+    if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
+    else              snes->reason = SNES_DIVERGED_FNORM_NAN;                  \
+    PetscFunctionReturn(0);\
+  }\
+}
+
+
+#define SNESCheckKSPSolve(snes)\
+  {\
+    KSPConvergedReason kspreason; \
+    PetscErrorCode ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);\
+    if (kspreason < 0) {\
+      if (kspreason == KSP_DIVERGED_NANORINF) {\
+        PetscBool domainerror;\
+        ierr = MPI_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr); \
+        if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
+        else              snes->reason = SNES_DIVERGED_LINEAR_SOLVE;                  \
+        PetscFunctionReturn(0);\
+      } else {\
+        if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {\
+          ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);\
+          snes->reason = SNES_DIVERGED_LINEAR_SOLVE;\
+          PetscFunctionReturn(0);\
+        }\
+      }\
+    }\
+  }
 
 #endif

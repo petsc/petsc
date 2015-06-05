@@ -52,7 +52,7 @@ if ( ${valgrind} == "1" ) then
     set PETSCVALGRIND_OPTIONS=
   endif
   set VALGRIND_CMD=`which valgrind`
-  set VALGRIND_OPTIONS="-q --tool=memcheck --dsymutil=yes --num-callers=20 --track-origins=yes ${PETSCVALGRIND_OPTIONS}"
+  set VALGRIND_OPTIONS="-q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes ${PETSCVALGRIND_OPTIONS}"
   if ( ${debugger} == "1" ) then
     set VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"
     set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --db-attach=yes"

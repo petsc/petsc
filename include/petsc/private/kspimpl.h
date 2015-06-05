@@ -99,7 +99,8 @@ struct _p_KSP {
 
   KSPSetUpStage  setupstage;
 
-  PetscInt       its;       /* number of iterations so far computed */
+  PetscInt       its;       /* number of iterations so far computed in THIS linear solve*/
+  PetscInt       totalits;   /* number of iterations used by this KSP object since it was created */
 
   PetscBool      transpose_solve;    /* solve transpose system instead */
 
@@ -116,8 +117,6 @@ struct _p_KSP {
   PetscBool    dscalefix2;   /* system has been unscaled */
   Vec          diagonal;     /* 1/sqrt(diag of matrix) */
   Vec          truediagonal;
-
-  MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 
   PetscBool    skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
@@ -199,7 +198,15 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y);CHKERRQ(ierr);}
+  if (ksp->pc_side == PC_LEFT) {
+    Mat          A;
+    MatNullSpace nullsp;
+    ierr = PCGetOperators(ksp->pc,NULL,&A);CHKERRQ(ierr);
+    ierr = MatGetNullSpace(A,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -288,5 +295,29 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
+
+/*
+    Either generate an error or mark as diverged when a scalar from an inner product is Nan or Inf
+*/
+#define KSPCheckDot(ksp,beta)           \
+  if (PetscIsInfOrNanScalar(beta)) { \
+    if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
+  else {\
+    ksp->reason = KSP_DIVERGED_NANORINF;\
+    PetscFunctionReturn(0);\
+  }\
+}
+
+/*
+    Either generate an error or mark as diverged when a real from a norm is Nan or Inf
+*/
+#define KSPCheckNorm(ksp,beta)           \
+  if (PetscIsInfOrNanReal(beta)) { \
+    if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
+  else {\
+    ksp->reason = KSP_DIVERGED_NANORINF;\
+    PetscFunctionReturn(0);\
+  }\
+}
 
 #endif

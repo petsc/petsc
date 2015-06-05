@@ -7,8 +7,8 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c
+                ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex43.c ex44.c ex45.c ex46.cxx
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -140,9 +140,6 @@ ex33: ex33.o  chkopts
 ex34: ex34.o  chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_KSP_LIB}
 	${RM} ex34.o
-ex35: ex35.o  chkopts
-	-${CLINKER} -o ex35 ex35.o  ${PETSC_KSP_LIB}
-	${RM} ex35.o
 ex36: ex36.o  chkopts
 	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
 	${RM} ex36.o
@@ -173,6 +170,12 @@ ex44: ex44.o chkopts
 ex45: ex45.o chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_KSP_LIB}
 	${RM} ex45.o
+ex46: ex46.o chkopts
+	-${CLINKER} -o ex46 ex46.o ${PETSC_KSP_LIB}
+	${RM} ex46.o
+ex47f: ex47f.o chkopts
+	-${FLINKER} -o ex47f ex47f.o ${PETSC_KSP_LIB}
+	${RM} ex47f.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -395,7 +398,7 @@ runex19_2:
 	   else printf "${PWD}\nPossible problem with ex19_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_2.tmp
 runex20:
-	-@${MPIEXEC} -n 1 ./ex20 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -mat_view -ksp_monitor_short -ksp_atol 1.0e-13 > ex20_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20 -ksp_monitor_short  > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
@@ -948,9 +951,15 @@ runex45:
 	   else printf "${PWD}\nPossible problem with ex45, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex45.tmp
 
+runex46:
+	-@${MPIEXEC} -np 1 ./ex46 > ex46.tmp 2>&1;
+	if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
-                                 ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 ex21.rm \
+                                 ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
@@ -981,4 +990,5 @@ TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 TESTEXAMPLES_CUDA              = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
+TESTEXAMPLES_CHOMBO            =
 include ${PETSC_DIR}/lib/petsc/conf/test

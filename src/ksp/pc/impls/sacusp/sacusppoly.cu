@@ -110,7 +110,11 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = VecCUSPGetArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+  cusp::monitor<PetscReal> monitor(*barray,its,rtol,abstol);
+#else
   cusp::default_monitor<PetscReal> monitor(*barray,its,rtol,abstol);
+#endif
 #if defined(PETSC_USE_COMPLEX)
   CHKERRQ(1); /* TODO */
 #else

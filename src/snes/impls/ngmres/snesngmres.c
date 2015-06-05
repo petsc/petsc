@@ -155,29 +155,34 @@ PetscErrorCode SNESView_NGMRES(SNES snes,PetscViewer viewer)
 #define __FUNCT__ "SNESSolve_NGMRES"
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
-  SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
+  SNES_NGMRES          *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec                 X,F,B,D,Y;
+  Vec                  X,F,B,D,Y;
 
   /* candidate linear combination answers */
-  Vec                 XA,FA,XM,FM;
+  Vec                  XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal           fnorm,fMnorm,fAnorm;
-  PetscReal           xnorm,xMnorm,xAnorm;
-  PetscReal           ynorm,yMnorm,yAnorm;
-  PetscInt            k,k_restart,l,ivec,restart_count = 0;
+  PetscReal            fnorm,fMnorm,fAnorm;
+  PetscReal            xnorm,xMnorm,xAnorm;
+  PetscReal            ynorm,yMnorm,yAnorm;
+  PetscInt             k,k_restart,l,ivec,restart_count = 0;
 
   /* solution selection data */
-  PetscBool           selectRestart;
-  PetscReal           dnorm,dminnorm = 0.0;
-  PetscReal           fminnorm;
+  PetscBool            selectRestart;
+  PetscReal            dnorm,dminnorm = 0.0;
+  PetscReal            fminnorm;
 
-  SNESConvergedReason reason;
-  PetscBool           lssucceed;
-  PetscErrorCode      ierr;
+  SNESConvergedReason  reason;
+  SNESLineSearchReason lssucceed;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -211,17 +216,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
   }
   fminnorm = fnorm;
 
@@ -262,8 +260,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       fMnorm = fnorm;
 
       ierr = SNESLineSearchApply(snes->linesearch,XM,FM,&fMnorm,Y);CHKERRQ(ierr);
-      ierr = SNESLineSearchGetSuccess(snes->linesearch,&lssucceed);CHKERRQ(ierr);
-      if (!lssucceed) {
+      ierr = SNESLineSearchGetReason(snes->linesearch,&lssucceed);CHKERRQ(ierr);
+      if (lssucceed) {
         if (++snes->numFailures >= snes->maxFailures) {
           snes->reason = SNES_DIVERGED_LINE_SEARCH;
           PetscFunctionReturn(0);
@@ -280,10 +278,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     } else {
       ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,&xMnorm,NULL,&yMnorm,&xAnorm,&fAnorm,&yAnorm);CHKERRQ(ierr);
     }
-    if (PetscIsInfOrNanReal(fAnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
 
     /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
     ierr          = SNESNGMRESSelect_Private(snes,k_restart,XM,FM,xMnorm,fMnorm,yMnorm,XA,FA,xAnorm,fAnorm,yAnorm,dnorm,fminnorm,dminnorm,X,F,Y,&xnorm,&fnorm,&ynorm);CHKERRQ(ierr);

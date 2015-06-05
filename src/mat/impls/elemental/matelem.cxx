@@ -1340,6 +1340,10 @@ static struct _MatOps MatOps_Values = {
 /*MC
    MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
 
+  Use ./configure --download-elemental to install PETSc to use Elemental
+
+  Use -pc_type lu -pc_factor_mat_solver_package elemental to us this direct solver
+
    Options Database Keys:
 + -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
 - -mat_elemental_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix

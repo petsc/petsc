@@ -2541,21 +2541,22 @@ consistent interface among direct and iterative linear solvers.
 \begin{tabular}{lll}
 {\bf Method}    &{\bf PCType}   & {\bf Options Database Name}\\
 \hline
-Jacobi                               & PCJACOBI      & jacobi\\
-Block Jacobi                         & PCBJACOBI     & bjacobi\\
-SOR (and SSOR)                       & PCSOR         & sor\\
-SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
-Incomplete Cholesky                  & PCICC         & icc\\
-Incomplete LU                        & PCILU         & ilu\\
-Additive Schwarz                     & PCASM         & asm\\
-Algebraic Multigrid                  & PCGAMG         & gamg\\
-Linear solver                        & PCKSP         & ksp \\
-Combination of preconditioners       & PCCOMPOSITE   & composite \\
+Jacobi                                        & PCJACOBI    & jacobi\\
+Block Jacobi                                  & PCBJACOBI   & bjacobi\\
+SOR (and SSOR)                                & PCSOR       & sor\\
+SOR with Eisenstat trick                      & PCEISENSTAT & eisenstat\\
+Incomplete Cholesky                           & PCICC       & icc\\
+Incomplete LU                                 & PCILU       & ilu\\
+Additive Schwarz                              & PCASM       & asm\\
+Algebraic Multigrid                           & PCGAMG      & gamg\\
+Balancing Domain Decomposition by Constraints & PCBDDC      & bddc\\
+Linear solver                                 & PCKSP       & ksp \\
+Combination of preconditioners                & PCCOMPOSITE & composite \\
 \hline
-LU                                   & PCLU          & lu\\
-Cholesky                             & PCCHOLESKY    & cholesky\\
-No preconditioning                   & PCNONE        & none\\
-Shell for user-defined PC            & PCSHELL       & shell\\
+LU                                            & PCLU        & lu\\
+Cholesky                                      & PCCHOLESKY  & cholesky\\
+No preconditioning                            & PCNONE      & none\\
+Shell for user-defined PC                     & PCSHELL     & shell\\
 \hline
 \end{tabular}
 \end{center}
@@ -2886,12 +2887,84 @@ operators, curl/curl operators, highly stretched grids or highly anisotropic pro
 large jumps in material coefficients with complex geometry (AMG is
 particularly well suited to jumps in coefficients but it is not a
 perfect solution), highly incompressible elasticity, not to mention
-ill-posed problems, and many others.
+ill-posed problems, and many others. For div/div and curl/curl operators,
+you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hypre_set_type ams})
+or the Auxilary Divergence Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
+These solvers need some additional information on the underlying mesh;
+specifically, AMS needs the so-called discrete gradient operator, which can be specified via
+PCHYPRESetDiscreteGradient(). In addition to the the discrete gradient, ADS also needs the
+specification of the discrete curl operator, which can be set using PCHYPRESetDiscreteCurl().
 
 PETSc's AMG solver is constructed as a framework for developers to
 easily add AMG capabilities, like a new AMG algorithm or a new matrix
 triple product, etc. Contact us directly if you are interested in extending/improving PETSc's algebraic multigrid solvers.
 
+%----------------------------------------------------------------------
+\subsection{Balancing Domain Decomposition by Constraints}
+
+PETSc provides the Balancing Domain Decomposition by Constraints (BDDC) method for preconditioning
+parallel finite element problems stored in unassembled format (see MATIS). BDDC is a 2-level
+non-overlapping domain decomposition method which can be easily adapted to different problems
+and discretizations by means of few user customizations. The application of the preconditioner to a vector consists
+in the static condensation of the residual at the interior of the subdomains by means of local Dirichet solves, followed by an
+additive combination of Neumann local corrections and the solution of a global coupled coarse problem.
+Command line options for the underlying KSP objects are prefixed by \trl{-pc_bddc_dirichlet}, \trl{-pc_bddc_neumann},
+and \trl{-pc_bddc_coarse} respectively.
+
+The current implementation supports any kind of linear system, and assumes a one-to-one mapping between subdomains and
+MPI processes. Complex numbers are supported as well. For non-symmetric problems, use the runtime option \trl{-pc_bddc_symmetric 0}.
+
+Unlike conventional non-overlapping methods that iterates just on the degrees of freedom at the interface between subdomain,
+PCBDDC iterates on the whole set of degrees of freedom allowing the use of approximate subdomain solvers.
+When using approximate solvers with singular problems, the nullspace of the operator should be provided using PCBDDCSetNullSpace().
+
+At the basis of the method there's the analysis of the connected components of the interface for the detection of vertices,
+edges and faces equivalence classes. Additional information on the degrees of freedom can be supplied to PCBDDC by using
+the following functions: PCBDDCSetDofsSplitting(), PCBDDCSetLocalAdjacencyGraph(), PCBDDCSetPrimalVerticesLocalIS(),
+PCBDDCSetNeumannBoundaries(), PCBDDCSetDirichletBoundaries(), PCBDDCSetNeumannBoundariesLocal(), PCBDDCSetDirichletBoundariesLocal().
+
+Crucial for the convergence of the iterative process is the specification of the primal constraints to be imposed at the interface
+between subdomains. PCBDDC uses by default vertex continuities and edge arithmetic averages, which are enough for the three-dimensional
+Poisson problem with constant coeffcients. The user can switch on and off the usage of vertices, edges or face constraints by using the command line
+switches \trl{-pc_bddc_use_vertices}, \trl{-pc_bddc_use_edges}, \trl{-pc_bddc_use_faces}. A customization of the constraints is available
+by attaching a MatNullSpace object to
+the preconditioning matrix via MatSetNearNullSpace(). The vectors of the MatNullSpace object should represent the constraints
+in the form of quadrature rules; quadrature rules for different classes of the interface can be listed in the same vector.
+The number of vectors of the MatNullSpace object corresponds to the maximum number of constraints that can be imposed for each class.
+Once all the quadrature rules for a given interface class have been extracted, an SVD operation is performed to retain the non-singular modes.
+As an example, the rigid body modes represent an effective choice for elasticity, even in the almost incompressible case. For particular problems,
+like e.g. edge-based discretization with Nedelec elements, a user defined change of basis of the degrees of
+freedom can be beneficial for PCBDDC; use PCBDDCSetChangeOfBasisMat() to customize the change of basis.
+
+The BDDC method is usually robust with respect to jumps in the material parameters aligned with the interface;
+for PDEs with more than one material parameter you may also consider to use the so-called deluxe scaling,
+available via the command line switch \trl{-pc_bddc_use_deluxe_scaling}. Other scalings are available,
+see PCISSetSubdomainScalingFactor(), PCISSetSubdomainDiagonalScaling() or PCISSetUseStiffnessScaling().
+However, the convergence properties of the BDDC method degrades in presence of large jumps in the material coefficients
+not aligned with the interface; for such cases, PETSc has the capability of adaptively computing the primal constraints.
+Adaptive selection of constraints could be requested by specifying a threshold value at command line by using
+\trl{-pc_bddc_adaptive_threshold x}. Valid values for the threshold \trl{x} ranges from 1 to infinity,
+with smaller values corresponding to more robust preconditioners. For SPD problems in 2D, or in 3D with only face degrees of freedom
+(like in the case of Raviart-Thomas or Brezzi-Douglas-Marini elements), such a threshold is a very accurate estimator
+of the condition number of the resulting preconditioned operator. Since the adaptive selection of constraints for BDDC methods is still
+an active topic of research, its implementation is currently limited to SPD problems; moreover, because the technique requires the
+explicit knowledge of the local Schur complements, it needs the external package MUMPS.
+
+When solving problems decomposed in thousands of subdomains or more, the solution of the BDDC coarse problem could become a bottleneck;
+in order to overcome this issue, the user could either consider to solve the parallel coarse problem on a subset of the communicator
+associated with PCBDDC by using the command line switch \trl{-pc_bddc_coarse_redistribute}, or instead use a multilevel approach.
+The latter can be requested by specifying the number of requested level at command line (\trl{-pc_bddc_levels}) or by using PCBDDCSetLevels().
+An additional parameter (see PCBDDCSetCoarseningRatio()) controls the number of subdomains that will be generated at the next level;
+the larger the coarsening ratio, the lower the number of coarser subdomains.
+
+PETSc currently provides an experimental interface to the FETI-DP method, which is the dual method of BDDC. Users interested in
+experimenting with FETI-DP should use PCBDDCCreateFETIDPOperators() in order access
+the Mat and PC objects needed by the FETI-DP method. The latter call should be performed after having called PCSetUp() on the PCBDDC object.
+PCBDDCMatFETIDPGetRHS() maps the original right-hand side to a suitable right-hand side for the FETI-DP solver.
+The physical solution can be recovered by using PCBDDCMatFETIDPGetSolution().
+A stand-alone class for FETI-DP will be provided in future releases.
+
+For further details, see the example \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c} and the online documentation for PCBDDC.
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
@@ -3501,13 +3574,14 @@ functions you do not need to include it in the \trl{basis} vectors you provide).
 
 One then tells the KSP object you are using what the null space is with the call
 \begin{tabbing}
-KSPSetNullSpace(KSP ksp,MatNullSpace nsp);
+MatSetNullSpace(Mat mat,MatNullSpace nsp);
+MatSetTransposeNullSpace(Mat mat,MatNullSpace nsp);
 \end{tabbing}
 The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options \trl{-pc_factor_shift_type <shifttype>}
+You can run with the additional options
 \findex{-pc_factor_shift_type} or 
 \trl{-pc_factor_shift_type NONZERO}  \trl{-pc_factor_shift_amount  <dampingfactor>} \findex{-pc_factor_shift_amount} to
 prevent the zero pivot. A good choice for the \trl{dampingfactor} is 1.e-10.
@@ -4715,9 +4789,52 @@ Currently supported types are TSEULER, TSRK (Runge-Kutta), \sindex{generalized l
 TSBEULER, TSCN (Crank-Nicolson), TSTHETA, TSGL (generalized linear), TSPSEUDO, and \sindex{Crank-Nicolson} \sindex{Runge-Kutta}
 TSSUNDIALS (only if the Sundials package is installed), \sindex{backward Euler} \sindex{Euler, backward}
 or the command line option \\
-\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials}.
+\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials,eimex,arkimex,rosw}.
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
+
+A list of available methods is given in Table \ref{tab:TSPET}.
+
+%
+\begin{table}
+\caption{Time integration schemes.}
+\centering
+%{   \scriptsize
+%\tiny
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS Name}&{\bf Reference}&{\bf Class}& {\bf Type}&{\bf Order}\\
+\hline
+euler&forward Euler&one-step&explicit&1\\
+\hline
+ssp&multistage SSP \cite{Ketcheson_2008}&Runge-Kutta&explicit&$\le$ 4\\
+\hline
+rk*&multistage&Runge-Kutta&explicit&$\ge$ 1\\
+\hline
+beuler&backward Euler&one-step&implicit&1\\
+\hline
+cn&Crank-Nicolson&one-step&implicit&2\\
+\hline
+theta*&theta-method&one-step&implicit&$\le$2\\
+\hline
+alpha&alpha-method \cite{Jansen_2000}&one-step&implicit&2\\
+\hline
+gl&general linear
+\cite{Butcher_2007}&multistep-multistage&implicit& $\le$ 3\\
+\hline
+eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
+1$, adaptive&\\
+\hline
+arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
+\hline
+rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly implicit&$1-4$\\
+\hline
+\end{tabular}%}
+\label{tab:TSPET} 
+\end{table}
+%
+
+
 
 
 \noindent Set the initial time and timestep with the command
@@ -4762,7 +4879,7 @@ In place of TSSolve(), a single step can be taken using
 TSStep(TS ts);
 \end{tabbing}
 
-\subsection{Using Implicit-Explicit (IMEX) methods for multi-rate problems}
+\subsection{Using Implicit-Explicit (IMEX) methods for stiff problems}
 \label{sec_imex}
 For problems with multiple time scales
 $F()$ will be treated implicitly using a method suitable for stiff problems and $G()$ will be treated explicitly when using an IMEX method like TSARKIMEX.
@@ -4773,6 +4890,165 @@ The user provides three pieces of information, the APIs for which have been desc
 \item ``Stiff'' part $F(t,u,\dot u)$ using TSSetIFunction().
 \item Jacobian $F_u + (shift) F_{\dot u}$ using TSSetIJacobian().
 \end{itemize}
+
+The user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher if the problem is implicit; e.g.,
+$F(t,u,\dot u) = M \dot u - f(t,u)$, where M is not the identity matrix: 
+\begin{itemize}
+\item the problem is an implicit ODE (defined implicitly through TSSetIFunction())
+or
+\item a DAE is being solved.
+\end{itemize}
+An IMEX problem representation can be made
+implicit by setting TSARKIMEXSetFullyImplicit().
+
+Some use-case examples for TSARKIMEX are listed in Table \ref{tab:DE:forms} and a
+list of methods with a summary of their properties is given in
+Table \ref{tab:IMEX:RK:PETSc}. 
+
+%
+\begin{table}
+\centering
+\caption{\label{tab:DE:forms}In PETSc the DAEs and ODEs are formulated
+as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
+implicitly and $G()$ explicitly. An IMEX formulation such as
+$M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
+solve  $g(t,y) - M x=0$ in place of $g(t,u)$. General cases such as
+$f(t,y,\dot{y})=g(t,y)$ are 
+not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
+%
+\begin{tabular}{|l|c|p{3in}|}
+\hline
+$\dot{y}=g(t,y)$ & nonstiff ODE & $f(t,y,\dot{y}) = \dot{y}$,
+$G(t,y)=g(t,y)$\\
+\hline
+$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+\hline
+$M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+\hline
+$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$,
+$G(t,y)=g(t,y)$\\
+\hline
+$M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
+$G(t,y)=M^{-1}g(t,y)$\\
+\hline
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $f(t,y,\dot{y}) = f(t,y,\dot{y})$,
+$F(t,y)=0$; the user needs to set TSSetEquationType() to
+TS\_EQ\_IMPLICIT or higher\\
+\hline
+\end{tabular}
+\end{table}
+%
+
+%
+\begin{table}
+\centering
+\caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
+IMEX Runge-Kutta schemes.  For each method we listed the reference, the
+  total number 
+  of stages/implicit stages, the order/stage-order,
+  the implicit stability properties, stiff accuracy (SA), the
+  existence of an embedded scheme, and dense output.} 
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+{\bf Name} &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+\hline
+a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
+\hline
+l2&SSP2(2,2,2)\cite{Pareschi_2005}
+&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
+\hline
+ars122&ARS122,
+\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
+\hline
+2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+\hline
+prssp2&PRS(3,3,2)
+\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
+\hline
+3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
+\hline
+bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
+\hline
+ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
+\hline
+4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
+\hline
+5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
+\hline
+\end{tabular}
+\end{table}
+%
+
+ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
+W-methods. They can accommodate inexact Jacobian matrices in their
+formulation. A series of methods are available in PETSc listed in
+Table \ref{tab:IMEX:RosW:PETSc}.
+
+%
+\begin{table}
+\centering
+
+\caption{\label{tab:IMEX:RosW:PETSc}List
+of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
+  of stages and implicit stages, the scheme order and stage-order,
+  the implicit stability properties, stiff accuracy (SA), the
+  existence of an embedded scheme, dense output, the capacity to use
+  inexact Jacobian matrices (-W), and high order integration of differential
+  algebraic equations (PDAE).} 
+{\scriptsize
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
+Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
+\hline
+theta1& classical&
+1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
+\hline
+theta2& classical&
+1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
+\hline
+2m             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+\hline
+2p             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+\hline
+ra3pw          &\cite{Rang_2005}&
+3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
+\hline
+ra34pw2        &\cite{Rang_2005}&
+4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
+\hline
+rodas3         &\cite{Sandu_1997}&
+4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
+\hline
+sandu3         &\cite{Sandu_1997}&
+3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
+\hline
+assp3p3s1c &unpublished&
+3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
+\hline
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+\hline
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+\hline
+ark3       &unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
+\hline
+\end{tabular}}
+\end{table}
+%
+
 
 \subsection{Using fully implicit methods}
 Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a DM that provides a coloring so the Jacobian can be computed efficiently via finite differences.
@@ -4857,7 +5133,7 @@ event monitoring routine
 \begin{tabbing}
      TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
      ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
-     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void* eventP),void *eventP);
+     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 \end{tabbing}
 Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for 
 an event (+1 for positive zero-crossing, -1 for negative zero-crossing, and 0 for both), \trl{terminate} conveys whether 
@@ -4869,7 +5145,7 @@ The arguments to \trl{eventmonitor()} are the timestep context, current time, in
 value, and the (optional) user-provided context \trl{eventP}. 
 
 The arguments to \trl{posteventmonitor()} routine are
-the timestep context, number of events occured, indices of events occured, current time, input state $u$, and the (optional)
+the timestep context, number of events occured, indices of events occured, current time, input state $u$, a boolean flag indicating forward solve (1) or adjoint solve (0), and the (optional)
 user-provided context \trl{eventP}. 
 
 The event monitoring functionality is only available with PETSc's implicit time-stepping solvers TSTHETA, TSARKIMEX, and TSROSW.
@@ -4945,7 +5221,7 @@ The TS library provides a framework based on discrete adjoint models
 for sensitivity analysis for ODEs and DAEs.  The ODE/DAE solution
 process (henceforth called the forward run) can be obtained by using
 either explicit or implicit solvers in TS, depending on the problem
-propeties. Currently supported method types are TSRK (Runge-Kutta) explicit
+properties. Currently supported method types are TSRK (Runge-Kutta) explicit
 methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
 
 Consider the ODE/DAE
@@ -4971,9 +5247,9 @@ TSSetSaveTrajectory(TS ts),
 \end{tabbing}
 then calls TSSolve() in the usual manner.
 
- One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
+One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $d\Phi_i/dy|_{t=t_F}$ and $d\Phi_i/dp|_{t=t_F}$ respectively. Then one calls
 \begin{tabbing}
-TSAdjointSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
+TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 \end{tabbing}
 
 If $F()$ is a function of $p$ one needs to also provide the Jacobian $F_p$ with 
@@ -4985,16 +5261,25 @@ are the timestep context, current time, $y$, and the (optional) user-provided co
 
 If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
 \begin{tabbing}
-TSAdjointSetCostIntegrand(\=TS ts,PetscInt numcost,\\
+TSSetCostIntegrand(\=TS ts,PetscInt numcost,\\
                           \>PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),\\
                           \>PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
                           \>PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 \end{tabbing}
 where $\mathrm{drdyf}= dr /dy$, $\mathrm{drdpf} = dr /dp$. 
+
 Lastly one starts the backward run by calling
 \begin{tabbing}
 TSAdjointSolve(TS ts).
 \end{tabbing}
+
+One can get the value of the integral term by calling 
+\begin{tabbing}
+TSGetCostIntegral(TS ts,Vec *q). 
+\end{tabbing}
+If TSSetCostGradients() and TSSetCostIntegrand() are called before TSSolve(), the integral term will be evaluated in the forward run. 
+Otherwise, the computation will take place in the backward run (inside TSAdjointSolve()). 
+Note that this allows the evaluation of the integral term in the cost function without having to run the adjoint solvers.  
 
 To provide a better understanding of the use of the adjoint solvers, we introduce a simple example, corresponding to \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3adj.c}.
 The problem is to study dynamic security of power system when there are credible contingencies such as short-circuits or loss of generators, transmission lines, or loads. 
@@ -5027,7 +5312,7 @@ For ODE solution, PETSc requires user-provided functions to evaluate the system 
 and its corresponding Jacobian $F_y + (shift) F_{\dot y}$ (set by TSSetIJacobian()).  
 Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here. 
 For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using TSAdjointSetRHSJacobian(),
-and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using TSAdjointSetCostIntegrand(). 
+and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using TSSetCostIntegrand(). 
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$. 
 After TSAdjointSolve(), the sensitivity of the cost function w.r.t. to initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly. 
@@ -5440,7 +5725,7 @@ Fortran programmers
 can check these error codes with
 \trl{CHKERRQ(ierr)}, which terminates all processes when an error is
 encountered.  Likewise, one can set error codes within Fortran programs by
-using \trl{SETERRQ(comm,ierr,p,' ')}, which again terminates all processes
+using \trl{SETERRQ(comm,p,' ',ierr)}, which again terminates all processes
 upon detection of an error.
 Note that complete error tracebacks with
 \trl{CHKERRQ()} and \trl{SETERRQ()}, as described in Section
@@ -8478,3 +8763,10 @@ for(v=Start; v \trl{<} End; v++) \{ \\
 \label{ch_index}
 \end{theindex}
 
+
+%%  LocalWords:  IMEX TSARKIMEX nonlinearities PDE APIs Jacobian DAE
+%%  LocalWords:  TSSetRHSFunction TSSetIFunction TSSetIJacobian EQ IM
+%%  LocalWords:  TSSetEquationType TSARKIMEXSetFullyImplicit PETSc CN
+%%  LocalWords:  DAEs ODEs Runge Kutta nonstiff SSP SDIRK ars ARS PRS
+%%  LocalWords:  prssp nonSDIRK bpr ROSW linearized Rosenbrock PDAE
+%%  LocalWords:  Zoltan ra pw rodas sandu assp lassp RK

@@ -17,7 +17,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('SuiteSparse', '-download-suitesparse-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install SuiteSparse to use GPUs'))
+    help.addArgument('SUITESPARSE', '-download-suitesparse-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install SuiteSparse to use GPUs'))
     
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

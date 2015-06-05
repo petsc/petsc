@@ -432,6 +432,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   TSRHSJacobian  rhsjacobianfunc;
   void           *ctx;
   TSIJacobian    ijacobianfunc;
+  TSRHSFunction  rhsfunction;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -441,8 +442,9 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
-  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate))) {
+  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) {
     PetscFunctionReturn(0);
   }
 
@@ -1723,9 +1725,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetCostGradients"
+#define __FUNCT__ "TSGetCostGradients"
 /*@
-   TSAdjointGetCostGradients - Returns the gradients from the TSAdjointSolve()
+   TSGetCostGradients - Returns the gradients from the TSAdjointSolve()
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
@@ -1742,7 +1744,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSAdjointGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
+PetscErrorCode  TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1922,18 +1924,11 @@ PetscErrorCode  TSSetUp(TS ts)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Notes:
-   For basic use of the TS solvers the user need not explicitly call
-   TSSetUp(), since these actions will automatically occur during
-   the call to TSStep().  However, if one wishes to control this
-   phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().
-
    Level: advanced
 
 .keywords: TS, timestep, setup
 
-.seealso: TSCreate(), TSStep(), TSDestroy()
+.seealso: TSCreate(), TSAdjointStep(), TSSetCostGradients()
 @*/
 PetscErrorCode  TSAdjointSetUp(TS ts)
 {
@@ -1942,11 +1937,13 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetCostGradients() first");
+  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
 
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  if (ts->vecs_sensip){
-    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+  if (ts->vec_costintegral) { /* if there is integral in the cost function*/
+    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+    if (ts->vecs_sensip){
+      ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    }
   }
 
   if (ts->ops->adjointsetup) {
@@ -1992,11 +1989,12 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
-  ierr = ISDestroy(&ts->is_diff);CHKERRQ(ierr);
 
-  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  if (ts->vecs_drdp){
-    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+ if (ts->vec_costintegral) {
+    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+    if (ts->vecs_drdp){
+      ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    }
   }
   ts->vecs_sensi  = NULL;
   ts->vecs_sensip = NULL;
@@ -2317,9 +2315,9 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetCostGradients"
+#define __FUNCT__ "TSSetCostGradients"
 /*@
-   TSAdjointSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial conditions and w.r.t. the problem parameters 
+   TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial conditions and w.r.t. the problem parameters 
       for use by the TSAdjoint routines.
 
    Logically Collective on TS and Vec
@@ -2335,13 +2333,14 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSAdjointSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
+PetscErrorCode  TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(lambda,2);
   ts->vecs_sensi  = lambda;
   ts->vecs_sensip = mu;
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
   ts->numcost  = numcost;
   PetscFunctionReturn(0);
 }
@@ -2420,9 +2419,9 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetCostIntegrand"
+#define __FUNCT__ "TSSetCostIntegrand"
 /*@C
-    TSAdjointSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
+    TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
 
     Logically Collective on TS
 
@@ -2454,9 +2453,9 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
-.seealso: TSAdjointSetRHSJacobian(),TSAdjointGetCostGradients(), TSAdjointSetCostGradients()
+.seealso: TSAdjointSetRHSJacobian(),TSGetCostGradients(), TSSetCostGradients()
 @*/
-PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                                                                   PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                                                                   PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 {
@@ -2464,22 +2463,22 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetCostGradients() first so that the number of cost functions can be determined.");
-  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
+  if (!ts->numcost) ts->numcost=numcost;
 
-  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
-  ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
-  ts->costintegrand     = rf;
-  ts->costintegrandctx  = ctx;
-  ts->drdyfunction    = drdyf;
-  ts->drdpfunction    = drdpf;
+  ierr                 = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
+  ierr                 = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
+  ts->costintegrand    = rf;
+  ts->costintegrandctx = ctx;
+  ts->drdyfunction     = drdyf;
+  ts->drdpfunction     = drdpf;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetCostIntegral"
+#define __FUNCT__ "TSGetCostIntegral"
 /*@
-   TSAdjointGetCostIntegral - Returns the values of the integral term in the cost functions.
+   TSGetCostIntegral - Returns the values of the integral term in the cost functions.
    It is valid to call the routine after a backward run.
 
    Not Collective
@@ -2492,11 +2491,11 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode
 
    Level: intermediate
 
-.seealso: TSAdjointSetCostIntegrand()
+.seealso: TSSetCostIntegrand()
 
 .keywords: TS, sensitivity analysis
 @*/
-PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
+PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2526,7 +2525,7 @@ PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
 
 .keywords: TS, compute
 
-.seealso: TSAdjointSetCostIntegrand()
+.seealso: TSSetCostIntegrand()
 @*/
 PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec y,Vec q)
 {
@@ -2975,7 +2974,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g %s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? "(r)\n" : "\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3119,7 +3118,7 @@ PetscErrorCode  TSStep(TS ts)
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointStep"
 /*@
-   TSAdjointStep - Steps one time step
+   TSAdjointStep - Steps one time step backward in the adjoint run
 
    Collective on TS
 
@@ -3128,16 +3127,9 @@ PetscErrorCode  TSStep(TS ts)
 
    Level: intermediate
 
-   Notes:
-   The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
-   be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
+.keywords: TS, adjoint, step
 
-   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
-   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
-
-.keywords: TS, timestep, solve
-
-.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
+.seealso: TSAdjointSetUp(), TSAdjointSolve()
 @*/
 PetscErrorCode  TSAdjointStep(TS ts)
 {
@@ -3152,7 +3144,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts, "-ts_view_solution");CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
@@ -3281,6 +3273,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    if (ts->vec_costintegral) ts->costintegralfwd=PETSC_TRUE;
     if(ts->event) {
       ierr = TSEventMonitorInitialize(ts);CHKERRQ(ierr);
     }
@@ -3305,10 +3298,11 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       solution = ts->vec_sol;
     }
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(solution, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(solution,(PetscObject) ts,"-ts_view_solution");CHKERRQ(ierr);
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,NULL,"-ts_view_solution");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
@@ -3338,7 +3332,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetSolution(), TSStep()
+.seealso: TSCreate(), TSSetCostGradients(), TSSetSolution(), TSAdjointStep()
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
@@ -3359,24 +3353,15 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
   if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,ts->ptime);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,&ts->ptime);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
     }
-
-#if 0 /* I don't think PostStep is needed in AdjointSolve */
-      if (ts->event->status != TSEVENT_PROCESSING) {
-        ierr = TSPostStep(ts);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = TSPostStep(ts);CHKERRQ(ierr);
-    }
-#endif
   }
   ts->solvetime = ts->ptime;
-  ierr = VecViewFromOptions(ts->vecs_sensi[0], ((PetscObject) ts)->prefix, "-ts_adjoint_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4385,7 +4370,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Input Parameter:
 +  ts - the TS context
-.  equation_type - see TSEquationType
+-  equation_type - see TSEquationType
 
    Level: advanced
 
@@ -4889,6 +4874,14 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 +  -ts_rtol <rtol> - relative tolerance for local truncation error
 -  -ts_atol <atol> Absolute tolerance for local truncation error
 
+   Notes:
+   With PETSc's implicit schemes for DAE problems, the calculation of the local truncation error
+   (LTE) includes both the differential and the algebraic variables. If one wants the LTE to be
+   computed only for the differential or the algebraic part then this can be done using the vector of
+   tolerances vatol. For example, by setting the tolerance vector with the desired tolerance for the 
+   differential part and infinity for the algebraic part, the LTE calculation will include only the
+   differential variables.
+
    Level: beginner
 
 .seealso: TS, TSAdapt, TSVecNormWRMS(), TSGetTolerances()
@@ -4946,34 +4939,6 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetDifferentialEquationsIS"
-/*@
-   TSSetDifferentialEquationsIS - Sets an IS containing locations of differential equations in a DAE
-
-   Not Collective
-
-   Input Arguments:
-+  ts - time stepping context
--  is_diff - Index set for differential equations
-
-   Level: advanced
-
-@*/
-PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(is_diff,IS_CLASSID,2);
-  PetscCheckSameComm(ts,1,is_diff,2);
-  ierr = PetscObjectReference((PetscObject)is_diff);CHKERRQ(ierr);
-  ierr = ISDestroy(&ts->is_diff);CHKERRQ(ierr);
-  ts->is_diff = is_diff;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNorm2"
 /*@
    TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between two state vectors
@@ -5020,83 +4985,32 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm)
     const PetscScalar *atol,*rtol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
-    if(ts->is_diff) {
-      const PetscInt *idx;
-      PetscInt k;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-      for(i=0; i < n; i++) {
-	k = idx[i] - rstart;
-	tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k])*PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      for (i=0; i<n; i++) {
-	tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    for (i=0; i<n; i++) {
+      tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else if (ts->vatol) {       /* vector atol, scalar rtol */
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
-    if(ts->is_diff) {
-      const PetscInt *idx;
-      PetscInt k;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-      for(i=0; i < n; i++) {
-	k = idx[i] - rstart;
-	tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      for (i=0; i<n; i++) {
-	tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    for (i=0; i<n; i++) {
+      tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
   } else if (ts->vrtol) {       /* scalar atol, vector rtol */
     const PetscScalar *rtol;
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
-    if(ts->is_diff) {
-      const PetscInt *idx;
-      PetscInt k;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-      for(i=0; i < n; i++) {
-	k = idx[i] - rstart;
-	tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      for (i=0; i<n; i++) {
-	tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    for (i=0; i<n; i++) {
+      tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else {                      /* scalar atol, scalar rtol */
-    if (ts->is_diff) {
-      const PetscInt *idx;
-      PetscInt k;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-	k = idx[i] - rstart;
-	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-    } else {
-      for (i=0; i<n; i++) {
-	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    for (i=0; i<n; i++) {
+      tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
   }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -5155,108 +5069,44 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm)
     const PetscScalar *atol,*rtol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
-    if(ts->is_diff) {
-      const PetscInt *idx;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-
-      k = idx[0];
-      tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for(i=1; i < n; i++) {
-	k = idx[i] - rstart;
-	tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k])*PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      k = 0;
-      tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for (i=1; i<n; i++) {
-	tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    k = 0;
+    tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+    max = PetscAbsScalar(y[k] - u[k]) / tol;
+    for (i=1; i<n; i++) {
+      tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else if (ts->vatol) {       /* vector atol, scalar rtol */
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
-    if(ts->is_diff) {
-      const PetscInt *idx;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-
-      k = idx[0];
-      tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for(i=1; i < n; i++) {
-	k = idx[i] - rstart;
-	tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      k = 0;
-      tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for (i=1; i<n; i++) {
-	tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-        max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    k = 0;
+    tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+    max = PetscAbsScalar(y[k] - u[k]) / tol;
+    for (i=1; i<n; i++) {
+      tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
   } else if (ts->vrtol) {       /* scalar atol, vector rtol */
     const PetscScalar *rtol;
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
-    if(ts->is_diff) {
-      const PetscInt *idx;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-
-      k = idx[0];
-      tol = ts->atol + PetscRealPart(rtol[k])*PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for(i=1; i < n; i++) {
-	k = idx[i] - rstart;
-	tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      k = 0;
-      tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for (i=1; i<n; i++) {
-	tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    k = 0;
+    tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+    max = PetscAbsScalar(y[k] - u[k]) / tol;
+    for (i=1; i<n; i++) {
+      tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else {                      /* scalar atol, scalar rtol */
-    if (ts->is_diff) {
-      const PetscInt *idx;
-      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
-
-      k = idx[0];
-      tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for (i=1; i<n; i++) {
-	k = idx[i] - rstart;
-	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
-      }
-      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
-    } else {
-      k = 0;
-      tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
-      max = PetscAbsScalar(y[k] - u[k]) / tol;
-      for (i=1; i<n; i++) {
-	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-	max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
-      }
+    k = 0;
+    tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+    max = PetscAbsScalar(y[k] - u[k]) / tol;
+    for (i=1; i<n; i++) {
+      tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
     }
   }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -6378,7 +6228,6 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobianDefaultColor"
 /*@C
@@ -6462,5 +6311,90 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
     ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "TSClone"
+/*@C
+  TSClone - This function clones a time step object. 
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. tsin    - The input TS
+
+  Output Parameter:
+. tsout   - The output TS (cloned)
+
+  Notes:
+  This function is used to create a clone of a TS object. It is used in ARKIMEX for initializing the slope for first stage explicit methods. It will likely be replaced in the future with a mechanism of switching methods on the fly. 
+
+  When using TSDestroy() on a clone the user has to first reset the correct TS reference in the embedded SNES object: e.g.: by running SNES snes_dup=NULL; TSGetSNES(ts,&snes_dup); ierr = TSSetSNES(ts,snes_dup);
+
+  Level: developer
+
+.keywords: TS, clone
+.seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
+@*/
+PetscErrorCode  TSClone(TS tsin, TS *tsout)
+{
+  TS             t;
+  PetscErrorCode ierr;
+  SNES           snes_start;
+  DM             dm;
+  TSType         type;
+
+  PetscFunctionBegin;
+  PetscValidPointer(tsin,1);
+  *tsout = NULL;
+
+  ierr = PetscHeaderCreate(t, TS_CLASSID, "TS", "Time stepping", "TS", PetscObjectComm((PetscObject)tsin), TSDestroy, TSView);CHKERRQ(ierr);
+
+  /* General TS description */
+  t->numbermonitors    = 0;
+  t->setupcalled       = 0;
+  t->ksp_its           = 0;
+  t->snes_its          = 0;
+  t->nwork             = 0;
+  t->rhsjacobian.time  = -1e20;
+  t->rhsjacobian.scale = 1.;
+  t->ijacobian.shift   = 1.;
+
+  ierr = TSGetSNES(tsin,&snes_start);                   CHKERRQ(ierr);
+  ierr = TSSetSNES(t,snes_start);                       CHKERRQ(ierr);
+
+  ierr = TSGetDM(tsin,&dm);                             CHKERRQ(ierr);
+  ierr = TSSetDM(t,dm);                                 CHKERRQ(ierr);
+
+  t->adapt=tsin->adapt;
+  PetscObjectReference((PetscObject)t->adapt);
+
+  t->problem_type      = tsin->problem_type;
+  t->ptime             = tsin->ptime;
+  t->time_step         = tsin->time_step;
+  t->time_step_orig    = tsin->time_step_orig;
+  t->max_time          = tsin->max_time;
+  t->steps             = tsin->steps;
+  t->max_steps         = tsin->max_steps;
+  t->equation_type     = tsin->equation_type;
+  t->atol              = tsin->atol;
+  t->rtol              = tsin->rtol;
+  t->max_snes_failures = tsin->max_snes_failures;
+  t->max_reject        = tsin->max_reject;
+  t->errorifstepfailed = tsin->errorifstepfailed;
+
+  ierr = TSGetType(tsin,&type); CHKERRQ(ierr);
+  ierr = TSSetType(t,type);     CHKERRQ(ierr);
+
+  t->vec_sol           = NULL;
+
+  t->cfltime          = tsin->cfltime;
+  t->cfltime_local    = tsin->cfltime_local;
+  t->exact_final_time = tsin->exact_final_time;
+
+  ierr = PetscMemcpy(t->ops,tsin->ops,sizeof(struct _TSOps));CHKERRQ(ierr);
+
+  *tsout = t;
   PetscFunctionReturn(0);
 }

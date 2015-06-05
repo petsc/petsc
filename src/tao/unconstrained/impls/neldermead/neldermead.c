@@ -103,7 +103,7 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
   TaoConvergedReason reason;
   PetscReal          *x;
-  PetscInt           iter=0,i;
+  PetscInt           i;
   Vec                Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
   PetscReal          fr,fe,fc;
   PetscInt           shrink;
@@ -147,7 +147,7 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   while (1) {
     shrink = 0;
     ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,iter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
     /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */
@@ -239,14 +239,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NM;
   tao->ops->destroy = TaoDestroy_NM;
 
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-5;
-  tao->frtol = 1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol = 1e-8;
-  tao->frtol = 1e-8;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
 #endif
 
   nm->simplex = 0;

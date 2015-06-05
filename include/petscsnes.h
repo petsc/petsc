@@ -87,7 +87,7 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode SNESReasonView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESReasonViewFromOptions(SNES);
 
@@ -138,6 +138,7 @@ PETSC_EXTERN PetscErrorCode SNESGetLagJacobian(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetLagPreconditionerPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetLagJacobianPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetGridSequence(SNES,PetscInt);
+PETSC_EXTERN PetscErrorCode SNESGetGridSequence(SNES,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveIterations(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES,PetscInt*);
@@ -558,8 +559,27 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOrder(SNESLineSearch,PetscInt *order);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order);
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);
+/*E
+    SNESLineSearchReason - if line search has succeeded or failed and why
+
+   Level: intermediate
+
+   Developer Notes: this must match petsc/finclude/petscsnes.h
+
+   Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
+     also adjust that array.
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
+E*/
+typedef enum {SNES_LINESEARCH_SUCCEEDED,
+              SNES_LINESEARCH_FAILED_NANORINF,
+              SNES_LINESEARCH_FAILED_DOMAIN,
+              SNES_LINESEARCH_FAILED_REDUCT,       /* INSUFFICENT REDUCTION */
+              SNES_LINESEARCH_FAILED_USER,
+              SNES_LINESEARCH_FAILED_FUNCTION} SNESLineSearchReason;
+
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetReason(SNESLineSearch, SNESLineSearchReason*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetReason(SNESLineSearch, SNESLineSearchReason);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch,Vec,Vec,Vec,Vec,Vec);
@@ -812,5 +832,7 @@ PETSC_EXTERN PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
+
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

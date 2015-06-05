@@ -9,7 +9,7 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,As;
   Vec            x,y,ys;
@@ -39,6 +39,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) use_random = 0;
