@@ -58,7 +58,7 @@ cdef inline int CHKERR(int ierr) nogil except -1:
         return 0 # no error
     if ierr == PETSC_ERR_PYTHON:
         return -1 # error in Python call
-    SETERR(ierr)
+    <void>SETERR(ierr)
     return -1
 
 # --------------------------------------------------------------------

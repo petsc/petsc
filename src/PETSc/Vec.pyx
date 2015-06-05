@@ -764,7 +764,7 @@ cdef class Vec(Object):
         cdef PetscVec* sx
         CHKERR( VecNestGetSubVecs(self.vec, &N, &sx) )
         output = []
-        for i in range(N): 
+        for i in range(N):
           pyvec = Vec()
           pyvec.vec = sx[i]
           CHKERR( PetscObjectReference(<PetscObject> pyvec.vec) )
