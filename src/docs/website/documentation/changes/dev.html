@@ -110,9 +110,11 @@
       </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
-      PetscDrawBoxedString() changed to PetscDrawStringBoxed()
-      added PetscDrawBar object for drawing bar graphs
-      added PetscDrawStringCentered()
+      <ul>
+        <li>PetscDrawBoxedString() changed to PetscDrawStringBoxed()
+          added PetscDrawBar object for drawing bar graphs
+          added PetscDrawStringCentered()</li>
+      </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
@@ -125,27 +127,33 @@
          <li>Added support for MUMPS sequential solver in Schur complement mode</li>
       </ul>
       <h4>PC:</h4>
-         Removed -pc_hypre_type euclid due to bit-rot
-         Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
-         Added PCBDDCSetChangeOfBasisMat for user defined change of basis
-         PCBDDC: added adaptive selection of constraints: it is available by command line options
-         PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
-         PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()
-         PCFactorSetUseInplace() now takes a PetscBool argument. Added PCFactorGetUseInplace()
-         PCFactorSetAllowDiagonalFill() now takes a PetscBool argument. Added PCFactorGetAllowDiagonalFill()
-         PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean
-         Added Interface to AMS solver from HYPRE for Nedelec discretizations (-pc_hypre_type ams)
-         Added Interface to ADS solver from HYPRE for Raviart-Thomas discretizations (-pc_hypre_type ads)
+      <ul>
+         <li>Removed -pc_hypre_type euclid due to bit-rot</li>
+         <li>Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it</li>
+         <li>Added PCBDDCSetChangeOfBasisMat for user defined change of basis</li>
+         <li>PCBDDC: added adaptive selection of constraints: it is available by command line options</li>
+         <li>PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option</li>
+         <li>PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()</li>
+         <li>PCFactorSetUseInplace() now takes a PetscBool argument. Added PCFactorGetUseInplace()</li>
+         <li>PCFactorSetAllowDiagonalFill() now takes a PetscBool argument. Added PCFactorGetAllowDiagonalFill()</li>
+         <li>PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean</li>
+         <li>Added Interface to AMS solver from HYPRE for Nedelec discretizations (-pc_hypre_type ams)</li>
+         <li>Added Interface to ADS solver from HYPRE for Raviart-Thomas discretizations (-pc_hypre_type ads)</li>
+      </ul>
       <h4>KSP:</h4>
-      Removed KSPSetNullSpace() always use MatSetNullSpace()
-      Added MatSetTransposeNullSpace() to indicate the null space of the transpose operator
-         Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev
-         Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_
-         KSPGetVecs() replaced with KSPCreateVecs() because it actually does create the Vecs that need to be destroyed
+      <ul>
+        <li>Removed KSPSetNullSpace() always use MatSetNullSpace()</li>
+        <li>Added MatSetTransposeNullSpace() to indicate the null space of the transpose operator</li>
+        <li>Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev</li>
+        <li>Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_</li>
+        <li>KSPGetVecs() replaced with KSPCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
+      </ul>
       <h4>SNES:</h4>
-      Added KSPMonitorSNES() with command line option -ksp_monitor_snes and -ksp_monitor_snes_lg to monitor SNES residual norm at each linear iteration
-      SNESMonitorVI() becomes SNESVIMonitor()
-      Added SNESVIMonitorResidual() and -snes_vi_monitor_residual
+      <ul>
+        <li>Added KSPMonitorSNES() with command line option -ksp_monitor_snes and -ksp_monitor_snes_lg to monitor SNES residual norm at each linear iteration
+      SNESMonitorVI() becomes SNESVIMonitor()</li>
+        <li>Added SNESVIMonitorResidual() and -snes_vi_monitor_residual</li>
+      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <ul>
@@ -160,8 +168,10 @@
       </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
-      HDF5 viewer will save Vecs and DMDA Vecs with a dimension of 1 if the bs/dof of the vector is 1. To always include this dimension as a specific dimension
-      in the HDF5 file even if if it is of size 1 use PetscViewerHDF5SetBaseDimension2() or -viewer_hdf5_base_dimension2 true
+      <ul>
+        <li>HDF5 viewer will save Vecs and DMDA Vecs with a dimension of 1 if the bs/dof of the vector is 1. To always include this dimension as a specific dimension
+      in the HDF5 file even if if it is of size 1 use PetscViewerHDF5SetBaseDimension2() or -viewer_hdf5_base_dimension2 true</li>
+      </ul>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
