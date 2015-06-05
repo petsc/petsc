@@ -7,8 +7,8 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.c
+                ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex43.c ex44.c ex45.c ex46.cxx
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F ex47f.F
 
@@ -140,9 +140,6 @@ ex33: ex33.o  chkopts
 ex34: ex34.o  chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_KSP_LIB}
 	${RM} ex34.o
-ex35: ex35.o  chkopts
-	-${CLINKER} -o ex35 ex35.o  ${PETSC_KSP_LIB}
-	${RM} ex35.o
 ex36: ex36.o  chkopts
 	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
 	${RM} ex36.o

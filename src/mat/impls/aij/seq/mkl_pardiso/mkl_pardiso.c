@@ -434,7 +434,7 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
     mat_mkl_pardiso->pt[i] = 0;
   }
   
-  /*Default options for both sym and unsym */
+  /* Default options for both sym and unsym */
   mat_mkl_pardiso->iparm[ 0] =  1; /* Solver default parameters overriden with provided by iparm */
   mat_mkl_pardiso->iparm[ 1] =  2; /* Metis reordering */
   mat_mkl_pardiso->iparm[ 5] =  0; /* Write solution into x */
@@ -460,7 +460,7 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
   mat_mkl_pardiso->phase     = -1;
   
   if(ftype == MAT_FACTOR_LU){
-    /*Default type for non-sym*/
+    /* Default type for non-sym */
 #if defined(PETSC_USE_COMPLEX)
     mat_mkl_pardiso->mtype     = 13;
 #else
@@ -472,7 +472,7 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
     mat_mkl_pardiso->iparm[12] =  1; /* Switch on Maximum Weighted Matching algorithm (default for non-symmetric) */
 
   } else {
-    /*Default type for sym*/
+    /* Default type for sym */
 #if defined(PETSC_USE_COMPLEX)
     mat_mkl_pardiso ->mtype    = 3;
 #else
