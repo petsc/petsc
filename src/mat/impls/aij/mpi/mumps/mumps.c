@@ -2562,6 +2562,10 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 
   Works with MATAIJ and MATSBAIJ matrices
 
+  Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with MUMPS
+
+  Use -pc_type cholesky or lu -pc_factor_mat_solver_package mumps to us this direct solver
+
   Options Database Keys:
 +  -mat_mumps_icntl_1 <6>: ICNTL(1): output stream for error messages (None)
 .  -mat_mumps_icntl_2 <0>: ICNTL(2): output stream for diagnostic printing, statistics, and warning (None)

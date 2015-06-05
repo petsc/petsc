@@ -507,7 +507,7 @@ M*/
    Notes: By default PETSC_COMM_WORLD and MPI_COMM_WORLD are identical unless you wish to
           run PETSc on ONLY a subset of MPI_COMM_WORLD. In that case create your new (smaller)
           communicator, call it, say comm, and set PETSC_COMM_WORLD = comm BEFORE calling
-          PetscInitialize(), but after MPI_Init() has been called. 
+          PetscInitialize(), but after MPI_Init() has been called.
 
           The value of PETSC_COMM_WORLD should never be USED/accessed before PetscInitialize()
           is called because it may not have a valid value yet.
@@ -1634,7 +1634,7 @@ PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
 PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
 #include <petscviewertypes.h>
 #include <petscoptions.h>
@@ -1651,7 +1651,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject,const char*[
 PETSC_EXTERN PetscErrorCode PetscObjectChangeTypeName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroy(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroyAll(void);
-PETSC_EXTERN PetscErrorCode PetscObjectViewFromOptions(PetscObject,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscObjectViewFromOptions(PetscObject,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectName(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompare(PetscObject,const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,const char[],...);
@@ -2269,7 +2269,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
    Level: advanced
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast()
-@*/ 
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;
@@ -2459,7 +2459,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
-PETSC_STATIC_INLINE PetscErrorCode PetscRandomViewFromOptions(PetscRandom A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode PetscRandomViewFromOptions(PetscRandom A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
@@ -2492,7 +2492,6 @@ PETSC_EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[],int,int*);
-PETSC_EXTERN PetscErrorCode PetscWebServe(MPI_Comm,int);
 
 /*
    In binary files variables are stored using the following lengths,

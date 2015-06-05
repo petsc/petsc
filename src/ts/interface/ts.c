@@ -1924,18 +1924,11 @@ PetscErrorCode  TSSetUp(TS ts)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Notes:
-   For basic use of the TS solvers the user need not explicitly call
-   TSSetUp(), since these actions will automatically occur during
-   the call to TSStep().  However, if one wishes to control this
-   phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().
-
    Level: advanced
 
 .keywords: TS, timestep, setup
 
-.seealso: TSCreate(), TSStep(), TSDestroy()
+.seealso: TSCreate(), TSAdjointStep(), TSSetCostGradients()
 @*/
 PetscErrorCode  TSAdjointSetUp(TS ts)
 {
@@ -1946,9 +1939,11 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
   if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
 
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  if (ts->vecs_sensip){
-    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+  if (ts->vec_costintegral) { /* if there is integral in the cost function*/
+    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+    if (ts->vecs_sensip){
+      ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    }
   }
 
   if (ts->ops->adjointsetup) {
@@ -1995,9 +1990,11 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
 
-  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  if (ts->vecs_drdp){
-    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+ if (ts->vec_costintegral) {
+    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+    if (ts->vecs_drdp){
+      ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+    }
   }
   ts->vecs_sensi  = NULL;
   ts->vecs_sensip = NULL;
@@ -2469,12 +2466,12 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
   if (!ts->numcost) ts->numcost=numcost;
 
-  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
-  ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
-  ts->costintegrand     = rf;
-  ts->costintegrandctx  = ctx;
-  ts->drdyfunction    = drdyf;
-  ts->drdpfunction    = drdpf;
+  ierr                 = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
+  ierr                 = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
+  ts->costintegrand    = rf;
+  ts->costintegrandctx = ctx;
+  ts->drdyfunction     = drdyf;
+  ts->drdpfunction     = drdpf;
   PetscFunctionReturn(0);
 }
 
@@ -3121,7 +3118,7 @@ PetscErrorCode  TSStep(TS ts)
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointStep"
 /*@
-   TSAdjointStep - Steps one time step
+   TSAdjointStep - Steps one time step backward in the adjoint run
 
    Collective on TS
 
@@ -3130,16 +3127,9 @@ PetscErrorCode  TSStep(TS ts)
 
    Level: intermediate
 
-   Notes:
-   The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
-   be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
+.keywords: TS, adjoint, step
 
-   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
-   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
-
-.keywords: TS, timestep, solve
-
-.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
+.seealso: TSAdjointSetUp(), TSAdjointSolve()
 @*/
 PetscErrorCode  TSAdjointStep(TS ts)
 {
@@ -3154,7 +3144,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts, "-ts_view_solution");CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
@@ -3308,7 +3298,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       solution = ts->vec_sol;
     }
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(solution, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(solution,(PetscObject) ts,"-ts_view_solution");CHKERRQ(ierr);
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
@@ -3342,7 +3332,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetSolution(), TSStep()
+.seealso: TSCreate(), TSSetCostGradients(), TSSetSolution(), TSAdjointStep()
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
@@ -3363,24 +3353,15 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
   if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,ts->ptime);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,&ts->ptime);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
     }
-
-#if 0 /* I don't think PostStep is needed in AdjointSolve */
-      if (ts->event->status != TSEVENT_PROCESSING) {
-        ierr = TSPostStep(ts);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = TSPostStep(ts);CHKERRQ(ierr);
-    }
-#endif
   }
   ts->solvetime = ts->ptime;
-  ierr = VecViewFromOptions(ts->vecs_sensi[0], ((PetscObject) ts)->prefix, "-ts_adjoint_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

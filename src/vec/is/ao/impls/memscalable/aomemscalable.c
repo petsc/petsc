@@ -417,6 +417,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscMPIInt       size,rank;
 
   PetscFunctionBegin;
+  if (!isapp) SETERRQ(PetscObjectComm((PetscObject)ao),PETSC_ERR_ARG_WRONGSTATE,"AOSetIS() must be called before AOSetType()");
   /* create special struct aomems */
   ierr     = PetscNewLog(ao,&aomems);CHKERRQ(ierr);
   ao->data = (void*) aomems;

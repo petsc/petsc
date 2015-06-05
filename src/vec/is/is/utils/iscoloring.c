@@ -76,14 +76,16 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
   Developer Note: This cannot use PetscObjectViewFromOptions() because ISColoring is not a PetscObject
 
 */
-PetscErrorCode ISColoringViewFromOptions(ISColoring obj,const char prefix[],const char optionname[])
+PetscErrorCode ISColoringViewFromOptions(ISColoring obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
+  prefix = bobj ? bobj->prefix : NULL;
   ierr   = PetscOptionsGetViewer(obj->comm,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);

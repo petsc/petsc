@@ -284,7 +284,7 @@ int main(int argc, char **argv)
     initialGuess[1] = zero;
     initialGuess[2] = zero;
     ierr = DMPlexProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(u, "initial_", "-vec_view");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(u, NULL, "-initial_vec_view");CHKERRQ(ierr);
     ierr = DMPlexComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial L_2 Error: %g\n", error);CHKERRQ(ierr);}
@@ -293,7 +293,7 @@ int main(int argc, char **argv)
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final L_2 Error: %g\n", error);CHKERRQ(ierr);}
   }
-  ierr = VecViewFromOptions(u, "sol_", "-vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);

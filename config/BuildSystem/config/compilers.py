@@ -959,7 +959,7 @@ class Configure(config.base.Configure):
         if arg.startswith('COMPILER_PATH=') or arg.startswith('LIBRARY_PATH='):
           self.logPrint('Skipping arg '+arg, 4, 'compilers')
           continue
-        # HPUX lists a bunch of library directories seperated by :
+        # HPUX lists a bunch of library directories separated by :
         if arg.find(':') >=0:
           founddir = 0
           for l in arg.split(':'):

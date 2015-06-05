@@ -1506,6 +1506,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->numLinearSolveFailures = 0;
   snes->maxLinearSolveFailures = 1;
 
+  snes->vizerotolerance = 1.e-8;
+
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   ierr = PetscNewLog(snes,&kctx);CHKERRQ(ierr);
 
@@ -3924,7 +3926,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     }
   }
   ierr = SNESViewFromOptions(snes,NULL,"-snes_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(snes->vec_sol,((PetscObject)snes)->prefix,"-snes_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(snes->vec_sol,(PetscObject)snes,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)snes);CHKERRQ(ierr);

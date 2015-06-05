@@ -4,9 +4,10 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3adj_events.c ex3opt.c ex3opt_fd.c ex4.c
-EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
-EXAMPLESFH      = ex2f.h
+EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3adj_events.c ex3opt.c ex3opt_fd.c ex5.c \
+                ex6.c ex7.c ex8.c ex9adj.c ex9.c ex9opt.c
+EXAMPLESF       =
+EXAMPLESFH      =
 MANSEC          = TS
 DIRS            = stability_9bus
 

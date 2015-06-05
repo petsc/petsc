@@ -20,6 +20,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,
   if (ksp) {
     for (i=0; i<nloc; i++) ksp[i] = tksp[i];
   }
+  *ierr = PetscFree(tksp);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitsetis_(PC *pc, CHAR splitname PETSC_MIXED_LEN(len),IS *is, PetscErrorCode *ierr PETSC_END_LEN(len))

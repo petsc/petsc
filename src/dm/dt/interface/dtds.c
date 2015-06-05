@@ -204,42 +204,6 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDSViewFromOptions"
-/*
-  PetscDSViewFromOptions - Processes command line options to determine if/how a PetscDS is to be viewed.
-
-  Collective on PetscDS
-
-  Input Parameters:
-+ prob   - the PetscDS
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscDS, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscDSViewFromOptions(PetscDS prob, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) prob), prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) prob), ((PetscObject) prob)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscDSView(prob, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDSSetFromOptions"
 /*@
   PetscDSSetFromOptions - sets parameters in a PetscDS from the options database
