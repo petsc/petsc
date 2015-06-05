@@ -511,8 +511,9 @@ PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const
     ierr = ISRestoreIndices(icol[i],&icol_indices);CHKERRQ(ierr);
     nindx = irow_n+icol_n;
     ierr = PetscSortRemoveDupsInt(&nindx,indices);CHKERRQ(ierr);
+    /* renumber columns */
     for(j=0; j<irow_n; j++){
-      for(k=sxadj[j]; k<sxadj[j]; k++){
+      for(k=sxadj[j]; k<sxadj[j+1]; k++){
     	ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
 #if PETSC_USE_DEBUG
     	if(loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %d \n",sadjncy[k]);
@@ -609,10 +610,10 @@ static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, Pe
     }
   }
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
-  /*if we need to deal with edge weights */
+  /*if we need to deal with edge weights ???*/
   if(a->values){isvalue=1;}else{isvalue=0;}
   /*involve a global communication */
-  ierr = MPI_Allreduce(&isvalue,&isvalue,1,MPIU_INT,MPIU_SUM,comm);CHKERRQ(ierr);
+  /*ierr = MPI_Allreduce(&isvalue,&isvalue,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);*/
   if(isvalue){ierr = PetscCalloc1(Ncols_recv,&values_recv);CHKERRQ(ierr);}
   nroots = Ncols_send;
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
