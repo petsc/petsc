@@ -1691,7 +1691,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
         ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       }
       if (pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
-        ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcis->is_I_local);CHKERRQ(ierr);
+        ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_TRUE,pcis->is_I_local);CHKERRQ(ierr);
       }
     }
     if (neumann) { /* Neumann */
@@ -1710,7 +1710,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
         ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       }
       if (pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
-        ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcbddc->is_R_local);CHKERRQ(ierr);
+        ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_FALSE,pcbddc->is_R_local);CHKERRQ(ierr);
       }
     }
   }
@@ -4474,9 +4474,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 #endif
 
   /* Compute coarse null space (special handling by BDDC only) */
+#if 0
   if (pcbddc->NullSpace) {
     ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
   }
+#endif
 
   if (pcbddc->coarse_ksp) {
     Vec crhs,csol;
