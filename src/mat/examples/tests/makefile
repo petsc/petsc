@@ -1506,7 +1506,10 @@ runex79f:
 	   else printf "${PWD}\nPossible problem with ex79f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex79f_1.tmp
 runex82:
-	  -@${MPIEXEC} -n 4 ./ex82 
+	  -@${MPIEXEC} -n 4 ./ex82   > ex82.tmp 2>&1; \
+          if (${DIFF} output/ex82.out ex82.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex82, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex82.tmp
 runex85f:
 	-@${MPIEXEC} -n 1 ./ex85f  > ex85f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex85f_1.out ex85f_1.tmp) then true; \
