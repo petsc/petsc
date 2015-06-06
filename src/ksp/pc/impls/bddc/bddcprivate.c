@@ -3243,8 +3243,8 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
 
   /* reduce from leaves to roots */
   ierr = PetscMemzero(root_data,Nl*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
 
   /* count indexes in local part of layout */
   nlocals = 0;
