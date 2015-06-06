@@ -17,7 +17,7 @@
 !
 ! --------------------------------------------------------------------
 
-#include "finclude/petscdef.h"
+#include "petsc/finclude/petscdef.h"
 #include "petscversion.h"
 
 #undef  CHKERRQ
