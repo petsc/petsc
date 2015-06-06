@@ -3243,8 +3243,8 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
 
   /* reduce from leaves to roots */
   ierr = PetscMemzero(root_data,Nl*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
 
   /* count indexes in local part of layout */
   nlocals = 0;
@@ -3261,9 +3261,9 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
   /* cumulative of number of indexes and size of subset without holes */
 #if defined(PETSC_HAVE_MPI_EXSCAN)
   start = 0;
-  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
 #else
-  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   start = start-nlocals;
 #endif
 
