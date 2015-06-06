@@ -3261,9 +3261,9 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
   /* cumulative of number of indexes and size of subset without holes */
 #if defined(PETSC_HAVE_MPI_EXSCAN)
   start = 0;
-  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
 #else
-  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   start = start-nlocals;
 #endif
 
