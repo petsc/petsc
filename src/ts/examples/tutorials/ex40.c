@@ -47,14 +47,14 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionBegin;
   if (event_list[0] == 0) {
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %f seconds\n",t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %f seconds\n",(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     u[0] = 0.0;
     u[1] = -0.9*u[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
     ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
   } else if (event_list[0] == 1) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %d times\n",app->nbounces);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %D times\n",app->nbounces);CHKERRQ(ierr);
   }
   app->nbounces++;
   PetscFunctionReturn(0);
