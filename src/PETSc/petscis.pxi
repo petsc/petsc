@@ -113,8 +113,9 @@ cdef extern from "pep3118.h":
 cdef class _IS_buffer:
 
     cdef PetscIS iset
-    cdef const_PetscInt *data
     cdef PetscInt size
+    cdef const_PetscInt *data
+    cdef bint hasarray
 
     def __cinit__(self, IS iset not None):
         cdef PetscIS i = iset.iset
@@ -122,34 +123,37 @@ cdef class _IS_buffer:
         self.iset = i
         self.size = 0
         self.data = NULL
+        self.hasarray = 0
 
     def __dealloc__(self):
-        if self.iset != NULL and self.data != NULL:
+        if self.hasarray and self.iset != NULL:
             CHKERR( ISRestoreIndices(self.iset, &self.data) )
         CHKERR( ISDestroy(&self.iset) )
 
     #
 
     cdef int acquire(self) except -1:
-        if self.iset != NULL and self.data == NULL:
+        if not self.hasarray and self.iset != NULL:
             CHKERR( ISGetLocalSize(self.iset, &self.size) )
             CHKERR( ISGetIndices(self.iset, &self.data) )
+            self.hasarray = 1
         return 0
 
     cdef int release(self) except -1:
-        if self.iset != NULL and self.data != NULL:
-            CHKERR( ISRestoreIndices(self.iset, &self.data) )
-            self.data = NULL
+        if self.hasarray and self.iset != NULL:
             self.size = 0
+            CHKERR( ISRestoreIndices(self.iset, &self.data) )
+            self.hasarray = 0
+            self.data = NULL
         return 0
 
     # buffer interface (PEP 3118)
 
     cdef int acquirebuffer(self, Py_buffer *view, int flags) except -1:
         self.acquire()
-        PyPetscBuffer_FillInfo(view, <void*>self.data,
-                               self.size, c'i', 1, flags)
-        if view != NULL: view.obj = self
+        PyPetscBuffer_FillInfo(view, <void*>self.data, self.size,
+                               c'i', 1, flags)
+        view.obj = self
         return 0
 
     cdef int releasebuffer(self, Py_buffer *view) except -1:
@@ -166,11 +170,14 @@ cdef class _IS_buffer:
     # buffer interface (legacy)
 
     cdef Py_ssize_t getbuffer(self, void **p) except -1:
-        if self.iset != NULL and self.data == NULL:
-            CHKERR( ISGetLocalSize(self.iset, &self.size) )
-            CHKERR( ISGetIndices(self.iset, &self.data) )
-        if p != NULL: p[0] = <void*>self.data
-        return <Py_ssize_t>(<size_t>self.size*sizeof(PetscInt))
+        cdef PetscInt n = 0
+        if p != NULL:
+            self.acquire()
+            p[0] = <void*>self.data
+            n = self.size
+        elif self.iset != NULL:
+            CHKERR( ISGetLocalSize(self.iset, &n) )
+        return <Py_ssize_t>(<size_t>n*sizeof(PetscInt))
 
     def __getsegcount__(self, Py_ssize_t *lenp):
         if lenp != NULL:
@@ -186,9 +193,10 @@ cdef class _IS_buffer:
 
     property __array_interface__:
         def __get__(self):
+            cdef PetscInt n = 0
             if self.iset != NULL:
-                CHKERR( ISGetLocalSize(self.iset, &self.size) )
-            cdef object size = toInt(self.size)
+                CHKERR( ISGetLocalSize(self.iset, &n) )
+            cdef object size = toInt(n)
             cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_INT)
             cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
             return dict(version=3,
