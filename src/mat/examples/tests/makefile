@@ -1215,6 +1215,12 @@ runex40:
 	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
+runex40_2:
+	-@${MPIEXEC} -n 3 ./ex40 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \
+	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
+	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex41:
 	-@${MPIEXEC} -n 3 ./ex41 -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \

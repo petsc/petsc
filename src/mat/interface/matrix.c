@@ -6789,6 +6789,9 @@ PetscErrorCode  MatDestroySeqNonzeroStructure(Mat *mat)
 .  is  - the array of index sets (these index sets will changed during the call)
 -  ov  - the additional overlap requested
 
+   Options Database:
+.  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
+
    Level: developer
 
    Concepts: overlap

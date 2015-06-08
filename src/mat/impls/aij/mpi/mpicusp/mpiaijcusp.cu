@@ -134,6 +134,8 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions*,Mat);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
 PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
@@ -145,6 +147,8 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat
   Mat_MPIAIJCUSP       *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   PetscFunctionBegin;
+  ierr = MatSetFromOptions_MPIAIJ(PetscOptionsObject,A);CHKERRQ(ierr);
+
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
