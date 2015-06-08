@@ -819,9 +819,21 @@ cdef class Vec(Object):
 
     property array:
         def __get__(self):
-            return asarray(self)
+            return vec_getarray_w(self)
         def __set__(self, value):
             vec_setarray(self, value)
+
+    property array_w:
+        "Vec array (writable)"
+        def __get__(self):
+            return vec_getarray_w(self)
+        def __set__(self, value):
+            vec_getarray_w(self)[...] = value
+
+    property array_r:
+        "Vec array (read-only)"
+        def __get__(self):
+            return vec_getarray_r(self)
 
     # --- NumPy array interface (legacy) ---
 
