@@ -168,6 +168,11 @@
       </ul>
       </ul>
       <h4>DMPlex:</h4>
+      <ul>
+        <li>Can now redistribute parallel meshes</li>
+        <li>Can now increase the overlap of parallel meshes</li>
+        <li>Added new mesh formats, Fluent CAS and Gmsh</li>
+      </ul>
       <h4>PetscViewer:</h4>
       <ul>
         <li>HDF5 viewer will save Vecs and DMDA Vecs with a dimension of 1 if the bs/dof of the vector is 1. To always include this dimension as a specific dimension
@@ -175,7 +180,6 @@
       </ul>
       <h4>SYS:</h4>
       <h4>AO:</h4>
-      <h4>Sieve:</h4>
       <h4>Fortran:</h4>
      <ul>
         <li>Fortran include files are now in include/petsc/finclude instead of include/finclude. Thus replace uses of #include "finclude/xxx.h" with #include "petsc/finclude/xxx.h". Reason for change: to namespace the finclude directory with PETSc for --prefix installs of PETSc and for packaging systems</li>
