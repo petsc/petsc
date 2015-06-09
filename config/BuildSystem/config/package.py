@@ -539,7 +539,9 @@ class Package(config.base.Configure):
       self.headers.pushLanguage('C++')
     else:
       self.headers.pushLanguage(self.defaultLanguage)
+    self.headers.saveLog()
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
+    self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return ret
 
@@ -606,8 +608,10 @@ class Package(config.base.Configure):
         if directory: self.logPrint('Contents: '+str(os.listdir(directory)))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
+      self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
+        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           if self.includes:
@@ -619,6 +623,7 @@ class Package(config.base.Configure):
           self.directory = directory
           self.framework.packages.append(self)
           return
+      self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
