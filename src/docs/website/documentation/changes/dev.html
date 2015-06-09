@@ -100,6 +100,8 @@
         <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
         <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
         <li>  Removed all threadcomm support including --with-pthreadclasses and --with-openmpclasses configure arguments </li>
+        <li>  Updated MUMPS version to 5.0.0 - and updated metis to 5.1.0,  parmetis to 4.0.3-p1 - in sync with MUMPS.</li>
+        <li>  Updated to hypre-2.10.0b, scotch_6.0.3, Elemental-0.85</li>
       </ul>
       <h4>Configure/Build:</h4>
       <ul>
@@ -140,6 +142,7 @@
          <li>PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean</li>
          <li>Added Interface to AMS solver from HYPRE for Nedelec discretizations (-pc_hypre_type ams)</li>
          <li>Added Interface to ADS solver from HYPRE for Raviart-Thomas discretizations (-pc_hypre_type ads)</li>
+         <li>Contributed  MKL Pardiso interface providing PCCholesky support. Useable with: -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mkl_pardiso</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
