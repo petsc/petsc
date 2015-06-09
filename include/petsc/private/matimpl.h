@@ -181,7 +181,7 @@ struct _MatOps {
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
   PetscErrorCode (*placeholder_127)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
+  PetscErrorCode (*getsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
   PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -202,7 +202,7 @@ struct _MatOps {
   PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
   /*144*/
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
-  
+
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

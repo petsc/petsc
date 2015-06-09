@@ -2,13 +2,7 @@
 /*  --------------------------------------------------------------------
 
      This file implements a subclass of the SeqAIJ matrix class that uses
-     the SuperLU sparse solver. You can use this as a starting point for
-     implementing your own subclass of a PETSc matrix class.
-
-     This demonstrates a way to make an implementation inheritence of a PETSc
-     matrix type. This means constructing a new matrix type (SuperLU) by changing some
-     of the methods of the previous type (SeqAIJ), adding additional data, and possibly
-     additional method. (See any book on object oriented programming).
+     the SuperLU sparse solver.
 */
 
 /*
@@ -240,7 +234,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   lu->flg                = SAME_NONZERO_PATTERN;
   F->ops->solve          = MatSolve_SuperLU;
   F->ops->solvetranspose = MatSolveTranspose_SuperLU;
-  F->ops->matsolve       = MatMatSolve_SuperLU;
+  F->ops->matsolve       = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -548,6 +542,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
   via the external package SuperLU.
 
   Use ./configure --download-superlu to have PETSc installed with SuperLU
+
+  Use -pc_type lu -pc_factor_mat_solver_package superlu to us this direct solver
 
   Options Database Keys:
 + -mat_superlu_equil <FALSE>            - Equil (None)

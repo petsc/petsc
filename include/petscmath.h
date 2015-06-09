@@ -38,6 +38,7 @@ typedef float PetscReal;
 #define PetscAsinReal(a)    asin(a)
 #define PetscAcosReal(a)    acos(a)
 #define PetscAtanReal(a)    atan(a)
+#define PetscAtan2Real(a,b) atan2(a,b)
 #define PetscSinhReal(a)    sinh(a)
 #define PetscCoshReal(a)    cosh(a)
 #define PetscTanhReal(a)    tanh(a)
@@ -62,6 +63,7 @@ typedef double PetscReal;
 #define PetscAsinReal(a)    asin(a)
 #define PetscAcosReal(a)    acos(a)
 #define PetscAtanReal(a)    atan(a)
+#define PetscAtan2Real(a,b) atan2(a,b)
 #define PetscSinhReal(a)    sinh(a)
 #define PetscCoshReal(a)    cosh(a)
 #define PetscTanhReal(a)    tanh(a)
@@ -94,7 +96,7 @@ typedef __float128 PetscReal;
 #define PetscAsinReal(a)    asinq(a)
 #define PetscAcosReal(a)    acosq(a)
 #define PetscAtanReal(a)    atanq(a)
-#define PetscAtan2Real(a)   atan2q(a)
+#define PetscAtan2Real(a,b) atan2q(a,b)
 #define PetscSinhReal(a)    sinhq(a)
 #define PetscCoshReal(a)    coshq(a)
 #define PetscTanhReal(a)    tanhq(a)
@@ -522,7 +524,7 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 #define MPIU_2INT MPI_2INT
 #endif
 
-PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) 
+PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
 {
   PetscInt result = 1;
   while (power) {
@@ -533,7 +535,7 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) 
+PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
 {
   PetscReal result = 1;
   if (power < 0) {
@@ -548,7 +550,7 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) 
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power)
 {
   PetscScalar result = 1;
   if (power < 0) {
