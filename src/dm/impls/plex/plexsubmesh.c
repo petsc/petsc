@@ -3165,12 +3165,10 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 @*/
 PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subpointMap, 2);
-  *subpointMap = mesh->subpointMap;
+  *subpointMap = ((DM_Plex*) dm->data)->subpointMap;
   PetscFunctionReturn(0);
 }
 
