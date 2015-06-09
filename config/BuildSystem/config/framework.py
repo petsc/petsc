@@ -949,6 +949,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       while 1:
         child = q.get() # Might have to indicate blocking
         ret = 1
+        self.logPrint('*******************************************************************************\nSaving log for '+child.__module__)
         child.saveLog()
         try:
           if not hasattr(child, '_configured'):
@@ -1000,6 +1001,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
           se  = str(e)
+        self.logPrint('THERE SHOULD BE NOTHING HERE\nRestoring log for '+child.__module__+'\n*******************************************************************************')
         out = child.restoreLog()
         if ret:
           out += '\n'+msg+'\n'+se+'\n'
