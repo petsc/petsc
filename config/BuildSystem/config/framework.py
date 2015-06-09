@@ -395,8 +395,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   ###############################################
   # Filtering Mechanisms
 
-  def filterPreprocessOutput(self,output):
-    self.log.write("Preprocess stderr before filtering:"+output+":\n")
+  def filterPreprocessOutput(self,output, log = None):
+    if log is None: log = self.log
+    log.write("Preprocess stderr before filtering:"+output+":\n")
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
@@ -413,7 +414,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Lahey/Fujitsu
     lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
-    self.log.write("Preprocess stderr after filtering:"+output+":\n")
+    log.write("Preprocess stderr after filtering:"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
