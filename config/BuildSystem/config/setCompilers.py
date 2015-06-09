@@ -1405,13 +1405,19 @@ class Configure(config.base.Configure):
   def checkDynamicLinker(self):
     '''Check that the linker can dynamicaly load shared libraries'''
     self.dynamicLibraries = 0
+    self.headers.saveLog()
     if not self.headers.check('dlfcn.h'):
+      self.logWrite(self.headers.restoreLog())
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
+    self.logWrite(self.headers.restoreLog())
+    self.libraries.saveLog()
     if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
       if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Dynamic linking disabled since functions dlopen(), dlsym(), and dlclose() were not found')
         return
+    self.logWrite(self.libraries.restoreLog())
     for linker, flags, ext in self.generateDynamicLinkerGuesses():
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):

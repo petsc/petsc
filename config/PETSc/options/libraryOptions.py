@@ -65,8 +65,10 @@ class Configure(config.base.Configure):
       self.addDefine('USE_CTABLE', '1')
 
     # used in src/mat/impls/sbaij/seq/relax.h
+    self.libraries.saveLog()
     if not self.libraries.isBGL():
       self.addDefine('USE_BACKWARD_LOOP','1')
+    self.logWrite(self.libraries.restoreLog())
 
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     if not hasattr(self.compilers, 'FC') and self.useFortranKernels:
