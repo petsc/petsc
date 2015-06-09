@@ -289,7 +289,7 @@ class Configure(config.package.Package):
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
     yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a', 2)
     # Portland group compiler blas and lapack
-    if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC):
+    if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
       dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
       dir = os.path.join(os.environ['PGI'],'linux86','5.0','lib')

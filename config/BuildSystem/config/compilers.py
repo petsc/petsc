@@ -646,7 +646,7 @@ class Configure(config.base.Configure):
         self.fortranMangling = mangler
         break
     else:
-      if self.setCompilers.isDarwin():
+      if self.setCompilers.isDarwin(self.log):
         mess = '  See http://www.mcs.anl.gov/petsc/documentation/faq.html#gfortran'
       else:
         mess = ''
@@ -739,7 +739,7 @@ class Configure(config.base.Configure):
       return
     self.pushLanguage('FC')
     oldFlags = self.setCompilers.LDFLAGS
-    if config.setCompilers.Configure.isNAG(self.getCompiler()):
+    if config.setCompilers.Configure.isNAG(self.getCompiler(), self.log):
       self.setCompilers.LDFLAGS += ' --verbose'
     else:
       self.setCompilers.LDFLAGS += ' -v'
@@ -884,7 +884,7 @@ class Configure(config.base.Configure):
             elif arg == '-lgfortranbegin':
               fmainlibs.append(arg)
               continue
-            elif arg == '-lfrtbegin' and not config.setCompilers.Configure.isCygwin():
+            elif arg == '-lfrtbegin' and not config.setCompilers.Configure.isCygwin(self.log):
               fmainlibs.append(arg)
               continue
             else:
@@ -1134,14 +1134,14 @@ class Configure(config.base.Configure):
       return
     # do an apporximate test when batch mode is used, as we cannot run the proper test..
     if self.argDB['with-batch']:
-      if config.setCompilers.Configure.isPGI(self.setCompilers.FC):
+      if config.setCompilers.Configure.isPGI(self.setCompilers.FC, self.log):
         self.addDefine('HAVE_F90_2PTR_ARG', 1)
         self.logPrint('PGI F90 compiler detected & using --with-batch, so use two arguments for array pointers', 3, 'compilers')
       else:
         self.logPrint('Using --with-batch, so guess that F90 uses a single argument for array pointers', 3, 'compilers')
       return
     # do not check on windows - as it pops up the annoying debugger
-    if config.setCompilers.Configure.isCygwin():
+    if config.setCompilers.Configure.isCygwin(self.log):
       self.logPrint('Cygwin detected: ignoring HAVE_F90_2PTR_ARG test')
       return
 
@@ -1394,7 +1394,7 @@ class Configure(config.base.Configure):
   def configure(self):
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
-      self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC)
+      self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
       self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCStaticInline)
@@ -1406,7 +1406,7 @@ class Configure(config.base.Configure):
     else:
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
-      self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX)
+      self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkRestrict,['Cxx'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
