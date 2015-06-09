@@ -1000,13 +1000,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
           se  = str(e)
-        if ret:
-          self.logWrite(msg+'\n'+se+'\n')
-          try:
-            import sys,traceback
-            traceback.print_tb(sys.exc_info()[2], file = self.log)
-          except: pass
         out = child.restoreLog()
+        if ret:
+          out += '\n'+msg+'\n'+se+'\n'
+          try:
+            import sys,traceback,cStringIO
+            tb = cStringIO.StringIO()
+            traceback.print_tb(sys.exc_info()[2], file = tb)
+            out += tb.getvalue()
+            tb.close()
+          except: pass
         # Udpate queue
         done.put((ret, out, emsg, child))
         q.task_done()
