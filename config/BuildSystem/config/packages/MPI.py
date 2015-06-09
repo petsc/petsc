@@ -454,7 +454,7 @@ class Configure(config.package.Package):
     import re
     output = ''
     try:
-      output   = self.executeShellCommand(self.compilers.CC + ' -show')[0]
+      output   = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0]
       compiler = output.split(' ')[0]
     except:
       pass

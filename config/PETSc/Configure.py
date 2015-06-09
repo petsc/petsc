@@ -219,7 +219,7 @@ prepend-path PATH %s
     if self.mpi.usingMPIUni:
       #
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
-      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'))
+      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -854,7 +854,7 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
-      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir, log = self.log)
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
