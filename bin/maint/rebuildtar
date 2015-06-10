@@ -30,9 +30,12 @@ ssh petsc@login.mcs.anl.gov " \
   /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
 
-# Update download/index.html as well
-ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/download/index.html
-scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/download
+# Update documentation/index.html documentation/installation.html download/index.html as well
+ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/documentation/index.html \
+  /mcs/web/research/projects/petsc/documentation/installation.html /mcs/web/research/projects/petsc/download/index.html
+scp ${PETSC_DIR}/src/docs/website/documentation/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/documentation/
+scp ${PETSC_DIR}/src/docs/website/documentation/installation.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/documentation/
+scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/download/
 
 # update websnapshot. 'petsc-current' link is updated manually
 echo "*** updating snapshot ***"
