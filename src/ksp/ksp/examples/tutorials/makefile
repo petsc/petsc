@@ -1288,6 +1288,31 @@ runex60_3:
 	   else printf "${PWD}\nPossible problem with with ex60_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex60_3.tmp
 
+runex60_4:
+	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type pipefcg -ksp_pipefcg_mmax 1 -eta 0.1 > ex60_4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex60_4.out ex60_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_4.tmp
+
+runex60_5:
+	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type pipefcg -ksp_pipefcg_mmax 10000 -eta 0.1 > ex60_5.tmp 2>&1;	  \
+           if (${DIFF} output/ex60_5.out ex60_5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_5.tmp
+
+runex60_6 :
+	-@${MPIEXEC} -n 4 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-1 -ksp_ksp_max_it 5 -ksp_ksp_converged_reason > ex60_6.tmp 2>&1; \
+           if (${DIFF} output/ex60_6.out ex60_6.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_6, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_6.tmp
+
+runex60_7 :
+	-@${MPIEXEC} -n 4 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type pipefcg -ksp_pipefcg_mmax 10000 -eta 0 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-1 -ksp_ksp_max_it 5 -ksp_ksp_converged_reason > ex60_7.tmp 2>&1; \
+           if (${DIFF} output/ex60_7.out ex60_7.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_7, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_7.tmp
+
+
 NP = 1
 M  = 4
 N  = 5
@@ -1399,7 +1424,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex54.PETSc runex54 runex54_Classical ex54.rm ex55.PETSc runex55 runex55_Classical runex55_NC ex55.rm\
                                  ex56.PETSc runex56_nns runex56 ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
-                                 ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
+                                 ex60.PETSc runex60 runex60_2 runex60_3 runex60_4 runex60_5 runex60_6 runex60_7 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex43.PETSc runex43_3 ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm

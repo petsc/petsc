@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP);
@@ -79,6 +80,7 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPGMRES,       KSPCreate_GMRES);CHKERRQ(ierr);
   ierr = KSPRegister(KSPTCQMR,       KSPCreate_TCQMR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFCG  ,       KSPCreate_FCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPIPEFCG,     KSPCreate_PIPEFCG);CHKERRQ(ierr);
   ierr = KSPRegister(KSPBCGS,        KSPCreate_BCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPIBCGS,       KSPCreate_IBCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFBCGS,       KSPCreate_FBCGS);CHKERRQ(ierr);

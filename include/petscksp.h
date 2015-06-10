@@ -40,6 +40,7 @@ typedef const char* KSPType;
 #define   KSPSTCG       "stcg"
 #define   KSPGLTR       "gltr"
 #define KSPFCG        "fcg"
+#define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
 #define   KSPFGMRES     "fgmres"
 #define   KSPLGMRES     "lgmres"
@@ -184,6 +185,13 @@ PETSC_EXTERN PetscErrorCode KSPFCGSetNprealloc(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetNprealloc(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCDTruncationType);
 PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCDTruncationType*);
+
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetMmax(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetMmax(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetNprealloc(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetNprealloc(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetTruncationType(KSP,KSPFCDTruncationType);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetTruncationType(KSP,KSPFCDTruncationType*);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
@@ -371,7 +379,7 @@ M*/
 
 /*MC
     KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
-       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS, KSPFCG
+       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS, KSPFCG, KSPPIPEFCG, KSPPIPEGCR
 
    Level: advanced
 
