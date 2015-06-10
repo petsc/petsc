@@ -136,6 +136,7 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
+extern PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions*,Mat);
 extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
