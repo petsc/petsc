@@ -711,6 +711,10 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 /*MC
   MATSOLVERSUPERLU_DIST - Parallel direct solver package for LU factorization
 
+  Use ./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with SuperLU_DIST
+
+  Use -pc_type lu -pc_factor_mat_solver_package superlu_dist to us this direct solver
+
    Works with AIJ matrices
 
   Options Database Keys:

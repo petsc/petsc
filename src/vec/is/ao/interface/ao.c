@@ -55,7 +55,7 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "AODestroy"
-/*@C
+/*@
    AODestroy - Destroys an application ordering.
 
    Collective on AO
@@ -79,6 +79,8 @@ PetscErrorCode  AODestroy(AO *ao)
   if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*ao);CHKERRQ(ierr);
+  ierr = ISDestroy(&(*ao)->isapp);CHKERRQ(ierr);
+  ierr = ISDestroy(&(*ao)->ispetsc);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
     ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);
@@ -427,7 +429,7 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "AOSetFromOptions"
-/*@C
+/*@
     AOSetFromOptions - Sets AO options from the options database.
 
    Collective on AO
@@ -464,7 +466,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
 
 #undef __FUNCT__
 #define __FUNCT__ "AOSetIS"
-/*@C
+/*@
    AOSetIS - Sets the IS associated with the application ordering.
 
    Collective on MPI_Comm
@@ -477,6 +479,8 @@ PetscErrorCode AOSetFromOptions(AO ao)
 
    Notes:
    The index sets isapp and ispetsc are used only for creation of ao.
+
+   This routine increases the reference count of isapp and ispetsc so you may/should destroy these arguments after this call if you no longer need them
 
    Level: beginner
 
@@ -495,14 +499,18 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
     ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"napp %D != npetsc %d. Local IS lengths must match",napp,npetsc);
   }
+  ierr = ISDestroy(&ao->isapp);CHKERRQ(ierr);
+  ierr = ISDestroy(&ao->ispetsc);CHKERRQ(ierr);
   ao->isapp   = isapp;
   ao->ispetsc = ispetsc;
+  if (ao->isapp) {ierr = PetscObjectReference((PetscObject)ao->isapp);CHKERRQ(ierr);}
+  if (ao->ispetsc) {ierr = PetscObjectReference((PetscObject)ao->ispetsc);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "AOCreate"
-/*@C
+/*@
    AOCreate - Creates an application ordering.
 
    Collective on MPI_Comm

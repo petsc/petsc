@@ -128,10 +128,11 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetUp"
-PetscErrorCode  PCISSetUp(PC pc)
+PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
 {
   PC_IS          *pcis  = (PC_IS*)(pc->data);
   Mat_IS         *matis;
+  MatReuse       reuse;
   PetscErrorCode ierr;
   PetscBool      flg,issbaij;
   Vec            counter;
@@ -141,21 +142,19 @@ PetscErrorCode  PCISSetUp(PC pc)
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
   matis = (Mat_IS*)pc->pmat->data;
 
-  pcis->pure_neumann = matis->pure_neumann;
-
-  /* get info on mapping */
-  ierr = PetscObjectReference((PetscObject)matis->mapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&pcis->mapping);CHKERRQ(ierr);
-  pcis->mapping = matis->mapping;
-  ierr = ISLocalToGlobalMappingGetSize(pcis->mapping,&pcis->n);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
-
-  /* Creating local and global index sets for interior and inteface nodes. */
-  {
+  /* first time creation, get info on substructuring */
+  if (!pc->setupcalled) {
     PetscInt    n_I;
     PetscInt    *idx_I_local,*idx_B_local,*idx_I_global,*idx_B_global;
     PetscInt    *array;
     PetscInt    i,j;
+
+    /* get info on mapping */
+    ierr = PetscObjectReference((PetscObject)matis->mapping);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&pcis->mapping);CHKERRQ(ierr);
+    pcis->mapping = matis->mapping;
+    ierr = ISLocalToGlobalMappingGetSize(pcis->mapping,&pcis->n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
 
     /* Identifying interior and interface nodes, in local numbering */
     ierr = PetscMalloc1(pcis->n,&array);CHKERRQ(ierr);
@@ -164,6 +163,7 @@ PetscErrorCode  PCISSetUp(PC pc)
       for (j=0;j<pcis->n_shared[i];j++)
           array[pcis->shared[i][j]] += 1;
 
+    /* Creating local and global index sets for interior and inteface nodes. */
     ierr = PetscMalloc1(pcis->n,&idx_I_local);CHKERRQ(ierr);
     ierr = PetscMalloc1(pcis->n,&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
@@ -179,93 +179,106 @@ PetscErrorCode  PCISSetUp(PC pc)
     idx_B_global = idx_I_local + n_I; /* Just avoiding allocating extra memory, since we have vacant space */
     idx_I_global = idx_B_local + pcis->n_B;
     ierr         = ISLocalToGlobalMappingApply(pcis->mapping,pcis->n_B,idx_B_local,idx_B_global);CHKERRQ(ierr);
-    ierr         = ISLocalToGlobalMappingApply(pcis->mapping,n_I,      idx_I_local,idx_I_global);CHKERRQ(ierr);
+    ierr         = ISLocalToGlobalMappingApply(pcis->mapping,n_I,idx_I_local,idx_I_global);CHKERRQ(ierr);
 
-    /* Creating the index sets. */
+    /* Creating the index sets */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,pcis->n_B,idx_B_local,PETSC_COPY_VALUES, &pcis->is_B_local);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,pcis->n_B,idx_B_global,PETSC_COPY_VALUES,&pcis->is_B_global);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n_I,idx_I_local,PETSC_COPY_VALUES, &pcis->is_I_local);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n_I,idx_I_global,PETSC_COPY_VALUES,&pcis->is_I_global);CHKERRQ(ierr);
 
-    /* Freeing memory and restoring arrays */
+    /* Freeing memory */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
     ierr = PetscFree(idx_I_local);CHKERRQ(ierr);
     ierr = PetscFree(array);CHKERRQ(ierr);
+
+    /* Creating work vectors and arrays */
+    ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_N,&pcis->vec2_N);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n-pcis->n_B,&pcis->vec1_D);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_D,&pcis->vec2_D);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_D,&pcis->vec3_D);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_D,&pcis->vec4_D);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n,&pcis->work_N);CHKERRQ(ierr);
+    /* scaling vector */
+    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+
+    /* Creating the scatter contexts */
+    ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
+    ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
+    ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
+
+    /* map from boundary to local */
+    ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&pcis->BtoNmap);CHKERRQ(ierr);
   }
 
   /*
     Extracting the blocks A_II, A_BI, A_IB and A_BB from A. If the numbering
     is such that interior nodes come first than the interface ones, we have
 
-    [           |      ]
-    [    A_II   | A_IB ]
-    A = [           |      ]
-    [-----------+------]
-    [    A_BI   | A_BB ]
+        [ A_II | A_IB ]
+    A = [------+------]
+        [ A_BI | A_BB ]
   */
+  reuse = MAT_INITIAL_MATRIX;
+  if (pcis->reusesubmatrices && pc->setupcalled) {
+    if (pc->flag == SAME_NONZERO_PATTERN) {
+      reuse = MAT_REUSE_MATRIX;
+    } else {
+      reuse = MAT_INITIAL_MATRIX;
+    }
+  }
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
+  }
 
-  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_II);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
   if (!issbaij) {
-    ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
   } else {
     Mat newmat;
     ierr = MatConvert(matis->A,MATSEQBAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
     ierr = MatDestroy(&newmat);CHKERRQ(ierr);
   }
-  /*
-    Creating work vectors and arrays
-  */
-  ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_N,&pcis->vec2_N);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n-pcis->n_B,&pcis->vec1_D);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_D,&pcis->vec2_D);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_D,&pcis->vec3_D);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_D,&pcis->vec4_D);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
-  ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pcis->n,&pcis->work_N);CHKERRQ(ierr);
-
-  /* Creating the scatter contexts */
-  ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
-  ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
   /* Creating scaling "matrix" D */
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,NULL);CHKERRQ(ierr);
-  if (!pcis->D) {
-    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
-    if (!pcis->use_stiffness_scaling) {
-      ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetDiagonal(matis->A,pcis->vec1_N);CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    }
+  if (!pcis->use_stiffness_scaling) {
+    ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetDiagonal(matis->A,pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
   ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
   ierr = VecSet(counter,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecDestroy(&counter);CHKERRQ(ierr);
 
   /* See historical note 01, at the bottom of this file. */
 
-  /*
-    Creating the KSP contexts for the local Dirichlet and Neumann problems.
-  */
-  if (pcis->computesolvers) {
+  /* Creating the KSP contexts for the local Dirichlet and Neumann problems */
+  if (computesolvers) {
     PC pc_ctx;
+
+    pcis->pure_neumann = matis->pure_neumann;
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
     ierr = KSPSetErrorIfNotConverged(pcis->ksp_D,pc->erroriffailure);CHKERRQ(ierr);
@@ -385,6 +398,7 @@ PetscErrorCode  PCISDestroy(PC pc)
     ierr = ISLocalToGlobalMappingRestoreInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(&pcis->mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&pcis->BtoNmap);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetUseStiffnessScaling_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainScalingFactor_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C",NULL);CHKERRQ(ierr);
@@ -403,35 +417,35 @@ PetscErrorCode  PCISCreate(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pcis->is_B_local  = 0;
-  pcis->is_I_local  = 0;
-  pcis->is_B_global = 0;
-  pcis->is_I_global = 0;
-  pcis->A_II        = 0;
-  pcis->A_IB        = 0;
-  pcis->A_BI        = 0;
-  pcis->A_BB        = 0;
-  pcis->D           = 0;
-  pcis->ksp_N       = 0;
-  pcis->ksp_D       = 0;
-  pcis->vec1_N      = 0;
-  pcis->vec2_N      = 0;
-  pcis->vec1_D      = 0;
-  pcis->vec2_D      = 0;
-  pcis->vec3_D      = 0;
-  pcis->vec1_B      = 0;
-  pcis->vec2_B      = 0;
-  pcis->vec3_B      = 0;
-  pcis->vec1_global = 0;
-  pcis->work_N      = 0;
-  pcis->global_to_D = 0;
-  pcis->N_to_B      = 0;
-  pcis->global_to_B = 0;
-  pcis->computesolvers = PETSC_TRUE;
-  pcis->mapping     = 0;
-  pcis->n_neigh     = -1;
-
-  pcis->scaling_factor = 1.0;
+  pcis->is_B_local       = 0;
+  pcis->is_I_local       = 0;
+  pcis->is_B_global      = 0;
+  pcis->is_I_global      = 0;
+  pcis->A_II             = 0;
+  pcis->A_IB             = 0;
+  pcis->A_BI             = 0;
+  pcis->A_BB             = 0;
+  pcis->D                = 0;
+  pcis->ksp_N            = 0;
+  pcis->ksp_D            = 0;
+  pcis->vec1_N           = 0;
+  pcis->vec2_N           = 0;
+  pcis->vec1_D           = 0;
+  pcis->vec2_D           = 0;
+  pcis->vec3_D           = 0;
+  pcis->vec1_B           = 0;
+  pcis->vec2_B           = 0;
+  pcis->vec3_B           = 0;
+  pcis->vec1_global      = 0;
+  pcis->work_N           = 0;
+  pcis->global_to_D      = 0;
+  pcis->N_to_B           = 0;
+  pcis->global_to_B      = 0;
+  pcis->mapping          = 0;
+  pcis->BtoNmap          = 0;
+  pcis->n_neigh          = -1;
+  pcis->scaling_factor   = 1.0;
+  pcis->reusesubmatrices = PETSC_TRUE;
   /* composing functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetUseStiffnessScaling_C",PCISSetUseStiffnessScaling_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainScalingFactor_C",PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);

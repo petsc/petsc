@@ -2,11 +2,11 @@
 Number of degrees of freedom               :       21 
 Number of iterations                       :        1 
 Eigenvalues preconditioned operator        : 1.00e+00 1.00e+00
-Error betweeen exact and computed solution : 1.99e-13
+Error betweeen exact and computed solution : 2.84e-13
 --------------------------------------------------------------
 ------------------FETI-DP stats-------------------------------
 Number of degrees of freedom               :        0 
 Number of iterations                       :        0 
 Eigenvalues preconditioned operator        : 1.00e+00 1.00e+00
-Error betweeen exact and computed solution : 2.45e-13
+Error betweeen exact and computed solution : 3.29e-13
 --------------------------------------------------------------

@@ -8,5 +8,5 @@ Error betweeen exact and computed solution : 4.80e-06
 Number of degrees of freedom               :        6 
 Number of iterations                       :        3 
 Eigenvalues preconditioned operator        : 1.00e+00 1.04e+00
-Error betweeen exact and computed solution : 1.28e-13
+Error betweeen exact and computed solution : 8.35e-14
 --------------------------------------------------------------

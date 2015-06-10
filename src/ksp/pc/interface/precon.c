@@ -1223,6 +1223,8 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
    Output Parameter:
 .  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
 
+   Level: intermediate
+
 .seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
  @*/
 PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)

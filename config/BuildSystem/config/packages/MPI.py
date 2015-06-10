@@ -68,6 +68,7 @@ class Configure(config.package.Package):
   def generateLibList(self, directory):
     if self.setCompilers.usedMPICompilers:
       self.liblist = []
+      self.libdir  = []
     return config.package.Package.generateLibList(self,directory)
 
   # search many obscure locations for MPI
@@ -431,7 +432,10 @@ class Configure(config.package.Package):
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     if self.checkCompile(mpich_test):
       buf = self.outputPreprocess(mpich_test)
-      mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
+      try:
+        mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
+      except:
+        self.logPrint('Unable to parse MPICH version from header. Probably a buggy preprocessor')
       self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
     elif self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
