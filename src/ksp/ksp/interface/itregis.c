@@ -33,6 +33,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP);
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP);
@@ -100,6 +101,7 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPLGMRES,      KSPCreate_LGMRES);CHKERRQ(ierr);
   ierr = KSPRegister(KSPLCD,         KSPCreate_LCD);CHKERRQ(ierr);
   ierr = KSPRegister(KSPGCR,         KSPCreate_GCR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPIPEGCR,     KSPCreate_PIPEGCR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPPGMRES,      KSPCreate_PGMRES);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   ierr = KSPRegister(KSPDGMRES,      KSPCreate_DGMRES);CHKERRQ(ierr);

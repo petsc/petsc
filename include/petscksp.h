@@ -65,6 +65,7 @@ typedef const char* KSPType;
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
 #define KSPGCR        "gcr"
+#define KSPPIPEGCR    "pipegcr"
 #define KSPTSIRM      "tsirm"
 #define KSPCGLS       "cgls"
 
@@ -192,6 +193,15 @@ PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetNprealloc(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetNprealloc(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetTruncationType(KSP,KSPFCDTruncationType);
 PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetTruncationType(KSP,KSPFCDTruncationType*);
+
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetMmax(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetMmax(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetNprealloc(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetNprealloc(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetTruncationType(KSP,KSPFCDTruncationType);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetTruncationType(KSP,KSPFCDTruncationType*);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetUnrollW(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
