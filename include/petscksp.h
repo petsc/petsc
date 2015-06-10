@@ -155,25 +155,35 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP,PetscBool,PetscBool,PetscInt *,Ve
 
 /*E
 
-  KSPFCGTruncationType - Define how stored directions are used to orthogonalize in FCG
+  KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate directions (FCD) methods
 
-  KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCD_TRUNCATION uses all (up to mmax) stored directions
+  KSP_FCD_TRUNCATION_RESTART uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
    Level: intermediate
-
-.seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
+.seealso : KSPFCG,KSPPIPEFCG,KSPPIPEGCR,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
 E*/
-typedef enum {KSP_FCG_TRUNC_TYPE_STANDARD,KSP_FCG_TRUNC_TYPE_NOTAY} KSPFCGTruncationType;
-PETSC_EXTERN const char *const KSPFCGTruncationTypes[];
+typedef enum {KSP_FCD_TRUNCATION,KSP_FCD_TRUNCATION_RESTART} KSPFCDTruncationType;
+PETSC_EXTERN const char *const KSPFCDTruncationTypes[];
+
+#define KSPFCDGetNumOldDirections(ctx,i,mi) ({                                                    \
+  if(ctx->trunctype == KSP_FCD_TRUNCATION_RESTART){                                               \
+    mi = ((i-1) % ctx->mmax)+1;                                                                   \
+    if (mi==1 && i!=1) ++(ctx->n_search_space_resets);                                            \
+  } else if (ctx->trunctype == KSP_FCD_TRUNCATION)                                                \
+    mi = ctx->mmax;                                                                               \
+ else {                                                                                           \
+   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unrecognized Truncation Strategy");CHKERRQ(ierr); \
+  }                                                                                               \
+})
 
 PETSC_EXTERN PetscErrorCode KSPFCGSetMmax(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetMmax(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPFCGSetNprealloc(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetNprealloc(KSP,PetscInt*);
-PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCGTruncationType);
-PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCGTruncationType*);
+PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCDTruncationType);
+PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCDTruncationType*);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
