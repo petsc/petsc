@@ -46,7 +46,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   }
 
   /* The optimal new step based purely on local truncation error for this step. */
-  hfac_lte = safety * PetscRealPart(PetscPowScalar((PetscScalar)enorm,(PetscReal)(-1./order)));
+  hfac_lte = safety * PetscPowReal(enorm,-1./order);
   h_lte    = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
 
   *next_sc = 0;
