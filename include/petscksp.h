@@ -42,6 +42,7 @@ typedef const char* KSPType;
 #define KSPFCG        "fcg"
 #define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
+#define KSPPIPEFGMRES "pipefgmres"
 #define   KSPFGMRES     "fgmres"
 #define   KSPLGMRES     "lgmres"
 #define   KSPDGMRES     "dgmres"
@@ -215,6 +216,8 @@ PETSC_EXTERN PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,Pe
 
 PETSC_EXTERN PetscErrorCode KSPLGMRESSetAugDim(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPLGMRESSetConstant(KSP);
+
+PETSC_EXTERN PetscErrorCode KSPPIPEFGMRESSetShift(KSP,PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP,PetscInt*);
