@@ -280,11 +280,11 @@ cdef int DMSHELL_CreateFieldDecomposition(
 
     if clen != NULL:
         if names is not None:
-            clen[0] = len(names)
+            clen[0] = <PetscInt>len(names)
         elif ises is not None:
-            clen[0] = len(ises)
+            clen[0] = <PetscInt>len(ises)
         elif dms is not None:
-            clen[0] = len(dms)
+            clen[0] = <PetscInt>len(dms)
         else:
             clen[0] = 0
 
