@@ -42,9 +42,7 @@ def getoptionparser():
 def getbuilddir():
     from distutils.util import get_platform
     s = os.path.join("build", "lib.%s-%.3s" % (get_platform(), sys.version))
-    if (sys.version[:3] >= '2.6' and
-        hasattr(sys, 'gettotalrefcount')):
-        s += '-pydebug'
+    if hasattr(sys, 'gettotalrefcount'): s += '-pydebug'
     return s
 
 def setup_python(options):
@@ -64,9 +62,6 @@ def setup_unittest(options):
         from unittest.runner import _WritelnDecorator
     except ImportError:
         from unittest import _WritelnDecorator
-    #
-    if sys.version[:3] < '2.4':
-        TestSuite.__iter__ = lambda self: iter(self._tests)
     #
     writeln_orig = _WritelnDecorator.writeln
     def writeln(self, message=''):

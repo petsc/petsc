@@ -41,11 +41,7 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
 {
   if (view == NULL) return 0;
   if (((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) && (readonly == 1)) {
-    #if PY_VERSION_HEX >= 0x02060000
     PyErr_SetString(PyExc_BufferError, "Object is not writable.");
-    #else
-    PyErr_SetString(PyExc_TypeError, "Object is not writable.");
-    #endif
     return -1;
   }
   view->buf = buf;

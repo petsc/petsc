@@ -104,9 +104,7 @@ class PetscConfig:
             'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(\d+)"),
             }
         petscversion_h = os.path.join(petsc_dir, 'include', 'petscversion.h')
-        f = open(petscversion_h, 'rt')
-        try: data = f.read()
-        finally: f.close()
+        with open(petscversion_h, 'rt') as f: data = f.read()
         major = int(version_re['major'].search(data).groups()[0])
         minor = int(version_re['minor'].search(data).groups()[0])
         micro = int(version_re['micro'].search(data).groups()[0])
@@ -130,12 +128,10 @@ class PetscConfig:
             variables  = join(PETSC_DIR, PETSC_ARCH, confdir, 'variables')
         petscvariables = join(PETSC_DIR, PETSC_ARCH, confdir, 'petscvariables')
         #
-        variables = open(variables)
-        try: contents = variables.read()
-        finally: variables.close()
-        petscvariables = open(petscvariables)
-        try: contents += petscvariables.read()
-        finally: petscvariables.close()
+        with open(variables) as f:
+            contents = f.read()
+        with open(petscvariables) as f:
+            contents += f.read()
         #
         confstr  = 'PETSC_DIR  = %s\n' % PETSC_DIR
         confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
@@ -503,9 +499,8 @@ class build_ext(_build_ext):
                                    dist_name.replace('4py', '') + '.cfg')
         #
         def write_file(filename, data):
-            fh = open(filename, 'w')
-            try: fh.write(config_data)
-            finally: fh.close()
+            with open(filename, 'w') as fh:
+                fh.write(config_data)
         execute(write_file, (config_file, config_data),
                 msg='writing %s' % config_file,
                 verbose=self.verbose, dry_run=self.dry_run)

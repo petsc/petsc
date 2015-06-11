@@ -32,7 +32,7 @@ void *Cython_ImportFunction(PyObject   *module,
     p = PyCObject_AsVoidPtr(capsule);
   }
 #endif
-#if PY_VERSION_HEX >= 0x02070000 && !(PY_MAJOR_VERSION==3&&PY_MINOR_VERSION==0)
+#if PY_VERSION_HEX >= 0x02070000
   if (PyCapsule_CheckExact(capsule)) {
     if (!PyCapsule_IsValid(capsule, signature)) {
       const char *desc = PyCapsule_GetName(capsule);

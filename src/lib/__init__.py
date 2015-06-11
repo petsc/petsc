@@ -104,9 +104,7 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
             return (path, '')
     # helper function
     def parse_rc(rcfile):
-        fh = open(rcfile)
-        try: rcdata = fh.read()
-        finally: fh.close()
+        with open(rcfile) as f: rcdata = f.read()
         lines = [ln.strip() for ln in rcdata.splitlines()]
         lines = [ln for ln in lines if not ln.startswith('#')]
         entries = [ln.split('=') for ln in lines if ln]

@@ -121,17 +121,6 @@ The previous steps will install the :mod:`petsc4py` package at standard
 location :file:`{prefix}/lib/python{X}.{X}/site-packages`.
 
 If you do not have root privileges or you want to install *PETSc for
-Python* for your private use, you have two options depending on the
-target Python version.
+Python* for your private use, just do::
 
-* For Python 2.6 and up::
-
-    $ python setup.py install --user
-
-* For Python 2.5 and below (assuming your home directory is available
-  through the :envvar:`HOME` environment variable)::
-
-    $ python setup.py install --home=$HOME
-
-  Finally, add :file:`$HOME/lib/python` or :file:`$HOME/lib64/python`
-  to your :envvar:`PYTHONPATH` environment variable.
+  $ python setup.py install --user

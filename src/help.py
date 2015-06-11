@@ -4,10 +4,10 @@
 """
 Command line access to the PETSc Options Database.
 
-This module intends to provide command line access to the PETSc
-Options Database. It outputs a listing of the many PETSc options
-indicating option names, default values and descriptions. If you have
-Python 2.4 and above, then you can issue at the command line::
+This module provides command line access to PETSc Options
+Database. It outputs a listing of the many PETSc options
+indicating option names, default values and descriptions.
+Usage::
 
   $ python -m petsc4py.help [vec|mat|pc|ksp|snes|ts|tao] [<petsc-option-list>]
 

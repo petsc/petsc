@@ -13,7 +13,7 @@ Dependencies
 
 * A matching version of PETSc_  built with *shared/dynamic libraries*.
 
-* Python_ 2.4 to 2.7 or 3.1 to 3.4.
+* Python_ 2.6, 2.7, 3.2 or above.
 
 * A recent NumPy_ release.
 

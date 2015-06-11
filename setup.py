@@ -8,6 +8,11 @@ PETSc for Python
 
 import sys
 import os
+import re
+
+pyver = sys.version_info[:2]
+if pyver < (2, 6) or (3, 0) <= pyver < (3, 2):
+    raise RuntimeError("Python version 2.6, 2.7 or >= 3.2 required")
 
 # --------------------------------------------------------------------
 # Metadata
@@ -21,18 +26,13 @@ def name():
     return 'petsc4py'
 
 def version():
-    import re
-    fh = open(os.path.join('src', '__init__.py'))
-    try: data = fh.read()
-    finally: fh.close()
-    m = re.search(r"__version__\s*=\s*'(.*)'", data)
-    return m.groups()[0]
+    with open(os.path.join(topdir, 'src', '__init__.py')) as f:
+        m = re.search(r"__version__\s*=\s*'(.*)'", f.read())
+        return m.groups()[0]
 
 def description():
-    f = open(os.path.join(topdir, 'DESCRIPTION.rst'))
-    try: data = f.read()
-    finally: f.close()
-    return data
+    with open(os.path.join(topdir, 'DESCRIPTION.rst')) as f:
+        return f.read()
 
 name     = name()
 version  = version()
@@ -101,7 +101,7 @@ def run_setup():
             metadata['install_requires'] += ['Cython>='+CYTHON]
         PETSC_DIR = os.environ.get('PETSC_DIR')
         if not (PETSC_DIR and os.path.isdir(PETSC_DIR)):
-            metadata['install_requires'] += ["petsc"+reqs]
+            metadata['install_requires'] += ['petsc'+reqs]
     #
     setup(packages     = ['petsc4py',
                           'petsc4py.lib',],
@@ -180,7 +180,7 @@ def run_cython(source, depends=(), includes=(),
     from distutils import log
     from distutils import dep_util
     from distutils.errors import DistutilsError
-    target = os.path.splitext(source)[0]+".c"
+    target = os.path.splitext(source)[0]+'.c'
     cwd = os.getcwd()
     try:
         if wdir: os.chdir(wdir)
@@ -213,9 +213,9 @@ def build_sources(cmd):
         not cmd.force): return
     # petsc4py.PETSc
     source = 'petsc4py.PETSc.pyx'
-    depends = ("include/*/*.pxd",
-               "PETSc/*.pyx",
-               "PETSc/*.pxi",)
+    depends = ('include/*/*.pxd',
+               'PETSc/*.pyx',
+               'PETSc/*.pxi',)
     includes = ['include']
     destdir_h = os.path.join('include', 'petsc4py')
     run_cython(source, depends, includes,
@@ -223,9 +223,9 @@ def build_sources(cmd):
                force=cmd.force, VERSION=CYTHON)
     # libpetsc4py
     source = os.path.join('libpetsc4py', 'libpetsc4py.pyx')
-    depends = ["include/petsc4py/*.pxd",
-               "libpetsc4py/*.pyx",
-               "libpetsc4py/*.pxi"]
+    depends = ['include/petsc4py/*.pxd',
+               'libpetsc4py/*.pyx',
+               'libpetsc4py/*.pxi']
     includes = ['include']
     run_cython(source, depends, includes,
                destdir_c=None, destdir_h=None, wdir='src',
