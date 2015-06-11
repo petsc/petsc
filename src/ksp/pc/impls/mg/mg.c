@@ -1192,7 +1192,6 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
-.  -pc_mg_monitor - print information on the multigrid convergence
 .  -pc_mg_galerkin - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
 .  -pc_mg_multiplicative_cycles - number of cycles to use as the preconditioner (defaults to 1)
 .  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
