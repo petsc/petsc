@@ -87,7 +87,7 @@ from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_src, build_ext
 from conf.petscconf import test, sdist
 
-CYTHON = '0.15'
+CYTHON = '0.22'
 
 def run_setup():
     if ('setuptools' in sys.modules):
