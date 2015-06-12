@@ -27,11 +27,10 @@ cd A
 mkdir Headers
 cp  ${PETSC_DIR}/include/*.h Headers
 cp  ${PETSC_DIR}/${PETSC_ARCH}/include/*.h Headers
-cp -r  ${PETSC_DIR}/include/petsc-private Headers
+cp -r  ${PETSC_DIR}/include/petsc Headers
 cd Headers
-sed -i "" "s?#include [ ]*<petsc-private?#import <PETSc/petsc-private?g" *.h petsc-private/*.h
-sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
-sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc/private/*.h petsc/mpiuni/*.h
+sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc/private/*.h petsc/mpiuni/*.h
 cd ..
 
 echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map

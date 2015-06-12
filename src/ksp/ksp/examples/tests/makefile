@@ -7,10 +7,10 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.c
+                ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex43.c ex44.c ex45.c ex46.cxx
 EXAMPLESCH      =
-EXAMPLESF       = ex5f.F ex12f.F ex16f.F ex47f.F
+EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -140,9 +140,6 @@ ex33: ex33.o  chkopts
 ex34: ex34.o  chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_KSP_LIB}
 	${RM} ex34.o
-ex35: ex35.o  chkopts
-	-${CLINKER} -o ex35 ex35.o  ${PETSC_KSP_LIB}
-	${RM} ex35.o
 ex36: ex36.o  chkopts
 	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
 	${RM} ex36.o
@@ -959,11 +956,6 @@ runex46:
 	if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex46, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
-runex47f:
-	-@${MPIEXEC} -n 1 ./ex47f > ex47f_1.tmp 2>&1; \
-	   if (${DIFF} output/ex47f_1.out ex47f_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex47f_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex47f_1.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
@@ -998,5 +990,5 @@ TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 TESTEXAMPLES_CUDA              = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
-TESTEXAMPLES_CHOMBO            = ex46.PETSc runex46 ex46.rm ex47f.PETSc runex47f ex47f.rm
+TESTEXAMPLES_CHOMBO            =
 include ${PETSC_DIR}/lib/petsc/conf/test

@@ -1,4 +1,4 @@
-  0 SNES VI Function norm 9.462208808922e-02 Active lower constraints 7235/7417 upper constraints 0/0 Percent of total 0.768945 Percent of bounded 0
+  0 SNES VI Function norm 9.462208808922e-02 Active lower constraints 202/7417 upper constraints 0/0 Percent of total 0.0214688 Percent of bounded 0
     0 KSP Residual norm 2.45779 
     1 KSP Residual norm 0.000562181 
     2 KSP Residual norm 3.89628e-05 
@@ -59,16 +59,10 @@
     1 KSP Residual norm 1.71261e-07 
     2 KSP Residual norm 7.23239e-09 
     3 KSP Residual norm 1.571e-10 
- 13 SNES VI Function norm 5.034491206618e-09 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0
+ 13 SNES VI Function norm 5.034491203631e-09 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0
     0 KSP Residual norm 6.1677e-08 
     1 KSP Residual norm 8.404e-11 
     2 KSP Residual norm < 1.e-11
     3 KSP Residual norm < 1.e-11
- 14 SNES VI Function norm 1.645964466381e-13 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0
-    0 KSP Residual norm < 1.e-11
-    1 KSP Residual norm < 1.e-11
-    2 KSP Residual norm < 1.e-11
-    3 KSP Residual norm < 1.e-11
-    4 KSP Residual norm < 1.e-11
- 15 SNES VI Function norm 2.695666746777e-15 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 15
+ 14 SNES VI Function norm 1.646267685244e-13 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 14

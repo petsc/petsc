@@ -1638,7 +1638,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscFECellGeo
   for (c = 0; c < numComp; ++c) value[c] = 0.0;
   for (q = 0; q < quad->numPoints; ++q) {
     CoordinatesRefToReal(geom->dimEmbed, dim, geom->v0, geom->J, &quad->points[q*dim], x);
-    ierr = (*func)(dim, x, numComp, val, ctx);CHKERRQ(ierr);
+    ierr = (*func)(geom->dimEmbed, x, numComp, val, ctx);CHKERRQ(ierr);
     for (c = 0; c < numComp; ++c) {
       value[c] += val[c]*quad->weights[q];
     }

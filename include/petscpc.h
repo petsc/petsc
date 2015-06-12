@@ -155,16 +155,16 @@ PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,P
 PETSC_EXTERN PetscErrorCode PCASMGetLocalSubdomains(PC,PetscInt*,IS*[],IS*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
 
+PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
-PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGASMSetOverlap(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGASMSetDMSubdomains(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGASMGetDMSubdomains(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCGASMSetUseDMSubdomains(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGASMGetUseDMSubdomains(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCGASMSetSortIndices(PC,PetscBool );
 
 PETSC_EXTERN PetscErrorCode PCGASMSetType(PC,PCGASMType);
-PETSC_EXTERN PetscErrorCode PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]);
-PETSC_EXTERN PetscErrorCode PCGASMDestroySubdomains(PetscInt,IS[],IS[]);
+PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains(Mat,PetscInt,PetscInt*,IS*[]);
+PETSC_EXTERN PetscErrorCode PCGASMDestroySubdomains(PetscInt,IS*[],IS*[]);
 PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubdomains(PC,PetscInt*,IS*[],IS*[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubmatrices(PC,PetscInt*,Mat*[]);

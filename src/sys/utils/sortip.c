@@ -52,7 +52,7 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
    Level: intermediate
 
    Notes:
-   i is unchanged on output.
+   On output i is unchanged and idx[i] is the position of the i-th smallest index in i.
 
    Concepts: sorting^ints with permutation
 

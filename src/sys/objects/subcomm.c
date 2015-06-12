@@ -174,12 +174,13 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
   ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
 
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
+  /* TODO: this can be done in an ostensibly scalale way (i.e., without allocating an array of size 'size') as is done in PetscObjectsCreateGlobalOrdering(). */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*size,&recvbuf);CHKERRQ(ierr);
-  
+
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&mysubsize);CHKERRQ(ierr);
-  
+
   sendbuf[0] = color;
   sendbuf[1] = mysubsize;
   ierr = MPI_Allgather(sendbuf,2,MPI_INT,recvbuf,2,MPI_INT,comm);CHKERRQ(ierr);
@@ -189,7 +190,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
     subsize[recvbuf[i]] = recvbuf[i+1];
   }
   ierr = PetscFree(recvbuf);CHKERRQ(ierr);
-  
+
   duprank = 0;
   for (icolor=0; icolor<nsubcomm; icolor++) {
     if (icolor != color) { /* not color of this process */
@@ -200,7 +201,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
     }
   }
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-  
+
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->child,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
@@ -264,7 +265,7 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
   (*psubcomm)->n         = size;
   (*psubcomm)->color     = rank;
   (*psubcomm)->subsize   = NULL;
-  (*psubcomm)->type      = PETSC_SUBCOMM_INTERLACED; 
+  (*psubcomm)->type      = PETSC_SUBCOMM_INTERLACED;
   PetscFunctionReturn(0);
 }
 

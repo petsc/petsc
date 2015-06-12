@@ -230,15 +230,6 @@ ex64: ex64.o  chkopts
 ex65: ex65.o  chkopts
 	-${CLINKER} -o ex65 ex65.o ${PETSC_SNES_LIB}
 	${RM} ex65.o
-ex653d: ex653D.o chkopts
-	-${CLINKER} -o ex653d ex653D.o ${PETSC_SNES_LIB}
-	${RM} ex653d.o
-ex65dm: ex65dm.o  chkopts
-	-${CLINKER} -o ex65dm ex65dm.o ${PETSC_SNES_LIB}
-	${RM} ex65dm.o
-ex633d_db: ex633D_DB.o  chkopts
-	-${CLINKER} -o ex633d_db ex633D_DB.o ${PETSC_SNES_LIB}
-	${RM} ex633d_db.o
 ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_SNES_LIB}
 	${RM} ex70.o
@@ -925,7 +916,7 @@ testex19: ex19.PETSc
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; \
-	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/mpiexec.uni" ]; then \
+	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/petsc-mpiexec.uni" ]; then \
            ${MPIEXEC} -n 2 ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 MPI processes"; \
