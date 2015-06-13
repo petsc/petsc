@@ -98,6 +98,16 @@
 
       <h4>General:</h4>
       <ul>
+        <li>  User makefiles must be updated. You must change the lines
+          <ul>
+             <li> include  ${PETSC_DIR}/conf/variables and </li>
+             <li> include ${PETSC_DIR}/conf/rules </li>
+          </ul>
+          to
+          <ul>
+            <li>include  ${PETSC_DIR}/lib/petsc/conf/variables and</li>
+            <li>include ${PETSC_DIR}/lib/petsc/conf/rules</li></li>
+          </ul>
         <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
         <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
         <li>  Removed all threadcomm support including --with-pthreadclasses and --with-openmpclasses configure arguments </li>
