@@ -5518,12 +5518,12 @@ second approach will require some hand massaging. For example,
 \chapter{Using MATLAB with PETSc}
 \label{ch_matlab}\sindex{MATLAB}
 
-There are four basic ways to use MATLAB with PETSc: (1) dumping files to
+There are three basic ways to use MATLAB with PETSc: (1) dumping files to
 be read into MATLAB, (2) automatically sending data from a running PETSc program
 to a MATLAB process where you may interactively type MATLAB commands (or run
-scripts), (3) automatically sending data back and forth between PETSc and
+scripts), and (3) automatically sending data back and forth between PETSc and
 MATLAB where MATLAB commands are issued not interactively but from a script or
-the PETSc program and (4) directly in MATLAB using PETSc objects.
+the PETSc program (this uses the MATLAB Engine).
 
 \section{Dumping Data for MATLAB}
 One can dump PETSc matrices and vectors to the screen (and thus save in a file via
@@ -5623,18 +5623,6 @@ PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
 \end{tabbing}
 There is a short-cut to starting the MATLAB engine
 with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
-
-\section{Using PETSc objects directly in MATLAB}
-
-This code is not currently supported due to lack of interest and usage. If you really want to use this and are interested in maintaining it please contact us.
-
-PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
-You can build with or without MPI, but cannot run on more than one process
-There is currently no MPI in the API, the MPI\_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
-Add \trl{${PETSC_DIR}/share/petsc/matlab/classes} to your MATLAB path.
-
-In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
-
 
 %------------------------------------------------------------------
 \cleardoublepage
