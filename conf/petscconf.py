@@ -6,6 +6,7 @@ __all__ = ['setup',
            'build',
            'build_src',
            'build_ext',
+           'clean',
            'test',
            'sdist',
            ]
@@ -14,6 +15,6 @@ __all__ = ['setup',
 
 from conf.baseconf import setup, Extension
 from conf.baseconf import config, build, build_src, build_ext
-from conf.baseconf import test, sdist
+from conf.baseconf import clean, test, sdist
 
 # --------------------------------------------------------------------

@@ -10,6 +10,11 @@ import sys
 import os
 import re
 
+try:
+    import setuptools
+except ImportError:
+    setuptools = None
+
 pyver = sys.version_info[:2]
 if pyver < (2, 6) or (3, 0) <= pyver < (3, 2):
     raise RuntimeError("Python version 2.6, 2.7 or >= 3.2 required")
@@ -85,23 +90,23 @@ def get_ext_modules(Extension):
 
 from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_src, build_ext
-from conf.petscconf import test, sdist
+from conf.petscconf import clean, test, sdist
 
 CYTHON = '0.22'
 
 def run_setup():
-    if ('setuptools' in sys.modules):
-        from os.path import exists, join
-        vstr = metadata['version'].split('.')[:2]
-        x, y = int(vstr[0]), int(vstr[1])
-        reqs = ">=%s.%s,<%s.%s" % (x, y, x, y+1)
-        metadata['zip_safe'] = False
-        metadata['install_requires'] = ['numpy']
-        if not exists(join('src', 'petsc4py.PETSc.c')):
-            metadata['install_requires'] += ['Cython>='+CYTHON]
+    setup_args = metadata.copy()
+    if setuptools:
+        setup_args['zip_safe'] = False
+        setup_args['install_requires'] = ['numpy']
         PETSC_DIR = os.environ.get('PETSC_DIR')
         if not (PETSC_DIR and os.path.isdir(PETSC_DIR)):
-            metadata['install_requires'] += ['petsc'+reqs]
+            vstr = setup_args['version'].split('.')[:2]
+            x, y = int(vstr[0]), int(vstr[1])
+            PETSC = ">=%s.%s,<%s.%s" % (x, y, x, y+1)
+            setup_args['install_requires'] += ['petsc'+PETSC]
+        if not os.path.exists(os.path.join('src', 'petsc4py.PETSc.c')):
+            setup_args['setup_requires'] = ['Cython>='+CYTHON]
     #
     setup(packages     = ['petsc4py',
                           'petsc4py.lib',],
@@ -118,24 +123,17 @@ def run_setup():
                           'build'      : build,
                           'build_src'  : build_src,
                           'build_ext'  : build_ext,
+                          'clean'      : clean,
                           'test'       : test,
                           'sdist'      : sdist,
                           },
-          **metadata)
+          **setup_args)
 
 def chk_cython(VERSION):
-    import re
     from distutils import log
     from distutils.version import LooseVersion
     from distutils.version import StrictVersion
     warn = lambda msg='': sys.stderr.write(msg+'\n')
-    #
-    cython_zip = 'cython.zip'
-    if os.path.isfile(cython_zip):
-        path = os.path.abspath(cython_zip)
-        if sys.path[0] != path:
-            sys.path.insert(0, path)
-            log.info("adding '%s' to sys.path", cython_zip)
     #
     try:
         import Cython
@@ -174,8 +172,8 @@ def chk_cython(VERSION):
     return True
 
 def run_cython(source, depends=(), includes=(),
-               destdir_c=None, destdir_h=None, wdir=None,
-               force=False, VERSION=None):
+               destdir_c=None, destdir_h=None,
+               wdir=None, force=False, VERSION=None):
     from glob import glob
     from distutils import log
     from distutils import dep_util
@@ -240,7 +238,14 @@ def run_testsuite(cmd):
         from runtests import main
     finally:
         del sys.path[0]
-    err = main(cmd.args or [])
+    if cmd.dry_run:
+        return
+    args = cmd.args[:] or []
+    if cmd.verbose < 1:
+        args.insert(0,'-q')
+    if cmd.verbose > 1:
+        args.insert(0,'-v')
+    err = main(args)
     if err:
         raise DistutilsError("test")
 
