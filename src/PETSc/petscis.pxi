@@ -167,6 +167,22 @@ cdef class _IS_buffer:
     def __releasebuffer__(self, Py_buffer *view):
         self.releasebuffer(view)
 
+    # 'with' statement (PEP 343)
+
+    cdef object enter(self):
+        self.acquire()
+        return asarray(self)
+
+    cdef object exit(self):
+        self.release()
+        return None
+
+    def __enter__(self):
+        return self.enter()
+
+    def __exit__(self, *exc):
+        return self.exit()
+
     # buffer interface (legacy)
 
     cdef Py_ssize_t getbuffer(self, void **p) except -1:
