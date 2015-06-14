@@ -819,16 +819,17 @@ cdef class Vec(Object):
 
     property array:
         def __get__(self):
-            return vec_getarray_w(self)
+            return self.array_w
         def __set__(self, value):
-            vec_setarray(self, value)
+            self.array_w = value
 
     property array_w:
         "Vec array (writable)"
         def __get__(self):
             return vec_getarray_w(self)
         def __set__(self, value):
-            vec_getarray_w(self)[...] = value
+            with _Vec_buffer(self) as array:
+                array[:] = value
 
     property array_r:
         "Vec array (read-only)"
