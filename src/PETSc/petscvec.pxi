@@ -328,15 +328,21 @@ cdef object vecgetvalues(PetscVec vec, object oindices, object values):
 
 # --------------------------------------------------------------------
 
-cdef inline object vec_getarray_r(Vec self):
+cdef inline _Vec_buffer vec_getbuffer_r(Vec self):
     cdef _Vec_buffer buf = _Vec_buffer(self)
     buf.readonly = 1
-    return asarray(buf)
+    return buf
 
-cdef inline object vec_getarray_w(Vec self):
+cdef inline _Vec_buffer vec_getbuffer_w(Vec self):
     cdef _Vec_buffer buf = _Vec_buffer(self)
     buf.readonly = 0
-    return asarray(buf)
+    return buf
+
+cdef inline ndarray vec_getarray_r(Vec self):
+    return asarray(vec_getbuffer_r(self))
+
+cdef inline ndarray vec_getarray_w(Vec self):
+    return asarray(vec_getbuffer_w(self))
 
 cdef inline int vec_setarray(Vec self, object o) except -1:
     cdef PetscInt na=0, nv=0, i=0

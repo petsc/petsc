@@ -356,6 +356,12 @@ cdef class Vec(Object):
         CHKERR( MPI_Comm_size(comm, &size) )
         return array_i(size+1, rng)
 
+    def getBuffer(self, readonly=False):
+        if readonly:
+            return vec_getbuffer_r(self)
+        else:
+            return vec_getbuffer_w(self)
+
     def getArray(self, readonly=False):
         if readonly:
             return vec_getarray_r(self)
@@ -817,30 +823,44 @@ cdef class Vec(Object):
         def __get__(self):
             return self.getOwnershipRanges()
 
+    property buffer_w:
+        "Vec buffer (writable)"
+        def __get__(self):
+            return self.getBuffer()
+
+    property buffer_r:
+        "Vec buffer (read-only)"
+        def __get__(self):
+            return self.getBuffer(True)
+
+    property array_w:
+        "Vec array (writable)"
+        def __get__(self):
+            return self.getArray()
+        def __set__(self, value):
+            cdef buf = self.getBuffer()
+            with buf as array: array[:] = value
+
+    property array_r:
+        "Vec array (read-only)"
+        def __get__(self):
+            return self.getArray(True)
+
+    property buffer:
+        def __get__(self):
+            return self.buffer_w
+
     property array:
         def __get__(self):
             return self.array_w
         def __set__(self, value):
             self.array_w = value
 
-    property array_w:
-        "Vec array (writable)"
-        def __get__(self):
-            return vec_getarray_w(self)
-        def __set__(self, value):
-            with _Vec_buffer(self) as array:
-                array[:] = value
-
-    property array_r:
-        "Vec array (read-only)"
-        def __get__(self):
-            return vec_getarray_r(self)
-
     # --- NumPy array interface (legacy) ---
 
     property __array_interface__:
         def __get__(self):
-            cdef _Vec_buffer buf = _Vec_buffer(self)
+            cdef buf = self.getBuffer()
             return buf.__array_interface__
 
 # --------------------------------------------------------------------
