@@ -1212,11 +1212,11 @@ runex40:
 	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex40_2:
-	-@${MPIEXEC} -n 3 ./ex40 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \
-	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
-	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex40_1.tmp ex40_12.tmp
+	-@${MPIEXEC} -n 3 ./ex40 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2 > ex40_2.tmp 2>&1; \
+	   grep -v "flg =1" ex40_2.tmp > ex40_22.tmp; \
+	   if (${DIFF} output/ex40_2.out ex40_22.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex40_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex40_2.tmp ex40_22.tmp
 runex41:
 	-@${MPIEXEC} -n 3 ./ex41 -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
@@ -2424,7 +2424,7 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm e
                                  ex95.PETSc  ex95.rm ex101.PETSc runex101 ex101.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm  ex99.PETSc ex99.rm \
                                  ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm
-TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
+TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40_1 runex40_2 ex40.rm ex41.PETSc runex41 ex41.rm \
                                  ex42.PETSc runex42 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  \
                                  ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
