@@ -17,7 +17,7 @@ cdef class IS(Object):
         self.obj = <PetscObject*> &self.iset
         self.iset = NULL
 
-    #
+    # buffer interface (PEP 3118)
 
     def __getbuffer__(self, Py_buffer *view, int flags):
         cdef _IS_buffer buf = _IS_buffer(self)
@@ -27,6 +27,17 @@ cdef class IS(Object):
         cdef _IS_buffer buf = <_IS_buffer>(view.obj)
         buf.releasebuffer(view)
 
+    # 'with' statement (PEP 343)
+
+    def __enter__(self):
+        cdef _IS_buffer buf = _IS_buffer(self)
+        self.set_attr('__buffer__', buf)
+        return buf.enter()
+
+    def __exit__(self, *exc):
+        cdef _IS_buffer buf = self.get_attr('__buffer__')
+        self.set_attr('__buffer__', None)
+        return buf.exit()
     #
 
     def view(self, Viewer viewer=None):

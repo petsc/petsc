@@ -28,8 +28,8 @@ class Bratu2D:
         nx, ny = self.nx, self.ny
         alpha = self.alpha
         order = self.order
-        x = X[...].reshape(nx, ny, order=order)
-        f = F[...].reshape(nx, ny, order=order)
+        x = X.getArray(readonly=1).reshape(nx, ny, order=order)
+        f = F.getArray(readonly=0).reshape(nx, ny, order=order)
         self.compute(alpha, x, f)
 
 # convenience access to

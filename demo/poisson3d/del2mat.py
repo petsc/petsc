@@ -20,8 +20,8 @@ class Del2Mat:
         "y <- A * x"
         N, F = self.N, self.F
         # get 3D arrays from vectos
-        xx = x[...].reshape(N, order='f')
-        yy = y[...].reshape(N, order='f')
+        xx = x.getArray(readonly=1).reshape(N, order='f')
+        yy = y.getArray(readonly=0).reshape(N, order='f')
         # call Fortran subroutine
         del2apply(F, xx, yy)
 

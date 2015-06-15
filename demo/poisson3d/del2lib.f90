@@ -6,10 +6,10 @@
 subroutine del2apply (n, F, x, y)
 
   !f2py intent(hide) :: n=shape(F,0)-2
-  integer      :: n
-  real(kind=8) :: F(0:n+1,0:n+1,0:n+1)
-  real(kind=8) :: x(n,n,n)
-  real(kind=8) :: y(n,n,n)
+  integer      , intent(in)    :: n
+  real(kind=8) , intent(inout) :: F(0:n+1,0:n+1,0:n+1)
+  real(kind=8) , intent(in)    :: x(n,n,n)
+  real(kind=8) , intent(inout) :: y(n,n,n)
 
   F(1:n,1:n,1:n) = x
 
