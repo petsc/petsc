@@ -146,7 +146,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 #define __FUNCT__ "MatPartitioningHierarchical_ReassembleFineparts"
 PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
 {
-  PetscInt            *local_indices, *global_indices,*owners,*sfineparts_indices,localsize,i;;
+  PetscInt            *local_indices, *global_indices,*owners,*sfineparts_indices,localsize,i;
   const PetscInt      *ranges,*fineparts_indices;
   PetscMPIInt         rank;
   MPI_Comm            comm;
