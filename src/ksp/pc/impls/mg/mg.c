@@ -547,7 +547,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mglevels[0]->levels;
   PC             cpc;
-  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
+  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE,bjaclu;
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
@@ -798,11 +798,19 @@ PetscErrorCode PCSetUp_MG(PC pc)
   */
   ierr = PetscObjectTypeCompare((PetscObject)mglevels[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
   if (preonly) {
+    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCBJACOBI,&bjaclu);CHKERRQ(ierr);
+    if (bjaclu) {
+      KSP *k2; PetscInt ii,first; PC pc2;
+      ierr = PCBJacobiGetSubKSP(cpc,&ii,&first,&k2);CHKERRQ(ierr);
+      if (ii != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D is not one",ii);
+      ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc2,PCLU,&bjaclu);CHKERRQ(ierr);
+    }
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCSVD,&svd);CHKERRQ(ierr);
-    if (!lu && !redundant && !cholesky && !svd) {
+    if (!lu && !redundant && !cholesky && !svd && !bjaclu) {
       ierr = KSPSetType(mglevels[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
     }
   }
