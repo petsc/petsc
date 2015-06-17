@@ -800,11 +800,15 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (preonly) {
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCBJACOBI,&bjaclu);CHKERRQ(ierr);
     if (bjaclu) {
-      KSP *k2; PetscInt ii,first; PC pc2;
+      KSP *k2;
+      PetscInt ii,first;
       ierr = PCBJacobiGetSubKSP(cpc,&ii,&first,&k2);CHKERRQ(ierr);
-      if (ii != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D is not one",ii);
-      ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)pc2,PCLU,&bjaclu);CHKERRQ(ierr);
+      if (ii==1) {
+        PC pc2;
+        ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)pc2,PCLU,&bjaclu);CHKERRQ(ierr);
+      }
+      else bjaclu = PETSC_FALSE;
     }
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
