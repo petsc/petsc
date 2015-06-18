@@ -34,7 +34,7 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
   ierr = DMDAVecGetArray(da, v, &p);CHKERRQ(ierr);
   for (i = info.gxs; i < info.gxs + info.gxm; i++) {
     for (j = info.gys; j < info.gys + info.gym; j++) {
-      ierr = PetscSynchronizedPrintf(com, "%g, ", p[j][i]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(com, "%g, ", (double) PetscRealPart(p[j][i]));CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedPrintf(com, "\n");CHKERRQ(ierr);
   }
