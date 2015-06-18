@@ -62,7 +62,7 @@ class Configure(config.package.Package):
     orderingsc = '-Dpord'
     orderingsf = self.compilers.FortranDefineCompilerOption+'pord'
     # Disable threads on BGL
-    if self.libraries.isBGL(self.log):
+    if self.libraries.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
     if self.parmetis.found:
       g.write('IMETIS = '+self.headers.toString(self.parmetis.include)+'\n')
