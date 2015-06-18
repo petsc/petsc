@@ -6823,6 +6823,129 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
   PetscFunctionReturn(0);
 }
 
+
+static PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatIncreaseOverlapSplit"
+/*@
+   MatIncreaseOverlap - Given a set of submatrices indicated by index sets on a subcomm,
+   replaces the index sets by larger ones that represent submatrices with
+   additional overlap.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  n   - the number of index sets
+.  is  - the array of index sets (these index sets will changed during the call)
+-  ov  - the additional overlap requested
+
+   Options Database:
+.  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
+
+   Level: developer
+
+   Concepts: overlap
+   Concepts: ASM^computing overlap
+
+.seealso: MatGetSubMatrices()
+@*/
+PetscErrorCode  MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have one or more domains, you have %D",n);
+  if (n) {
+    PetscValidPointer(is,3);
+    PetscValidHeaderSpecific(*is,IS_CLASSID,3);
+  }
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  MatCheckPreallocated(mat,1);
+  if (!ov) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
+  for(i=0; i<n; i++){
+	ierr =  MatIncreaseOverlapSplit_Single(mat,&is[i],ov);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ * where should we put this function????
+ * all functions in this file are interfaces
+ * */
+static PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
+{
+  PetscInt         i,local,nindx,current,*indices_rd,*indices_ov;
+  const PetscInt   *ranges,*indices;
+  PetscMPIInt      gsize,grank,srank,ssize,issamecomm,*granks,k;
+  IS               swapis;
+  MPI_Comm         gcomm,scomm;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)*is,&scomm);CHKERRQ(ierr);
+  /*increase overlap on each individual subdomain*/
+  ierr = (*mat->ops->increaseoverlap)(mat,1,is,ov);CHKERRQ(ierr);
+  /*remove duplicate entrices belonging to the same subcomm */
+  ierr = PetscObjectGetComm((PetscObject)mat,&gcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(gcomm,scomm,&issamecomm);CHKERRQ(ierr);
+  /* if subcomm is the same as the global comm,
+   * user does not want to use subcomm
+   * */
+  if(issamecomm!=MPI_IDENT) PetscFunctionReturn(0);
+  /* if subcomm is petsc_comm_self,
+   * user also does not care subcomm
+   * */
+  ierr = MPI_Comm_compare(scomm,PETSC_COMM_SELF,&issamecomm);CHKERRQ(ierr);
+  if(issamecomm!=MPI_IDENT) PetscFunctionReturn(0);
+  /*global rank, size */
+  ierr = MPI_Comm_rank(gcomm,&grank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(gcomm,&gsize);CHKERRQ(ierr);
+  /*local rank, size in a subcomm */
+  ierr = MPI_Comm_rank(scomm,&srank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(scomm,&ssize);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ssize,&granks);CHKERRQ(ierr);
+  /*if there exists a dead-lock */
+  ierr = MPI_Allgather(&grank,1,MPI_INT,granks,1,MPI_INT,scomm);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRanges(mat,&ranges);CHKERRQ(ierr);
+  /*first number of local seciton */
+  local = ranges[grank];
+  ierr = ISGetLocalSize(*is,&nindx);CHKERRQ(ierr);
+  ierr = ISGetIndices(*is,&indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nindx,&indices_rd);CHKERRQ(ierr);
+  /*if size of subcomm is large
+   * this procedure possibly is slow
+   * it should be improved in the future.
+   * */
+  for(i=0; i<nindx; i++){
+	current       = indices[i];
+	indices_rd[i] = current;
+	for(k=0; k<ssize; k++){
+      if(granks[k] == grank) continue;
+      if(ranges[(granks[k]]=<current && current<ranges[(granks[k]+1]){
+    	indices_rd[i] = local;
+    	break;
+      }
+	}
+  }
+  ierr = ISRestoreIndices(*is,&indices);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = PetscSortRemoveDupsInt(&nindx,&indices_rd);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(scomm,nindx,indices_rd,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nindx,&indices_ov);CHKERRQ(ierr);
+
+
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBlockSize"
 /*@
