@@ -425,7 +425,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatGetSubMatricesMPI_MPIAdj,
                                /*129*/ 0,
                                        0,
                                        0,
@@ -481,25 +481,67 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
 }
 
 static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values);
+static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const IS irow[],const IS icol[],PetscBool subcomm,MatReuse scall,Mat *submat[])
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatricesMPI_MPIAdj"
+PetscErrorCode MatGetSubMatricesMPI_MPIAdj(Mat mat,PetscInt n, const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+{
+  PetscErrorCode     ierr;
+  /*get sub-matrices across a sub communicator */
+  PetscFunctionBegin;
+  ierr = MatGetSubMatrices_MPIAdj_Private(mat,n,irow,icol,PETSC_TRUE,scall,submat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrices_MPIAdj"
 PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  /*get sub-matrices based on PETSC_COMM_SELF */
+  ierr = MatGetSubMatrices_MPIAdj_Private(mat,n,irow,icol,PETSC_FALSE,scall,submat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrices_MPIAdj_Private"
+static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const IS irow[],const IS icol[],PetscBool subcomm,MatReuse scall,Mat *submat[])
+{
   PetscInt           i,irow_n,icol_n,*sxadj,*sadjncy,*svalues;
-  PetscInt          *indices,nindx,j,k,loc;
+  PetscInt          *indices,nindx,j,k,loc,issame;
   const PetscInt    *irow_indices,*icol_indices;
+  MPI_Comm           scomm_row,scomm_col,scomm_mat;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   nindx = 0;
+  /*
+   * Estimate a maximum number for allocating memory
+   */
   for(i=0; i<n; i++){
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
     nindx = nindx>(irow_n+icol_n)? nindx:(irow_n+icol_n);
   }
   ierr = PetscCalloc1(nindx,&indices);CHKERRQ(ierr);
+  /* construct a submat */
   for(i=0; i<n; i++){
+	/*comms */
+    if(subcomm){
+	  ierr = PetscObjectGetComm((PetscObject)irow[i],&scomm_row);CHKERRQ(ierr);
+	  ierr = PetscObjectGetComm((PetscObject)icol[i],&scomm_col);CHKERRQ(ierr);
+	  ierr = MPI_Comm_compare(scomm_row,scomm_col,&issame);CHKERRQ(ierr);
+	  if(issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row index set must have the same comm as the col index set\n");
+	  ierr = MPI_Comm_compare(scomm_row,PETSC_COMM_SELF,&issame);CHKERRQ(ierr);
+	  if(issame == MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," can not use PETSC_COMM_SELF as comm when extracting a parallel submatrix\n");
+	}else{
+	  scomm_row = PETSC_COMM_SELF;
+	}
+	/*get sub-matrix data*/
     ierr = MatGetSubMatrix_MPIAdj_data(mat,irow[i],icol[i],&sxadj,&sadjncy,&svalues);CHKERRQ(ierr);
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
@@ -522,9 +564,12 @@ PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const
       }
     }
     if(scall==MAT_INITIAL_MATRIX){
-      ierr = MatCreateMPIAdj(PETSC_COMM_SELF,irow_n,icol_n,sxadj,sadjncy,svalues,submat[i]);CHKERRQ(ierr);
+      ierr = MatCreateMPIAdj(scomm_row,irow_n,icol_n,sxadj,sadjncy,svalues,submat[i]);CHKERRQ(ierr);
     }else{
        Mat                sadj = *(submat[i]);
+       ierr = PetscObjectGetComm((PetscObject)sadj,&scomm_mat);CHKERRQ(ierr);
+       ierr = MPI_Comm_compare(scomm_row,scomm_mat,&issame);CHKERRQ(ierr);
+       if(issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"submatrix  must have the same comm as the col index set\n");
        Mat_MPIAdj        *sa = (Mat_MPIAdj*)((sadj)->data);
        ierr = PetscMemcpy(sa->i,sxadj,sizeof(PetscInt)*(irow_n+1));CHKERRQ(ierr);
        ierr = PetscMemcpy(sa->j,sadjncy,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);
