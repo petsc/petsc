@@ -6829,8 +6829,8 @@ static PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov
 #undef __FUNCT__
 #define __FUNCT__ "MatIncreaseOverlapSplit"
 /*@
-   MatIncreaseOverlap - Given a set of submatrices indicated by index sets on a subcomm,
-   replaces the index sets by larger ones that represent submatrices with
+   MatIncreaseOverlapSplit - Given a set of submatrices indicated by index sets across
+   a sub communicator, replaces the index sets by larger ones that represent submatrices with
    additional overlap.
 
    Collective on Mat
