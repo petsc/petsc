@@ -368,6 +368,24 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCCompositeGetNumberPC_Composite"
+static PetscErrorCode  PCCompositeGetNumberPC_Composite(PC pc,PetscInt *n)
+{
+  PC_Composite     *jac;
+  PC_CompositeLink next;
+
+  PetscFunctionBegin;
+  jac  = (PC_Composite*)pc->data;
+  next = jac->head;
+  *n = 0;
+  while (next) {
+    next = next->next;
+    (*n) ++;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeGetPC_Composite"
 static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 {
@@ -499,6 +517,36 @@ PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCCompositeGetNumberPC"
+/*@
+   PCCompositeGetNumberPC - Gets the number of PC objects in the composite PC.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  num - the number of sub pcs
+
+   Level: Developer
+
+.keywords: PC, get, composite preconditioner, sub preconditioner
+
+.seealso: PCCompositeGetPC()
+@*/
+PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidIntPointer(num,2);
+  ierr = PetscUseMethod(pc,"PCCompositeGetNumberPC_C",(PC,PetscInt*),(pc,num));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeGetPC"
 /*@
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
@@ -516,7 +564,7 @@ PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
 
 .keywords: PC, get, composite preconditioner, sub preconditioner
 
-.seealso: PCCompositeAddPC()
+.seealso: PCCompositeAddPC(), PCCompositeGetNumberPC()
 @*/
 PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
@@ -583,6 +631,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",PCCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetType_C",PCCompositeGetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C",PCCompositeAddPC_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetNumberPC_C",PCCompositeGetNumberPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C",PCCompositeGetPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
