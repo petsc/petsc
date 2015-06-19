@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/plex/examples/tests/
-EXAMPLESC       = ex1.c ex3.c
+EXAMPLESC       = ex1.c ex3.c ex9.c
 EXAMPLESF       = ex1f90.F ex2f90.F
 MANSEC          = DM
 
@@ -26,6 +26,10 @@ ex2f90: ex2f90.o  chkopts
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} -f ex3.o
+
+ex9: ex9.o  chkopts
+	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
+	${RM} -f ex9.o
 
 #--------------------------------------------------------------------------
 runex1:

@@ -642,7 +642,7 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
 . name  - The stage name
 
   Output Parameter:
-. stage - The stage
+. stage - The stage, , or -1 if no stage with that name exists
 
   Level: intermediate
 
