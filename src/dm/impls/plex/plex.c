@@ -788,6 +788,9 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin;
     PetscInt  pStart, pEnd, p, dof, cdof;
 
+    /* Set localtoglobalmapping on the matrix for MatSetValuesLocal() to work (it also creates the local matrices in case of MATIS) */
+    ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt bdof;
@@ -811,10 +814,6 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
-
-    /* Set localtoglobalmapping on the matrix for MatSetValuesLocal() to work */
-    ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
-    ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
