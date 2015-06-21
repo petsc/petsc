@@ -40,6 +40,7 @@ else:
 _config    = import_command('config')
 _build     = import_command('build')
 _build_ext = import_command('build_ext')
+_install   = import_command('install')
 _clean     = import_command('clean')
 _sdist     = import_command('sdist')
 
@@ -554,6 +555,10 @@ PETSC_ARCH = %(PETSC_ARCH)s
                 outputs.append(outfile)
         outputs = list(set(outputs))
         return outputs
+
+class install(_install):
+    def run(self):
+        _install.run(self)
 
 class clean(_clean):
     def run(self):

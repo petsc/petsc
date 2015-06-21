@@ -89,7 +89,7 @@ def get_ext_modules(Extension):
 # --------------------------------------------------------------------
 
 from conf.petscconf import setup, Extension
-from conf.petscconf import config, build, build_src, build_ext
+from conf.petscconf import config, build, build_src, build_ext, install
 from conf.petscconf import clean, test, sdist
 
 CYTHON = '0.22'
@@ -128,6 +128,7 @@ def run_setup():
                           'build'      : build,
                           'build_src'  : build_src,
                           'build_ext'  : build_ext,
+                          'install'    : install,
                           'clean'      : clean,
                           'test'       : test,
                           'sdist'      : sdist,
