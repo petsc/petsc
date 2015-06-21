@@ -105,7 +105,12 @@ def run_setup():
             x, y = int(vstr[0]), int(vstr[1])
             PETSC = ">=%s.%s,<%s.%s" % (x, y, x, y+1)
             setup_args['install_requires'] += ['petsc'+PETSC]
-        if not os.path.exists(os.path.join('src', 'petsc4py.PETSc.c')):
+    if setuptools:
+        src = os.path.join('src', 'petsc4py.PETSc.c')
+        has_src = os.path.exists(os.path.join(topdir, src))
+        has_git = os.path.isdir(os.path.join(topdir, '.git'))
+        has_hg  = os.path.isdir(os.path.join(topdir, '.hg'))
+        if not has_src or has_git or has_hg:
             setup_args['setup_requires'] = ['Cython>='+CYTHON]
     #
     setup(packages     = ['petsc4py',
