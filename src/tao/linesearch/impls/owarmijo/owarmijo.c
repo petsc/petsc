@@ -286,6 +286,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   if (ls->reason) PetscFunctionReturn(0);
 
   /* Successful termination, update memory */
+  ls->reason = TAOLINESEARCH_SUCCESS;
   armP->lastReference = ref;
   if (armP->replacementPolicy == REPLACE_FIFO) {
     armP->memory[armP->current++] = *f;
