@@ -10,7 +10,7 @@ cdef extern from *:
     ctypedef char const_char "const char"
 
 cdef inline object bytes2str(const_char p[]):
-     if p == NULL: 
+     if p == NULL:
          return None
      cdef bytes s = <char*>p
      if isinstance(s, str):
@@ -206,7 +206,7 @@ cdef int traceback(MPI_Comm       comm,
     fnm = bytes2str(cfile)
     m = "%s() line %d in %s" % (fun, line, fnm)
     tbl.insert(0, m)
-    if p != PETSC_ERROR_INITIAL: 
+    if p != PETSC_ERROR_INITIAL:
         return n
     #
     del tbl[1:] # clear any previous stuff
@@ -283,7 +283,7 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     try:
         for 0 <= i < c:
             v[i] = strdup(args[i])
-            if v[i] == NULL: 
+            if v[i] == NULL:
                 raise MemoryError
     except:
         delinitargs(&c, &v); raise
@@ -364,10 +364,26 @@ cdef extern from *:
 
 cdef bint registercalled = 0
 
+cdef const char *citation = b"""\
+@Article{Dalcin20111124,
+Author = "Lisandro D. Dalcin and Rodrigo R. Paz and Pablo A. Kler and Alejandro Cosimo",
+Title = "Parallel distributed computing using {P}ython",
+Journal = "Advances in Water Resources",
+Note = "New Computational Methods and Software Tools",
+Volume = "34",
+Number = "9",
+Pages = "1124 - 1139",
+Year = "2011",
+DOI = "http://dx.doi.org/10.1016/j.advwatres.2011.04.013",
+}
+"""
+
 cdef int register() except -1:
     global registercalled
     if registercalled: return 0
     registercalled = True
+    # register citation
+    CHKERR( PetscCitationsRegister(citation, NULL) )
     # make sure all PETSc packages are initialized
     CHKERR( PetscInitializePackageAll() )
     # register custom implementations

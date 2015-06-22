@@ -50,6 +50,8 @@ cdef extern from * nogil:
     int PetscSequentialPhaseEnd(MPI_Comm,int)
     int PetscSleep(int)
 
+    int PetscCitationsRegister(const char[],PetscBool*)
+
 
 cdef inline int Sys_Sizes(
     object size, object bsize,
