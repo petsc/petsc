@@ -432,8 +432,11 @@ class Configure(config.package.Package):
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     if self.checkCompile(mpich_test):
       buf = self.outputPreprocess(mpich_test)
-      mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
-      self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
+      try:
+        mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
+        self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
+      except:
+        self.logPrint('Unable to parse MPICH version from header. Probably a buggy preprocessor')
     elif self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
       ompi_major_version = ompi_minor_version = ompi_release_version = 'unknown'
@@ -441,11 +444,11 @@ class Configure(config.package.Package):
         ompi_major_version = re.compile('\nint ompi_major = *([0-9]*) *;').search(buf).group(1)
         ompi_minor_version = re.compile('\nint ompi_minor = *([0-9]*) *;').search(buf).group(1)
         ompi_release_version = re.compile('\nint ompi_release = *([0-9]*) *;').search(buf).group(1)
+        self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
+        self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
+        self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
-      self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
-      self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
-      self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show"'''
     import re

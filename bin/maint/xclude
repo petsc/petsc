@@ -34,6 +34,8 @@ petsc-dist/default.log.bkp
 petsc-dist/confdefs.h
 petsc-dist/conffix.h
 petsc-dist/conftest.c
+petsc-dist/conftest
+petsc-dist/conftestval
 petsc-dist/todo
 petsc-dist/surplus
 petsc-dist/TAGS_MAKEFILES

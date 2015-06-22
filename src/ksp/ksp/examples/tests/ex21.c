@@ -130,7 +130,7 @@ int main(int argc,char *argv[])
   ierr = MatDestroy(&S);CHKERRQ(ierr);
   ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
-  /* This time just the preconditioner */
+  /* This time just the preconditioning matrix. */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_SCHUR_COMPLEMENT_AINV_LUMP,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nPreconditioning Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);

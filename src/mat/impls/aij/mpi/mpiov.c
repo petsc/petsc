@@ -2046,7 +2046,10 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
       ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
 #else
       ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory((PetscObject)C,-aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+      /* A bit of a HACK: ideally we should deal with case aij->B all in one code block below. */
+      if (aij->B) {
+        ierr = PetscLogObjectMemory((PetscObject)C,-aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+      }
 #endif
       ngcol = 0;
       if (aij->lvec) {

@@ -3222,7 +3222,7 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
    Neighbor-wise Collective on Mat
 
    Input Parameters:
-+  mat - the factored matrix
++  A - the factored matrix
 -  B - the right-hand-side matrix  (dense matrix)
 
    Output Parameter:
