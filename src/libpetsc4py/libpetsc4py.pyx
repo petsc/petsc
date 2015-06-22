@@ -278,7 +278,7 @@ cdef object load_module(object path):
 
 # -----------------------------------------------------------------------------
 
-#@cython.internal
+@cython.internal
 cdef class _PyObj:
 
     cdef object self
@@ -505,7 +505,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSolve(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
 
-#@cython.internal
+@cython.internal
 cdef class _PyMat(_PyObj): pass
 cdef inline _PyMat PyMat(PetscMat mat):
     if mat != NULL and mat.data != NULL:
@@ -1137,7 +1137,7 @@ cdef extern from * nogil:
         void *data
         PCOps ops
 
-#@cython.internal
+@cython.internal
 cdef class _PyPC(_PyObj): pass
 cdef inline _PyPC PyPC(PetscPC pc):
     if pc != NULL and pc.data != NULL:
@@ -1412,7 +1412,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPMonitor(PetscKSP,PetscInt,PetscReal)
 
 
-#@cython.internal
+@cython.internal
 cdef class _PyKSP(_PyObj): pass
 cdef inline _PyKSP PyKSP(PetscKSP ksp):
     if ksp != NULL and ksp.data != NULL:
@@ -1766,7 +1766,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESSetFromOptions(PetscSNES)
 
 
-#@cython.internal
+@cython.internal
 cdef class _PySNES(_PyObj): pass
 cdef inline _PySNES PySNES(PetscSNES snes):
     if snes != NULL and snes.data != NULL:
@@ -2047,14 +2047,19 @@ cdef extern from * nogil:
       PetscErrorCode (*reset)(PetscTS)            except IERR
       PetscErrorCode (*setfromoptions)(PetscOptions*,PetscTS) except IERR
       PetscErrorCode (*view)(PetscTS,PetscViewer) except IERR
-      PetscErrorCode (*prestep)(PetscTS)          except IERR
-      PetscErrorCode (*poststep)(PetscTS)         except IERR
       PetscErrorCode (*step)(PetscTS) except IERR
+      PetscErrorCode (*rollback)(PetscTS) except IERR
+      PetscErrorCode (*interpolate)(PetscTS,PetscReal,PetscVec) except IERR
+      PetscErrorCode (*evaluatestep)(PetscTS,PetscInt,PetscVec,PetscBool*) except IERR
       PetscErrorCode (*solve)(PetscTS) except IERR
       PetscErrorCode (*snesfunction)(PetscSNES,PetscVec,PetscVec,PetscTS) except IERR
       PetscErrorCode (*snesjacobian)(PetscSNES,PetscVec,PetscMat,PetscMat,PetscTS) except IERR
     ctypedef _TSOps *TSOps
     struct _TSUserOps:
+      PetscErrorCode (*prestep)(PetscTS) except IERR
+      PetscErrorCode (*prestage)(PetscTS,PetscReal) except IERR
+      PetscErrorCode (*poststage)(PetscTS,PetscReal,PetscInt,PetscVec*) except IERR
+      PetscErrorCode (*poststep)(PetscTS) except IERR
       PetscErrorCode (*rhsfunction)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except IERR
       PetscErrorCode (*ifunction)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,void*) except IERR
       PetscErrorCode (*rhsjacobian)(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*) except IERR
@@ -2090,7 +2095,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESTSFormFunction(PetscSNES,PetscVec,PetscVec,void*)
     PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat,PetscMat,void*)
 
-#@cython.internal
+@cython.internal
 cdef class _PyTS(_PyObj): pass
 cdef inline _PyTS PyTS(PetscTS ts):
     if ts != NULL and ts.data != NULL:
@@ -2132,6 +2137,9 @@ cdef PetscErrorCode TSCreate_Python(
     ops.setfromoptions = TSSetFromOptions_Python
     ops.view           = TSView_Python
     ops.step           = TSStep_Python
+    ops.rollback       = TSRollBack_Python
+    ops.interpolate    = TSInterpolate_Python
+    ops.evaluatestep   = TSEvaluateStep_Python
     ops.snesfunction   = SNESTSFormFunction_Python
     ops.snesjacobian   = SNESTSFormJacobian_Python
     #
@@ -2260,6 +2268,45 @@ cdef PetscErrorCode TSStep_Python(
         step(TS_(ts))
     else:
         TSStep_Python_default(ts)
+    return FunctionEnd()
+
+cdef PetscErrorCode TSRollBack_Python(
+    PetscTS   ts,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TSRollBack_Python")
+    cdef rollback = PyTS(ts).rollback
+    if rollback is None: return UNSUPPORTED(b"rollback")
+    rollback(TS_(ts))
+    return FunctionEnd()
+
+cdef PetscErrorCode TSInterpolate_Python(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TSInterpolate _Python")
+    cdef interpolate = PyTS(ts).interpolate
+    if interpolate is None: return UNSUPPORTED(b"interpolate")
+    interpolate(TS_(ts),toReal(t),Vec_(x))
+    return FunctionEnd()
+
+cdef PetscErrorCode TSEvaluateStep_Python(
+    PetscTS   ts,
+    PetscInt  o,
+    PetscVec  x,
+    PetscBool *flag,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TSEvaluateStep _Python")
+    cdef evaluatestep = PyTS(ts).evaluatestep
+    if evaluatestep is None: return UNSUPPORTED(b"evaluatestep")
+    cdef done = evaluatestep(TS_(ts),toInt(o),Vec_(x))
+    if flag != NULL:
+        flag[0] = PETSC_TRUE if done else PETSC_FALSE
+    elif not done:
+        return PetscSETERR(PETSC_ERR_USER, "Cannot evaluate step")
     return FunctionEnd()
 
 cdef PetscErrorCode SNESTSFormFunction_Python(

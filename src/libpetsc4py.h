@@ -1,5 +1,7 @@
 #include <petsc.h>
-/*#include "libpetsc4py/libpetsc4py.h"*/
+/*
+#include "libpetsc4py/libpetsc4py.h"
+*/
 PETSC_EXTERN int import_libpetsc4py(void);
 PETSC_EXTERN PetscErrorCode MatPythonGetContext(Mat,void**);
 PETSC_EXTERN PetscErrorCode MatPythonSetContext(Mat,void*);
