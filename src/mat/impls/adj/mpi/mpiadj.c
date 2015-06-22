@@ -500,6 +500,7 @@ PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const
   }
   ierr = PetscCalloc1(nindx,&indices);CHKERRQ(ierr);
   for(i=0; i<n; i++){
+	sxadj=0; sadjncy=0; svalues=0;
     ierr = MatGetSubMatrix_MPIAdj_data(mat,irow[i],icol[i],&sxadj,&sadjncy,&svalues);CHKERRQ(ierr);
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
