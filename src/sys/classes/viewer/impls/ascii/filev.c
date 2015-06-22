@@ -60,7 +60,11 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   ierr = MPI_Attr_get(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {
     if (vlink && vlink->viewer == viewer) {
-      ierr = MPI_Attr_put(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      if (vlink->next) {
+        ierr = MPI_Attr_put(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      } else {
+        ierr = MPI_Attr_delete(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval);CHKERRQ(ierr);
+      }
       ierr = PetscFree(vlink);CHKERRQ(ierr);
     } else {
       while (vlink && vlink->next) {
