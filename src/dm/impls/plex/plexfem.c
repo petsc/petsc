@@ -132,12 +132,13 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   MPI_Comm       comm;
   Vec            mode[6];
   PetscSection   section, globalSection;
-  PetscInt       dim, n, m, d, i, j;
+  PetscInt       dim, dimEmbed, n, m, d, i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   if (dim == 1) {
     ierr = MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -155,7 +156,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
     void    *voidctx = (void *) (&ctx[0]);
     PetscErrorCode (*func)(PetscInt, const PetscReal *, PetscInt, PetscScalar *, void *) = DMPlexProjectRigidBody;
 
-    ctx[0] = dim;
+    ctx[0] = dimEmbed;
     ctx[1] = d;
     ierr = DMPlexProjectFunction(dm, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
   }

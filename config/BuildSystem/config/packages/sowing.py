@@ -55,7 +55,7 @@ class Configure(config.package.GNUPackage):
       self.logPrint("Not checking sowing on user request\n")
       return
 
-    if self.petscclone.isClone and hasattr(self.compilers, 'FC'):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or self.framework.clArgDB.has_key('download-sowing'):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
