@@ -365,16 +365,16 @@ cdef extern from *:
 cdef bint registercalled = 0
 
 cdef const char *citation = b"""\
-@Article{Dalcin20111124,
-Author = "Lisandro D. Dalcin and Rodrigo R. Paz and Pablo A. Kler and Alejandro Cosimo",
-Title = "Parallel distributed computing using {P}ython",
-Journal = "Advances in Water Resources",
-Note = "New Computational Methods and Software Tools",
-Volume = "34",
-Number = "9",
-Pages = "1124 - 1139",
-Year = "2011",
-DOI = "http://dx.doi.org/10.1016/j.advwatres.2011.04.013",
+@Article{Dalcin2011,
+  Author = {Lisandro D. Dalcin and Rodrigo R. Paz and Pablo A. Kler and Alejandro Cosimo},
+  Title = {Parallel distributed computing using {P}ython},
+  Journal = {Advances in Water Resources},
+  Note = {New Computational Methods and Software Tools},
+  Volume = {34},
+  Number = {9},
+  Pages = {1124--1139},
+  Year = {2011},
+  DOI = {http://dx.doi.org/10.1016/j.advwatres.2011.04.013}
 }
 """
 
