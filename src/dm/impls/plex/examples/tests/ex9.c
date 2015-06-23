@@ -238,7 +238,7 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxConeTime;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -276,7 +276,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxClosureTime;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -320,7 +320,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   PetscScalar        tmpArray[64];
   PetscScalar       *userArray     = user->reuseArray ? tmpArray : NULL;
   PetscReal          maxTimePerRun = user->maxVecClosureTime;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
