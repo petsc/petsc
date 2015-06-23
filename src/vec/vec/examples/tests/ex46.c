@@ -9,7 +9,7 @@ T*/
 #include <petscvec.h>
 
 #define VEC_LEN 10
-const PetscScalar test_values[] = { 0.311256, 88.068, 11.077444, 9953.62, 7.345, 64.8943, 3.1458, 6699.95, 0.00084, 0.0647 };
+const PetscReal test_values[] = { 0.311256, 88.068, 11.077444, 9953.62, 7.345, 64.8943, 3.1458, 6699.95, 0.00084, 0.0647 };
 
 #undef __FUNCT__
 #define __FUNCT__ "MyVecDump"
@@ -81,7 +81,7 @@ PetscErrorCode VecFill(Vec x)
   PetscFunctionBeginUser;
   ierr = VecGetOwnershipRange(x,&s,&e);CHKERRQ(ierr);
   for (i=s; i<e; i++) {
-    ierr = VecSetValue(x,i,test_values[i],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValue(x,i,(PetscScalar)test_values[i],INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);

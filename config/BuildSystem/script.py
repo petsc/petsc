@@ -22,7 +22,7 @@ if sys.version_info[:2] >= (2, 6) and not USE_SUBPROCESS:
 import nargs
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
-  useThreads = 1
+  useThreads = 0 # worarround issue with parallel configure
 else:
   useThreads = int(useThreads)
 

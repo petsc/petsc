@@ -3243,8 +3243,8 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
 
   /* reduce from leaves to roots */
   ierr = PetscMemzero(root_data,Nl*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPIU_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
 
   /* count indexes in local part of layout */
   nlocals = 0;
@@ -3261,9 +3261,9 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
   /* cumulative of number of indexes and size of subset without holes */
 #if defined(PETSC_HAVE_MPI_EXSCAN)
   start = 0;
-  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
 #else
-  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
   start = start-nlocals;
 #endif
 
@@ -4034,7 +4034,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = PCBDDCComputePrimalNumbering(pc,&pcbddc->coarse_size,&pcbddc->global_primal_indices);CHKERRQ(ierr);
     /* see if we can avoid some work */
     if (pcbddc->coarse_ksp) { /* coarse ksp has already been created */
-      if (ocoarse_size != pcbddc->coarse_size) { /* ...but with different size, so reset it and set reuse flag to false */
+      /* if the coarse size is different or we are using adaptive selection, better to not reuse the coarse matrix */
+      if (ocoarse_size != pcbddc->coarse_size || pcbddc->adaptive_selection) {
         PC        pc;
         PetscBool isbddc;
 
@@ -4383,6 +4384,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
     }
     /* propagate BDDC info to the next level (these are dummy calls if pc_temp is not of type PCBDDC) */
+    ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
     if (nisdofs) {
       ierr = PCBDDCSetDofsSplitting(pc_temp,nisdofs,isarray);CHKERRQ(ierr);
       for (i=0;i<nisdofs;i++) {
@@ -4395,7 +4397,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
 
     /* get some info after set from options */
-    ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);

@@ -115,6 +115,7 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
       Vec         subv;
       IS          is;
       const char *fname, *fgroup;
+      char        subname[PETSC_MAX_PATH_LEN];
       char        group[PETSC_MAX_PATH_LEN];
       PetscInt    pStart, pEnd;
       PetscBool   flag;
@@ -125,12 +126,15 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
       if (!fname) continue;
       ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
       ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) subv, fname);CHKERRQ(ierr);
+      ierr = PetscStrcpy(subname, name);CHKERRQ(ierr);
+      ierr = PetscStrcat(subname, "_");CHKERRQ(ierr);
+      ierr = PetscStrcat(subname, fname);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) subv, subname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
       ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, fname);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, subname);CHKERRQ(ierr);
       ierr = PetscViewerHDF5HasAttribute(viewer, group, "vector_field_type", &flag);CHKERRQ(ierr);
       if (!flag) {
         if ((ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_CELL_VECTOR_FIELD)) {
