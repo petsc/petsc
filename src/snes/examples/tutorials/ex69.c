@@ -133,8 +133,8 @@ static void stokes_momentum_vel_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   for (cI = 0; cI < dim; ++cI) {
     for (d = 0; d < dim; ++d) {
-      g3[((cI*dim+cI)*dim+d)*dim+d] += 0.5*nu; /*g3[cI, cI, d, d]*/
-      g3[((cI*dim+d)*dim+d)*dim+cI] += 0.5*nu; /*g3[cI, d, d, cI]*/
+      g3[((cI*dim+cI)*dim+d)*dim+d] += nu; /*g3[cI, cI, d, d]*/
+      g3[((cI*dim+d)*dim+d)*dim+cI] += nu; /*g3[cI, d, d, cI]*/
     }
   }
 }
