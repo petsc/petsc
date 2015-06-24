@@ -158,8 +158,6 @@ class BaseTestMatAnyAIJ(object):
             self.A.setOption(opt, True)
         ai, aj, av = A.getValuesCSR()
         rstart, rend = A.getOwnershipRange()
-        try: range = xrange
-        except NameError: pass
         for row in range(rstart, rend):
             cols, vals = A.getRow(row)
             i = row - rstart
