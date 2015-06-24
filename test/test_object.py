@@ -240,7 +240,7 @@ class TestObjectAOMapping(BaseTestObject, unittest.TestCase):
 # --------------------------------------------------------------------
 
 import numpy
-if numpy.iscomplex(PETSc.ScalarType()):
+if numpy.iscomplexobj(PETSc.ScalarType()):
     del TestObjectTAO
 
 if __name__ == '__main__':

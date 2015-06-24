@@ -54,7 +54,7 @@ class TestTAOWorld(BaseTestTAO, unittest.TestCase):
 # --------------------------------------------------------------------
 
 import numpy
-if numpy.iscomplex(PETSc.ScalarType()):
+if numpy.iscomplexobj(PETSc.ScalarType()):
     del BaseTestTAO
     del TestTAOSelf
     del TestTAOWorld
