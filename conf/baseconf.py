@@ -199,6 +199,8 @@ class PetscConfig:
          ldflags, ldshared, so_ext) = get_config_vars(
             'CC', 'CXX', 'CFLAGS',  'CCSHARED',
             'LDFLAGS', 'LDSHARED', 'SO')
+        cflags = cflags or ''
+        ldflags = ldflags or ''
         cflags = cflags.replace('-Wstrict-prototypes', '')
         ld = cc
         ldshared = ldshared.replace(ld, '', 1).strip()
