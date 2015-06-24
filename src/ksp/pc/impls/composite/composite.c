@@ -30,7 +30,16 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   Mat              mat  = pc->pmat;
 
   PetscFunctionBegin;
+
   if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+
+  /* Set the reuse flag on children PCs */
+  while (next) {
+    ierr = PCSetReusePreconditioner(next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+    next = next->next;
+  }
+  next = jac->head;
+
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
@@ -116,6 +125,10 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
   if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   if (!next->next || next->next->next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
 
+  /* Set the reuse flag on children PCs */
+  ierr = PCSetReusePreconditioner(next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+  ierr = PCSetReusePreconditioner(next->next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+
   ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
   ierr = PCApply(next->next->pc,jac->work1,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -131,6 +144,14 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+
+  /* Set the reuse flag on children PCs */
+  while (next) {
+    ierr = PCSetReusePreconditioner(next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+    next = next->next;
+  }
+  next = jac->head;
+
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
