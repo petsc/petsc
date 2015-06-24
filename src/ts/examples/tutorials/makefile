@@ -640,9 +640,14 @@ runex20adj_20:
 	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20fwd:
-	-@${MPIEXEC} -n 1 ./ex20fwd -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -ts_dt 0.001 -mu 100000 | tee ex20fwd_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20fwd -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 > ex20fwd_1.tmp 2>&1; \
 	  ${DIFF} output/ex20fwd_1.out ex20fwd_1.tmp || printf "${PWD}\nPossible problem with ex20fwd, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20fwd_1.tmp 
+	  ${RM} -f ex20fwd_1.tmp
+
+runex20fwd_2:
+	-@${MPIEXEC} -n 1 ./ex20fwd -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined > ex20fwd_2.tmp 2>&1; \
+	  ${DIFF} output/ex20fwd_1.out ex20fwd_2.tmp || printf "${PWD}\nPossible problem with ex20fwd, diffs above\n=========================================\n"; \
+	  ${RM} -f ex20fwd_2.tmp
 
 runex20opt_ic:
 	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view -mu 100000 > ex20opt_ic_1.tmp 2>&1; \
@@ -877,6 +882,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
                             ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 runex26_asm ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             printdot ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
+                            ex20fwd.PETSc runex20fwd runex20fwd_2 ex20fwd.rm \
                             ex20opt_p.PETSc   ex20opt_p.rm \
                             ex20opt_ic.PETSc  ex20opt_ic.rm
 TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
