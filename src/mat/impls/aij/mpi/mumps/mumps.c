@@ -2062,7 +2062,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   MumpsScalar    *orhs;
   PetscScalar    *osol,*nrhs,*nsol;
-  PetscInt       orhs_size,osol_size;
+  PetscInt       orhs_size,osol_size,olrhs_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2077,6 +2077,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   }
   /* swap pointers */
   orhs = mumps->id.redrhs;
+  olrhs_size = mumps->id.lredrhs;
   orhs_size = mumps->sizeredrhs;
   osol = mumps->schur_sol;
   osol_size = mumps->schur_sizesol;
@@ -2084,6 +2085,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = (MumpsScalar*)nrhs;
   ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
+  mumps->id.lredrhs = mumps->sizeredrhs;
   mumps->schur_sol = nsol;
   ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
 
@@ -2094,6 +2096,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = orhs;
+  mumps->id.lredrhs = olrhs_size;
   mumps->sizeredrhs = orhs_size;
   mumps->schur_sol = osol;
   mumps->schur_sizesol = osol_size;
