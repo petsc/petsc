@@ -140,7 +140,7 @@ cdef class TS(Object):
 
     # --- user RHS Function/Jacobian routines ---
 
-    def setRHSFunction(self, function, Vec f not None, args=None, kargs=None):
+    def setRHSFunction(self, function, Vec f=None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
@@ -152,7 +152,7 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetRHSFunction(self.ts, fvec, NULL, NULL) )
 
-    def setRHSJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
+    def setRHSJacobian(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat=Jmat
@@ -202,7 +202,7 @@ cdef class TS(Object):
 
     # --- user Implicit Function/Jacobian routines ---
 
-    def setIFunction(self, function, Vec f, args=None, kargs=None):
+    def setIFunction(self, function, Vec f=None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
@@ -214,7 +214,7 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetIFunction(self.ts, fvec, NULL, NULL) )
 
-    def setIJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
+    def setIJacobian(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat=Jmat
