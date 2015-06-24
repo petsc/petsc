@@ -215,6 +215,9 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
                                if (hierr && hierr != HYPRE_ERROR_CONV) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
                                if (hierr) hypre__global_error = 0;);
 
+  if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero) {
+    PetscStackCall("HYPRE_AMSProjectOutGradients",ierr = HYPRE_AMSProjectOutGradients(jac->hsolver,jxv);CHKERRQ(ierr););
+  }
   HYPREReplacePointer(jac->b,(PetscScalar*)sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
