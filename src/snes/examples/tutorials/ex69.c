@@ -960,7 +960,7 @@ int main(int argc, char **argv)
   SNES             snes;                 /* nonlinear solver */
   DM               dm;                   /* problem definition */
   Vec              u,r;                  /* solution, residual vectors */
-  Mat              A,J;                  /* Jacobian matrix */
+  Mat              J;                    /* Jacobian matrix */
 #if 1
   MatNullSpace     nullSpace;            /* May be necessary for pressure */
   Vec              nullVec;
@@ -996,18 +996,13 @@ int main(int argc, char **argv)
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexSNESComputeResidualFEM,&user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexSNESComputeJacobianFEM,&user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(dm, &user, &nullVec, &nullSpace);CHKERRQ(ierr);
-#if 0
-  ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  A = J;
-  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-  if (A != J) {
-    ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-  }
-  //ierr = SNESSetJacobian(snes, A, J, NULL, NULL);CHKERRQ(ierr);
-#endif
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+
+  /* There should be a way to express this using the DM */
+  ierr = SNESSetUp(snes);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes, NULL, &J, NULL, NULL);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
 
   ierr = DMPlexProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
@@ -1046,10 +1041,6 @@ int main(int argc, char **argv)
 
   ierr = VecDestroy(&nullVec);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
-#if 0
-  if (A != J) {ierr = MatDestroy(&A);CHKERRQ(ierr);}
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-#endif
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
