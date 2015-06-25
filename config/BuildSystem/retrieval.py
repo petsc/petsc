@@ -4,6 +4,8 @@ import os
 import urllib
 import urlparse
 import config.base
+import socket
+
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh', 'svn'])
 
@@ -56,8 +58,12 @@ class Retriever(logger.Logger):
       os.unlink(localFile)
 
     try:
+      sav_timeout = socket.getdefaulttimeout()
+      socket.setdefaulttimeout(30)
       urllib.urlretrieve(url, localFile)
+      socket.setdefaulttimeout(sav_timeout)
     except Exception, e:
+      socket.setdefaulttimeout(sav_timeout)
       failureMessage = '''\
 Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
