@@ -480,8 +480,8 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values);
-static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const IS irow[],const IS icol[],PetscBool subcomm,MatReuse scall,Mat *submat[])
+static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat,IS,IS, PetscInt **,PetscInt **,PetscInt **);
+static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat,PetscInt,const IS[],const IS[],PetscBool,MatReuse,Mat **);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatricesMPI_MPIAdj"
@@ -512,7 +512,8 @@ PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const
 static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const IS irow[],const IS icol[],PetscBool subcomm,MatReuse scall,Mat *submat[])
 {
   PetscInt           i,irow_n,icol_n,*sxadj,*sadjncy,*svalues;
-  PetscInt          *indices,nindx,j,k,loc,issame;
+  PetscInt          *indices,nindx,j,k,loc;
+  PetscMPIInt        issame;
   const PetscInt    *irow_indices,*icol_indices;
   MPI_Comm           scomm_row,scomm_col,scomm_mat;
   PetscErrorCode     ierr;
