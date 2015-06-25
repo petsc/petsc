@@ -3,6 +3,7 @@
 #include <petsc/private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning);
@@ -49,7 +50,8 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current);CHKERRQ(ierr);
-  ierr = MatPartitioningRegister("square",               MatPartitioningCreate_Square);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGAVERAGE, MatPartitioningCreate_Average);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGSQUARE,  MatPartitioningCreate_Square);CHKERRQ(ierr);
   ierr = MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_Hierarchical);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
   ierr = MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
