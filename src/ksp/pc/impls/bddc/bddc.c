@@ -1172,6 +1172,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*        matis;
   MatNullSpace   nearnullspace;
+  PetscInt       nrows,ncols;
   PetscBool      computetopography,computesolvers,computesubschurs;
   PetscBool      computeconstraintsmatrix;
   PetscBool      new_nearnullspace_provided,ismatis;
@@ -1180,6 +1181,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
+  }
+  ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
+  if (nrows != ncols) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   }
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
