@@ -20,7 +20,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat             A;
+  Mat             A,B;
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size,membershipKey;
   PetscInt        *ia,*ja,*indices_sc,isrows_localsize;
@@ -97,8 +97,9 @@ int main(int argc,char **args)
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
   /*create a sub-IS on the sub communicator  */
   ierr = ISCreateGeneral(scomm,isrows_localsize,indices_sc,PETSC_OWN_POINTER,&isrows_sc);CHKERRQ(ierr);
+  ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   /*increase overlap */
-  ierr = MatIncreaseOverlapSplit(A,1,&isrows_sc,1);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlapSplit(B,1,&isrows_sc,1);CHKERRQ(ierr);
   ierr = ISView(isrows_sc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows_sc);CHKERRQ(ierr);
   /*
@@ -106,6 +107,7 @@ int main(int argc,char **args)
     are no longer needed.
   */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
