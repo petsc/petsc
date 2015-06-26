@@ -6,8 +6,9 @@
 #include <petsc/private/matimpl.h>
 
 typedef struct {
-  Mat        A;             /* the local Neumann matrix */
-  VecScatter ctx;           /* update local vectors for matrix vector product */
+  Mat        A;             /* the local matrix */
+  VecScatter cctx;          /* column scatter */
+  VecScatter rctx;          /* row scatter */
   Vec        x,y;           /* work space for matrix vector product */
   PetscBool  pure_neumann;
   PetscSF    sf;

@@ -1265,11 +1265,11 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = MatCreateVecs(ChangeOfBasisMatrix,&x,&x_change);CHKERRQ(ierr);
     ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
     ierr = MatMult(ChangeOfBasisMatrix,x,x_change);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->cctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->cctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = MatMult(new_mat,matis->x,matis->y);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->rctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->rctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_INFINITY,&error);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -2115,8 +2115,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = PetscMalloc1(nnsp_size,&localnearnullsp);CHKERRQ(ierr);
     for (k=0;k<nnsp_size;k++) {
       ierr = VecDuplicate(pcis->vec1_N,&localnearnullsp[k]);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
 
     /* whether or not to skip lapack calls */
@@ -2876,8 +2876,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
       ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecReciprocal(pcis->vec1_global);CHKERRQ(ierr);
       ierr = MatDiagonalScale(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,NULL);CHKERRQ(ierr);
     }
@@ -2890,11 +2890,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = VecDuplicate(pcis->vec1_global,&x_change);CHKERRQ(ierr);
       ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
       ierr = VecCopy(x,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = MatMult(localChangeOfBasisMatrix,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,x_change);CHKERRQ(ierr);
       ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
       ierr = VecNorm(x,NORM_INFINITY,&error);CHKERRQ(ierr);
@@ -3139,7 +3139,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
       ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
       for (i=0;i<pcbddc->n_ISForDofs;i++) {
-        ierr = PCBDDCGlobalToLocal(matis->ctx,pcis->vec1_global,pcis->vec1_N,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
         ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
       }
       pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
@@ -3160,10 +3160,10 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Setup of Graph */
   if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(matis->ctx,pcis->vec1_global,pcis->vec1_N,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+    ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   }
   if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(matis->ctx,pcis->vec1_global,pcis->vec1_N,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+    ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   }
   ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices);CHKERRQ(ierr);
 
@@ -3813,7 +3813,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   /* create MATIS object if needed */
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-    ierr = MatCreateIS(comm_n,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,mat_n);CHKERRQ(ierr);
+    ierr = MatCreateIS(comm_n,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,NULL,mat_n);CHKERRQ(ierr);
   } else {
     /* it also destroys the local matrices */
     ierr = MatSetLocalToGlobalMapping(*mat_n,l2gmap,l2gmap);CHKERRQ(ierr);
@@ -4144,7 +4144,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 #endif
-  ierr = MatCreateIS(PetscObjectComm((PetscObject)pc),1,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_islg,&t_coarse_mat_is);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)pc),1,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_islg,NULL,&t_coarse_mat_is);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(t_coarse_mat_is,coarse_submat_dense);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(t_coarse_mat_is,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(t_coarse_mat_is,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -4667,10 +4667,10 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
     for (i=0;i<pcis->n;i++) {
       if (array[i] == 1.0) {
@@ -4685,8 +4685,8 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     }
     ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
     ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Size of coarse problem is %d (%lf)\n",coarse_size,PetscRealPart(coarsesum));CHKERRQ(ierr);
     if (pcbddc->dbg_flag > 1 || set_error_reduced) {

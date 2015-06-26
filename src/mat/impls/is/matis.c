@@ -462,7 +462,7 @@ PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),bs,m,n,M,N,mat->rmap->mapping,&B);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),bs,m,n,M,N,mat->rmap->mapping,mat->cmap->mapping,&B);CHKERRQ(ierr);
   ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
   ierr = MatDestroy(&localmat);CHKERRQ(ierr);
@@ -509,7 +509,8 @@ PetscErrorCode MatDestroy_IS(Mat A)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&b->A);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&b->cctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&b->rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->x);CHKERRQ(ierr);
   ierr = VecDestroy(&b->y);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&b->sf);CHKERRQ(ierr);
@@ -533,16 +534,16 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   /*  scatter the global vector x into the local work vector */
-  ierr = VecScatterBegin(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->cctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->cctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* multiply the local matrix */
   ierr = MatMult(is->A,is->x,is->y);CHKERRQ(ierr);
 
   /* scatter product back into global memory */
   ierr = VecSet(y,zero);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->rctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->rctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -569,23 +570,23 @@ PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_IS"
-PetscErrorCode MatMultTranspose_IS(Mat A,Vec x,Vec y)
+PetscErrorCode MatMultTranspose_IS(Mat A,Vec y,Vec x)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin; /*  y = A' * x */
+  PetscFunctionBegin;
   /*  scatter the global vector x into the local work vector */
-  ierr = VecScatterBegin(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->rctx,y,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->rctx,y,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* multiply the local matrix */
-  ierr = MatMultTranspose(is->A,is->x,is->y);CHKERRQ(ierr);
+  ierr = MatMultTranspose(is->A,is->y,is->x);CHKERRQ(ierr);
 
   /* scatter product back into global vector */
-  ierr = VecSet(y,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecSet(x,0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->cctx,is->x,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->cctx,is->x,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -631,18 +632,19 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
-  PetscInt       n,bs;
+  PetscInt       nr,rbs,nc,cbs;
   Mat_IS         *is = (Mat_IS*)A->data;
   IS             from,to;
-  Vec            global;
+  Vec            cglobal,rglobal;
 
   PetscFunctionBegin;
   PetscCheckSameComm(A,1,rmapping,2);
-  if (rmapping != cmapping) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
+  PetscCheckSameComm(A,1,cmapping,3);
   /* Destroy any previous data */
   ierr = VecDestroy(&is->x);CHKERRQ(ierr);
   ierr = VecDestroy(&is->y);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&is->rctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&is->cctx);CHKERRQ(ierr);
   ierr = MatDestroy(&is->A);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&is->sf);CHKERRQ(ierr);
   ierr = PetscFree2(is->sf_rootdata,is->sf_leafdata);CHKERRQ(ierr);
@@ -654,30 +656,39 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
 
   /* Create the local matrix A */
-  ierr = ISLocalToGlobalMappingGetSize(rmapping,&n);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(rmapping,&bs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(rmapping,&nr);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(rmapping,&rbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(cmapping,&nc);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(cmapping,&cbs);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
-  if (bs > 1) {
-    ierr = MatSetType(is->A,MATSEQBAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(is->A,MATSEQAIJ);CHKERRQ(ierr);
-  }
-  ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(is->A,bs);CHKERRQ(ierr);
+  ierr = MatSetType(is->A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetSizes(is->A,nr,nc,nr,nc);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(is->A,rbs,cbs);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 
   /* Create the local work vectors */
-  ierr = MatSetUp(is->A);CHKERRQ(ierr);
+  //ierr = MatSetUp(is->A);CHKERRQ(ierr);
   ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
 
-  /* setup the global to local scatter */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
+  /* setup the global to local scatters */
+  ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,nr,0,1,&to);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&global,NULL);CHKERRQ(ierr);
-  ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = VecScatterCreate(rglobal,from,is->y,to,&is->rctx);CHKERRQ(ierr);
+  if (rmapping != cmapping) {
+    ierr = ISDestroy(&to);CHKERRQ(ierr);
+    ierr = ISDestroy(&from);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,nc,0,1,&to);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(cmapping,to,&from);CHKERRQ(ierr);
+    ierr = VecScatterCreate(cglobal,from,is->x,to,&is->cctx);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject)is->rctx);CHKERRQ(ierr);
+    is->cctx = is->rctx;
+  }
+  ierr = VecDestroy(&rglobal);CHKERRQ(ierr);
+  ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -759,15 +770,14 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
        Set up is->x as a "counting vector". This is in order to MatMult_IS
        work properly in the interface nodes.
     */
-    Vec         counter;
-    PetscScalar one=1.0, zero=0.0;
-    ierr = MatCreateVecs(A,&counter,NULL);CHKERRQ(ierr);
-    ierr = VecSet(counter,zero);CHKERRQ(ierr);
-    ierr = VecSet(is->x,one);CHKERRQ(ierr);
-    ierr = VecScatterBegin(is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(is->ctx,counter,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(is->ctx,counter,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    Vec counter;
+    ierr = MatCreateVecs(A,NULL,&counter);CHKERRQ(ierr);
+    ierr = VecSet(counter,0.);CHKERRQ(ierr);
+    ierr = VecSet(is->y,1.);CHKERRQ(ierr);
+    ierr = VecScatterBegin(is->rctx,is->y,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(is->rctx,is->y,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(is->rctx,counter,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(is->rctx,counter,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecDestroy(&counter);CHKERRQ(ierr);
   }
   if (!n) {
@@ -775,14 +785,14 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   } else {
     is->pure_neumann = PETSC_FALSE;
 
-    ierr = VecGetArray(is->x,&array);CHKERRQ(ierr);
+    ierr = VecGetArray(is->y,&array);CHKERRQ(ierr);
     ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr = MatSetValue(is->A,rows[i],rows[i],diag/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecRestoreArray(is->x,&array);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = VecRestoreArray(is->y,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -936,12 +946,12 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 
   PetscFunctionBegin;
   /* get diagonal of the local matrix */
-  ierr = MatGetDiagonal(is->A,is->x);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(is->A,is->y);CHKERRQ(ierr);
 
   /* scatter diagonal back into global vector */
   ierr = VecSet(v,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,is->x,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,is->x,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->rctx,is->y,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->rctx,is->y,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -964,10 +974,11 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
        process but not across processes.
 
    Input Parameters:
-+     comm - MPI communicator that will share the matrix
-.     bs - local and global block size of the matrix
++     comm    - MPI communicator that will share the matrix
+.     bs      - block size of the matrix
 .     m,n,M,N - local and/or global sizes of the left and right vector used in matrix vector products
--     map - mapping that defines the global number for each local number
+.     rmap    - local to global map for rows
+-     cmap    - local to global map for cols
 
    Output Parameter:
 .    A - the resulting matrix
@@ -976,22 +987,29 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
 
    Notes: See MATIS for more details
           m and n are NOT related to the size of the map, they are the size of the part of the vector owned
-          by that process. m + nghosts (or n + nghosts) is the length of map since map maps all local points
-          plus the ghost points to global indices.
+          by that process. The sizes of rmap and cmap define the size of the local matrices.
+          If either rmap or cmap are NULL, than the matrix is assumed to be square
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
 @*/
-PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
+PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping rmap,ISLocalToGlobalMapping cmap,Mat *A)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!rmap && !cmap) SETERRQ(comm,PETSC_ERR_USER,"You need to provide at least one of the mapping");
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
   ierr = MatSetUp(*A);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*A,map,map);CHKERRQ(ierr);
+  if (rmap && cmap) {
+    ierr = MatSetLocalToGlobalMapping(*A,rmap,cmap);CHKERRQ(ierr);
+  } else if (!rmap) {
+    ierr = MatSetLocalToGlobalMapping(*A,cmap,cmap);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetLocalToGlobalMapping(*A,rmap,rmap);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1042,8 +1060,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   PetscFunctionBegin;
   ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
-  ierr    = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
+  /* matrix ops */
+  ierr    = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->ops->mult                    = MatMult_IS;
   A->ops->multadd                 = MatMultAdd_IS;
   A->ops->multtranspose           = MatMultTranspose_IS;
@@ -1065,15 +1084,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->ishermitian             = MatIsHermitian_IS;
   A->ops->issymmetric             = MatIsSymmetric_IS;
   A->ops->duplicate               = MatDuplicate_IS;
-
-  /* zeros pointer */
-  b->A           = 0;
-  b->ctx         = 0;
-  b->x           = 0;
-  b->y           = 0;
-  b->sf          = 0;
-  b->sf_rootdata = 0;
-  b->sf_leafdata = 0;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
