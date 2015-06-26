@@ -676,7 +676,6 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 
   /* Create the local work vectors */
-  //ierr = MatSetUp(is->A);CHKERRQ(ierr);
   ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
 
   /* setup the global to local scatters */
