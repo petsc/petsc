@@ -3517,7 +3517,6 @@ typedef enum {MATDENSE_PRIVATE=0,MATAIJ_PRIVATE,MATBAIJ_PRIVATE,MATSBAIJ_PRIVATE
 PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, PetscBool restrict_comm, PetscBool restrict_full, MatReuse reuse, Mat *mat_n, PetscInt nis, IS isarray[])
 {
   Mat                    local_mat;
-  Mat_IS                 *matis;
   IS                     is_sends_internal;
   PetscInt               rows,cols,new_local_rows;
   PetscInt               i,bs,buf_size_idxs,buf_size_idxs_is,buf_size_vals;
@@ -3574,9 +3573,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     ierr = PetscObjectReference((PetscObject)is_sends);CHKERRQ(ierr);
     is_sends_internal = is_sends;
   }
-
-  /* get pointer of MATIS data */
-  matis = (Mat_IS*)mat->data;
 
   /* get comm */
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
