@@ -179,9 +179,11 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
       output = output +  error
       import re
-      VMAJOR,VMINOR = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output).groups()
-      if (int(VMAJOR),int(VMINOR)) >= (4,6):
-        return 1
+      strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (4,6):
+          return 1
     except RuntimeError:
       pass
     return 0
