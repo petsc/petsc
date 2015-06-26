@@ -749,11 +749,9 @@ PetscErrorCode  MatSetUp(Mat A)
 
   Notes:
   The available visualization contexts include
-+    PETSC_VIEWER_STDOUT_SELF - standard output (default)
-.    PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-        output where only the first processor opens
-        the file.  All other processors send their
-        data to the first processor to print.
++    PETSC_VIEWER_STDOUT_SELF - for sequential matrices
+.    PETSC_VIEWER_STDOUT_WORLD - for parallel matrices created on PETSC_COMM_WORLD
+.    PETSC_VIEWER_STDOUT_(comm) - for matrices created on MPI communicator comm
 -     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    The user can open alternative visualization contexts with
