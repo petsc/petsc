@@ -619,8 +619,8 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   u4 *= sin(km*z); /* zx stress */
   sum4 += u4;
 
-  //rho = -sigma*sin(km*z)*cos(kn*x); /* density */
-  //sum7 += rho;
+  /* rho = -sigma*sin(km*z)*cos(kn*x); */ /* density */
+  /* sum7 += rho; */
 
   /* Output */
   if (nu != NULL) {
@@ -635,14 +635,14 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   }
   if (s != NULL) {
     s[0] = sum3;
-    s[1] = sum6;
-    s[2] = sum4;
+    s[1] = sum4;
+    s[2] = sum6;
   }
   if (gamma != NULL) {
     /* sigma = tau - p, tau = sigma + p, tau[] = 2*eta*gamma[] */
     gamma[0] = (sum3+sum5)/(2.0*Z);
-    gamma[1] = (sum6+sum5)/(2.0*Z);
-    gamma[2] = (sum4)/(2.0*Z);
+    gamma[1] = (sum4)/(2.0*Z);
+    gamma[2] = (sum6+sum5)/(2.0*Z);
   }
   PetscFunctionReturn(0);
 }
