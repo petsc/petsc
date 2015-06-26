@@ -61,12 +61,14 @@ static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *part
   ierr = PetscCalloc1(m,&indices);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(part->adj,&start,&end);CHKERRQ(ierr);
   for(i=start; i<end; i++){
+	/*find a target */
 	ierr = PetscFindInt(i,nparts,parts,&loc);CHKERRQ(ierr);
 	if(loc<0) loc = -(loc+1);
-	else loc = loc-1;
+	else loc = loc+1;
 	indices[i-start] = loc;
   }
   ierr = PetscFree(parts);CHKERRQ(ierr);
+  /*create a partitioning */
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),m,indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
