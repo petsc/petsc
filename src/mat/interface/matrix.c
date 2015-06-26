@@ -6824,7 +6824,7 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 }
 
 
-PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov);
+PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIncreaseOverlapSplit"
