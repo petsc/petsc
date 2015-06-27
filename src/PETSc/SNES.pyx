@@ -554,6 +554,9 @@ cdef class SNES(Object):
         PetscINCREF(vec.obj)
         return vec
 
+    def setSolution(self, Vec vec not None):
+        CHKERR( SNESSetSolution(self.snes, vec.vec) )
+
     def getSolutionUpdate(self):
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolutionUpdate(self.snes, &vec.vec) )
