@@ -125,6 +125,7 @@ cdef extern from * nogil:
 
     int SNESGetRhs(PetscSNES,PetscVec*)
     int SNESGetSolution(PetscSNES,PetscVec*)
+    int SNESSetSolution(PetscSNES,PetscVec)
     int SNESGetSolutionUpdate(PetscSNES,PetscVec*)
 
     int SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
