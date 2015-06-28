@@ -375,6 +375,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
 
   for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
