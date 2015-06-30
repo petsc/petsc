@@ -346,7 +346,11 @@ ex82: ex82.o chkopts
 	
 ex83: ex83.o chkopts
 	-${CLINKER} -o ex83 ex83.o ${PETSC_MAT_LIB}
-	${RM} ex83.o	
+	${RM} ex83.o
+	
+ex84: ex84.o chkopts
+	-${CLINKER} -o ex84 ex84.o ${PETSC_MAT_LIB}
+	${RM} ex84.o		
 		
 
 ex79f: ex79f.o chkopts
