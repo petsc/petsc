@@ -98,9 +98,12 @@ int main(int argc,char **args)
   /*create a sub-IS on the sub communicator  */
   ierr = ISCreateGeneral(scomm,isrows_localsize,indices_sc,PETSC_OWN_POINTER,&isrows_sc);CHKERRQ(ierr);
   ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+#if 1
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
   /*increase overlap */
   ierr = MatIncreaseOverlapSplit(B,1,&isrows_sc,1);CHKERRQ(ierr);
-  ierr = ISView(isrows_sc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISView(isrows_sc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows_sc);CHKERRQ(ierr);
   /*
     Free work space.  All PETSc objects should be destroyed when they
