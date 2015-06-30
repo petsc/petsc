@@ -143,9 +143,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
 
   PetscFunctionBegin;
   row -= A->rmap->rstart;
-
   if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
-
   *nz = a->i[row+1] - a->i[row];
   if (v) {
     PetscInt j;
@@ -154,7 +152,9 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
       a->rowvalues_alloc = PetscMax(a->rowvalues_alloc*2, *nz);
       ierr = PetscMalloc1(a->rowvalues_alloc,&a->rowvalues);CHKERRQ(ierr);
     }
-    for (j=0; j<*nz; j++) a->rowvalues[j] = a->values[a->i[row]+j];
+    for (j=0; j<*nz; j++){
+      a->rowvalues[j] = a->values ? a->values[a->i[row]+j]:1.0;
+    }
     *v = (*nz) ? a->rowvalues : NULL;
   }
   if (idx) *idx = (*nz) ? a->j + a->i[row] : NULL;
