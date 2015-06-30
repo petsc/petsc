@@ -749,11 +749,9 @@ PetscErrorCode  MatSetUp(Mat A)
 
   Notes:
   The available visualization contexts include
-+    PETSC_VIEWER_STDOUT_SELF - standard output (default)
-.    PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-        output where only the first processor opens
-        the file.  All other processors send their
-        data to the first processor to print.
++    PETSC_VIEWER_STDOUT_SELF - for sequential matrices
+.    PETSC_VIEWER_STDOUT_WORLD - for parallel matrices created on PETSC_COMM_WORLD
+.    PETSC_VIEWER_STDOUT_(comm) - for matrices created on MPI communicator comm
 -     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    The user can open alternative visualization contexts with
@@ -8567,15 +8565,13 @@ PetscErrorCode  MatCreateVecs(Mat mat,Vec *right,Vec *left)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  MatCheckPreallocated(mat,1);
   if (mat->ops->getvecs) {
     ierr = (*mat->ops->getvecs)(mat,right,left);CHKERRQ(ierr);
   } else {
-    PetscMPIInt size;
-    PetscInt    rbs,cbs;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size);CHKERRQ(ierr);
+    PetscInt rbs,cbs;
     ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
     if (right) {
+      if (mat->cmap->n < 0) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"PetscLayout for columns not yet setup");
       ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
       ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
@@ -8583,6 +8579,7 @@ PetscErrorCode  MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
     }
     if (left) {
+      if (mat->rmap->n < 0) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"PetscLayout for rows not yet setup");
       ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
       ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
