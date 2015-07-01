@@ -43,6 +43,15 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+/* ========================================================================== */
+/*
+   Since PETSc manages its own extern "C" handling users should never include PETSc include
+   files within extern "C"
+*/
+#if defined(__cplusplus)
+void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_put_petsc_headers_inside_an_extern_c(double);
+#endif
+
 #if defined(__cplusplus)
 #  define PETSC_RESTRICT PETSC_CXX_RESTRICT
 #else
