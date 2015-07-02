@@ -139,6 +139,7 @@
          <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
          <li>Added support for MUMPS sequential solver in Schur complement mode</li>
          <li>MatGetSubMatricesMPI() will extract parallel submatrices on subcommunicators of the supplied IS objects. Unsorted, but not repeated indices are okay.</li>
+         <li>Removed MatMFFDAddNullSpace() just use MatSetNullSpace()</li>
       </ul>
       <h4>PC:</h4>
       <ul>
