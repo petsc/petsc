@@ -1550,7 +1550,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunction(Mat,PetscErrorCode(*)(void*,Vec,Vec),void*);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioni(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioniBase(Mat,PetscErrorCode (*)(void*,Vec));
-PETSC_EXTERN PetscErrorCode MatMFFDAddNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatMFFDSetHHistory(Mat,PetscScalar[],PetscInt);
 PETSC_EXTERN PetscErrorCode MatMFFDResetHHistory(Mat);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctionError(Mat,PetscReal);

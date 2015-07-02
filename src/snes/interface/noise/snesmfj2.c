@@ -154,7 +154,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
   ierr = VecScale(y,1.0/hs);CHKERRQ(ierr);
-  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
+  if (mat->nullsp) {ierr = MatNullSpaceRemove(mat->nullsp,y);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
