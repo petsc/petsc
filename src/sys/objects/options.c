@@ -441,6 +441,10 @@ static char *Petscgetline(FILE * f)
 
   Notes: Use  # for lines that are comments and which should be ignored.
 
+   Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
+   such as -log_summary or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
+   calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
+
   Level: developer
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
