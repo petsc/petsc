@@ -1003,10 +1003,7 @@ int main(int argc, char **argv)
   ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   A = J;
-  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-  if (A != J) {
-    ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-  }
+  ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   //ierr = SNESSetJacobian(snes, A, J, NULL, NULL);CHKERRQ(ierr);
 #endif
 

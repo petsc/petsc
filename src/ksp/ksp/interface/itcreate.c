@@ -474,6 +474,9 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
    Notes:
 
+    If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+    space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
+
     All future calls to KSPSetOperators() must use the same size matrices!
 
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.

@@ -330,12 +330,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
-      ierr = MatNullSpaceTest(nullsp,pmat,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullsp,mat,NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;

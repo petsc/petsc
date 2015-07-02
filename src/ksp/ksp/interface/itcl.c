@@ -436,12 +436,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver matrix","MatSetNullSpace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
     MatNullSpace nsp;
-    Mat          Bmat;
+    Mat          Amat;
 
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)ksp),PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
-    ierr = PCGetOperators(ksp->pc,NULL,&Bmat);CHKERRQ(ierr);
-    if (Bmat) {
-      ierr = MatSetNullSpace(Bmat,nsp);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&Amat,NULL);CHKERRQ(ierr);
+    if (Amat) {
+      ierr = MatSetNullSpace(Amat,nsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot set nullspace, matrix has not yet been provided");
   }
