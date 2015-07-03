@@ -215,7 +215,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   /*get rows from remote and local */
-  ierr = ISBuildTwoSided(destination,&irows);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(destination,NULL,&irows);CHKERRQ(ierr);
   ierr = ISDuplicate(irows,&icols);CHKERRQ(ierr);
   /*get rows information */
   ierr = ISGetLocalSize(irows,&irows_ln);CHKERRQ(ierr);
