@@ -168,7 +168,7 @@ PETSC_EXTERN PetscErrorCode ISColoringSetType(ISColoring,ISColoringType);
 
 
 /* --------------------------------------------------------------------------*/
-PETSC_EXTERN PetscErrorCode ISBuildTwoSided(IS, IS*);
+PETSC_EXTERN PetscErrorCode ISBuildTwoSided(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISPartitioningToNumbering(IS,IS*);
 PETSC_EXTERN PetscErrorCode ISPartitioningCount(IS,PetscInt,PetscInt[]);
 
