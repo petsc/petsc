@@ -815,6 +815,13 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype), \
    MPI_Abort(MPI_COMM_WORLD,0))
 
+#define MPI_Type_create_resized(oldtype,lb,extent,newtype) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (oldtype),   \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (lb),   \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (extent), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
 #if defined(__cplusplus)
 }
 #endif
