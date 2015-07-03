@@ -344,6 +344,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
     Input Parameters
 .   to - an IS describes where we will go. Negative target rank will be ignored
+.   toindx - an IS describes what indices should send. NULL means sending natural numbering
 
     Output Parameter:
 .   rows - contains new numbers from remote or local
@@ -353,9 +354,9 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 .seealso: MatPartitioningCreate(), ISPartitioningToNumbering(), ISPartitioningCount()
 
 @*/
-PetscErrorCode  ISBuildTwoSided(IS ito, IS *rows)
+PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 {
-   const PetscInt       *ito_indices;
+   const PetscInt       *ito_indices,*toindx_indices;
    PetscInt             *send_indices,rstart,*recv_indices,nrecvs,nsends;
    PetscInt              nto,*tosizes,nfrom,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
    PetscMPIInt          *toranks,*fromranks,size,target_rank,*fromperm_newtoold;
@@ -405,11 +406,17 @@ PetscErrorCode  ISBuildTwoSided(IS ito, IS *rows)
    }
    nsends = tooffsets_tmp[size];
    ierr = PetscCalloc1(nsends,&send_indices);CHKERRQ(ierr);
+   if(toindx){
+	 ierr = ISGetIndices(toindx,&toindx_indices);CHKERRQ(ierr);
+   }
    for(i=0; i<ito_ln; i++){
 	 if(ito_indices[i]<0) continue;
 	 target_rank = ito_indices[i];
-	 send_indices[tooffsets_tmp[target_rank]] = i+rstart;
+	 send_indices[tooffsets_tmp[target_rank]] = toindx? toindx_indices[i]:(i+rstart);
 	 tooffsets_tmp[target_rank]++;
+   }
+   if(toindx){
+   	 ierr = ISRestoreIndices(toindx,&toindx_indices);CHKERRQ(ierr);
    }
    ierr = ISRestoreIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscFree2(tosizes_tmp,tooffsets_tmp);CHKERRQ(ierr);
