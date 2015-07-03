@@ -51,9 +51,9 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 
   /* Take the computed step. */
   ierr = VecAXPY(X,-1.0,Y);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   if (snes->numbermonitors) {
     PetscReal fnorm;
-    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,1,fnorm);CHKERRQ(ierr);
   }
