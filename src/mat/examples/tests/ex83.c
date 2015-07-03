@@ -81,7 +81,7 @@ int main(int argc,char **args)
   /* partitioning */
   ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* compute coming rows */
-  ierr = ISBuildTwoSided(is,&isrows);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
   ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /*create a sub-communicator */
   ierr = MPI_Comm_split(comm, membershipKey,rank,&scomm);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **args)
 #endif
   /*increase overlap */
   ierr = MatIncreaseOverlapSplit(B,1,&isrows_sc,1);CHKERRQ(ierr);
-  ierr = ISView(isrows_sc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = ISView(isrows_sc,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows_sc);CHKERRQ(ierr);
   /*
     Free work space.  All PETSc objects should be destroyed when they
