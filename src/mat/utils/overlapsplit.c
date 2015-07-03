@@ -176,8 +176,8 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = PetscFree2(indices_ov_rd,sources_sc_rd);CHKERRQ(ierr);
   /*create a index set*/
   ierr = ISCreateGeneral(scomm,nroots,indices_recv,PETSC_OWN_POINTER,&is_sc);CHKERRQ(ierr);
-#if 0
-  if(grank==3) {ierr = ISView(is_sc,PETSC_NULL);CHKERRQ(ierr);}
+#if 1
+  ierr = ISView(is_sc,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
   /*create a index set for cols */
@@ -211,7 +211,6 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
 #endif
   ierr = MatGetSubMatricesMPI(mat,1,&is_sc,&allis_sc,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
   /* we do not need them any more */
-  ierr = ISDestroy(&is_sc);CHKERRQ(ierr);
   ierr = ISDestroy(&allis_sc);CHKERRQ(ierr);
 #if 1
   ierr = MatView(smat[0],PETSC_NULL);CHKERRQ(ierr);
@@ -237,8 +236,13 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
   ierr = MatDestroy(&(smat[0]));CHKERRQ(ierr);
   ierr = PetscFree(smat);CHKERRQ(ierr);
+#if 1
+  ierr = ISView(partitioning,PETSC_NULL);CHKERRQ(ierr);
+#endif
   /* get local rows including  overlap */
-  ierr = ISBuildTwoSided(partitioning,is);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(partitioning,is_sc,is);CHKERRQ(ierr);
+  /* destroy */
+  ierr = ISDestroy(&is_sc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
