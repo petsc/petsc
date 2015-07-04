@@ -2,6 +2,7 @@
 /*
    This file contains routines for Parallel vector operations.
  */
+#include <petscoptions.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__
@@ -370,7 +371,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetFromOptions_MPI"
-static PetscErrorCode VecSetFromOptions_MPI(Vec X)
+static PetscErrorCode VecSetFromOptions_MPI(PetscOptions *PetscOptionsObject,Vec X)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE,set;
@@ -383,6 +384,7 @@ static PetscErrorCode VecSetFromOptions_MPI(Vec X)
   }
   PetscFunctionReturn(0);
 }
+
 
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecDuplicateVecs_Default,
@@ -431,7 +433,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0,
                                 0,
                                 VecResetArray_MPI,
-                                VecSetFromOptions_MPI,
+                                VecSetFromOptions_MPI,/*set from options */
                                 VecMaxPointwiseDivide_Seq,
                                 VecPointwiseMax_Seq,
                                 VecPointwiseMaxAbs_Seq,
