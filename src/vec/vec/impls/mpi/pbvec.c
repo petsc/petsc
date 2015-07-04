@@ -98,6 +98,292 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 extern PetscErrorCode VecSetOption_MPI(Vec,VecOption,PetscBool);
 extern PetscErrorCode VecResetArray_MPI(Vec);
 
+#undef __FUNCT__
+#define __FUNCT__ "VecAssemblySend_MPI_Private"
+static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rankid,PetscMPIInt rank,void *sdata,MPI_Request req[],void *ctx)
+{
+  Vec X = (Vec)ctx;
+  Vec_MPI *x = (Vec_MPI*)X->data;
+  VecAssemblyHeader *hdr = (VecAssemblyHeader*)sdata;
+  PetscInt bs = X->map->bs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* x->recvhdr only exists when we are reusing a communication network.  In that case, some messages can be empty, but
+   * we have to send them this time if we sent them before because the receiver is expecting them. */
+  if (hdr->count || (x->recvhdr && x->sendptrs[rankid].ints)) {
+    ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+  }
+  if (hdr->bcount || (x->recvhdr && x->sendptrs[rankid].intb)) {
+    ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecAssemblyRecv_MPI_Private"
+static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rank,void *rdata,MPI_Request req[],void *ctx)
+{
+  Vec X = (Vec)ctx;
+  Vec_MPI *x = (Vec_MPI*)X->data;
+  VecAssemblyHeader *hdr = (VecAssemblyHeader*)rdata;
+  PetscErrorCode ierr;
+  PetscInt bs = X->map->bs;
+  VecAssemblyFrame *frame;
+
+  PetscFunctionBegin;
+  ierr = PetscSegBufferGet(x->segrecvframe,1,&frame);CHKERRQ(ierr);
+
+  if (hdr->count) {
+    ierr = PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+    ierr = PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+    frame->pendings = 2;
+  } else {
+    frame->ints = NULL;
+    frame->scalars = NULL;
+    frame->pendings = 0;
+  }
+
+  if (hdr->bcount) {
+    ierr = PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+    ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+    frame->pendingb = 2;
+  } else {
+    frame->intb = NULL;
+    frame->scalarb = NULL;
+    frame->pendingb = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecAssemblyBegin_MPI_BTS"
+static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
+{
+  Vec_MPI        *x = (Vec_MPI*)X->data;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscInt       i,j,jb,bs;
+
+  PetscFunctionBegin;
+  if (X->stash.donotstash) PetscFunctionReturn(0);
+
+  ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  {
+    InsertMode addv;
+    ierr = MPI_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
+    if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
+  }
+#endif
+  X->bstash.insertmode = X->stash.insertmode; /* Block stash implicitly tracks InsertMode of scalar stash */
+
+  ierr = VecStashSortCompress_Private(&X->stash);CHKERRQ(ierr);
+  ierr = VecStashSortCompress_Private(&X->bstash);CHKERRQ(ierr);
+
+  if (!x->sendranks) {
+    PetscMPIInt nowners,bnowners,*owners,*bowners;
+    PetscInt ntmp;
+    ierr = VecStashGetOwnerList_Private(&X->stash,X->map,&nowners,&owners);CHKERRQ(ierr);
+    ierr = VecStashGetOwnerList_Private(&X->bstash,X->map,&bnowners,&bowners);CHKERRQ(ierr);
+    ierr = PetscMergeMPIIntArray(nowners,owners,bnowners,bowners,&ntmp,&x->sendranks);CHKERRQ(ierr);
+    x->nsendranks = ntmp;
+    ierr = PetscFree(owners);CHKERRQ(ierr);
+    ierr = PetscFree(bowners);CHKERRQ(ierr);
+    ierr = PetscMalloc1(x->nsendranks,&x->sendhdr);CHKERRQ(ierr);
+    ierr = PetscCalloc1(x->nsendranks,&x->sendptrs);CHKERRQ(ierr);
+  }
+  for (i=0,j=0,jb=0; i<x->nsendranks; i++) {
+    PetscMPIInt rank = x->sendranks[i];
+    x->sendhdr[i].insertmode = X->stash.insertmode;
+    /* Initialize pointers for non-empty stashes the first time around.  Subsequent assemblies with
+     * VEC_SUBSET_OFF_PROC_ENTRIES will leave the old pointers (dangling because the stash has been collected) when
+     * there is nothing new to send, so that size-zero messages get sent instead. */
+    x->sendhdr[i].count = 0;
+    if (X->stash.n) {
+      x->sendptrs[i].ints    = &X->stash.idx[j];
+      x->sendptrs[i].scalars = &X->stash.array[j];
+      for ( ; j<X->stash.n && X->stash.idx[j] < X->map->range[rank+1]; j++) x->sendhdr[i].count++;
+    }
+    x->sendhdr[i].bcount = 0;
+    if (X->bstash.n) {
+      x->sendptrs[i].intb    = &X->bstash.idx[jb];
+      x->sendptrs[i].scalarb = &X->bstash.array[jb*bs];
+      for ( ; jb<X->bstash.n && X->bstash.idx[jb]*bs < X->map->range[rank+1]; jb++) x->sendhdr[i].bcount++;
+    }
+  }
+
+  if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}
+  if (!x->segrecvscalar) {ierr = PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar);CHKERRQ(ierr);}
+  if (!x->segrecvframe) {ierr = PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe);CHKERRQ(ierr);}
+  if (x->recvhdr) {             /* VEC_SUBSET_OFF_PROC_ENTRIES and this is not the first assembly */
+    PetscMPIInt tag[4];
+    if (!x->assembly_subset) SETERRQ(comm,PETSC_ERR_PLIB,"Attempt to reuse rendezvous when not VEC_SUBSET_OFF_PROC_ENTRIES");
+    for (i=0; i<4; i++) {ierr = PetscCommGetNewTag(comm,&tag[i]);CHKERRQ(ierr);}
+    for (i=0; i<x->nsendranks; i++) {
+      ierr = VecAssemblySend_MPI_Private(comm,tag,i,x->sendranks[i],x->sendhdr+i,x->sendreqs+4*i,X);CHKERRQ(ierr);
+    }
+    for (i=0; i<x->nrecvranks; i++) {
+      ierr = VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X);CHKERRQ(ierr);
+    }
+    x->use_status = PETSC_TRUE;
+  } else {                      /* First time */
+    ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
+    x->use_status = PETSC_FALSE;
+  }
+
+  {
+    PetscInt nstash,reallocs;
+    ierr = VecStashGetInfo_Private(&X->stash,&nstash,&reallocs);CHKERRQ(ierr);
+    ierr = PetscInfo2(X,"Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+    ierr = VecStashGetInfo_Private(&X->bstash,&nstash,&reallocs);CHKERRQ(ierr);
+    ierr = PetscInfo2(X,"Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecAssemblyEnd_MPI_BTS"
+static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
+{
+  Vec_MPI *x = (Vec_MPI*)X->data;
+  PetscInt bs = X->map->bs;
+  PetscMPIInt npending,*some_indices,r;
+  MPI_Status  *some_statuses;
+  PetscScalar *xarray;
+  PetscErrorCode ierr;
+  VecAssemblyFrame *frame;
+
+  PetscFunctionBegin;
+  if (X->stash.donotstash) {
+    X->stash.insertmode = NOT_SET_VALUES;
+    X->bstash.insertmode = NOT_SET_VALUES;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
+  ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
+  ierr = PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses);CHKERRQ(ierr);
+  for (r=0,npending=0; r<x->nrecvranks; r++) npending += frame[r].pendings + frame[r].pendingb;
+  while (npending>0) {
+    PetscMPIInt ndone,ii;
+    /* Filling MPI_Status fields requires some resources from the MPI library.  We skip it on the first assembly, or
+     * when VEC_SUBSET_OFF_PROC_ENTRIES has not been set, because we could exchange exact sizes in the initial
+     * rendezvous.  When the rendezvous is elided, however, we use MPI_Status to get actual message lengths, so that
+     * subsequent assembly can set a proper subset of the values. */
+    ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    for (ii=0; ii<ndone; ii++) {
+      PetscInt i = some_indices[ii]/4,j,k;
+      InsertMode imode = (InsertMode)x->recvhdr[i].insertmode;
+      PetscInt *recvint;
+      PetscScalar *recvscalar;
+      PetscBool intmsg = (PetscBool)(some_indices[ii]%2 == 0);
+      PetscBool blockmsg = (PetscBool)((some_indices[ii]%4)/2 == 1);
+      npending--;
+      if (!blockmsg) { /* Scalar stash */
+        PetscMPIInt count;
+        if (--frame[i].pendings > 0) continue;
+        if (x->use_status) {
+          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRQ(ierr);
+        } else count = x->recvhdr[i].count;
+        for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
+          PetscInt loc = *recvint - X->map->rstart;
+          if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %D out of local range [%D,%D)]",*recvint,X->map->rstart,X->map->rend);
+          switch (imode) {
+          case ADD_VALUES:
+            xarray[loc] += *recvscalar++;
+            break;
+          case INSERT_VALUES:
+            xarray[loc] = *recvscalar++;
+            break;
+          default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+          }
+        }
+      } else {                  /* Block stash */
+        PetscMPIInt count;
+        if (--frame[i].pendingb > 0) continue;
+        if (x->use_status) {
+          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRQ(ierr);
+          if (!intmsg) count /= bs; /* Convert from number of scalars to number of blocks */
+        } else count = x->recvhdr[i].bcount;
+        for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<count; j++,recvint++) {
+          PetscInt loc = (*recvint)*bs - X->map->rstart;
+          switch (imode) {
+          case ADD_VALUES:
+            for (k=loc; k<loc+bs; k++) xarray[k] += *recvscalar++;
+            break;
+          case INSERT_VALUES:
+            for (k=loc; k<loc+bs; k++) xarray[k] = *recvscalar++;
+            break;
+          default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+          }
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArray(X,&xarray);CHKERRQ(ierr);
+  ierr = MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = PetscFree2(some_indices,some_statuses);CHKERRQ(ierr);
+  if (x->assembly_subset) {
+    void *dummy;                /* reset segbuffers */
+    ierr = PetscSegBufferExtractInPlace(x->segrecvint,&dummy);CHKERRQ(ierr);
+    ierr = PetscSegBufferExtractInPlace(x->segrecvscalar,&dummy);CHKERRQ(ierr);
+  } else {
+    ierr = VecAssemblyReset_MPI(X);CHKERRQ(ierr);
+  }
+
+  X->stash.insertmode = NOT_SET_VALUES;
+  X->bstash.insertmode = NOT_SET_VALUES;
+  ierr = VecStashScatterEnd_Private(&X->stash);CHKERRQ(ierr);
+  ierr = VecStashScatterEnd_Private(&X->bstash);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecAssemblyReset_MPI"
+PetscErrorCode VecAssemblyReset_MPI(Vec X)
+{
+  Vec_MPI *x = (Vec_MPI*)X->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(x->sendreqs);CHKERRQ(ierr);
+  ierr = PetscFree(x->recvreqs);CHKERRQ(ierr);
+  ierr = PetscFree(x->sendranks);CHKERRQ(ierr);
+  ierr = PetscFree(x->recvranks);CHKERRQ(ierr);
+  ierr = PetscFree(x->sendhdr);CHKERRQ(ierr);
+  ierr = PetscFree(x->recvhdr);CHKERRQ(ierr);
+  ierr = PetscFree(x->sendptrs);CHKERRQ(ierr);
+  ierr = PetscSegBufferDestroy(&x->segrecvint);CHKERRQ(ierr);
+  ierr = PetscSegBufferDestroy(&x->segrecvscalar);CHKERRQ(ierr);
+  ierr = PetscSegBufferDestroy(&x->segrecvframe);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetFromOptions_MPI"
+static PetscErrorCode VecSetFromOptions_MPI(Vec X)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg = PETSC_FALSE,set;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsBool("-vec_assembly_bts","Use BuildTwoSided version of assembly","",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    X->ops->assemblybegin = flg ? VecAssemblyBegin_MPI_BTS : VecAssemblyBegin_MPI;
+    X->ops->assemblyend   = flg ? VecAssemblyEnd_MPI_BTS   : VecAssemblyEnd_MPI;
+  }
+  PetscFunctionReturn(0);
+}
+
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecDuplicateVecs_Default,
                                 VecDestroyVecs_Default,
@@ -119,8 +405,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecPointwiseMult_Seq,
                                 VecPointwiseDivide_Seq,
                                 VecSetValues_MPI, /* 20 */
-                                VecAssemblyBegin_MPI,
-                                VecAssemblyEnd_MPI,
+                                VecAssemblyBegin_MPI_BTS,
+                                VecAssemblyEnd_MPI_BTS,
                                 0,
                                 VecGetSize_MPI,
                                 VecGetSize_Seq,
@@ -145,7 +431,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0,
                                 0,
                                 VecResetArray_MPI,
-                                0,
+                                VecSetFromOptions_MPI,
                                 VecMaxPointwiseDivide_Seq,
                                 VecPointwiseMax_Seq,
                                 VecPointwiseMaxAbs_Seq,
@@ -209,6 +495,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   s->localupdate = 0;
 
   v->stash.insertmode = NOT_SET_VALUES;
+  v->bstash.insertmode = NOT_SET_VALUES;
   /* create the stashes. The block-size for bstash is set later when
      VecSetValuesBlocked is called.
   */
