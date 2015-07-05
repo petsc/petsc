@@ -1235,6 +1235,9 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
    Notes:
    The matrices Amat and Pmat are exactly the matrices that are used by SNES for the nonlinear solve.
 
+   If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+   space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
+
    The matrix dF/dU + a*dF/dU_t you provide turns out to be
    the Jacobian of F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
    The time integrator internally approximates U_t by W+a*U where the positive "shift"

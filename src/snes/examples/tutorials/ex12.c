@@ -582,10 +582,7 @@ int main(int argc, char **argv)
   }
   if (user.bcType == NEUMANN) {
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject) dm), PETSC_TRUE, 0, NULL, &nullSpace);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-    if (A != J) {
-      ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-    }
+    ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
 
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*)) DMPlexSNESComputeResidualFEM, &user);CHKERRQ(ierr);

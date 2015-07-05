@@ -565,7 +565,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* Check for null space attached to IS */
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nullspace", (PetscObject*) &sp);CHKERRQ(ierr);
       if (sp) {
-        ierr = MatSetNullSpace(jac->pmat[i], sp);CHKERRQ(ierr);
+        ierr = MatSetNullSpace(jac->mat[i], sp);CHKERRQ(ierr);
       }
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nearnullspace", (PetscObject*) &sp);CHKERRQ(ierr);
       if (sp) {
@@ -709,7 +709,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* Note that the inner KSP is NOT going to inherit this prefix, and if it did, it would be reset just below.  Is that what we want? */
       ierr = MatSetOptionsPrefix(jac->schur,schurmatprefix);CHKERRQ(ierr);
       ierr = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
-      ierr = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
+      ierr = MatGetNullSpace(jac->mat[1], &sp);CHKERRQ(ierr);
       if (sp) {
         ierr = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);
       }
