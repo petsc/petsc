@@ -77,3 +77,65 @@
           PetscErrorCode ierr
         End Subroutine
       End Interface DMDAVecRestoreArrayF90
+
+      Interface DMDAVecGetArrayReadF90
+        Subroutine DMDAVecGetArrayReadF901(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayReadF902(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayReadF903(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayReadF904(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecGetArrayReadF90
+
+      Interface DMDAVecRestoreArrayReadF90
+        Subroutine DMDAVecRestoreArrayReadF901(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayReadF902(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayReadF903(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayReadF904(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecRestoreArrayReadF90
