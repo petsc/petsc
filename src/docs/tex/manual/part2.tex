@@ -3622,9 +3622,10 @@ functions you do not need to include it in the \trl{basis} vectors you provide).
 
 One then tells the KSP object you are using what the null space is with the call
 \begin{tabbing}
-MatSetNullSpace(Mat mat,MatNullSpace nsp);
-MatSetTransposeNullSpace(Mat mat,MatNullSpace nsp);
+MatSetNullSpace(Mat Amat,MatNullSpace nsp);
+MatSetTransposeNullSpace(Mat Amat,MatNullSpace nsp);
 \end{tabbing}
+The Amat should be the {\bf first} matrix argument used with KSPSetOperators(), SNESSetJacobian(), or TSSetIJacobian()
 The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
@@ -5979,7 +5980,7 @@ Current routines include:
 \begin{tabbing}
  VecGetArrayF90(), VecRestoreArrayF90()\\
  VecDuplicateVecsF90(), VecDestroyVecsF90()\\
- DMDAVecGetArrayF90(), ISLocalToGlobalMappingGetIndicesF90()\\
+ DMDAVecGetArrayF90(), DMDAVecGetArrayReadF90(), ISLocalToGlobalMappingGetIndicesF90()\\
  MatDenseGetArrayF90(), MatDenseRestoreArrayF90()\\
  ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{tabbing}

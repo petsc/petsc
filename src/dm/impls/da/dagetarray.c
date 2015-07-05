@@ -274,13 +274,13 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 
     appropriate DMGlobalToLocalBegin() and DMGlobalToLocalEnd() to have correct values in the ghost locations.
 
-  Fortran Notes: From Fortran use DMDAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+  Fortran Notes: From Fortran use DMDAVecGetArrayReadF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
        dimension. For a DMDA created with a dof of 1 use the dimension of the DMDA, for a DMDA created with a dof greater than 1 use one more than the
        dimension of the DMDA. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
        array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
        DMDAGetCorners() for a global array or DMDAGetGhostCorners() for a local array. Include petsc/finclude/petscdmda.h90 to access this routine.
 
-  Due to bugs in the compiler DMDAVecGetArrayF90() does not work with gfortran versions before 4.5
+  Due to bugs in the compiler DMDAVecGetArrayReadF90() does not work with gfortran versions before 4.5
 
   Level: intermediate
 
@@ -342,7 +342,7 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-  Fortran Notes: From Fortran use DMDAVecRestoreArrayF90()
+  Fortran Notes: From Fortran use DMDAVecRestoreArrayReadF90()
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
@@ -407,7 +407,7 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
-    In Fortran 90 you do not need a version of DMDAVecRestoreArrayDOF() just use  DMDAVecRestoreArrayF90() and declare your array with one higher dimension,
+    In Fortran 90 you do not need a version of DMDAVecRestoreArrayDOF() just use  DMDAVecRestoreArrayReadF90() and declare your array with one higher dimension,
     see src/dm/examples/tutorials/ex11f90.F
 
   Level: intermediate
