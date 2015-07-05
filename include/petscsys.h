@@ -2417,6 +2417,7 @@ PETSC_EXTERN PetscErrorCode PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],Pet
 PETSC_EXTERN PetscErrorCode PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeIntArrayPair(PetscInt,const PetscInt*,const PetscInt*,PetscInt,const PetscInt*,const PetscInt*,PetscInt*,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeIntArray(PetscInt,const PetscInt*,PetscInt,const PetscInt*,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscMergeMPIIntArray(PetscInt,const PetscMPIInt[],PetscInt,const PetscMPIInt[],PetscInt*,PetscMPIInt**);
 
 PETSC_EXTERN PetscErrorCode PetscSetDisplay(void);
 PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
@@ -2530,7 +2531,17 @@ PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths(MPI_Comm,PetscMPIInt,Petsc
 PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths2(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscMPIInt**,PetscMPIInt**,PetscMPIInt**);
 PETSC_EXTERN PetscErrorCode PetscPostIrecvInt(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscInt***,MPI_Request**);
 PETSC_EXTERN PetscErrorCode PetscPostIrecvScalar(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscScalar***,MPI_Request**);
-PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSided(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscInt,const PetscMPIInt*,const void*,PetscInt*,PetscMPIInt**,void*) PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSided(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt*,const void*,PetscMPIInt*,PetscMPIInt**,void*)
+  PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,
+                                                    PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                    PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+  PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,
+                                                       MPI_Request**,MPI_Request**,
+                                                       PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                       PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+  PetscAttrMPIPointerWithType(6,3);
 
 /*E
     PetscBuildTwoSidedType - algorithm for setting up two-sided communication
@@ -2540,6 +2551,8 @@ $      a buffer of length equal to the communicator size. Not memory-scalable du
 $      the large reduction size. Requires only MPI-1.
 $  PETSC_BUILDTWOSIDED_IBARRIER - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
 $      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires MPI-3.
+$  PETSC_BUILDTWOSIDED_REDSCATTER - similar to above, but use more optimized function
+$      that only communicates the part of the reduction that is necessary.  Requires MPI-2.
 
    Level: developer
 
@@ -2548,8 +2561,9 @@ E*/
 typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
   PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
-  PETSC_BUILDTWOSIDED_IBARRIER = 1
-  /* Updates here must be accompanied by updates in petsc/finclude/petscsys.h and the string array in mpits.c */
+  PETSC_BUILDTWOSIDED_IBARRIER = 1,
+  PETSC_BUILDTWOSIDED_REDSCATTER = 2
+  /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);

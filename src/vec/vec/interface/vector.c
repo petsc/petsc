@@ -808,6 +808,14 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
           in ix in calls to VecSetValues() or VecGetValues(). These rows are simply
           ignored.
+-     VEC_SUBSET_OFF_PROC_ENTRIES, which causes VecAssemblyBegin() to assume that the off-process
+          entries will always be a subset (possibly equal) of the off-process entries set on the
+          first assembly.  This reuses the communication pattern, thus avoiding a global reduction.
+          Subsequent assemblies setting off-process values should use the same InsertMode as the
+          first assembly.
+
+   Developer Note:
+   The InsertMode restriction could be removed by packing the stash messages out of place.
 
    Level: intermediate
 

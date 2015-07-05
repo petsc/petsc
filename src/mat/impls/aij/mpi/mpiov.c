@@ -58,11 +58,11 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   PetscErrorCode   ierr;
   MPI_Comm         comm;
   PetscInt        *length,length_i,tlength,*remoterows,nrrows,reducednrrows,*rrow_ranks,*rrow_isids,i,j,owner;
-  PetscInt         *tosizes,*tosizes_temp,*toffsets,*fromsizes,*todata,*fromdata,nto,nfrom;
+  PetscInt         *tosizes,*tosizes_temp,*toffsets,*fromsizes,*todata,*fromdata;
   PetscInt         nrecvrows,*sbsizes = 0,*sbdata = 0;
-  const PetscInt **indices,*indices_i;
+  const PetscInt  *indices_i,**indices;
   PetscLayout      rmap;
-  PetscMPIInt      rank,size,*toranks,*fromranks;
+  PetscMPIInt      rank,size,*toranks,*fromranks,nto,nfrom;
   PetscSF          sf;
   PetscSFNode     *remote;
 
@@ -74,7 +74,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /*row map*/
   ierr = MatGetLayouts(mat,&rmap,PETSC_NULL);CHKERRQ(ierr);
   /*retrieve IS data*/
-  ierr = PetscCalloc2(nidx,&indices,nidx,&length);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nidx,(PetscInt ***)&indices,nidx,&length);CHKERRQ(ierr);
   /*get length and indices*/
   for (i=0,tlength=0; i<nidx; i++){
     ierr = ISGetLocalSize(is[i],&length[i]);CHKERRQ(ierr);

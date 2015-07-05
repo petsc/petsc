@@ -54,6 +54,7 @@
       PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
       PetscEnum MAT_SPD
       PetscEnum MAT_NO_OFF_PROC_ENTRIES
+      PetscEnum MAT_SUBSET_OFF_PROC_ENTRIES
       PetscEnum MAT_NO_OFF_PROC_ZERO_ROWS
       PetscEnum MAT_DIAGBLOCK_CSR
       PetscEnum MAT_OFFDIAGBLOCK_CSR
@@ -92,7 +93,8 @@
       parameter (MAT_NO_OFF_PROC_ZERO_ROWS=16)
       parameter (MAT_NO_OFF_PROC_ENTRIES=17)
       parameter (MAT_NEW_NONZERO_LOCATIONS=18)
-      parameter (MAT_OPTION_MAX=19)
+      parameter (MAT_SUBSET_OFF_PROC_ENTRIES=19)
+      parameter (MAT_OPTION_MAX=20)
 !
 !  MatFactorShiftType
 !
