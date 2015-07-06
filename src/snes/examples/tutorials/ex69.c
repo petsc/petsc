@@ -3215,8 +3215,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscQuadrature q;
   PetscDS         prob;
   Parameter      *ctx;
-  PetscInt        order, comp, f;
-  const char     *auxFieldNames[3];
+  PetscInt        numAux = user->solType == SOLKX ? 3 : 5, order, comp, f;
+  const char     *auxFieldNames[5];
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
@@ -3228,9 +3228,9 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, "pres_", order, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Create discretization of auxiliary fields */
-  ierr = PetscMalloc1(3, &feAux);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numAux, &feAux);CHKERRQ(ierr);
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
-  for (f = 0; f < 3; ++f) {
+  for (f = 0; f < numAux; ++f) {
     ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
@@ -3249,7 +3249,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(cdm, dmAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-    for (f = 0; f < 3; ++f) {ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);}
+    for (f = 0; f < numAux; ++f) {ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);}
     ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
     ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
     ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
@@ -3267,7 +3267,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
-  for (f = 0; f < 3; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
+  for (f = 0; f < numAux; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
   ierr = PetscFree(feAux);CHKERRQ(ierr);
   {
     PetscObject  pressure;
