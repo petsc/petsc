@@ -761,7 +761,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   PetscReal      sum1 = 0.0, sum2 = 0.0, sum3 = 0.0, sum4 = 0.0, sum5 = 0.0, sum6 = 0.0;
   PetscReal      ZA = etaA, ZB = etaB;
   PetscInt       nz  = m,    nx = n;
-  PetscReal      u1, u2, u3, u4, u5, u6, Z, x, z;
+  PetscReal      u1, u2, u3, u4, u5, u6, Z, x = pos[0], z = pos[1];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2994,7 +2994,7 @@ static PetscErrorCode SolCxSolutionPressure(PetscInt dim, const PetscReal x[], P
 #define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *solTypes[3]  = {"solkx", "solcx"};
+  const char    *solTypes[2]  = {"solkx", "solcx"};
   PetscInt       sol;
   PetscErrorCode ierr;
 
