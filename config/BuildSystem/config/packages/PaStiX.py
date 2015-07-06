@@ -28,7 +28,7 @@ class Configure(config.package.Package):
 
     # This one should be the only one needed
     # all other tests for mac should not be useful.
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       g.write('HOSTARCH   = i686_mac\n')
     else:
       g.write('HOSTARCH   = i686_pc_linux\n')
@@ -39,7 +39,7 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('C')
     g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')
     # common.c tries to use some silly clock_gettime() routine that Mac doesn't have unless this is set
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       cflags = ' -DX_ARCHi686_mac    '
     else:
       cflags = ''
@@ -56,7 +56,7 @@ class Configure(config.package.Package):
     g.write('LKFOPT      =\n')
     g.write('MKPROG      = '+self.make.make+'\n')
     # PaStiX make system has error where in one location it doesn't pass in CCFOTP
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+' -DX_ARCHi686_mac \n')
     else:
       g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+'\n')
@@ -197,7 +197,7 @@ class Configure(config.package.Package):
 
     g.write('MAKE     = $(MKPROG)\n')
     g.write('CC       = $(MPCCPROG)\n')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       cflags = ' -DX_ARCHi686_mac    '
     else: cflags = ''
     g.write('CFLAGS   = $(CCFOPT) $(CCTYPES)'+cflags+'\n')

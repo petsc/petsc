@@ -29,16 +29,20 @@ class Configure(config.base.Configure):
 
     # These are for when the routines are called from Fortran
     if hasattr(self.compilers, 'FC'):
+      self.libraries.saveLog()
       self.libraries.pushLanguage('FC')
       if self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       call get_command_argument(i,arg)'):
         self.addDefine('HAVE_FORTRAN_GET_COMMAND_ARGUMENT',1)
       elif self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       call getarg(i,arg)'):
         self.addDefine('HAVE_FORTRAN_GETARG',1)
       self.libraries.popLanguage()
+      self.logWrite(self.libraries.restoreLog())
 
     # These are for when the routines are called fraom C
     # We should unify the naming conventions of these.
     self.pushLanguage('C')
+    self.libraries.saveLog()
+    self.functions.saveLog()
     # This one is not currently used in PETSc source code
     if self.libraries.check('','get_command_argument', otherLibs = self.compilers.flibs, fortranMangle = 1):
       self.addDefine('HAVE_GET_COMMAND_ARGUMENT',1)
@@ -58,6 +62,8 @@ class Configure(config.base.Configure):
     elif self.functions.check('_gfortran_iargc', libraries = self.compilers.flibs):
       self.addDefine('HAVE_GFORTRAN_IARGC',1)
     self.popLanguage()
+    self.logWrite(self.libraries.restoreLog())
+    self.logWrite(self.functions.restoreLog())
     return
 
   def configure(self):
