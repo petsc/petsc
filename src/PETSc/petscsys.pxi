@@ -33,6 +33,7 @@ cdef extern from * nogil:
     PetscErrorHandlerFunction PetscIgnoreErrorHandler
     int PetscPushErrorHandler(PetscErrorHandlerFunction,void*)
     int PetscPopErrorHandler()
+    int PetscInfoAllow(PetscBool, char*)
 
     int PetscErrorMessage(int,char*[],char**)
 
