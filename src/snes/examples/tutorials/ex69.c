@@ -69,18 +69,34 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  PetscReal t, const PetscReal x[], PetscScalar f0[])
 {
   f0[0] = 0.0;
-  f0[1] = -sin(a[2]*PETSC_PI*x[1])*cos(a[1]*PETSC_PI*x[0]);
+  f0[1] = -sin(a[1]*PETSC_PI*x[1])*cos(a[0]*PETSC_PI*x[0]);
 }
 
-static void stokes_momentum(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                            PetscReal t, const PetscReal x[], PetscScalar f1[])
+static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                               PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
+  const PetscReal nu = PetscExpReal(2.0*a[2]*x[0]);
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
-      f1[c*dim+d] = PetscExpReal(2.0*a[0]*x[0]) * (u_x[c*dim+d] + u_x[d*dim+c]);
+      f1[c*dim+d] = nu * (u_x[c*dim+d] + u_x[d*dim+c]);
+    }
+    f1[c*dim+c] -= u[dim];
+  }
+}
+
+static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                               PetscReal t, const PetscReal x[], PetscScalar f1[])
+{
+  const PetscReal nu = x[0] < a[4] ? a[2] : a[3];
+  PetscInt c, d;
+  for (c = 0; c < dim; ++c) {
+    for (d = 0; d < dim; ++d) {
+      f1[c*dim+d] = nu * (u_x[c*dim+d] + u_x[d*dim+c]);
     }
     f1[c*dim+c] -= u[dim];
   }
@@ -127,12 +143,27 @@ static void stokes_momentum_pres_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 /* < \nabla v, \nabla u + {\nabla u}^T >, J_{uu}
    This just gives \nabla u, give the perdiagonal for the transpose */
-static void stokes_momentum_vel_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                  PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+static void stokes_momentum_vel_J_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
-  const PetscReal nu  = PetscExpReal(2.0*a[0]*x[0]);
+  const PetscReal nu  = PetscExpReal(2.0*a[2]*x[0]);
+  PetscInt        cI, d;
+
+  for (cI = 0; cI < dim; ++cI) {
+    for (d = 0; d < dim; ++d) {
+      g3[((cI*dim+cI)*dim+d)*dim+d] += nu; /*g3[cI, cI, d, d]*/
+      g3[((cI*dim+d)*dim+d)*dim+cI] += nu; /*g3[cI, d, d, cI]*/
+    }
+  }
+}
+static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+{
+  const PetscReal nu = x[0] < a[4] ? a[2] : a[3];
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -3036,14 +3067,16 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
   bag  = user->bag;
   switch (user->solType) {
   case SOLKX:
-    ierr = PetscBagRegisterReal(bag, &p->B, 1.0, "B", "Exponential scale for viscosity variation");CHKERRQ(ierr);
     ierr = PetscBagRegisterInt(bag,  &p->n, 1,   "n", "x-wavelength for forcing variation");CHKERRQ(ierr);
     ierr = PetscBagRegisterInt(bag,  &p->m, 1,   "m", "z-wavelength for forcing variation");CHKERRQ(ierr);
+    ierr = PetscBagRegisterReal(bag, &p->B, 1.0, "B", "Exponential scale for viscosity variation");CHKERRQ(ierr);
     break;
   case SOLCX:
+    ierr = PetscBagRegisterInt(bag,  &p->n,    1,   "n",    "x-wavelength for forcing variation");CHKERRQ(ierr);
+    ierr = PetscBagRegisterInt(bag,  &p->m,    1,   "m",    "z-wavelength for forcing variation");CHKERRQ(ierr);
     ierr = PetscBagRegisterReal(bag, &p->etaA, 1.0, "etaA", "Viscosity for x < xc");CHKERRQ(ierr);
     ierr = PetscBagRegisterReal(bag, &p->etaB, 1.0, "etaB", "Viscosity for x > xc");CHKERRQ(ierr);
-    ierr = PetscBagRegisterReal(bag, &p->xc,   0.5, "xc", "x-coordinate of the viscosity jump");CHKERRQ(ierr);
+    ierr = PetscBagRegisterReal(bag, &p->xc,   0.5, "xc",   "x-coordinate of the viscosity jump");CHKERRQ(ierr);
     break;
   }
   PetscFunctionReturn(0);
@@ -3139,11 +3172,24 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 1, stokes_mass, f1_zero);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL);CHKERRQ(ierr);
+  switch (user->solType) {
+  case SOLKX:
+    ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_kx);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 1, stokes_mass, f1_zero);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_kx);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL);CHKERRQ(ierr);
+    break;
+  case SOLCX:
+    ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_cx);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 1, stokes_mass, f1_zero);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_cx);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d", (PetscInt) user->solType);
+  }
   switch (user->dim) {
   case 2:
     switch (user->solType) {
@@ -3187,14 +3233,16 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
     ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
     switch (user->solType) {
     case SOLKX:
-      a[0] = param->B;
-      a[1] = param->m;
-      a[2] = param->n;
+      a[0] = param->m;
+      a[1] = param->n;
+      a[2] = param->B;
       break;
     case SOLCX:
-      a[0] = param->etaA;
-      a[1] = param->etaB;
-      a[2] = param->xc;
+      a[0] = param->m;
+      a[1] = param->n;
+      a[2] = param->etaA;
+      a[3] = param->etaB;
+      a[4] = param->xc;
       break;
     }
   }
