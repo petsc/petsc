@@ -1082,6 +1082,32 @@ runex46_ew_3:
 	   else printf "${PWD}\nPossible problem with ex46_ew_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
 
+FMRISE_NGMRES_NPC_BASE = -@${MPIEXEC} -n 1 ./ex46 -K 3 -m 1 -D 0.2 -snes_monitor_short -ksp_converged_reason -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic
+
+runex46_fm_rise_1:
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 1  > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_fm_rise_1.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_fm_rise_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_fm_rise_2:
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 1 -snes_ngmres_restart_fm_rise > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_fm_rise_2.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_fm_rise_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_fm_rise_3:
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 2 > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_fm_rise_3.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_fm_rise_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_fm_rise_4:
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 2  -snes_ngmres_restart_fm_rise  > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_fm_rise_4.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_fm_rise_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
 runex47cu:
 	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -dm_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex47cu_1.out ex47cu_1.tmp) then true; \
@@ -1173,4 +1199,3 @@ TESTEXAMPLES_SUITESPARSE       = ex19.PETSc runex19_umfpack runex19_klu runex19_
 
 
 include ${PETSC_DIR}/lib/petsc/conf/test
-
