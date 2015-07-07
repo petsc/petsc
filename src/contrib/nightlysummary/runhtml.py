@@ -242,6 +242,9 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "is superseded",
                           "warning: no debug symbols in executable (-arch x86_64)",
                           "(aka 'const double *') doesn't match specified 'MPI' type tag that requires 'double *'",
+                          "(aka 'const int *') doesn't match specified 'MPI' type tag that requires 'int *'",
+                          "(aka 'const long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
+                          "(aka 'long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
                           "cusp/complex.h", "cusp/detail/device/generalized_spmv/coo_flat.h",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
