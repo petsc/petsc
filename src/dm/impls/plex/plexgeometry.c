@@ -131,6 +131,105 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscGridHashInitialize_Internal"
+static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscInt dim, const PetscScalar point[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  box->dim = dim;
+  for (d = 0; d < dim; ++d) box->lower[d] = box->upper[d] = PetscRealPart(point[d]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashCreate"
+PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScalar point[], PetscGridHash *box)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(1, box);CHKERRQ(ierr);
+  ierr = PetscGridHashInitialize_Internal(*box, dim, point);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashEnlarge"
+PetscErrorCode PetscGridHashEnlarge(PetscGridHash box, const PetscScalar point[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  for (d = 0; d < box->dim; ++d) {
+    box->lower[d] = PetscMin(box->lower[d], PetscRealPart(point[d]));
+    box->upper[d] = PetscMax(box->upper[d], PetscRealPart(point[d]));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashSetGrid"
+PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const PetscReal h[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  for (d = 0; d < box->dim; ++d) {
+    box->extent[d] = box->upper[d] - box->lower[d];
+    if (n[d] == PETSC_DETERMINE) {
+      box->h[d] = h[d];
+      box->n[d] = PetscCeilReal(box->extent[d]/h[d]);
+    } else {
+      box->n[d] = n[d];
+      box->h[d] = box->extent[d]/n[d];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashGetEnclosingBox"
+PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscReal points[], PetscInt dboxes[], PetscInt boxes[])
+{
+  const PetscReal *lower = box->lower;
+  const PetscReal *upper = box->upper;
+  const PetscReal *h     = box->h;
+  const PetscInt  *n     = box->n;
+  const PetscInt   dim   = box->dim;
+  PetscInt         d, p;
+
+  PetscFunctionBegin;
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      PetscInt dbox = PetscFloorReal((points[p*dim+d] - lower[d])/h[d]);
+
+      if (dbox == n[d] && PetscAbsReal(points[p*dim+d] - upper[d]) < 1.0e-9) dbox = n[d]-1;
+      if (dbox < 0 || dbox >= n[d]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %d (%g, %g, %g) is outside of our bounding box",
+                                             p, points[p*dim+0], dim > 1 ? points[p*dim+1] : 0.0, dim > 2 ? points[p*dim+2] : 0.0);
+      dboxes[p*dim+d] = dbox;
+    }
+    if (boxes) for (d = 1, boxes[p] = dboxes[p*dim]; d < dim; ++d) boxes[p] += dboxes[p*dim+d]*n[d-1];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashDestroy"
+PetscErrorCode PetscGridHashDestroy(PetscGridHash *box)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (*box) {
+    ierr = PetscSectionDestroy(&(*box)->cellSection);CHKERRQ(ierr);
+    ierr = ISDestroy(&(*box)->cells);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&(*box)->cellsSparse);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(*box);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define __FUNCT__ "DMLocatePoints_Plex"
 /*
  Need to implement using the guess
