@@ -97,7 +97,6 @@ typedef struct {
   int tags[4];       /* Tag array */
 } GmshElement;
 
-
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int   index;    /* Type of section */
@@ -202,7 +201,7 @@ typedef struct {
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
-
+  PetscGridHash        lbox;              /* Local box for searching */
 
   /* Debugging */
   PetscBool            printSetValues;
