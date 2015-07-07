@@ -391,7 +391,9 @@ Thanks,
       msg['Reply-To'] = ','.join(REPLY_TO)
       msg['Subject'] = "PETSc blame digest (%s) %s\n\n" % (self.argDB['buildBranch'], today)
 
-      if self.argDB['blameMailPost']:
+      if author in ['Peter Brune <brune@mcs.anl.gov>']:
+        print 'Skipping sending e-mail to:',author
+      elif self.argDB['blameMailPost']:
         server = smtplib.SMTP('localhost')
         server.sendmail(FROM, TO, msg.as_string())
         server.quit()
