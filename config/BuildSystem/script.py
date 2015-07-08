@@ -172,7 +172,11 @@ class Script(logger.Logger):
         errorClosed  = 0
         lst = [output, error]
         while 1:
-          ready = select.select(lst, [], [])
+          try:
+            ready = select.select(lst, [], [])
+          except Exception, e:
+            if log: log.write('** Error calling select() : '+str(e)+'\n')
+            continue
           if len(ready[0]):
             if error in ready[0]:
               msg = error.readline()

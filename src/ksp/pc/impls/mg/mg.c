@@ -547,7 +547,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mglevels[0]->levels;
   PC             cpc;
-  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
+  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE,bjaclu;
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
@@ -798,11 +798,23 @@ PetscErrorCode PCSetUp_MG(PC pc)
   */
   ierr = PetscObjectTypeCompare((PetscObject)mglevels[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
   if (preonly) {
+    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCBJACOBI,&bjaclu);CHKERRQ(ierr);
+    if (bjaclu) {
+      KSP *k2;
+      PetscInt ii,first;
+      ierr = PCBJacobiGetSubKSP(cpc,&ii,&first,&k2);CHKERRQ(ierr);
+      if (ii==1) {
+        PC pc2;
+        ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)pc2,PCLU,&bjaclu);CHKERRQ(ierr);
+      }
+      else bjaclu = PETSC_FALSE;
+    }
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)cpc,PCSVD,&svd);CHKERRQ(ierr);
-    if (!lu && !redundant && !cholesky && !svd) {
+    if (!lu && !redundant && !cholesky && !svd && !bjaclu) {
       ierr = KSPSetType(mglevels[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
     }
   }
@@ -1192,7 +1204,6 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
-.  -pc_mg_monitor - print information on the multigrid convergence
 .  -pc_mg_galerkin - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
 .  -pc_mg_multiplicative_cycles - number of cycles to use as the preconditioner (defaults to 1)
 .  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices

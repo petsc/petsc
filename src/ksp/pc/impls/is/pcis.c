@@ -150,9 +150,9 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     PetscInt    i,j;
 
     /* get info on mapping */
-    ierr = PetscObjectReference((PetscObject)matis->mapping);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pc->pmat->rmap->mapping);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&pcis->mapping);CHKERRQ(ierr);
-    pcis->mapping = matis->mapping;
+    pcis->mapping = pc->pmat->rmap->mapping;
     ierr = ISLocalToGlobalMappingGetSize(pcis->mapping,&pcis->n);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
 

@@ -1084,6 +1084,7 @@ static PetscErrorCode PCHYPRESetBetaPoissonMatrix_HYPRE_AMS(PC pc, Mat A)
 
   PetscFunctionBegin;
   if (!A) {
+    PetscStackCallStandard(HYPRE_AMSSetBetaPoissonMatrix,(jac->hsolver,NULL));
     jac->ams_beta_is_zero = PETSC_TRUE;
     PetscFunctionReturn(0);
   }

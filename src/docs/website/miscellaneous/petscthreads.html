@@ -69,12 +69,9 @@
       <p>
         In petsc-3.2 we have implemented approach 2 (pthreads). The
         corresponding classes are VECSEQPTHREAD and MATSEQAIJPTHREAD; these are
-        very preliminary but can be explored. We hope to obtain implementations
-        of approach 1 from others in the community. User are free also to use
-        threads for OpenMP in their code so long as that code does not make
-        PETSc calls. See <a href="../features/threads.html">threads</a> for how
-        to use the thread-based Vec and Mat.
-      </p>
+        very preliminary but can be explored. We found the code was never faster than
+        pure MPI and cumbersome to use hence we have removed it.
+              </p>
 
       <p>
         <b><u>A more complicated model of PETSc with threads</u></b>, which would

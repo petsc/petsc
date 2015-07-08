@@ -8,7 +8,7 @@ class CompilerOptions(config.base.Configure):
 
     if compiler.find('mpicc') >=0:
       try:
-        output   = self.executeShellCommand(compiler + ' -show')[0]
+        output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
@@ -16,7 +16,7 @@ class CompilerOptions(config.base.Configure):
 
     flags = []
     # GNU gcc
-    if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
+    if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
         if self.argDB['with-visibility']:
@@ -33,7 +33,7 @@ class CompilerOptions(config.base.Configure):
         flags.append('-O')
     else:
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
           # next one fails in OpenMP build and we don't use it anyway so remove
@@ -75,7 +75,7 @@ class CompilerOptions(config.base.Configure):
 
     if compiler.find('mpiCC') >=0  or compiler.find('mpicxx') >=0 :
       try:
-        output   = self.executeShellCommand(compiler+' -show')[0]
+        output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
       except:
@@ -83,7 +83,7 @@ class CompilerOptions(config.base.Configure):
 
     flags = []
     # GNU g++
-    if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
+    if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
         # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
@@ -109,7 +109,7 @@ class CompilerOptions(config.base.Configure):
         flags.append('-O')
     else:
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
         elif bopt == 'g':
@@ -148,19 +148,19 @@ class CompilerOptions(config.base.Configure):
 
     if compiler.endswith('mpif77') or compiler.endswith('mpif90'):
       try:
-        output   = self.executeShellCommand(compiler+' -show')[0]
+        output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
         pass
 
     flags = []
-    if config.setCompilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-Wno-unused-variable', '-ffree-line-length-0'])
-        if config.setCompilers.Configure.isGfortran46plus(compiler):
+        if config.setCompilers.Configure.isGfortran46plus(compiler, self.log):
           flags.extend(['-Wno-unused-dummy-argument']) # Silence warning because dummy parameters are sometimes necessary
-        if config.setCompilers.Configure.isGfortran45x(compiler):
+        if config.setCompilers.Configure.isGfortran45x(compiler, self.log):
           flags.extend(['-Wno-line-truncation']) # Work around bug in this series, fixed in 4.6: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42852
       elif bopt == 'g':
         if self.argDB['with-gcov']:
@@ -178,7 +178,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':

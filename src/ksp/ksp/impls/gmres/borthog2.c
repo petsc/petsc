@@ -90,7 +90,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
 
     hnrm = PetscSqrtReal(hnrm);
     ierr = VecNorm(VEC_VV(it+1),NORM_2, &wnrm);CHKERRQ(ierr);
-    if (wnrm < 1.0286 * hnrm) {
+    if (wnrm < hnrm) {
       refine = PETSC_TRUE;
       ierr   = PetscInfo2(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm);CHKERRQ(ierr);
     }
