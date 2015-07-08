@@ -365,9 +365,8 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 {
   DM_Plex        *mesh = (DM_Plex *) dm->data;
-  PetscInt        cell = -1 /*, guess = -1*/;
   PetscInt        bs, numPoints, p;
-  PetscInt        dim, cStart, cEnd, cMax, numCells, c, coneSize;
+  PetscInt        dim, cStart, cEnd, cMax, numCells, c;
   const PetscInt *boxCells;
   PetscInt       *cells;
   PetscScalar    *a;
@@ -392,7 +391,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   ierr = ISGetIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
-    PetscInt           dbin[3], bin, d, cell, cellOffset;
+    PetscInt           dbin[3], bin, cell, cellOffset;
 
     ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
     /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */

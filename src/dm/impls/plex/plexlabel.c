@@ -866,7 +866,7 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
   IS              vIS;
   const PetscInt *values;
   PetscInt       *points;
-  PetscInt        nV, vS, vE, v, N;
+  PetscInt        nV, vS = 0, vE = 0, v, N;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
