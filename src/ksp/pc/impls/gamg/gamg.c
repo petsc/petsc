@@ -732,34 +732,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     if (!mg->galerkin) SETERRQ(comm,PETSC_ERR_USER,"PCGAMG must use Galerkin for coarse operators.");
     if (mg->galerkin == 1) mg->galerkin = 2;
 
-    /* create cheby smoothers */
-    for (lidx = 1, level = pc_gamg->Nlevels-2; lidx <= fine_level; lidx++, level--) {
-      KSP       smoother;
-      PetscBool flag,flag2;
-      PC        subpc;
-
-      ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
-      ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-
-      /* do my own cheby */
-      ierr = PetscObjectTypeCompare((PetscObject)smoother, KSPCHEBYSHEV, &flag);CHKERRQ(ierr);
-      if (0 && flag) {
-        PetscReal emax, emin;
-        ierr = PetscObjectTypeCompare((PetscObject)subpc, PCJACOBI, &flag);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)subpc, PCSOR, &flag2);CHKERRQ(ierr);
-        /* eigen estimate only for diagnal PC but lets acccept SOR because it is close and safe (always lower) */
-        if ((flag||flag2) && (emax=emaxs[level]) > 0.0) {
-          PetscInt N1, N0;
-          emax=emaxs[level];
-          ierr = MatGetSize(Aarr[level], &N1, NULL);CHKERRQ(ierr);
-          ierr = MatGetSize(Aarr[level+1], &N0, NULL);CHKERRQ(ierr);
-          emin  = emax * pc_gamg->eigtarget[0];
-          emax *= pc_gamg->eigtarget[1];
-          ierr = KSPChebyshevSetEigenvalues(smoother, emax, emin);CHKERRQ(ierr);
-        }
-      } /* setup checby flag */
-    } /* non-coarse levels */
-
     /* clean up */
     for (level=1; level<pc_gamg->Nlevels; level++) {
       ierr = MatDestroy(&Parr[level]);CHKERRQ(ierr);
@@ -1248,7 +1220,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
     ierr = PetscOptionsInt("-pc_gamg_process_eq_limit","Limit (goal) on number of equations per process on coarse grids","PCGAMGSetProcEqLim",pc_gamg->min_eq_proc,&pc_gamg->min_eq_proc,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit","Limit on number of equations for the coarse grid","PCGAMGSetCoarseEqLim",pc_gamg->coarse_eq_limit,&pc_gamg->coarse_eq_limit,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_gamg_threshold","Relative threshold to use for dropping edges in aggregation graph","PCGAMGSetThreshold",pc_gamg->threshold,&pc_gamg->threshold,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsRealArray("-pc_gamg_eigtarget","Target eigenvalue range as fraction of estimated maximum eigenvalue","PCGAMGSetEigTarget",pc_gamg->eigtarget,&two,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_mg_levels","Set number of MG levels","PCGAMGSetNlevels",pc_gamg->Nlevels,&pc_gamg->Nlevels,NULL);CHKERRQ(ierr);
 
     /* set options for subtype */
@@ -1337,8 +1308,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->emax_id          = -1;
   pc_gamg->current_level    = 0; /* don't need to init really */
-  pc_gamg->eigtarget[0]     = 0.05;
-  pc_gamg->eigtarget[1]     = 1.05;
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
 
   /* PCSetUp_GAMG assumes that the type has been set, so set it to the default now */

@@ -25,11 +25,9 @@ int main(int argc,char **args)
   KSP            ksp;
   MPI_Comm       comm;
   PetscMPIInt    npe,mype;
-  PC             pc;
   PetscScalar    DD[24][24],DD2[24][24];
   PetscLogStage  stage[6];
   PetscScalar    DD1[24][24];
-  PCType         type;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   comm = PETSC_COMM_WORLD;
@@ -72,14 +70,10 @@ int main(int argc,char **args)
     if (mype==npe-1) m = nn*nn*nn - (npe-1)*m;
   }
   m *= 3; /* number of equations local*/
-  /* Setup solver, get PC type and pc */
+  /* Setup solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp, KSPCG);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(ksp, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc, PCGAMG);CHKERRQ(ierr); /* default */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PCGetType(pc, &type);CHKERRQ(ierr);
 
   {
     /* configureation */
@@ -268,6 +262,8 @@ int main(int argc,char **args)
     ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
     ierr = VecDestroy(&vec_coords);CHKERRQ(ierr);
   } else {
+    PC             pc;
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetCoordinates(pc, 3, m/3, coords);CHKERRQ(ierr);
   }
 
