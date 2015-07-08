@@ -59,7 +59,6 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   (*map)->range  = 0;
   (*map)->rstart = 0;
   (*map)->rend   = 0;
-  (*map)->trstarts = 0;
   PetscFunctionReturn(0);
 }
 
