@@ -190,7 +190,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGridHashGetEnclosingBox"
-PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscReal points[], PetscInt dboxes[], PetscInt boxes[])
+PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
 {
   const PetscReal *lower = box->lower;
   const PetscReal *upper = box->upper;
@@ -202,11 +202,11 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
   PetscFunctionBegin;
   for (p = 0; p < numPoints; ++p) {
     for (d = 0; d < dim; ++d) {
-      PetscInt dbox = PetscFloorReal((points[p*dim+d] - lower[d])/h[d]);
+      PetscInt dbox = PetscFloorReal((PetscRealPart(points[p*dim+d]) - lower[d])/h[d]);
 
-      if (dbox == n[d] && PetscAbsReal(points[p*dim+d] - upper[d]) < 1.0e-9) dbox = n[d]-1;
+      if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
       if (dbox < 0 || dbox >= n[d]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %d (%g, %g, %g) is outside of our bounding box",
-                                             p, points[p*dim+0], dim > 1 ? points[p*dim+1] : 0.0, dim > 2 ? points[p*dim+2] : 0.0);
+                                             p, PetscRealPart(points[p*dim+0]), dim > 1 ? PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? PetscRealPart(points[p*dim+2]) : 0.0);
       dboxes[p*dim+d] = dbox;
     }
     if (boxes) for (d = 1, boxes[p] = dboxes[p*dim]; d < dim; ++d) boxes[p] += dboxes[p*dim+d]*n[d-1];

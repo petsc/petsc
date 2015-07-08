@@ -252,7 +252,7 @@ typedef struct _PetscGridHash *PetscGridHash;
 PETSC_EXTERN PetscErrorCode PetscGridHashCreate(MPI_Comm, PetscInt, const PetscScalar[], PetscGridHash *);
 PETSC_EXTERN PetscErrorCode PetscGridHashEnlarge(PetscGridHash, const PetscScalar []);
 PETSC_EXTERN PetscErrorCode PetscGridHashSetGrid(PetscGridHash, const PetscInt [], const PetscReal []);
-PETSC_EXTERN PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash, PetscInt, const PetscReal [], PetscInt [], PetscInt []);
+PETSC_EXTERN PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash, PetscInt, const PetscScalar [], PetscInt [], PetscInt []);
 PETSC_EXTERN PetscErrorCode PetscGridHashDestroy(PetscGridHash *);
 
 /* FVM Support */
