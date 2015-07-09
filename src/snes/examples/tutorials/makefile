@@ -1082,24 +1082,12 @@ runex46_ew_3:
 	   else printf "${PWD}\nPossible problem with ex46_ew_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
 
-FMRISE_NGMRES_NPC_BASE = -@${MPIEXEC} -n 1 ./ex46 -K 3 -m 1 -D 0.2 -snes_monitor_short -ksp_converged_reason -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic
-
-runex46_fm_rise_1:
-	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 1  > ex46.tmp 2>&1; \
-	   if (${DIFF} output/ex46_fm_rise_1.out ex46.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex46_fm_rise_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex46.tmp
+FMRISE_NGMRES_NPC_BASE = -@${MPIEXEC} -n 1 ./ex46 -K 3 -m 1 -D 0.2 -snes_monitor_short  -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic
 
 runex46_fm_rise_2:
 	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 1 -snes_ngmres_restart_fm_rise > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_fm_rise_2.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex46_fm_rise_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex46.tmp
-
-runex46_fm_rise_3:
-	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 2 > ex46.tmp 2>&1; \
-	   if (${DIFF} output/ex46_fm_rise_3.out ex46.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex46_fm_rise_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
 
 runex46_fm_rise_4:
@@ -1174,7 +1162,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
                                  ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
-                                 ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 ex46.rm \
+                                 ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
