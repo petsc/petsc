@@ -380,8 +380,6 @@ Thanks,
 
       if author == 'Mark Adams <mark.adams@columbia.edu>':
         author =  'Mark Adams <mfadams@lbl.gov>'
-      else:
-        author = author
 
       checkbuilds = 'PETSc checkBuilds <petsc-checkbuilds@mcs.anl.gov>'
       dev = 'petsc-dev <petsc-dev@mcs.anl.gov>'
