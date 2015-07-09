@@ -21,7 +21,6 @@ int main(int argc,char **args)
   MPI_Comm       comm;
   PetscBool      use_coords = PETSC_FALSE;
   PetscMPIInt    npe,mype;
-  PC             pc;
   PetscScalar    DD[8][8],DD2[8][8];
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage[2];
@@ -194,14 +193,13 @@ int main(int argc,char **args)
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp, KSPCG);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc, PCGAMG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* finish KSP/PC setup */
     ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     if (use_coords) {
+      PC             pc;
+      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
       ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
     }
     ierr = PetscFree(coords);CHKERRQ(ierr);

@@ -702,9 +702,12 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 +   SNES_QN_SCALE_NONE - don't scale the problem
 .   SNES_QN_SCALE_SHANNO - use shanno scaling
 .   SNES_QN_SCALE_LINESEARCH - scale based upon line search lambda
--   SNES_QN_SCALE_JACOBIAN - scale by inverting a previously computed Jacobian.
+-   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration 
+                             of QN and at ever restart.
 
-.keywords: SNES, SNESQN, scaling, type, set SNESLineSearch, SNESQNScaleType
+.keywords: scaling type
+
+.seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESetJacobian()
 @*/
 
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)

@@ -123,6 +123,7 @@ PETSC_EXTERN PetscErrorCode DMLabelFilter(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelPermute(DMLabel, IS, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);
 
+PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateLabel(DM, const char []);
 PETSC_EXTERN PetscErrorCode DMPlexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetLabelValue(DM, const char[], PetscInt, PetscInt);

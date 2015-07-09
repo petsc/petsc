@@ -21,8 +21,8 @@ class Configure(config.package.GNUPackage):
     return
 
   def checkDownload(self):
-    if config.setCompilers.Configure.isCygwin():
-      if config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+    if config.setCompilers.Configure.isCygwin(self.log):
+      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
         self.download = self.download_cygwin
       else:
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')

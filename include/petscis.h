@@ -188,7 +188,6 @@ struct _n_PetscLayout{
                                        * positive. Do NOT multiply above numbers by bs */
   PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatCreateVecs() reuse map of input object */
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
-  PetscInt               *trstarts;   /* local start for each thread */
 };
 
 #undef __FUNCT__
