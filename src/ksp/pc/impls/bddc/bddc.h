@@ -85,6 +85,7 @@ typedef struct {
   IS                  coarse_subassembling_init;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
+  PetscBool           saddle_point;
   /* scaling */
   Vec                 work_scaling;
   PetscBool           use_deluxe_scaling;
