@@ -1202,7 +1202,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscBool      flag;
-  PetscInt       two   = 2;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
