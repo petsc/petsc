@@ -1233,8 +1233,37 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   } else {
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
-    pcbddc->local_mat = matis->A;
+    if (!pcbddc->saddle_point) {
+      ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+      pcbddc->local_mat = matis->A;
+    } else {
+      PetscInt       i,n;
+      const PetscInt *idxs;
+      PetscScalar    *array;
+
+      ierr = MatDuplicate(matis->A,MAT_COPY_VALUES,&pcbddc->local_mat);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
+      ierr = MatFindZeroDiagonals(matis->A,&pcbddc->zerodiag);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pcbddc->zerodiag,&n);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+      ierr = VecCreate(PetscObjectComm((PetscObject)matis->A),&pcbddc->saddle_sums);CHKERRQ(ierr);
+      ierr = VecSetSizes(pcbddc->saddle_sums,n,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetType(pcbddc->saddle_sums,VECSTANDARD);CHKERRQ(ierr);
+      ierr = VecSet(pcbddc->saddle_sums,0.);CHKERRQ(ierr);
+      ierr = VecGetArray(pcbddc->saddle_sums,&array);CHKERRQ(ierr);
+      for (i=0;i<n;i++) {
+        PetscInt          j,ncol;
+        const PetscInt    *cols;
+        const PetscScalar *vals;
+
+        ierr = MatGetRow(matis->A,idxs[i],&ncol,&cols,&vals);CHKERRQ(ierr);
+        for (j=0;j<ncol;j++) array[cols[j]] += vals[j];
+        ierr = MatRestoreRow(matis->A,idxs[i],&ncol,&cols,&vals);CHKERRQ(ierr);
+      }
+      ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+n-1,1.,NULL,NULL);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+      ierr = VecRestoreArray(pcbddc->saddle_sums,&array);CHKERRQ(ierr);
+    }
   }
 
   /* workaround for reals */
@@ -1971,6 +2000,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_nnsp_true       = PETSC_FALSE;
   pcbddc->use_qr_single       = PETSC_FALSE;
   pcbddc->symmetric_primal    = PETSC_TRUE;
+  pcbddc->saddle_point        = PETSC_FALSE;
   pcbddc->dbg_flag            = 0;
   /* private */
   pcbddc->local_primal_size          = 0;
@@ -2029,7 +2059,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->redistribute_coarse        = 0;
   pcbddc->coarse_subassembling       = 0;
   pcbddc->coarse_subassembling_init  = 0;
-
+  pcbddc->zerodiag                   = 0;
+  pcbddc->saddle_sums                = 0;
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
 

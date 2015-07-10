@@ -463,6 +463,8 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->coarse_subassembling);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->saddle_sums);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
