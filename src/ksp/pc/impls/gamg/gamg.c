@@ -460,7 +460,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   MPI_Comm       comm;
   PetscMPIInt    rank,size,nactivepe;
   Mat            Aarr[GAMG_MAXLEVELS],Parr[GAMG_MAXLEVELS];
-  PetscReal      emaxs[GAMG_MAXLEVELS];
   IS             *ASMLocalIDsArr[GAMG_MAXLEVELS];
   PetscLogDouble nnz0=0.,nnztot=0.;
   MatInfo        info;
@@ -592,12 +591,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
-    /* cache eigen estimate */
-    if (pc_gamg->emax_id != -1) {
-      PetscBool flag;
-      ierr = PetscObjectComposedDataGetReal((PetscObject)Aarr[level], pc_gamg->emax_id, emaxs[level], flag);CHKERRQ(ierr);
-      if (!flag) emaxs[level] = -1.;
-    } else emaxs[level] = -1.;
     if (level==0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) {
       ierr =  PetscInfo1(pc,"Stop gridding, level %D\n",level);CHKERRQ(ierr);
@@ -1305,7 +1298,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->coarse_eq_limit  = 50;
   pc_gamg->threshold        = 0.;
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
-  pc_gamg->emax_id          = -1;
   pc_gamg->current_level    = 0; /* don't need to init really */
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
 
