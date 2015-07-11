@@ -448,8 +448,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,(ilocal ? ilocal[i] : i)+1);
-  ierr = PetscMalloc2(nroots,&roots,nleaves,&leaves);CHKERRQ(ierr);
-  for (i=0; i<nleaves; i++) {
+  ierr = PetscMalloc2(nroots,&roots,maxlocal,&leaves);CHKERRQ(ierr);
+  for (i=0; i<maxlocal; i++) {
     leaves[i].rank  = rank;
     leaves[i].index = i;
   }
