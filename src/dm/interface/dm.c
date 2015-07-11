@@ -3266,7 +3266,7 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
     ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
     if (!s)  SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     if (!dm->sf) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSF in order to create a global PetscSection");
-    ierr = PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&dm->map);CHKERRQ(ierr);
     ierr = PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->defaultGlobalSection, &dm->map);CHKERRQ(ierr);
     ierr = PetscSectionViewFromOptions(dm->defaultGlobalSection, NULL, "-global_section_view");CHKERRQ(ierr);
@@ -4283,7 +4283,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     ierr = DMSetDefaultSection(dm->dmBC, newSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&newSection);CHKERRQ(ierr);
     ierr = DMGetPointSF(dm->dmBC, &sf);CHKERRQ(ierr);
-    ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, &gsection);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, PETSC_FALSE, &gsection);CHKERRQ(ierr);
     ierr = DMSetDefaultGlobalSection(dm->dmBC, gsection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
   }

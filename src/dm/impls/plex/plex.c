@@ -5154,7 +5154,7 @@ static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, Pets
     ierr = PetscSectionSetDof(section, p, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
   ierr = PetscMalloc1(pEnd - pStart, &numbers);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetOffset(globalSection, p, &numbers[p-pStart]);CHKERRQ(ierr);
