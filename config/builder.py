@@ -268,6 +268,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 2, 'args': '-test_num 1 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
                                                                   {'numProcs': 3, 'args': '-dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
                                                                   ],
+                        'src/dm/impls/plex/examples/tests/ex15': [{'numProcs': 2, 'args': '-verbose -globaltonatural_sf_view'},
+                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex16': [{'numProcs': 1, 'args': '-dm_view ascii::ascii_info_detail -dmlabel_view'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
