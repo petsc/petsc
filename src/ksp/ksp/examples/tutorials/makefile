@@ -1107,64 +1107,64 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54_geo:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1;	  \
-         ${DIFF} output/ex54_0.out ex54.tmp || printf "${PWD}\nPossible problem with ex54_0.out, diffs above\n=========================================\n"; \
-        ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	  \
+         ${DIFF} output/ex54_0.out ex.tmp || printf "${PWD}\nPossible problem with ex54_0.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
-         ${DIFF} output/ex54_1.out ex54.tmp || printf "${PWD}\nPossible problem with ex54_1.out, diffs above\n======================================\n"; \
-        ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex54_1.out ex.tmp || printf "${PWD}\nPossible problem with ex54_1.out, diffs above\n======================================\n"; \
+        ${RM} -f ex.tmp
 
 runex54_Classical:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
-         ${DIFF} output/ex54_classical.out ex54.tmp || printf "${PWD}\nPossible problem with ex54_Classical, diffs above\n======================================\n"; \
-       ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex54_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex54_classical.out, diffs above\n======================================\n"; \
+       ${RM} -f ex.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
-         ${DIFF} output/ex54f.out ex54.tmp || printf "${PWD}\nPossible problem with ex54f, diffs above\n======================================\n"; \
-        ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex54f.out ex.tmp || printf "${PWD}\nPossible problem with ex54f.out, diffs above\n======================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_geo:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_coarse_ksp_type preonly -ksp_type cg -ksp_norm_type unpreconditioned > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_0.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_geo, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_levels_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned > ex.tmp 2>&1;	  \
+         ${DIFF} output/ex55_0.out ex.tmp || printf "${PWD}\nPossible problem with ex55_0.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_hypre:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_hypre.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_hypre, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short > ex.tmp 2>&1;	  \
+         ${DIFF} output/ex55_hypre.out ex.tmp || printf "${PWD}\nPossible problem with ex55_hypre, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_coarse_ksp_type preonly > ex55.tmp 2>&1; \
-         ${DIFF} output/ex55_sa.out ex55.tmp || printf "${PWD}\nPossible problem with ex55, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex55_sa.out ex.tmp || printf "${PWD}\nPossible problem with ex55_sa.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_Classical:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex55.tmp 2>&1; \
-         ${DIFF} output/ex55_classical.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_Classical, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex55_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex55_classical.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_NC:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex55.tmp 2>&1; \
-         ${DIFF} output/ex55_NC.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_NC, diffs above\n======================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex55_NC.out ex.tmp || printf "${PWD}\nPossible problem with ex55_NC.out, diffs above\n======================================\n"; \
+        ${RM} -f ex.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_coarse_ksp_type preonly -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex56.tmp 2>&1; \
-         ${DIFF} output/ex56_0.out ex56.tmp || printf "${PWD}\nPossible problem with ex56, diffs above \n=========================================\n"; \
-         ${RM} -f ex56.tmp
+	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex.tmp 2>&1; \
+         ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
+         ${RM} -f ex.tmp
 
 runex56_ml:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short -mg_coarse_ksp_type preonly > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_ml.out ex56.tmp || printf "${PWD}\nPossible problem with ex56_ml, diffs above\n=========================================\n"; \
-        ${RM} -f ex56.tmp
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	\
+         ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex56_nns:
-	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -mg_coarse_ksp_type preonly > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_nns.out ex56.tmp || printf "${PWD}\nPossible problem with ex56_nns, diffs above\n=========================================\n"; \
-         ${RM} -f ex56.tmp
+	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	\
+         ${DIFF} output/ex56_nns.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns.out, diffs above\n=========================================\n"; \
+         ${RM} -f ex.tmp
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
