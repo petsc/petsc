@@ -805,7 +805,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   if (!level) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a number of significant digits");
   /* Find K such that the weights are < 32 digits of precision */
   for (K = 1; PetscAbsReal(PetscLog10Real(wk)) < 2*p; ++K) {
-    wk = 0.5*h*PETSC_PI*cosh(K*h)/PetscSqr(cosh(0.5*PETSC_PI*sinh(K*h)));
+    wk = 0.5*h*PETSC_PI*PetscCoshReal(K*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(K*h)));
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
   ierr = PetscQuadratureSetOrder(*q, 2*K+1);CHKERRQ(ierr);
@@ -816,8 +816,8 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   x[0] = beta;
   w[0] = 0.5*alpha*PETSC_PI;
   for (k = 1; k < K; ++k) {
-    wk = 0.5*alpha*h*PETSC_PI*cosh(k*h)/PetscSqr(cosh(0.5*PETSC_PI*sinh(k*h)));
-    xk = tanh(0.5*PETSC_PI*sinh(k*h));
+    wk = 0.5*alpha*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
+    xk = tanh(0.5*PETSC_PI*PetscSinhReal(k*h));
     x[2*k-1] = -alpha*xk+beta;
     w[2*k-1] = wk;
     x[2*k+0] =  alpha*xk+beta;
@@ -864,8 +864,8 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
     h   *= 0.5;
     sum *= 0.5;
     do {
-      wk = 0.5*h*PETSC_PI*cosh(k*h)/PetscSqr(cosh(0.5*PETSC_PI*sinh(k*h)));
-      xk = tanh(0.5*PETSC_PI*sinh(k*h));
+      wk = 0.5*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
+      xk = tanh(0.5*PETSC_PI*PetscSinhReal(k*h));
       lx = -alpha*xk+beta;
       rx =  alpha*xk+beta;
       func(lx, &lval);
@@ -880,14 +880,14 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
       ++k;
       /* Only need to evaluate every other point on refined levels */
       if (l != 1) ++k;
-    } while (PetscAbsReal(PetscLog10Real(wk)) < 2*p); /* Only need to evaluate sum until weights are < 32 digits of precision */
+    } while (PetscAbsReal(PetscLog10Real(wk)) < p); /* Only need to evaluate sum until weights are < 32 digits of precision */
 
     d1 = PetscLog10Real(PetscAbsReal(sum - osum));
     d2 = PetscLog10Real(PetscAbsReal(sum - psum));
     d3 = PetscLog10Real(maxTerm) - p;
     d4 = PetscLog10Real(PetscMax(PetscAbsReal(lterm), PetscAbsReal(rterm)));
     d  = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1)/d2, 2*d1), d3), d4)));
-  } while (d < digits);
+  } while (d < digits && l < 12);
   *sol = sum;
   PetscFunctionReturn(0);
 }
