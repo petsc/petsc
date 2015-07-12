@@ -5,14 +5,14 @@ static char help[] = "An example of writing a global Vec from a DMPlex with HDF5
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
   MPI_Comm       comm;
   DM             dm;
-  Vec            v, nv;
-  PetscInt       dim = 2;
-  PetscBool      test_native = PETSC_FALSE, test_write = PETSC_FALSE, test_read = PETSC_FALSE, test_stdout = PETSC_FALSE, verbose = PETSC_FALSE, flg;
-  PetscViewer    stdoutViewer,hdf5Viewer;
+  Vec            v, nv, rv, coord;
+  PetscBool      test_read = PETSC_FALSE, verbose = PETSC_FALSE, flg;
+  PetscViewer    hdf5Viewer;
+  PetscInt       dim         = 2;
   PetscInt       numFields   = 1;
   PetscInt       numBC       = 0;
   PetscInt       numComp[1]  = {2};
@@ -20,7 +20,6 @@ int main(int argc,char **argv)
   PetscInt       bcFields[1] = {0};
   IS             bcPoints[1] = {NULL};
   PetscSection   section;
-  Vec            coord, readV;
   PetscScalar    norm;
   PetscErrorCode ierr;
 
@@ -28,10 +27,7 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_native","Test writing in native format","",PETSC_FALSE,&test_native,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_write","Test writing to the HDF5 file","",PETSC_FALSE,&test_write,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_read","Test reading from the HDF5 file","",PETSC_FALSE,&test_read,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_stdout","Test stdout","",PETSC_FALSE,&test_stdout,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-verbose","print the Vecs","",PETSC_FALSE,&verbose,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim","the dimension of the problem","",2,&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -82,46 +78,56 @@ int main(int argc,char **argv)
   }
 
   ierr = VecViewFromOptions(v, NULL, "-global_vec_view");CHKERRQ(ierr);
-  if (test_write) {
-    ierr = PetscViewerHDF5Open(comm,"V.h5",FILE_MODE_WRITE,&hdf5Viewer);CHKERRQ(ierr);
-    if (test_native) {ierr = PetscViewerPushFormat(hdf5Viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
-    ierr = VecView(v,hdf5Viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&hdf5Viewer);CHKERRQ(ierr);
-  }
-
-  if (test_stdout && test_native) {
-    ierr = PetscViewerASCIIGetStdout(comm,&stdoutViewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(stdoutViewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-    ierr = VecView(v,stdoutViewer);CHKERRQ(ierr);
-  }
 
   if (test_read) {
-    ierr = DMCreateGlobalVector(dm,&readV);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) readV,"V");CHKERRQ(ierr);
-    ierr = PetscViewerHDF5Open(comm,"V.h5",FILE_MODE_READ,&hdf5Viewer);CHKERRQ(ierr);
-    if (test_native) {ierr = PetscViewerPushFormat(hdf5Viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
-    ierr = VecLoad(readV,hdf5Viewer);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dm, &rv);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) rv, "V");CHKERRQ(ierr);
+    /* Test native read */
+    ierr = PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(hdf5Viewer, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
+    ierr = VecLoad(rv, hdf5Viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&hdf5Viewer);CHKERRQ(ierr);
     if (verbose) {
       PetscInt size, bs;
 
-      ierr = VecGetSize(readV,&size);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(readV,&bs);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"==== Vector from file. size==%d\tblock size=%d\n",size,bs);CHKERRQ(ierr);
+      ierr = VecGetSize(rv, &size);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(rv, &bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs);CHKERRQ(ierr);
+      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-    if (test_native) {
-      ierr = VecEqual(readV,v,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Vectors are equal\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"\nVectors are not equal\n\n");CHKERRQ(ierr);
-        ierr = VecAXPY(readV,-1.,v);CHKERRQ(ierr);
-        ierr = VecNorm(readV,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"diff norm is = %f",norm);CHKERRQ(ierr);
-        ierr = VecView(readV,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      }
-      ierr = VecDestroy(&readV);CHKERRQ(ierr);
+    ierr = VecEqual(rv, v, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "V and RV are equal\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "V and RV are not equal\n\n");CHKERRQ(ierr);
+      ierr = VecAXPY(rv, -1.0, v);CHKERRQ(ierr);
+      ierr = VecNorm(rv, NORM_INFINITY, &norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %f\n", norm);CHKERRQ(ierr);
+      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+    /* Test raw read */
+    ierr = PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer);CHKERRQ(ierr);
+    ierr = VecLoad(rv, hdf5Viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&hdf5Viewer);CHKERRQ(ierr);
+    if (verbose) {
+      PetscInt size, bs;
+
+      ierr = VecGetSize(rv, &size);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(rv, &bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs);CHKERRQ(ierr);
+      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    ierr = VecEqual(rv, nv, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "NV and RV are equal\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "NV and RV are not equal\n\n");CHKERRQ(ierr);
+      ierr = VecAXPY(rv, -1.0, v);CHKERRQ(ierr);
+      ierr = VecNorm(rv, NORM_INFINITY, &norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %f\n", norm);CHKERRQ(ierr);
+      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&rv);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&nv);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);

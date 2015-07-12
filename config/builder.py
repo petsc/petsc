@@ -269,6 +269,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 3, 'args': '-dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex15': [{'numProcs': 2, 'args': '-verbose -globaltonatural_sf_view'},
+                                                                  {'numProcs': 2, 'args': '-verbose -global_vec_view hdf5:V.h5:native -test_read'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex16': [{'numProcs': 1, 'args': '-dm_view ascii::ascii_info_detail -dmlabel_view'},
                                                                   ],
