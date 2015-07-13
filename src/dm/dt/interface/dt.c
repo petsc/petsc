@@ -1016,7 +1016,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
     mpfr_log10(tmp, curTerm, MPFR_RNDN);
     d4 = mpfr_get_d(tmp, MPFR_RNDN);
     d  = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1)/d2, 2*d1), d3), d4)));
-  } while (d < digits && l < 14);
+  } while (d < digits && l < 8);
   *sol = mpfr_get_d(sum, MPFR_RNDN);
   /* Cleanup */
   mpfr_clears(alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
