@@ -909,7 +909,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */
-  const PetscInt  p            = 16; /* Digits of precision in the evaluation */
   PetscInt        l            = 0;  /* Level of refinement, h = 2^{-l} */
   mpfr_t          alpha;             /* Half-width of the integration interval */
   mpfr_t          beta;              /* Center of the integration interval */
@@ -928,7 +927,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   PetscFunctionBegin;
   if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
   /* Create high precision storage */
-  mpfr_inits2(4*p, alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
+  mpfr_inits2(PetscCeilReal(safetyFactor*digits*PetscLogReal(10.)/PetscLogReal(2.)), alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
   /* Initialization */
   mpfr_set_d(alpha, 0.5*(b-a), MPFR_RNDN);
   mpfr_set_d(beta,  0.5*(b+a), MPFR_RNDN);
@@ -1002,7 +1001,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
       if (l != 1) ++k;
       mpfr_log10(tmp, wk, MPFR_RNDN);
       mpfr_abs(tmp, tmp, MPFR_RNDN);
-    } while (mpfr_get_d(tmp, MPFR_RNDN) < safetyFactor*p); /* Only need to evaluate sum until weights are < 32 digits of precision */
+    } while (mpfr_get_d(tmp, MPFR_RNDN) < safetyFactor*digits); /* Only need to evaluate sum until weights are < 32 digits of precision */
     mpfr_sub(tmp, sum, osum, MPFR_RNDN);
     mpfr_abs(tmp, tmp, MPFR_RNDN);
     mpfr_log10(tmp, tmp, MPFR_RNDN);
@@ -1012,7 +1011,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
     mpfr_log10(tmp, tmp, MPFR_RNDN);
     d2 = mpfr_get_d(tmp, MPFR_RNDN);
     mpfr_log10(tmp, maxTerm, MPFR_RNDN);
-    d3 = mpfr_get_d(tmp, MPFR_RNDN) - p;
+    d3 = mpfr_get_d(tmp, MPFR_RNDN) - digits;
     mpfr_log10(tmp, curTerm, MPFR_RNDN);
     d4 = mpfr_get_d(tmp, MPFR_RNDN);
     d  = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1)/d2, 2*d1), d3), d4)));
