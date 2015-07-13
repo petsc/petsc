@@ -903,7 +903,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
 }
 
 #ifdef PETSC_HAVE_MPFR
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
@@ -1023,7 +1022,13 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   mpfr_clears(alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
   PetscFunctionReturn(0);
 }
-
+#else
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+{
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method will not work without MPFR. Reconfigure using --download-mpfr --download-gmp");
+}
 #endif
 
 #undef __FUNCT__
