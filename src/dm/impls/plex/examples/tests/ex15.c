@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   PetscInt       bcFields[1] = {0};
   IS             bcPoints[1] = {NULL};
   PetscSection   section;
-  PetscScalar    norm;
+  PetscReal      norm;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "V and RV are not equal\n\n");CHKERRQ(ierr);
       ierr = VecAXPY(rv, -1.0, v);CHKERRQ(ierr);
       ierr = VecNorm(rv, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %f\n", norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm);CHKERRQ(ierr);
       ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     /* Test raw read */
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "NV and RV are not equal\n\n");CHKERRQ(ierr);
       ierr = VecAXPY(rv, -1.0, v);CHKERRQ(ierr);
       ierr = VecNorm(rv, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %f\n", norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm);CHKERRQ(ierr);
       ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = VecDestroy(&rv);CHKERRQ(ierr);
