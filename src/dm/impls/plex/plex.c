@@ -147,8 +147,8 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetDM(originalv, &dm);CHKERRQ(ierr);
-  if (!dm) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   ierr = PetscObjectGetComm((PetscObject) originalv, &comm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
