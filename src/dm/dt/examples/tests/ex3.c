@@ -90,7 +90,7 @@ static void func12(PetscReal x, PetscReal *val)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  const PetscInt  digits       = 12;
+  const PetscInt  digits       = 14;
   const PetscReal epsilon      = 1.0e-14;
   const PetscReal bounds[24]   =
     {
@@ -132,9 +132,18 @@ int main(int argc, char **argv)
     PetscReal integral;
 
     ierr = PetscDTTanhSinhIntegrate(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
-    if (PetscAbsReal(integral - analytic[f]) < epsilon) {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%d is correct\n", f+1);CHKERRQ(ierr);}
-    else                                                {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%d is wrong: %15.15f (%15.15f)\n", f+1, integral, PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);}
+    if (PetscAbsReal(integral - analytic[f]) < epsilon) {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is correct\n", f+1);CHKERRQ(ierr);}
+    else                                                {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %15.15f (%15.15f)\n", f+1, integral, PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);}
   }
+#ifdef PETSC_HAVE_MPFR
+  for (f = 0; f < 12; ++f) {
+    PetscReal integral;
+
+    ierr = PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
+    if (PetscAbsReal(integral - analytic[f]) < epsilon) {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is correct\n", f+1);CHKERRQ(ierr);}
+    else                                                {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %15.15f (%15.15f)\n", f+1, integral, PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);}
+  }
+#endif
   PetscFinalize();
   return 0;
 }
