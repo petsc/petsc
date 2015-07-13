@@ -899,6 +899,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
     d  = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1)/d2, 2*d1), d3), d4)));
   } while (d < digits && l < 12);
   *sol = sum;
+
   PetscFunctionReturn(0);
 }
 
@@ -907,7 +908,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
 #define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
-  const PetscInt  safetyFactor = 4;  /* Calculate abcissa until 2*p digits */
+  const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */
   const PetscInt  p            = 16; /* Digits of precision in the evaluation */
   PetscInt        l            = 0;  /* Level of refinement, h = 2^{-l} */
   mpfr_t          alpha;             /* Half-width of the integration interval */
@@ -927,7 +928,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   PetscFunctionBegin;
   if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
   /* Create high precision storage */
-  mpfr_inits2(p*safetyFactor, alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
+  mpfr_inits2(4*p, alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
   /* Initialization */
   mpfr_set_d(alpha, 0.5*(b-a), MPFR_RNDN);
   mpfr_set_d(beta,  0.5*(b+a), MPFR_RNDN);
@@ -1002,7 +1003,6 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
       mpfr_log10(tmp, wk, MPFR_RNDN);
       mpfr_abs(tmp, tmp, MPFR_RNDN);
     } while (mpfr_get_d(tmp, MPFR_RNDN) < safetyFactor*p); /* Only need to evaluate sum until weights are < 32 digits of precision */
-
     mpfr_sub(tmp, sum, osum, MPFR_RNDN);
     mpfr_abs(tmp, tmp, MPFR_RNDN);
     mpfr_log10(tmp, tmp, MPFR_RNDN);
