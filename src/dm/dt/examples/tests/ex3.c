@@ -85,6 +85,18 @@ static void func12(PetscReal x, PetscReal *val)
   *val = PetscExpReal(1-1/x)/PetscSqrtReal(x*x*x-x*x*x*x);
 }
 #undef __FUNCT__
+#define __FUNCT__ "func13"
+static void func13(PetscReal x, PetscReal *val)
+{
+  *val = PetscExpReal(-(1/x-1)*(1/x-1)/2)/(x*x);
+}
+#undef __FUNCT__
+#define __FUNCT__ "func14"
+static void func14(PetscReal x, PetscReal *val)
+{
+  *val = PetscExpReal(1-1/x)*PetscCosReal(1/x-1)/(x*x);
+}
+#undef __FUNCT__
 
 
 #define __FUNCT__ "main"
@@ -92,7 +104,7 @@ int main(int argc, char **argv)
 {
   const PetscInt  digits       = 14;
   const PetscReal epsilon      = 1.0e-14;
-  const PetscReal bounds[24]   =
+  const PetscReal bounds[28]   =
     {
       0.0, 1.0,
       0.0, 1.0,
@@ -105,9 +117,11 @@ int main(int argc, char **argv)
       0.0, PETSC_PI/2.,
       0.0, PETSC_PI/2.,
       0.0, 1.0,
+      0.0, 1.0,
+      0.0, 1.0,
       0.0, 1.0
     };
-  const PetscReal analytic[12] =
+  const PetscReal analytic[14] =
     {
       0.250000000000000,
       0.210657251225806988108092302182988001695680805674,
@@ -121,14 +135,16 @@ int main(int argc, char **argv)
       2.221441469079183123507940495030346849307310844687,
       1.570796326794896619231321691639751442098584699687,
       1.772453850905516027298167483341145182797549456122,
+      1.253314137315500251207882642405522626503493370304,
+      0.500000000000000000000000000000000000000000000000
     };
-  void          (*funcs[12])(PetscReal, PetscReal *) = {func1, func2, func3, func4, func5, func6, func7, func8, func9, func10, func11, func12};
+  void          (*funcs[14])(PetscReal, PetscReal *) = {func1, func2, func3, func4, func5, func6, func7, func8, func9, func10, func11, func12, func13, func14};
   PetscInt        f;
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
   /* Integrate each function */
-  for (f = 0; f < 12; ++f) {
+  for (f = 0; f < 14; ++f) {
     PetscReal integral;
 
     ierr = PetscDTTanhSinhIntegrate(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
@@ -136,7 +152,7 @@ int main(int argc, char **argv)
     else                                                {ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %15.15f (%15.15f)\n", f+1, integral, PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);}
   }
 #ifdef PETSC_HAVE_MPFR
-  for (f = 0; f < 12; ++f) {
+  for (f = 0; f < 14; ++f) {
     PetscReal integral;
 
     ierr = PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
