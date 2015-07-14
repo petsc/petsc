@@ -157,3 +157,13 @@ cdef class DMShell(DM):
             CHKERR( DMShellSetCreateFieldDecomposition(self.dm, DMSHELL_CreateFieldDecomposition) )
         else:
             CHKERR( DMShellSetCreateFieldDecomposition(self.dm, NULL) )
+
+    def setCreateSubDM(self, create_subdm, args=None, kargs=None):
+        if create_subdm is not None:
+            if args  is None: args = ()
+            if kargs is None: kargs = {}
+            context = (create_subdm, args, kargs)
+            self.set_attr('__create_subdm__', context)
+            CHKERR( DMShellSetCreateSubDM(self.dm, DMSHELL_CreateSubDM) )
+        else:
+            CHKERR( DMShellSetCreateSubDM(self.dm, NULL) )
