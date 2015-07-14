@@ -140,7 +140,8 @@ runex15_0:
 	   else printf "${PWD}\nPossible problem with with runex15_0, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex15_0.tmp
 
-TESTEXAMPLES_C        = ex3.PETSc runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 ex3.rm ex15.PETSc runex15_0 ex15.rm
+TESTEXAMPLES_C        = ex3.PETSc runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 ex3.rm
+TESTEXAMPLES_HDF5     = ex15.PETSc runex15_0 ex15.rm
 TESTEXAMPLES_TRIANGLE = ex3.PETSc runex3_constraints runex3_nonconforming_simplex_2 ex3.rm
 TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 runex3_nonconforming_simplex_3 ex3.rm
 TESTEXAMPLES_FORTRAN  = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
