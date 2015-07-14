@@ -155,11 +155,4 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
-    if self.languages.clanguage == 'C':
-      self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
-      self.addDefine('CUDA_EXTERN_C_END','}')
-    else:
-      self.addDefine('CUDA_EXTERN_C_BEGIN',' ')
-      self.addDefine('CUDA_EXTERN_C_END',' ')
-    self.configureTypes()
     return

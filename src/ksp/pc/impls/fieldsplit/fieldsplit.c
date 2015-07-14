@@ -562,11 +562,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink->x = jac->x[i]; ilink->y = jac->y[i]; ilink->z = NULL;
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
       ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
-      /* Check for null space attached to IS */
-      ierr = PetscObjectQuery((PetscObject) ilink->is, "nullspace", (PetscObject*) &sp);CHKERRQ(ierr);
-      if (sp) {
-        ierr = MatSetNullSpace(jac->mat[i], sp);CHKERRQ(ierr);
-      }
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nearnullspace", (PetscObject*) &sp);CHKERRQ(ierr);
       if (sp) {
         ierr = MatSetNearNullSpace(jac->pmat[i], sp);CHKERRQ(ierr);
@@ -602,6 +597,18 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
   } else {
     jac->mat = jac->pmat;
+  }
+
+  /* Check for null space attached to IS */
+  ilink = jac->head;
+  for (i=0; i<nsplit; i++) {
+    MatNullSpace sp;
+
+    ierr = PetscObjectQuery((PetscObject) ilink->is, "nullspace", (PetscObject*) &sp);CHKERRQ(ierr);
+    if (sp) {
+      ierr = MatSetNullSpace(jac->mat[i], sp);CHKERRQ(ierr);
+    }
+    ilink = ilink->next;
   }
 
   if (jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
