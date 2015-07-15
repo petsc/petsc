@@ -61,9 +61,9 @@ typedef struct {
   PetscInt  measuretype;
   PetscInt  smoothtype;
   PetscInt  smoothnumlevels;
-  PetscInt  eu_level;   // Number of levels for ILU(k) in Euclid
-  double    eu_droptolerance; // Drop tolerance for ILU(k) in Euclid
-  PetscInt  eu_bj;      // Defines use of Block Jacobi ILU in Euclid
+  PetscInt  eu_level;   /* Number of levels for ILU(k) in Euclid */
+  double    eu_droptolerance; /* Drop tolerance for ILU(k) in Euclid */
+  PetscInt  eu_bj;      /* Defines use of Block Jacobi ILU in Euclid */
   PetscInt  relaxtype[3];
   double    relaxweight;
   double    outerrelaxweight;
