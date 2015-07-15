@@ -736,7 +736,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(xin->map->n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1 || dim2) {
+  if (bs > 1 || dim2) {
     count[dim] = bs;
     ++dim;
   }
@@ -760,7 +760,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1 || dim2) {
+  if (bs > 1 || dim2) {
     offset[dim] = 0;
     ++dim;
   }
