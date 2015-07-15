@@ -28,10 +28,14 @@ Although we are using a DMDA, and thus have a structured mesh, we will discretiz
 the problem with finite elements, splitting each cell of the DMDA into two
 triangles.
 
-This uses multigrid to solve the linear system
+  This example is WRONG. It, for example, creates the global vector user->sol_n.rho but then accesses values in it using the element numbering
+  which is based on local (ghosted) numbering.
+
+  This example does not produce any meaningful results because it is incomplete; the systems produced may not be reasonable.
+
 */
 
-static char help[] = "Solves 2D compressible Euler using multigrid.\n\n";
+static char help[] = "Solves 2D compressible Euler.\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -78,7 +82,8 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDASetElementType(da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
@@ -352,6 +357,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -483,6 +489,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
@@ -633,9 +640,10 @@ PetscErrorCode ComputePredictor(DM da, UserContext *user)
 #if 0
   ierr = DMLocalToGlobalBegin(da, uLocal, ADD_VALUES,u);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da, uLocal, ADD_VALUES,u);CHKERRQ(ierr);
+#endif
   ierr = DMRestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
-#endif
+  ierr = DMRestoreGlobalVector(da, &uOld);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
