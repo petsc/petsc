@@ -12,6 +12,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
 
   PetscFunctionBegin;
   if (!da->e) {
+    if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
     ierr   = DMDAGetCorners(dm,&xs,0,0,&xe,0,0);CHKERRQ(ierr);
     ierr   = DMDAGetGhostCorners(dm,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
@@ -42,6 +43,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
 
   PetscFunctionBegin;
   if (!da->e) {
+    if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=2; nn=3;}
     if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1; nn=4;}
     ierr   = DMDAGetCorners(dm,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
@@ -90,6 +92,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
 
   PetscFunctionBegin;
   if (!da->e) {
+    if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=6; nn=4;}
     if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1; nn=8;}
     ierr   = DMDAGetCorners(dm,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
