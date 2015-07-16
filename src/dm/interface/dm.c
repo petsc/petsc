@@ -211,13 +211,15 @@ PetscErrorCode VecGetDM(Vec v, DM *dm)
 #undef __FUNCT__
 #define __FUNCT__ "VecSetDM"
 /*@
-  VecSetDM - Sets the DM defining the data layout of the vector
+  VecSetDM - Sets the DM defining the data layout of the vector.
 
   Not collective
 
   Input Parameters:
 + v - The Vec
 - dm - The DM
+
+  Note: This is NOT the same as DMCreateGlobalVector() since it does not change the view methods or perform other customization, but merely sets the DM member.
 
   Level: intermediate
 
