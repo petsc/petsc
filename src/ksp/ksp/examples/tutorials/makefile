@@ -670,27 +670,28 @@ runex10_17:
 	   else printf "${PWD}\nPossible problem with ex10_17, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_17.tmp
 runex10_boomeramg_schwarz:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Schwarz-smoothers -f0 ${DATAFILESPATH}/matrices/poisson2 > ex10_boomeramg_schwarz.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Schwarz-smoothers -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_schwarz.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_schwarz.out ex10_boomeramg_schwarz.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_schwarz, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_schwarz.tmp
 runex10_boomeramg_pilut:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2 > ex10_boomeramg_pilut.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_pilut.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_pilut.out ex10_boomeramg_pilut.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_pilut, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_pilut.tmp
 runex10_boomeramg_parasails:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2 > ex10_boomeramg_parasails.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_parasails.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_parasails.out ex10_boomeramg_parasails.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_parasails, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_parasails.tmp
+# Euclid has a bug in its handling of MPI communicators resulting in some memory not being freed at conclusion of the run
 runex10_boomeramg_euclid:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01  -f0 ${DATAFILESPATH}/matrices/poisson2 > ex10_boomeramg_euclid.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01  -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_euclid.out ex10_boomeramg_euclid.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_euclid.tmp
 runex10_boomeramg_euclid_bj:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj -f0 ${DATAFILESPATH}/matrices/poisson2 > ex10_boomeramg_euclid_bj.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid_bj.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_euclid_bj.out ex10_boomeramg_euclid_bj.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid_bj, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_euclid_bj.tmp
@@ -1287,7 +1288,7 @@ TESTEXAMPLES_MATLAB_ENGINE     = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17		       = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm
 TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 ex10.rm runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut runex10_boomeramg_euclid runex10_boomeramg_euclid_bj
+TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut runex10_boomeramg_euclid runex10_boomeramg_euclid_bj ex10.rm
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
                                  runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
