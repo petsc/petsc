@@ -798,7 +798,6 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   const PetscReal beta  = (b+a)/2.;                  /* Center of the integration interval */
   const PetscReal h     = PetscPowReal(2.0, -level); /* Step size, length between x_k */
   PetscReal       wk    = 0.5*PETSC_PI;              /* Quadrature weight at x_k */
-  PetscReal       xk;                                /* Quadrature point x_k on reference domain [-1, 1] */
   PetscReal      *x, *w;
   PetscInt        K, k, npoints;
   PetscErrorCode  ierr;
@@ -848,7 +847,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
   PetscReal       wk;                /* Quadrature weight at x_k */
   PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
   PetscInt        d;                 /* Digits of precision in the integral */
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
@@ -922,7 +920,6 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
   PetscInt        d;                 /* Digits of precision in the integral */
   mpfr_t          pi2, kh, msinh, mcosh, maxTerm, curTerm, tmp;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
