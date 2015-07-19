@@ -797,6 +797,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   const PetscReal alpha = (b-a)/2.;                  /* Half-width of the integration interval */
   const PetscReal beta  = (b+a)/2.;                  /* Center of the integration interval */
   const PetscReal h     = PetscPowReal(2.0, -level); /* Step size, length between x_k */
+  PetscReal       xk;                                /* Quadrature point x_k on reference domain [-1, 1] */
   PetscReal       wk    = 0.5*PETSC_PI;              /* Quadrature weight at x_k */
   PetscReal      *x, *w;
   PetscInt        K, k, npoints;
@@ -841,7 +842,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
   PetscReal       osum  = 0.0;       /* Integral on last level */
   PetscReal       psum  = 0.0;       /* Integral on the level before the last level */
   PetscReal       sum;               /* Integral on current level */
-  PetscReal       xk;                /* Quadrature point x_k on reference domain [-1, 1] */
   PetscReal       yk;                /* Quadrature point 1 - x_k on reference domain [-1, 1] */
   PetscReal       lx, rx;            /* Quadrature points to the left and right of 0 on the real domain [a, b] */
   PetscReal       wk;                /* Quadrature weight at x_k */
@@ -867,15 +867,9 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
     sum *= 0.5;
     do {
       wk = 0.5*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
-#if 1
       yk = 1.0/(PetscExpReal(0.5*PETSC_PI*PetscSinhReal(k*h)) * PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
       lx = -alpha*(1.0 - yk)+beta;
       rx =  alpha*(1.0 - yk)+beta;
-#else
-      xk = tanh(0.5*PETSC_PI*PetscSinhReal(k*h));
-      lx = -alpha*xk+beta;
-      rx =  alpha*xk+beta;
-#endif
       func(lx, &lval);
       func(rx, &rval);
       lterm   = alpha*wk*lval;
