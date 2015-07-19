@@ -109,6 +109,17 @@
       parameter (SNES_NGMRES_SELECT_DIFFERENCE = 1)
       parameter (SNES_NGMRES_SELECT_LINESEARCH = 2)
 
+!
+! SNESQNType
+!
+
+      PetscEnum SNES_QN_LBFGS
+      PetscEnum SNES_QN_BROYDEN
+      PetscEnum SNES_QN_BADBROYDEN
+
+      parameter(SNES_QN_LBFGS       = 0)
+      parameter(SNES_QN_BROYDEN     = 1)
+      parameter(SNES_QN_BADBROYDEN  = 2)
 
 !
 ! SNESQNScaleType
