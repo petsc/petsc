@@ -142,7 +142,7 @@ int main(int argc,char **args)
         /* Get array data */
         ierr = elem_3d_elast_v_25((PetscScalar*)DD1);CHKERRQ(ierr);
       }
-    
+
       /* BC version of element */
       for (i=0; i<24; i++) {
         for (j=0; j<24; j++) {
@@ -184,9 +184,15 @@ int main(int argc,char **args)
             /* radius */
             PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+(z-.5+h/2)*(z-.5+h/2));
             PetscReal alpha = 1.0;
-            PetscInt  jx,ix,idx[8] = { id, id+1, id+NN+1, id+NN,
-                                       id        + NN*NN, id+1    + NN*NN,
-                                       id+NN+1 + NN*NN, id+NN + NN*NN };
+            PetscInt  jx,ix,idx[8];
+            idx[0] = id;
+            idx[1] = id+1;
+            idx[2] = id+NN+1;
+            idx[3] = id+NN;
+            idx[4] = id + NN*NN;
+            idx[5] = id+1 + NN*NN;
+            idx[6] = id+NN+1 + NN*NN;
+            idx[7] = id+NN + NN*NN;
 
             /* correct indices */
             if (i==Ni1-1 && Ni1!=nn) {
