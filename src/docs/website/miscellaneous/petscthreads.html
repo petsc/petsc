@@ -54,7 +54,7 @@
       </p>
 
       <p>
-        <b><u>The simplest model of PETSc with threads</u></b> is to contain all
+        <b><u>The simple model of PETSc with threads</u></b> is to contain all
         the thread operations <b><u>inside</u></b> the Mat and Vec classes,
         leaving the user's programming model identical to what it is today. This
         model can be done in two ways by having Vec and Mat class implementations
@@ -67,11 +67,23 @@
       </ol>
 
       <p>
-        In petsc-3.2 we have implemented approach 2 (pthreads). The
-        corresponding classes are VECSEQPTHREAD and MATSEQAIJPTHREAD; these are
-        very preliminary but can be explored. We found the code was never faster than
+        We tried this approach (with support for both OpenMP and pthreads) and found the code was never faster than
         pure MPI and cumbersome to use hence we have removed it.
-              </p>
+      </p>
+
+      <p>
+        <b><u>An alternative simple model of PETSc with
+        threads</u></b> is to have individual OpenMP threads to each
+        manage their own (sequential) PETSc objects (and each thread
+        can interact only with its own objects). This is useful when
+        one has many small systems (or sets of ODEs) that must be
+        integrated in an "embarrassingly parallel" fashion.
+      </ol>
+
+      <p>
+        To use this feature one must ./configure PETSc with the option --with-threadsafety --with-log=0 --with-openmp. src/ksp/ksp/examples/tutorials/ex61f.F90 demonstrates how this may be used.
+      </p>
+
 
       <p>
         <b><u>A more complicated model of PETSc with threads</u></b>, which would
