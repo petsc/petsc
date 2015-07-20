@@ -137,6 +137,7 @@ typedef struct {
   PetscInt            *supports;          /* Cone for each point */
   PetscBool            refinementUniform; /* Flag for uniform cell refinement */
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
+  PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
   PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
