@@ -90,6 +90,14 @@
         <li><a href="#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
         <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
+        <li><a href="#PetscOptionsInsertFile">What does it mean when make test gives:</a>
+            <pre>
+Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
+See http://www.mcs.anl.gov/petsc/documentation/faq.html
+[0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
+            </pre></li>
       </ul>
 
       <h4><a href="#usage">Usage</a></h4>
@@ -453,7 +461,7 @@
       though they try to implement the built-in data types of double etc are not
       native types and cannot "just be used" in a general piece of numerical
       source code rather the code has to rewritten to live within the limitations
-      of QD classes.
+      of QD classes. But note, above, that PETSc can be built to use quad precision.
 
       <hr>
 
@@ -608,6 +616,21 @@
 
       <p>
         grep "self.download "  config/BuildSystem/config/packages/*.py
+      </p>
+
+      <hr>
+
+      <h3><a name="PetscOptionsInsertFile">What does it mean when make test gives:</a></h3>
+            <pre>
+Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
+See http://www.mcs.anl.gov/petsc/documentation/faq.html
+[0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
+</pre></li>
+
+      <p>
+        The machine has a funky network configuration and for some reason MPICH is unable to communicate between processes with the socket connections it has established. This can happen even if you are running MPICH on just one machine. Often you will find that ping `hostname` fails with this network configuration; that is processes on the machine cannot even connect to the same machine. You can try completely disconnecting your machine from the network and see if make test then works or speaking with your system adminstrator. You can also use the ./configure options --download-mpich --download-mpich-device=ch3:nemesis 
       </p>
 
       <hr>

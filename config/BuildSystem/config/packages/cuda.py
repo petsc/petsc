@@ -155,4 +155,5 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
+    self.configureTypes()
     return

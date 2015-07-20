@@ -842,13 +842,11 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
   PetscReal       osum  = 0.0;       /* Integral on last level */
   PetscReal       psum  = 0.0;       /* Integral on the level before the last level */
   PetscReal       sum;               /* Integral on current level */
-  PetscReal       xk;                /* Quadrature point x_k on reference domain [-1, 1] */
   PetscReal       yk;                /* Quadrature point 1 - x_k on reference domain [-1, 1] */
   PetscReal       lx, rx;            /* Quadrature points to the left and right of 0 on the real domain [a, b] */
   PetscReal       wk;                /* Quadrature weight at x_k */
   PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
   PetscInt        d;                 /* Digits of precision in the integral */
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
@@ -922,7 +920,6 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
   PetscInt        d;                 /* Digits of precision in the integral */
   mpfr_t          pi2, kh, msinh, mcosh, maxTerm, curTerm, tmp;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");

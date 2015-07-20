@@ -2925,6 +2925,10 @@ convergence rates.
 \trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
 this is not obvious) and is recommended if poor convergence rates are
 observed, at least until the source of the problem is discovered.
+Optimizing parameters for AMG is tricky; we can help.
+To get help with your problem, first tell us the PDE that you are solving and any other useful information like discretizations, stretched grids, high contrast media, etc.
+Run with \trl{-info} and pipe the output, which will be large, to \trl{grep GAMG}, and send us the output (about 20 lines).
+This will give us useful high level information that will often give us a direction to start optimizing parameters.
 
 Finally, there are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
