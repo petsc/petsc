@@ -466,17 +466,17 @@ runex20:
 	   ${RM} -f ex20_1.tmp
 
 runex20adj:
-	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1000000 > ex20adj_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -mu 100000 > ex20adj_1.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_1.out ex20adj_1.tmp || printf "${PWD}\nPossible problem with ex20adj_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj_1.tmp 
 
 runex20opt_ic:
-	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -tao_view -mu 1000000 > ex20opt_ic_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view -mu 100000 > ex20opt_ic_1.tmp 2>&1; \
 	  ${DIFF} output/ex20opt_ic_1.out ex20opt_ic_1.tmp || printf "${PWD}\nPossible problem with ex20opt_ic_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20opt_ic_1.tmp
 
 runex20opt_p:
-	-@${MPIEXEC} -n 1 ./ex20opt_p -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -tao_view -mu 1 > ex20opt_p_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20opt_p -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view > ex20opt_p_1.tmp 2>&1; \
 	  ${DIFF} output/ex20opt_p_1.out ex20opt_p_1.tmp || printf "${PWD}\nPossible problem with ex20opt_p_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20opt_p_1.tmp 
 
