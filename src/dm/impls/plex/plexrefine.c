@@ -6843,6 +6843,63 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexSetRefinementFunction"
+/*@
+  DMPlexSetRefinementFunction - Set the function giving the maximum cell volume for refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementFunc - Function giving the maximum cell volume in the refined mesh
+
+  Note: The calling sequence is refinementFunc(coords, limit)
+$ coords - Coordinates of the current point, usually a cell centroid
+$ limit  - The maximum cell volume for a cell containing this point
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
+PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *))
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->refinementFunc = refinementFunc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetRefinementLimit"
+/*@
+  DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementFunc - Function giving the maximum cell volume in the refined mesh
+
+  Note: The calling sequence is refinementFunc(coords, limit)
+$ coords - Coordinates of the current point, usually a cell centroid
+$ limit  - The maximum cell volume for a cell containing this point
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
+PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFunc)(const PetscReal [], PetscReal *))
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(refinementFunc,  2);
+  *refinementFunc = mesh->refinementFunc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetCellRefiner_Internal"
 PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 {
