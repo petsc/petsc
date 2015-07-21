@@ -961,7 +961,7 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
 
    Notes:
    VecSetValuesBlocked() sets x[bs*ix[i]+j] = y[bs*i+j],
-   for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
+   for j=0,...,bs-1, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
    Calls to VecSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES
    options cannot be mixed without intervening calls to the assembly
