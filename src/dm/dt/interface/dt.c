@@ -799,7 +799,6 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   const PetscReal h     = PetscPowReal(2.0, -level); /* Step size, length between x_k */
   PetscReal       xk;                                /* Quadrature point x_k on reference domain [-1, 1] */
   PetscReal       wk    = 0.5*PETSC_PI;              /* Quadrature weight at x_k */
-  PetscReal       xk;                                /* Quadrature point x_k on reference domain [-1, 1] */
   PetscReal      *x, *w;
   PetscInt        K, k, npoints;
   PetscErrorCode  ierr;
