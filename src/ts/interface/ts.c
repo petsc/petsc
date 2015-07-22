@@ -3357,8 +3357,8 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
   if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,&ts->ptime);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
