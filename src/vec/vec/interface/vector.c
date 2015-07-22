@@ -523,11 +523,9 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
    Notes:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
++     PETSC_VIEWER_STDOUT_SELF - for sequential vectors
+.     PETSC_VIEWER_STDOUT_WORLD - for parallel vectors created on PETSC_COMM_WORLD
+-     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
    option PetscViewerSetFormat().

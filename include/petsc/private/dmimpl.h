@@ -144,6 +144,8 @@ struct _p_DM {
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
+  PetscSF                 sfNatural;            /* SF mapping to the "natural" ordering */
+  PetscBool               useNatural;           /* Create the natural SF */
   /* Allows a non-standard data layout */
   PetscSection            defaultSection;       /* Layout for local vectors */
   PetscSection            defaultGlobalSection; /* Layout for global vectors */

@@ -23,7 +23,7 @@ PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS*)snes->data;
 
   PetscFunctionBegin;
-  *inact = vi->IS_inact_prev;
+  *inact = vi->IS_inact;
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +388,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
   for (i=0; i<maxits; i++) {
 
-    IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
+    IS         IS_act; /* _act -> active set _inact -> inactive set */
     IS         IS_redact; /* redundant active set */
     VecScatter scat_act,scat_inact;
     PetscInt   nis_act,nis_inact;
@@ -406,7 +406,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /* Create active and inactive index sets */
 
     /*original
-    ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
+    ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&vi->IS_inact);CHKERRQ(ierr);
      */
     ierr = SNESVIGetActiveSetIS(snes,X,F,&IS_act);CHKERRQ(ierr);
 
@@ -414,18 +414,18 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);CHKERRQ(ierr);
       if (IS_redact) {
         ierr = ISSort(IS_redact);CHKERRQ(ierr);
-        ierr = ISComplement(IS_redact,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+        ierr = ISComplement(IS_redact,X->map->rstart,X->map->rend,&vi->IS_inact);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
       } else {
-        ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+        ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&vi->IS_inact);CHKERRQ(ierr);
       }
     } else {
-      ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+      ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&vi->IS_inact);CHKERRQ(ierr);
     }
 
 
     /* Create inactive set submatrix */
-    ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
 
     if (0) {                    /* Dead code (temporary developer hack) */
       IS keptrows;
@@ -440,20 +440,20 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
         ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
         ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
-        ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
+        ierr = ISGetIndices(vi->IS_inact,&inact);CHKERRQ(ierr);
         ierr = PetscMalloc1(cnt,&nrows);CHKERRQ(ierr);
         for (k=0; k<cnt; k++) nrows[k] = inact[krows[k]-rstart];
         ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(vi->IS_inact,&inact);CHKERRQ(ierr);
         ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
-        ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
+        ierr = ISDestroy(&vi->IS_inact);CHKERRQ(ierr);
 
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
-        ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
-        ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),cnt,nrows,PETSC_OWN_POINTER,&vi->IS_inact);CHKERRQ(ierr);
+        ierr = ISComplement(vi->IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
+        ierr = MatGetSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
       }
     }
-    ierr = DMSetVI(snes->dm,IS_inact);CHKERRQ(ierr);
+    ierr = DMSetVI(snes->dm,vi->IS_inact);CHKERRQ(ierr);
     /* remove later */
 
     /*
@@ -461,12 +461,12 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = VecView(vi->xl,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xl))->comm));CHKERRQ(ierr);
     ierr = VecView(X,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)X)));CHKERRQ(ierr);
     ierr = VecView(F,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)F)));CHKERRQ(ierr);
-    ierr = ISView(IS_inact,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)IS_inact)));CHKERRQ(ierr);
+    ierr = ISView(vi->IS_inact,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)vi->IS_inact)));CHKERRQ(ierr);
      */
 
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(vi->IS_inact,&nis_inact);CHKERRQ(ierr);
 
     /* Create active and inactive set vectors */
     ierr = SNESCreateSubVectors_VINEWTONRSLS(snes,nis_inact,&F_inact);CHKERRQ(ierr);
@@ -475,7 +475,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
     /* Create scatter contexts */
     ierr = VecScatterCreate(Y,IS_act,Y_act,NULL,&scat_act);CHKERRQ(ierr);
-    ierr = VecScatterCreate(Y,IS_inact,Y_inact,NULL,&scat_inact);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,vi->IS_inact,Y_inact,NULL,&scat_inact);CHKERRQ(ierr);
 
     /* Do a vec scatter to active and inactive set vectors */
     ierr = VecScatterBegin(scat_inact,F,F_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -490,15 +490,15 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /* Active set direction = 0 */
     ierr = VecSet(Y_act,0);CHKERRQ(ierr);
     if (snes->jacobian != snes->jacobian_pre) {
-      ierr = MatGetSubMatrix(snes->jacobian_pre,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(snes->jacobian_pre,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
     } else prejac_inact_inact = jac_inact_inact;
 
-    ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
+    ierr = ISEqual(vi->IS_inact_prev,vi->IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     }
 
-    /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
+    /*      ierr = ISView(vi->IS_inact,0);CHKERRQ(ierr); */
     /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
     /*      ierr = MatView(snes->jacobian_pre,0); */
 
@@ -521,14 +521,14 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
           PetscInt       n,N = 101*101,j,cnts[3] = {0,0,0};
           const PetscInt *ii;
 
-          ierr = ISGetSize(IS_inact,&n);CHKERRQ(ierr);
-          ierr = ISGetIndices(IS_inact,&ii);CHKERRQ(ierr);
+          ierr = ISGetSize(vi->IS_inact,&n);CHKERRQ(ierr);
+          ierr = ISGetIndices(vi->IS_inact,&ii);CHKERRQ(ierr);
           for (j=0; j<n; j++) {
             if (ii[j] < N) cnts[0]++;
             else if (ii[j] < 2*N) cnts[1]++;
             else if (ii[j] < 3*N) cnts[2]++;
           }
-          ierr = ISRestoreIndices(IS_inact,&ii);CHKERRQ(ierr);
+          ierr = ISRestoreIndices(vi->IS_inact,&ii);CHKERRQ(ierr);
 
           ierr = PCBJacobiSetTotalBlocks(pc,3,cnts);CHKERRQ(ierr);
         }
@@ -558,9 +558,9 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
     if (!isequal) {
       ierr = ISDestroy(&vi->IS_inact_prev);CHKERRQ(ierr);
-      ierr = ISDuplicate(IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
+      ierr = ISDuplicate(vi->IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
     }
-    ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
+    ierr = ISDestroy(&vi->IS_inact);CHKERRQ(ierr);
     ierr = MatDestroy(&jac_inact_inact);CHKERRQ(ierr);
     if (snes->jacobian != snes->jacobian_pre) {
       ierr = MatDestroy(&prejac_inact_inact);CHKERRQ(ierr);

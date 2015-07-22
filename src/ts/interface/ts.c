@@ -388,6 +388,7 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
     ierr = TSTrajectorySetType(ts->trajectory,TSTRAJECTORYBASIC);CHKERRQ(ierr);
+    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1234,6 +1235,9 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
 
    Notes:
    The matrices Amat and Pmat are exactly the matrices that are used by SNES for the nonlinear solve.
+
+   If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+   space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
 
    The matrix dF/dU + a*dF/dU_t you provide turns out to be
    the Jacobian of F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
@@ -3353,8 +3357,8 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
   if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,&ts->ptime);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);

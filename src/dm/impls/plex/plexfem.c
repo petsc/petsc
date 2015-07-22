@@ -830,7 +830,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, con
       }
       for (q = 0; q < numQuadPoints; ++q) {
         CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
-        ierr = (*funcs[field])(dim, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
+        ierr = (*funcs[field])(dim, coords, Nc, funcVal, ctx);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);

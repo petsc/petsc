@@ -6,15 +6,15 @@ Adjoint solve:Removing fault at time = 0.10
  sensitivity wrt initial conditions: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]
 Vec Object: 1 MPI processes
   type: seq
--170.168
-15394.3
+-174.588
+14986.2
 Vec Object: 1 MPI processes
   type: seq
-438.244
+442.039
 Vec Object: 1 MPI processes
   type: seq
 12.3988
 
  cost function=11.2988
 
- sensitivity wrt parameter pm: 342.3425761 
+ sensitivity wrt parameter pm: 343.6469591 

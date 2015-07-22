@@ -410,6 +410,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
   PC             pc;
   PetscBool      match;
   PetscErrorCode ierr;
+  MatNullSpace   nullsp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -431,6 +432,14 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator rutines, only version 1 and 2");
+
+  /* attach any user provided null space that was on Amat to the newly created matrix free matrix */
+  if (snes->jacobian) {
+    ierr = MatGetNullSpace(snes->jacobian,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatSetNullSpace(J,nullsp);CHKERRQ(ierr);
+    }
+  }
 
   ierr = PetscInfo1(snes,"Setting default matrix-free operator routines (version %D)\n", version);CHKERRQ(ierr);
   if (hasOperator) {
@@ -2444,6 +2453,9 @@ M*/
    Notes:
    If the Amat matrix and Pmat matrix are different you must call MatAssemblyBegin/End() on
    each matrix.
+
+   If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+   space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
 
    If using SNESComputeJacobianDefaultColor() to assemble a Jacobian, the ctx argument
    must be a MatFDColoring.

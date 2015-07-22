@@ -201,12 +201,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
    Notes:
    This PetscViewer can be destroyed with PetscViewerDestroy().
 
-   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD),
-   then only the first processor in the group opens the file.  All other
-   processors send their data to the first processor to print.
-
-   Each processor can instead write its own independent output by
-   specifying the communicator PETSC_COMM_SELF.
+   The MPI communicator used here must match that used by the object one is viewing. For example if the 
+   Mat was created with a PETSC_COMM_WORLD, then the Viewer must be created with PETSC_COMM_WORLD
 
    As shown below, PetscViewerASCIIOpen() is useful in conjunction with
    MatView() and VecView()

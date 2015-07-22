@@ -26,7 +26,6 @@ typedef struct gamg_TAG {
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
   PetscReal threshold;      /* common quatity to many AMG methods so keep it up here */
-  PetscInt  emax_id;      /* stashing places */
   PetscInt  current_level; /* stash construction state */
 
   /* these 4 are all related to the method data and should be in the subctx */
@@ -35,7 +34,6 @@ typedef struct gamg_TAG {
   PetscInt  data_cell_cols;
   PetscInt  orig_data_cell_rows;
   PetscInt  orig_data_cell_cols;
-  PetscReal eigtarget[2];
   PetscReal *data;          /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscReal *orig_data;          /* cache data */
 

@@ -1,4 +1,5 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
+#include <petscdm.h>
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
@@ -375,6 +376,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
 
   for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
@@ -504,8 +506,15 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 {
   SNES_QN        *qn = (SNES_QN*)snes->data;
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
+
+  if (!snes->vec_sol) {
+    ierr             = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr             = DMCreateGlobalVector(dm,&snes->vec_sol);CHKERRQ(ierr);
+  }
+
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
   if (qn->type != SNES_QN_BROYDEN) ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
   ierr = PetscMalloc4(qn->m,&qn->alpha,qn->m,&qn->beta,qn->m,&qn->dXtdF,qn->m,&qn->lambda);CHKERRQ(ierr);
@@ -693,9 +702,12 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 +   SNES_QN_SCALE_NONE - don't scale the problem
 .   SNES_QN_SCALE_SHANNO - use shanno scaling
 .   SNES_QN_SCALE_LINESEARCH - scale based upon line search lambda
--   SNES_QN_SCALE_JACOBIAN - scale by inverting a previously computed Jacobian.
+-   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration 
+                             of QN and at ever restart.
 
-.keywords: SNES, SNESQN, scaling, type, set SNESLineSearch, SNESQNScaleType
+.keywords: scaling type
+
+.seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESetJacobian()
 @*/
 
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)

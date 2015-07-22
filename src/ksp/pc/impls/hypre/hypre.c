@@ -1084,6 +1084,7 @@ static PetscErrorCode PCHYPRESetBetaPoissonMatrix_HYPRE_AMS(PC pc, Mat A)
 
   PetscFunctionBegin;
   if (!A) {
+    PetscStackCallStandard(HYPRE_AMSSetBetaPoissonMatrix,(jac->hsolver,NULL));
     jac->ams_beta_is_zero = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
@@ -1400,7 +1401,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     /* Vector valued Poisson AMG solver parameters: coarsen type, agg_levels, relax_type, interp_type, Pmax */
     jac->as_amg_alpha_opts[0] = 10;
     jac->as_amg_alpha_opts[1] = 1;
-    jac->as_amg_alpha_opts[2] = 8;
+    jac->as_amg_alpha_opts[2] = 6;
     jac->as_amg_alpha_opts[3] = 6;
     jac->as_amg_alpha_opts[4] = 4;
     jac->as_amg_alpha_theta   = 0.25;
@@ -1408,7 +1409,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->ams_beta_is_zero = PETSC_FALSE;
     jac->as_amg_beta_opts[0] = 10;
     jac->as_amg_beta_opts[1] = 1;
-    jac->as_amg_beta_opts[2] = 8;
+    jac->as_amg_beta_opts[2] = 6;
     jac->as_amg_beta_opts[3] = 6;
     jac->as_amg_beta_opts[4] = 4;
     jac->as_amg_beta_theta   = 0.25;

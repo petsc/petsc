@@ -547,12 +547,15 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
-  void            *exactCtxs[3] = {user, user, user};
+  void            *exactCtxs[3];
   MPI_Comm         comm;
   PetscReal        error, errorDer, tol = 1.0e-10;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  exactCtxs[0]       = user;
+  exactCtxs[1]       = user;
+  exactCtxs[2]       = user;
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
@@ -594,7 +597,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscErrorCode (*exactFuncs[1]) (PetscInt, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   PetscErrorCode (*exactFuncDers[1]) (PetscInt, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
   PetscReal       n[3]         = {1.0, 1.0, 1.0};
-  void           *exactCtxs[3] = {user, user, user};
+  void           *exactCtxs[3];
   DM              rdm, idm, fdm;
   Mat             Interp;
   Vec             iu, fu, scaling;
@@ -605,6 +608,9 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  exactCtxs[0]       = user;
+  exactCtxs[1]       = user;
+  exactCtxs[2]       = user;
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
@@ -682,7 +688,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   DM               odm = dm, rdm = NULL, cdm = NULL;
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {trig};
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx) = {trigDer};
-  void            *exactCtxs[3] = {user, user, user};
+  void            *exactCtxs[3];
   PetscInt         r, c, cStart, cEnd;
   PetscReal        errorOld, errorDerOld, error, errorDer, rel, len, lenOld;
   double           p;
@@ -690,6 +696,9 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
 
   PetscFunctionBegin;
   if (!user->convergence) PetscFunctionReturn(0);
+  exactCtxs[0] = user;
+  exactCtxs[1] = user;
+  exactCtxs[2] = user;
   ierr = PetscObjectReference((PetscObject) odm);CHKERRQ(ierr);
   if (!user->convRefine) {
     for (r = 0; r < Nr; ++r) {
