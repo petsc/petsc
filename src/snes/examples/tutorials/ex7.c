@@ -880,7 +880,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
   ierr = CreateNullSpace(info->da,&N);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,1,&N,&nullspace);CHKERRQ(ierr);
   ierr = VecDestroy(&N);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(A,nullspace);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

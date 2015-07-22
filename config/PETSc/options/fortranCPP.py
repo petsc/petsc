@@ -28,8 +28,8 @@ class Configure(config.base.Configure):
     '''Handle case where Fortran cannot preprocess properly'''
     if hasattr(self.compilers, 'FC'):
       # these rules do not have preprocessing hence FCPPFLAGS is not used
-      self.addMakeRule('.f.o .f90.o .f95.o','',['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FFLAGS} ${FC_FLAGS} -o $@ $<'])
-      self.addMakeRule('.f.a',       '',['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FFLAGS} ${FC_FLAGS} $<', \
+      self.addMakeRule('.f.o .f90.o .f95.o','',['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<'])
+      self.addMakeRule('.f.a',       '',['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} $<', \
                                          '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o', \
                                          '-${RM} $*.o'])
 
@@ -42,18 +42,18 @@ class Configure(config.base.Configure):
         self.addMakeRule('.F.o .F90.o .F95.o','',['-@${RM} __$< __$*.c',\
                                            '-@${GREP} -v "^!" $< > __$*.c',\
                                            '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$<',\
-                                           '${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FFLAGS} ${FC_FLAGS} __$< -o $*.o',\
+                                           '${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} __$< -o $*.o',\
                                            '-@if [ "${SKIP_RM}" != "yes" ] ;then  ${RM} __$< __$*.c ; fi'])
         self.addMakeRule('.F.a',       '',['-@${RM} __$< __$*.c',\
                                            '-@${GREP} -v "^!" $< > __$*.c',\
                                            '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$<',\
-                                           '${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FFLAGS} ${FC_FLAGS} __$< -o $*.o',\
+                                           '${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} __$< -o $*.o',\
                                            '-${AR} cr ${LIBNAME} $*.o',\
                                            '-${RM} __$< __$*.c'])
       else:
         # Fortran handles CPP macros correctly
-        self.addMakeRule('.F.o .F90.o .F95.o','',['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} -o $@ $<'])
-        self.addMakeRule('.F.a','',       ['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} $<',\
+        self.addMakeRule('.F.o .F90.o .F95.o','',['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS} -o $@ $<'])
+        self.addMakeRule('.F.a','',       ['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS} $<',\
                                            '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o',\
                                            '-${RM} $*.o'])
 

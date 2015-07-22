@@ -448,8 +448,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,(ilocal ? ilocal[i] : i)+1);
-  ierr = PetscMalloc2(nroots,&roots,nleaves,&leaves);CHKERRQ(ierr);
-  for (i=0; i<nleaves; i++) {
+  ierr = PetscMalloc2(nroots,&roots,maxlocal,&leaves);CHKERRQ(ierr);
+  for (i=0; i<maxlocal; i++) {
     leaves[i].rank  = rank;
     leaves[i].index = i;
   }
@@ -894,6 +894,50 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateEmbeddedLeafSF"
+/*@C
+  PetscSFCreateEmbeddedLeafSF - removes edges from all but the selected leaves, does not remap indices
+
+  Collective
+
+  Input Arguments:
++ sf - original star forest
+. nleaves - number of leaves to select on this process
+- selected - selected leaves on this process
+
+  Output Arguments:
+.  newsf - new star forest
+
+  Level: advanced
+
+.seealso: PetscSFCreateEmbeddedSF(), PetscSFSetGraph(), PetscSFGetGraph()
+@*/
+PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nleaves, const PetscInt *selected, PetscSF *newsf)
+{
+  PetscSFNode   *iremote;
+  PetscInt      *ilocal;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  if (nleaves) PetscValidPointer(selected, 3);
+  PetscValidPointer(newsf, 4);
+  ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves, &iremote);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; ++i) {
+    const PetscInt l = selected[i];
+
+    ilocal[i]        = sf->mine ? sf->mine[l] : l;
+    iremote[i].rank  = sf->remote[l].rank;
+    iremote[i].index = sf->remote[l].index;
+  }
+  ierr = PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, newsf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*newsf, sf->nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFBcastBegin"
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
@@ -1303,5 +1347,44 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFCompose"
+/*@
+  PetscSFCompose - Compose a new PetscSF equivalent to action to PetscSFs
+
+  Input Parameters:
++ sfA - The first PetscSF
+- sfB - The second PetscSF
+
+  Output Parameters:
+. sfBA - equvalent PetscSF for applying A then B
+
+  Level: developer
+
+.seealso: PetscSF, PetscSFGetGraph(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
+{
+  MPI_Comm           comm;
+  const PetscSFNode *remotePointsA, *remotePointsB;
+  PetscSFNode       *remotePointsBA;
+  const PetscInt    *localPointsA, *localPointsB;
+  PetscInt           numRootsA, numLeavesA, numRootsB, numLeavesB;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfA, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 1);
+  ierr = PetscObjectGetComm((PetscObject) sfA, &comm);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesB, &remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA, numRootsA, numLeavesB, localPointsB, PETSC_COPY_VALUES, remotePointsBA, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -23,7 +23,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp,3);CHKERRQ(ierr);
-  if (cheb->emin == 0. || cheb->emax == 0.) { /* We need to estimate eigenvalues */
+  if ((cheb->emin == 0. || cheb->emax == 0.) && !cheb->kspest) { /* We need to estimate eigenvalues */
     ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -287,6 +287,11 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObje
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Must specify either 0, 2, or 4 parameters for eigenvalue estimation");
     }
+  }
+
+  /* We need to estimate eigenvalues; need to set this here so that KSPSetFromOptions() is called on the estimator */
+  if ((cheb->emin == 0. || cheb->emax == 0.) && !cheb->kspest) {
+   ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   }
 
   if (cheb->kspest) {

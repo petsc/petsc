@@ -1253,12 +1253,6 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = VecDestroy(&xx);CHKERRQ(ierr);
       ierr = VecDestroy(&bb);CHKERRQ(ierr);
       ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
-
-      if (pc_gamg->emax_id == -1) {
-        ierr = PetscObjectComposedDataRegister(&pc_gamg->emax_id);CHKERRQ(ierr);
-        if (pc_gamg->emax_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->emax_id == -1");
-      }
-      ierr = PetscObjectComposedDataSetScalar((PetscObject)Amat, pc_gamg->emax_id, emax);CHKERRQ(ierr);
     }
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */

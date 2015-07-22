@@ -85,7 +85,7 @@ typedef struct {
   PetscReal tola,tolb,tolc,told;
   PetscInt  ksp_its;
   PetscInt  ksp_its_initial;
-  int       stages[10];
+  PetscLogStage stages[10];
   PetscBool use_ptap;
   PetscBool use_lrc;
 } AppCtx;

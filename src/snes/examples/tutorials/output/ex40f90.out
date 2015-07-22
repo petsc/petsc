@@ -2,7 +2,7 @@
   1 SNES Function norm 21.1059 
   2 SNES Function norm 1.48791 
   3 SNES Function norm 0.0100216 
-  4 SNES Function norm 4.67462e-07 
+  4 SNES Function norm 4.67479e-07 
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -67,10 +67,9 @@ SNES Object: 1 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
-            maximum iterations=10
+            maximum iterations=10, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
             left preconditioning
-            using nonzero initial guess
             using NONE norm type for convergence test
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000

@@ -1,9 +1,7 @@
 #define PETSC_SKIP_COMPLEX
 
 #include <petscconf.h>
-PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
-PETSC_CUDA_EXTERN_C_END
 #include <../src/mat/impls/aij/mpi/mpicusp/mpicuspmatimpl.h>
 
 #undef __FUNCT__

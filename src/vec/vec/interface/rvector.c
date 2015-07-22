@@ -961,7 +961,7 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
 
    Notes:
    VecSetValuesBlocked() sets x[bs*ix[i]+j] = y[bs*i+j],
-   for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
+   for j=0,...,bs-1, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
    Calls to VecSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES
    options cannot be mixed without intervening calls to the assembly
@@ -2999,7 +2999,7 @@ PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockGet"
-/*@C
+/*@
    VecLockGet  - Gets the current lock status of a vector
 
    Logically Collective on Vec
@@ -3026,7 +3026,7 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockPush"
-/*@C
+/*@
    VecLockPush  - Lock a vector from writing
 
    Logically Collective on Vec
@@ -3054,7 +3054,7 @@ PetscErrorCode VecLockPush(Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockPop"
-/*@C
+/*@
    VecLockPop  - Unlock a vector from writing
 
    Logically Collective on Vec
