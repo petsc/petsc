@@ -45,7 +45,7 @@ cdef extern from * nogil:
     int PetscSectionGetFieldOffset(PetscSection,PetscInt,PetscInt,PetscInt*)
     int PetscSectionSetFieldOffset(PetscSection,PetscInt,PetscInt,PetscInt)
     int PetscSectionGetOffsetRange(PetscSection,PetscInt*,PetscInt*)
-    int PetscSectionCreateGlobalSection(PetscSection,PetscSF,PetscBool,PetscSection*)
+    int PetscSectionCreateGlobalSection(PetscSection,PetscSF,PetscBool,PetscBool,PetscSection*)
     #int PetscSectionCreateGlobalSectionCensored(PetscSection,PetscSF,PetscBool,PetscInt,const_PetscInt[],PetscSection*)
     int PetscSectionCreateSubsection(PetscSection,PetscInt,PetscInt[],PetscSection*)
     int PetscSectionCreateSubmeshSection(PetscSection,IS,PetscSection*)
