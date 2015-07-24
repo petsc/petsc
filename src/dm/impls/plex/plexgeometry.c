@@ -402,6 +402,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
       ierr = DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell);CHKERRQ(ierr);
       if (cell >= 0) break;
     }
+    if (cell < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in mesh", p);
     cells[p] = cell;
   }
   ierr = ISRestoreIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
