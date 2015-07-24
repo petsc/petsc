@@ -1,6 +1,42 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLineIntersection_2D_Internal"
+static PetscErrorCode DMPlexGetLineIntersection_2D_Internal(const PetscReal segmentA[], const PetscReal segmentB[], PetscReal intersection[], PetscBool *hasIntersection)
+{
+  const PetscReal p0_x  = segmentA[0*2+0];
+  const PetscReal p0_y  = segmentA[0*2+1];
+  const PetscReal p1_x  = segmentA[1*2+0];
+  const PetscReal p1_y  = segmentA[1*2+1];
+  const PetscReal p2_x  = segmentB[0*2+0];
+  const PetscReal p2_y  = segmentB[0*2+1];
+  const PetscReal p3_x  = segmentB[1*2+0];
+  const PetscReal p3_y  = segmentB[1*2+1];
+  const PetscReal s1_x  = p1_x - p0_x;
+  const PetscReal s1_y  = p1_y - p0_y;
+  const PetscReal s2_x  = p3_x - p2_x;
+  const PetscReal s2_y  = p3_y - p2_y;
+  const PetscReal denom = (-s2_x * s1_y + s1_x * s2_y);
+
+  PetscFunctionBegin;
+  *hasIntersection = PETSC_FALSE;
+  /* Non-parallel lines */
+  if (denom != 0.0) {
+    const PetscReal s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / denom;
+    const PetscReal t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / denom;
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+      *hasIntersection = PETSC_TRUE;
+      if (intersection) {
+        intersection[0] = p0_x + (t * s1_x);
+        intersection[1] = p0_y + (t * s1_y);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexLocatePoint_Simplex_2D_Internal"
 static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
@@ -319,7 +355,6 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
     /* Find boxes enclosing each vertex */
     ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
     ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, boxes);CHKERRQ(ierr);
     /* Mark cells containing the vertices */
     for (e = 0; e < dim+1; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
@@ -332,14 +367,15 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
         dlim[d*2+1] = PetscMax(dlim[d*2+1], dboxes[e*dim+d]);
       }
     }
-    /* Check whether cell contains any vertex of these subboxes TODO vectorize this */
+    /* Check for intersection of box with cell */
     for (k = dlim[2*2+0], point[2] = lbox->lower[2] + k*h[2]; k <= dlim[2*2+1]; ++k, point[2] += h[2]) {
       for (j = dlim[1*2+0], point[1] = lbox->lower[1] + j*h[1]; j <= dlim[1*2+1]; ++j, point[1] += h[1]) {
         for (i = dlim[0*2+0], point[0] = lbox->lower[0] + i*h[0]; i <= dlim[0*2+1]; ++i, point[0] += h[0]) {
           const PetscInt box = (k*lbox->n[1] + j)*lbox->n[0] + i;
           PetscScalar    cpoint[3];
-          PetscInt       cell, ii, jj, kk;
+          PetscInt       cell, edge, ii, jj, kk;
 
+          /* Check whether cell contains any vertex of these subboxes TODO vectorize this */
           for (kk = 0, cpoint[2] = point[2]; kk < (dim > 2 ? 2 : 1); ++kk, cpoint[2] += h[2]) {
             for (jj = 0, cpoint[1] = point[1]; jj < (dim > 1 ? 2 : 1); ++jj, cpoint[1] += h[1]) {
               for (ii = 0, cpoint[0] = point[0]; ii < 2; ++ii, cpoint[0] += h[0]) {
@@ -349,9 +385,32 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
               }
             }
           }
+          /* Check whether cell edge intersects any edge of these subboxes TODO vectorize this */
+          for (edge = 0; edge < dim+1; ++edge) {
+            PetscReal segA[6], segB[6];
+
+            for (d = 0; d < dim; ++d) {segA[d] = PetscRealPart(ccoords[edge*dim+d]); segA[dim+d] = PetscRealPart(ccoords[((edge+1)%(dim+1))*dim+d]);}
+            for (kk = 0; kk < (dim > 2 ? 2 : 1); ++kk) {
+              if (dim > 2) {segB[2]     = point[2];
+                            segB[dim+2] = point[2] + kk*h[2];}
+              for (jj = 0; jj < (dim > 1 ? 2 : 1); ++jj) {
+                if (dim > 1) {segB[1]     = point[1];
+                              segB[dim+1] = point[1] + jj*h[1];}
+                for (ii = 0; ii < 2; ++ii) {
+                  PetscBool intersects;
+
+                  segB[0]     = point[0];
+                  segB[dim+0] = point[0] + ii*h[0];
+                  ierr = DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects);CHKERRQ(ierr);
+                  if (intersects) {DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); edge = ii = jj = kk = dim+1;}
+                }
+              }
+            }
+          }
         }
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
   }
   ierr = PetscFree2(dboxes, boxes);CHKERRQ(ierr);
   ierr = DMLabelConvertToSection(lbox->cellsSparse, &lbox->cellSection, &lbox->cells);CHKERRQ(ierr);
