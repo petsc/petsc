@@ -5965,8 +5965,6 @@ PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
 @*/
 PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ((DM_Plex *) dm->data)->regularRefinement = regular;

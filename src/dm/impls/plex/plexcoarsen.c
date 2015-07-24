@@ -10,6 +10,7 @@
 PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
+#ifdef PETSC_HAVE_PRAGMATIC
   DM             udm, coordDM;
   DMLabel        bd;
   Mat            A;
@@ -23,6 +24,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   const PetscInt *faces;
   PetscInt      *cells, *bdFaces, *bdFaceIds;
   PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, f, maxConeSize, size, bdSize, coff;
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

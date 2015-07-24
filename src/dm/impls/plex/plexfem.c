@@ -1484,8 +1484,8 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
     PetscClassId     id;
     PetscDualSpace   Q;
     PetscQuadrature  f;
-    const PetscReal *qpoints, *qweights;
-    PetscInt         npoints = 0, Nc, Np, fpdim, i, p, d;
+    const PetscReal *qpoints;
+    PetscInt         Nc, Np, fpdim, i, d;
 
     ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -1573,7 +1573,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
     PetscDualSpace   Q;
     PetscQuadrature  f;
     const PetscReal *qpoints, *qweights;
-    PetscInt         npoints = 0, Nc, Np, fpdim, i, p, d;
+    PetscInt         Nc, Np, fpdim, i, d;
 
     ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -1602,7 +1602,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         PetscScalar    *pV;
         IS              coarseCellIS;
         const PetscInt *coarseCells;
-        PetscInt        numCoarseCells, cpdim, q, r, c, j;
+        PetscInt        numCoarseCells, cpdim, q, c, j;
 
         /* Get points from the dual basis functional quadrature */
         ierr = PetscDualSpaceGetFunctional(Q, i, &f);CHKERRQ(ierr);
