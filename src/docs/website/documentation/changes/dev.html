@@ -102,6 +102,7 @@
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
+      For complex numbers VecNorm(v,NORM_1,) will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1 norm of the absolutely values of the complex entries. Previously it returned the 1 norm of the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most people expect the former.
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>

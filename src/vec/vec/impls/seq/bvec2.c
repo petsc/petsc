@@ -259,8 +259,20 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
+#if defined(PETSC_USE_COMPLEX)
+    PetscScalar tmp = 0.0;
+    PetscInt    i;
+#endif
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    /* BLASasum() returns the nonstandard 1 norm of the 1 norm of the complex entries so we provide a custom loop instead */
+    for (i=0; i<n; i++) {
+      tmp += PetscAbsScalar(xx[i]);
+    }
+    *z = tmp;
+#else
     PetscStackCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
+#endif
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
