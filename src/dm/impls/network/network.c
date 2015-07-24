@@ -554,7 +554,7 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
   Notes:
   This routine should be called only when using multiple processors.
 
-  Distributes the network with a non-overlapping partitioning of the edges.
+  Distributes the network with <overlap>-overlapping partitioning of the edges.
 
   Level: intermediate
 
