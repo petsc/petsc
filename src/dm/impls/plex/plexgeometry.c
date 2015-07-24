@@ -322,7 +322,8 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
     ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, NULL);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
     /* Get grid of boxes containing these */
-    for (d = 0; d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
+    for (d = 0;   d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
+    for (d = dim; d < 3;   ++d) {dlim[d*2+0] = dlim[d*2+1] = 0;}
     for (e = 1; e < dim+1; ++e) {
       for (d = 0; d < dim; ++d) {
         dlim[d*2+0] = PetscMin(dlim[d*2+0], dboxes[e*dim+d]);
