@@ -281,7 +281,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   PetscSection       coordSection;
   Vec                coordsLocal;
   const PetscScalar *coords;
-  PetscInt          *dboxes;
+  PetscInt          *dboxes, *boxes;
   PetscInt           n[3] = {10, 10, 10};
   PetscInt           dim, N, cStart, cEnd, c, i;
   PetscErrorCode     ierr;
@@ -307,10 +307,10 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMLabelCreate("cells", &lbox->cellsSparse);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd);CHKERRQ(ierr);
-  /* Compute boxes which overlap each cell */
+  /* Compute boxes which overlap each cell: http://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscCalloc1((dim+1) * dim, &dboxes);CHKERRQ(ierr);
+  ierr = PetscCalloc2((dim+1) * dim, &dboxes, dim+1, &boxes);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscReal *h       = lbox->h;
     PetscScalar     *ccoords = NULL;
@@ -319,8 +319,10 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
     /* Find boxes enclosing each vertex */
     ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
-    ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, NULL);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
+    ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, boxes);CHKERRQ(ierr);
+    /* Mark cells containing the vertices */
+    for (e = 0; e < dim+1; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
     /* Get grid of boxes containing these */
     for (d = 0;   d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
     for (d = dim; d < 3;   ++d) {dlim[d*2+0] = dlim[d*2+1] = 0;}
@@ -351,7 +353,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
       }
     }
   }
-  ierr = PetscFree(dboxes);CHKERRQ(ierr);
+  ierr = PetscFree2(dboxes, boxes);CHKERRQ(ierr);
   ierr = DMLabelConvertToSection(lbox->cellsSparse, &lbox->cellSection, &lbox->cells);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&lbox->cellsSparse);CHKERRQ(ierr);
   *localBox = lbox;
