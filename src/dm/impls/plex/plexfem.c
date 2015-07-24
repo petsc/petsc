@@ -1623,10 +1623,13 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         ierr = ISGetIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
         ierr = VecGetArray(pointVec, &pV);CHKERRQ(ierr);
         for (ccell = 0; ccell < numCoarseCells; ++ccell) {
+          PetscReal pVReal[3];
+
           ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
           /* Transform points from real space to coarse reference space */
           ierr = DMPlexComputeCellGeometryFEM(dmc, coarseCells[ccell], NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
-          CoordinatesRealToRef(dim, dim, v0c, invJc, &pV[ccell*dim], x);
+          CoordinatesRealToRef(dim, dim, v0c, invJc, pVReal, x);
+          for (d = 0; d < dim; ++d) pV[ccell*dim+d] = pVReal[d];
 
           if (id == PETSCFE_CLASSID) {
             PetscFE    fe = (PetscFE) obj;
