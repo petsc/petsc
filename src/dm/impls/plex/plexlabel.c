@@ -859,6 +859,55 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelConvertToSection"
+PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS *is)
+{
+  IS              vIS;
+  const PetscInt *values;
+  PetscInt       *points;
+  PetscInt        nV, vS = 0, vE = 0, v, N;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetNumValues(label, &nV);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(label, &vIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(vIS, &values);CHKERRQ(ierr);
+  if (nV) {vS = values[0]; vE = values[0]+1;}
+  for (v = 1; v < nV; ++v) {
+    vS = PetscMin(vS, values[v]);
+    vE = PetscMax(vE, values[v]+1);
+  }
+  ierr = PetscSectionCreate(PETSC_COMM_SELF, section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*section, vS, vE);CHKERRQ(ierr);
+  for (v = 0; v < nV; ++v) {
+    PetscInt n;
+
+    ierr = DMLabelGetStratumSize(label, values[v], &n);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(*section, values[v], n);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(*section, &N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N, &points);CHKERRQ(ierr);
+  for (v = 0; v < nV; ++v) {
+    IS              is;
+    const PetscInt *spoints;
+    PetscInt        dof, off, p;
+
+    ierr = PetscSectionGetDof(*section, values[v], &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(*section, values[v], &off);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[v], &is);CHKERRQ(ierr);
+    ierr = ISGetIndices(is, &spoints);CHKERRQ(ierr);
+    for (p = 0; p < dof; ++p) points[off+p] = spoints[p];
+    ierr = ISRestoreIndices(is, &spoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(vIS, &values);CHKERRQ(ierr);
+  ierr = ISDestroy(&vIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, N, points, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateLabel"
