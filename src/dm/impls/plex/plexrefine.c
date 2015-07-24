@@ -6870,7 +6870,7 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRefinementLimit"
+#define __FUNCT__ "DMPlexGetRefinementFunction"
 /*@
   DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
 
