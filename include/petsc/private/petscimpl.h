@@ -252,6 +252,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidLogicalCollectiveScalar(a,b,c) do {} while (0)
 #define PetscValidLogicalCollectiveReal(a,b,c) do {} while (0)
 #define PetscValidLogicalCollectiveInt(a,b,c) do {} while (0)
+#define PetscValidLogicalCollectiveMPIInt(a,b,c) do {} while (0)
 #define PetscValidLogicalCollectiveBool(a,b,c) do {} while (0)
 #define PetscValidLogicalCollectiveEnum(a,b,c) do {} while (0)
 
@@ -310,6 +311,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     _7_ierr = MPI_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
   } while (0)
+
+#define PetscValidLogicalCollectiveMPIInt(a,b,c) do {} while (0)
 
 #define PetscValidLogicalCollectiveBool(a,b,c)                          \
   do {                                                                  \
