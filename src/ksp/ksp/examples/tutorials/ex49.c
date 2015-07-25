@@ -1055,6 +1055,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     ierr = KSPSetOperators(ksp_E,AA,AA);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp_E);CHKERRQ(ierr);
 
+    MatSetNearNullSpace(AA,NULL);
+
     ierr = KSPSolve(ksp_E,ff,XX);CHKERRQ(ierr);
 
     /* push XX back into X */
