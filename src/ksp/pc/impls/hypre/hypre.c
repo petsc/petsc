@@ -73,6 +73,13 @@ typedef struct {
   PetscBool nodal_relax;
   PetscInt  nodal_relax_levels;
 
+  PetscInt  nodal_coarsening;
+  PetscInt  vec_interp_variant;
+  HYPRE_IJVector  *hmnull;
+  HYPRE_ParVector *phmnull;  /* near null space passed to hypre */  
+  PetscInt        n_hmnull;
+  Vec             hmnull_constant;
+
   /* options for AS (Auxiliary Space preconditioners) */
   PetscInt  as_print;
   PetscInt  as_max_iter;
@@ -148,8 +155,33 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
 
   /* special case for BoomerAMG */
   if (jac->setup == HYPRE_BoomerAMGSetup) {
+    MatNullSpace    mnull;
+    PetscBool       has_const;
+    PetscInt        nvec,i;
+    const Vec       *vecs;
+
     ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
     if (bs > 1) PetscStackCallStandard(HYPRE_BoomerAMGSetNumFunctions,(jac->hsolver,bs));
+    ierr = MatGetNearNullSpace(pc->mat, &mnull);CHKERRQ(ierr);
+    if (mnull) {
+      ierr = MatNullSpaceGetVecs(mnull, &has_const, &nvec, &vecs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nvec+1,&jac->hmnull);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nvec+1,&jac->phmnull);CHKERRQ(ierr);
+      for (i=0; i<nvec; i++) {
+        ierr = VecHYPRE_IJVectorCreate(vecs[i],&jac->hmnull[i]);CHKERRQ(ierr);
+        PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->hmnull[i],(void**)&jac->phmnull[i]));
+      }
+      if (has_const) {
+        ierr = MatCreateVecs(pc->pmat,&jac->hmnull_constant,NULL);CHKERRQ(ierr);
+        ierr = VecSet(jac->hmnull_constant,1);CHKERRQ(ierr);
+        ierr = VecNormalize(jac->hmnull_constant,NULL);
+        ierr = VecHYPRE_IJVectorCreate(jac->hmnull_constant,&jac->hmnull[nvec]);CHKERRQ(ierr);
+        PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->hmnull[nvec],(void**)&jac->phmnull[nvec]));
+        nvec++;
+      }
+      PetscStackCallStandard(HYPRE_BoomerAMGSetInterpVectors,(jac->hsolver,nvec,jac->phmnull));
+      jac->n_hmnull = nvec;
+    }
   }
 
   /* special case for AMS */
@@ -243,6 +275,16 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   if (jac->C) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->C));
   if (jac->alpha_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->alpha_Poisson));
   if (jac->beta_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->beta_Poisson));
+  if (jac->n_hmnull) {
+    PetscInt i;
+
+    for (i=0; i<jac->n_hmnull; i++) {
+      PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->hmnull[i]));
+    }
+    ierr = PetscFree(jac->hmnull);CHKERRQ(ierr);
+    ierr = PetscFree(jac->phmnull);CHKERRQ(ierr);
+    ierr = VecDestroy(&jac->hmnull_constant);CHKERRQ(ierr);
+  }
   if (jac->destroy) PetscStackCall("HYPRE_DestroyXXX",ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr););
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
   if (jac->comm_hypre != MPI_COMM_NULL) { ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);}
@@ -449,6 +491,16 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOption
     jac->gridsweeps[2] = 1;
   }
 
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen","Use a nodal based coarsening 1-6","HYPRE_BoomerAMGSetNodal",jac->nodal_coarsening, &jac->nodal_coarsening,&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscStackCallStandard(HYPRE_BoomerAMGSetNodal,(jac->hsolver,jac->nodal_coarsening));
+  }
+
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_variant","Variant of algorithm 1-4","HYPRE_BoomerAMGSetInterpVecVariant",jac->vec_interp_variant, &jac->vec_interp_variant,&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscStackCallStandard(HYPRE_BoomerAMGSetInterpVecVariant,(jac->hsolver,jac->vec_interp_variant));
+  }
+
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_down","Number of sweeps for the down cycles","None",jac->gridsweeps[0], &indx,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleNumSweeps,(jac->hsolver,indx, 1));
@@ -568,12 +620,6 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOption
     PetscStackCallStandard(HYPRE_BoomerAMGSetDebugFlag,(jac->hsolver,level));
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_coarsen", "HYPRE_BoomerAMGSetNodal()", "None", jac->nodal_coarsen ? PETSC_TRUE : PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
-  if (flg && tmp_truth) {
-    jac->nodal_coarsen = 1;
-    PetscStackCallStandard(HYPRE_BoomerAMGSetNodal,(jac->hsolver,1));
-  }
-
   ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
   if (flg && tmp_truth) {
     PetscInt tmp_int;
@@ -657,11 +703,14 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Measure type        %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Interpolation type  %s\n",HYPREBoomerAMGInterpType[jac->interptype]);CHKERRQ(ierr);
-    if (jac->nodal_coarsen) {
-      ierr = PetscViewerASCIIPrintf(viewer," HYPRE BoomerAMG: Using nodal coarsening (with HYPRE_BOOMERAMGSetNodal())\n");CHKERRQ(ierr);
+    if (jac->nodal_coarsening) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Using nodal coarsening (with HYPRE_BOOMERAMGSetNodal() %D\n",jac->nodal_coarsening);CHKERRQ(ierr);
+    }
+    if (jac->vec_interp_variant) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: HYPRE_BoomerAMGSetInterpVecVariant() %D\n",jac->vec_interp_variant);CHKERRQ(ierr);
     }
     if (jac->nodal_relax) {
-      ierr = PetscViewerASCIIPrintf(viewer," HYPRE BoomerAMG: Using nodal relaxation via Schwarz smoothing on levels %d\n",jac->nodal_relax_levels);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Using nodal relaxation via Schwarz smoothing on levels %d\n",jac->nodal_relax_levels);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1631,6 +1680,13 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
           2007-02-03 Using HYPRE-1.11.1b, the routine HYPRE_BoomerAMGSolveT and the option
           -pc_hypre_parasails_reuse were failing with SIGSEGV. Dalcin L.
 
+          MatSetNearNullSpace() - if you provide a near null space to your matrix it is ignored by hypre UNLESS you also use
+          the two options:
++   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
+-   -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())
+
+          Depending on the linear system you may see the same or different convergence depending on the values you use.
+
           See PCPFMG for access to the hypre Struct PFMG solver
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
@@ -1666,6 +1722,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   jac->alpha_Poisson      = NULL;
   jac->beta_Poisson       = NULL;
   jac->setdim             = NULL;
+  jac->hmnull             = NULL;
+  jac->n_hmnull           = 0;
   /* duplicate communicator for hypre */
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
