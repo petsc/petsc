@@ -1482,7 +1482,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   for (field = 0; field < Nf; ++field) {
     PetscObject      obj;
     PetscClassId     id;
-    PetscDualSpace   Q;
+    PetscDualSpace   Q = NULL;
     PetscQuadrature  f;
     const PetscReal *qpoints;
     PetscInt         Nc, Np, fpdim, i, d;
@@ -1570,7 +1570,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   for (field = 0; field < Nf; ++field) {
     PetscObject      obj;
     PetscClassId     id;
-    PetscDualSpace   Q;
+    PetscDualSpace   Q = NULL;
     PetscQuadrature  f;
     const PetscReal *qpoints, *qweights;
     PetscInt         Nc, Np, fpdim, i, d;
