@@ -391,16 +391,16 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
             for (d = 0; d < dim; ++d) {segA[d] = PetscRealPart(ccoords[edge*dim+d]); segA[dim+d] = PetscRealPart(ccoords[((edge+1)%(dim+1))*dim+d]);}
             for (kk = 0; kk < (dim > 2 ? 2 : 1); ++kk) {
-              if (dim > 2) {segB[2]     = point[2];
-                            segB[dim+2] = point[2] + kk*h[2];}
+              if (dim > 2) {segB[2]     = PetscRealPart(point[2]);
+                            segB[dim+2] = PetscRealPart(point[2]) + kk*h[2];}
               for (jj = 0; jj < (dim > 1 ? 2 : 1); ++jj) {
-                if (dim > 1) {segB[1]     = point[1];
-                              segB[dim+1] = point[1] + jj*h[1];}
+                if (dim > 1) {segB[1]     = PetscRealPart(point[1]);
+                              segB[dim+1] = PetscRealPart(point[1]) + jj*h[1];}
                 for (ii = 0; ii < 2; ++ii) {
                   PetscBool intersects;
 
-                  segB[0]     = point[0];
-                  segB[dim+0] = point[0] + ii*h[0];
+                  segB[0]     = PetscRealPart(point[0]);
+                  segB[dim+0] = PetscRealPart(point[0]) + ii*h[0];
                   ierr = DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects);CHKERRQ(ierr);
                   if (intersects) {DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); edge = ii = jj = kk = dim+1;}
                 }
