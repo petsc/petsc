@@ -1164,6 +1164,20 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetValueLayout"
+/*@
+  PetscSectionGetValueLayout - Get the PetscLayout associated with a section, usually the default global section.
+
+  Input Parameters:
++ comm - The MPI_Comm
+- s    - The PetscSection
+
+  Output Parameter:
+. layout - The layout for the section
+
+  Level: developer
+
+.seealso: PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
   PetscInt       pStart, pEnd, p, localSize = 0;

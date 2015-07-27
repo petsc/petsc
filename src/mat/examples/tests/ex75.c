@@ -195,19 +195,19 @@ int main(int argc,char **args)
   /* Test MatNorm() */
   ierr  = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(r1-r2)/r2;
+  rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && !rank) {
     PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_INFINITY,&r2);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(r1-r2)/r2;
+  rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && !rank) {
     PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
   }
   ierr  = MatNorm(A,NORM_1,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_1,&r2);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(r1-r2)/r2;
+  rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && !rank) {
     PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
   }

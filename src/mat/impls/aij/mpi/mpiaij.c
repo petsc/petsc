@@ -3341,22 +3341,22 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],co
 
        The format which is used for the sparse matrix input, is equivalent to a
     row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
+    as shown
 
-        1 0 0
-        2 0 3     P0
-       -------
-        4 5 6     P1
-
-     Process0 [P0]: rows_owned=[0,1]
-        i =  {0,1,3}  [size = nrow+1  = 2+1]
-        j =  {0,0,2}  [size = nz = 6]
-        v =  {1,2,3}  [size = nz = 6]
-
-     Process1 [P1]: rows_owned=[2]
-        i =  {0,3}    [size = nrow+1  = 1+1]
-        j =  {0,1,2}  [size = nz = 6]
-        v =  {4,5,6}  [size = nz = 6]
+$        1 0 0
+$        2 0 3     P0
+$       -------
+$        4 5 6     P1
+$
+$     Process0 [P0]: rows_owned=[0,1]
+$        i =  {0,1,3}  [size = nrow+1  = 2+1]
+$        j =  {0,0,2}  [size = 3]
+$        v =  {1,2,3}  [size = 3]
+$
+$     Process1 [P1]: rows_owned=[2]
+$        i =  {0,3}    [size = nrow+1  = 1+1]
+$        j =  {0,1,2}  [size = 3]
+$        v =  {4,5,6}  [size = 3]
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
@@ -3550,22 +3550,22 @@ PetscErrorCode  MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
 
        The format which is used for the sparse matrix input, is equivalent to a
     row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
+    as shown
 
-        1 0 0
-        2 0 3     P0
-       -------
-        4 5 6     P1
-
-     Process0 [P0]: rows_owned=[0,1]
-        i =  {0,1,3}  [size = nrow+1  = 2+1]
-        j =  {0,0,2}  [size = nz = 6]
-        v =  {1,2,3}  [size = nz = 6]
-
-     Process1 [P1]: rows_owned=[2]
-        i =  {0,3}    [size = nrow+1  = 1+1]
-        j =  {0,1,2}  [size = nz = 6]
-        v =  {4,5,6}  [size = nz = 6]
+$        1 0 0
+$        2 0 3     P0
+$       -------
+$        4 5 6     P1
+$
+$     Process0 [P0]: rows_owned=[0,1]
+$        i =  {0,1,3}  [size = nrow+1  = 2+1]
+$        j =  {0,0,2}  [size = 3]
+$        v =  {1,2,3}  [size = 3]
+$
+$     Process1 [P1]: rows_owned=[2]
+$        i =  {0,3}    [size = nrow+1  = 1+1]
+$        j =  {0,1,2}  [size = 3]
+$        v =  {4,5,6}  [size = 3]
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
