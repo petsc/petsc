@@ -4246,15 +4246,15 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
 
        The format which is used for the sparse matrix input, is equivalent to a
     row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
+    as shown
 
-        1 0 0
-        2 0 3
-        4 5 6
-
-        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
-        j =  {0,0,2,0,1,2}  [size = nz = 6]; values must be sorted for each row
-        v =  {1,2,3,4,5,6}  [size = nz = 6]
+$        1 0 0
+$        2 0 3
+$        4 5 6
+$
+$        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
+$        j =  {0,0,2,0,1,2}  [size = 6]; values must be sorted for each row
+$        v =  {1,2,3,4,5,6}  [size = 6]
 
 
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()

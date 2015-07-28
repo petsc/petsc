@@ -976,6 +976,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     else {
       if (ksp->pc) {
         ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
         if (matset) {
           ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
           ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
@@ -1005,12 +1006,13 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     else {
       if (ksp->pc) {
         ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
         if (matset) {
           ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
         } else if (pmatset) {
           ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
-          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
         }
       }
       if (!vecl) {

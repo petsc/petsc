@@ -331,7 +331,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscBool, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection, PetscSF, PetscBool, PetscInt, const PetscInt [], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, PetscInt [], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, PetscSection *);

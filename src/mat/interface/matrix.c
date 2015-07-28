@@ -7880,6 +7880,8 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
       For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) you also likely should
       call MatSetTransposeNullSpace(). This allows the linear system to be solved in a least squares sense.
 
+      You can remove the null space by calling this routine with an nullsp of NULL
+
 
       The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
    the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
@@ -7900,9 +7902,9 @@ PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
+  if (nullsp) PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   MatCheckPreallocated(mat,1);
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
   mat->nullsp = nullsp;
   PetscFunctionReturn(0);
@@ -8000,6 +8002,8 @@ PetscErrorCode  MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
    Notes:
       Overwrites any previous near null space that may have been attached
 
+      You can remove the null space by calling this routine with an nullsp of NULL
+
    Concepts: null space^attaching to matrix
 
 .seealso: MatCreate(), MatNullSpaceCreate(), MatSetNullSpace()
@@ -8011,11 +8015,10 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
+  if (nullsp) PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   MatCheckPreallocated(mat,1);
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
-
   mat->nearnullsp = nullsp;
   PetscFunctionReturn(0);
 }

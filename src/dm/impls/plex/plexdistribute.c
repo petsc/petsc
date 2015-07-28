@@ -1594,6 +1594,13 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
   /* Copy BC */
   ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
+  /* Create sfNatural */
+  if (dm->useNatural) {
+    PetscSection section;
+
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural);CHKERRQ(ierr);
+  }
   /* Cleanup */
   if (sf) {*sf = sfMigration;}
   else    {ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);}

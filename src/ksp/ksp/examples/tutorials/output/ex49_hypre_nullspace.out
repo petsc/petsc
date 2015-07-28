@@ -1,0 +1,54 @@
+  Residual norms for elas_ solve.
+  0 KSP natural resid norm 4.584301301606e+00 true resid norm 5.247024862911e+00 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP natural resid norm 2.222395697628e-01 true resid norm 1.907883518733e-01 ||r(i)||/||b|| 3.636124410652e-02
+  2 KSP natural resid norm 3.177863793146e-02 true resid norm 1.968653192588e-02 ||r(i)||/||b|| 3.751941803256e-03
+  3 KSP natural resid norm 1.719860505051e-02 true resid norm 9.702908954721e-03 ||r(i)||/||b|| 1.849221074462e-03
+  4 KSP natural resid norm 2.113128015375e-02 true resid norm 1.313302348493e-02 ||r(i)||/||b|| 2.502946684657e-03
+  5 KSP natural resid norm 2.422810440132e-02 true resid norm 1.694312097796e-02 ||r(i)||/||b|| 3.229091041234e-03
+  6 KSP natural resid norm 8.722133589282e-03 true resid norm 6.018396169743e-03 ||r(i)||/||b|| 1.147011178141e-03
+  7 KSP natural resid norm 2.768193340258e-03 true resid norm 2.091724119560e-03 ||r(i)||/||b|| 3.986495536443e-04
+  8 KSP natural resid norm 5.609323664601e-04 true resid norm 4.387298285263e-04 ||r(i)||/||b|| 8.361497038589e-05
+  9 KSP natural resid norm 1.074673589000e-04 true resid norm 8.482891252712e-05 ||r(i)||/||b|| 1.616704985081e-05
+ 10 KSP natural resid norm 1.862877016528e-05 true resid norm 1.419473679260e-05 ||r(i)||/||b|| 2.705292458767e-06
+Linear elas_ solve converged due to CONVERGED_RTOL iterations 10
+KSP Object:(elas_) 1 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  left preconditioning
+  using NATURAL norm type for convergence test
+PC Object:(elas_) 1 MPI processes
+  type: hypre
+    HYPRE BoomerAMG preconditioning
+    HYPRE BoomerAMG: Cycle type V
+    HYPRE BoomerAMG: Maximum number of levels 25
+    HYPRE BoomerAMG: Maximum number of iterations PER hypre call 1
+    HYPRE BoomerAMG: Convergence tolerance PER hypre call 0
+    HYPRE BoomerAMG: Threshold for strong coupling 0.25
+    HYPRE BoomerAMG: Interpolation truncation factor 0
+    HYPRE BoomerAMG: Interpolation: max elements per row 0
+    HYPRE BoomerAMG: Number of levels of aggressive coarsening 0
+    HYPRE BoomerAMG: Number of paths for aggressive coarsening 1
+    HYPRE BoomerAMG: Maximum row sums 0.9
+    HYPRE BoomerAMG: Sweeps down         1
+    HYPRE BoomerAMG: Sweeps up           1
+    HYPRE BoomerAMG: Sweeps on coarse    1
+    HYPRE BoomerAMG: Relax down          symmetric-SOR/Jacobi
+    HYPRE BoomerAMG: Relax up            symmetric-SOR/Jacobi
+    HYPRE BoomerAMG: Relax on coarse     Gaussian-elimination
+    HYPRE BoomerAMG: Relax weight  (all)      1
+    HYPRE BoomerAMG: Outer relax weight (all) 1
+    HYPRE BoomerAMG: Using CF-relaxation
+    HYPRE BoomerAMG: Measure type        local
+    HYPRE BoomerAMG: Coarsen type        Falgout
+    HYPRE BoomerAMG: Interpolation type  classical
+    HYPRE BoomerAMG: Using nodal coarsening (with HYPRE_BOOMERAMGSetNodal() 6
+    HYPRE BoomerAMG: HYPRE_BoomerAMGSetInterpVecVariant() 4
+  linear system matrix = precond matrix:
+  Mat Object:   1 MPI processes
+    type: seqaij
+    rows=966, cols=966, bs=2
+    total: nonzeros=16348, allocated nonzeros=16348
+    total number of mallocs used during MatSetValues calls =0
+      has attached near null space
+      using I-node routines: found 483 nodes, limit used is 5

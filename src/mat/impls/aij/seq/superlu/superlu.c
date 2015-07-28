@@ -522,7 +522,7 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveInt(F,dtol,2);
+  PetscValidLogicalCollectiveReal(F,dtol,2);
   ierr = PetscTryMethod(F,"MatSuperluSetILUDropTol_C",(Mat,PetscReal),(F,dtol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
