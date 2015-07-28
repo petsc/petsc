@@ -146,9 +146,9 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
     if (l<osm->n) {
       d = permutation[l]; /* d is the local number of the l-th smallest (in the global ordering) among the locally supported subdomains */
       if (numbering[d] == count) {
-        ierr = PetscViewerGetSubcomm(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
         ierr = PCGASMSubdomainView_Private(pc,d,sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
         ++l;
       }
     }
@@ -227,7 +227,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
         if (numbering[d] == count) {
           ierr = MPI_Comm_size(((PetscObject)osm->ois[d])->comm, &ssize);CHKERRQ(ierr);
           ierr = MPI_Comm_rank(((PetscObject)osm->ois[d])->comm, &srank);CHKERRQ(ierr);
-          ierr = PetscViewerGetSubcomm(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
+          ierr = PetscViewerGetSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ierr = ISGetLocalSize(osm->ois[d],&bsz);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_TRUE);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d|%d] (subcomm [%d|%d]) local subdomain number %D, local size = %D\n",rank,size,srank,ssize,d,bsz);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
           }
           ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
           ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
-          ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
+          ierr = PetscViewerRestoreSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ++l;
         }
       }

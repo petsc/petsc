@@ -64,9 +64,9 @@ int main(int argc,char **argv)
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Column permutation\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = ISView(iscol,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);

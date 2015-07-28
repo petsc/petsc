@@ -65,10 +65,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFil
 PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
 PETSC_EXTERN PetscErrorCode PetscViewerDestroy(PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerGetSingleton(PetscViewer,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerGetSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerRestoreSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGetSubViewer(PetscViewer,MPI_Comm,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer,MPI_Comm,PetscViewer*);
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetUp(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerView(PetscViewer,PetscViewer);

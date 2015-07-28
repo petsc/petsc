@@ -1135,13 +1135,13 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the PetscDraw object
     */
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPIBAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
       ierr = MatView_SeqBAIJ(((Mat_MPIBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

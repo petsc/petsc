@@ -209,15 +209,15 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       if (jac->ksp && !jac->psubcomm) {
-        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         if (!rank) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
-        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       } else if (jac->psubcomm && !jac->psubcomm->color) {
-        ierr = PetscViewerASCIIGetStdout(PetscSubcommChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIGetStdout(PetscSubViewerChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -230,22 +230,22 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",
                                                 rank,jac->n_local,jac->first_local);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local block number %D\n",rank,i);CHKERRQ(ierr);
         ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blks=%D",jac->n);CHKERRQ(ierr);
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[25];

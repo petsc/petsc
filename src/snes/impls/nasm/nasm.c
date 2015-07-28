@@ -232,13 +232,13 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
       if (nasm->subsnes) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is the same for all blocks:\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         if (!rank) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = SNESView(nasm->subsnes[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
-        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
     } else {
@@ -250,22 +250,22 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following SNES objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
-      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       for (i=0; i<nasm->n; i++) {
         ierr = VecGetLocalSize(nasm->x[i],&bsz);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
         ierr = SNESView(nasm->subsnes[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blocks=%D,type=%s",N,SNESNASMTypes[nasm->type]);CHKERRQ(ierr);
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (nasm->subsnes && !rank) {ierr = SNESView(nasm->subsnes[0],sviewer);CHKERRQ(ierr);}
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

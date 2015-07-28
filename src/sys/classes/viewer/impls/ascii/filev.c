@@ -81,34 +81,21 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_ASCII_Singleton"
-PetscErrorCode PetscViewerDestroy_ASCII_Singleton(PetscViewer viewer)
+#define __FUNCT__ "PetscViewerDestroy_ASCII_SubViewer"
+PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRestoreSingleton(vascii->bviewer,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(vascii->bviewer,0,&viewer);CHKERRQ(ierr);
   vascii->bviewer = NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_ASCII_Subcomm"
-PetscErrorCode PetscViewerDestroy_ASCII_Subcomm(PetscViewer viewer)
-{
-  PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerRestoreSubcomm(vascii->subviewer,PetscObjectComm((PetscObject)viewer),&viewer);CHKERRQ(ierr);
-  vascii->subviewer = NULL;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlush_ASCII_Singleton_0"
-PetscErrorCode PetscViewerFlush_ASCII_Singleton_0(PetscViewer viewer)
+#define __FUNCT__ "PetscViewerFlush_ASCII_SubViewer_0"
+PetscErrorCode PetscViewerFlush_ASCII_SubViewer_0(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   int               err;
@@ -498,7 +485,6 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
 
 /* ----------------------------------------------------------------------- */
 
-#include <../src/sys/fileio/mprint.h> /* defines the queue datastructures and variables */
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerASCIIPrintf"
@@ -533,7 +519,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
   PetscInt          tab,intab = ascii->tab;
   PetscErrorCode    ierr;
   FILE              *fd = ascii->fd;
-  PetscBool         iascii,issingleton = PETSC_FALSE;
+  PetscBool         iascii;
   int               err;
 
   PetscFunctionBegin;
@@ -541,15 +527,27 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
-  if (ascii->bviewer) {
-    viewer      = ascii->bviewer;
-    ascii       = (PetscViewer_ASCII*)viewer->data;
-    fd          = ascii->fd;
-    issingleton = PETSC_TRUE;
-  }
-
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
-  if (!rank) {
+  if (!rank) PetscFunctionReturn(0);
+
+  if (ascii->bviewer) { /* pass string up to parent viewer */
+    char        *string;
+    va_list     Argp;
+    size_t      fullLength;
+
+    ierr       = PetscCalloc1(QUEUESTRINGSIZE, &string);CHKERRQ(ierr);
+    tab        = intab;
+    tab       *= 2;
+    while (tab--) {
+      *string++ = ' ';
+    }
+    va_start(Argp,format);
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*ascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
+    va_end(Argp);
+
+    ierr = PetscViewerASCIISynchronizedPrintf(ascii->bviewer,"%s",string);CHKERRQ(ierr);
+    ierr = PetscFree(string);CHKERRQ(ierr);
+  } else { /* write directly to file */
     va_list Argp;
     tab = intab;
     while (tab--) {
@@ -570,31 +568,6 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
       err  = fflush(petsc_history);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     }
-    va_end(Argp);
-  } else if (issingleton) {
-    char        *string;
-    va_list     Argp;
-    size_t      fullLength;
-    PrintfQueue next;
-
-    ierr = PetscNew(&next);CHKERRQ(ierr);
-    if (petsc_printfqueue) {
-      petsc_printfqueue->next = next;
-      petsc_printfqueue       = next;
-    } else {
-      petsc_printfqueuebase = petsc_printfqueue = next;
-    }
-    petsc_printfqueuelength++;
-    next->size = QUEUESTRINGSIZE;
-    ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
-    string     = next->string;
-    tab        = intab;
-    tab       *= 2;
-    while (tab--) {
-      *string++ = ' ';
-    }
-    va_start(Argp,format);
-    ierr = PetscVSNPrintf(string,next->size-2*ascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
   PetscFunctionReturn(0);
@@ -743,17 +716,16 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSingleton_ASCII"
-PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
+#define __FUNCT__ "PetscViewerGetSubViewer_ASCII"
+PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
 {
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data,*ovascii;
-  const char        *name;
 
   PetscFunctionBegin;
-  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Singleton already obtained from PetscViewer and not restored");
-  ierr         = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
+  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer already obtained from PetscViewer and not restored");
+  ierr         = PetscViewerCreate(subcomm,outviewer);CHKERRQ(ierr);
   ierr         = PetscViewerSetType(*outviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   ovascii      = (PetscViewer_ASCII*)(*outviewer)->data;
   ovascii->fd  = vascii->fd;
@@ -763,88 +735,31 @@ PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *out
 
   (*outviewer)->format  = viewer->format;
 
-  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
-
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   ((PetscViewer_ASCII*)((*outviewer)->data))->bviewer = viewer;
-  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII_Singleton;
+  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII_SubViewer;
   if (rank) (*outviewer)->ops->flush = 0;
-  else      (*outviewer)->ops->flush = PetscViewerFlush_ASCII_Singleton_0;
+  else      (*outviewer)->ops->flush = PetscViewerFlush_ASCII_SubViewer_0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSingleton_ASCII"
-PetscErrorCode PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
+#define __FUNCT__ "PetscViewerRestoreSubViewer_ASCII"
+PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)(*outviewer)->data;
   PetscViewer_ASCII *ascii  = (PetscViewer_ASCII*)viewer->data;
 
   PetscFunctionBegin;
-  if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Singleton never obtained from PetscViewer");
-  if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate singleton");
+  if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer PetscViewer never obtained from PetscViewer");
+  if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate a SubViewer PetscViewer");
 
   ascii->sviewer             = 0;
   vascii->fd                 = PETSC_STDOUT;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   ierr                       = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
   ierr                       = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSubcomm_ASCII"
-PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
-{
-  PetscErrorCode    ierr;
-  PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data,*ovascii;
-  const char        *name;
-
-  PetscFunctionBegin;
-  if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Subcomm viewer already obtained from PetscViewer and not restored");
-  /* Note that we need to open vascii->filename for the subcomm:
-     we can't count on reusing viewer's fd since the root in comm and subcomm may differ.
-     Further, if the subcomm happens to be the same as comm, PetscViewerASCIIOpen() will
-     will return the current viewer, having increfed it.
-   */
-  ierr = PetscViewerASCIIOpen(subcomm,vascii->filename, outviewer);CHKERRQ(ierr);
-  if (*outviewer == viewer) PetscFunctionReturn(0);
-  ovascii = (PetscViewer_ASCII*)(*outviewer)->data;
-
-  ovascii->tab    = vascii->tab;
-  vascii->sviewer = *outviewer;
-
-  (*outviewer)->format  = viewer->format;
-
-  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
-
-  ((PetscViewer_ASCII*)((*outviewer)->data))->subviewer = viewer;
-
-  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII_Subcomm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSubcomm_ASCII"
-PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
-{
-  PetscErrorCode    ierr;
-  PetscViewer_ASCII *oascii = (PetscViewer_ASCII*)(*outviewer)->data;
-  PetscViewer_ASCII *ascii  = (PetscViewer_ASCII*)viewer->data;
-
-  PetscFunctionBegin;
-  if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Subcomm never obtained from PetscViewer");
-  if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"The given PetscViewer did not generate this subcomm viewer");
-
-  ascii->sviewer             = 0;
-  oascii->fd                 = PETSC_STDOUT;
-  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
-
-  ierr = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -875,10 +790,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 
   viewer->ops->destroy          = PetscViewerDestroy_ASCII;
   viewer->ops->flush            = PetscViewerFlush_ASCII;
-  viewer->ops->getsingleton     = PetscViewerGetSingleton_ASCII;
-  viewer->ops->restoresingleton = PetscViewerRestoreSingleton_ASCII;
-  viewer->ops->getsubcomm       = PetscViewerGetSubcomm_ASCII;
-  viewer->ops->restoresubcomm   = PetscViewerRestoreSubcomm_ASCII;
+  viewer->ops->getsubcomm       = PetscViewerGetSubViewer_ASCII;
+  viewer->ops->restoresubcomm   = PetscViewerRestoreSubViewer_ASCII;
   viewer->ops->view             = PetscViewerView_ASCII;
   viewer->ops->read             = PetscViewerASCIIRead;
 
@@ -930,7 +843,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       rank,size;
+  PetscMPIInt       rank;
   PetscInt          tab = vascii->tab;
   MPI_Comm          comm;
   FILE              *fp;
@@ -942,16 +855,15 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
-  if (size > 1 && !vascii->allowsynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIISynchronizedAllow() to allow this call");
-  if (!viewer->ops->flush) PetscFunctionReturn(0); /* This viewer obtained via PetscViewerGetSubcomm_ASCII(), should not participate. */
+  if (!vascii->allowsynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIISynchronizedAllow() to allow this call");
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   fp   = vascii->fd;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  /* First processor prints immediately to fp */
-  if (!rank) {
+  if (ascii->bviewer) { /* pass string up to parent viewer */
+
+  } else if (!rank) {   /* First processor prints immediately to fp */
     va_list Argp;
 
     while (tab--) {
