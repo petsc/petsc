@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   PetscBool         flg;
   PetscSubcomm      psubcomm,psubsubcomm;
   MPI_Comm          comm,subcomm,subsubcomm;
+  PetscMPIInt       size;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -31,7 +32,10 @@ int main(int argc,char **argv)
   */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size < 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
   ierr = PetscOptionsGetViewer(comm,NULL,"-viewer",&viewer,&format,&flg);CHKERRQ(ierr);
+  if (!viewer) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
 
   ierr = PetscViewerASCIIPrintf(viewer,"Print called on original full viewer %d\n",PetscGlobalRank);CHKERRQ(ierr);
 
@@ -42,9 +46,9 @@ int main(int argc,char **argv)
   ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
   subcomm = PetscSubcommChild(psubcomm);
 
-  ierr = PetscViewerGetSubcomm(viewer,subcomm,&subviewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(subviewer,"Print called on  sub viewers %d\n",PetscGlobalRank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(subviewer,"  Print called on sub viewers %d\n",PetscGlobalRank);CHKERRQ(ierr);
 
   ierr = PetscSubcommCreate(subcomm,&psubsubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubsubcomm,2);CHKERRQ(ierr);
@@ -53,12 +57,12 @@ int main(int argc,char **argv)
   ierr = PetscSubcommSetFromOptions(psubsubcomm);CHKERRQ(ierr);
   subsubcomm = PetscSubcommChild(psubsubcomm);
 
-  ierr = PetscViewerGetSubcomm(subviewer,subsubcomm,&subsubviewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(subviewer,subsubcomm,&subsubviewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(subsubviewer,"Print called on sub sub viewers %d\n",PetscGlobalRank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(subsubviewer,"  Print called on sub sub viewers %d\n",PetscGlobalRank);CHKERRQ(ierr);
 
-  ierr = PetscViewerRestoreSubcomm(subviewer,subsubcomm,&subsubviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubcomm(viewer,subcomm,&subviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(subviewer,subsubcomm,&subsubviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
 
   ierr = PetscSubcommDestroy(&psubsubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);

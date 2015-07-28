@@ -143,8 +143,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   v->ops->destroy          = PetscViewerDestroy_String;
   v->ops->view             = 0;
   v->ops->flush            = 0;
-  v->ops->getsubcomm       = PetscViewerGetSubViewer_String;
-  v->ops->restoresubcomm   = PetscViewerRestoreSubViewer_String;
+  v->ops->getsubviewer     = PetscViewerGetSubViewer_String;
+  v->ops->restoresubviewer = PetscViewerRestoreSubViewer_String;
   ierr                     = PetscNewLog(v,&vstr);CHKERRQ(ierr);
   v->data                  = (void*)vstr;
   vstr->string             = 0;

@@ -217,7 +217,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
         }
         ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       } else if (jac->psubcomm && !jac->psubcomm->color) {
-        ierr = PetscViewerASCIIGetStdout(PetscSubViewerChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIGetStdout(PetscSubcommChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

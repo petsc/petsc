@@ -49,7 +49,7 @@ PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,P
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerRestoreSubViewer_Binary"
-PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscErrorCode rank;
@@ -1434,8 +1434,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->skipoptions     = PETSC_TRUE;
   vbinary->skipheader      = PETSC_FALSE;
   vbinary->setfromoptionscalled = PETSC_FALSE;
-  v->ops->getsubcomm       = PetscViewerGetSubViewer_Binary;
-  v->ops->restoresubcomm   = PetscViewerRestoreSubViewer_Binary;
+  v->ops->getsubviewer     = PetscViewerGetSubViewer_Binary;
+  v->ops->restoresubviewer = PetscViewerRestoreSubViewer_Binary;
   v->ops->read             = PetscViewerBinaryRead;
   vbinary->btype           = (PetscFileMode) -1;
   vbinary->storecompressed = PETSC_FALSE;

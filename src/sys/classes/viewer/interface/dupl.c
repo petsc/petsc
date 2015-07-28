@@ -39,8 +39,8 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
   if (size == 1) {
     ierr       = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = viewer;
-  } else if (viewer->ops->getsubcomm) {
-    ierr = (*viewer->ops->getsubcomm)(viewer,comm,outviewer);CHKERRQ(ierr);
+  } else if (viewer->ops->getsubviewer) {
+    ierr = (*viewer->ops->getsubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
   ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -75,8 +75,8 @@ PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,Pet
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (outviewer) *outviewer = 0;
-  } else if (viewer->ops->restoresubcomm) {
-    ierr = (*viewer->ops->restoresubcomm)(viewer,comm,outviewer);CHKERRQ(ierr);
+  } else if (viewer->ops->restoresubviewer) {
+    ierr = (*viewer->ops->restoresubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

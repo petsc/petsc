@@ -490,8 +490,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->ops->view             = PetscViewerView_Draw;
   viewer->ops->destroy          = PetscViewerDestroy_Draw;
   viewer->ops->setfromoptions   = PetscViewerSetFromOptions_Draw;
-  viewer->ops->getsubcomm     = PetscViewerGetSubViewer_Draw;
-  viewer->ops->restoresubcomm = PetscViewerRestoreSubViewer_Draw;
+  viewer->ops->getsubviewer     = PetscViewerGetSubViewer_Draw;
+  viewer->ops->restoresubviewer = PetscViewerRestoreSubViewer_Draw;
 
   /* these are created on the fly if requested */
   vdraw->draw_max  = 5;

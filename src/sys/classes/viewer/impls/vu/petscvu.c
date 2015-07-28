@@ -142,8 +142,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;
   viewer->ops->flush            = PetscViewerFlush_VU;
-  viewer->ops->getsubcomm       = NULL;
-  viewer->ops->restoresubcomm   = NULL;
+  viewer->ops->getsubviewer     = NULL;
+  viewer->ops->restoresubviewer = NULL;
 
   vu->fd          = NULL;
   vu->mode        = FILE_MODE_WRITE;
