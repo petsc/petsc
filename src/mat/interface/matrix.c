@@ -7844,12 +7844,9 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
 
    Level: developer
 
-   Notes:
-      This null space is used by solvers. Overwrites any previous null space that may have been attached
-
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatSetNullSpace()
 @*/
 PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 {
