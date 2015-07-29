@@ -22,7 +22,6 @@ struct _p_PC_SemiRedundant {
   //PetscErrorCode (*pcsemired_reset_type)(PC);
 };
 
-MPI_Comm PetscSubcommParent(PetscSubcomm);
 PetscBool isActiveRank(PetscSubcomm);
 DM private_PCSemiRedundantGetSubDM(PC_SemiRedundant*);
 

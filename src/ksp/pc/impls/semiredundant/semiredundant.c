@@ -23,8 +23,6 @@
  xtmp(comm) -> y(comm)
  */
 
-MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
-
 PetscBool isActiveRank(PetscSubcomm scomm)
 {
   if (scomm->color == 0) { return PETSC_TRUE; }
@@ -599,7 +597,7 @@ static PetscErrorCode PCSemiRedundantSetIgnoreDM_SemiRedundant(PC pc,PetscBool v
   return(0);
 }
 
-static PetscErrorCode PCSemiRedundantGetSubDM_SemiRedundant(PC pc,DM *dm)
+static PetscErrorCode PCSemiRedundantGetDM_SemiRedundant(PC pc,DM *dm)
 {
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
   *dm = private_PCSemiRedundantGetSubDM(red);
@@ -712,7 +710,7 @@ PetscErrorCode PCSemiRedundantSetIgnoreDM(PC pc,PetscInt v)
 }
 
 /*@
- PCSemiRedundantGetSubDM - Get the re-partitioned DM attached to the sub KS{.
+ PCSemiRedundantGetDM - Get the re-partitioned DM attached to the sub KSP.
  
  Not Collective
  
@@ -726,9 +724,9 @@ PetscErrorCode PCSemiRedundantSetIgnoreDM(PC pc,PetscInt v)
  
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantGetSubDM(PC pc,DM *subdm)
+PetscErrorCode PCSemiRedundantGetDM(PC pc,DM *subdm)
 {
-  PetscTryMethod(pc,"PCSemiRedundantGetSubDM_C",(PC,DM*),(pc,subdm));
+  PetscTryMethod(pc,"PCSemiRedundantGetDM_C",(PC,DM*),(pc,subdm));
   return(0);
 }
 
@@ -783,6 +781,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_SemiRedundant(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantSetReductionFactor_C",PCSemiRedundantSetReductionFactor_SemiRedundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetIgnoreDM_C",PCSemiRedundantGetIgnoreDM_SemiRedundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantSetIgnoreDM_C",PCSemiRedundantSetIgnoreDM_SemiRedundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetSubDM_C",PCSemiRedundantGetSubDM_SemiRedundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetDM_C",PCSemiRedundantGetDM_SemiRedundant);CHKERRQ(ierr);
   return(0);
 }
