@@ -1,7 +1,49 @@
 
-#include <petsc/private/pcimpl.h>
-#include <petscksp.h>           /*I "petscksp.h" I*/
-#include <petscdm.h>
+/*
+ Defines a semi-redundant preconditioner.
+ 
+ Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
+ creates a child sub-communicator (c') containing less MPI processes than the original parent preconditioner (PC).
+ 
+ During PCSetup, the B operator is scattered onto c'.
+ Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
+ Then KSPSolve() is executed on the c' communicator.
+
+ The preconditioner is deemed "semi" redundant as it only calls KSPSolve() on a single
+ sub-communicator in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
+ This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
+ 
+ Comments:
+ - The semi-redundant preconditioner is aware of nullspaces which are attached to the only B operator.
+ In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
+ a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
+
+ - The semi-redundant preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
+ 1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
+ is attached the sub KSPSolve(). The design of semi-redundant is such that it should be possible to extend support 
+ for re-partitioning other DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
+ 
+ - By default, B' is defined by simply fusing rows from different MPI processes
+
+ - When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permuting of B
+ into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatGetSubMatrices(), (iii) fusing the
+ locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
+ 
+ Limitations/improvements
+ - VecPlaceArray could be used within PCApply() to improve efficiency and reduce memory usage.
+ 
+ - The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
+ and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). I opted to use P^T.A.P as it appears
+ VecPermute() does not supported for the use case required here. By computing P, I can permute both the operator and RHS in a 
+ consistent manner.
+ 
+ - Currently the coordinates of the DMDA on c are not propagated to the sub DM defined on c'
+ 
+*/
+
+#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
+#include <petscksp.h> /*I "petscksp.h" I*/
+#include <petscdm.h> /*I "petscdm.h" I*/
 
 #include "semiredundant.h"
 
