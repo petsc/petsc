@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
     blmP = (TAO_BLMVM *)tao->data;
     ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
     blmP->H0 = H0;
-  } else SETERRQ(PetscObjectComm(PetscObject(tao)), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
 
   PetscFunctionReturn(0);
 }
@@ -368,7 +368,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
   } else if (is_blmvm) {
     blmP = (TAO_BLMVM *)tao->data;
     M = blmP->M;
-  } else SETERRQ(PetscObjectComm(PetscObject(tao)), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
 
   ierr = MatLMVMGetH0(M, H0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -395,7 +395,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
   } else if (is_blmvm) {
     blmP = (TAO_BLMVM *)tao->data;
     M = blmP->M;
-  } else SETERRQ(PetscObjectComm(PetscObject(tao)), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
 
   ierr = MatLMVMGetH0KSP(M, ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
