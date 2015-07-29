@@ -502,6 +502,40 @@ cdef class TAO(Object):
         PetscINCREF(vec.obj)
         return vec
 
+    def setGradientNormMat(self, Mat mat):
+        """
+        """
+        CHKERR( TaoSetGradientNorm(self.tao, mat.mat) )
+
+    def getGradientNormMat(self):
+        """
+        """
+        cdef Mat mat = Mat()
+        CHKERR( TaoGetGradientNorm(self.tao, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
+    def setLMVMH0(self, Mat mat):
+        """
+        """
+        CHKERR( TaoLMVMSetH0(self.tao, mat.mat) )
+
+    def getLMVMH0(self):
+        """
+        """
+        cdef Mat mat = Mat()
+        CHKERR( TaoLMVMGetH0(self.tao, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
+    def getLMVMH0KSP(self):
+        """
+        """
+        cdef KSP ksp = KSP()
+        CHKERR( TaoLMVMGetH0KSP(self.tao, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
     def getVariableBounds(self):
         """
         """

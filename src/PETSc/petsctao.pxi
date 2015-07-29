@@ -105,6 +105,11 @@ cdef extern from * nogil:
 
     int TaoGetSolutionVector(PetscTAO,PetscVec*)
     int TaoGetGradientVector(PetscTAO,PetscVec*)
+    int TaoSetGradientNorm(PetscTAO,PetscMat)
+    int TaoGetGradientNorm(PetscTAO,PetscMat*)
+    int TaoLMVMSetH0(PetscTAO,PetscMat)
+    int TaoLMVMGetH0(PetscTAO,PetscMat*)
+    int TaoLMVMGetH0KSP(PetscTAO,PetscKSP*)
     int TaoGetVariableBounds(PetscTAO,PetscVec*,PetscVec*)
     #int TaoGetConstraintsVec(PetscTAO,PetscVec*)
     #int TaoGetVariableBoundVecs(PetscTAO,PetscVec*,PetscVec*)
