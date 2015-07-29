@@ -273,6 +273,11 @@ PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant 
     
     /* attach redundant nullspace to Bred */
     ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+
+    for (i=0; i<n; i++) {
+      ierr = VecDestroy(&sub_vecs[i]);CHKERRQ(ierr);
+    }
+    PetscFree(sub_vecs);
   }
   return(0);
 }
