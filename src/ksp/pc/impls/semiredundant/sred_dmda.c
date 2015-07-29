@@ -142,6 +142,7 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_repart(PC pc,PC_SemiRedundant *sred,PC_
   ctx->dmrepart = NULL;
   _range_i_re = _range_j_re = _range_k_re = NULL;
   
+  /* Create DMDA on the child communicator */
   if (isActiveRank(sred->psubcomm)) {
     
     switch (dim) {
@@ -169,7 +170,6 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_repart(PC pc,PC_SemiRedundant *sred,PC_
   }
   
   /* generate ranges for repartitioned dm */
-  
   /* note - assume rank 0 always participates */
   ierr = MPI_Bcast(&ctx->Mp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&ctx->Np_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
