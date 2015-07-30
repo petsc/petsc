@@ -2805,10 +2805,12 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
   PetscValidHeaderSpecific(gradient,VEC_CLASSID,1);
 
   if (tao->gradient_norm) {
+    PetscScalar gnorms;
+
     if (type != NORM_2) SETERRQ(PetscObjectComm((PetscObject)gradient), PETSC_ERR_ARG_WRONGSTATE, "Norm type must be NORM_2 if an inner product for the gradient norm is set.");
     ierr = MatMult(tao->gradient_norm, gradient, tao->gradient_norm_tmp);CHKERRQ(ierr);
-    ierr = VecDot(gradient, tao->gradient_norm_tmp, gnorm);CHKERRQ(ierr);
-    *gnorm = PetscSqrtReal(*gnorm);
+    ierr = VecDot(gradient, tao->gradient_norm_tmp, &gnorms);CHKERRQ(ierr);
+    *gnorm = (PetscReal) PetscSqrtScalar(gnorms);
   } else {
     ierr = VecNorm(gradient, type, gnorm);CHKERRQ(ierr);
   }
