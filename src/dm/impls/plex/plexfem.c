@@ -1084,6 +1084,117 @@ PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeL2DiffVec"
+/*@C
+  DMPlexComputeL2DiffVec - This function computes the cellwise L_2 difference between a function u and an FEM interpolant solution u_h, and stores it in a Vec.
+
+  Input Parameters:
++ dm    - The DM
+. funcs - The functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each function, or NULL.
+- X     - The coefficient vector u_h
+
+  Output Parameter:
+. D - A Vec which holds the difference ||u - u_h||_2 for each cell
+
+  Level: developer
+
+.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
+@*/
+PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, Vec D)
+{
+  const PetscInt   debug = 0;
+  PetscSection     section;
+  PetscQuadrature  quad;
+  Vec              localX;
+  PetscScalar     *funcVal, *interpolant;
+  PetscReal       *coords, *v0, *J, *invJ, detJ;
+  const PetscReal *quadPoints, *quadWeights;
+  PetscInt         dim, numFields, numComponents = 0, numQuadPoints, cStart, cEnd, cEndInterior, c, field, fieldOffset;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSet(D, 0.0);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  for (field = 0; field < numFields; ++field) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     Nc;
+
+    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetQuadrature(fv, &quad);CHKERRQ(ierr);
+      ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+    numComponents += Nc;
+  }
+  ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *x = NULL;
+    PetscReal    elemDiff = 0.0;
+
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
+    ierr = DMPlexVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+
+    for (field = 0, fieldOffset = 0; field < numFields; ++field) {
+      PetscObject  obj;
+      PetscClassId id;
+      void * const ctx = ctxs ? ctxs[field] : NULL;
+      PetscInt     Nb, Nc, q, fc;
+
+      ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
+      else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
+      else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+      if (debug) {
+        char title[1024];
+        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, Nb*Nc, &x[fieldOffset]);CHKERRQ(ierr);
+      }
+      for (q = 0; q < numQuadPoints; ++q) {
+        CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
+        ierr = (*funcs[field])(dim, coords, Nc, funcVal, ctx);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
+        else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
+        else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+        for (fc = 0; fc < Nc; ++fc) {
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*quadWeights[q]*detJ;
+        }
+      }
+      fieldOffset += Nb*Nc;
+    }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
+    ierr = VecSetValuesSection(D, section, c, &elemDiff, ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree6(funcVal,interpolant,coords,v0,J,invJ);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = VecSqrtAbs(D);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeIntegralFEM"
 /*@
   DMPlexComputeIntegralFEM - Form the local integral F from the local input X using pointwise functions specified by the user
