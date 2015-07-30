@@ -14,6 +14,9 @@
  This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
  
  Comments:
+ - The communicator used within the semi-redundant preconditioner is defined by a PetscSubcomm using the INTERLACED
+ creation routine. We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
+ 
  - The semi-redundant preconditioner is aware of nullspaces which are attached to the only B operator.
  In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
  a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
