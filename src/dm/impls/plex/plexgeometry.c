@@ -40,19 +40,20 @@ static PetscErrorCode DMPlexGetLineIntersection_2D_Internal(const PetscReal segm
 #define __FUNCT__ "DMPlexLocatePoint_Simplex_2D_Internal"
 static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
-  const PetscInt embedDim = 2;
-  PetscReal      x        = PetscRealPart(point[0]);
-  PetscReal      y        = PetscRealPart(point[1]);
-  PetscReal      v0[2], J[4], invJ[4], detJ;
-  PetscReal      xi, eta;
-  PetscErrorCode ierr;
+  const PetscInt  embedDim = 2;
+  const PetscReal eps      = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal       x        = PetscRealPart(point[0]);
+  PetscReal       y        = PetscRealPart(point[1]);
+  PetscReal       v0[2], J[4], invJ[4], detJ;
+  PetscReal       xi, eta;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
   xi  = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]);
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
-  if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) *cell = c;
+  if ((xi >= -eps) && (eta >= -eps) && (xi + eta <= 2.0+eps)) *cell = c;
   else *cell = -1;
   PetscFunctionReturn(0);
 }
