@@ -403,15 +403,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt i   = 0;
     char     buf[256];
 
+    while (cdm) {ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr); ++i;}
+    cdm = *dm;
     while (cdm) {
       PetscViewer viewer;
 
+      --i;
       ierr = PetscSNPrintf(buf, 256, "ex12-%d.h5", i);CHKERRQ(ierr);
       ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
-      ++i;
     }
   }
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
