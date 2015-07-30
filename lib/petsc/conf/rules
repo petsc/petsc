@@ -104,7 +104,7 @@ cmake: chk_makej
 gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
-	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} V=${V}
+	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} ${MAKE_PAR_OUT_FLG} V=${V}
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
