@@ -399,20 +399,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (user->viewHierarchy) {
-    DM cdm = *dm;
-    PetscInt i = 0;
-    char buf[255];
+    DM       cdm = *dm;
+    PetscInt i   = 0;
+    char     buf[256];
 
     while (cdm) {
       PetscViewer viewer;
-      sprintf(buf, "ex12-%d.h5", i);
 
+      ierr = PetscSNPrintf(buf, 256, "ex12-%d.h5", i);CHKERRQ(ierr);
       ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
       ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
-      i = i + 1;
+      ++i;
     }
   }
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
@@ -560,6 +559,7 @@ int main(int argc, char **argv)
   JacActionCtx   userJ;       /* context for Jacobian MF action */
   PetscInt       its;         /* iterations for convergence */
   PetscReal      error = 0.0; /* L_2 error in the solution */
+  PetscBool      isFAS;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -697,6 +697,55 @@ int main(int argc, char **argv)
     }
   }
   ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
+
+  /* View the error on each level */
+  ierr = PetscObjectTypeCompare((PetscObject) snes, SNESFAS, &isFAS);CHKERRQ(ierr);
+  if (user.viewHierarchy && isFAS) {
+    SNES        lfas = snes;
+    DM          fdm  = dm, cdm;
+    Vec         uf   = u,  uc;
+    PetscFE     fe;
+    PetscViewer viewer;
+    char        buf[256];
+    PetscInt    dim, numLevels, l;
+
+    ierr = PetscFECreateDefault(dm, user.dim, 1, PETSC_TRUE, "error_", -1, &fe);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) fe, "L2");CHKERRQ(ierr);
+    ierr = SNESFASGetLevels(snes, &numLevels);CHKERRQ(ierr);
+    for (l = 0; l < numLevels; ++l) {
+      DM      edm;
+      PetscDS prob;
+
+      /* Create DM for error */
+      ierr = DMClone(fdm, &edm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(fdm, edm);CHKERRQ(ierr);
+      ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
+      ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+      /* Calculate error: uses fdm, uf */
+      ierr = DMGetGlobalVector(edm, &r);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
+      ierr = DMPlexComputeL2DiffVec(edm, user.exactFuncs, NULL, uf, r);CHKERRQ(ierr);
+      /* View error */
+      ierr = PetscSNPrintf(buf, 256, "ex12-%d.h5", l);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
+      ierr = VecView(r, viewer);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(edm, &r);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      ierr = DMDestroy(&edm);CHKERRQ(ierr);
+      /* Project solution: uses uf, uc */
+      if (l < numLevels - 1) {
+        ierr = DMPlexGetCoarseDM(fdm, &cdm);CHKERRQ(ierr);
+        ierr = DMGetGlobalVector(cdm, &uc);CHKERRQ(ierr);
+        ierr = SNESFASRestrict(lfas, uf, uc);CHKERRQ(ierr);
+      }
+      /* Fine <-- Coarse */
+      if (l > 0) {ierr = DMRestoreGlobalVector(fdm, &uf);CHKERRQ(ierr);}
+      ierr = SNESFASCycleGetCorrection(lfas, &lfas);CHKERRQ(ierr);
+      fdm  = cdm;
+      uf   = uc;
+    }
+    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  }
 
   if (user.bcType == NEUMANN) {ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);}
   if (user.jacobianMF) {ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);}
