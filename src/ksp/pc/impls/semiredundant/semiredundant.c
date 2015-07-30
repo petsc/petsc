@@ -40,8 +40,6 @@
  VecPermute() does not supported for the use case required here. By computing P, I can permute both the operator and RHS in a 
  consistent manner.
  
- - Currently the coordinates of the DMDA on c are not propagated to the sub DM defined on c'
- 
 */
 
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/

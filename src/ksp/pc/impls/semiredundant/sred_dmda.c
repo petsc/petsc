@@ -114,6 +114,330 @@ PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim,PetscMPIInt rank_re,PetscInt 
   return(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCSemiRedundantSetUp_dmda_repart_coors2d"
+PetscErrorCode PCSemiRedundantSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,DM subdm)
+{
+  PetscErrorCode ierr;
+  DM             cdm;
+  Vec            coor,coor_natural,perm_coors;
+  PetscInt       i,j,si,sj,ni,nj,M,N,Ml,Nl,c,nidx;
+  PetscInt       *fine_indices;
+  IS             is_fine,is_local;
+	VecScatter     sctx;
+  
+  ierr = DMGetCoordinates(dm,&coor);CHKERRQ(ierr);
+  if (!coor) return(0);
+  
+  if (isActiveRank(psubcomm)) {
+    ierr = DMDASetUniformCoordinates(subdm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  }
+  
+	/* Get the coordinate vector from the distributed array */
+	ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+	ierr = DMDACreateNaturalVector(cdm,&coor_natural);CHKERRQ(ierr);
+  
+	ierr = DMDAGlobalToNaturalBegin(cdm,coor,INSERT_VALUES,coor_natural);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalEnd(cdm,coor,INSERT_VALUES,coor_natural);CHKERRQ(ierr);
+  
+  /* get indices of the guys I want to grab */
+	ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  
+  if (isActiveRank(psubcomm)) {
+    ierr = DMDAGetCorners(subdm,&si,&sj,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
+    
+    Ml = ni;
+    Nl = nj;
+  } else {
+    Ml = Nl = 1;
+  }
+  
+	ierr = PetscMalloc(sizeof(PetscInt)*Ml*Nl*2,&fine_indices);CHKERRQ(ierr);
+	
+	c = 0;
+  if (isActiveRank(psubcomm)) {
+    for (j=sj; j<sj+nj; j++) {
+      for (i=si; i<si+ni; i++) {
+        
+        nidx = (i) + (j)*M;
+        fine_indices[c  ] = 2 * nidx     ;
+        fine_indices[c+1] = 2 * nidx + 1 ;
+        
+        c = c + 2;
+      }
+    }
+  } else {
+    i = si;
+    j = sj;
+    
+    nidx = (i) + (j)*M;
+    fine_indices[0] = 2 * nidx     ;
+    fine_indices[1] = 2 * nidx + 1 ;
+  }
+  
+	/* generate scatter */
+	ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),Ml*Nl*2,fine_indices,PETSC_USE_POINTER,&is_fine);CHKERRQ(ierr);
+	ierr = ISCreateStride(PETSC_COMM_SELF,Ml*Nl*2,0,1,&is_local);CHKERRQ(ierr);
+  
+  /* scatter */
+  ierr = VecCreate(PETSC_COMM_SELF,&perm_coors);CHKERRQ(ierr);
+  ierr = VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*2);CHKERRQ(ierr);
+  ierr = VecSetType(perm_coors,VECSEQ);CHKERRQ(ierr);
+  
+	ierr = VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx);CHKERRQ(ierr);
+	
+	ierr = VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	ierr = VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  
+  /* access */
+  if (isActiveRank(psubcomm)) {
+    Vec               _coors;
+    const PetscScalar *LA_perm;
+    PetscScalar       *LA_coors;
+    
+    ierr = DMGetCoordinates(subdm,&_coors);CHKERRQ(ierr);
+    
+    ierr = VecGetArrayRead(perm_coors,&LA_perm);CHKERRQ(ierr);
+    ierr = VecGetArray(_coors,&LA_coors);CHKERRQ(ierr);
+    for (i=0; i<Ml*Nl*2; i++) {
+      LA_coors[i] = LA_perm[i];
+    }
+    ierr = VecRestoreArray(_coors,&LA_coors);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(perm_coors,&LA_perm);CHKERRQ(ierr);
+  }
+  
+  /* update local coords */
+  if (isActiveRank(psubcomm)) {
+    DM  _dmc;
+    Vec _coors,_coors_local;
+    
+    ierr = DMGetCoordinateDM(subdm,&_dmc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(subdm,&_coors);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(subdm,&_coors_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(_dmc,_coors,INSERT_VALUES,_coors_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(_dmc,_coors,INSERT_VALUES,_coors_local);CHKERRQ(ierr);
+  }
+  
+#if 0
+  {
+    PetscViewer viewer;
+    Vec X;
+    
+    DMCreateGlobalVector(dm,&X);
+    ierr = PetscViewerCreate(PetscSubcommParent(psubcomm),&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,"orig.vts");CHKERRQ(ierr);
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    VecDestroy(&X);
+  }
+  if (isActiveRank(psubcomm)) {
+    PetscViewer viewer;
+    Vec X;
+    
+    DMCreateGlobalVector(subdm,&X);
+    ierr = PetscViewerCreate(PetscSubcommChild(psubcomm),&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,"repart.vts");CHKERRQ(ierr);
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    VecDestroy(&X);
+  }
+#endif
+  
+  ierr = VecScatterDestroy(&sctx);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_fine);CHKERRQ(ierr);
+	ierr = PetscFree(fine_indices);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_local);CHKERRQ(ierr);
+  ierr = VecDestroy(&perm_coors);CHKERRQ(ierr);
+	ierr = VecDestroy(&coor_natural);CHKERRQ(ierr);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSemiRedundantSetUp_dmda_repart_coors3d"
+PetscErrorCode PCSemiRedundantSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,DM subdm)
+{
+  PetscErrorCode ierr;
+  DM             cdm;
+  Vec            coor,coor_natural,perm_coors;
+  PetscInt       i,j,k,si,sj,sk,ni,nj,nk,M,N,P,Ml,Nl,Pl,c,nidx;
+  PetscInt       *fine_indices;
+  IS             is_fine,is_local;
+	VecScatter     sctx;
+  
+  ierr = DMGetCoordinates(dm,&coor);CHKERRQ(ierr);
+  if (!coor) return(0);
+  
+  if (isActiveRank(psubcomm)) {
+    ierr = DMDASetUniformCoordinates(subdm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  }
+  
+	/* Get the coordinate vector from the distributed array */
+	ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+	ierr = DMDACreateNaturalVector(cdm,&coor_natural);CHKERRQ(ierr);
+  
+	ierr = DMDAGlobalToNaturalBegin(cdm,coor,INSERT_VALUES,coor_natural);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalEnd(cdm,coor,INSERT_VALUES,coor_natural);CHKERRQ(ierr);
+
+  /* get indices of the guys I want to grab */
+	ierr = DMDAGetInfo(dm,NULL,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+
+  if (isActiveRank(psubcomm)) {
+    ierr = DMDAGetCorners(subdm,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+
+    Ml = ni;
+    Nl = nj;
+    Pl = nk;
+  } else {
+    Ml = Nl = Pl = 1;
+  }
+  
+	ierr = PetscMalloc(sizeof(PetscInt)*Ml*Nl*Pl*3,&fine_indices);CHKERRQ(ierr);
+	
+	c = 0;
+  if (isActiveRank(psubcomm)) {
+    for (k=sk; k<sk+nk; k++) {
+      for (j=sj; j<sj+nj; j++) {
+        for (i=si; i<si+ni; i++) {
+          
+          nidx = (i) + (j)*M + (k)*M*N;
+          fine_indices[c  ] = 3 * nidx     ;
+          fine_indices[c+1] = 3 * nidx + 1 ;
+          fine_indices[c+2] = 3 * nidx + 2 ;
+          
+          c = c + 3;
+        }
+      }
+    }
+  } else {
+    i = si;
+    j = sj;
+    k = sk;
+    
+    nidx = (i) + (j)*M + (k)*M*N;
+    fine_indices[0] = 3 * nidx     ;
+    fine_indices[1] = 3 * nidx + 1 ;
+    fine_indices[2] = 3 * nidx + 2 ;
+  }
+  
+	/* generate scatter */
+	ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),Ml*Nl*Pl*3,fine_indices,PETSC_USE_POINTER,&is_fine);CHKERRQ(ierr);
+	ierr = ISCreateStride(PETSC_COMM_SELF,Ml*Nl*Pl*3,0,1,&is_local);CHKERRQ(ierr);
+
+  /* scatter */
+  ierr = VecCreate(PETSC_COMM_SELF,&perm_coors);CHKERRQ(ierr);
+  ierr = VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*Pl*3);CHKERRQ(ierr);
+  ierr = VecSetType(perm_coors,VECSEQ);CHKERRQ(ierr);
+  
+	ierr = VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx);CHKERRQ(ierr);
+	
+	ierr = VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	ierr = VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /* access */
+  if (isActiveRank(psubcomm)) {
+    Vec               _coors;
+    const PetscScalar *LA_perm;
+    PetscScalar       *LA_coors;
+    
+    ierr = DMGetCoordinates(subdm,&_coors);CHKERRQ(ierr);
+
+    ierr = VecGetArrayRead(perm_coors,&LA_perm);CHKERRQ(ierr);
+    ierr = VecGetArray(_coors,&LA_coors);CHKERRQ(ierr);
+    for (i=0; i<Ml*Nl*Pl*3; i++) {
+      LA_coors[i] = LA_perm[i];
+    }
+    ierr = VecRestoreArray(_coors,&LA_coors);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(perm_coors,&LA_perm);CHKERRQ(ierr);
+  }
+  
+  /* update local coords */
+  if (isActiveRank(psubcomm)) {
+    DM  _dmc;
+    Vec _coors,_coors_local;
+    
+    ierr = DMGetCoordinateDM(subdm,&_dmc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(subdm,&_coors);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(subdm,&_coors_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(_dmc,_coors,INSERT_VALUES,_coors_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(_dmc,_coors,INSERT_VALUES,_coors_local);CHKERRQ(ierr);
+  }
+
+#if 0
+  {
+    PetscViewer viewer;
+    Vec X;
+    
+    DMCreateGlobalVector(dm,&X);
+    ierr = PetscViewerCreate(PetscSubcommParent(psubcomm),&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,"orig.vts");CHKERRQ(ierr);
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    VecDestroy(&X);
+  }
+  if (isActiveRank(psubcomm)) {
+    PetscViewer viewer;
+    Vec X;
+    
+    DMCreateGlobalVector(subdm,&X);
+    ierr = PetscViewerCreate(PetscSubcommChild(psubcomm),&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,"repart.vts");CHKERRQ(ierr);
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    VecDestroy(&X);
+  }
+#endif
+  
+  ierr = VecScatterDestroy(&sctx);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_fine);CHKERRQ(ierr);
+	ierr = PetscFree(fine_indices);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_local);CHKERRQ(ierr);
+  ierr = VecDestroy(&perm_coors);CHKERRQ(ierr);
+	ierr = VecDestroy(&coor_natural);CHKERRQ(ierr);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSemiRedundantSetUp_dmda_repart_coors"
+PetscErrorCode PCSemiRedundantSetUp_dmda_repart_coors(PC pc,PC_SemiRedundant *sred,PC_SemiRedundant_DMDACtx *ctx)
+{
+  PetscInt       dim;
+  DM             dm,subdm;
+  PetscSubcomm   psubcomm;
+  MPI_Comm       comm;
+  Vec            coor;
+  PetscErrorCode ierr;
+  
+  
+  psubcomm = sred->psubcomm;
+  comm = PetscSubcommParent(psubcomm);
+  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+  subdm = ctx->dmrepart;
+  
+  ierr = DMGetCoordinates(dm,&coor);CHKERRQ(ierr);
+  if (!coor) return(0);
+  
+  PetscInfo(pc,"PCSemiRedundant: setting up the coordinates (DMDA)\n");
+  ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  switch (dim) {
+    case 1:
+      SETERRQ(comm,PETSC_ERR_SUP,"SemiRedundant: DMDA (1D) repartitioning not provided");
+      break;
+    case 2: PCSemiRedundantSetUp_dmda_repart_coors2d(psubcomm,dm,subdm);
+      break;
+    case 3: PCSemiRedundantSetUp_dmda_repart_coors3d(psubcomm,dm,subdm);
+      break;
+  }
+  return(0);
+}
+
 /* setup repartitioned dm */
 #undef __FUNCT__
 #define __FUNCT__ "PCSemiRedundantSetUp_dmda_repart"
@@ -461,6 +785,7 @@ PetscErrorCode PCSemiRedundantSetUp_dmda(PC pc,PC_SemiRedundant *sred)
   ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   
   PCSemiRedundantSetUp_dmda_repart(pc,sred,ctx);
+  PCSemiRedundantSetUp_dmda_repart_coors(pc,sred,ctx);
   switch (dim) {
     case 1:
       SETERRQ(comm,PETSC_ERR_SUP,"SemiRedundant: DMDA (1D) repartitioning not provided");
