@@ -67,6 +67,8 @@
 #define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
 #define PETSC_ERR_MAX_VALUE        93  /* this is always the one more than the largest error code */
 
+#define PETSC_ERR_OPT_OVERWRITE    94  /* overwrote options which should not be changed */
+
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 
