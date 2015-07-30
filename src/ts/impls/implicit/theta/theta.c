@@ -545,6 +545,48 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetUp_BEuler"
+static PetscErrorCode TSSetUp_BEuler(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (th->Theta != 1.0) {
+    th->Theta = 1.0;
+#if defined(PETSC_USE_DEBUG)
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Resetting Theta to be 1.0 for backward Euler\n");CHKERRQ(ierr);
+#endif
+  }
+  ierr = TSSetUp_Theta(ts);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetUp_CN"
+static PetscErrorCode TSSetUp_CN(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (th->Theta != 0.5) {
+    th->Theta = 0.5;
+#if defined(PETSC_USE_DEBUG)
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Resetting Theta to be 0.5 for Crank-Nicolson \n");CHKERRQ(ierr);
+#endif
+  }
+  if (!th->endpoint) {
+    th->endpoint = PETSC_TRUE;
+#if defined(PETSC_USE_DEBUG)
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Resetting ts_theta_endpoint to be TRUE for Crank-Nicolson\n");CHKERRQ(ierr);
+#endif
+  }
+  ierr = TSSetUp_Theta(ts);
+  PetscFunctionReturn(0);
+}
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__
@@ -921,6 +963,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
   PetscFunctionBegin;
   ierr = TSCreate_Theta(ts);CHKERRQ(ierr);
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
+  ts->ops->setup = TSSetUp_BEuler;
   ts->ops->view = TSView_BEuler;
   PetscFunctionReturn(0);
 }
@@ -959,6 +1002,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
   ierr = TSCreate_Theta(ts);CHKERRQ(ierr);
   ierr = TSThetaSetTheta(ts,0.5);CHKERRQ(ierr);
   ierr = TSThetaSetEndpoint(ts,PETSC_TRUE);CHKERRQ(ierr);
+  ts->ops->setup = TSSetUp_CN; 
   ts->ops->view = TSView_CN;
   PetscFunctionReturn(0);
 }
