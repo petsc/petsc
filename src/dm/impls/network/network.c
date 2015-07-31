@@ -437,7 +437,7 @@ PetscErrorCode DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMNetworkAddNumVariables"
+#define __FUNCT__ "DMNetworkSetNumVariables"
 /*@ 
   DMNetworkSetNumVariables - Sets number of variables for a vertex/edge point.
 
