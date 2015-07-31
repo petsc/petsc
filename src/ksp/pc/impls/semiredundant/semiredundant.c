@@ -1,6 +1,7 @@
 
 /*
- Defines a semi-redundant preconditioner.
+ 
+ Defines a semi-redundant preconditioner
  
  Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
  creates a child sub-communicator (c') containing less MPI processes than the original parent preconditioner (PC).
@@ -39,6 +40,29 @@
  and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). I opted to use P^T.A.P as it appears
  VecPermute() does not supported for the use case required here. By computing P, I can permute both the operator and RHS in a 
  consistent manner.
+ 
+ - Mapping of vectors is performed this way
+ Suppose the parent comm size was 4, and we set a reduction factor of 2, thus would give a comm size on c' of 2.
+ Using the interlaced creation routine, the ranks in c with color = 0, will be rank 0 and 2.
+ We perform the scatter to the sub-comm in the following way, 
+ [1] Given a vector x defined on comm c
+ 
+   rank(c) : _________ 0 ______  ________ 1 _______  ________ 2 _____________ ___________ 3 __________
+         x : [0, 1, 2, 3, 4, 5] [6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17] [18, 19, 20, 21, 22, 23]
+
+ scatter to xtmp defined also on comm c so that we have the following values
+ 
+   rank(c) : ___________________ 0 ________________  _1_  ______________________ 2 _______________________  __3_
+      xtmp : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [ 6 ] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] [ 18 ]
+
+ The entries on rank 1 and 3 (ranks which do not have a color = 0 in c') are filled with the first bs values living on that rank,
+ where bs is the block size of the vector.
+ 
+ [2] Copy the value from rank 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
+ Ranks 0 and 2 are the only ranks in the subcomm which have a color = 0.
+ 
+  rank(c') : ___________________ 0 _______________  ______________________ 1 _____________________
+      xred : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
  
 */
 
