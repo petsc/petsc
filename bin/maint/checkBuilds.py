@@ -380,7 +380,7 @@ Thanks,
 
       if author == 'Mark Adams <mark.adams@columbia.edu>':
         author =  'Mark Adams <mfadams@lbl.gov>'
-      if author == 'Karl Rupp <rupp@mcs.anl.gov>'
+      if author == 'Karl Rupp <rupp@mcs.anl.gov>':
         author =  'Karl Rupp <me@karlrupp.net>'
 
       checkbuilds = 'PETSc checkBuilds <petsc-checkbuilds@mcs.anl.gov>'
