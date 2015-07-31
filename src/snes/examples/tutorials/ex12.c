@@ -29,6 +29,8 @@ typedef struct {
   BCType        bcType;
   CoeffType     variableCoefficient;
   PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  /* Solver */
+  PC            pcmg;              /* This is needed for error monitoring */
 } AppCtx;
 
 PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
@@ -574,7 +576,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
   DM             dm, edm;
   PetscDS        prob;
   PetscFE        fe;
-  Vec            u, r;
+  Vec            du, r;
   PetscInt       level = 0;
   PetscBool      hasLevel;
   PetscViewer    viewer;
@@ -592,13 +594,44 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
   ierr = DMPlexCopyCoordinates(dm, edm);CHKERRQ(ierr);
   ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  /* Calculate solution */
+  {
+    PC       pc = user->pcmg; /* The MG PC */
+    DM       fdm,  cdm;
+    KSP      fksp, cksp;
+    Vec      fu,   cu;
+    PetscInt levels, l;
+
+    ierr = KSPBuildSolution(ksp, NULL, &du);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetInt((PetscObject) ksp, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
+    ierr = PCMGGetLevels(pc, &levels);CHKERRQ(ierr);
+    ierr = PCMGGetSmoother(pc, levels-1, &fksp);CHKERRQ(ierr);
+    ierr = KSPBuildSolution(fksp, NULL, &fu);CHKERRQ(ierr);
+    for (l = levels-1; l > level; --l) {
+      Mat R;
+      Vec s;
+
+      ierr = PCMGGetSmoother(pc, l-1, &cksp);CHKERRQ(ierr);
+      ierr = KSPGetDM(cksp, &cdm);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(cdm, &cu);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc, l, &R);CHKERRQ(ierr);
+      ierr = PCMGGetRScale(pc, l, &s);CHKERRQ(ierr);
+      ierr = MatRestrict(R, fu, cu);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(cu, cu, s);CHKERRQ(ierr);
+      if (l < levels-1) {ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);}
+      fdm  = cdm;
+      fu   = cu;
+    }
+    if (levels-1 > level) {
+      ierr = VecAXPY(du, 1.0, cu);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(cdm, &cu);CHKERRQ(ierr);
+    }
+  }
   /* Calculate error */
-  ierr = KSPBuildSolution(ksp, NULL, &u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(edm, &r);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
-  ierr = DMPlexComputeL2DiffVec(edm, user->exactFuncs, NULL, u, r);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2DiffVec(edm, user->exactFuncs, NULL, du, r);CHKERRQ(ierr);
   /* View error */
-  ierr = PetscObjectComposedDataGetInt((PetscObject) ksp, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
   ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
   ierr = VecView(r, viewer);CHKERRQ(ierr);
@@ -775,10 +808,10 @@ int main(int argc, char **argv)
       }
     } else {
       ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp, KSPMonitorError, &user, NULL);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject) pc, PCMG, &isMG);CHKERRQ(ierr);
       if (isMG) {
+        user.pcmg = pc;
         ierr = PCMGGetLevels(pc, &numLevels);CHKERRQ(ierr);
         for (l = 0; l < numLevels; ++l) {
           ierr = PCMGGetSmootherDown(pc, l, &ksp);CHKERRQ(ierr);
