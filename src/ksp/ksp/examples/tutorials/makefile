@@ -53,7 +53,11 @@ ex5: ex5.o  chkopts
 
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_KSP_LIB}
-	#${RM} ex6.o
+	${RM} ex6.o
+
+ex6f: ex6f.o  chkopts
+	-${FLINKER} -o ex6f ex6f.o  ${PETSC_KSP_LIB}
+	${RM} ex6f.o
 
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_KSP_LIB}
@@ -465,6 +469,11 @@ runex6_2:
 	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex6_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6_2.tmp
+runex6f:
+	-@${MPIEXEC} -n 1 ./ex6f -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex6f_1.out ex6f_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6f_1.tmp
 runex7:
 	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
