@@ -790,4 +790,61 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction*
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+#  if defined(PETSC_HAVE_CONCURRENCYKIT)
+#include <ck_spinlock.h>
+typedef ck_spinlock_t PetscSpinlock;
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_init(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_lock(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_unlock(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
+{
+  return 0;
+}
+#  elif defined(PETSC_HAVE_OPENMP)
+#include <omp.h>
+typedef omp_lock_t PetscSpinlock;
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
+{
+  omp_lock_init(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
+{
+  omp_set_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
+{
+  omp_unset_unlock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
+{
+  return 0;
+}
+#else
+Thread safety requires either --with-openmp or --download-concurrencykit
+#endif
+
+#else
+typedef int PetscSpinlock;
+#define PetscSpinlockCreate(a,b)
+#define PetscSpinlockLock(a)
+#define PetscSpinlockUnlock(a)
+#define PetscSpinlockDestroy(a)
+#endif
+
 #endif /* _PETSCHEAD_H */
