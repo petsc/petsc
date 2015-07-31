@@ -814,6 +814,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlo
   return 0;
 }
 #  elif defined(PETSC_HAVE_OPENMP)
+
 #include <omp.h>
 typedef omp_lock_t PetscSpinlock;
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
@@ -833,6 +834,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
 {
+  omp_destroy_lock(omp_lock);
   return 0;
 }
 #else
@@ -841,10 +843,15 @@ Thread safety requires either --with-openmp or --download-concurrencykit
 
 #else
 typedef int PetscSpinlock;
-#define PetscSpinlockCreate(a,b)
+#define PetscSpinlockCreate(a)
 #define PetscSpinlockLock(a)
 #define PetscSpinlockUnlock(a)
 #define PetscSpinlockDestroy(a)
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+extern PetscSpinlock PetscViewerASCIISpinLock;
+extern PetscSpinlock PetscCommSpinLock;
 #endif
 
 #endif /* _PETSCHEAD_H */

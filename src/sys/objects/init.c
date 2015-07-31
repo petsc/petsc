@@ -660,9 +660,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 
   ierr = PetscOptionsGetString(NULL,"-info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+    }
   }
 
 #if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL)
