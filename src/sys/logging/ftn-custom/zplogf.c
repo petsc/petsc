@@ -53,9 +53,11 @@ PETSC_EXTERN void PETSC_STDCALL petsclogflops_(PetscLogDouble *f,PetscErrorCode 
 
 PETSC_EXTERN void PETSC_STDCALL petsclogview_(PetscViewer *viewer,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
+#if defined(PETSC_USE_LOG)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscLogView(v);
+#endif
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

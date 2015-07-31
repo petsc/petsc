@@ -51,3 +51,4 @@ class Configure(config.package.Package):
     if not hasattr(self.framework, 'packages'):
       self.framework.packages = []
     self.framework.packages.append(self)
+    config.package.Package.configureLibrary(self)

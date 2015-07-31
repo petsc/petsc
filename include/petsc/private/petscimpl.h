@@ -818,7 +818,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlo
 typedef omp_lock_t PetscSpinlock;
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
-  omp_lock_init(omp_lock);
+  omp_init_lock(omp_lock);
   return 0;
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
@@ -828,7 +828,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
 {
-  omp_unset_unlock(omp_lock);
+  omp_unset_lock(omp_lock);
   return 0;
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
