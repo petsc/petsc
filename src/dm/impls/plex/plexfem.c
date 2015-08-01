@@ -1103,7 +1103,6 @@ PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt
 @*/
 PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, Vec D)
 {
-  const PetscInt   debug = 0;
   PetscSection     section;
   PetscQuadrature  quad;
   Vec              localX;
@@ -1149,7 +1148,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, 
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
-    PetscReal    elemDiff = 0.0;
+    PetscScalar  elemDiff = 0.0;
 
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
@@ -1166,11 +1165,6 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, 
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
       else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
-      if (debug) {
-        char title[1024];
-        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
-        ierr = DMPrintCellVector(c, title, Nb*Nc, &x[fieldOffset]);CHKERRQ(ierr);
-      }
       for (q = 0; q < numQuadPoints; ++q) {
         CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
         ierr = (*funcs[field])(dim, coords, Nc, funcVal, ctx);CHKERRQ(ierr);
@@ -1178,14 +1172,12 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, 
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
         else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
         for (fc = 0; fc < Nc; ++fc) {
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
           elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*quadWeights[q]*detJ;
         }
       }
       fieldOffset += Nb*Nc;
     }
     ierr = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
-    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
     ierr = VecSetValuesSection(D, section, c, &elemDiff, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree6(funcVal,interpolant,coords,v0,J,invJ);CHKERRQ(ierr);
