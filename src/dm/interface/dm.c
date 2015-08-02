@@ -386,6 +386,71 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMAppendOptionsPrefix"
+/*@C
+   DMAppendOptionsPrefix - Appends to the prefix used for searching for all
+   DM options in the database.
+
+   Logically Collective on DM
+
+   Input Parameters:
++  dm - the DM context
+-  prefix - the prefix string to prepend to all DM option requests
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: DM, append, options, prefix, database
+
+.seealso: DMSetOptionsPrefix(), DMGetOptionsPrefix()
+@*/
+PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)dm,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetOptionsPrefix"
+/*@C
+   DMGetOptionsPrefix - Gets the prefix used for searching for all
+   DM options in the database.
+
+   Not Collective
+
+   Input Parameters:
+.  dm - the DM context
+
+   Output Parameters:
+.  prefix - pointer to the prefix string used is returned
+
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   sufficient length to hold the prefix.
+
+   Level: advanced
+
+.keywords: DM, set, options, prefix, database
+
+.seealso: DMSetOptionsPrefix(), DMAppendOptionsPrefix()
+@*/
+PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy"
 /*@
     DMDestroy - Destroys a vector packer or DMDA.
