@@ -351,7 +351,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 #define __FUNCT__ "DMSetOptionsPrefix"
 /*@C
    DMSetOptionsPrefix - Sets the prefix used for searching for all
-   DMDA options in the database.
+   DM options in the database.
 
    Logically Collective on DM
 
