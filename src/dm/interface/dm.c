@@ -353,10 +353,10 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
    DMSetOptionsPrefix - Sets the prefix used for searching for all
    DMDA options in the database.
 
-   Logically Collective on DMDA
+   Logically Collective on DM
 
    Input Parameter:
-+  da - the DMDA context
++  da - the DM context
 -  prefix - the prefix to prepend to all option names
 
    Notes:
@@ -365,7 +365,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
    Level: advanced
 
-.keywords: DMDA, set, options, prefix, database
+.keywords: DM, set, options, prefix, database
 
 .seealso: DMSetFromOptions()
 @*/
