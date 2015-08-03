@@ -25,7 +25,7 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
         break;
       }
     }
-    if (pi == -1) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart][pi] cannot be determined : range %D, val %D",Mp,i); }
+    if (pi == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pi cannot be determined : range %D, val %D",Mp,i);
     *_pi = pi;
   }
   
@@ -36,7 +36,7 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
         break;
       }
     }
-    if (pj == -1) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart][pj] cannot be determined : range %D, val %D",Np,j); }
+    if (pj == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pj cannot be determined : range %D, val %D",Np,j);
     *_pj = pj;
   }
   
@@ -47,7 +47,7 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
         break;
       }
     }
-    if (pk == -1) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart][pk] cannot be determined : range %D, val %D",Pp,k); }
+    if (pk == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pk cannot be determined : range %D, val %D",Pp,k);
     *_pk = pk;
   }
   
@@ -427,8 +427,7 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_repart_coors(PC pc,PC_SemiRedundant *sr
   PetscInfo(pc,"PCSemiRedundant: setting up the coordinates (DMDA)\n");
   ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   switch (dim) {
-    case 1:
-      SETERRQ(comm,PETSC_ERR_SUP,"SemiRedundant: DMDA (1D) repartitioning not provided");
+    case 1: SETERRQ(comm,PETSC_ERR_SUP,"SemiRedundant: DMDA (1D) repartitioning not provided");
       break;
     case 2: PCSemiRedundantSetUp_dmda_repart_coors2d(psubcomm,dm,subdm);
       break;
@@ -622,13 +621,13 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_permutation_3d(PC pc,PC_SemiRedundant *
         ierr = _DMDADetermineGlobalS0(3,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re);CHKERRQ(ierr);
         
         ii = i - ctx->start_i_re[ rank_reI[0] ];
-        if (ii < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error ii \n"); }
+        if (ii < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error ii");
         
         jj = j - ctx->start_j_re[ rank_reI[1] ];
-        if (jj < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error jj \n"); }
+        if (jj < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error jj");
         
         kk = k - ctx->start_k_re[ rank_reI[2] ];
-        if (kk < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error kk \n"); }
+        if (kk < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error kk");
         
         lenI_re[0] = ctx->range_i_re[ rank_reI[0] ];
         lenI_re[1] = ctx->range_j_re[ rank_reI[1] ];
@@ -707,10 +706,10 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_permutation_2d(PC pc,PC_SemiRedundant *
       ierr = _DMDADetermineGlobalS0(2,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re);CHKERRQ(ierr);
       
       ii = i - ctx->start_i_re[ rank_reI[0] ];
-      if (ii < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error ii \n"); }
+      if (ii < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
       
       jj = j - ctx->start_j_re[ rank_reI[1] ];
-      if (jj < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error jj \n"); }
+      if (jj < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
       
       lenI_re[0] = ctx->range_i_re[ rank_reI[0] ];
       lenI_re[1] = ctx->range_j_re[ rank_reI[1] ];
@@ -811,8 +810,7 @@ PetscErrorCode PCSemiRedundantSetUp_dmda(PC pc,PC_SemiRedundant *sred)
   PCSemiRedundantSetUp_dmda_repart(pc,sred,ctx);
   PCSemiRedundantSetUp_dmda_repart_coors(pc,sred,ctx);
   switch (dim) {
-    case 1:
-      SETERRQ(comm,PETSC_ERR_SUP,"SemiRedundant: DMDA (1D) repartitioning not provided");
+    case 1: SETERRQ(comm,PETSC_ERR_SUP,"SemiRedundant: DMDA (1D) repartitioning not provided");
       break;
     case 2: PCSemiRedundantSetUp_dmda_permutation_2d(pc,sred,ctx);
       break;
