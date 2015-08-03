@@ -452,8 +452,9 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_repart(PC pc,PC_SemiRedundant *sred,PC_
   const PetscInt  *_range_j_re;
   const PetscInt  *_range_k_re;
   DMDAInterpolationType itype;
-  PetscInt refine_x,refine_y,refine_z;
-  MPI_Comm comm,subcomm;
+  PetscInt              refine_x,refine_y,refine_z;
+  MPI_Comm              comm,subcomm;
+  const char            *prefix;
   
   comm = PetscSubcommParent(sred->psubcomm);
   subcomm = PetscSubcommChild(sred->psubcomm);
@@ -472,20 +473,43 @@ PetscErrorCode PCSemiRedundantSetUp_dmda_repart(PC pc,PC_SemiRedundant *sred,PC_
     switch (dim) {
       case 1:
         PetscInfo(pc,"PCSemiRedundant: setting up the DMDA on comm subset (1D)\n");
-        ierr = DMDACreate1d(subcomm,bx,nx,ndof,nsw,NULL,&ctx->dmrepart);CHKERRQ(ierr);
+        /*ierr = DMDACreate1d(subcomm,bx,nx,ndof,nsw,NULL,&ctx->dmrepart);CHKERRQ(ierr);*/
+        ny = nz = 1;
+        by = bz = DM_BOUNDARY_NONE;
         break;
       case 2:
         PetscInfo(pc,"PCSemiRedundant: setting up the DMDA on comm subset (2D)\n");
-        ierr = DMDACreate2d(subcomm,bx,by,stencil,nx,ny, PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,&ctx->dmrepart);CHKERRQ(ierr);
+        /*ierr = DMDACreate2d(subcomm,bx,by,stencil,nx,ny, PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,&ctx->dmrepart);CHKERRQ(ierr);*/
+        nz = 1;
+        bz = DM_BOUNDARY_NONE;
         break;
       case 3:
         PetscInfo(pc,"PCSemiRedundant: setting up the DMDA on comm subset (3D)\n");
-        ierr = DMDACreate3d(subcomm,bx,by,bz,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&ctx->dmrepart);CHKERRQ(ierr);
+        /*ierr = DMDACreate3d(subcomm,bx,by,bz,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&ctx->dmrepart);CHKERRQ(ierr);*/
         break;
     }
-    
-    ierr = DMSetOptionsPrefix(ctx->dmrepart,"repart_");CHKERRQ(ierr);
-    
+    /* 
+     The API DMDACreate1d(), DMDACreate2d(), DMDACreate3d() does not allow us to set/append
+     a unique option prefix for the DM, thus I prefer to expose the contents of these API's here.
+     This allows users to control the partitioning of the subDM.
+    */
+    ierr = DMDACreate(subcomm,&ctx->dmrepart);CHKERRQ(ierr);
+    /* Set unique option prefix name */
+    ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
+    ierr = DMSetOptionsPrefix(ctx->dmrepart,prefix);CHKERRQ(ierr);
+    ierr = DMAppendOptionsPrefix(ctx->dmrepart,"repart_");CHKERRQ(ierr);
+    /* standard setup from DMDACreate{1,2,3}d() */
+    ierr = DMSetDimension(ctx->dmrepart,dim);CHKERRQ(ierr);
+    ierr = DMDASetSizes(ctx->dmrepart,nx,ny,nz);CHKERRQ(ierr);
+    ierr = DMDASetNumProcs(ctx->dmrepart,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(ctx->dmrepart,bx,by,bz);CHKERRQ(ierr);
+    ierr = DMDASetDof(ctx->dmrepart,ndof);CHKERRQ(ierr);
+    ierr = DMDASetStencilType(ctx->dmrepart,stencil);CHKERRQ(ierr);
+    ierr = DMDASetStencilWidth(ctx->dmrepart,nsw);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(ctx->dmrepart,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(ctx->dmrepart);CHKERRQ(ierr);
+    ierr = DMSetUp(ctx->dmrepart);CHKERRQ(ierr);
+    /* Set refinement factors and interpolation type from the partent */
     ierr = DMDASetRefinementFactor(ctx->dmrepart,refine_x,refine_y,refine_z);CHKERRQ(ierr);
     ierr = DMDASetInterpolationType(ctx->dmrepart,itype);CHKERRQ(ierr);
     
@@ -1028,12 +1052,15 @@ PetscErrorCode DMView_DMDAShort_3d(DM dm,PetscViewer v)
   PetscInt       M,N,P,m,n,p,ndof,nsw;
   MPI_Comm       comm;
   PetscMPIInt    size;
+  const char*    prefix;
   PetscErrorCode ierr;
   
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,NULL,&M,&N,&P,&m,&n,&p,&ndof,&nsw,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  PetscViewerASCIIPrintf(v,"DMDA Object: %d MPI processes\n",(int)size);
+  if (prefix) { PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,(int)size); }
+  else { PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",(int)size); }
   PetscViewerASCIIPrintf(v,"  M %D N %D P %D m %D n %D p %D dof %D overlap %D\n",M,N,P,m,n,p,ndof,nsw);
 	return(0);
 }
@@ -1045,12 +1072,15 @@ PetscErrorCode DMView_DMDAShort_2d(DM dm,PetscViewer v)
   PetscInt       M,N,m,n,ndof,nsw;
   MPI_Comm       comm;
   PetscMPIInt    size;
+  const char*    prefix;
   PetscErrorCode ierr;
   
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,&m,&n,NULL,&ndof,&nsw,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  PetscViewerASCIIPrintf(v,"DMDA Object: %d MPI processes\n",(int)size);
+  if (prefix) { PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,(int)size); }
+  else { PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",(int)size); }
   PetscViewerASCIIPrintf(v,"  M %D N %D m %D n %D dof %D overlap %D\n",M,N,m,n,ndof,nsw);
 	return(0);
 }
