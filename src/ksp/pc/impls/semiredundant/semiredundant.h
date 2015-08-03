@@ -17,9 +17,10 @@ struct _p_PC_SemiRedundant {
   PetscBool         ignore_dm;
   SemiRedundantType sr_type;
   void              *dm_ctx;
-  //PetscErrorCode (*pcsemired_setup_type)(PC,PC_SemiRedundant*);
-  //PetscErrorCode (*pcsemired_matcreate_type)(PC,PC_SemiRedundant*,MatReuse,Mat*);
-  //PetscErrorCode (*pcsemired_reset_type)(PC);
+  PetscErrorCode    (*pcsemired_setup_type)(PC,PC_SemiRedundant*);
+  PetscErrorCode    (*pcsemired_matcreate_type)(PC,PC_SemiRedundant*,MatReuse,Mat*);
+  PetscErrorCode    (*pcsemired_matnullspacecreate_type)(PC,PC_SemiRedundant*,Mat);
+  PetscErrorCode    (*pcsemired_reset_type)(PC);
 };
 
 PetscBool isActiveRank(PetscSubcomm);

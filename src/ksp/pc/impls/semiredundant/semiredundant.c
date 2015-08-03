@@ -270,8 +270,8 @@ PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant 
   /* copy entries */
   for (k=0; k<n; k++) {
     const PetscScalar *x_array;
-    PetscScalar *LA_sub_vec;
-    PetscInt st,ed,bs;
+    PetscScalar       *LA_sub_vec;
+    PetscInt          st,ed,bs;
     
     /* pull in vector x->xtmp */
     ierr = VecScatterBegin(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -445,43 +445,45 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
   } else {
     sr_type = sred->sr_type;
   }
-  
-  /* setup */
+
+  /* set function pointers for repartition setup, matrix creation/update, matrix nullspace and reset functionality */
   switch (sr_type) {
     case SR_DEFAULT:
-      ierr = PCSemiRedundantSetUp_default(pc,sred);CHKERRQ(ierr);
+      sred->pcsemired_setup_type              = PCSemiRedundantSetUp_default;
+      sred->pcsemired_matcreate_type          = PCSemiRedundantMatCreate_default;
+      sred->pcsemired_matnullspacecreate_type = PCSemiRedundantMatNullSpaceCreate_default;
+      sred->pcsemired_reset_type              = NULL;
       break;
     case SR_DMDA:
-      pc->ops->apply          = PCApply_SemiRedundant_dmda;
-      pc->ops->applytranspose = NULL;
-      ierr = PCSemiRedundantSetUp_dmda(pc,sred);CHKERRQ(ierr);
+      pc->ops->apply                          = PCApply_SemiRedundant_dmda;
+      sred->pcsemired_setup_type              = PCSemiRedundantSetUp_dmda;
+      sred->pcsemired_matcreate_type          = PCSemiRedundantMatCreate_dmda;
+      sred->pcsemired_matnullspacecreate_type = PCSemiRedundantMatNullSpaceCreate_dmda;
+      sred->pcsemired_reset_type              = PCReset_SemiRedundant_dmda;
       break;
-    case SR_DMPLEX:
+    case SR_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Supprt for DMPLEX is currently not available");
+      break;
+    default: SETERRQ(comm,PETSC_ERR_SUP,"Only supprt for repartitioning DMDA is provided");
       break;
   }
   
+  /* setup */
+  if (sred->pcsemired_setup_type) {
+    ierr = sred->pcsemired_setup_type(pc,sred);CHKERRQ(ierr);
+  }
+  
   /* update */
-  switch (sr_type) {
-    case SR_DEFAULT:
-      if (!pc->setupcalled) {
-        ierr = PCSemiRedundantMatCreate_default(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred);CHKERRQ(ierr);
-        ierr = PCSemiRedundantMatNullSpaceCreate_default(pc,sred,sred->Bred);CHKERRQ(ierr);
-      } else {
-        ierr = PCSemiRedundantMatCreate_default(pc,sred,MAT_REUSE_MATRIX,&sred->Bred);CHKERRQ(ierr);
-      }
-      break;
-      
-    case SR_DMDA:
-      if (!pc->setupcalled) {
-        ierr = PCSemiRedundantMatCreate_dmda(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred);CHKERRQ(ierr);
-        ierr = PCSemiRedundantMatNullSpaceCreate_dmda(pc,sred,sred->Bred);CHKERRQ(ierr);
-      } else {
-        ierr = PCSemiRedundantMatCreate_dmda(pc,sred,MAT_REUSE_MATRIX,&sred->Bred);CHKERRQ(ierr);
-      }
-      break;
-      
-    case SR_DMPLEX:
-      break;
+  if (!pc->setupcalled) {
+    if (sred->pcsemired_matcreate_type) {
+      ierr = sred->pcsemired_matcreate_type(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred);CHKERRQ(ierr);
+    }
+    if (sred->pcsemired_matnullspacecreate_type) {
+      ierr = sred->pcsemired_matnullspacecreate_type(pc,sred,sred->Bred);CHKERRQ(ierr);
+    }
+  } else {
+    if (sred->pcsemired_matcreate_type) {
+      ierr = sred->pcsemired_matcreate_type(pc,sred,MAT_REUSE_MATRIX,&sred->Bred);CHKERRQ(ierr);
+    }
   }
   
   /* common - no construction */
@@ -562,13 +564,6 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_SemiRedundant"
-static PetscErrorCode PCApplyTranspose_SemiRedundant(PC pc,Vec x,Vec y)
-{
-  return(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PCReset_SemiRedundant"
 static PetscErrorCode PCReset_SemiRedundant(PC pc)
 {
@@ -582,14 +577,8 @@ static PetscErrorCode PCReset_SemiRedundant(PC pc)
   if (sred->xtmp) { ierr = VecDestroy(&sred->xtmp);CHKERRQ(ierr); }
   if (sred->Bred) { ierr = MatDestroy(&sred->Bred);CHKERRQ(ierr); }
   if (sred->ksp) { ierr = KSPReset(sred->ksp);CHKERRQ(ierr); }
-  switch (sred->sr_type) {
-    case SR_DEFAULT:
-      break;
-    case SR_DMDA:
-      ierr = PCReset_SemiRedundant_dmda(pc);CHKERRQ(ierr);
-      break;
-    case SR_DMPLEX:
-      break;
+  if (sred->pcsemired_reset_type) {
+    ierr = sred->pcsemired_reset_type(pc);CHKERRQ(ierr);
   }
   return(0);
 }
@@ -845,12 +834,17 @@ PETSC_EXTERN PetscErrorCode PCCreate_SemiRedundant(PC pc)
   pc->data             = (void*)sred;
   
   pc->ops->apply          = PCApply_SemiRedundant;
-  pc->ops->applytranspose = PCApplyTranspose_SemiRedundant;
+  pc->ops->applytranspose = NULL;
   pc->ops->setup          = PCSetUp_SemiRedundant;
   pc->ops->destroy        = PCDestroy_SemiRedundant;
   pc->ops->reset          = PCReset_SemiRedundant;
   pc->ops->setfromoptions = PCSetFromOptions_SemiRedundant;
   pc->ops->view           = PCView_SemiRedundant;
+  
+  sred->pcsemired_setup_type              = PCSemiRedundantSetUp_default;
+  sred->pcsemired_matcreate_type          = PCSemiRedundantMatCreate_default;
+  sred->pcsemired_matnullspacecreate_type = PCSemiRedundantMatNullSpaceCreate_default;
+  sred->pcsemired_reset_type              = NULL;
   
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetKSP_C",PCSemiRedundantGetKSP_SemiRedundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetReductionFactor_C",PCSemiRedundantGetReductionFactor_SemiRedundant);CHKERRQ(ierr);
