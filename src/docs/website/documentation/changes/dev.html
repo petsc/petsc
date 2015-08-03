@@ -111,11 +111,13 @@
          -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
          -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())
           see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG
+         Added PCSemiRedundant which supports running solvers on sub-communicators. This PC allows re-partitioning of coarse levels solves within PCMG when using Galerkin coarse level operators.
       <h4>KSP:</h4>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
+      Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
