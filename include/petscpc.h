@@ -324,6 +324,6 @@ PETSC_EXTERN PetscErrorCode PCSemiRedundantGetReductionFactor(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCSemiRedundantSetReductionFactor(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCSemiRedundantGetIgnoreDM(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSemiRedundantSetIgnoreDM(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCSemiRedundantGetSubDM(PC,DM*);
+PETSC_EXTERN PetscErrorCode PCSemiRedundantGetDM(PC,DM*);
 
 #endif /* __PETSCPC_H */
