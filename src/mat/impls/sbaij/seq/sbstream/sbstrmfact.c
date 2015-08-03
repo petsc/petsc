@@ -381,7 +381,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*a->bs2*a->nz - (A->rmap->bs+2.0*bs2)*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*a->bs2*a->nz - (A->rmap->bs+2.0*a->bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

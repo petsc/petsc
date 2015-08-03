@@ -718,7 +718,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,V
   ierr = MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(ai,aj,aa,mbs,x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*a->bs2*a->nz - A->rmap->bbs*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->bs2*a->nz - A->rmap->bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

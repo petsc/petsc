@@ -843,10 +843,10 @@ Thread safety requires either --with-openmp or --download-concurrencykit
 
 #else
 typedef int PetscSpinlock;
-#define PetscSpinlockCreate(a)
-#define PetscSpinlockLock(a)
-#define PetscSpinlockUnlock(a)
-#define PetscSpinlockDestroy(a)
+#define PetscSpinlockCreate(a)  0
+#define PetscSpinlockLock(a)    0
+#define PetscSpinlockUnlock(a)  0
+#define PetscSpinlockDestroy(a) 0
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
