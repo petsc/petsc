@@ -804,29 +804,33 @@ PetscErrorCode PCSemiRedundantGetDM(PC pc,DM *subdm)
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
- PCSEMIREDUNDANT - Runs a KSP solver on a sub-group of processors. MPI processes not in the sub-communicator are idle during the solve.
- 
- Options Database:
- +   -pc_semiredundant_reduction_factor <n> - factor to use communicator size by, for example if you are using 64 MPI processes and
- use an n of 4, the new sub-communicator will be 4 defined with 64/4 processes
- -   -pc_semiredundant_ignore_dm <false> - flag to indicate whether an attached DM should be ignored
- 
- Level: advanced
- 
- Notes: The default KSP is PREONLY. If a DM is attached to the PC, it is re-partitioned on the sub-communicator. Both the B mat operator
- and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned DM.
- Currently only support for re-partitioning a DMDA is provided.
- Any nullspace attached to the original PC are extracted, re-partitioned and set on the operator in the sub KSP.
- KSPSetComputeOperators() is not propagated to the sub KSP.
- Optimization: (i) Memory re-use could be used in the scatters between the vectors defined on different sized communicators;
- (ii) Memory re-use and faster set-up would follow if the result of P^T.A.P was not re-allocated each time (DMDA attached).
- 
+   PCSEMIREDUNDANT - Runs a KSP solver on a sub-group of processors. MPI processes not in the sub-communicator are idle during the solve.
+
+   Options Database:
++  -pc_semiredundant_reduction_factor <n> - factor to use communicator size by, for example if you are using 64 MPI processes and
+   use an n of 4, the new sub-communicator will be 4 defined with 64/4 processes
+-  -pc_semiredundant_ignore_dm <false> - flag to indicate whether an attached DM should be ignored
+
+   Level: advanced
+
+   Notes:
+   The default KSP is PREONLY. If a DM is attached to the PC, it is re-partitioned on the sub-communicator.
+   Both the B mat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned DM.
+   Currently only support for re-partitioning a DMDA is provided.
+   Any nullspace attached to the original Bmat operator are extracted, re-partitioned and set on the repartitioned Bmat operator.
+   KSPSetComputeOperators() is not propagated to the sub KSP.
+   Currently there is no support for the flag -pc_use_amat
+
+   Optimizations:
+   (i) VecPlaceArray() could be used for scatters between the vectors defined on different sized communicators, thereby slightly reducing memory footprint;
+   (ii) Memory re-use and faster set-up would follow if the result of P^T.A.P was not re-allocated each time PCSetUp_SemiRedundant() was called (DMDA).
+
  Contributed by Dave May
- 
- .seealso:  PCSemiRedundantGetKSP(),
+
+.seealso:  PCSemiRedundantGetKSP(), PCSemiRedundantGetDM(),
  PCSemiRedundantGetReductionFactor(), PCSemiRedundantSetReductionFactor(),
  PCSemiRedundantGetIgnoreDM(), PCSemiRedundantSetIgnoreDM(), PCREDUNDANT
- M*/
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SemiRedundant"
 PETSC_EXTERN PetscErrorCode PCCreate_SemiRedundant(PC pc)
