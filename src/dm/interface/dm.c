@@ -25,7 +25,7 @@ const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWI
 
   Level: beginner
 
-.seealso: DMSetType(), DMDA, DMSLICED, DMCOMPOSITE
+.seealso: DMSetType(), DMDA, DMSLICED, DMCOMPOSITE, DMPLEX, DMMOAB, DMNETWORK
 @*/
 PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 {
@@ -131,7 +131,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
-   Logically Collective on DMDA
+   Logically Collective on DM
 
    Input Parameter:
 +  da - initial distributed array
@@ -142,7 +142,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType, DMGetVecType()
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType()
 @*/
 PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
@@ -160,7 +160,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 /*@C
        DMGetVecType - Gets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
-   Logically Collective on DMDA
+   Logically Collective on DM
 
    Input Parameter:
 .  da - initial distributed array
@@ -170,7 +170,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType
 @*/
 PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
 {
@@ -453,7 +453,7 @@ PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy"
 /*@
-    DMDestroy - Destroys a vector packer or DMDA.
+    DMDestroy - Destroys a vector packer or DM.
 
     Collective on DM
 
@@ -740,7 +740,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector"
 /*@
-    DMCreateGlobalVector - Creates a global vector from a DMDA or DMComposite object
+    DMCreateGlobalVector - Creates a global vector from a DM object
 
     Collective on DM
 
@@ -768,7 +768,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateLocalVector"
 /*@
-    DMCreateLocalVector - Creates a local vector from a DMDA or DMComposite object
+    DMCreateLocalVector - Creates a local vector from a DM object
 
     Not Collective
 
@@ -884,7 +884,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation"
 /*@
-    DMCreateInterpolation - Gets interpolation matrix between two DMDA or DMComposite objects
+    DMCreateInterpolation - Gets interpolation matrix between two DM objects
 
     Collective on DM
 
@@ -922,7 +922,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection"
 /*@
-    DMCreateInjection - Gets injection matrix between two DMDA or DMComposite objects
+    DMCreateInjection - Gets injection matrix between two DM objects
 
     Collective on DM
 
@@ -985,7 +985,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix"
 /*@
-    DMCreateMatrix - Gets empty Jacobian for a DMDA or DMComposite
+    DMCreateMatrix - Gets empty Jacobian for a DM
 
     Collective on DM
 
@@ -1031,7 +1031,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   DMSetMatrixPreallocateOnly - When DMCreateMatrix() is called the matrix will be properly
     preallocated but the nonzero structure and zero values will not be set.
 
-  Logically Collective on DMDA
+  Logically Collective on DM
 
   Input Parameter:
 + dm - the DM
