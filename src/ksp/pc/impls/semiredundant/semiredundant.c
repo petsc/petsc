@@ -195,34 +195,18 @@ PetscErrorCode PCSemiRedundantMatCreate_default(PC pc,PC_SemiRedundant *sred,Mat
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
   ierr = MatGetSize(B,&nr,&nc);CHKERRQ(ierr);
   
-  if (reuse == MAT_INITIAL_MATRIX) {
-    
-    Bred = NULL;
-    /*
-     if (isActiveRank(sred->psubcomm)) {
-     ierr = VecGetLocalSize(sred->xred,&fused_length);
-     ierr = MatCreate(subcomm,&Bred);CHKERRQ(ierr);
-     ierr = MatSetSizes(Bred,fused_length,PETSC_DECIDE,PETSC_DETERMINE,nc);CHKERRQ(ierr);
-     ierr = MatSetBlockSize(Bred,bsize);CHKERRQ(ierr);
-     ierr = MatSetFromOptions(Bred);CHKERRQ(ierr);
-     }
-     */
-    *A = Bred;
-  } else {
-    Bred = *A;
-  }
-  
   isrow = sred->isin;
   ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
   
   ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   
-  
   Bred = NULL;
   if (isActiveRank(sred->psubcomm)) {
     PetscInt mm;
     
+    if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
+
     ierr = MatGetSize(Blocal,&mm,NULL);CHKERRQ(ierr);
     //ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred);CHKERRQ(ierr);
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,mm,reuse,&Bred);CHKERRQ(ierr);

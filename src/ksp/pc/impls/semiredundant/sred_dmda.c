@@ -854,6 +854,8 @@ PetscErrorCode PCSemiRedundantMatCreate_dmda(PC pc,PC_SemiRedundant *sred,MatReu
   Bred = NULL;
   if (isActiveRank(sred->psubcomm)) {
     PetscInt mm;
+
+    if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
     
     ierr = MatGetSize(Blocal,&mm,NULL);CHKERRQ(ierr);
     //ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred);CHKERRQ(ierr);
