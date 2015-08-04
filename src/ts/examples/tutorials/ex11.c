@@ -53,8 +53,6 @@ typedef struct _n_Model *Model;
 
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
-
-typedef void (*RiemannFunction)(const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
@@ -77,11 +75,11 @@ struct _n_FunctionalLink {
 };
 
 struct _n_Physics {
-  RiemannFunction riemann;
-  PetscInt        dof;          /* number of degrees of freedom per cell */
-  PetscReal       maxspeed;     /* kludge to pick initial time step, need to add monitoring and step control */
-  void            *data;
-  PetscInt        nfields;
+  PetscRiemannFunc riemann;
+  PetscInt         dof;          /* number of degrees of freedom per cell */
+  PetscReal        maxspeed;     /* kludge to pick initial time step, need to add monitoring and step control */
+  void             *data;
+  PetscInt         nfields;
   const struct FieldDescription *field_desc;
 };
 
@@ -287,7 +285,7 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOp
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
-  phys->riemann    = PhysicsRiemann_Advect;
+  phys->riemann    = (PetscRiemannFunc)PhysicsRiemann_Advect;
   ierr = PetscNew(&advect);CHKERRQ(ierr);
   phys->data       = advect;
   ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
@@ -452,7 +450,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
-  phys->riemann = (RiemannFunction) PhysicsRiemann_SW;
+  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
   ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
@@ -632,7 +630,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
-  phys->riemann = (RiemannFunction) PhysicsRiemann_Euler_Rusanov;
+  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
