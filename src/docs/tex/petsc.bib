@@ -309,7 +309,6 @@ publisher = {IEEE Computer Society},
 address = {Los Alamitos, CA},
 }
 
-# https://fs.hlrs.de/projects/par/mpi/mpi30/
 @book{mpi3,
   title="MPI: A Message-Passing Interface Standard, Version 3.0",
   author={Message Passing Interface Forum},
@@ -756,7 +755,7 @@ address = {Los Alamitos, CA},
 	Volume = {195},
 	Year = {2006}}
 
-@conference{georgii2005interactive,
+@conference{georgii2005interactiveb,
 	Author = {Georgii, J. and Westermann, R.},
 	Booktitle = {Proceedings of VMV},
 	Date-Added = {2010-08-19 15:41:36 -0500},
@@ -1002,11 +1001,11 @@ address = {Los Alamitos, CA},
 }
 
 @TechReport{streams,
-  author = "J. D. McCalpin",
-  title = "{STREAM}: Sustainable memory bandwidth in high performance computers",
-  institution = "University of Virginia",
-  note = "http://www.cs.virginia.edu/stream",
-  year = 1995
+  author = {J. D. McCalpin},
+  title = {{STREAM}: Sustainable memory bandwidth in high performance computers},
+  institution = {University of Virginia},
+  url = {http://www.cs.virginia.edu/stream},
+  year = {1995}
 }
 
 @article{AReusken_1988b,
@@ -2149,23 +2148,23 @@ Alvin P. Leung and Manfred Morari",
   volume =	 2,
   pages =	 "1--4"
 }
-n
-@Manual( ibm-essl,
+
+@Manual{ ibm-essl,
     Title = "{E}ngineering and {S}cientific {S}ubroutine {L}ibrary Version 2:
 Guide and Reference",
     Organization = "IBM",
     Year  = 1992,
     Key   = "IBM-ESSL"
-    )
+    }
 
-@Manual( IBM-EUI,
+@Manual{ IBM-EUI,
     Title = "{IBM} {AIX} Parallel Environment Parallel Programming Subroutine
 Reference Release 2.0",
     Organization = "IBM",
     Month = JUN,
     Year  = 1994,
     Key   = "IBM-EUI"
-    )
+    }
 
 @Manual( IBM-EUIH,
     Title = "Using {EUIH}: An Experimental {EUI} Implementation",
@@ -2466,10 +2465,10 @@ Producing {F}ortran interfaces to {C} source code",
                    Nonlinear Equations",
    PUBLISHER    = "Prentice-Hall",
    ADDRESS      = "Englewood Cliffs, NJ",
-   YEAR         = 1983}
+   YEAR         = {1983}
    }
 
-@TechReport{ more:92,
+@TechReport{more:92,
     AUTHOR      = "Jorge J. Mor\'{e} and David Thuente",
     TITLE       = "Line search algorithms with guaranteed sufficient decrease",
     INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
@@ -2477,7 +2476,7 @@ Producing {F}ortran interfaces to {C} source code",
     NUMBER      = "MCS-P330-1092",
     }
 
-@Article{ brownsaad:90,
+@Article{brownsaad:90,
   author = 	 "Peter N. Brown and Youcef Saad",
   title = 	 "Hybrid {K}rylov Methods for Nonlinear Systems of Equations",
   journal =	 "SIAM J. Sci. Stat. Comput.",
@@ -3000,8 +2999,9 @@ Booktitle = "Supercomputing '95 Proceedings",
 
 @misc{matlab-web-page,
   author = {{The} {MathWorks}},
+  title  = {{Matlab} {Web} page},
   title  = {Matlab},
-  note   = {\url{http://www.mathworks.com}}
+  url    = {http://www.mathworks.com}
 }
 
 @misc {
@@ -3097,7 +3097,6 @@ Booktitle = "Supercomputing '95 Proceedings",
                   usually achieve maximum performance, and tremendous
                   improvements in terms of execution speed can be seen
                   over conventional computers.",
-   acknowledgement = ack-nhfb,
    classification = "723; 921",
    journalabr =   "SIAM Rev",
    keywords =     "computer programming --- Algorithms; dense matrices;
@@ -3463,13 +3462,6 @@ mesh refinement",
   year    = "2002",
   pages   = "66--93",
   volume  = "165"
-}
-
-@Misc{ matlab-web-page,
-  author =       "",
-  title =        "{Matlab Web page}",
-  howpublished = "\url{http://www.mathworks.com}",
-  key   =        "{Matlab} {Web} page"
 }
 
 @misc{ veltisto-web-page,
@@ -4412,8 +4404,6 @@ note  = "\url{https://ice.txcorp.com/trac/2011_FspDefinitionWorkshop}"
 % -----------------------------------------------------------------------
 % Model coupling refs
 
-http://csdrm.caltech.edu/
-
 @book{greve-blatter,
   author = "Ralf Greve and Heinz Blatter",
   title = "Dynamics of Ice Sheets and Glaciers",
@@ -5355,7 +5345,6 @@ It begins with a general introduction to bundles, including such topics as diffe
   MRreviewer =   "Moody T. Chu",
   bibdate =      "Wed Jan 07 15:23:19 1998",
   bibsource =    "ftp://ftp.math.utah.edu/pub/bibnet/authors/t/trefethen-lloyd-n.bib",
-  acknowledgement = ack-nhfb
 }
 
 @inproceedings{Rhea08,
@@ -5635,7 +5624,7 @@ note = "See \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/TownHall.pdf}"
 @misc{www:fenics,
      author = {{FE}ni{CS}},
      title = {{FE}ni{CS} Project},
-     howpublished = {\url{http://www.fenics.org/}}},
+     howpublished = {\url{http://www.fenics.org/}},
      year = {2010},
 }
 
@@ -5873,7 +5862,7 @@ year      = 2009}
   author =       {M.V. Umansky and X.Q. Xu and B. Dudson and L.L. LoDestro
                  and J.R. Myra},
   title =        {{Status and verification of edge plasma turbulence code BOUT}},
-  journal =      CPP,
+  journal =      {Computer Physics Communications},
   year =         2009,
   volume =       {180},
   pages =        {887-903},
@@ -5882,7 +5871,7 @@ year      = 2009}
 @Article{xu:1998,
   author =       {X.Q. Xu and R.H. Cohen},
   title =        {{Scrape-Off Layer Turbulence Theory and Simulations}},
-  journal =      CPP,
+  journal =      {Computer Physics Communications},
   year =         1998,
   volume =       36,
   number =       {1-2},
@@ -6016,7 +6005,7 @@ year = {1993}
   year={2001},
   publisher={Elsevier}
 }
-}
+
 @article{elman1999bfbt,
   title={{Preconditioning for the steady-state Navier-Stokes equations with low viscosity}},
   author={Elman, H.C.},
@@ -7184,7 +7173,7 @@ year = {2010}
 	Type = {Tech. report},
 	Title = {Hiding global communication latency in the {GMRES} algorithm on massively parallel machines},
         url = {http://twna.ua.ac.be/sites/twna.ua.ac.be/files/latency_gmres.pdf},
-	Year = {2012}}
+	Year = {2012}
 }
 
 @article{GhyselsVanroose2014,
@@ -8735,19 +8724,6 @@ year = {2009}
   year    = {1979},
 }
 
-@inbook{,
-  author       = {},
-  title        = {},
-  publisher    = {},
-  year         = 1993,
-  volume       = 4,
-  series       = 5,
-  address      = {The address of the publisher},
-  edition      = 3,
-  month        = 7,
-  note         = {An optional note}
-}
-
 @incollection{Knepley2012,
   author       = {Matthew G. Knepley},
   title        = {Programming Languages for Scientific Computing},
@@ -8781,7 +8757,7 @@ year = {2009}
 }
 
 @incollection{RokosGorman13,
-  title     = {PRAgMaTIc – Parallel Anisotropic Adaptive Mesh Toolkit},
+  title     = {PRAgMaTIc - Parallel Anisotropic Adaptive Mesh Toolkit},
   author    = {Georgios Rokos and Gerard Gorman},
   booktitle = {Facing the Multicore-Challenge III},
   series    = {Lecture Notes in Computer Science},
