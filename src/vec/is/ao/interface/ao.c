@@ -45,7 +45,9 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ao));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ao),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ao,viewer);CHKERRQ(ierr);
