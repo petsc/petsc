@@ -11,7 +11,7 @@
 #endif
 
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode PetscLogBegin_Private(void);
+extern PetscErrorCode PetscLogInitialize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -843,9 +843,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
 #endif
 
-  /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
+  /* Creates the logging data structures; this is enabled even if logging is not turned on */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
+  ierr = PetscLogInitialize();CHKERRQ(ierr);
 #endif
 
   /*
