@@ -16,7 +16,7 @@ static char help[] = "Illustrates use of hierarchical partitioning.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat             A;                      /* linear system matrix */
+  Mat             A;                      /* matrix */
   PetscInt        m,n;                    /* mesh dimensions in x- and y- directions */
   PetscInt        i,j,Ii,J,Istart,Iend;
   PetscErrorCode  ierr;
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /*
-     Assemble the matrix for the five point stencil, YET AGAIN
+     Assemble the matrix for the five point stencil (finite difference), YET AGAIN
   */
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ int main(int argc,char **args)
   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
   ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalSetNfineparts(part,4);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   /* get new processor owner number of each vertex */
   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
