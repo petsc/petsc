@@ -2374,6 +2374,12 @@ runex192:
 	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve -mat_mumps_icntl_19 1 >> ex192.tmp 2>&1; \
 	   ${DIFF} output/ex192.out ex192.tmp || printf "${PWD}\nPossible problem with ex192, diffs above\n=========================================\n"; \
 	   ${RM} -f ex192.tmp
+	   
+
+runex193:
+	  -@${MPIEXEC} -n 4 ./ex193   -mat_partitioning_hierarchical_Nfineparts 2  > ex193.tmp 2>&1; \
+	   ${DIFF} output/ex193.out ex193.tmp || printf "${PWD}\nPossible problem with ex193, diffs above\n=========================================\n"; \
+	   ${RM} -f ex193.tmp	   
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
