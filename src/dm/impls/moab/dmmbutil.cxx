@@ -86,25 +86,25 @@ PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& ge
       moab::CN::SubEntityVertexIndices(moab::MBTRI, 2, 0, subent_conn.data());
       if (trigen_opts == 1) {
         if (subelem) { /* 0 1 2 of a QUAD */
-          connectivity[offset+subent_conn[0]] = A;
+          connectivity[offset+subent_conn[0]] = B;
           connectivity[offset+subent_conn[1]] = C;
-          connectivity[offset+subent_conn[2]] = B;
+          connectivity[offset+subent_conn[2]] = A;
         }
         else {        /* 2 3 0 of a QUAD */
-          connectivity[offset+subent_conn[0]] = A;
-          connectivity[offset+subent_conn[1]] = D;
+          connectivity[offset+subent_conn[0]] = D;
+          connectivity[offset+subent_conn[1]] = A;
           connectivity[offset+subent_conn[2]] = C;
         }
       }
       else if (trigen_opts == 2) {
         if (subelem) { /* 0 1 2 of a QUAD */
           connectivity[offset+subent_conn[0]] = A;
-          connectivity[offset+subent_conn[1]] = D;
-          connectivity[offset+subent_conn[2]] = B;
+          connectivity[offset+subent_conn[1]] = B;
+          connectivity[offset+subent_conn[2]] = D;
         }
         else {        /* 2 3 0 of a QUAD */
-          connectivity[offset+subent_conn[0]] = D;
-          connectivity[offset+subent_conn[1]] = C;
+          connectivity[offset+subent_conn[0]] = C;
+          connectivity[offset+subent_conn[1]] = D;
           connectivity[offset+subent_conn[2]] = B;
         }
       }
@@ -653,11 +653,11 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
         ierr = PetscLogEventBegin(genCtx.generateVertices,0,0,0,0);CHKERRQ(ierr);
         ierr = DMMoab_GenerateVertices_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, verts);CHKERRQ(ierr);
-        ierr     = PetscLogEventEnd(genCtx.generateVertices,0,0,0,0);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(genCtx.generateVertices,0,0,0,0);CHKERRQ(ierr);
 
         ierr = PetscLogEventBegin(genCtx.generateElements,0,0,0,0);CHKERRQ(ierr);
         ierr = DMMoab_GenerateElements_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, cells);CHKERRQ(ierr);
-        ierr     = PetscLogEventEnd(genCtx.generateElements,0,0,0,0);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(genCtx.generateElements,0,0,0,0);CHKERRQ(ierr);
 
         PetscInt part_num=0;
         switch(genCtx.dim) {
@@ -705,13 +705,14 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     }
   }
   
-  ierr = PetscLogEventBegin(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
   /* set geometric dimension tag for regions */
   merr = mbImpl->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
   merr = mbImpl->add_parent_child(dmmoab->fileset,regionset);MBERRNM(merr);
 
   /* Only in parallel: resolve shared entities between processors and exchange ghost layers */
   if (global_size>1) {
+
+    ierr = PetscLogEventBegin(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
 
     merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, genCtx.dim, cells);MBERR("Can't get all d-dimensional elements.", merr);
     merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, verts);MBERR("Can't get all vertices.", merr);
@@ -740,6 +741,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
     /* Reassign global IDs on all entities. */
     merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true,false);MBERRNM(merr);
+  
+    ierr = PetscLogEventEnd(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
   }
 
   if (!genCtx.keep_skins) { // default is to delete the 1- and 2-dimensional entities
@@ -755,34 +758,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
     merr = dmmoab->pcomm->delete_entities(toDelete) ;MBERR("Can't delete entities", merr);
   }
-  ierr = PetscLogEventEnd(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
-
-#if 0
-  {
-    moab::Range vowned, vlocal, vghost, adjs;
-    //merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,*dmmoab->vlocal,true);MBERRNM(merr);
-    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, vlocal, false);MBERRNM(merr);
-
-    /* filter based on parallel status */
-    merr = pcomm->filter_pstatus(vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&vowned);MBERRNM(merr);
-
-    /* filter all the non-owned and shared entities out of the list */
-    adjs = moab::subtract(vlocal, vowned);
-    merr = pcomm->filter_pstatus(adjs,PSTATUS_GHOST|PSTATUS_INTERFACE,PSTATUS_OR,-1,&vghost);MBERRNM(merr);
-    adjs = moab::subtract(adjs, vghost);
-    vlocal = moab::subtract(vlocal, adjs);
-
-    /* compute and cache the sizes of local and ghosted entities */
-    int nloc, n, nghost;
-    nloc = vowned.size();
-    nghost = vghost.size();
-    ierr = MPI_Allreduce(&nloc, &n, 1, MPI_INTEGER, MPI_SUM, comm);CHKERRQ(ierr);
-
-    PetscInfo4(NULL, "Vertices: total - %d, local - %D, owned - %D, ghosted - %D.\n", n, vlocal.size(), nloc, nghost);
-  }
-
-  mbImpl->write_file("dmmbutil.h5m", 0, (global_size > 1 ? "PARALLEL=WRITE_PART" : ""), &dmmoab->fileset);
-#endif
   PetscFunctionReturn(0);
 }
 
