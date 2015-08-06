@@ -1,5 +1,5 @@
 
-static char help[] = "Partition tiny grid using hierarchical partitioning.\n\n";
+static char help[] = "Partition a tiny grid using hierarchical partitioning.\n\n";
 
 /*T
    Concepts: partitioning
@@ -94,4 +94,3 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return 0;
 }
-

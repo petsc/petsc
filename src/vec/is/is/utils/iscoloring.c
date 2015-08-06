@@ -358,8 +358,8 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 {
    const PetscInt       *ito_indices,*toindx_indices;
    PetscInt             *send_indices,rstart,*recv_indices,nrecvs,nsends;
-   PetscInt              nto,*tosizes,nfrom,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
-   PetscMPIInt          *toranks,*fromranks,size,target_rank,*fromperm_newtoold;
+   PetscInt             *tosizes,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
+   PetscMPIInt          *toranks,*fromranks,size,target_rank,*fromperm_newtoold,nto,nfrom;
    PetscLayout           isrmap;
    MPI_Comm              comm;
    PetscSF               sf;

@@ -543,6 +543,7 @@ static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const 
 	  scomm_row = PETSC_COMM_SELF;
 	}
 	/*get sub-matrix data*/
+	sxadj=0; sadjncy=0; svalues=0;
     ierr = MatGetSubMatrix_MPIAdj_data(mat,irow[i],icol[i],&sxadj,&sadjncy,&svalues);CHKERRQ(ierr);
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
@@ -616,6 +617,8 @@ static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, Pe
   /* construct sf graph*/
   nleaves = nlrows_is;
   for(i=0; i<nlrows_is; i++){
+	owner = -1;
+	rlocalindex = -1;
     ierr = PetscLayoutFindOwnerIndex(rmap,irows_indices[i],&owner,&rlocalindex);CHKERRQ(ierr);
     iremote[i].rank  = owner;
     iremote[i].index = rlocalindex;
