@@ -249,6 +249,9 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0'},
                                                                   {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0,0'},
                                                                   # Parallel tests
+                                                                  # Grouping tests
+                                                                  {'num': 'group_1', 'numProcs': 1, 'args': '-num_groups 1 -num_dof 1,0,0 -is_view -orig_mat_view -perm_mat_view'},
+                                                                  {'num': 'group_2', 'numProcs': 1, 'args': '-num_groups 2 -num_dof 1,0,0 -is_view -perm_mat_view'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex11': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
