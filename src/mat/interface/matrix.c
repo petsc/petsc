@@ -9041,6 +9041,8 @@ PetscErrorCode  MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
    should either
 $   1) use MAT_REUSE_MATRIX in all calls but the first or
 $   2) call MatMatMultSymbolic() once and then MatMatMultNumeric() for each product needed
+   In the special case where matrix B (and hence C) are dense you can create the correctly sized matrix C yourself and then call this routine
+   with MAT_REUSE_MATRIX, rather than first having MatMatMult() create it for you. You can NEVER do this if the matrix C is sparse.
 
    Level: intermediate
 
