@@ -118,7 +118,7 @@ cdef extern from * nogil:
     #int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,Vec,PetscSection,Vec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
 
-    int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscIS*)
+    int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
     int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
 
     #int DMPlexCreateSubmesh(PetscDM,PetscDMLabel,PetscInt,PetscDM*)
