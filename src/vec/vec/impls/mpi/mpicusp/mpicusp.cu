@@ -209,7 +209,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec vv)
   vv->ops->axpbypcz               = VecAXPBYPCZ_SeqCUSP;
   vv->ops->pointwisemult          = VecPointwiseMult_SeqCUSP;
   vv->ops->setrandom              = VecSetRandom_SeqCUSP;
+  vv->ops->placearray             = VecPlaceArray_SeqCUSP;
   vv->ops->replacearray           = VecReplaceArray_SeqCUSP;
+  vv->ops->resetarray             = VecResetArray_SeqCUSP;
   vv->ops->dot_local              = VecDot_SeqCUSP;
   vv->ops->tdot_local             = VecTDot_SeqCUSP;
   vv->ops->norm_local             = VecNorm_SeqCUSP;
@@ -220,10 +222,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec vv)
   vv->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUSP;
   vv->ops->getlocalvectorread     = VecGetLocalVector_SeqCUSP;
   vv->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUSP;
-  /* place array?
-     reset array?
-     get values?
-  */
   ierr = VecCUSPAllocateCheck(vv);CHKERRCUSP(ierr);
   vv->valid_GPU_array      = PETSC_CUSP_GPU;
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
