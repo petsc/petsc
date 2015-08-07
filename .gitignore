@@ -14,3 +14,9 @@ __pycache__
 #petsc4py.PETSc.c
 #petsc4py.PETSc*.h
 #src/libpetsc4py/libpetsc4py.[hc]
+Cython-0.22.1-py2.7-macosx-10.9-intel.egg
+src/petsc4py.PETSc.c
+src/include/petsc4py/petsc4py.PETSc.h
+src/include/petsc4py/petsc4py.PETSc_api.h
+src/libpetsc4py/libpetsc4py.c
+src/libpetsc4py/libpetsc4py.h
