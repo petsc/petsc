@@ -244,7 +244,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   }
   if (prob->ops->setfromoptions) {ierr = (*prob->ops->setfromoptions)(prob);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) prob);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) prob);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscDSViewFromOptions(prob, NULL, "-petscds_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);

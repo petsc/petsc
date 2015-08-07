@@ -505,7 +505,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
   if (part->ops->setfromoptions) {ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) part);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscPartitionerViewFromOptions(part, NULL, "-petscpartitioner_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);

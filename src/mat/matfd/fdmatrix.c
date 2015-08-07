@@ -386,7 +386,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)matfd);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)matfd);CHKERRQ(ierr);
   PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
