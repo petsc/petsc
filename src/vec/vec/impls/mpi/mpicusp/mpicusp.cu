@@ -40,7 +40,6 @@ PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
     work *= work;
     ierr  = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     *z    = PetscSqrtReal(sum);
-    //printf("VecNorm_MPICUSP : z=%1.5g\n",*z);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_SeqCUSP(xin,NORM_1,&work);CHKERRQ(ierr);
@@ -176,8 +175,6 @@ PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
   ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
   *dp  = sum[0];
   *nm  = sum[1];
-  //printf("VecDotNorm2_MPICUSP=%1.5g,%1.5g\n",PetscRealPart(*dp),PetscImaginaryPart(*dp));
-  //printf("VecDotNorm2_MPICUSP=%1.5g,%1.5g\n",PetscRealPart(*nm),PetscImaginaryPart(*nm));
   PetscFunctionReturn(0);
 }
 
