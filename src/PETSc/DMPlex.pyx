@@ -597,7 +597,7 @@ cdef class DMPlex(DM):
         cdef PetscMatOrderingType cval = NULL
         otype = str2bytes(otype, &cval)
         cdef IS perm = IS()
-        CHKERR( DMPlexGetOrdering(self.dm, cval, &perm.iset) )
+        CHKERR( DMPlexGetOrdering(self.dm, cval, NULL, &perm.iset) )
         return perm
 
     def permute(self, IS perm not None):
