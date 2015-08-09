@@ -297,7 +297,8 @@ PetscErrorCode FormExactSolution1(DM da, AppCtx *user, Vec U)
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d   **coords;
-  PetscScalar  **u, x, y;
+  PetscScalar  **u;
+  PetscReal      x, y;
   PetscInt       xs, ys, xm, ym, i, j;
   PetscErrorCode ierr;
 
@@ -309,8 +310,8 @@ PetscErrorCode FormExactSolution1(DM da, AppCtx *user, Vec U)
   ierr = DMDAVecGetArray(da, U, &u);CHKERRQ(ierr);
   for (j = ys; j < ys+ym; ++j) {
     for (i = xs; i < xs+xm; ++i) {
-      x = coords[j][i].x;
-      y = coords[j][i].y;
+      x = PetscRealPart(coords[j][i].x);
+      y = PetscRealPart(coords[j][i].y);
       u[j][i] = x*(1 - x)*y*(1 - y);
     }
   }
@@ -336,7 +337,8 @@ PetscErrorCode FormExactSolution2(DM da, AppCtx *user, Vec U)
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d   **coords;
-  PetscScalar  **u, x, y;
+  PetscScalar  **u;
+  PetscReal      x, y;
   PetscInt       xs, ys, xm, ym, i, j;
   PetscErrorCode ierr;
 
@@ -348,9 +350,9 @@ PetscErrorCode FormExactSolution2(DM da, AppCtx *user, Vec U)
   ierr = DMDAVecGetArray(da, U, &u);CHKERRQ(ierr);
   for (j = ys; j < ys+ym; ++j) {
     for (i = xs; i < xs+xm; ++i) {
-      x = coords[j][i].x;
-      y = coords[j][i].y;
-      u[j][i] = sin(PETSC_PI*x)*sin(PETSC_PI*y);
+      x = PetscRealPart(coords[j][i].x);
+      y = PetscRealPart(coords[j][i].y);
+      u[j][i] = PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y);
     }
   }
   ierr = DMDAVecRestoreArray(da, U, &u);CHKERRQ(ierr);
@@ -416,7 +418,8 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscReal      lambda,hx,hy,hxdhy,hydhx;
-  PetscScalar    u,ue,uw,un,us,uxx,uyy,x,y;
+  PetscScalar    u,ue,uw,un,us,uxx,uyy;
+  PetscReal      x,y;
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d   **coords;
@@ -437,8 +440,8 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         f[j][i] = 2.0*(hydhx+hxdhy)*vx[j][i];
       } else {
-        x  = coords[j][i].x;
-        y  = coords[j][i].y;
+        x  = PetscRealPart(coords[j][i].x);
+        y  = PetscRealPart(coords[j][i].y);
         u  = vx[j][i];
         uw = vx[j][i-1];
         ue = vx[j][i+1];
@@ -469,7 +472,8 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscReal      lambda,hx,hy,hxdhy,hydhx;
-  PetscScalar    u,ue,uw,un,us,uxx,uyy,x,y;
+  PetscScalar    u,ue,uw,un,us,uxx,uyy;
+  PetscReal      x,y;
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d   **coords;
@@ -490,8 +494,8 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         f[j][i] = 2.0*(hydhx+hxdhy)*vx[j][i];
       } else {
-        x  = coords[j][i].x;
-        y  = coords[j][i].y;
+        x  = PetscRealPart(coords[j][i].x);
+        y  = PetscRealPart(coords[j][i].y);
         u  = vx[j][i];
         uw = vx[j][i-1];
         ue = vx[j][i+1];
@@ -505,7 +509,7 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*sin(PETSC_PI*x)*sin(PETSC_PI*y) - lambda*exp(sin(PETSC_PI*x)*sin(PETSC_PI*y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*exp(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
       }
     }
   }

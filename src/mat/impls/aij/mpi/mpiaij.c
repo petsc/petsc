@@ -1679,6 +1679,19 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetGhosts_MPIAIJ"
+PetscErrorCode  MatGetGhosts_MPIAIJ(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(aij->B,NULL,nghosts);CHKERRQ(ierr);
+  if (ghosts) *ghosts = aij->garray;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_MPIAIJ"
 PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
@@ -2729,7 +2742,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                 /*114*/MatGetSeqNonzeroStructure_MPIAIJ,
                                        0,
-                                       0,
+                                       MatGetGhosts_MPIAIJ,
                                        0,
                                        0,
                                 /*119*/0,

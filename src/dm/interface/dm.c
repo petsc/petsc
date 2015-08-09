@@ -633,7 +633,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 #undef __FUNCT__
 #define __FUNCT__ "DMView"
 /*@C
-    DMView - Views a vector packer or DMDA.
+    DMView - Views a DM
 
     Collective on DM
 
@@ -641,7 +641,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 +   dm - the DM object to view
 -   v - the viewer
 
-    Level: developer
+    Level: beginner
 
 .seealso DMDestroy(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 

@@ -260,7 +260,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     *z   = max;
   } else if (type == NORM_1) {
 #if defined(PETSC_USE_COMPLEX)
-    PetscScalar tmp = 0.0;
+    PetscReal tmp = 0.0;
     PetscInt    i;
 #endif
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);

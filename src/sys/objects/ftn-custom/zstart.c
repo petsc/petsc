@@ -212,6 +212,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern PetscFPT PetscFPTData;
 #endif
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+PetscSpinlock PetscViewerASCIISpinLock;
+PetscSpinlock PetscCommSpinLock;
+#endif
+
 /* -----------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_SAWS)
@@ -304,6 +309,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (f_petsc_comm_world) PETSC_COMM_WORLD = MPI_Comm_f2c(*(MPI_Fint*)&f_petsc_comm_world); /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
   else PETSC_COMM_WORLD = MPI_COMM_WORLD;
   PetscInitializeCalled = PETSC_TRUE;
+
+  *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLock);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
+  *ierr = PetscSpinlockCreate(&PetscCommSpinLock);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
 
   *ierr = PetscErrorPrintfInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()\n");return;}
@@ -429,7 +439,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
