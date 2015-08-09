@@ -133,7 +133,7 @@ extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
 extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode  PetscLogBegin_Private(void);
+extern PetscErrorCode  PetscLogInitialize(void);
 #endif
 extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
@@ -419,7 +419,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing SAWs\n");return;}
 #endif
 #if defined(PETSC_USE_LOG)
-  *ierr = PetscLogBegin_Private();
+  *ierr = PetscLogInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
 #endif
   *ierr = PetscInitialize_DynamicLibraries();
