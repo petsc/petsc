@@ -3,6 +3,12 @@
 
 /* ---------------------------------------------------------------------*/
 
+/*
+    The variable Petsc_Viewer_Stdout_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a PetscViewer.
+*/
+static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerASCIIGetStdout"
 /*@C
@@ -26,9 +32,23 @@
 PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
+  PetscBool      flg;
+  MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIOpen(comm,"stdout",viewer);CHKERRQ(ierr);
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
+  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Stdout_keyval,(void**)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscViewerASCIIOpen(ncomm,"stdout",viewer);CHKERRQ(ierr);
+    ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stdout_keyval,(void*)*viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -67,6 +87,12 @@ PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 
 /* ---------------------------------------------------------------------*/
 
+/*
+    The variable Petsc_Viewer_Stderr_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a PetscViewer.
+*/
+static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerASCIIGetStderr"
 /*@C
@@ -92,7 +118,23 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIOpen(comm,"stderr",viewer);CHKERRQ(ierr);
+  PetscBool      flg;
+  MPI_Comm       ncomm;
+
+  PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
+  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Stderr_keyval,(void**)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscViewerASCIIOpen(ncomm,"stderr",viewer);CHKERRQ(ierr);
+    ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stderr_keyval,(void*)*viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
