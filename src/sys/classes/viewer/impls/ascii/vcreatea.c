@@ -116,8 +116,6 @@ static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
-
-  PetscFunctionBegin;
   PetscBool      flg;
   MPI_Comm       ncomm;
 
