@@ -345,7 +345,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       }
       if (osm->overlap > 0) {
 	/* Extend the "overlapping" regions by a number of steps */
-	ierr = MatIncreaseOverlap(pc->pmat,osm->n,osm->ois,osm->overlap);CHKERRQ(ierr);
+	ierr = MatIncreaseOverlapSplit(pc->pmat,osm->n,osm->ois,osm->overlap);CHKERRQ(ierr);
       }
     }
 
