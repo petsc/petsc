@@ -40,7 +40,6 @@ int main(int argc,char **argv)
      sviewer will cause the submatrices (one per processor) to be printed in the correct order
   */
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Submatrices\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = MatView(submat,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);

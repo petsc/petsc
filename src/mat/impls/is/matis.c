@@ -627,7 +627,6 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
   PetscViewer    sviewer;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = MatView(a->A,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);

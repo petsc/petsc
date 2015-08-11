@@ -13,7 +13,7 @@ typedef struct {
   char          *filename;
   PetscBool     storecompressed;
   PetscBool     closefile;
-  PetscBool     allowsynchronized; /* allow synchronized writes from any process to the viewer */
+  PetscInt      allowsynchronized; /* allow synchronized writes from any process to the viewer */
 
   PrintfQueue   petsc_printfqueue,petsc_printfqueuebase;
   int           petsc_printfqueuelength;

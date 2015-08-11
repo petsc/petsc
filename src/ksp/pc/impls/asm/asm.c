@@ -66,7 +66,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
         ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n_local_true);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
@@ -82,7 +82,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blocks=%D, overlap=%D, type=%s",osm->n,osm->overlap,PCASMTypes[osm->type]);CHKERRQ(ierr);
@@ -128,10 +128,10 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = ISRestoreIndices(osm->is[i],&idx);CHKERRQ(ierr);
       ierr = PetscViewerStringSPrintf(sviewer,"\n");CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, s);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscFree(s);CHKERRQ(ierr);
       if (osm->is_local) {
         /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
@@ -146,22 +146,22 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
         ierr = ISRestoreIndices(osm->is_local[i],&idx);CHKERRQ(ierr);
         ierr = PetscViewerStringSPrintf(sviewer,"\n");CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, s);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
         ierr = PetscFree(s);CHKERRQ(ierr);
       }
     } else {
       /* Participate in collective viewer calls. */
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       /* Assume either all ranks have is_local or none do. */
       if (osm->is_local) {
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       }
     }
   }

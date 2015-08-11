@@ -242,7 +242,7 @@ extern FILE *petsc_history;
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    viewer - optained with PetscViewerASCIIOpen()
++    viewer - obtained with PetscViewerASCIIOpen()
 -    tabs - number of tabs
 
     Level: developer
@@ -278,7 +278,7 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
     Not Collective, meaningful on first processor only.
 
     Input Parameters:
-.    viewer - optained with PetscViewerASCIIOpen()
+.    viewer - obtained with PetscViewerASCIIOpen()
     Output Parameters:
 .    tabs - number of tabs
 
@@ -315,7 +315,7 @@ PetscErrorCode  PetscViewerASCIIGetTab(PetscViewer viewer,PetscInt *tabs)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    viewer - optained with PetscViewerASCIIOpen()
++    viewer - obtained with PetscViewerASCIIOpen()
 -    tabs - number of tabs
 
     Level: developer
@@ -351,7 +351,7 @@ PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    viewer - optained with PetscViewerASCIIOpen()
++    viewer - obtained with PetscViewerASCIIOpen()
 -    tabs - number of tabs
 
     Level: developer
@@ -380,26 +380,25 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIISynchronizedAllow"
+#define __FUNCT__ "PetscViewerASCIIPushSynchronized"
 /*@C
-    PetscViewerASCIISynchronizedAllow - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer
+    PetscViewerASCIIPushSynchronized - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer
 
     Collective on PetscViewer
 
     Input Parameters:
-+    viewer - optained with PetscViewerASCIIOpen()
--    allow - PETSC_TRUE to allow the synchronized printing
+.    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
 
   Concepts: PetscViewerASCII^formating
   Concepts: tab^setting
 
-.seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
+.seealso: PetscViewerASCIIPopSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
 @*/
-PetscErrorCode  PetscViewerASCIISynchronizedAllow(PetscViewer viewer,PetscBool allow)
+PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscBool         iascii;
@@ -408,7 +407,42 @@ PetscErrorCode  PetscViewerASCIISynchronizedAllow(PetscViewer viewer,PetscBool a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) ascii->allowsynchronized = allow;
+  if (iascii) ascii->allowsynchronized++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIPopSynchronized"
+/*@C
+    PetscViewerASCIIPopSynchronized - Undoes most recent PetscViewerASCIIPushSynchronized() for this viewer
+
+    Collective on PetscViewer
+
+    Input Parameters:
+.    viewer - obtained with PetscViewerASCIIOpen()
+
+    Level: intermediate
+
+  Concepts: PetscViewerASCII^formating
+  Concepts: tab^setting
+
+.seealso: PetscViewerASCIIPushSynchronized(), PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
+          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+@*/
+PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
+{
+  PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
+  PetscBool         iascii;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ascii->allowsynchronized--;
+    if (ascii->allowsynchronized < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called more times than PetscViewerASCIIPushSynchronized()");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -421,7 +455,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedAllow(PetscViewer viewer,PetscBool a
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-.    viewer - optained with PetscViewerASCIIOpen()
+.    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: developer
 
@@ -457,7 +491,7 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-.    viewer - optained with PetscViewerASCIIOpen()
+.    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: developer
 
@@ -495,7 +529,7 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    viewer - optained with PetscViewerASCIIOpen()
++    viewer - obtained with PetscViewerASCIIOpen()
 -    flg - PETSC_TRUE or PETSC_FALSE
 
     Level: developer
@@ -541,7 +575,7 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    viewer - optained with PetscViewerASCIIOpen()
++    viewer - obtained with PetscViewerASCIIOpen()
 -    format - the usual printf() format string
 
     Level: developer
@@ -556,7 +590,7 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerASCIIPushTab(), PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(),
-          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIISynchronizedAllow()
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushSynchronized()
 @*/
 PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
 {
@@ -582,15 +616,9 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     size_t      fullLength;
 
     ierr       = PetscCalloc1(QUEUESTRINGSIZE, &string);CHKERRQ(ierr);
-    tab        = intab;
-    tab       *= 2;
-    while (tab--) {
-      *string++ = ' ';
-    }
     va_start(Argp,format);
-    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*ascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
-
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s",string);CHKERRQ(ierr);
     ierr = PetscFree(string);CHKERRQ(ierr);
   } else { /* write directly to file */
@@ -783,10 +811,10 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm
 
   PetscFunctionBegin;
   if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer already obtained from PetscViewer and not restored");
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr         = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr         = PetscViewerCreate(subcomm,outviewer);CHKERRQ(ierr);
   ierr         = PetscViewerSetType(*outviewer,PETSCVIEWERASCII);CHKERRQ(ierr);
-  ierr         = PetscViewerASCIISynchronizedAllow(*outviewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr         = PetscViewerASCIIPushSynchronized(*outviewer);CHKERRQ(ierr);
   ovascii      = (PetscViewer_ASCII*)(*outviewer)->data;
   ovascii->fd  = vascii->fd;
   ovascii->tab = vascii->tab;
@@ -809,13 +837,12 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm com
   PetscViewer_ASCII *ascii  = (PetscViewer_ASCII*)viewer->data;
 
   PetscFunctionBegin;
-  if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer PetscViewer never obtained from PetscViewer");
-  if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate a SubViewer PetscViewer");
+  if (!ascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer never obtained from PetscViewer");
+  if (ascii->sviewer != *outviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate this SubViewer");
 
   ascii->sviewer             = 0;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   ierr                       = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
-  ierr                       = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -891,7 +918,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
           PetscFOpen(), PetscViewerFlush(), PetscViewerASCIIGetPointer(), PetscViewerDestroy(), PetscViewerASCIIOpen(),
-          PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedAllow()
+          PetscViewerASCIIPrintf(), PetscViewerASCIIPushSynchronized()
 
 @*/
 PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
@@ -910,7 +937,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
-  if (!vascii->allowsynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIISynchronizedAllow() to allow this call");
+  if (!vascii->allowsynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIIPushSynchronized() to allow this call");
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

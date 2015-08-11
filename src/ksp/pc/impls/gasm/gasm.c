@@ -78,10 +78,10 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
   ierr = PetscViewerDestroy(&sviewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Inner subdomain:\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscFree(cidx);CHKERRQ(ierr);
@@ -103,10 +103,10 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
   ierr = ISRestoreIndices(osm->ois[i],&idx);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Outer subdomain:\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscFree(cidx);CHKERRQ(ierr);
@@ -207,10 +207,10 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"%s\n",overlap);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%s\n",gsubdomains);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%s\n",msubdomains);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d|%d] number of locally-supported subdomains = %D\n",rank,size,osm->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     /* Cannot take advantage of osm->same_subdomain_solvers without a global numbering of subdomains. */
     ierr = PetscViewerASCIIPrintf(viewer,"Subdomain solver info is as follows:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -229,15 +229,13 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
           ierr = MPI_Comm_rank(((PetscObject)osm->ois[d])->comm, &srank);CHKERRQ(ierr);
           ierr = PetscViewerGetSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ierr = ISGetLocalSize(osm->ois[d],&bsz);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_TRUE);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d|%d] (subcomm [%d|%d]) local subdomain number %D, local size = %D\n",rank,size,srank,ssize,d,bsz);CHKERRQ(ierr);
           ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_FALSE);CHKERRQ(ierr);
           if (view_subdomains) {
             ierr = PCGASMSubdomainView_Private(pc,d,sviewer);CHKERRQ(ierr);
           }
           if (!pc->setupcalled) {
-            PetscViewerASCIIPrintf(sviewer, "Solver not set up yet: PCSetUp() not yet called\n");CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(sviewer, "Solver not set up yet: PCSetUp() not yet called\n");CHKERRQ(ierr);
           } else {
             ierr = KSPView(osm->ksp[d],sviewer);CHKERRQ(ierr);
           }
@@ -252,6 +250,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     ierr = PetscFree2(numbering,permutation);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

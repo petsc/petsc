@@ -42,7 +42,7 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
   } else if (viewer->ops->getsubviewer) {
     ierr = (*viewer->ops->getsubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +78,7 @@ PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,Pet
   } else if (viewer->ops->restoresubviewer) {
     ierr = (*viewer->ops->restoresubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
