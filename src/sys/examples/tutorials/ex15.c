@@ -1,5 +1,5 @@
 
-static char help[] = "Tests using PetscViewerGetSubComm() recursively\n\n";
+static char help[] = "Tests using PetscViewerGetSubViewer() recursively\n\n";
 
 /*T
    Concepts: viewers

@@ -186,8 +186,14 @@ runex13:
 runex14:
 	-@${MPIEXEC} -n 3 ./ex14
 
-TESTEXAMPLES_C		      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-                            ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm ex11.PETSc runex11 ex11.rm
+runex15:
+	-@PETSC_OPTIONS= ${MPIEXEC} -n 4 ./ex15 -viewer > ex15.tmp 5>&1; \
+	   if (${DIFF} output/ex15_1.out ex15.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex15.tmp
+
+TESTEXAMPLES_C	          = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+                            ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm ex11.PETSc runex11 ex11.rm ex15.PETSc runex15 ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                             ex3.PETSc runex3 ex3.rm

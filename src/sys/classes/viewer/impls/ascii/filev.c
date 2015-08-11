@@ -818,6 +818,7 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm
   ovascii      = (PetscViewer_ASCII*)(*outviewer)->data;
   ovascii->fd  = vascii->fd;
   ovascii->tab = vascii->tab;
+  ovascii->closefile = PETSC_FALSE;
 
   vascii->sviewer = *outviewer;
 
