@@ -132,7 +132,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
           if (n < 2) {
             /* if I have any ghost adj then not a sing */
             ix = lid_cprowID[lid];
-            if (ix==-1 || (matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])==0) {
+            if (ix==-1 || !(matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])) {
               nremoved++;
               lid_removed[lid] = PETSC_TRUE;
               /* should select this because it is technically in the MIS but lets not */
@@ -214,7 +214,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
       /* all done? */
       t1   = nloc - nDone;
       ierr = MPI_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr); /* synchronous version */
-      if (t2 == 0) break;
+      if (!t2) break;
     } else break; /* all done */
   } /* outer parallel MIS loop */
   ierr = ISRestoreIndices(perm,&perm_ix);CHKERRQ(ierr);

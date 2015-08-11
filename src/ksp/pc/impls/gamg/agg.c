@@ -240,7 +240,7 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
 
   /* create data - syntactic sugar that should be refactored at some point */
-  if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
+  if (!pc_gamg->data || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
     ierr = PetscMalloc1(arrsz+1, &pc_gamg->data);CHKERRQ(ierr);
   }
@@ -351,9 +351,9 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
   }
   if (nloc>0) {
     if (!(matA_1 && !matA_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_1 && !matA_1->compressedrow.use)");
-    if (!(matB_1==0 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
+    if (!(!matB_1 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
     if (!(matA_2 && !matA_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_2 && !matA_2->compressedrow.use)");
-    if (!(matB_2==0 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
+    if (!(!matB_2 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
   }
   /* get state of locals and selected gid for deleted */
   ierr = PetscMalloc2(nloc, &lid_state,nloc, &lid_parent_gid);CHKERRQ(ierr);
@@ -494,7 +494,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
                 ierr = PetscCDGetNextPos(aggs_2,oldslidj,&pos);CHKERRQ(ierr);
               }
               if (hav!=1) {
-                if (hav==0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
+                if (!hav) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
                 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
               }
             } else {
@@ -1076,7 +1076,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
-  if (ii==0) {
+  if (!ii) {
     ierr = PetscInfo(pc,"No selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
@@ -1104,7 +1104,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
         ierr = PCGAMGGetDataWithGhosts(Gmat, 1, tmp_ldata, &stride, &tmp_gdata);CHKERRQ(ierr);
 
-        if (jj==0 && kk==0) { /* now I know how many todal nodes - allocate */
+        if (!jj && !kk) { /* now I know how many todal nodes - allocate */
           ierr    = PetscMalloc1(stride*bs*data_cols, &data_w_ghost);CHKERRQ(ierr);
           nbnodes = bs*stride;
         }
@@ -1196,7 +1196,7 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
 #endif
-    if (jj == 0) {
+    if (!jj) {
       KSP eksp;
       Vec bb, xx;
       PC  epc;
