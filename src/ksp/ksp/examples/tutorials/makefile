@@ -1142,7 +1142,7 @@ runex54_Classical:
        ${RM} -f ex.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex54f -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
          ${DIFF} output/ex54f.out ex.tmp || printf "${PWD}\nPossible problem with ex54f.out, diffs above\n======================================\n"; \
         ${RM} -f ex.tmp
 
