@@ -930,7 +930,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   Mat            mat,Gmat2, Gmat1 = *a_Gmat1;  /* squared graph */
   IS             perm;
-  PetscInt       Ii,nloc,bs,n,m;
+  PetscInt       Istart,Iend,Ii,nloc,bs,n,m;
   PetscInt       *permute;
   PetscBool      *bIndexSet;
   MatCoarsen     crs;
@@ -949,21 +949,19 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   if (pc_gamg->current_level < pc_gamg_agg->square_graph) {
     ierr = PetscInfo2(a_pc,"Square Graph on level %d of %d to square\n",pc_gamg->current_level+1,pc_gamg_agg->square_graph);
     CHKERRQ(ierr);
-    /* ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2); */
     ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
   } else Gmat2 = Gmat1;
 
-  /* get MIS aggs */
-  /* randomize */
+  /* get MIS aggs - randomize */
   ierr = PetscMalloc1(nloc, &permute);CHKERRQ(ierr);
   ierr = PetscMalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
     bIndexSet[Ii] = PETSC_FALSE;
     permute[Ii]   = Ii;
   }
-  srand(1); /* make deterministic */
+  ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    PetscInt iSwapIndex = rand()%nloc;
+    PetscInt iSwapIndex = (PetscInt)((PETSC_HASH_FACT*(Istart+Ii))%(unsigned long)nloc);
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
       permute[iSwapIndex]   = permute[Ii];
@@ -978,7 +976,6 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
   ierr = MatCoarsenCreate(comm, &crs);CHKERRQ(ierr);
-  /* ierr = MatCoarsenSetType(crs, MATCOARSENMIS);CHKERRQ(ierr); */
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetGreedyOrdering(crs, perm);CHKERRQ(ierr);
   ierr = MatCoarsenSetAdjacency(crs, Gmat2);CHKERRQ(ierr);
@@ -1202,25 +1199,45 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       PC  epc;
       ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-      {
+      if (0) {
         PetscRandom rctx;
+        PetscInt    Istart,Iend,ncols,kk,Ii;
+        PetscScalar zero = 0.0;
         ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
         ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
         ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
         ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-      }
-
-      /* zeroing out BC rows -- needed for crazy matrices */
-      {
-        PetscInt    Istart,Iend,ncols,jj,Ii;
-        PetscScalar zero = 0.0;
+        /* zeroing out BC rows -- needed for crazy matrices */
         ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
-        for (Ii = Istart, jj = 0; Ii < Iend; Ii++, jj++) {
+        for (Ii = Istart, kk = 0; Ii < Iend; Ii++, kk++) {
           ierr = MatGetRow(Amat,Ii,&ncols,0,0);CHKERRQ(ierr);
           if (ncols <= 1) {
             ierr = VecSetValues(bb, 1, &Ii, &zero, INSERT_VALUES);CHKERRQ(ierr);
           }
           ierr = MatRestoreRow(Amat,Ii,&ncols,0,0);CHKERRQ(ierr);
+        }
+        ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+      }
+      else {
+        PetscInt    Istart,Iend,nloc,bs,Ii,kk,idx,ncols;
+        PetscScalar zero = 0.0;
+        ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
+        ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
+        nloc = (Iend-Istart)/bs;
+        for (Ii = 0; Ii < nloc; Ii++) {
+          for (kk = 0; kk < bs; kk++) {
+            ierr = MatGetRow(Amat,(idx=Ii*bs+Istart+kk),&ncols,0,0);CHKERRQ(ierr);
+            if (ncols <= 1) {
+              ierr = VecSetValues(bb, 1, &idx, &zero, INSERT_VALUES);CHKERRQ(ierr);
+            }
+            else {
+              /* simple high frequency random  number */
+              PetscScalar v = ((PetscScalar)((PETSC_HASH_FACT*idx)%100) - 49.5)/50.0;
+              ierr = VecSetValues(bb, 1, &idx, &v, INSERT_VALUES);CHKERRQ(ierr);
+            }
+            ierr = MatRestoreRow(Amat,idx,&ncols,0,0);CHKERRQ(ierr);
+          }
         }
         ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
         ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
