@@ -1237,32 +1237,99 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
     } else {
-      PetscInt       i,n;
-      const PetscInt *idxs;
-      PetscScalar    *array;
+      PetscInt  nz;
+      PetscBool sorted;
 
-      ierr = MatDuplicate(matis->A,MAT_COPY_VALUES,&pcbddc->local_mat);CHKERRQ(ierr);CHKERRQ(ierr);
       ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
+      /* should I also include nonzero pressures? */
       ierr = MatFindZeroDiagonals(matis->A,&pcbddc->zerodiag);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(pcbddc->zerodiag,&n);CHKERRQ(ierr);
-      ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
-      ierr = VecCreate(PetscObjectComm((PetscObject)matis->A),&pcbddc->saddle_sums);CHKERRQ(ierr);
-      ierr = VecSetSizes(pcbddc->saddle_sums,n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(pcbddc->saddle_sums,VECSTANDARD);CHKERRQ(ierr);
-      ierr = VecSet(pcbddc->saddle_sums,0.);CHKERRQ(ierr);
-      ierr = VecGetArray(pcbddc->saddle_sums,&array);CHKERRQ(ierr);
-      for (i=0;i<n;i++) {
-        PetscInt          j,ncol;
-        const PetscInt    *cols;
-        const PetscScalar *vals;
-
-        ierr = MatGetRow(matis->A,idxs[i],&ncol,&cols,&vals);CHKERRQ(ierr);
-        for (j=0;j<ncol;j++) array[cols[j]] += vals[j];
-        ierr = MatRestoreRow(matis->A,idxs[i],&ncol,&cols,&vals);CHKERRQ(ierr);
+      ierr = ISSorted(pcbddc->zerodiag,&sorted);CHKERRQ(ierr);
+      if (!sorted) {
+        ierr = ISSort(pcbddc->zerodiag);CHKERRQ(ierr);
       }
-      ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+n-1,1.,NULL,NULL);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
-      ierr = VecRestoreArray(pcbddc->saddle_sums,&array);CHKERRQ(ierr);
+      if (!PetscGlobalRank) printf("ZERODIAG\n");
+      if (!PetscGlobalRank) ISView(pcbddc->zerodiag,NULL);
+      ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
+      if (nz) {
+        IS                zerodiagc;
+        const PetscScalar *cB0_vals;
+        PetscScalar       *array;
+        const PetscInt    *idxs,*idxsc,*cB0_cols;
+        PetscInt          i,n,*nnz,cB0_ncol;
+
+        /* TODO: add check for shared dofs */
+        pcbddc->use_change_of_basis = PETSC_TRUE;
+        ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
+        ierr = ISComplement(pcbddc->zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
+        ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+        ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
+        /* local change of basis for pressures */
+        ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
+        ierr = MatCreate(PetscObjectComm((PetscObject)matis->A),&pcbddc->benign_change);CHKERRQ(ierr);
+        ierr = MatSetType(pcbddc->benign_change,MATAIJ);CHKERRQ(ierr);
+        ierr = MatSetSizes(pcbddc->benign_change,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+        ierr = PetscMalloc1(n,&nnz);CHKERRQ(ierr);
+        for (i=0;i<n-nz;i++) nnz[idxsc[i]] = 1; /* identity on velocities */
+        for (i=0;i<nz-1;i++) nnz[idxs[i]] = 2; /* change on pressures */
+        nnz[idxs[nz-1]] = nz; /* last local pressure dof: _0 set */
+        ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
+        ierr = PetscFree(nnz);CHKERRQ(ierr);
+        /* set identity on velocities */
+        for (i=0;i<n-nz;i++) {
+          ierr = MatSetValue(pcbddc->benign_change,idxsc[i],idxsc[i],1.,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        /* set change on pressures */
+        for (i=0;i<nz-1;i++) {
+          PetscScalar vals[2];
+          PetscInt    cols[2];
+
+          /* TODO: add quadrature */
+          cols[0] = idxs[i];
+          cols[1] = idxs[nz-1];
+          vals[0] = 1.;
+          vals[1] = 1./nz;
+          ierr = MatSetValues(pcbddc->benign_change,1,idxs+i,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        ierr = PetscMalloc1(nz,&array);CHKERRQ(ierr);
+        for (i=0;i<nz-1;i++) array[i] = -1.;
+        array[nz-1] = 1./nz;
+        ierr = MatSetValues(pcbddc->benign_change,1,idxs+nz-1,nz,idxs,array,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscFree(array);CHKERRQ(ierr);
+        ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        /* TODO: need optimization? */
+        ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+        if (!PetscGlobalRank) printf("Local MAT\n");
+        if (!PetscGlobalRank) MatView(matis->A,NULL);
+        if (!PetscGlobalRank) printf("Local pressure change\n");
+        if (!PetscGlobalRank) MatView(pcbddc->benign_change,NULL);
+        if (!PetscGlobalRank) printf("Local AFTER CHANGE\n");
+        if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
+        /* extract B_0 */
+        ierr = MatGetRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
+        pcbddc->B0_ncol = cB0_ncol;
+        ierr = PetscFree2(pcbddc->B0_cols,pcbddc->B0_vals);CHKERRQ(ierr);
+        ierr = PetscMalloc2(cB0_ncol,&pcbddc->B0_cols,cB0_ncol,&pcbddc->B0_vals);CHKERRQ(ierr);
+        ierr = PetscMemcpy(pcbddc->B0_cols,cB0_cols,cB0_ncol*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscMemcpy(pcbddc->B0_vals,cB0_vals,cB0_ncol*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = MatRestoreRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
+        /* temporary remove rows and cols from local problem (added back at the end of setup) */
+        ierr = MatSetOption(pcbddc->local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+nz-1,1.,NULL,NULL);CHKERRQ(ierr);
+        if (!PetscGlobalRank) printf("REMOVED AND B0\n");
+        if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
+        if (!PetscGlobalRank) {
+          for (i=0;i<pcbddc->B0_ncol;i++) printf("%d %f\n",pcbddc->B0_cols[i],pcbddc->B0_vals[i]);
+        }
+        ierr = MatAssemblyBegin(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
+        ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
+      } else { /* this is unlikely to happen */
+        ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+        pcbddc->local_mat = matis->A;
+      }
     }
   }
 
@@ -1282,9 +1349,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCISSetUp(pc,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
     matis->A = temp_mat;
+      if (!PetscGlobalRank) printf("IS_I_LOCAL\n");
+      if (!PetscGlobalRank) { PC_IS* pcis=(PC_IS*)(pc->data); ISView(pcis->is_I_local,NULL); }
   }
 
-  /* Analyze interface and setup sub_schurs data */
+  /* Analyze interface */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     computeconstraintsmatrix = PETSC_TRUE;
@@ -2059,8 +2128,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->redistribute_coarse        = 0;
   pcbddc->coarse_subassembling       = 0;
   pcbddc->coarse_subassembling_init  = 0;
+
+  /* benign subspace trick */
   pcbddc->zerodiag                   = 0;
-  pcbddc->saddle_sums                = 0;
+  pcbddc->B0_ncol                    = 0;
+  pcbddc->B0_cols                    = NULL;
+  pcbddc->B0_vals                    = NULL;
+  pcbddc->benign_change              = 0;
+
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
 

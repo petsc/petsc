@@ -52,8 +52,12 @@ typedef struct {
   PetscBool     use_exact_dirichlet_trick;
   PetscBool     ksp_guess_nonzero;
   PetscBool     rhs_change;
+  /* benign subspace trick */
   IS            zerodiag;
-  Vec           saddle_sums;
+  Mat           benign_change;
+  PetscInt      B0_ncol;
+  PetscInt      *B0_cols;
+  PetscScalar   *B0_vals;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
   PetscBool     use_vertices;
