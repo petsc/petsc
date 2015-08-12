@@ -229,7 +229,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         PetscReal best_fact = 0.;
         jj = -1;
         for (kk = 1 ; kk <= size ; kk++) {
-          if (!size%kk) { /* a candidate */
+          if (!(size%kk)) { /* a candidate */
             PetscReal nactpe = (PetscReal)size/(PetscReal)kk, fact = nactpe/(PetscReal)new_size;
             if (fact > 1.0) fact = 1./fact; /* keep fact < 1 */
             if (fact > best_fact) {
