@@ -984,7 +984,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   pcbddc->rhs_change = PETSC_FALSE;
-
   /* Take into account zeroed rows -> change rhs and store solution removed */
   if (rhs) {
     IS dirIS = NULL;
@@ -1073,6 +1072,32 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 
     /* change rhs */
     ierr = MatMultTranspose(change_ctx->global_change,rhs,pcis->vec1_global);CHKERRQ(ierr);
+
+    /* change rhs on pressures (iteration matrix is of type MATIS) */
+    if (pcbddc->saddle_point) {
+      Mat_IS *matis = (Mat_IS*)(change_ctx->original_mat->data);
+
+      ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      if (pcbddc->benign_change) {
+        ierr = MatMultTranspose(pcbddc->benign_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+        ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        /* change local iteration matrix */
+        ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_REUSE_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+        ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+        pcbddc->benign_original_mat = matis->A;
+        ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
+        matis->A = pcbddc->local_mat;
+        ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+      } else {
+        ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      }
+    }
+
     ierr = VecCopy(pcis->vec1_global,rhs);CHKERRQ(ierr);
     pcbddc->rhs_change = PETSC_TRUE;
   }
@@ -1129,6 +1154,27 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (x) {
       PC_IS *pcis = (PC_IS*)(pc->data);
       ierr = MatMult(change_ctx->global_change,x,pcis->vec1_global);CHKERRQ(ierr);
+      /* restore solution on pressures */
+      if (pcbddc->saddle_point) {
+        Mat_IS *matis = (Mat_IS*)pc->mat->data;
+
+        ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        if (pcbddc->benign_change) {
+
+          ierr = MatMult(pcbddc->benign_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+          ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+          ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+          /* restore local iteration matrix */
+          ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject)pcbddc->benign_original_mat);CHKERRQ(ierr);
+          matis->A = pcbddc->benign_original_mat;
+          ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+        } else {
+          ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+          ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        }
+      }
       ierr = VecCopy(pcis->vec1_global,x);CHKERRQ(ierr);
     }
   }
@@ -1218,6 +1264,13 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->faster_deluxe && pcbddc->adaptive_selection && pcbddc->use_change_of_basis) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute faster deluxe if adaptivity and change of basis are both requested. Rerun with -pc_bddc_deluxe_faster false");
   }
+
+  /* check if the iteration matrix is of type MATIS in case the benign trick has been requested */
+  ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
+  if (pcbddc->saddle_point && !ismatis) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the iteration matrix to be of type MATIS");
+  }
+
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
@@ -1454,11 +1507,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     /* SetUp Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
-  }
-
-  if (pcbddc->zerodiag) {
-    /* insert B0 in pcbddc->local_mat */
-    ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   if (pcbddc->dbg_flag) {
