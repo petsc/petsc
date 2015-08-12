@@ -1236,7 +1236,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (!pcbddc->saddle_point) {
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
-    } else {
+    } else { /* TODO: handle user change of basis */
       PetscInt  nz;
       PetscBool sorted;
 
@@ -1252,10 +1252,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
       if (nz) {
         IS                zerodiagc;
-        const PetscScalar *cB0_vals;
         PetscScalar       *array;
-        const PetscInt    *idxs,*idxsc,*cB0_cols;
-        PetscInt          i,n,*nnz,cB0_ncol;
+        const PetscInt    *idxs,*idxsc;
+        PetscInt          i,n,*nnz;
 
         /* TODO: add check for shared dofs */
         pcbddc->use_change_of_basis = PETSC_TRUE;
@@ -1305,27 +1304,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         if (!PetscGlobalRank) MatView(pcbddc->benign_change,NULL);
         if (!PetscGlobalRank) printf("Local AFTER CHANGE\n");
         if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
-        /* extract B_0 */
-        ierr = MatGetRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
-        pcbddc->B0_ncol = cB0_ncol;
-        ierr = PetscFree2(pcbddc->B0_cols,pcbddc->B0_vals);CHKERRQ(ierr);
-        ierr = PetscMalloc2(cB0_ncol,&pcbddc->B0_cols,cB0_ncol,&pcbddc->B0_vals);CHKERRQ(ierr);
-        ierr = PetscMemcpy(pcbddc->B0_cols,cB0_cols,cB0_ncol*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(pcbddc->B0_vals,cB0_vals,cB0_ncol*sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = MatRestoreRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
-        /* temporary remove rows and cols from local problem (added back at the end of setup) */
-        ierr = MatSetOption(pcbddc->local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-        ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+nz-1,1.,NULL,NULL);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
+        ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
+        /* pop B0 mat from pcbddc->local_mat */
+        ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
         if (!PetscGlobalRank) printf("REMOVED AND B0\n");
         if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
         if (!PetscGlobalRank) {
           for (i=0;i<pcbddc->B0_ncol;i++) printf("%d %f\n",pcbddc->B0_cols[i],pcbddc->B0_vals[i]);
         }
-        ierr = MatAssemblyBegin(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
-        ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
       } else { /* this is unlikely to happen */
         ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
         pcbddc->local_mat = matis->A;
@@ -1430,8 +1418,24 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (computesolvers || pcbddc->new_primal_space) {
     if (pcbddc->use_change_of_basis) {
       PC_IS *pcis = (PC_IS*)(pc->data);
+      Mat   temp_mat = NULL;
 
+      if (pcbddc->zerodiag) {
+        /* insert B0 in pcbddc->local_mat */
+        ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
+        /* hack: swap pointers */
+        temp_mat = matis->A;
+        matis->A = pcbddc->local_mat;
+        pcbddc->local_mat = NULL;
+      }
       ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+      if (pcbddc->zerodiag) {
+        /* restore original matrix */
+        ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
+        matis->A = temp_mat;
+        /* pop B0 from pcbddc->local_mat */
+        ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
+      }
       /* get submatrices */
       ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
       ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
@@ -1450,6 +1454,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     /* SetUp Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+  }
+
+  if (pcbddc->zerodiag) {
+    /* insert B0 in pcbddc->local_mat */
+    ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   if (pcbddc->dbg_flag) {

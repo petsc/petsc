@@ -6,6 +6,51 @@ static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y);
 static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCBenignPopOrPushB0"
+PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
+{
+  PC_BDDC*        pcbddc = (PC_BDDC*)pc->data;
+  const PetscInt  *idxs;
+  PetscInt        nz = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (!pcbddc->zerodiag) {
+    PetscFunctionReturn(0);
+  } else {
+    ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
+    if (!nz) PetscFunctionReturn(0);
+  }
+  ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+  /* TODO: add error checking
+    - avoid nested pop (or push) calls.
+    - cannot push before pop.
+  */
+  if (pop) {
+    const PetscInt    *cB0_cols;
+    PetscInt          cB0_ncol;
+    const PetscScalar *cB0_vals;
+
+    /* extract B_0 */
+    ierr = MatGetRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
+    pcbddc->B0_ncol = cB0_ncol;
+    ierr = PetscFree2(pcbddc->B0_cols,pcbddc->B0_vals);CHKERRQ(ierr);
+    ierr = PetscMalloc2(cB0_ncol,&pcbddc->B0_cols,cB0_ncol,&pcbddc->B0_vals);CHKERRQ(ierr);
+    ierr = PetscMemcpy(pcbddc->B0_cols,cB0_cols,cB0_ncol*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(pcbddc->B0_vals,cB0_vals,cB0_ncol*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MatRestoreRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
+    /* remove rows and cols from local problem */
+    ierr = MatSetOption(pcbddc->local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+nz-1,1.,NULL,NULL);CHKERRQ(ierr);
+  } else { /* push */
+    ierr = MatSetValues(pcbddc->local_mat,1,&idxs[nz-1],pcbddc->B0_ncol,pcbddc->B0_cols,pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCAdaptiveSelection"
 PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 {
