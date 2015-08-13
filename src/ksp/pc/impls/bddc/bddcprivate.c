@@ -9,10 +9,10 @@ static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
 #define __FUNCT__ "PCBDDCBenignPopOrPushB0"
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
 {
-  PC_BDDC*        pcbddc = (PC_BDDC*)pc->data;
-  const PetscInt  *idxs;
-  PetscInt        nz = 0;
-  PetscErrorCode  ierr;
+  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  const PetscInt *idxs;
+  PetscInt       nz = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!pcbddc->zerodiag) {
@@ -74,6 +74,10 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
   }
 
+  if (sub_schurs->n_subs && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for general matrix pencils (herm %d, posdef %d)\n",sub_schurs->is_hermitian,sub_schurs->is_posdef);
+  }
+
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
@@ -83,10 +87,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
   if (pcbddc->dbg_flag) {
     PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d cc %d (%d,%d).\n",PetscGlobalRank,sub_schurs->n_subs,sub_schurs->is_hermitian,sub_schurs->is_posdef);
-  }
-
-  if (sub_schurs->n_subs && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for general matrix pencils (herm %d, posdef %d)\n",sub_schurs->is_hermitian,sub_schurs->is_posdef);
   }
 
   /* max size of subsets */
@@ -4884,7 +4884,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   if (!sub_schurs->use_mumps) {
     /* pcbddc->ksp_D up to date only if not using MUMPS */
     ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
     PetscBool isseqaij;
@@ -4904,7 +4904,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
         ierr = MatConvert(pcbddc->local_mat,MATSEQAIJ,MAT_REUSE_MATRIX,&pcbddc->local_mat);CHKERRQ(ierr);
       }
     }
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
 

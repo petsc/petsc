@@ -272,7 +272,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool reuse_solvers)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, PetscBool compute_Stilda, PetscBool reuse_solvers, PetscBool benign_trick)
 {
   Mat                    F,A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all;
@@ -289,6 +289,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   PetscSubcomm           subcomm;
   PetscMPIInt            color,rank;
   MPI_Comm               comm_n;
+  PetscBool              use_getr = PETSC_FALSE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -315,7 +316,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     /* check */
     ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+    if (compute_Stilda && (!Ain->hermitian_set || !Ain->spd_set)) {
       PetscInt lsize;
 
       ierr = MatGetSize(Ain,&lsize,NULL);CHKERRQ(ierr);
@@ -340,8 +341,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         } else {
           sub_schurs->is_hermitian = PETSC_TRUE;
         }
-        ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
-        if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
+        if (!Ain->spd_set) {
+          ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
+          if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
+        }
         ierr = VecDestroy(&vec1);CHKERRQ(ierr);
         ierr = VecDestroy(&vec2);CHKERRQ(ierr);
         ierr = VecDestroy(&vec3);CHKERRQ(ierr);
@@ -356,9 +359,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     } else {
       ierr = MatConvert(Ain,MATSEQAIJ,MAT_INITIAL_MATRIX,&sub_schurs->A);CHKERRQ(ierr);
     }
-  }
-  if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"General matrix pencils are not currently supported (%d,%d)",sub_schurs->is_hermitian,sub_schurs->is_posdef);
   }
 
   ierr = PetscObjectReference((PetscObject)Sin);CHKERRQ(ierr);
@@ -533,9 +533,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   /* allocate extra workspace needed only for GETRI */
   Bwork = NULL;
   pivots = NULL;
-  if (local_size && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+  if (local_size && !benign_trick && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
     PetscScalar lwork;
 
+    use_getr = PETSC_TRUE;
     B_lwork = -1;
     ierr = PetscBLASIntCast(local_size,&B_N);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -677,7 +678,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     IS          is_A_all;
     PetscScalar *work,*S_data;
     PetscInt    *idxs_schur,n_I,n_I_all,*dummy_idx,size_schur,size_active_schur,cum,cum2;
-    PetscBool   mumps_S;
+    PetscBool   mumps_S,S_upper_triangular = PETSC_FALSE;
 
     /* get working mat */
     n_I = 0;
@@ -728,6 +729,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatMumpsSetIcntl(F,19,2);CHKERRQ(ierr);
 #endif
         ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+        S_upper_triangular = PETSC_TRUE;
       } else {
         ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS) /* be sure that icntl 19 is not set by command line */
@@ -750,6 +752,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       reuse_solvers = PETSC_FALSE;
       mumps_S = PETSC_FALSE;
     }
+
+    /* when using te benign subspace trick, the local Schur complements are SPD */
+    if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
 
     if (reuse_solvers) {
       Mat              A_II;
@@ -823,7 +828,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* get S_E */
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      if (mumps_S && sub_schurs->is_hermitian) { /* When using MUMPS data I need to expand to upper triangular (column oriented) */
+      if (mumps_S && S_upper_triangular) { /* I need to expand the upper triangular data (column oriented) */
         PetscInt k;
         for (k=0;k<subset_size;k++) {
           for (j=k;j<subset_size;j++) {
@@ -831,7 +836,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             work[j*subset_size+k] = S_data[cum2+k*size_schur+j];
           }
         }
-      } else { /* copy to workspace */
+      } else { /* just copy to workspace */
         PetscInt k;
         for (k=0;k<subset_size;k++) {
           for (j=0;j<subset_size;j++) {
@@ -847,7 +852,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       if (compute_Stilda) {
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        if (sub_schurs->is_hermitian && sub_schurs->is_posdef) { /* TODO add sytrf/i for symmetric non hermitian */
+        if (!use_getr) { /* TODO add sytrf/i for symmetric non hermitian */
           PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,work,&B_N,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
           PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,work,&B_N,&B_ierr));
@@ -887,7 +892,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(size_schur,&B_N);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          if (sub_schurs->is_hermitian && sub_schurs->is_posdef) { /* TODO add sytrf/i for symmetric non hermitian */
+          if (!use_getr) { /* TODO add sytrf/i for symmetric non hermitian */
             PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,S_data,&B_N,&B_ierr));
             if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
             PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,S_data,&B_N,&B_ierr));
@@ -909,7 +914,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
           ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
           /* get (St^-1)_E */
-          if (sub_schurs->is_hermitian) { /* Here I don't need to expand to upper triangular (column oriented) */
+          /* Here I don't need to expand to upper triangular since St^-1
+             will be properly accessed later during adaptive selection */
+          if (S_upper_triangular) {
             PetscInt k;
             for (k=0;k<subset_size;k++) {
               for (j=k;j<subset_size;j++) {
@@ -982,7 +989,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+      if (!use_getr) {
         PetscInt j,k;
 
         PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array+cum,&B_N,&B_ierr));

@@ -67,7 +67,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_symmetric","Symmetric computation of primal basis functions","none",pcbddc->symmetric_primal,&pcbddc->symmetric_primal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_coarse_adj","Number of processors where to map the coarse adjacency list","none",pcbddc->coarse_adj_red,&pcbddc->coarse_adj_red,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_saddle_point","Apply the benign subspace trick","none",pcbddc->saddle_point,&pcbddc->saddle_point,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_benign_trick","Apply the benign subspace trick to a class of saddle point problems","none",pcbddc->benign_saddle_point,&pcbddc->benign_saddle_point,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1074,7 +1074,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = MatMultTranspose(change_ctx->global_change,rhs,pcis->vec1_global);CHKERRQ(ierr);
 
     /* change rhs on pressures (iteration matrix is of type MATIS) */
-    if (pcbddc->saddle_point) {
+    if (pcbddc->benign_saddle_point) {
       Mat_IS *matis = (Mat_IS*)(change_ctx->original_mat->data);
 
       ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1155,7 +1155,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       PC_IS *pcis = (PC_IS*)(pc->data);
       ierr = MatMult(change_ctx->global_change,x,pcis->vec1_global);CHKERRQ(ierr);
       /* restore solution on pressures */
-      if (pcbddc->saddle_point) {
+      if (pcbddc->benign_saddle_point) {
         Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
         ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1267,7 +1267,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* check if the iteration matrix is of type MATIS in case the benign trick has been requested */
   ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
-  if (pcbddc->saddle_point && !ismatis) {
+  if (pcbddc->benign_saddle_point && !ismatis) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the iteration matrix to be of type MATIS");
   }
 
@@ -1286,7 +1286,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   } else {
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-    if (!pcbddc->saddle_point) {
+    if (!pcbddc->benign_saddle_point) {
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
     } else { /* TODO: handle user change of basis */
@@ -1300,8 +1300,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       if (!sorted) {
         ierr = ISSort(pcbddc->zerodiag);CHKERRQ(ierr);
       }
-      if (!PetscGlobalRank) printf("ZERODIAG\n");
-      if (!PetscGlobalRank) ISView(pcbddc->zerodiag,NULL);
+      //if (!PetscGlobalRank) printf("ZERODIAG\n");
+      //if (!PetscGlobalRank) ISView(pcbddc->zerodiag,NULL);
       ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
       if (nz) {
         IS                zerodiagc;
@@ -1351,22 +1351,22 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         /* TODO: need optimization? */
         ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
-        if (!PetscGlobalRank) printf("Local MAT\n");
-        if (!PetscGlobalRank) MatView(matis->A,NULL);
-        if (!PetscGlobalRank) printf("Local pressure change\n");
-        if (!PetscGlobalRank) MatView(pcbddc->benign_change,NULL);
-        if (!PetscGlobalRank) printf("Local AFTER CHANGE\n");
-        if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
+        //if (!PetscGlobalRank) printf("Local MAT\n");
+        //if (!PetscGlobalRank) MatView(matis->A,NULL);
+        //if (!PetscGlobalRank) printf("Local pressure change\n");
+        //if (!PetscGlobalRank) MatView(pcbddc->benign_change,NULL);
+        //if (!PetscGlobalRank) printf("Local AFTER CHANGE\n");
+        //if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
         ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
         ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
         ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
         /* pop B0 mat from pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
-        if (!PetscGlobalRank) printf("REMOVED AND B0\n");
-        if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
-        if (!PetscGlobalRank) {
-          for (i=0;i<pcbddc->B0_ncol;i++) printf("%d %f\n",pcbddc->B0_cols[i],pcbddc->B0_vals[i]);
-        }
+        //if (!PetscGlobalRank) printf("REMOVED AND B0\n");
+        //if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
+        //if (!PetscGlobalRank) {
+        //  for (i=0;i<pcbddc->B0_ncol;i++) printf("%d %f\n",pcbddc->B0_cols[i],pcbddc->B0_vals[i]);
+        //}
       } else { /* this is unlikely to happen */
         ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
         pcbddc->local_mat = matis->A;
@@ -1380,6 +1380,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
   }
 #endif
+  if (matis->A->symmetric_set) {
+    ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);
+  }
+  if (matis->A->spd_set) {
+    ierr = MatSetOption(pcbddc->local_mat,MAT_SPD,matis->A->spd);CHKERRQ(ierr);
+  }
 
   /* Set up all the "iterative substructuring" common block without computing solvers */
   {
@@ -1390,8 +1396,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCISSetUp(pc,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
     matis->A = temp_mat;
-      if (!PetscGlobalRank) printf("IS_I_LOCAL\n");
-      if (!PetscGlobalRank) { PC_IS* pcis=(PC_IS*)(pc->data); ISView(pcis->is_I_local,NULL); }
+      //if (!PetscGlobalRank) printf("IS_I_LOCAL\n");
+      //if (!PetscGlobalRank) { PC_IS* pcis=(PC_IS*)(pc->data); ISView(pcis->is_I_local,NULL); }
   }
 
   /* Analyze interface */
@@ -2126,7 +2132,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_nnsp_true       = PETSC_FALSE;
   pcbddc->use_qr_single       = PETSC_FALSE;
   pcbddc->symmetric_primal    = PETSC_TRUE;
-  pcbddc->saddle_point        = PETSC_FALSE;
+  pcbddc->benign_saddle_point = PETSC_FALSE;
   pcbddc->dbg_flag            = 0;
   /* private */
   pcbddc->local_primal_size          = 0;
