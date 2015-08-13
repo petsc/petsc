@@ -1367,7 +1367,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         //if (!PetscGlobalRank) {
         //  for (i=0;i<pcbddc->B0_ncol;i++) printf("%d %f\n",pcbddc->B0_cols[i],pcbddc->B0_vals[i]);
         //}
-      } else { /* this is unlikely to happen */
+      } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
+        ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
         pcbddc->local_mat = matis->A;
       }
