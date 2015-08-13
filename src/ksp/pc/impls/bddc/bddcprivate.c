@@ -44,6 +44,7 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
     ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+nz-1,1.,NULL,NULL);CHKERRQ(ierr);
   } else { /* push */
     ierr = MatSetValues(pcbddc->local_mat,1,&idxs[nz-1],pcbddc->B0_ncol,pcbddc->B0_cols,pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(pcbddc->local_mat,pcbddc->B0_ncol,pcbddc->B0_cols,1,&idxs[nz-1],pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
