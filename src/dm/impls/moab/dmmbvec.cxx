@@ -594,7 +594,9 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,char** 
 }
 
 
-PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateGlobalVector_Moab"
+PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
 {
   PetscErrorCode  ierr;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
@@ -607,7 +609,9 @@ PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
 }
 
 
-PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *lvec)
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalVector_Moab"
+PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *lvec)
 {
   PetscErrorCode  ierr;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
@@ -664,7 +668,9 @@ PetscErrorCode DMVecUserDestroy_Moab(void *user)
 }
 
 
-PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm,Vec g,InsertMode mode,Vec l)
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalBegin_Moab"
+PETSC_EXTERN PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode    ierr;  
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
@@ -675,7 +681,9 @@ PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 
-PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm,Vec g,InsertMode mode,Vec l)
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalEnd_Moab"
+PETSC_EXTERN PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode    ierr;  
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
@@ -686,7 +694,9 @@ PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 
-PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm,Vec l,InsertMode mode,Vec g)
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalBegin_Moab"
+PETSC_EXTERN PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode    ierr;  
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
@@ -697,7 +707,9 @@ PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm,Vec l,InsertMode mode,Vec g)
 }
 
 
-PetscErrorCode  DMLocalToGlobalEnd_Moab(DM dm,Vec l,InsertMode mode,Vec g)
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalEnd_Moab"
+PETSC_EXTERN PetscErrorCode  DMLocalToGlobalEnd_Moab(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode    ierr;  
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;

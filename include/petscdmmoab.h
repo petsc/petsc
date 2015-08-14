@@ -64,6 +64,11 @@ PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
 PETSC_EXTERN PetscErrorCode DMMoabSetFieldVector(DM, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMMoabSetGlobalFieldVector(DM, Vec);
 
+PETSC_EXTERN PetscErrorCode DMMoabCreateVertices(DM, const PetscReal* coords, PetscInt nverts, moab::Range*);
+PETSC_EXTERN PetscErrorCode DMMoabCreateElement(DM, const moab::EntityType type, const moab::EntityHandle* conn, PetscInt nverts, moab::EntityHandle* elem);
+PETSC_EXTERN PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm);
+PETSC_EXTERN PetscErrorCode DMMoabRenumberMeshEntities(DM dm);
+
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName);
 PETSC_EXTERN PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName);
 PETSC_EXTERN PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt nfields,const char* fields[]);

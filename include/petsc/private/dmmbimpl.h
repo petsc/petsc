@@ -46,6 +46,8 @@ typedef struct {
   PetscInt                seqstart,seqend;                /* Local start and end entity IDs for vertices */
   PetscInt                vstart,vend;                    /* Global start and end index for distributed Vec */
   PetscInt                nghostrings;                    /* Number of ghost ring layers */
+  PetscInt                gminmax[2],lminmax[2];          /* Local and global min/max in the ID sequence */
+  PetscInt                refct;
 
   /* store the mapping information */
   ISLocalToGlobalMapping  ltog_map;
@@ -79,6 +81,9 @@ typedef struct {
   PetscInt                nhlevels, hlevel;
   moab::EntityHandle     *hsets;
 
+  /* Sub-mesh level data-strucuture */
+  DM                     *parent;
+
 } DM_Moab;
 
 typedef struct {
@@ -87,21 +92,6 @@ typedef struct {
   PetscInt             nhlevels, hlevel;
   moab::EntityHandle  *hsets;
 } SubDM_MOAB;
-
-PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM,Vec *);
-PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM,Vec *);
-PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J);
-PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin_Moab(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd_Moab(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin_Moab(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd_Moab(DM,Vec,InsertMode,Vec);
-
-PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM,PetscInt,DM[]);
-PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM,PetscInt,DM[]);
-PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM,DM,Mat*,Vec*);
-PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM,DM,VecScatter*);
-PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM,MPI_Comm,DM*);
-PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM,MPI_Comm,DM*);
 
 #endif /* _DMMBIMPL_H */
 

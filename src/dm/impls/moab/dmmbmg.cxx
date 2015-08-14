@@ -86,7 +86,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
 
 .keywords: DMMoab, generate, refinement
 @*/
-PetscErrorCode  DMRefineHierarchy_Moab(DM dm,PetscInt nlevels,DM dmf[])
+PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm,PetscInt nlevels,DM dmf[])
 {
   PetscErrorCode  ierr;
   PetscInt        i;
@@ -119,7 +119,7 @@ PetscErrorCode  DMRefineHierarchy_Moab(DM dm,PetscInt nlevels,DM dmf[])
 
 .keywords: DMMoab, generate, coarsening
 @*/
-PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
+PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
 {
   PetscErrorCode  ierr;
   PetscInt        i;
@@ -155,7 +155,7 @@ PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
 
 .keywords: DMMoab, create, refinement
 @*/
-PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interpl,Vec* vec)
+PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interpl,Vec* vec)
 {
   DM_Moab         *dmbp, *dmbc;
   PetscErrorCode   ierr;
@@ -337,7 +337,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interpl,Vec* vec)
     //  std::cout<<"values "<<values_phi[j]<<std::endl;
 
   }
-
+  if (vec) *vec=NULL;
   ierr = MatAssemblyBegin(*interpl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*interpl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -363,7 +363,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interpl,Vec* vec)
 
 .keywords: DMMoab, create, refinement
 @*/
-PetscErrorCode DMCreateInjection_Moab(DM dm1,DM dm2,VecScatter* ctx)
+PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1,DM dm2,VecScatter* ctx)
 {
   //DM_Moab        *dmmoab;
 
@@ -488,7 +488,7 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
 
 .keywords: DMMoab, create, refinement
 @*/
-PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
+PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
 {
   PetscErrorCode  ierr;
 
@@ -521,7 +521,7 @@ PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
 
 .keywords: DMMoab, create, coarsening
 @*/
-PetscErrorCode DMCoarsen_Moab(DM dm,MPI_Comm comm,DM* dmc)
+PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm,MPI_Comm comm,DM* dmc)
 {
   PetscErrorCode  ierr;
 

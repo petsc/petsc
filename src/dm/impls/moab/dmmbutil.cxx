@@ -576,6 +576,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   global_rank = pcomm->rank();
   dmmoab->dim = dim;
   dmmoab->nghostrings=nghost;
+  dmmoab->refct = 1;
 
   /* create a file set to associate all entities in current mesh */
   merr = mbImpl->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
@@ -847,6 +848,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,PetscInt nghost,con
   /* TODO: Decipher dimension based on the loaded mesh instead of getting from user */
   dmmoab->dim = dim;
   dmmoab->nghostrings=nghost;
+  dmmoab->refct = 1;
 
   /* create a file set to associate all entities in current mesh */
   merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
@@ -881,6 +883,40 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,PetscInt nghost,con
 
   PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
   ierr = PetscFree(readopts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabRenumberMeshEntities"
+/*@
+  DMMoabRenumberMeshEntities - Order and number all entities (vertices->elements) to be contiguously ordered
+  in parallel
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ dm  - The DM object
+
+  Level: advanced
+
+.keywords: DM, reorder
+
+.seealso: DMSetUp(), DMCreate()
+@*/
+PetscErrorCode DMMoabRenumberMeshEntities(DM dm)
+{
+  moab::ErrorCode     merr;
+  DM_Moab            *dmmoab;
+  moab::Range         verts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+
+  dmmoab = (DM_Moab*) dm->data;
+
+  /* Insert new points */
+  merr = dmmoab->pcomm->assign_global_ids(dmmoab->fileset,3,0,false,true,false);MBERRNM(merr);
   PetscFunctionReturn(0);
 }
 

@@ -7,7 +7,9 @@
 
 static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool);
 
-PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateMatrix_Moab"
+PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 {
   PetscErrorCode  ierr;
   PetscInt        innz=0,ionz=0,nlsiz;
