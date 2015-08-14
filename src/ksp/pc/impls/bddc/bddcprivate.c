@@ -6,45 +6,67 @@ static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y);
 static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCBenignPopOrPushP0"
+PetscErrorCode PCBDDCBenignPopOrPushP0(PC pc, Vec v, PetscBool pop)
+{
+  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!pcbddc->benign_sf) {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc),&pcbddc->benign_sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(pcbddc->benign_sf,pc->pmat->rmap,1,NULL,PETSC_OWN_POINTER,&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
+  }
+  if (pop) { /* use SF to get values */
+    PetscScalar *array;
+
+    ierr = VecGetArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(pcbddc->benign_sf,MPIU_SCALAR,array,&pcbddc->benign_p0);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,&pcbddc->benign_p0);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
+  } else { /* use VecSetValue */
+    ierr = VecSetValue(v,pcbddc->benign_p0_gidx,pcbddc->benign_p0,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCBenignPopOrPushB0"
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  const PetscInt *idxs;
-  PetscInt       nz = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pcbddc->zerodiag) {
-    PetscFunctionReturn(0);
-  } else {
-    ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
-    if (!nz) PetscFunctionReturn(0);
-  }
-  ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
   /* TODO: add error checking
     - avoid nested pop (or push) calls.
     - cannot push before pop.
   */
+  if (!pcbddc->zerodiag) {
+    PetscFunctionReturn(0);
+  }
   if (pop) {
     const PetscInt    *cB0_cols;
     PetscInt          cB0_ncol;
     const PetscScalar *cB0_vals;
 
     /* extract B_0 */
-    ierr = MatGetRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
+    ierr = MatGetRow(pcbddc->local_mat,pcbddc->benign_p0_lidx,&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
     pcbddc->B0_ncol = cB0_ncol;
     ierr = PetscFree2(pcbddc->B0_cols,pcbddc->B0_vals);CHKERRQ(ierr);
     ierr = PetscMalloc2(cB0_ncol,&pcbddc->B0_cols,cB0_ncol,&pcbddc->B0_vals);CHKERRQ(ierr);
     ierr = PetscMemcpy(pcbddc->B0_cols,cB0_cols,cB0_ncol*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(pcbddc->B0_vals,cB0_vals,cB0_ncol*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MatRestoreRow(pcbddc->local_mat,idxs[nz-1],&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
+    ierr = MatRestoreRow(pcbddc->local_mat,pcbddc->benign_p0_lidx,&cB0_ncol,&cB0_cols,&cB0_vals);CHKERRQ(ierr);
     /* remove rows and cols from local problem */
     ierr = MatSetOption(pcbddc->local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatZeroRowsColumns(pcbddc->local_mat,1,idxs+nz-1,1.,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatZeroRowsColumns(pcbddc->local_mat,1,&pcbddc->benign_p0_lidx,1.,NULL,NULL);CHKERRQ(ierr);
   } else { /* push */
-    ierr = MatSetValues(pcbddc->local_mat,1,&idxs[nz-1],pcbddc->B0_ncol,pcbddc->B0_cols,pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(pcbddc->local_mat,pcbddc->B0_ncol,pcbddc->B0_cols,1,&idxs[nz-1],pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(pcbddc->local_mat,1,&pcbddc->benign_p0_lidx,pcbddc->B0_ncol,pcbddc->B0_cols,pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(pcbddc->local_mat,pcbddc->B0_ncol,pcbddc->B0_cols,1,&pcbddc->benign_p0_lidx,pcbddc->B0_vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(pcbddc->local_mat,pcbddc->benign_p0_lidx,pcbddc->benign_p0_lidx,0.0,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
@@ -1977,6 +1999,16 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     ierr = MatMultTranspose(pcbddc->coarse_psi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
     if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_psi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
   }
+
+  /* add p0 to the last value of vec1_P holding the coarse dof relative to p0 */
+  if (pcbddc->benign_change) {
+    PetscScalar *array;
+
+    ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    array[pcbddc->local_primal_size-1] += pcbddc->benign_p0;
+    ierr = VecRestoreArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+  }
+
   /* start communications from local primal nodes to rhs of coarse solver */
   ierr = VecSet(pcbddc->coarse_vec,zero);CHKERRQ(ierr);
   ierr = PCBDDCScatterCoarseDataBegin(pc,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2012,6 +2044,14 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   } else {
     ierr = MatMultAdd(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
     if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+  }
+  /* store p0 */
+  if (pcbddc->benign_change) {
+    PetscScalar *array;
+
+    ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    pcbddc->benign_p0 = array[pcbddc->local_primal_size-1];
+    ierr = VecRestoreArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

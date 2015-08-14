@@ -60,6 +60,10 @@ typedef struct {
   PetscInt      B0_ncol;
   PetscInt      *B0_cols;
   PetscScalar   *B0_vals;
+  PetscSF       benign_sf;
+  PetscScalar   benign_p0;
+  PetscInt      benign_p0_lidx;
+  PetscInt      benign_p0_gidx;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
   PetscBool     use_vertices;

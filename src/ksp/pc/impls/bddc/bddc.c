@@ -1354,22 +1354,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         /* TODO: need optimization? */
         ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
-        //if (!PetscGlobalRank) printf("Local MAT\n");
-        //if (!PetscGlobalRank) MatView(matis->A,NULL);
-        //if (!PetscGlobalRank) printf("Local pressure change\n");
-        //if (!PetscGlobalRank) MatView(pcbddc->benign_change,NULL);
-        //if (!PetscGlobalRank) printf("Local AFTER CHANGE\n");
-        //if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
+        /* store local and global idxs for p0 */
+        pcbddc->benign_p0_lidx = idxs[nz-1];
+        ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,1,&idxs[nz-1],&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
         ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
         ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
         ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
         /* pop B0 mat from pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
-        //if (!PetscGlobalRank) printf("REMOVED AND B0\n");
-        //if (!PetscGlobalRank) MatView(pcbddc->local_mat,NULL);
-        //if (!PetscGlobalRank) {
-        //  for (i=0;i<pcbddc->B0_ncol;i++) printf("%d %f\n",pcbddc->B0_cols[i],pcbddc->B0_vals[i]);
-        //}
       } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
         ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
@@ -1451,6 +1443,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = VecDot(matis->x,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] check original mat: %1.4e\n",PetscGlobalRank,vals[0]);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
+
+    /* check PCBDDCBenignPopOrPush */
+    ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
+    pcbddc->benign_p0 = -PetscGlobalRank;
+    ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+    pcbddc->benign_p0 = 1;
+    ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
+    if (pcbddc->benign_p0 != -PetscGlobalRank) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignPopOrPushP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
+    }
   }
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
@@ -1642,6 +1644,9 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static == PETSC_TRUE) */
 
   PetscFunctionBegin;
+  if (pcbddc->benign_saddle_point) { /* extract p0 from r */
+    ierr = PCBDDCBenignPopOrPushP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
+  }
   if (!pcbddc->use_exact_dirichlet_trick) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     /* First Dirichlet solve */
@@ -1687,6 +1692,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     ierr = MatMult(pcis->A_II,pcis->vec1_D,pcis->vec3_D);CHKERRQ(ierr);
   }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
+
   if (!pcbddc->use_exact_dirichlet_trick) {
     if (pcbddc->switch_static) {
       ierr = VecAXPBYPCZ(pcis->vec2_D,m_one,one,m_one,pcis->vec4_D,pcis->vec1_D);CHKERRQ(ierr);
@@ -1703,6 +1709,10 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     }
     ierr = VecScatterBegin(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
+
+  if (pcbddc->benign_saddle_point) { /* push p0 (computed in PCBDDCApplyInterface) */
+    ierr = PCBDDCBenignPopOrPushP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
