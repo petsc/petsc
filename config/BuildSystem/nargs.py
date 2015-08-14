@@ -351,7 +351,8 @@ class ArgDirList(Arg):
     # Should check whether it is a well-formed path
     nvalue = []
     for dir in value:
-      nvalue.append(os.path.expanduser(dir))
+      if dir:
+        nvalue.append(os.path.expanduser(dir))
     value = nvalue
     for dir in value:
       if self.mustExist and not os.path.isdir(dir):
