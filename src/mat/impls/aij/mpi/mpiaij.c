@@ -2603,11 +2603,13 @@ PetscErrorCode MatShift_MPIAIJ(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *maij = (Mat_MPIAIJ*)Y->data;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)maij->A->data,*bij = (Mat_SeqAIJ*)maij->B->data;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)maij->A->data;
 
   PetscFunctionBegin;
-  if (!aij->nz && !bij->nz) {
+  if (!Y->preallocated) {
     ierr = MatMPIAIJSetPreallocation(Y,1,NULL,0,NULL);CHKERRQ(ierr);
+  } else if (!aij->nz) {
+    ierr = MatSeqAIJSetPreallocation(maij->A,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
