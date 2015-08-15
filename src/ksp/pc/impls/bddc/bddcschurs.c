@@ -706,6 +706,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatSetOption(A,MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
 
+    /* when using te benign subspace trick, the local Schur complements are SPD */
+    if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
+
     if (n_I) {
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
@@ -752,9 +755,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       reuse_solvers = PETSC_FALSE;
       mumps_S = PETSC_FALSE;
     }
-
-    /* when using te benign subspace trick, the local Schur complements are SPD */
-    if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
 
     if (reuse_solvers) {
       Mat              A_II;
