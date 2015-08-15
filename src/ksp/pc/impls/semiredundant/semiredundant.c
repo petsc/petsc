@@ -319,9 +319,9 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
       
       ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: parent comm size reduction factor = %D\n",sred->redfactor);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: comm_size = %d , subcomm_size = %d\n",(int)comm_size,(int)subcomm_size);CHKERRQ(ierr);
-      ierr = PetscViewerGetSubcomm(viewer,subcomm,&subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
       if (isActiveRank(sred->psubcomm)) {
+        ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
         
         if (dm && sred->ignore_dm) {
           ierr = PetscViewerASCIIPrintf(subviewer,"  SemiRedundant: ignoring DM\n");CHKERRQ(ierr);
@@ -340,9 +340,9 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
         }
         
         ierr = KSPView(sred->ksp,subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubcomm(viewer,subcomm,&subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
     }
   }
   return(0);
