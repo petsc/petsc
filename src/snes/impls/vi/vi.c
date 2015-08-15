@@ -58,9 +58,6 @@ PetscErrorCode  SNESVIMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,vo
   ierr = VecCopy(F,Finactive);CHKERRQ(ierr);
   ierr = VecISSet(Finactive,isactive,0.0);CHKERRQ(ierr);
   ierr = ISDestroy(&isactive);CHKERRQ(ierr);
-  if (!viewer) {
-    viewer = PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes));
-  }
   ierr = VecView(Finactive,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&Finactive);CHKERRQ(ierr);
   PetscFunctionReturn(0);

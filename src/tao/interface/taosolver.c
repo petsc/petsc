@@ -1763,7 +1763,7 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 
    Input Parameters:
 +  tao - the Tao context
--  ctx - PetscViewer context or NULL
+-  ctx - PetscViewer context
 
    Options Database Keys:
 .  -tao_draw_solution
@@ -1776,13 +1776,8 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) ctx;
-  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(tao->solution, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1798,7 +1793,7 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 
    Input Parameters:
 +  tao - the Tao context
--  ctx - PetscViewer context or NULL
+-  ctx - PetscViewer context
 
    Options Database Keys:
 .  -tao_draw_gradient
@@ -1811,13 +1806,8 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)ctx;
-  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(tao->gradient, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1833,7 +1823,7 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 
    Input Parameters:
 +  tao - the Tao context
--  ctx - PetscViewer context or NULL
+-  ctx - PetscViewer context
 
    Options Database Keys:
 .  -tao_draw_step
@@ -1846,13 +1836,8 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)(ctx);
-  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(tao->stepdirection, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
