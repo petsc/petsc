@@ -1222,6 +1222,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*        matis;
   MatNullSpace   nearnullspace;
+  IS             zerodiag = NULL;
   PetscInt       nrows,ncols;
   PetscBool      computetopography,computesolvers,computesubschurs;
   PetscBool      computeconstraintsmatrix;
@@ -1296,16 +1297,13 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       PetscInt  nz;
       PetscBool sorted;
 
-      ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
       /* should I also include nonzero pressures? */
-      ierr = MatFindZeroDiagonals(matis->A,&pcbddc->zerodiag);CHKERRQ(ierr);
-      ierr = ISSorted(pcbddc->zerodiag,&sorted);CHKERRQ(ierr);
+      ierr = MatFindZeroDiagonals(matis->A,&zerodiag);CHKERRQ(ierr);
+      ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
       if (!sorted) {
-        ierr = ISSort(pcbddc->zerodiag);CHKERRQ(ierr);
+        ierr = ISSort(zerodiag);CHKERRQ(ierr);
       }
-      //if (!PetscGlobalRank) printf("ZERODIAG\n");
-      //if (!PetscGlobalRank) ISView(pcbddc->zerodiag,NULL);
-      ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
       if (nz) {
         IS                zerodiagc;
         PetscScalar       *array;
@@ -1314,9 +1312,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
         /* TODO: add check for shared dofs */
         pcbddc->use_change_of_basis = PETSC_TRUE;
+        pcbddc->use_change_on_faces = PETSC_TRUE;
         ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
-        ierr = ISComplement(pcbddc->zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
-        ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+        ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
+        ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
         ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
         /* local change of basis for pressures */
         ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
@@ -1357,13 +1356,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         /* store local and global idxs for p0 */
         pcbddc->benign_p0_lidx = idxs[nz-1];
         ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,1,&idxs[nz-1],&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
         ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
         ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
         /* pop B0 mat from pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
       } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
-        ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
+        pcbddc->benign_p0_lidx = -1;
+        pcbddc->benign_p0_gidx = -1;
+        ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
         pcbddc->local_mat = matis->A;
       }
@@ -1400,7 +1401,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computeconstraintsmatrix = PETSC_TRUE;
   }
 
-  if (pcbddc->dbg_flag && pcbddc->zerodiag) {
+  /* check b(v_I,p_0) = 0 for all v_I */
+  if (pcbddc->dbg_flag && zerodiag) {
     PC_IS          *pcis = (PC_IS*)(pc->data);
     IS             dirIS = NULL;
     PetscScalar    *vals;
@@ -1410,8 +1412,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* p0 */
     ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
     ierr = PetscMalloc1(pcis->n,&vals);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
+    ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
     for (i=0;i<nz;i++) vals[i] = 1.;
     ierr = VecSetValues(pcis->vec1_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
@@ -1420,7 +1422,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = VecSetRandom(pcis->vec2_N,NULL);CHKERRQ(ierr);
     for (i=0;i<nz;i++) vals[i] = 0.;
     ierr = VecSetValues(pcis->vec2_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
     ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
     for (i=0;i<pcis->n_B;i++) vals[i] = 0.;
     ierr = VecSetValues(pcis->vec2_N,pcis->n_B,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
@@ -1443,14 +1445,18 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = VecDot(matis->x,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] check original mat: %1.4e\n",PetscGlobalRank,vals[0]);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
+  }
 
-    /* check PCBDDCBenignPopOrPush */
+  /* check PCBDDCBenignPopOrPush */
+  if (pcbddc->dbg_flag && pcbddc->benign_saddle_point) {
+    PC_IS  *pcis = (PC_IS*)(pc->data);
+
     ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
     pcbddc->benign_p0 = -PetscGlobalRank;
     ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->benign_p0 = 1;
     ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-    if (pcbddc->benign_p0 != -PetscGlobalRank) {
+    if (pcbddc->benign_p0_gidx >=0 && pcbddc->benign_p0 != -PetscGlobalRank) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignPopOrPushP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
     }
   }
@@ -1528,7 +1534,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       PC_IS *pcis = (PC_IS*)(pc->data);
       Mat   temp_mat = NULL;
 
-      if (pcbddc->zerodiag) {
+      if (zerodiag) {
         /* insert B0 in pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
         if (pcbddc->dbg_flag) {
@@ -1541,8 +1547,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
           /* p0 */
           ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
           ierr = PetscMalloc1(pcis->n,&vals);CHKERRQ(ierr);
-          ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
-          ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+          ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
+          ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
           vals[0] = 1.;
           ierr = VecSetValues(pcis->vec1_N,1,&idxs[nz-1],vals,INSERT_VALUES);CHKERRQ(ierr);
           ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
@@ -1551,7 +1557,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
           ierr = VecSetRandom(pcis->vec2_N,NULL);CHKERRQ(ierr);
           for (i=0;i<nz;i++) vals[i] = 0.;
           ierr = VecSetValues(pcis->vec2_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+          ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
           ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
           for (i=0;i<pcis->n_B;i++) vals[i] = 0.;
           ierr = VecSetValues(pcis->vec2_N,pcis->n_B,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
@@ -1581,7 +1587,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         pcbddc->local_mat = NULL;
       }
       ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
-      if (pcbddc->zerodiag) {
+      if (zerodiag) {
         /* restore original matrix */
         ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
         matis->A = temp_mat;
@@ -2294,7 +2300,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->coarse_subassembling_init  = 0;
 
   /* benign subspace trick */
-  pcbddc->zerodiag                   = 0;
   pcbddc->B0_ncol                    = 0;
   pcbddc->B0_cols                    = NULL;
   pcbddc->B0_vals                    = NULL;

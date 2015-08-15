@@ -15,7 +15,11 @@ PetscErrorCode PCBDDCBenignPopOrPushP0(PC pc, Vec v, PetscBool pop)
   PetscFunctionBegin;
   if (!pcbddc->benign_sf) {
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc),&pcbddc->benign_sf);CHKERRQ(ierr);
-    ierr = PetscSFSetGraphLayout(pcbddc->benign_sf,pc->pmat->rmap,1,NULL,PETSC_OWN_POINTER,&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
+    if (pcbddc->benign_p0_gidx >= 0) {
+      ierr = PetscSFSetGraphLayout(pcbddc->benign_sf,pc->pmat->rmap,1,NULL,PETSC_OWN_POINTER,&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFSetGraphLayout(pcbddc->benign_sf,pc->pmat->rmap,0,NULL,PETSC_OWN_POINTER,&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
+    }
   }
   if (pop) { /* use SF to get values */
     PetscScalar *array;
@@ -25,7 +29,9 @@ PetscErrorCode PCBDDCBenignPopOrPushP0(PC pc, Vec v, PetscBool pop)
     ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,&pcbddc->benign_p0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
   } else { /* use VecSetValue */
-    ierr = VecSetValue(v,pcbddc->benign_p0_gidx,pcbddc->benign_p0,INSERT_VALUES);CHKERRQ(ierr);
+    if (pcbddc->benign_p0_gidx >= 0) {
+      ierr = VecSetValue(v,pcbddc->benign_p0_gidx,pcbddc->benign_p0,INSERT_VALUES);CHKERRQ(ierr);
+    }
     ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
   }
@@ -44,7 +50,7 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
     - avoid nested pop (or push) calls.
     - cannot push before pop.
   */
-  if (!pcbddc->zerodiag) {
+  if (pcbddc->benign_p0_lidx < 0) {
     PetscFunctionReturn(0);
   }
   if (pop) {
@@ -531,7 +537,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->coarse_subassembling);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
-  ierr = ISDestroy(&pcbddc->zerodiag);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
@@ -554,7 +559,8 @@ PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC pc)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"BDDC Constraint matrix has not been created");
   }
   /* get sizes */
-  n_benign = (PetscInt)(!!pcbddc->zerodiag);
+  n_benign = 0;
+  if (pcbddc->benign_p0_lidx >= 0) n_benign = 1;
   n_constraints = pcbddc->local_primal_size - n_benign - pcbddc->n_vertices;
   if (n_benign && n_constraints) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot handle benign susbspace trick without change of basis");
@@ -635,7 +641,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscScalar     one=1.0,m_one=-1.0;
 
   PetscFunctionBegin;
-  n_benign = (PetscInt)(!!pcbddc->zerodiag);
+  n_benign = 0;
+  if (pcbddc->benign_p0_lidx >= 0) n_benign = 1;
   n_vertices = pcbddc->n_vertices;
   n_constraints = pcbddc->local_primal_size - n_benign - n_vertices;
   /* Set Non-overlapping dimensions */
@@ -1629,9 +1636,9 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
   /* print some info if requested */
   if (pcbddc->dbg_flag) {
-    PetscInt benign;
+    PetscInt benign = 0;
 
-    benign = (PetscInt)(!!pcbddc->zerodiag);
+    if (pcbddc->benign_p0_lidx >= 0) benign = 1;
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
@@ -2048,7 +2055,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   }
 
   /* add p0 to the last value of vec1_P holding the coarse dof relative to p0 */
-  if (pcbddc->benign_change) {
+  if (pcbddc->benign_p0_lidx >= 0) {
     PetscScalar *array;
 
     ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
@@ -2093,7 +2100,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
   }
   /* store p0 */
-  if (pcbddc->benign_change) {
+  if (pcbddc->benign_p0_lidx >= 0) {
     PetscScalar *array;
 
     ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
@@ -3212,15 +3219,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
 
   /* add pressure dof to set of primal nodes for numbering purposes */
-  if (pcbddc->zerodiag) {
-    const PetscInt *idxs;
-    PetscInt       nz;
-
-    ierr = ISGetLocalSize(pcbddc->zerodiag,&nz);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
-    pcbddc->local_primal_ref_node[pcbddc->local_primal_size_cc] = idxs[nz-1];
-    pcbddc->primal_indices_local_idxs[pcbddc->local_primal_size_cc] = idxs[nz-1];
-    ierr = ISRestoreIndices(pcbddc->zerodiag,&idxs);CHKERRQ(ierr);
+  if (pcbddc->benign_p0_lidx >= 0) {
+    pcbddc->local_primal_ref_node[pcbddc->local_primal_size_cc] = pcbddc->benign_p0_lidx;
+    pcbddc->primal_indices_local_idxs[pcbddc->local_primal_size_cc] = pcbddc->benign_p0_lidx;
     pcbddc->local_primal_ref_mult[pcbddc->local_primal_size_cc] = 1;
     pcbddc->local_primal_size_cc++;
     pcbddc->local_primal_size++;
