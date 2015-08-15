@@ -3,10 +3,11 @@
 
 configure_options = [
   '--with-debugging=0',
-  '--with-cc=mpicc.openmpi',
-  '--with-cxx=mpicxx.openmpi',
-  '--with-fc=mpif90.openmpi',
-  '--with-mpiexec=mpiexec.openmpi',
+  #'--with-cc=mpicc.openmpi',
+  #'--with-cxx=mpicxx.openmpi',
+  #'--with-fc=mpif90.openmpi',
+  #'--with-mpiexec=mpiexec.openmpi',
+  '--download-openmpi=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',
@@ -24,7 +25,11 @@ configure_options = [
   '--download-spai=1',
   '--download-parms=1',
   '--download-moab=1',
-  '--download-chaco=1'
+  '--download-chaco=1',
+  '--download-fftw=1',
+  '--download-petsc4py=1',
+  '--download-mpi4py=1',
+  '--download-saws',
   ]
 
 if __name__ == '__main__':

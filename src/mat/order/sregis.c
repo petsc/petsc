@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>     /*I       "petscmat.h"   I*/
+#include <petsc/private/matimpl.h>     /*I       "petscmat.h"   I*/
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_ND(Mat,MatOrderingType,IS*,IS*);
@@ -43,6 +43,7 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural);CHKERRQ(ierr);

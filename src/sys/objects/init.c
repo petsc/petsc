@@ -6,8 +6,8 @@
   what malloc is being used until it has already processed the input.
 */
 
-#define PETSC_DESIRE_COMPLEX
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
@@ -42,17 +42,13 @@ MPI_Datatype MPIU_C_COMPLEX;
    PETSC_i - the imaginary number i
 
    Synopsis:
-   #define PETSC_DESIRE_COMPLEX
    #include <petscsys.h>
    PetscComplex PETSC_i;
 
    Level: beginner
 
    Note:
-   Complex numbers are automatically available if PETSc was configured --with-scalar-type=complex (in which case
-   PetscComplex will match PetscScalar), otherwise the macro PETSC_DESIRE_COMPLEX must be defined before including any
-   PETSc headers. If the compiler supports complex numbers, PetscComplex and associated variables and functions will be
-   defined and PETSC_HAVE_COMPLEX will be set.
+   Complex numbers are automatically available if PETSc located a working complex implementation
 
 .seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
 M*/
@@ -252,23 +248,32 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 #include <cublas.h>
 #endif
 
+#if defined(PETSC_USE_LOG)
+extern PetscBool   PetscObjectsLog;
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
-  PetscReal      si,logthreshold;
+  PetscReal      si;
   PetscInt       intensity;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
+#if !defined(PETSC_HAVE_THREADSAFETY)
+  PetscReal      logthreshold;
+  PetscBool      flg4 = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   /*
       Setup the memory management; support for tracing malloc() usage
   */
@@ -317,6 +322,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1) {
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   }
+#endif
+
+#if defined(PETSC_USE_LOG)
+  ierr = PetscOptionsHasName(NULL,"-objects_dump",&PetscObjectsLog);CHKERRQ(ierr);
+#endif
 
   /*
       Set the display variable for graphics
@@ -619,7 +629,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -shared_tmp: tmp directory is shared by all processors\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -not_shared_tmp: each processor has separate tmp directory\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -memory_info: print memory usage at end of run\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -server <port>: Run PETSc webserver (default port is 8080) see PetscWebServe()\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log[_summary _summary_python]: logging objects and events\n");CHKERRQ(ierr);
@@ -651,9 +660,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 
   ierr = PetscOptionsGetString(NULL,"-info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+    }
   }
 
 #if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL)

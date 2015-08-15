@@ -1,6 +1,6 @@
 
 #include <petscksp.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscInt    restart;
@@ -45,8 +45,8 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
       ierr = (*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx);CHKERRQ(ierr);
     }
 
-    ierr = PCApply(pc, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
-    ierr = MatMult(A, s, v);CHKERRQ(ierr);  /* v = A s */
+    ierr = KSP_PCApply(ksp, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
+    ierr = KSP_MatMult(ksp,A, s, v);CHKERRQ(ierr);  /* v = A s */
 
     ierr = VecMDot(v,k, ctx->VV, ctx->val);CHKERRQ(ierr);
     for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
@@ -102,7 +102,7 @@ PetscErrorCode KSPSolve_GCR(KSP ksp)
   r    = ctx->R;
 
   /* compute initial residual */
-  ierr = MatMult(A, x, r);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,A, x, r);CHKERRQ(ierr);
   ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr); /* r = b - A x  */
   ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
 
@@ -155,11 +155,11 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*ctx->restart, &ctx->val);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->restart, &ctx->val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -195,7 +195,7 @@ PetscErrorCode KSPDestroy_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GCR"
-PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GCR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -203,7 +203,7 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GCR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GCR options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gcr_restart","Number of Krylov search directions","KSPGCRSetRestart",ctx->restart,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGCRSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

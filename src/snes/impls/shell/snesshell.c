@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>             /*I   "petscsnes.h"   I*/
+#include <petsc/private/snesimpl.h>             /*I   "petscsnes.h"   I*/
 
 typedef struct {PetscErrorCode (*solve)(SNES,Vec);void *ctx;} SNES_Shell;
 
@@ -69,12 +69,12 @@ PetscErrorCode SNESSetUp_Shell(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Shell"
-PetscErrorCode SNESSetFromOptions_Shell(SNES snes)
+PetscErrorCode SNESSetFromOptions_Shell(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES Shell options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES Shell options");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

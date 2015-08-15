@@ -1,5 +1,4 @@
-#include <petsc-private/taoimpl.h>
-#include "../src/tao/pde_constrained/impls/lcl/lcl.h"
+#include <petsc/private/taoimpl.h>
 
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
@@ -78,7 +77,6 @@ typedef struct {
   KSP solver;
   PC prec;
 
-  TAO_LCL *lcl;
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 } AppCtx;
@@ -125,7 +123,6 @@ int main(int argc, char **argv)
   AppCtx             user;
   IS                 is_allstate,is_alldesign;
   PetscInt           lo,hi,hi2,lo2,ksp_old;
-  PetscBool          flag;
   PetscInt           ntests = 1;
   PetscInt           i;
   int                stages[1];
@@ -133,19 +130,20 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 8;
-  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.nt = 8;
-  ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL);CHKERRQ(ierr);
   user.ndata = 64;
-  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,NULL);CHKERRQ(ierr);
   user.ns = 8;
-  ierr = PetscOptionsInt("-ns","Number of samples","",user.ns,&user.ns,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ns","Number of samples","",user.ns,&user.ns,NULL);CHKERRQ(ierr);
   user.alpha = 1.0;
-  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
   user.beta = 0.01;
-  ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,NULL);CHKERRQ(ierr);
   user.noise = 0.01;
-  ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,NULL);CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.mx; /*  number of constraints per time step */
   user.n = user.m*(user.nt+1); /*  number of variables */
@@ -191,7 +189,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOLCL);CHKERRQ(ierr);
-  user.lcl = (TAO_LCL*)(tao->data);
+
   /* Set up initial vectors and matrices */
   ierr = ParabolicInitialize(&user);CHKERRQ(ierr);
 
@@ -212,7 +210,8 @@ int main(int argc, char **argv)
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
 
  /* SOLVE THE APPLICATION */
-  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
@@ -574,17 +573,16 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   AppCtx         *user;
-  PetscReal      tau;
   PetscInt       its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
 
   if (Y == user->ytrue) {
+    /* First solve is done with true solution to set up problem */
     ierr = KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  } else if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSetTolerances(user->solver,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
 
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
@@ -607,16 +605,12 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
-  PetscReal      tau;
   AppCtx         *user;
   PetscInt       its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
-  if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  }
+
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
 
   i = user->nt - 1;
@@ -1186,7 +1180,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatShift(user->DSG,1.0);CHKERRQ(ierr);
 
   /* Now solve for y */
-  user->lcl->solve_type = LCL_FORWARD1;
   ierr = StateMatInvMult(user->Js,user->q,user->y);CHKERRQ(ierr);
 
   /* Construct projection matrix Q, a block diagonal matrix consisting of nt copies of Qblock along the diagonal */

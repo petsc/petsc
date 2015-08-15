@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>       /*I   "petsc-private/snesimpl.h"   I*/
+#include <petsc/private/snesimpl.h>       /*I   "petsc/private/snesimpl.h"   I*/
 #include <petscdm.h>
 #include <petscblaslapack.h>
 
@@ -111,6 +111,173 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
     viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNES"
+/*@C
+   KSPMonitorSNES - Print the residual norm of the nonlinear function at each iteration of the linear iterative solver.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
+-  dummy - unused monitor context
+
+   Level: intermediate
+
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate()
+@*/
+PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer;
+  SNES           snes = (SNES) dummy;
+  Vec            snes_solution,work1,work2;
+  PetscReal      snorm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetSolution(snes,&snes_solution);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work1);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work2);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,work1,NULL);CHKERRQ(ierr);
+  ierr = VecAYPX(work1,-1.0,snes_solution);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,work1,work2);CHKERRQ(ierr);
+  ierr = VecNorm(work2,NORM_2,&snorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&work2);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  if (n == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Residual norm %5.3e KSP Residual norm %5.3e \n",n,(double)snorm,(double)rnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include <petscdraw.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNESLGResidualNormCreate"
+/*@C
+   KSPMonitorSNESLGResidualNormCreate - Creates a line graph context for use with
+   KSP to monitor convergence of preconditioned residual norms.
+
+   Collective on KSP
+
+   Input Parameters:
++  host - the X display to open, or null for the local machine
+.  label - the title to put in the title bar
+.  x, y - the screen coordinates of the upper left coordinate of
+          the window
+-  m, n - the screen width and height in pixels
+
+   Output Parameter:
+.  draw - the drawing context
+
+   Options Database Key:
+.  -ksp_monitor_lg_residualnorm - Sets line graph monitor
+
+   Notes:
+   Use KSPMonitorSNESLGResidualNormDestroy() to destroy this line graph; do not use PetscDrawLGDestroy().
+
+   Level: intermediate
+
+.keywords: KSP, monitor, line graph, residual, create
+
+.seealso: KSPMonitorSNESLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorSNESLGTrueResidualCreate()
+@*/
+PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
+{
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+  PetscDrawAxis  axis;
+  PetscDrawLG    drawlg;
+  const char     *names[] = {"Linear residual","Nonlinear residual"};
+
+  PetscFunctionBegin;
+  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(draw,2,&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(drawlg,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Convergence of Residual Norm","Iteration","Residual Norm");CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(3,objs);CHKERRQ(ierr);
+  (*objs)[1] = (PetscObject)drawlg;
+  (*objs)[2] = (PetscObject)draw;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNESLGResidualNorm"
+PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
+{
+  PetscDrawLG    lg = (PetscDrawLG) objs[1];
+  PetscErrorCode ierr;
+  PetscReal      y[2];
+  SNES           snes = (SNES) objs[0];
+  Vec            snes_solution,work1,work2;
+
+  PetscFunctionBegin;
+  if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
+  else y[0] = -15.0;
+
+  ierr = SNESGetSolution(snes,&snes_solution);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work1);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work2);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,work1,NULL);CHKERRQ(ierr);
+  ierr = VecAYPX(work1,-1.0,snes_solution);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,work1,work2);CHKERRQ(ierr);
+  ierr = VecNorm(work2,NORM_2,y+1);CHKERRQ(ierr);
+  if (y[1] > 0.0) y[1] = PetscLog10Real(y[1]);
+  else y[1] = -15.0;
+  ierr = VecDestroy(&work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&work2);CHKERRQ(ierr);
+
+  ierr = PetscDrawLGAddPoint(lg,NULL,y);CHKERRQ(ierr);
+  if (n < 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNESLGResidualNormDestroy"
+/*@
+   KSPMonitorSNESLGResidualNormDestroy - Destroys a line graph context that was created
+   with KSPMonitorSNESLGResidualNormCreate().
+
+   Collective on KSP
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Level: intermediate
+
+.keywords: KSP, monitor, line graph, destroy
+
+.seealso: KSPMonitorSNESLGResidualNormCreate(), KSPMonitorSNESLGTrueResidualDestroy(), KSPMonitorSet()
+@*/
+PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
+{
+  PetscErrorCode ierr;
+  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[1];
+  PetscDraw      draw = (PetscDraw) (*objs)[2];
+
+  PetscFunctionBegin;
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscFree(*objs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -406,6 +573,63 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitorDefaultField"
+/*@C
+  SNESMonitorDefaultField - Monitors progress of the SNES solvers, separated into fields.
+
+  Collective on SNES
+
+  Input Parameters:
++ snes   - the SNES context
+. its    - iteration number
+. fgnorm - 2-norm of residual
+- ctx    - the PetscViewer
+
+  Notes:
+  This routine uses the DM attached to the residual vector
+
+  Level: intermediate
+
+.keywords: SNES, nonlinear, field, monitor, norm
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorDefaultShort()
+@*/
+PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, void *ctx)
+{
+  PetscViewer    viewer = ctx ? (PetscViewer) ctx : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject) snes));
+  Vec            r;
+  DM             dm;
+  PetscReal      res[256];
+  PetscInt       tablevel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
+  ierr = VecGetDM(r, &dm);CHKERRQ(ierr);
+  if (!dm) {ierr = SNESMonitorDefault(snes, its, fgnorm, ctx);CHKERRQ(ierr);}
+  else {
+    PetscSection s, gs;
+    PetscInt     Nf, f;
+
+    ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
+    if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, ctx);CHKERRQ(ierr);}
+    ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+    if (Nf > 256) SETERRQ1(PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
+    ierr = PetscSectionVecNorm(s, gs, r, NORM_2, res);CHKERRQ(ierr);
+    ierr = PetscObjectGetTabLevel((PetscObject) snes, &tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (f) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "%14.12e", res[f]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "] \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */

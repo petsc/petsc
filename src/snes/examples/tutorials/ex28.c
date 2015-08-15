@@ -5,7 +5,7 @@ static const char help[] = "1D multiphysics prototype with analytic Jacobians to
  * PDE (U):
  *     -(k u_x)_x = 1 on (0,1), subject to u(0) = 0, u(1) = 1
  * Algebraic (K):
- *     exp(k-1) + k = u + 1/(1/(1+u) + 1/(1+u_x^2))
+ *     exp(k-1) + k = 1/(1/(1+u) + 1/(1+u_x^2))
  *
  * The discretization places k at staggered points, and a separate DMDA is used for each "physics".
  *
@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
   lxk[0]--;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dak);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&pack);CHKERRQ(ierr);
@@ -380,9 +380,9 @@ int main(int argc, char *argv[])
   {
     user->ptype = 0; view_draw = PETSC_FALSE; pass_dm = PETSC_TRUE;
 
-    ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,0);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

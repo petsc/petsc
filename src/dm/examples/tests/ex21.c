@@ -50,7 +50,8 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   {
     DM         cdaf,cdac;
     Vec        coordsc,coordsf,coordsf2;
-    VecScatter inject;
+    Mat        inject;
+    VecScatter vscat;
     Mat        interp;
     PetscReal  norm;
 
@@ -61,10 +62,10 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-
-    ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+    ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
 
     ierr = DMCreateInterpolation(cdac,cdaf,&interp,NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(coordsf,&coordsf2);CHKERRQ(ierr);

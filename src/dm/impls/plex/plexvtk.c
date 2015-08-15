@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #undef __FUNCT__
@@ -89,7 +89,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
     }
-    if (numProcs > 1) {ierr = PetscMalloc1((maxCorners+maxCells), &remoteVertices);CHKERRQ(ierr);}
+    if (numProcs > 1) {ierr = PetscMalloc1(maxCorners+maxCells, &remoteVertices);CHKERRQ(ierr);}
     for (proc = 1; proc < numProcs; ++proc) {
       MPI_Status status;
 
@@ -529,8 +529,8 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 
         ierr = DMGetDefaultSection(dmX, &section);CHKERRQ(ierr);
         /* Here is where we check whether dmX is a submesh of dm */
-        ierr = DMPlexGetDimension(dm,  &dim);CHKERRQ(ierr);
-        ierr = DMPlexGetDimension(dmX, &dimX);CHKERRQ(ierr);
+        ierr = DMGetDimension(dm,  &dim);CHKERRQ(ierr);
+        ierr = DMGetDimension(dmX, &dimX);CHKERRQ(ierr);
         ierr = DMPlexGetChart(dm,  &pStart, &pEnd);CHKERRQ(ierr);
         ierr = DMPlexGetChart(dmX, &qStart, &qEnd);CHKERRQ(ierr);
         ierr = DMPlexGetSubpointMap(dm,  &subpointMap);CHKERRQ(ierr);

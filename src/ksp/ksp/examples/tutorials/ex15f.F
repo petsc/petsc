@@ -23,11 +23,11 @@
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -280,9 +280,9 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
       PC      pc
 
       Mat     pmat
@@ -296,7 +296,7 @@
       Vec    diag
 
       call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,ierr)
-      call MatGetVecs(pmat,diag,PETSC_NULL_OBJECT,ierr)
+      call MatCreateVecs(pmat,diag,PETSC_NULL_OBJECT,ierr)
       call MatGetDiagonal(pmat,diag,ierr)
       call VecReciprocal(diag,ierr)
 
@@ -324,8 +324,8 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
 
       PC      pc
       Vec     x,y
@@ -358,9 +358,9 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
       PC      pc
       PetscErrorCode ierr
 

@@ -70,7 +70,7 @@ PetscErrorCode test_solve(void)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create vectors */
-  ierr = MatGetVecs(A12, &h, &f);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A12, &h, &f);CHKERRQ(ierr);
 
   ierr = VecSet(f, 1.0);CHKERRQ(ierr);
   ierr = VecSet(h, 0.0);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscErrorCode test_solve_matgetvecs(void)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create vectors */
-  ierr = MatGetVecs(A, &b, &x);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &b, &x);CHKERRQ(ierr);
   ierr = VecNestGetSubVecs(b,NULL,&tmp_x);CHKERRQ(ierr);
   f    = tmp_x[0];
   h    = tmp_x[1];

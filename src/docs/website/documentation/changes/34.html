@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><a href="dev.html">dev</a></li>
+                <li><a href="36.html">3.6</a></li>
                 <li><a href="35.html">3.5</a></li>
                 <li><span class="current">3.4</span></li>
                 <li><a href="33.html">3.3</a></li>
@@ -148,7 +149,7 @@
         <li>VecDotNorm2() now returns the square of the norm in a real number (PetscReal) rather than the real part of a complex number (PetscScalar)</li>
         <li>Added VecDotRealPart()</li>
         <li>
-          The private header <tt>petsc-private/vecimpl.h</tt> is no longer included by <tt>petscvec.h</tt>.
+          The private header <tt>petsc/private/vecimpl.h</tt> is no longer included by <tt>petscvec.h</tt>.
           Users requiring direct access to internal members of Vec may need to include the private header, but may want to explain their use case to <tt>petsc-maint@mcs.anl.gov</tt> so that we can provide a stable API.
         </li>
         <li>

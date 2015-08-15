@@ -24,7 +24,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
   if (user->interpolate) {
     DM interpolatedMesh = NULL;
 
@@ -65,7 +65,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     PetscBool flag;
 
     ierr = ReadMesh(PETSC_COMM_WORLD, options->filename, options, &options->dm);CHKERRQ(ierr);
-    ierr = DMPlexGetDimension(options->dm, &dim);CHKERRQ(ierr);
+    ierr = DMGetDimension(options->dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(options->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     numCells = cEnd-cStart;
     ierr = PetscMalloc7(numCells*dim,&options->v0,numCells*dim*dim,&options->J,numCells*dim*dim,&options->invJ,numCells,&options->detJ,
@@ -134,6 +134,7 @@ PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoo
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(dm, spaceDim);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -149,7 +150,7 @@ PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometry(dm, cell, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  ierr = DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
   for (d = 0; d < spaceDim; ++d) {
     if (v0[d] != v0Ex[d]) {
       switch (spaceDim) {
@@ -202,7 +203,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "triangle");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   {
     PetscInt    numPoints[2]        = {3, 1};
     PetscInt    coneSize[4]         = {3, 0, 0, 0};
@@ -468,7 +469,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "quadrilateral");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   {
     PetscInt    numPoints[2]        = {4, 1};
     PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
@@ -719,7 +720,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "tetrahedron");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   {
     PetscInt    numPoints[2]        = {4, 1};
     PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
@@ -862,7 +863,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "hexahedron");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   {
     PetscInt    numPoints[2]        = {8, 1};
     PetscInt    coneSize[9]         = {8, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1009,7 +1010,7 @@ int main(int argc, char **argv)
   } else if (user.runType == RUN_FILE) {
     PetscInt dim, cStart, cEnd, c;
 
-    ierr = DMPlexGetDimension(user.dm, &dim);CHKERRQ(ierr);
+    ierr = DMGetDimension(user.dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(user.dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     for (c = 0; c < cEnd-cStart; ++c) {
       ierr = CheckFEMGeometry(user.dm, c+cStart, dim, &user.v0[c*dim], &user.J[c*dim*dim], &user.invJ[c*dim*dim], user.detJ[c]);CHKERRQ(ierr);

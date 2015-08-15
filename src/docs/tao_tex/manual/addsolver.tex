@@ -51,7 +51,7 @@ method for setting options at runtime, performance profiling, and debugging.
 \section{Header File}
 TAO solver implementation files must include the TAO implementation file \texttt{taoimpl.h}:
 \begin{verbatim}
-   #include "petsc-private/taoimpl.h"
+   #include "petsc/private/taoimpl.h"
 \end{verbatim}
 This file contains data elements that are generally kept hidden from application
 programmers, but may be necessary for solver implementations to access.
@@ -230,8 +230,7 @@ by this solver.   For example, the routine that creates the nonlinear
 conjugate gradient algorithm shown above can be implemented as follows.
 
 \begin{verbatim}
-EXTERN_C_BEGIN
-PetscErrorCode TaoCreate_CG(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG *cg = (TAO_CG*)tao->data;
   const char *morethuente_type = TAOLINESEARCH_MT;
@@ -246,7 +245,7 @@ PetscErrorCode TaoCreate_CG(Tao tao)
   cg->delta_max = 100;
   cg->cg_type = CG_PolakRibierePlus;
 
-  tao->max_its = 2000;
+  tao->max_it = 2000;
   tao->max_funcs = 4000;
   tao->fatol = 1e-4;
   tao->frtol = 1e-4;

@@ -41,19 +41,20 @@ PetscScalar k1(AppCtx *ctx,PetscReal t)
 #define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] - k1(ctx,t)*u[2] + ctx->k2*u[0];
   f[1] = udot[1] - k1(ctx,t)*u[2] + ctx->k3*u[1]*u[3] - ctx->sigma2;
   f[2] = udot[2] - ctx->k3*u[1]*u[3] + k1(ctx,t)*u[2];
   f[3] = udot[3] - ctx->k2*u[0] + ctx->k3*u[1]*u[3];
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -62,20 +63,21 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 #define __FUNCT__ "IJacobian"
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1,2,3};
-  PetscScalar    *u,*udot,J[4][4];
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1,2,3};
+  PetscScalar       J[4][4];
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr    = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   J[0][0] = a + ctx->k2;   J[0][1] = 0.0;                J[0][2] = -k1(ctx,t);       J[0][3] = 0.0;
   J[1][0] = 0.0;           J[1][1] = a + ctx->k3*u[3];   J[1][2] = -k1(ctx,t);       J[1][3] = ctx->k3*u[1];
   J[2][0] = 0.0;           J[2][1] = -ctx->k3*u[3];      J[2][2] = a + k1(ctx,t);    J[2][3] =  -ctx->k3*u[1];
   J[3][0] =  -ctx->k2;     J[3][1] = ctx->k3*u[3];       J[3][2] = 0.0;              J[3][3] = a + ctx->k3*u[1];
   ierr    = MatSetValues(B,4,rowcol,4,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -126,7 +128,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
   ctx.k1     = 1.0e-5;
   ctx.k2     = 1.0e5;

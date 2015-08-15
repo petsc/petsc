@@ -2,7 +2,7 @@
 /*
       Defines a preconditioner defined by R^T S R
 */
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/pcimpl.h>
 #include <petscksp.h>         /*I "petscksp.h" I*/
 
 typedef struct {
@@ -46,7 +46,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   if (!jac->x) {
     ierr = KSPGetOperatorsSet(jac->ksp,&a,NULL);CHKERRQ(ierr);
     if (!a) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
-    ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
+    ierr   = KSPCreateVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
     jac->x = *xx;
     jac->b = *yy;
     ierr   = PetscFree(xx);CHKERRQ(ierr);
@@ -279,6 +279,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   pc->ops->applyrichardson = 0;
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
+  ierr = KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
 
   pc->data = (void*)jac;

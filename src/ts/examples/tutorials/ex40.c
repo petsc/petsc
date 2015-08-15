@@ -22,23 +22,23 @@ typedef struct {
 #define __FUNCT__ "EventFunction"
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
-  AppCtx         *app=(AppCtx*)ctx;
-  PetscErrorCode ierr;
-  PetscScalar    *u;
+  AppCtx            *app=(AppCtx*)ctx;
+  PetscErrorCode    ierr;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
   /* Event for ball height */
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   fvalue[0] = u[0];
   /* Event for number of bounces */
   fvalue[1] = app->maxbounces - app->nbounces;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PostEventFunction"
-PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,void* ctx)
+PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
   PetscErrorCode ierr;
@@ -47,15 +47,15 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionBegin;
   if (event_list[0] == 0) {
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %f seconds\n",t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %f seconds\n",(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     u[0] = 0.0;
     u[1] = -0.9*u[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
     ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
   } else if (event_list[0] == 1) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %d times\n",app->nbounces);CHKERRQ(ierr);
-  } 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %D times\n",app->nbounces);CHKERRQ(ierr);
+  }
   app->nbounces++;
   PetscFunctionReturn(0);
 }
@@ -67,20 +67,21 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   f[0] = udot[0] - u[1];
   f[1] = udot[1] + 9.8;
 
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -92,20 +93,21 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
 */
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *u,*udot,J[2][2];
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   J[0][0] = a;                       J[0][1] = -1;
   J[1][0] = 0.0;                     J[1][1] = a;
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -115,7 +117,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   }
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -130,6 +132,7 @@ int main(int argc,char **argv)
   AppCtx         app;
   PetscInt       direction[2];
   PetscBool      terminate[2];
+  TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -155,7 +158,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   u[0] = 0.0;
@@ -166,6 +169,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,NULL);CHKERRQ(ierr);
@@ -188,7 +192,6 @@ int main(int argc,char **argv)
   terminate[0] = PETSC_FALSE;   terminate[1] = PETSC_TRUE;
   ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
-  TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in 
      the same event occuring multiple times in the same interval. A max. step 

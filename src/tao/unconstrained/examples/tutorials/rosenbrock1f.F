@@ -199,7 +199,7 @@
       call VecRestoreArray(G,g_v,g_i,ierr)
 
       f = ff
-      call PetscLogFlops(nn*15.0d0,ierr)
+      call PetscLogFlops(15.0d0*nn,ierr)
 
       return
       end
@@ -283,7 +283,7 @@
       call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
 
-      call PetscLogFlops(nn*9.0d0,ierr)
+      call PetscLogFlops(9.0d0*nn,ierr)
 
       return
       end

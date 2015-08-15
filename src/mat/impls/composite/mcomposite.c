@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
@@ -65,7 +65,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   }
   while (next->next) {
     if (!next->work) { /* should reuse previous work if the same size */
-      ierr = MatGetVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
+      ierr = MatCreateVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
     }
     out  = next->work;
     ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   }
   while (tail->prev) {
     if (!tail->prev->work) { /* should reuse previous work if the same size */
-      ierr = MatGetVecs(tail->mat,NULL,&tail->prev->work);CHKERRQ(ierr);
+      ierr = MatCreateVecs(tail->mat,NULL,&tail->prev->work);CHKERRQ(ierr);
     }
     out  = tail->prev->work;
     ierr = MatMultTranspose(tail->mat,in,out);CHKERRQ(ierr);
@@ -299,7 +299,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                /* 44*/ 0,
                                        MatScale_Composite,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                /* 49*/ 0,

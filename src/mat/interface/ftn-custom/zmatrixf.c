@@ -1,8 +1,12 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscmat.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matgetrowmin_                    MATGETROWMIN
+#define matgetrowminabs_                 MATGETROWMINABS
+#define matgetrowmax_                    MATGETROWMAX
+#define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
@@ -29,7 +33,7 @@
 #define matzerorowscolumnslocal_         MATZEROROWSCOLUMNSLOCAL
 #define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
-#define matgetvecs_                      MATGETVECS
+#define matcreatevecs_                   MATCREATEVECS
 #define matnullspaceremove_              MATNULLSPACEREMOVE
 #define matgetinfo_                      MATGETINFO
 #define matlufactor_                     MATLUFACTOR
@@ -46,10 +50,14 @@
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matdestroymatrices_              matdestroymatrices_
+#define matgetrowmin_                    matgetrowmin
+#define matgetrowminabs_                 matgetrowminabs
+#define matgetrowmax_                    matgetrowmax
+#define matgetrowmaxabs_                 matgetrowmaxabs
+#define matdestroymatrices_              matdestroymatrices
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
-#define matgetvecs_                      matgetvecs
+#define matcreatevecs_                   matcreatevecs
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
 #define matgetrow_                       matgetrow
@@ -57,9 +65,9 @@
 #define matview_                         matview
 #define matload_                         matload
 #define matseqaijgetarray_               matseqaijgetarray
-#define matseqaijrestorearray_                 matseqaijrestorearray
-#define matdensegetarray_             matdensegetarray
-#define matdenserestorearray_         matdenserestorearray
+#define matseqaijrestorearray_           matseqaijrestorearray
+#define matdensegetarray_                matdensegetarray
+#define matdenserestorearray_            matdenserestorearray
 #define matconvert_                      matconvert
 #define matgetsubmatrices_               matgetsubmatrices
 #define matzerorowscolumns_              matzerorowscolumns
@@ -90,6 +98,29 @@
 #define matfindnonzerorows_              matfindnonzerorows
 #endif
 
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmin_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMin(*mat,*v,idx);
+}
+PETSC_EXTERN void PETSC_STDCALL  matgetrowminabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMinAbs(*mat,*v,idx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmax_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMax(*mat,*v,idx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmaxabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMaxAbs(*mat,*v,idx);
+}
+
 static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
 {
   PetscErrorCode ierr = 0;
@@ -105,11 +136,11 @@ PETSC_EXTERN void PETSC_STDCALL matnullspacesetfunction_(MatNullSpace *sp, Petsc
   *ierr = MatNullSpaceSetFunction(*sp,ournullfunction,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL matcreatevecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
 {
   CHKFORTRANNULLOBJECT(right);
   CHKFORTRANNULLOBJECT(left);
-  *ierr = MatGetVecs(*mat,right,left);
+  *ierr = MatCreateVecs(*mat,right,left);
 }
 
 PETSC_EXTERN void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBool *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
@@ -385,52 +416,52 @@ PETSC_EXTERN void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *
   *__ierr = MatGetInfo(*mat,*flag,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactor(*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row, const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactor(*mat,*row,info);
 }

@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,ctx.n,ctx.n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
-  ierr = MatGetVecs(J,&X,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(J,&X,NULL);CHKERRQ(ierr);
 
   /* Create time integration context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);

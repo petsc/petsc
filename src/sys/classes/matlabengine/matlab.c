@@ -2,7 +2,7 @@
 #include <engine.h>   /* Matlab include file */
 #include <petscsys.h>
 #include <petscmatlab.h>               /*I   "petscmatlab.h"  I*/
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 struct  _p_PetscMatlabEngine {
   PETSCHEADER(int);
@@ -49,7 +49,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   }
   ierr = PetscOptionsGetBool(NULL,"-matlab_engine_graphics",&flg,NULL);CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(e,MATLABENGINE_CLASSID,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,NULL);CHKERRQ(ierr);
 
   if (!machine) machine = "\0";
   ierr = PetscStrcpy(buffer,PETSC_MATLAB_COMMAND);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   ierr  = PetscStrcat(buffer," -nojvm ");CHKERRQ(ierr);
   ierr  = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
   e->ep = engOpen(buffer);
-  if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine on %s\n",machine);
+  if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine on %s",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

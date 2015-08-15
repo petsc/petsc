@@ -149,13 +149,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
-    if (PetscIsInfOrNanScalar(beta)) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        PetscFunctionReturn(0);
-      }
-    }
+    KSPCheckDot(ksp,beta);
     dp = PetscSqrtReal(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
@@ -179,13 +173,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);         /*  beta <- z'*r       */
-    if (PetscIsInfOrNanScalar(beta)) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        PetscFunctionReturn(0);
-      }
-    }
+    KSPCheckDot(ksp,beta);
   }
 
   i = 0;
@@ -222,13 +210,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       dpi  = delta - beta*beta*dpiold/(betaold*betaold);             /*     dpi <- p'w     */
     }
     betaold = beta;
-    if (PetscIsInfOrNanScalar(dpi)) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        PetscFunctionReturn(0);
-      }
-    }
+    KSPCheckDot(ksp,beta);
 
     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
@@ -259,13 +241,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       } else {
         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
       }
-      if (PetscIsInfOrNanScalar(beta)) {
-        if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
-        else {
-          ksp->reason = KSP_DIVERGED_NANORINF;
-          PetscFunctionReturn(0);
-        }
-      }
+      KSPCheckDot(ksp,beta);
       dp = PetscSqrtReal(PetscAbsScalar(beta));
     } else {
       dp = 0.0;
@@ -292,18 +268,13 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       } else {
         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
       }
-      if (PetscIsInfOrNanScalar(beta)) {
-        if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
-        else {
-          ksp->reason = KSP_DIVERGED_NANORINF;
-          PetscFunctionReturn(0);
-        }
-      }
+      KSPCheckDot(ksp,beta);
     }
 
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (eigs) cg->ned = ksp->its;
   PetscFunctionReturn(0);
 }
 
@@ -357,19 +328,18 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_CG"
-PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg = (KSP_CG*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP CG and CGNE options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP CG and CGNE options");CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                           (PetscEnum*)&cg->type,NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()",
-                          "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -405,7 +375,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
     KSPCreate_CG - Creates the data structure for the Krylov method CG and sets the
        function pointers for all the routines it needs to call (KSPSolve_CG() etc)
 
-    It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 /*MC
      KSPCG - The preconditioned conjugate gradient (PCG) iterative method

@@ -1,9 +1,10 @@
+#define PETSC_SKIP_COMPLEX
 #include <petscsys.h>
 /*@C
-      PetscIsNormal - Returns PETSC_TRUE if the input value satisfies isnormal()
+      PetscIsNormalReal - Returns PETSC_TRUE if the input value satisfies isnormal()
 
     Input Parameter:
-.     a - the PetscRealValue
+.     a - the PetscReal Value
 
      Notes: uses the C99 standard isnormal() on systems where they exist.
       Uses isnormalq() with __float128
@@ -12,28 +13,16 @@
      Level: beginner
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128)
-PetscBool PetscIsNormalScalar(PetscScalar a)
-{
-  return PETSC_TRUE;
-}
 PetscBool PetscIsNormalReal(PetscReal a)
 {
   return PETSC_TRUE;
 }
 #elif defined(PETSC_HAVE_ISNORMAL)
-PetscBool PetscIsNormalScalar(PetscScalar a)
-{
-  return isnormal(PetscAbsScalar(a)) ? PETSC_TRUE : PETSC_FALSE;
-}
 PetscBool PetscIsNormalReal(PetscReal a)
 {
   return isnormal(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #else
-PetscBool PetscIsNormalScalar(PetscScalar a)
-{
-  return PETSC_TRUE;
-}
 PetscBool PetscIsNormalReal(PetscReal a)
 {
   return PETSC_TRUE;
@@ -41,7 +30,7 @@ PetscBool PetscIsNormalReal(PetscReal a)
 #endif
 
 /*@C
-      PetscIsInfOrNan - Returns an error code if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
+      PetscIsInfOrNanReal - Returns an error code if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
 
     Input Parameter:
 .     a - the floating point number
@@ -53,19 +42,11 @@ PetscBool PetscIsNormalReal(PetscReal a)
      Level: beginner
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128)
-PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
-{
-  return isinfq(PetscAbsScalar(a)) || isnanq(PetscAbsScalar(a));
-}
 PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 {
   return isinfq(a) || isnanq(a);
 }
 #elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
-PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
-{
-  return isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a));
-}
 PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 {
   return isinf(a) || isnan(a);
@@ -77,19 +58,11 @@ PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 #if defined(PETSC_HAVE_IEEEFP_H)
 #include <ieeefp.h>  /* Solaris prototypes these here */
 #endif
-PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
-{
-  return !_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a));
-}
 PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 {
   return !_finite(a) || _isnan(a);
 }
 #else
-PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
-{
-  return  ((a - a) != (PetscScalar)0);
-}
 PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 {
   return ((a - a) != 0);

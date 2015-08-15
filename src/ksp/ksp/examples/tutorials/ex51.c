@@ -73,17 +73,17 @@ int main(int argc,char **args)
   num1Dnodes = (p+1);
   num2Dnodes = num1Dnodes*num1Dnodes;
 
-  ierr = PetscMalloc1((num1Dnodes*num1Dnodes),&Me1D);CHKERRQ(ierr);
-  ierr = PetscMalloc1((num1Dnodes*num1Dnodes),&Ke1D);CHKERRQ(ierr);
-  ierr = PetscMalloc1((num2Dnodes*num2Dnodes),&Me2D);CHKERRQ(ierr);
-  ierr = PetscMalloc1((num2Dnodes*num2Dnodes),&Ke2D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num1Dnodes*num1Dnodes,&Me1D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num1Dnodes*num1Dnodes,&Ke1D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes*num2Dnodes,&Me2D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes*num2Dnodes,&Ke2D);CHKERRQ(ierr);
   ierr = PetscMalloc1(num2Dnodes,&idx);CHKERRQ(ierr);
   ierr = PetscMalloc1(num2Dnodes,&r);CHKERRQ(ierr);
   ierr = PetscMalloc1(num2Dnodes,&ue);CHKERRQ(ierr);
 
   /* Allocate quadrature and create stiffness matrices */
-  ierr = PetscMalloc1((p+1),&gllNode);CHKERRQ(ierr);
-  ierr = PetscMalloc1((p+1),&gllWgts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&gllNode);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&gllWgts);CHKERRQ(ierr);
   leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
   ierr = Form1DElementMass(h,p,gllNode,gllWgts,Me1D);CHKERRQ(ierr);
   ierr = Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D);CHKERRQ(ierr);

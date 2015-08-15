@@ -29,12 +29,12 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
   if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[write] using MPI-IO ***\n"); }
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
   if (isskip) { PetscPrintf(comm,"*** PetscViewer[write] skipping header ***\n"); }
@@ -59,14 +59,14 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecLoad(x,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
   if (isskip) { PetscPrintf(comm,"*** PetscViewer[load] skipping header ***\n"); }
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
   if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[load] using MPI-IO ***\n"); }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -125,8 +125,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
       for (j=0; j<DMDA_J; j++) {
         for (i=0; i<DMDA_I; i++) {
           for (d=0; d<3; d++) {
-            PetscReal   v;
-            PetscScalar test_value_s,test_value;
+            PetscScalar v,test_value_s,test_value;
             PetscInt    index;
 
             test_value_s = dmda_i_val[i]*((PetscScalar)i) + dmda_j_val[j]*((PetscScalar)(i+j*M)) + dmda_k_val[k]*((PetscScalar)(i + j*M + k*M*N));
@@ -134,10 +133,17 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
 
             index = 3*(i + j*M + k*M*N) + d;
             v = PetscAbsScalar(test_value-buffer[index]);
-            if (v > 1.0e-10) {
-              PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D,%D,%D(%D)])\n",test_value,i,j,k,d);
+#if defined(PETSC_USE_COMPLEX)
+            if ((PetscRealPart(v) > 1.0e-10) || (PetscImaginaryPart(v) > 1.0e-10)) {
+              PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %D,%D,%D(%D)])\n",(double)PetscRealPart(test_value),(double)PetscImaginaryPart(test_value),i,j,k,d);
               dataverified = PETSC_FALSE;
             }
+#else
+            if (PetscRealPart(v) > 1.0e-10) {
+              PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D,%D,%D(%D)])\n",(double)PetscRealPart(test_value),i,j,k,d);
+              dataverified = PETSC_FALSE;
+            }
+#endif
           }
         }
       }
@@ -166,21 +172,21 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   ierr = VecMax(b,&locmax[1],&max[1]);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"VecCompare\n");
-  PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",min[0],locmin[0]);
-  PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",max[0],locmax[0]);
+  PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",(double)min[0],locmin[0]);
+  PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",(double)max[0],locmax[0]);
 
-  PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",min[1],locmin[1]);
-  PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",max[1],locmax[1]);
+  PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",(double)min[1],locmin[1]);
+  PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",(double)max[1],locmax[1]);
 
   ierr = VecDuplicate(a,&ref);CHKERRQ(ierr);
   ierr = VecCopy(a,ref);CHKERRQ(ierr);
   ierr = VecAXPY(ref,-1.0,b);CHKERRQ(ierr);
   ierr = VecMin(ref,&locmin[0],&min[0]);CHKERRQ(ierr);
   if (PetscAbsReal(min[0]) > 1.0e-10) {
-    PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) < 1.0e-10\n");
-    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",PetscAbsReal(min[0]));
+    PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) > 1.0e-10\n");
+    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",(double)PetscAbsReal(min[0]));
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n",min[0]);
+    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n");
   }
   ierr = VecDestroy(&ref);CHKERRQ(ierr);
   PetscFunctionReturn(0);

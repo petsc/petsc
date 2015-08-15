@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>
+#include <petsc/private/dmpleximpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 typedef struct {
@@ -60,7 +60,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   PetscFunctionBegin;
   ierr = PetscMalloc3(piece->nconn,&conn,piece->ncells,&offsets,piece->ncells,&types);CHKERRQ(ierr);
 
-  ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <UnstructuredGrid>\n");CHKERRQ(ierr);
 
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -409,5 +409,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   ierr = PetscFree(buffer);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"\n  </AppendedData>\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"</VTKFile>\n");CHKERRQ(ierr);
+  ierr = PetscFClose(comm,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

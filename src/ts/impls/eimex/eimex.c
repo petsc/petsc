@@ -34,7 +34,7 @@ Computing, 31 (2010), pp. 4452-4477.
 .seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
 
  M*/
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static const PetscInt TSEIMEXDefault = 3;
@@ -137,31 +137,31 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
 
   /* Apply n_j steps of the base method to obtain solutions of T(j,1),1<=j<=s */
   for(j=0; j<ns; j++){
-	ierr = TSStage_EIMEX(ts,j);CHKERRQ(ierr);
-	ierr = VecCopy(Y,T[j]); CHKERRQ(ierr);
+        ierr = TSStage_EIMEX(ts,j);CHKERRQ(ierr);
+        ierr = VecCopy(Y,T[j]); CHKERRQ(ierr);
   }
 
   for(i=1;i<ns;i++){
     for(j=i;j<ns;j++){
       alpha = -(PetscReal)ext->N[j]/ext->N[j-i];
-      ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],T[Map(j-1,i-1,ns)]);/* T[j][i]=alpha*T[j][i-1]+T[j-1][i-1] */
+      ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],T[Map(j-1,i-1,ns)]);/* T[j][i]=alpha*T[j][i-1]+T[j-1][i-1] */CHKERRQ(ierr);
       alpha = 1.0/(1.0 + alpha);
       ierr  = VecScale(T[Map(j,i,ns)],alpha);CHKERRQ(ierr);
     }
   }
 
-  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,NULL);CHKERRQ(ierr);/* update ts solution */
+  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,NULL);CHKERRQ(ierr);/*update ts solution */
 
   if(ext->ord_adapt && ext->nstages < ext->max_rows){
 	accept = PETSC_FALSE;
 	while(!accept && ext->nstages < ext->max_rows){
-	  ierr = TSErrorNormWRMS(ts,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],&local_error);CHKERRQ(ierr);
+	  ierr = TSErrorWeightedNorm(ts,ts->vec_sol,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],ts->adapt->wnormtype,&local_error);CHKERRQ(ierr);
 	  accept = (local_error < 1.0)? PETSC_TRUE : PETSC_FALSE;
 
-	  if(!accept){/* add one more stage */
+	  if(!accept){/* add one more stage*/
 	    ierr = TSStage_EIMEX(ts,ext->nstages);CHKERRQ(ierr);
 	    ext->nstages++; ext->row_ind++; ext->col_ind++;
-	    /* T table need to be recycled */
+	    /*T table need to be recycled*/
 	    ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);
 	    for(i=0; i<ext->nstages-1; i++){
 	      for(j=0; j<=i; j++){
@@ -169,26 +169,25 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
 	      }
 	    }
 	    ierr = VecDestroyVecs(ext->nstages*(ext->nstages-1)/2,&T);CHKERRQ(ierr);
-	    T = ext->T; /* reset the pointer */
-	    /* recycling finished, store the new solution */
+	    T = ext->T; /*reset the pointer*/
+	    /*recycling finished, store the new solution*/
 	    ierr = VecCopy(Y,T[ext->nstages-1]); CHKERRQ(ierr);
-	    /* extrapolation for the newly added stage */
+	    /*extrapolation for the newly added stage*/
 	    for(i=1;i<ext->nstages;i++){
 	      alpha = -(PetscReal)ext->N[ext->nstages-1]/ext->N[ext->nstages-1-i];
-	      ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/* T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1] */
+	      ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/*T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1]*/CHKERRQ(ierr);
 	      alpha = 1.0/(1.0 + alpha);
 	      ierr  = VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha);CHKERRQ(ierr);
 	    }
-	    /* update ts solution */
+	    /*update ts solution */
 	    ierr = TSEvaluateStep(ts,ext->nstages,ts->vec_sol,NULL);CHKERRQ(ierr);
-	  }/* end if !accept */
-	}/* end while */
+	  }/*end if !accept*/
+	}/*end while*/
 
 	if(ext->nstages == ext->max_rows){
 		ierr = PetscInfo(ts,"Max number of rows has been used\n");CHKERRQ(ierr);
 	}
-  }/* end if ext->ord_adapt */
-
+  }/*end if ext->ord_adapt*/
   ts->ptime += ts->time_step;
   ts->steps++;
   ext->status = TS_STEP_COMPLETE;
@@ -196,7 +195,6 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   if (ext->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
-
 
 /* cubic Hermit spline */
 #undef __FUNCT__
@@ -206,7 +204,7 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscReal      t,a,b;
   Vec            Y0=ext->VecSolPrev,Y1=ext->Y,
-		         Ydot=ext->Ydot,YdotI=ext->YdotI;
+                         Ydot=ext->Ydot,YdotI=ext->YdotI;
   const PetscReal h = ts->time_step_prev;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -421,24 +419,24 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;
   DM             dm;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   if (!ext->N){ /* ext->max_rows not set */
     ierr = TSEIMEXSetMaxRows(ts,TSEIMEXDefault);CHKERRQ(ierr);
   }
   if(-1 == ext->row_ind && -1 == ext->col_ind){
-	ierr = TSEIMEXSetRowCol(ts,ext->max_rows,ext->max_rows);CHKERRQ(ierr);
-  }else{/* ext->row_ind and col_ind already set */
-    if(ext->ord_adapt){
+        ierr = TSEIMEXSetRowCol(ts,ext->max_rows,ext->max_rows);CHKERRQ(ierr);
+  } else{/* ext->row_ind and col_ind already set */
+    if (ext->ord_adapt){
       ierr = PetscInfo(ts,"Order adaptivity is enabled and TSEIMEXSetRowCol or -ts_eimex_row_col option will take no effect\n");CHKERRQ(ierr);
-	}
+    }
   }
 
   if(ext->ord_adapt){
     ext->nstages = 2; /* Start with the 2-stage scheme */
-	ierr = TSEIMEXSetRowCol(ts,ext->nstages,ext->nstages);CHKERRQ(ierr);
-  }else{
-	ext->nstages = ext->max_rows; /* by default nstages is the same as max_rows, this can be changed by setting order adaptivity */
+    ierr = TSEIMEXSetRowCol(ts,ext->nstages,ext->nstages);CHKERRQ(ierr);
+  } else{
+    ext->nstages = ext->max_rows; /* by default nstages is the same as max_rows, this can be changed by setting order adaptivity */
   }
 
   ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);/* full T table */
@@ -457,7 +455,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_EIMEX"
-static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
+static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;
@@ -467,10 +465,9 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
   PetscFunctionBegin;
   tindex[0] = TSEIMEXDefault;
   tindex[1] = TSEIMEXDefault;
-  ierr = PetscOptionsHead("EIMEX ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"EIMEX ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
-    flg  = PETSC_FALSE;
     ierr = PetscOptionsInt("-ts_eimex_max_rows","Define the maximum number of rows used","TSEIMEXSetMaxRows",nrows,&nrows,&flg);CHKERRQ(ierr); /* default value 3 */
     if(flg){
       ierr = TSEIMEXSetMaxRows(ts,nrows);CHKERRQ(ierr);

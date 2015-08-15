@@ -1,0 +1,14 @@
+Scalar a = 1.5 + 2.1i
+Real rarray of length 3
+ 1,
+ 2,
+ 3,
+Scalar rarray of length 8
+ 1 + 0i
+ -2 - 3i
+ 4.5 + 6.2i
+ 4.5 + 0i
+ 6.8 + 4i
+ 0 + 1i
+ -0 - 1i
+ 0 - 1.2i

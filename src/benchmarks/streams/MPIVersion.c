@@ -73,7 +73,7 @@ static double bytes[4] = {
   3 * sizeof(double) * N
 };
 
-#include <petscsys.h>
+#include <mpi.h>
 
 int main(int argc,char **args)
 {
@@ -83,26 +83,28 @@ int main(int argc,char **args)
   int          rank,size,resultlen;
   char         hostname[MPI_MAX_PROCESSOR_NAME];
   MPI_Status   status;
+  int          ierr=0;
 
   MPI_Init(&argc,&args);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (!rank) printf("Number of MPI processes %d\n",size);
+  if (!rank) printf("Number of MPI processes %d ",size);
 
   for (j=0; j<MPI_MAX_PROCESSOR_NAME; j++) {
     hostname[j] = 0;
   }
   MPI_Get_processor_name(hostname,&resultlen);
   if (!rank) {
-    printf("Process %d %s\n",rank,hostname);
+    printf("Processor names  %s ",hostname);
     for (j=1; j<size; j++) {
       MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);
-      printf("Process %d %s\n",j,hostname);
+      printf("%s ",hostname);
     }
+    printf("\n");
  } else {
    MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);
  }
- MPI_Barrier(MPI_COMM_WORLD);
+ ierr = MPI_Barrier(MPI_COMM_WORLD);
 
   /* --- SETUP --- determine precision and check timing --- */
 
@@ -149,30 +151,30 @@ int main(int argc,char **args)
   scalar = 3.0;
   for (k=0; k<NTIMES; k++)
   {
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = MPI_Wtime();
     /* should all these barriers be pulled outside of the time call? */
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = MPI_Wtime() - times[0][k];
 
     times[1][k] = MPI_Wtime();
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) b[j] = scalar*c[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[1][k] = MPI_Wtime() - times[1][k];
 
     times[2][k] = MPI_Wtime();
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j]+b[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[2][k] = MPI_Wtime() - times[2][k];
 
     times[3][k] = MPI_Wtime();
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
-    MPI_Barrier(MPI_COMM_WORLD);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);
     times[3][k] = MPI_Wtime() - times[3][k];
   }
 
@@ -182,11 +184,12 @@ int main(int argc,char **args)
     for (j=0; j<4; j++) mintime[j] = MIN(mintime[j], times[j][k]);
 
   for (j=0; j<4; j++) irate[j] = 1.0E-06 * bytes[j]/mintime[j];
-  MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  ierr = MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  if (ierr) printf("Error calling MPI\n");
 
   if (!rank) {
-    printf("Function      Rate (MB/s) \n");
-    for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);
+    printf("%s  %11.4f   Rate (MB/s) \n", label[3],rate[3]);
+    /* for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);*/
   }
   MPI_Finalize();
   return 0;

@@ -213,7 +213,6 @@
 !  Declarations for use with local arrays:
       PetscScalar lx_v(0:1)
       PetscOffset lx_i
-      Vec         localX
 
       ierr = 0
 
@@ -225,8 +224,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call DMGetLocalVector(da,localX,ierr)
-      call VecGetArray(localX,lx_v,lx_i,ierr)
+      call VecGetArray(X,lx_v,lx_i,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
@@ -234,13 +232,8 @@
 
 !  Restore vector
 
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
+      call VecRestoreArray(X,lx_v,lx_i,ierr)
 
-!  Insert values into global vector
-
-      call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
-      call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
-      call DMRestoreLocalVector(da,localX,ierr)
       return
       end
 
@@ -265,7 +258,7 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      PetscScalar  x(gxs:gxe,gys:gye)
+      PetscScalar    x(xs:xe,ys:ye)
       PetscErrorCode ierr
 
 !  Local variables:

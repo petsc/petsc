@@ -305,7 +305,6 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
 
 PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w, void *vctx)
 {
-  PetscFunctionBeginUser;
   PetscInt       i,j,l,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   Field          **x;
@@ -353,12 +352,12 @@ PetscErrorCode FormIFunction(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *us
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xdot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localX,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xdot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&fu);CHKERRQ(ierr);
   ierr = FormIFunctionLocal(&info,ptime,u,udot,fu,(AppCtx*)user);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Xdot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localX,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xdot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);

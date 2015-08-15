@@ -4,7 +4,7 @@
   between Fortran and C.
 */
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -223,13 +223,11 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsview_(PetscViewer *vin,PetscErrorCod
   *ierr = PetscOptionsView(v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(lprefix),CHAR option PETSC_MIXED_LEN(loption),PetscErrorCode *ierr PETSC_END_LEN(lprefix) PETSC_END_LEN(loption))
+PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,PetscObject *bobj,CHAR option PETSC_MIXED_LEN(loption),PetscErrorCode *ierr  PETSC_END_LEN(loption))
 {
-  char *p, *o;
+  char *o;
 
-  FIXCHAR(prefix, lprefix, p);
   FIXCHAR(option, loption, o);
-  *ierr = PetscObjectViewFromOptions(*obj, p, o);
-  FREECHAR(prefix, p);
+  *ierr = PetscObjectViewFromOptions(*obj, *bobj, o);
   FREECHAR(option, o);
 }

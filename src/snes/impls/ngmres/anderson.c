@@ -9,7 +9,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Anderson"
-PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
+PetscErrorCode SNESSetFromOptions_Anderson(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
@@ -58,6 +58,11 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -92,17 +97,10 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
   }
   fminnorm = fnorm;
 

@@ -1,5 +1,5 @@
 
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/owarmijo/owarmijo.h>
 
 #define REPLACE_FIFO 1
@@ -55,21 +55,21 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
-static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("OWArmijo linesearch options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_OWArmijo_alpha", "initial reference constant", "", armP->alpha, &armP->alpha, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_OWArmijo_beta_inf", "decrease constant one", "", armP->beta_inf, &armP->beta_inf, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_OWArmijo_beta", "decrease constant", "", armP->beta, &armP->beta, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_OWArmijo_sigma", "acceptance constant", "", armP->sigma, &armP->sigma, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_ls_OWArmijo_memory_size", "number of historical elements", "", armP->memorySize, &armP->memorySize, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_ls_OWArmijo_reference_policy", "policy for updating reference value", "", armP->referencePolicy, &armP->referencePolicy, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_ls_OWArmijo_replacement_policy", "policy for updating memory", "", armP->replacementPolicy, &armP->replacementPolicy, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_ls_OWArmijo_nondescending","Use nondescending OWArmijo algorithm","",armP->nondescending,&armP->nondescending, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"OWArmijo linesearch options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_OWArmijo_alpha", "initial reference constant", "", armP->alpha, &armP->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_OWArmijo_beta_inf", "decrease constant one", "", armP->beta_inf, &armP->beta_inf,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_OWArmijo_beta", "decrease constant", "", armP->beta, &armP->beta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_OWArmijo_sigma", "acceptance constant", "", armP->sigma, &armP->sigma,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_ls_OWArmijo_memory_size", "number of historical elements", "", armP->memorySize, &armP->memorySize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_ls_OWArmijo_reference_policy", "policy for updating reference value", "", armP->referencePolicy, &armP->referencePolicy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_ls_OWArmijo_replacement_policy", "policy for updating memory", "", armP->replacementPolicy, &armP->replacementPolicy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_ls_OWArmijo_nondescending","Use nondescending OWArmijo algorithm","",armP->nondescending,&armP->nondescending,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -238,7 +238,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     ierr = VecAXPY(armP->work,ls->step,s);CHKERRQ(ierr);
 
     partgdx=0.0;
-    ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);
+    ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
 
     /* Check the condition of gdx */
@@ -286,6 +286,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   if (ls->reason) PetscFunctionReturn(0);
 
   /* Successful termination, update memory */
+  ls->reason = TAOLINESEARCH_SUCCESS;
   armP->lastReference = ref;
   if (armP->replacementPolicy == REPLACE_FIFO) {
     armP->memory[armP->current++] = *f;
@@ -306,10 +307,9 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_OWArmijo"
-PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP;
   PetscErrorCode         ierr;
@@ -337,4 +337,4 @@ PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_OWArmijo;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

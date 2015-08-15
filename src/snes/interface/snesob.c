@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 /*MC
     SNESObjectiveFunction - functional form used to convey the objective function to the nonlinear solver
@@ -33,7 +33,7 @@ M*/
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be NULL)
 
-   Level: intermediately
+   Level: intermediate
 
    Note: This is not used in the SNESLINESEARCHCP line search.
 
@@ -170,7 +170,9 @@ PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes,Vec X,Vec F,void 
 
   PetscFunctionBegin;
   ierr = VecDuplicate(X,&Xh);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing parameters","SNES");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = VecSet(F,0.);CHKERRQ(ierr);
 
   ierr = VecNorm(X,NORM_2,&fob);CHKERRQ(ierr);

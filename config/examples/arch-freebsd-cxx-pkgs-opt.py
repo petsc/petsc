@@ -16,7 +16,7 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   # no with-cxx-dialect=C++11 support '--download-elemental=1',
-  #'--download-hdf5',
+  '--download-hdf5',
   '--download-sundials=1',
   '--download-hypre=1',
   '--download-suitesparse=1',
@@ -25,6 +25,7 @@ configure_options = [
   '--download-spai=1',
   '--download-netcdf=1',
   '--download-moab=1',
+  '--download-saws',
   ]
 
 if __name__ == '__main__':

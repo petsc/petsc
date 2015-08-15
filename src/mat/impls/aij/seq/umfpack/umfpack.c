@@ -2,42 +2,43 @@
 /*
    Provides an interface to the UMFPACK sparse solver available through SuiteSparse version 4.2.1
 
-   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
+   When build with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
-   that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
+   that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]
 
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #if defined(PETSC_USE_COMPLEX)
-#define umfpack_UMF_free_symbolic   umfpack_zl_free_symbolic
-#define umfpack_UMF_free_numeric    umfpack_zl_free_numeric
-#define umfpack_UMF_wsolve          umfpack_zl_wsolve
-#define umfpack_UMF_numeric         umfpack_zl_numeric
-#define umfpack_UMF_report_numeric  umfpack_zl_report_numeric
-#define umfpack_UMF_report_control  umfpack_zl_report_control
-#define umfpack_UMF_report_status   umfpack_zl_report_status
-#define umfpack_UMF_report_info     umfpack_zl_report_info
-#define umfpack_UMF_report_symbolic umfpack_zl_report_symbolic
-#define umfpack_UMF_qsymbolic       umfpack_zl_qsymbolic
-#define umfpack_UMF_symbolic        umfpack_zl_symbolic
-#define umfpack_UMF_defaults        umfpack_zl_defaults
+#define umfpack_UMF_free_symbolic                      umfpack_zl_free_symbolic
+#define umfpack_UMF_free_numeric                       umfpack_zl_free_numeric
+/* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
+#define umfpack_UMF_wsolve(a,b,c,d,e,f,g,h,i,j,k,l,m,n) umfpack_zl_wsolve(a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,d,e,f,g,h,i,(SuiteSparse_long*)j,k,l,(SuiteSparse_long*)m,n)
+#define umfpack_UMF_numeric(a,b,c,d,e,f,g,h)          umfpack_zl_numeric((SuiteSparse_long*)a,(SuiteSparse_long*)b,c,d,e,f,g,h)
+#define umfpack_UMF_report_numeric                    umfpack_zl_report_numeric
+#define umfpack_UMF_report_control                    umfpack_zl_report_control
+#define umfpack_UMF_report_status                     umfpack_zl_report_status
+#define umfpack_UMF_report_info                       umfpack_zl_report_info
+#define umfpack_UMF_report_symbolic                   umfpack_zl_report_symbolic
+#define umfpack_UMF_qsymbolic(a,b,c,d,e,f,g,h,i,j)    umfpack_zl_qsymbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f,(SuiteSparse_long*)g,h,i,j)
+#define umfpack_UMF_symbolic(a,b,c,d,e,f,g,h,i)       umfpack_zl_symbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f,g,h,i)
+#define umfpack_UMF_defaults                          umfpack_zl_defaults
 
 #else
-#define umfpack_UMF_free_symbolic   umfpack_dl_free_symbolic
-#define umfpack_UMF_free_numeric    umfpack_dl_free_numeric
-#define umfpack_UMF_wsolve          umfpack_dl_wsolve
-#define umfpack_UMF_numeric         umfpack_dl_numeric
-#define umfpack_UMF_report_numeric  umfpack_dl_report_numeric
-#define umfpack_UMF_report_control  umfpack_dl_report_control
-#define umfpack_UMF_report_status   umfpack_dl_report_status
-#define umfpack_UMF_report_info     umfpack_dl_report_info
-#define umfpack_UMF_report_symbolic umfpack_dl_report_symbolic
-#define umfpack_UMF_qsymbolic       umfpack_dl_qsymbolic
-#define umfpack_UMF_symbolic        umfpack_dl_symbolic
-#define umfpack_UMF_defaults        umfpack_dl_defaults
+#define umfpack_UMF_free_symbolic                  umfpack_dl_free_symbolic
+#define umfpack_UMF_free_numeric                   umfpack_dl_free_numeric
+#define umfpack_UMF_wsolve(a,b,c,d,e,f,g,h,i,j,k)  umfpack_dl_wsolve(a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,d,e,f,g,h,i,(SuiteSparse_long*)j,k)
+#define umfpack_UMF_numeric(a,b,c,d,e,f,g)         umfpack_dl_numeric((SuiteSparse_long*)a,(SuiteSparse_long*)b,c,d,e,f,g)
+#define umfpack_UMF_report_numeric                 umfpack_dl_report_numeric
+#define umfpack_UMF_report_control                 umfpack_dl_report_control
+#define umfpack_UMF_report_status                  umfpack_dl_report_status
+#define umfpack_UMF_report_info                    umfpack_dl_report_info
+#define umfpack_UMF_report_symbolic                umfpack_dl_report_symbolic
+#define umfpack_UMF_qsymbolic(a,b,c,d,e,f,g,h,i)   umfpack_dl_qsymbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,(SuiteSparse_long*)f,g,h,i)
+#define umfpack_UMF_symbolic(a,b,c,d,e,f,g,h)      umfpack_dl_symbolic(a,b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,e,f,g,h)
+#define umfpack_UMF_defaults                       umfpack_dl_defaults
 #endif
 
 #else
@@ -70,11 +71,6 @@
 #define umfpack_UMF_defaults        umfpack_di_defaults
 #endif
 #endif
-
-
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
 
 EXTERN_C_BEGIN
 #include <umfpack.h>
@@ -119,11 +115,12 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 #define __FUNCT__ "MatSolve_UMFPACK_Private"
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
-  Mat_UMFPACK    *lu = (Mat_UMFPACK*)A->spptr;
-  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)lu->A->data;
-  PetscScalar    *av = a->a,*ba,*xa;
-  PetscErrorCode ierr;
-  PetscInt       *ai = a->i,*aj = a->j,status;
+  Mat_UMFPACK       *lu = (Mat_UMFPACK*)A->spptr;
+  Mat_SeqAIJ        *a  = (Mat_SeqAIJ*)lu->A->data;
+  PetscScalar       *av = a->a,*xa;
+  const PetscScalar *ba;
+  PetscErrorCode    ierr;
+  PetscInt          *ai = a->i,*aj = a->j,status;
 
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_*_wsolve */
@@ -134,7 +131,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     ierr = PetscMalloc1(5*A->rmap->n,&lu->W);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArray(b,&ba);
+  ierr = VecGetArrayRead(b,&ba);
   ierr = VecGetArray(x,&xa);
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
@@ -147,7 +144,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
 
-  ierr = VecRestoreArray(b,&ba);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&ba);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -227,7 +224,9 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
   PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n;
+#if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *av = a->a;
+#endif
   const PetscInt *ra;
   PetscInt       status;
 
@@ -348,13 +347,16 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
   via the external package UMFPACK.
 
-  ./configure --download-suitesparse to install PETSc to use UMFPACK
+  Use ./configure --download-suitesparse to install PETSc to use UMFPACK
+
+  Use -pc_type lu -pc_factor_mat_solver_package umfpack to us this direct solver
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.
 
   Options Database Keys:
-+ -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
++ -mat_umfpack_ordering                - CHOLMOD, AMD, GIVEN, METIS, BEST, NONE
+. -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
 . -mat_umfpack_strategy <AUTO>         - (choose one of) AUTO UNSYMMETRIC SYMMETRIC 2BY2
 . -mat_umfpack_dense_col <alpha_c>     - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
 . -mat_umfpack_dense_row <0.2>         - Control[UMFPACK_DENSE_ROW]
@@ -364,13 +366,15 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 . -mat_umfpack_fixq <0>                - Control[UMFPACK_FIXQ]
 . -mat_umfpack_aggressive <1>          - Control[UMFPACK_AGGRESSIVE]
 . -mat_umfpack_pivot_tolerance <delta> - UMFPACK partial pivot tolerance: Control[UMFPACK_PIVOT_TOLERANCE]
-.  -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
-.  -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
+. -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
+. -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
 . -mat_umfpack_alloc_init <delta>      - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
-.  -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
+. -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
 - -mat_umfpack_irstep <maxit>          - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
 
    Level: beginner
+
+   Note: UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
 .seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
@@ -400,6 +404,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;
   B->ops->destroy          = MatDestroy_UMFPACK;
   B->ops->view             = MatView_UMFPACK;
+  B->ops->matsolve         = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_umfpack);CHKERRQ(ierr);
 
@@ -461,4 +466,20 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_SuiteSparse"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERUMFPACK,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERKLU,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -1,4 +1,4 @@
-#include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscsf.h>
@@ -23,13 +23,13 @@ PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_JP"
-PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_JP(PetscOptions *PetscOptionsObject,MatColoring mc)
 {
   PetscErrorCode ierr;
   MC_JP          *jp = (MC_JP*)mc->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("JP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"JP options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_coloring_jp_local","Do an initial coloring of local columns","",jp->local,&jp->local,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -57,9 +57,8 @@ PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weight
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
-  if (!isSeq && !isMPI) {
-    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
-  }
+  if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+
   /* get the inner matrix structure */
   oG = NULL;
   oi = NULL;
@@ -167,9 +166,8 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
   n=e-s;
   ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
-  if (!isSeq && !isMPI) {
-    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
-  }
+  if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+
   /* get the inner matrix structure */
   oG = NULL;
   oi = NULL;
@@ -313,9 +311,8 @@ PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,cons
   maskbase = 0;
   ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
-  if (!isSeq && !isMPI) {
-    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
-  }
+  if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+
   /* get the inner matrix structure */
   oG = NULL;
   oi = NULL;
@@ -490,12 +487,12 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
     ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     nadded_total=0;
     ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-    if (nadded_total == nadded_total_old) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");}
+    if (nadded_total == nadded_total_old) SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");
     nadded_total_old = nadded_total;
     round++;
   }
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),maxcolor_global+1,n,color,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),maxcolor_global+1,n,color,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = PetscFree(jp->dwts);CHKERRQ(ierr);
   ierr = PetscFree(jp->dmask);CHKERRQ(ierr);

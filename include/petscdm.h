@@ -33,13 +33,11 @@ typedef const char* DMType;
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
-PETSC_EXTERN PetscBool         DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);
 PETSC_EXTERN PetscErrorCode DMRegister(const char[],PetscErrorCode (*)(DM));
-PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode DMView(DM,PetscViewer);
@@ -63,7 +61,7 @@ PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,ISColoring*);
 PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
-PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,VecScatter*);
+PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMGetWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRestoreWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRefine(DM,MPI_Comm,DM*);
@@ -75,12 +73,13 @@ PETSC_EXTERN PetscErrorCode DMRefineHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),P
 PETSC_EXTERN PetscErrorCode DMRestrict(DM,Mat,Vec,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
-PETSC_STATIC_INLINE PetscErrorCode DMViewFromOptions(DM A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode DMViewFromOptions(DM A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateAggregates(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalHookAdd(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMLocalToGlobalHookAdd(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
@@ -89,17 +88,25 @@ PETSC_EXTERN PetscErrorCode DMLocalToLocalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 
+/* Topology support */
+PETSC_EXTERN PetscErrorCode DMGetDimension(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSetDimension(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM,PetscInt,PetscInt*,PetscInt*);
+
+/* Coordinate support */
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDM(DM,DM);
+PETSC_EXTERN PetscErrorCode DMGetCoordinateDim(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateDim(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateSection(DM,PetscSection*);
-PETSC_EXTERN PetscErrorCode DMSetCoordinateSection(DM,PetscSection);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateSection(DM,PetscInt,PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,IS*);
-PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal**,const PetscReal**);
-PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal**,const PetscReal**,const DMBoundaryType**);
+PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[],const DMBoundaryType[]);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -143,6 +150,8 @@ PETSC_EXTERN PetscErrorCode DMPrintLocalVec(DM, const char [], PetscReal, Vec);
 
 PETSC_EXTERN PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
+PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
 PETSC_EXTERN PetscErrorCode DMGetDefaultGlobalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultGlobalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);

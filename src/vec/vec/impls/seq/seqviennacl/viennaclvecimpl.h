@@ -2,7 +2,7 @@
 #define __VIENNACLVECIMPL
 
 #include <petscviennacl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #include <algorithm>
 #include <vector>
@@ -15,7 +15,7 @@
 
 typedef viennacl::vector<PetscScalar>    ViennaCLVector;
 
-PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscObject obj);
+PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj);
 
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqViennaCL(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec,Vec,Vec);

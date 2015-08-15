@@ -83,7 +83,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
 
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr  = PetscMalloc1((pn+1),&ci);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(pn+1,&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
   ierr         = PetscCalloc1(2*an+1,&ptadenserow);CHKERRQ(ierr);
@@ -148,12 +148,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((ci[pn]+1),&cj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ci[pn]+1,&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1((ci[pn]+1),&ca);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ci[pn]+1,&ca);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),pn,pn,ci,cj,ca,C);CHKERRQ(ierr);

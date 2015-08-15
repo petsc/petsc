@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.4.2.tar.gz']
     self.double           = 0
     self.downloadonWindows= 1
+    self.skippackagewithoptions = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -53,7 +54,7 @@ class Configure(config.package.Package):
           output  = commands.getoutput(fc+' -v')
           if output.find('IBM') >= 0:
             fc = os.path.join(os.path.dirname(fc),'xlf')
-            self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling BLAS/LAPACK\n')
+            self.log.write('Using IBM f90 compiler, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
       if line.startswith('FOPTFLAGS '):
         self.setCompilers.pushLanguage('FC')
@@ -86,17 +87,18 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling FBLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f libfblas.'+self.setCompilers.AR_LIB_SUFFIX+' libflapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
+      self.installDirProvider.printSudoPasswordMessage()
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libfblas.'+self.setCompilers.AR_LIB_SUFFIX+' libflapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=300, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, 'lib','petsc','conf',self.name), timeout=30, log = self.log)
     except RuntimeError, e:
       pass
-    return libdir
+    return self.installDir
 
 

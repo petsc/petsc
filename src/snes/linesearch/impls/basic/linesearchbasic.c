@@ -1,5 +1,5 @@
-#include <petsc-private/linesearchimpl.h>
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h>
+#include <petsc/private/snesimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchApply_Basic"
@@ -17,7 +17,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
 
   /* precheck */
   ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
     ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
-      ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }

@@ -17,8 +17,8 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
   nm->N = n;
   nm->oneOverN = 1.0/n;
   ierr = VecDuplicateVecs(tao->solution,nm->N+1,&nm->simplex);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nm->N+1),&nm->f_values);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nm->N+1),&nm->indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nm->N+1,&nm->f_values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nm->N+1,&nm->indices);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xbar);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xmur);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xmue);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
   }
   ierr = PetscFree(nm->indices);CHKERRQ(ierr);
   ierr = PetscFree(nm->f_values);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   tao->data = 0;
   PetscFunctionReturn(0);
 }
@@ -55,16 +55,15 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NM"
-PetscErrorCode TaoSetFromOptions_NM(Tao tao)
+PetscErrorCode TaoSetFromOptions_NM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Nelder-Mead options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nelder-Mead options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,NULL);CHKERRQ(ierr);
   nm->mu_ic = -nm->mu_oc;
   nm->mu_r = nm->mu_oc*2.0;
   nm->mu_e = nm->mu_oc*4.0;
@@ -104,7 +103,7 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
   TaoConvergedReason reason;
   PetscReal          *x;
-  PetscInt           iter=0,i;
+  PetscInt           i;
   Vec                Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
   PetscReal          fr,fe,fc;
   PetscInt           shrink;
@@ -141,14 +140,14 @@ PetscErrorCode TaoSolve_NM(Tao tao)
   ierr = NelderMeadSort(nm);CHKERRQ(ierr);
   ierr = VecSet(Xbar,0.0);CHKERRQ(ierr);
   for (i=0;i<nm->N;i++) {
-    ierr = VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]);
+    ierr = VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]);CHKERRQ(ierr);
   }
-  ierr = VecScale(Xbar,nm->oneOverN);
+  ierr = VecScale(Xbar,nm->oneOverN);CHKERRQ(ierr);
   reason = TAO_CONTINUE_ITERATING;
   while (1) {
     shrink = 0;
     ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,iter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
     /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */
@@ -197,14 +196,14 @@ PetscErrorCode TaoSolve_NM(Tao tao)
       ierr = PetscInfo(0,"Shrink\n");CHKERRQ(ierr);
 
       for (i=1;i<nm->N+1;i++) {
-        ierr = VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]);
+        ierr = VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
         ierr = TaoComputeObjective(tao,nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]);CHKERRQ(ierr);
       }
       ierr = VecAXPBY(Xbar,1.5*nm->oneOverN,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
 
       /*  Add last vector's fraction of average */
       ierr = VecAXPY(Xbar,nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-      ierr = NelderMeadSort(nm);
+      ierr = NelderMeadSort(nm);CHKERRQ(ierr);
       /*  Subtract new last vector from average */
       ierr = VecAXPY(Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
     }
@@ -223,10 +222,9 @@ PetscErrorCode TaoSolve_NM(Tao tao)
  Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NM"
-PetscErrorCode TaoCreate_NM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
 {
   TAO_NelderMead *nm;
   PetscErrorCode ierr;
@@ -241,14 +239,15 @@ PetscErrorCode TaoCreate_NM(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NM;
   tao->ops->destroy = TaoDestroy_NM;
 
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-5;
-  tao->frtol = 1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol = 1e-8;
-  tao->frtol = 1e-8;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
 #endif
 
   nm->simplex = 0;
@@ -261,7 +260,6 @@ PetscErrorCode TaoCreate_NM(Tao tao)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /*------------------------------------------------------------*/
@@ -301,7 +299,7 @@ PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, Pe
   ierr = VecCopy(Xmu,nm->simplex[index]);CHKERRQ(ierr);
   nm->f_values[index] = f;
 
-  ierr = NelderMeadSort(nm);
+  ierr = NelderMeadSort(nm);CHKERRQ(ierr);
 
   /*  Subtract last vector from average */
   ierr = VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);

@@ -25,168 +25,105 @@
   1 KSP Residual norm 0.0413945 
     Residual norms for fc_fieldsplit_pressure_ solve.
     0 KSP Residual norm 1 
-    Linear solve converged due to CONVERGED_RTOL iterations 16
-    Linear solve converged due to CONVERGED_RTOL iterations 15
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
     1 KSP Residual norm 0.542365 
-    Linear solve converged due to CONVERGED_RTOL iterations 23
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    2 KSP Residual norm 0.219772 
-    Linear solve converged due to CONVERGED_RTOL iterations 28
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    3 KSP Residual norm 0.0566767 
-    Linear solve converged due to CONVERGED_RTOL iterations 27
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    4 KSP Residual norm 0.0143373 
-    Linear solve converged due to CONVERGED_RTOL iterations 27
-    Linear solve converged due to CONVERGED_RTOL iterations 12
-    5 KSP Residual norm 0.0021517 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 9
-    6 KSP Residual norm 0.000294118 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 12
-    7 KSP Residual norm 5.72046e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 10
-    8 KSP Residual norm 3.68236e-06 
-  2 KSP Residual norm 8.90353e-07 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 23
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    2 KSP Residual norm 0.219769 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 28
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    3 KSP Residual norm 0.0566768 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    4 KSP Residual norm 0.0143376 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    5 KSP Residual norm 0.00215174 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 9
+    6 KSP Residual norm 0.000294123 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    7 KSP Residual norm 5.72055e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+    8 KSP Residual norm 3.68241e-06 
+  2 KSP Residual norm 9.15832e-07 
     Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 0.191564 
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    Linear solve converged due to CONVERGED_RTOL iterations 6
-    1 KSP Residual norm 0.0366796 
-    Linear solve converged due to CONVERGED_RTOL iterations 12
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    2 KSP Residual norm 0.026527 
-    Linear solve converged due to CONVERGED_RTOL iterations 20
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    3 KSP Residual norm 0.0185747 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    4 KSP Residual norm 0.018413 
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    5 KSP Residual norm 0.0181473 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 10
-    6 KSP Residual norm 0.0179641 
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    7 KSP Residual norm 0.0177485 
-    Linear solve converged due to CONVERGED_RTOL iterations 10
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    8 KSP Residual norm 0.0174734 
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    9 KSP Residual norm 0.0166619 
-    Linear solve converged due to CONVERGED_RTOL iterations 8
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   10 KSP Residual norm 0.0158196 
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   11 KSP Residual norm 0.0145651 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   12 KSP Residual norm 0.0120452 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   13 KSP Residual norm 0.00732728 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   14 KSP Residual norm 0.00361549 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   15 KSP Residual norm 0.0019932 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   16 KSP Residual norm 0.0011619 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   17 KSP Residual norm 0.000728081 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   18 KSP Residual norm 0.000451486 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   19 KSP Residual norm 0.000313105 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   20 KSP Residual norm 0.000239836 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   21 KSP Residual norm 0.000198476 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   22 KSP Residual norm 0.000179173 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   23 KSP Residual norm 0.000161734 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   24 KSP Residual norm 0.00013149 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   25 KSP Residual norm 7.20887e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   26 KSP Residual norm 3.02988e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 5
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   27 KSP Residual norm 1.52695e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   28 KSP Residual norm 9.53089e-06 
-    Linear solve converged due to CONVERGED_RTOL iterations 3
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-   29 KSP Residual norm 5.93217e-06 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 3
-   30 KSP Residual norm 0.00135822 
-    Linear solve converged due to CONVERGED_RTOL iterations 29
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-   31 KSP Residual norm 0.000205779 
-    Linear solve converged due to CONVERGED_RTOL iterations 20
-    Linear solve converged due to CONVERGED_RTOL iterations 16
-   32 KSP Residual norm 8.05597e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 22
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-   33 KSP Residual norm 2.35988e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 26
-    Linear solve converged due to CONVERGED_RTOL iterations 13
-   34 KSP Residual norm 4.55737e-06 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-   35 KSP Residual norm 9.96741e-07 
-  3 KSP Residual norm 1.73339e-08 
+    0 KSP Residual norm 0.221479 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+    1 KSP Residual norm 0.17427 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 20
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    2 KSP Residual norm 0.0910935 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 19
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+    3 KSP Residual norm 0.0628922 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    4 KSP Residual norm 0.022719 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
+    5 KSP Residual norm 0.0140147 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 6
+    6 KSP Residual norm 0.00905004 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 6
+    7 KSP Residual norm 0.00241639 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
+    8 KSP Residual norm 0.000570944 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
+    9 KSP Residual norm 0.000149772 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
+   10 KSP Residual norm 6.27213e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 6
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
+   11 KSP Residual norm 2.89249e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
+   12 KSP Residual norm 1.0213e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
+   13 KSP Residual norm 4.08227e-06 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
+   14 KSP Residual norm 1.14907e-06 
+  3 KSP Residual norm 1.82592e-08 
     Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 0.999479 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    1 KSP Residual norm 0.149795 
-    Linear solve converged due to CONVERGED_RTOL iterations 22
-    Linear solve converged due to CONVERGED_RTOL iterations 17
-    2 KSP Residual norm 0.0935285 
-    Linear solve converged due to CONVERGED_RTOL iterations 27
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    3 KSP Residual norm 0.0440861 
-    Linear solve converged due to CONVERGED_RTOL iterations 23
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    4 KSP Residual norm 0.0235775 
-    Linear solve converged due to CONVERGED_RTOL iterations 27
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    5 KSP Residual norm 0.00565915 
-    Linear solve converged due to CONVERGED_RTOL iterations 25
-    Linear solve converged due to CONVERGED_RTOL iterations 13
-    6 KSP Residual norm 0.00114382 
-    Linear solve converged due to CONVERGED_RTOL iterations 20
-    Linear solve converged due to CONVERGED_RTOL iterations 12
-    7 KSP Residual norm 0.00013253 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 9
-    8 KSP Residual norm 1.98435e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    9 KSP Residual norm 2.94772e-06 
+    0 KSP Residual norm 0.99952 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    1 KSP Residual norm 0.843473 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    2 KSP Residual norm 0.158112 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 26
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 14
+    3 KSP Residual norm 0.0906504 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 29
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    4 KSP Residual norm 0.0334366 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 11
+    5 KSP Residual norm 0.0059726 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 22
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 13
+    6 KSP Residual norm 0.000980307 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 9
+    7 KSP Residual norm 0.000154731 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
+    8 KSP Residual norm 2.40344e-05 
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
+    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 5
+    9 KSP Residual norm 3.95405e-06 
   4 KSP Residual norm < 1.e-11
 KSP Object:(fc_) 4 MPI processes
   type: fgmres
@@ -257,7 +194,6 @@ PC Object:(fc_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         right preconditioning
-        has attached null space
         using UNPRECONDITIONED norm type for convergence test
       PC Object:      (fc_fieldsplit_pressure_)       4 MPI processes
         type: lsc
@@ -266,7 +202,6 @@ PC Object:(fc_) 4 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=0.01, absolute=1e-50, divergence=10000
             left preconditioning
-            has attached null space
             using PRECONDITIONED norm type for convergence test
           PC Object:          (fc_fieldsplit_pressure_lsc_)           4 MPI processes
             type: bjacobi
@@ -306,6 +241,7 @@ PC Object:(fc_) 4 MPI processes
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
               total number of mallocs used during MatSetValues calls =0
+                has attached null space
                 not using I-node (on process 0) routines
         linear system matrix followed by preconditioner matrix:
         Mat Object:        (fc_fieldsplit_pressure_)         4 MPI processes
@@ -318,6 +254,7 @@ PC Object:(fc_) 4 MPI processes
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
                 total number of mallocs used during MatSetValues calls =0
+                  has attached null space
                   not using I-node (on process 0) routines
             A10
               Mat Object:               4 MPI processes
@@ -383,6 +320,7 @@ PC Object:(fc_) 4 MPI processes
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
           total number of mallocs used during MatSetValues calls =0
+            has attached null space
             not using I-node (on process 0) routines
   linear system matrix = precond matrix:
   Mat Object:   4 MPI processes
@@ -399,7 +337,7 @@ PC Object:(fc_) 4 MPI processes
   Min(u)  = -0.017280 [loc=2035]
   Max(u)  = 0.018577 [loc=2024]
   Norm(u) = 0.249724 
-  Sum(u)  = 0.189537 
+  Sum(u)  = 0.189536 
 -- pressure vector values --
   Min(p)  = -6.039639 [loc=844]
   Max(p)  = 4.836615 [loc=16]
@@ -409,4 +347,4 @@ PC Object:(fc_) 4 MPI processes
   Min(u,p)  = -6.039639 [loc=2890]
   Max(u,p)  = 4.836615 [loc=528]
   Norm(u,p) = 94.126319 
-  Sum(u,p)  = 0.189537 
+  Sum(u,p)  = 0.189536 

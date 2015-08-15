@@ -7,7 +7,7 @@
   Udot = F(t,U)
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static TSRKType  TSRKDefault = TSRK3BS;
@@ -38,6 +38,9 @@ typedef struct {
   RKTableau   tableau;
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
+  Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage*/ 
+  Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage*/ 
+  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose*/ 
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -380,7 +383,6 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       for (j=0; j<s; j++) w[j] = h*tab->b[j];
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
     } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
-    if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (order == tab->order-1) {
     if (!tab->bembed) goto unavailable;
@@ -451,6 +453,14 @@ static PetscErrorCode TSStep_RK(TS ts)
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
     if (accept) {
+      if (ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        for (i=0; i<s; i++) {
+          ierr = TSAdjointComputeCostIntegrand(ts,t+h*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+          ierr = VecAXPY(ts->vec_costintegral,h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
+        }
+      }
+
       /* ignore next_scheme for now */
       ts->ptime    += ts->time_step;
       ts->time_step = next_time_step;
@@ -467,6 +477,104 @@ static PetscErrorCode TSStep_RK(TS ts)
 reject_step: continue;
   }
   if (rk->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetUp_RK"
+static PetscErrorCode TSAdjointSetUp_RK(TS ts)
+{
+  TS_RK         *rk = (TS_RK*)ts->data;
+  RKTableau      tab;
+  PetscInt       s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
+  tab  = rk->tableau;
+  s    = tab->s;
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
+  if(ts->vecs_sensip) {
+    ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
+  }
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointStep_RK"
+static PetscErrorCode TSAdjointStep_RK(TS ts)
+{
+  TS_RK           *rk   = (TS_RK*)ts->data;
+  RKTableau        tab  = rk->tableau;
+  const PetscInt   s    = tab->s;
+  const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
+  PetscScalar     *w    = rk->work;
+  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu,*VecSensiTemp = rk->VecSensiTemp;
+  PetscInt         i,j,nadj;
+  PetscReal        t;
+  PetscErrorCode   ierr;
+  PetscReal        h = ts->time_step;
+  Mat              J,Jp;
+
+  PetscFunctionBegin;
+  t          = ts->ptime;
+  rk->status = TS_STEP_INCOMPLETE;
+  h = ts->time_step;
+  ierr = TSPreStep(ts);CHKERRQ(ierr);
+  for (i=s-1; i>=0; i--) {
+    rk->stage_time = t + h*(1.0-c[i]);
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
+      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);CHKERRQ(ierr);
+      for (j=i+1; j<s; j++) {
+        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);CHKERRQ(ierr);
+      }
+    }
+    /* Stage values of lambda */
+    ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
+    ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
+    if (ts->vec_costintegral) {
+      ierr = TSAdjointComputeDRDYFunction(ts,rk->stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
+      if (!ts->costintegralfwd) {
+        /* Evolve ts->vec_costintegral to compute integrals */
+        ierr = TSAdjointComputeCostIntegrand(ts,rk->stage_time,Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vec_costintegral,-h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);   
+      }
+    }
+    for (nadj=0; nadj<ts->numcost; nadj++) {
+      ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+      if (ts->vec_costintegral) {
+        ierr = VecAXPY(VecDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdy[nadj]);CHKERRQ(ierr);
+      }
+    }
+
+    /* Stage values of mu */
+    if(ts->vecs_sensip) {
+      ierr = TSAdjointComputeRHSJacobian(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      if (ts->vec_costintegral) {
+        ierr = TSAdjointComputeDRDPFunction(ts,rk->stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
+      }
+
+      for (nadj=0; nadj<ts->numcost; nadj++) {
+        ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+        if (ts->vec_costintegral) {
+          ierr = VecAXPY(VecDeltaMu[nadj*s+i],-h*b[i],ts->vecs_drdp[nadj]);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+
+  for (j=0; j<s; j++) w[j] = 1.0;
+  for (nadj=0; nadj<ts->numcost; nadj++) {
+    ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
+    if(ts->vecs_sensip) {
+      ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
+    }
+  }
+  ts->ptime += ts->time_step;
+  ts->steps++;
+  rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
 }
 
@@ -523,6 +631,9 @@ static PetscErrorCode TSReset_RK(TS ts)
   s    = rk->tableau->s;
   ierr = VecDestroyVecs(s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -575,7 +686,33 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm,VecScatter gscat,VecSca
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+/*
+#undef __FUNCT__
+#define __FUNCT__ "RKSetAdjCoe"
+static PetscErrorCode RKSetAdjCoe(RKTableau tab)
+{
+  PetscReal *A,*b;
+  PetscInt        s,i,j;
+  PetscErrorCode  ierr;
 
+  PetscFunctionBegin;
+  s    = tab->s;
+  ierr = PetscMalloc2(s*s,&A,s,&b);CHKERRQ(ierr);
+
+  for (i=0; i<s; i++)
+    for (j=0; j<s; j++) {
+      A[i*s+j] = (tab->b[s-1-i]==0) ? 0: -tab->A[s-1-i+(s-1-j)*s] * tab->b[s-1-j] / tab->b[s-1-i];
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Coefficients: A[%D][%D]=%.6f\n",i,j,A[i*s+j]);CHKERRQ(ierr);
+    }
+
+  for (i=0; i<s; i++) b[i] = (tab->b[s-1-i]==0)? 0: -tab->b[s-1-i];
+
+  ierr  = PetscMemcpy(tab->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(tab->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
+  ierr  = PetscFree2(A,b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+*/
 #undef __FUNCT__
 #define __FUNCT__ "TSSetUp_RK"
 static PetscErrorCode TSSetUp_RK(TS ts)
@@ -602,17 +739,19 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   PetscFunctionReturn(0);
 }
+
+
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RK"
-static PetscErrorCode TSSetFromOptions_RK(TS ts)
+static PetscErrorCode TSSetFromOptions_RK(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscErrorCode ierr;
   char           rktype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("RK ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"RK ODE solver options");CHKERRQ(ierr);
   {
     RKTableauLink  link;
     PetscInt       count,choice;
@@ -782,6 +921,19 @@ PetscErrorCode  TSRKSetType_RK(TS ts,TSRKType rktype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetStages_RK"
+static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+
+  PetscFunctionBegin;
+  *ns = rk->tableau->s;
+  if(Y) *Y  = rk->Y;
+  PetscFunctionReturn(0);
+}
+
+
 /* ------------------------------------------------------------ */
 /*MC
       TSRK - ODE and DAE solver using Runge-Kutta schemes
@@ -815,10 +967,13 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->view           = TSView_RK;
   ts->ops->load           = TSLoad_RK;
   ts->ops->setup          = TSSetUp_RK;
+  ts->ops->adjointsetup   = TSAdjointSetUp_RK;  
   ts->ops->step           = TSStep_RK;
   ts->ops->interpolate    = TSInterpolate_RK;
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
+  ts->ops->getstages      = TSGetStages_RK;
+  ts->ops->adjointstep    = TSAdjointStep_RK;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

@@ -3,7 +3,7 @@
     Factorization code for BAIJ format.
 */
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJSetNumericFactorization"
@@ -214,8 +214,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row and diagonal pointers, must be allocated separately because they will be given to the Mat_SeqAIJ and freed separately */
-  ierr  = PetscMalloc1((n+1),&bi);CHKERRQ(ierr);
-  ierr  = PetscMalloc1((n+1),&bdiag);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n+1,&bi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n+1,&bdiag);CHKERRQ(ierr);
   bi[0] = bdiag[0] = 0;
 
   /* linked list for storing column indices of the active row */
@@ -280,7 +280,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
-  ierr = PetscMalloc1((bi[n]+1),&bj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bi[n]+1,&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr             = PetscMalloc((bdiag[0]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
+  ierr             = PetscMalloc1((bdiag[0]+1)*bs2,&b->a);CHKERRQ(ierr);
   b->j             = bj;
   b->i             = bi;
   b->diag          = bdiag;
@@ -308,7 +308,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr    = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol = isicol;
-  ierr    = PetscMalloc1((bs*n+bs),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(bs*n+bs,&b->solve_work);CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory((PetscObject)B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
 
   b->maxnz = b->nz = bdiag[0]+1;
@@ -372,8 +372,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row and diagonal pointers, must be allocated separately because they will be given to the Mat_SeqAIJ and freed separately */
-  ierr = PetscMalloc1((n+1),&bi);CHKERRQ(ierr);
-  ierr = PetscMalloc1((n+1),&bdiag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&bi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&bdiag);CHKERRQ(ierr);
 
   bi[0] = bdiag[0] = 0;
 
@@ -449,7 +449,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((bi[n]+1),&bj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bi[n]+1,&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
@@ -463,7 +463,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr             = PetscMalloc((bi[n]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
+  ierr             = PetscMalloc1((bi[n]+1)*bs2,&b->a);CHKERRQ(ierr);
   b->j             = bj;
   b->i             = bi;
   b->diag          = bdiag;
@@ -478,7 +478,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol = isicol;
 
-  ierr = PetscMalloc1((bs*n+bs),&b->solve_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs*n+bs,&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
 
   b->maxnz = b->nz = bi[n];

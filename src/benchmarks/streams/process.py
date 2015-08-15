@@ -21,9 +21,9 @@ def process(fileoutput = 1):
   for i in match:
     if i:
       fields = i.split('\n')
-      size = int(fields[0])
-      hosts[size] = fields[1:size+1]
-      triads[size] = float(fields[size+5].split()[1])
+      size = int(fields[0].split()[0])
+      hosts[size] = fields[0].split()[3:]
+      triads[size] = float(fields[1].split()[1])
 
   if len(hosts) < 2: return
 

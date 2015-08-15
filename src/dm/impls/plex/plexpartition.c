@@ -1,4 +1,134 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+
+PetscClassId PETSCPARTITIONER_CLASSID = 0;
+
+PetscFunctionList PetscPartitionerList              = NULL;
+PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
+
+PetscBool ChacoPartitionercite = PETSC_FALSE;
+const char ChacoPartitionerCitation[] = "@inproceedings{Chaco95,\n"
+                               "  author    = {Bruce Hendrickson and Robert Leland},\n"
+                               "  title     = {A multilevel algorithm for partitioning graphs},\n"
+                               "  booktitle = {Supercomputing '95: Proceedings of the 1995 ACM/IEEE Conference on Supercomputing (CDROM)},"
+                               "  isbn      = {0-89791-816-9},\n"
+                               "  pages     = {28},\n"
+                               "  doi       = {http://doi.acm.org/10.1145/224170.224228},\n"
+                               "  publisher = {ACM Press},\n"
+                               "  address   = {New York},\n"
+                               "  year      = {1995}\n}\n";
+
+PetscBool ParMetisPartitionercite = PETSC_FALSE;
+const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
+                               "  author  = {George Karypis and Vipin Kumar},\n"
+                               "  title   = {A Parallel Algorithm for Multilevel Graph Partitioning and Sparse Matrix Ordering},\n"
+                               "  journal = {Journal of Parallel and Distributed Computing},\n"
+                               "  volume  = {48},\n"
+                               "  pages   = {71--85},\n"
+                               "  year    = {1998}\n}\n";
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreatePartitionerGraph"
+/*@C
+  DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
+
+  Input Parameters:
++ dm      - The mesh DM dm
+- height  - Height of the strata from which to construct the graph
+
+  Output Parameter:
++ numVertices - Number of vertices in the graph
+- offsets     - Point offsets in the graph
+- adjacency   - Point connectivity in the graph
+
+  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
+  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  representation on the mesh.
+
+  Level: developer
+
+.seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+@*/
+PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
+{
+  PetscInt       p, pStart, pEnd, a, adjSize, idx, size, nroots;
+  PetscInt      *adj = NULL, *vOffsets = NULL, *graph = NULL;
+  IS             cellNumbering;
+  const PetscInt *cellNum;
+  PetscBool      useCone, useClosure;
+  PetscSection   section;
+  PetscSegBuffer adjBuffer;
+  PetscSF        sfPoint;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  /* Build adjacency graph via a section/segbuffer */
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&adjBuffer);CHKERRQ(ierr);
+  /* Always use FVM adjacency to create partitioner graph */
+  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+  if (nroots > 0) {
+    ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
+    ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+  }
+  for (*numVertices = 0, p = pStart; p < pEnd; p++) {
+    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    if (nroots > 0) {if (cellNum[p] < 0) continue;}
+    adjSize = PETSC_DETERMINE;
+    ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
+    for (a = 0; a < adjSize; ++a) {
+      const PetscInt point = adj[a];
+      if (point != p && pStart <= point && point < pEnd) {
+        PetscInt *PETSC_RESTRICT pBuf;
+        ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
+        ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
+        *pBuf = point;
+      }
+    }
+    (*numVertices)++;
+  }
+  ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
+  /* Derive CSR graph from section/segbuffer */
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numVertices+1, &vOffsets);CHKERRQ(ierr);
+  for (idx = 0, p = pStart; p < pEnd; p++) {
+    if (nroots > 0) {if (cellNum[p] < 0) continue;}
+    ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
+  }
+  vOffsets[*numVertices] = size;
+  if (offsets) *offsets = vOffsets;
+  ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
+  if (nroots > 0) {
+    ISLocalToGlobalMapping ltogCells;
+    PetscInt n, size, *cells_arr;
+    /* In parallel, apply a global cell numbering to the graph */
+    ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(cellNumbering, &ltogCells);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltogCells, &size);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
+    /* Convert to positive global cell numbers */
+    for (n=0; n<size; n++) {if (cells_arr[n] < 0) cells_arr[n] = -(cells_arr[n]+1);}
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyBlock(ltogCells, vOffsets[*numVertices], graph, graph);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&ltogCells);CHKERRQ(ierr);
+  }
+  if (adjacency) *adjacency = graph;
+  /* Clean up */
+  ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = PetscFree(adj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateNeighborCSR"
@@ -14,7 +144,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 
   PetscFunctionBegin;
   /* For parallel partitioning, I think you have to communicate supports */
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   cellDim = dim - cellHeight;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
@@ -38,8 +168,13 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
       if (supportSize == 2) {
-        ++off[support[0]-cStart+1];
-        ++off[support[1]-cStart+1];
+        PetscInt numChildren;
+
+        ierr = DMPlexGetTreeChildren(dm,f,&numChildren,NULL);CHKERRQ(ierr);
+        if (!numChildren) {
+          ++off[support[0]-cStart+1];
+          ++off[support[1]-cStart+1];
+        }
       }
     }
     /* Prefix sum */
@@ -48,7 +183,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       PetscInt *tmp;
 
       ierr = PetscMalloc1(off[numCells], &adj);CHKERRQ(ierr);
-      ierr = PetscMalloc1((numCells+1), &tmp);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numCells+1, &tmp);CHKERRQ(ierr);
       ierr = PetscMemcpy(tmp, off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
       /* Get neighboring cells */
       for (f = fStart; f < fEnd; ++f) {
@@ -57,8 +192,13 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
         ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
         if (supportSize == 2) {
-          adj[tmp[support[0]-cStart]++] = support[1];
-          adj[tmp[support[1]-cStart]++] = support[0];
+          PetscInt numChildren;
+
+          ierr = DMPlexGetTreeChildren(dm,f,&numChildren,NULL);CHKERRQ(ierr);
+          if (!numChildren) {
+            adj[tmp[support[0]-cStart]++] = support[1];
+            adj[tmp[support[1]-cStart]++] = support[0];
+          }
         }
       }
 #if defined(PETSC_USE_DEBUG)
@@ -96,7 +236,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   for (cell = cStart; cell < cEnd; ++cell) {
     PetscInt numNeighbors = PETSC_DETERMINE, n;
 
-    ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
     /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
     for (n = 0; n < numNeighbors; ++n) {
       PetscInt        cellPair[2];
@@ -133,7 +273,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       PetscInt numNeighbors = PETSC_DETERMINE, n;
       PetscInt cellOffset   = 0;
 
-      ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
+      ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
       for (n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2];
@@ -171,6 +311,624 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerRegister"
+/*@C
+  PetscPartitionerRegister - Adds a new PetscPartitioner implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  PetscPartitionerRegister() may be called multiple times to add several user-defined PetscPartitioners
+
+  Sample usage:
+.vb
+    PetscPartitionerRegister("my_part", MyPetscPartitionerCreate);
+.ve
+
+  Then, your PetscPartitioner type can be chosen with the procedural interface via
+.vb
+    PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
+    PetscPartitionerSetType(PetscPartitioner, "my_part");
+.ve
+   or at runtime via the option
+.vb
+    -petscpartitioner_type my_part
+.ve
+
+  Level: advanced
+
+.keywords: PetscPartitioner, register
+.seealso: PetscPartitionerRegisterAll(), PetscPartitionerRegisterDestroy()
+
+@*/
+PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*function)(PetscPartitioner))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListAdd(&PetscPartitionerList, sname, function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerSetType"
+/*@C
+  PetscPartitionerSetType - Builds a particular PetscPartitioner
+
+  Collective on PetscPartitioner
+
+  Input Parameters:
++ part - The PetscPartitioner object
+- name - The kind of partitioner
+
+  Options Database Key:
+. -petscpartitioner_type <type> - Sets the PetscPartitioner type; use -help for a list of available types
+
+  Level: intermediate
+
+.keywords: PetscPartitioner, set, type
+.seealso: PetscPartitionerGetType(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name)
+{
+  PetscErrorCode (*r)(PetscPartitioner);
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr = PetscObjectTypeCompare((PetscObject) part, name, &match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscPartitionerList, name, &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
+
+  if (part->ops->destroy) {
+    ierr              = (*part->ops->destroy)(part);CHKERRQ(ierr);
+    part->ops->destroy = NULL;
+  }
+  ierr = (*r)(part);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) part, name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerGetType"
+/*@C
+  PetscPartitionerGetType - Gets the PetscPartitioner type name (as a string) from the object.
+
+  Not Collective
+
+  Input Parameter:
+. part - The PetscPartitioner
+
+  Output Parameter:
+. name - The PetscPartitioner type name
+
+  Level: intermediate
+
+.keywords: PetscPartitioner, get, type, name
+.seealso: PetscPartitionerSetType(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
+  *name = ((PetscObject) part)->type_name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView"
+/*@C
+  PetscPartitionerView - Views a PetscPartitioner
+
+  Collective on PetscPartitioner
+
+  Input Parameter:
++ part - the PetscPartitioner object to view
+- v    - the viewer
+
+  Level: developer
+
+.seealso: PetscPartitionerDestroy()
+@*/
+PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) part), &v);CHKERRQ(ierr);}
+  if (part->ops->view) {ierr = (*part->ops->view)(part, v);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerSetTypeFromOptions_Internal"
+PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part)
+{
+  const char    *defaultType;
+  char           name[256];
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  if (!((PetscObject) part)->type_name) defaultType = PETSCPARTITIONERCHACO;
+  else                                  defaultType = ((PetscObject) part)->type_name;
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, defaultType, name, 256, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPartitionerSetType(part, name);CHKERRQ(ierr);
+  } else if (!((PetscObject) part)->type_name) {
+    ierr = PetscPartitionerSetType(part, defaultType);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerSetFromOptions"
+/*@
+  PetscPartitionerSetFromOptions - sets parameters in a PetscPartitioner from the options database
+
+  Collective on PetscPartitioner
+
+  Input Parameter:
+. part - the PetscPartitioner object to set options for
+
+  Level: developer
+
+.seealso: PetscPartitionerView()
+@*/
+PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr = PetscPartitionerSetTypeFromOptions_Internal(part);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
+  if (part->ops->setfromoptions) {ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);}
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject) part);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscPartitionerViewFromOptions(part, NULL, "-petscpartitioner_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerSetUp"
+/*@C
+  PetscPartitionerSetUp - Construct data structures for the PetscPartitioner
+
+  Collective on PetscPartitioner
+
+  Input Parameter:
+. part - the PetscPartitioner object to setup
+
+  Level: developer
+
+.seealso: PetscPartitionerView(), PetscPartitionerDestroy()
+@*/
+PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  if (part->ops->setup) {ierr = (*part->ops->setup)(part);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy"
+/*@
+  PetscPartitionerDestroy - Destroys a PetscPartitioner object
+
+  Collective on PetscPartitioner
+
+  Input Parameter:
+. part - the PetscPartitioner object to destroy
+
+  Level: developer
+
+.seealso: PetscPartitionerView()
+@*/
+PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*part) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
+
+  if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
+  ((PetscObject) (*part))->refct = 0;
+
+  if ((*part)->ops->destroy) {ierr = (*(*part)->ops->destroy)(*part);CHKERRQ(ierr);}
+  ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate"
+/*@
+  PetscPartitionerCreate - Creates an empty PetscPartitioner object. The type can then be set with PetscPartitionerSetType().
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - The communicator for the PetscPartitioner object
+
+  Output Parameter:
+. part - The PetscPartitioner object
+
+  Level: beginner
+
+.seealso: PetscPartitionerSetType(), PETSCPARTITIONERCHACO, PETSCPARTITIONERPARMETIS, PETSCPARTITIONERSHELL, PETSCPARTITIONERSIMPLE
+@*/
+PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
+{
+  PetscPartitioner p;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(part, 2);
+  *part = NULL;
+  ierr = PetscFVInitializePackage();CHKERRQ(ierr);
+
+  ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
+
+  *part = p;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerPartition"
+/*@
+  PetscPartitionerPartition - Create a non-overlapping partition of the cells in the mesh
+
+  Collective on DM
+
+  Input Parameters:
++ part    - The PetscPartitioner
+- dm      - The mesh DM
+
+  Output Parameters:
++ partSection     - The PetscSection giving the division of points by partition
+- partition       - The list of points by partition
+
+  Note: Instead of cells, points at a given height can be partitioned by calling PetscPartitionerSetPointHeight()
+
+  Level: developer
+
+.seealso DMPlexDistribute(), PetscPartitionerSetPointHeight(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSection partSection, IS *partition)
+{
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 4);
+  PetscValidPointer(partition, 5);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) part), &size);CHKERRQ(ierr);
+  if (size == 1) {
+    PetscInt *points;
+    PetscInt  cStart, cEnd, c;
+
+    ierr = DMPlexGetHeightStratum(dm, part->height, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(partSection, 0, size);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(partSection, 0, cEnd-cStart);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
+    ierr = PetscMalloc1(cEnd-cStart, &points);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) points[c] = c;
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (part->height == 0) {
+    PetscInt  numVertices;
+    PetscInt *start     = NULL;
+    PetscInt *adjacency = NULL;
+
+    ierr = DMPlexCreatePartitionerGraph(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
+    if (!part->ops->partition) SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONGSTATE, "PetscPartitioner has no type");
+    ierr = (*part->ops->partition)(part, dm, size, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
+    ierr = PetscFree(start);CHKERRQ(ierr);
+    ierr = PetscFree(adjacency);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %D for points to partition", part->height);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy_Shell"
+PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
+  ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
+  ierr = PetscFree(p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Shell_Ascii"
+PetscErrorCode PetscPartitionerView_Shell_Ascii(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Shell Graph Partitioner:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Shell"
+PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscPartitionerView_Shell_Ascii(part, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerPartition_Shell"
+PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+  PetscInt                np;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(p->section, NULL, &np);CHKERRQ(ierr);
+  if (nparts != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
+  ierr = ISGetLocalSize(p->partition, &np);CHKERRQ(ierr);
+  if (numVertices != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input vertices %d != configured vertices %d", numVertices, np);
+  ierr = PetscSectionCopy(p->section, partSection);CHKERRQ(ierr);
+  *partition = p->partition;
+  ierr = PetscObjectReference((PetscObject) p->partition);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerInitialize_Shell"
+PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
+{
+  PetscFunctionBegin;
+  part->ops->view      = PetscPartitionerView_Shell;
+  part->ops->destroy   = PetscPartitionerDestroy_Shell;
+  part->ops->partition = PetscPartitionerPartition_Shell;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCPARTITIONERSHELL = "shell" - A PetscPartitioner object
+
+  Level: intermediate
+
+.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate_Shell"
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
+{
+  PetscPartitioner_Shell *p;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  part->data = p;
+
+  ierr = PetscPartitionerInitialize_Shell(part);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerShellSetPartition"
+/*@C
+  PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
+
+  Collective on PART
+
+  Input Parameters:
++ part     - The PetscPartitioner
+. numProcs - The number of partitions
+. sizes    - array of size numProcs (or NULL) providing the number of points in each partition
+- points   - array of size sum(sizes) (may be NULL iff sizes is NULL) providing the partition each point belongs to
+
+  Level: developer
+
+  Notes:
+
+    It is safe to free the sizes and points arrays after use in this routine.
+
+.seealso DMPlexDistribute(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt numProcs, const PetscInt sizes[], const PetscInt points[])
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+  PetscInt                proc, numPoints;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  if (sizes) {PetscValidPointer(sizes, 3);}
+  if (sizes) {PetscValidPointer(points, 4);}
+  ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
+  ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) part), &p->section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(p->section, 0, numProcs);CHKERRQ(ierr);
+  if (sizes) {
+    for (proc = 0; proc < numProcs; ++proc) {
+      ierr = PetscSectionSetDof(p->section, proc, sizes[proc]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(p->section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(p->section, &numPoints);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), numPoints, points, PETSC_COPY_VALUES, &p->partition);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy_Simple"
+PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
+{
+  PetscPartitioner_Simple *p = (PetscPartitioner_Simple *) part->data;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Simple_Ascii"
+PetscErrorCode PetscPartitionerView_Simple_Ascii(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Simple Graph Partitioner:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Simple"
+PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscPartitionerView_Simple_Ascii(part, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerPartition_Simple"
+PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
+{
+  PetscInt       np;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
+  for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerInitialize_Simple"
+PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part)
+{
+  PetscFunctionBegin;
+  part->ops->view      = PetscPartitionerView_Simple;
+  part->ops->destroy   = PetscPartitionerDestroy_Simple;
+  part->ops->partition = PetscPartitionerPartition_Simple;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCPARTITIONERSIMPLE = "simple" - A PetscPartitioner object
+
+  Level: intermediate
+
+.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate_Simple"
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
+{
+  PetscPartitioner_Simple *p;
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  part->data = p;
+
+  ierr = PetscPartitionerInitialize_Simple(part);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy_Chaco"
+PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
+{
+  PetscPartitioner_Chaco *p = (PetscPartitioner_Chaco *) part->data;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Chaco_Ascii"
+PetscErrorCode PetscPartitionerView_Chaco_Ascii(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Chaco Graph Partitioner:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Chaco"
+PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscPartitionerView_Chaco_Ascii(part, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_CHACO)
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
@@ -183,11 +941,13 @@ PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
                        int rqi_flag, int vmax, int ndims, double eigtol, long seed);
 
 extern int FREE_GRAPH;
+#endif
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexPartition_Chaco"
-PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
+#define __FUNCT__ "PetscPartitionerPartition_Chaco"
+PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
+#if defined(PETSC_HAVE_CHACO)
   enum {DEFAULT_METHOD = 1, INERTIAL_METHOD = 3};
   MPI_Comm       comm;
   int            nvtxs          = numVertices; /* number of vertices in full graph */
@@ -210,17 +970,14 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   short int     *assignment;              /* Output partition */
   int            fd_stdout, fd_pipe[2];
   PetscInt      *points;
-  PetscMPIInt    commSize;
   int            i, v, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &commSize);CHKERRQ(ierr);
   if (!numVertices) {
-    ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
-    ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -231,7 +988,7 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
     /* manager.createCellCoordinates(nvtxs, &x, &y, &z); */
     SETERRQ(comm, PETSC_ERR_SUP, "Inertial partitioning not yet supported");
   }
-  mesh_dims[0] = commSize;
+  mesh_dims[0] = nparts;
   mesh_dims[1] = 1;
   mesh_dims[2] = 1;
   ierr = PetscMalloc1(nvtxs, &assignment);CHKERRQ(ierr);
@@ -268,14 +1025,13 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   }
 #endif
   /* Convert to PetscSection+IS */
-  ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
   for (v = 0; v < nvtxs; ++v) {
-    ierr = PetscSectionAddDof(*partSection, assignment[v], 1);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(partSection, assignment[v], 1);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   ierr = PetscMalloc1(nvtxs, &points);CHKERRQ(ierr);
-  for (p = 0, i = 0; p < commSize; ++p) {
+  for (p = 0, i = 0; p < nparts; ++p) {
     for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
     }
@@ -288,16 +1044,96 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   ierr = PetscFree(assignment);CHKERRQ(ierr);
   for (i = 0; i < start[numVertices]; ++i) --adjacency[i];
   PetscFunctionReturn(0);
-}
+#else
+  SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-chaco.");
 #endif
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerInitialize_Chaco"
+PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part)
+{
+  PetscFunctionBegin;
+  part->ops->view      = PetscPartitionerView_Chaco;
+  part->ops->destroy   = PetscPartitionerDestroy_Chaco;
+  part->ops->partition = PetscPartitionerPartition_Chaco;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCPARTITIONERCHACO = "chaco" - A PetscPartitioner object using the Chaco library
+
+  Level: intermediate
+
+.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate_Chaco"
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner part)
+{
+  PetscPartitioner_Chaco *p;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  part->data = p;
+
+  ierr = PetscPartitionerInitialize_Chaco(part);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister(ChacoPartitionerCitation, &ChacoPartitionercite);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy_ParMetis"
+PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
+{
+  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
+  PetscErrorCode             ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_ParMetis_Ascii"
+PetscErrorCode PetscPartitionerView_ParMetis_Ascii(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "ParMetis Graph Partitioner:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_ParMetis"
+PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscPartitionerView_ParMetis_Ascii(part, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 
 #if defined(PETSC_HAVE_PARMETIS)
 #include <parmetis.h>
+#endif
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexPartition_ParMetis"
-PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
+#define __FUNCT__ "PetscPartitionerPartition_ParMetis"
+PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
+#if defined(PETSC_HAVE_PARMETIS)
   MPI_Comm       comm;
   PetscInt       nvtxs      = numVertices; /* The number of vertices in full graph */
   PetscInt      *vtxdist;                  /* Distribution of vertices across processes */
@@ -308,21 +1144,18 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
   PetscInt       wgtflag    = 0;           /* Indicates which weights are present */
   PetscInt       numflag    = 0;           /* Indicates initial offset (0 or 1) */
   PetscInt       ncon       = 1;           /* The number of weights per vertex */
-  PetscInt       nparts;                   /* The number of partitions */
   PetscReal     *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
   PetscReal     *ubvec;                    /* The balance intolerance for vertex weights */
   PetscInt       options[5];               /* Options */
   /* Outputs */
   PetscInt       edgeCut;                  /* The number of edges cut by the partition */
   PetscInt      *assignment, *points;
-  PetscMPIInt    commSize, rank, p, v, i;
+  PetscMPIInt    rank, p, v, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &commSize);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  nparts = commSize;
   options[0] = 0; /* Use all defaults */
   /* Calculate vertex distribution */
   ierr = PetscMalloc4(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment);CHKERRQ(ierr);
@@ -355,14 +1188,11 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
     }
   }
   /* Convert to PetscSection+IS */
-  ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
-  for (v = 0; v < nvtxs; ++v) {
-    ierr = PetscSectionAddDof(*partSection, assignment[v], 1);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
+  for (v = 0; v < nvtxs; ++v) {ierr = PetscSectionAddDof(partSection, assignment[v], 1);CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   ierr = PetscMalloc1(nvtxs, &points);CHKERRQ(ierr);
-  for (p = 0, i = 0; p < commSize; ++p) {
+  for (p = 0, i = 0; p < nparts; ++p) {
     for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
     }
@@ -371,236 +1201,377 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
+#else
+  SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif
+}
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexEnlargePartition"
-/* Expand the partition by BFS on the adjacency graph */
-PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection origPartSection, IS origPartition, PetscSection *partSection, IS *partition)
+#define __FUNCT__ "PetscPartitionerInitialize_ParMetis"
+PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
 {
-  PetscHashI      h;
-  const PetscInt *points;
-  PetscInt      **tmpPoints, *newPoints, totPoints = 0;
-  PetscInt        pStart, pEnd, part, q;
-  PetscBool       useCone;
-  PetscErrorCode  ierr;
+  PetscFunctionBegin;
+  part->ops->view      = PetscPartitionerView_ParMetis;
+  part->ops->destroy   = PetscPartitionerDestroy_ParMetis;
+  part->ops->partition = PetscPartitionerPartition_ParMetis;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCPARTITIONERPARMETIS = "parmetis" - A PetscPartitioner object using the ParMetis library
+
+  Level: intermediate
+
+.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate_ParMetis"
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part)
+{
+  PetscPartitioner_ParMetis *p;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  PetscHashICreate(h);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), partSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(origPartSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*partSection, pStart, pEnd);CHKERRQ(ierr);
-  ierr = ISGetIndices(origPartition, &points);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pEnd - pStart), &tmpPoints);CHKERRQ(ierr);
-  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-  for (part = pStart; part < pEnd; ++part) {
-    PetscInt *adj = NULL;
-    PetscInt  numPoints, nP, numNewPoints, off, p, n = 0;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  part->data = p;
 
-    PetscHashIClear(h);
-    ierr = PetscSectionGetDof(origPartSection, part, &numPoints);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(origPartSection, part, &off);CHKERRQ(ierr);
-    /* Add all existing points to h */
-    for (p = 0; p < numPoints; ++p) {
-      const PetscInt point = points[off+p];
-      PetscHashIAdd(h, point, 1);
-    }
-    PetscHashISize(h, nP);
-    if (nP != numPoints) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid partition has %d points, but only %d were unique", numPoints, nP);
-    /* Add all points in next BFS level */
-    for (p = 0; p < numPoints; ++p) {
-      const PetscInt point   = points[off+p];
-      PetscInt       adjSize = PETSC_DETERMINE, a;
-
-      ierr = DMPlexGetAdjacency(dm, point, &adjSize, &adj);CHKERRQ(ierr);
-      for (a = 0; a < adjSize; ++a) PetscHashIAdd(h, adj[a], 1);
-    }
-    PetscHashISize(h, numNewPoints);
-    ierr = PetscSectionSetDof(*partSection, part, numNewPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numNewPoints, &tmpPoints[part]);CHKERRQ(ierr);
-    ierr = PetscHashIGetKeys(h, &n, tmpPoints[part]);CHKERRQ(ierr);
-    ierr = PetscFree(adj);CHKERRQ(ierr);
-    totPoints += numNewPoints;
-  }
-  ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(origPartition, &points);CHKERRQ(ierr);
-  PetscHashIDestroy(h);
-  ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-  ierr = PetscMalloc1(totPoints, &newPoints);CHKERRQ(ierr);
-  for (part = pStart, q = 0; part < pEnd; ++part) {
-    PetscInt numPoints, p;
-
-    ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
-    for (p = 0; p < numPoints; ++p, ++q) newPoints[q] = tmpPoints[part][p];
-    ierr = PetscFree(tmpPoints[part]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(tmpPoints);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), totPoints, newPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+  ierr = PetscPartitionerInitialize_ParMetis(part);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionercite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexCreatePartition"
-/*
-  DMPlexCreatePartition - Create a non-overlapping partition of the points at the given height
+#define __FUNCT__ "DMPlexGetPartitioner"
+/*@
+  DMPlexGetPartitioner - Get the mesh partitioner
 
-  Collective on DM
+  Not collective
 
-  Input Parameters:
-  + dm - The DM
-  . height - The height for points in the partition
-  - enlarge - Expand each partition with neighbors
+  Input Parameter:
+. dm - The DM
 
-  Output Parameters:
-  + partSection - The PetscSection giving the division of points by partition
-  . partition - The list of points by partition
-  . origPartSection - If enlarge is true, the PetscSection giving the division of points before enlarging by partition, otherwise NULL
-  - origPartition - If enlarge is true, the list of points before enlarging by partition, otherwise NULL
+  Output Parameter:
+. part - The PetscPartitioner
 
   Level: developer
 
-.seealso DMPlexDistribute()
-*/
-PetscErrorCode DMPlexCreatePartition(DM dm, const char name[], PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition)
+  Note: This gets a borrowed reference, so the user should not destroy this PetscPartitioner.
+
+.seealso DMPlexDistribute(), DMPlexSetPartitioner(), PetscPartitionerCreate()
+@*/
+PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
-  char           partname[1024];
-  PetscBool      isChaco = PETSC_FALSE, isMetis = PETSC_FALSE, flg;
-  PetscMPIInt    size;
-  PetscErrorCode ierr;
+  DM_Plex *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
-
-  *origPartSection = NULL;
-  *origPartition   = NULL;
-  if (size == 1) {
-    PetscInt *points;
-    PetscInt  cStart, cEnd, c;
-
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), partSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(*partSection, 0, size);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(*partSection, 0, cEnd-cStart);CHKERRQ(ierr);
-    ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-    ierr = PetscMalloc1((cEnd - cStart), &points);CHKERRQ(ierr);
-    for (c = cStart; c < cEnd; ++c) points[c] = c;
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  ierr = PetscOptionsGetString(((PetscObject) dm)->prefix, "-dm_plex_partitioner", partname, 1024, &flg);CHKERRQ(ierr);
-  if (flg) name = partname;
-  if (name) {
-    ierr = PetscStrcmp(name, "chaco", &isChaco);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "metis", &isMetis);CHKERRQ(ierr);
-  }
-  if (height == 0) {
-    PetscInt  numVertices;
-    PetscInt *start     = NULL;
-    PetscInt *adjacency = NULL;
-
-    ierr = DMPlexCreateNeighborCSR(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
-    if (!name || isChaco) {
-#if defined(PETSC_HAVE_CHACO)
-      ierr = DMPlexPartition_Chaco(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
-#else
-      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-chaco.");
-#endif
-    } else if (isMetis) {
-#if defined(PETSC_HAVE_PARMETIS)
-      ierr = DMPlexPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
-#endif
-    } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Unknown mesh partitioning package %s", name);
-    if (enlarge) {
-      *origPartSection = *partSection;
-      *origPartition   = *partition;
-
-      ierr = DMPlexEnlargePartition(dm, start, adjacency, *origPartSection, *origPartition, partSection, partition);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(start);CHKERRQ(ierr);
-    ierr = PetscFree(adjacency);CHKERRQ(ierr);
-# if 0
-  } else if (height == 1) {
-    /* Build the dual graph for faces and partition the hypergraph */
-    PetscInt numEdges;
-
-    buildFaceCSRV(mesh, mesh->getFactory()->getNumbering(mesh, mesh->depth()-1), &numEdges, &start, &adjacency, GraphPartitioner::zeroBase());
-    GraphPartitioner().partition(numEdges, start, adjacency, partition, manager);
-    destroyCSR(numEdges, start, adjacency);
-#endif
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid partition height %D", height);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(part, 2);
+  *part = mesh->partitioner;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexCreatePartitionClosure"
-PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition)
+#define __FUNCT__ "DMPlexSetPartitioner"
+/*@
+  DMPlexSetPartitioner - Set the mesh partitioner
+
+  logically collective on dm and part
+
+  Input Parameters:
++ dm - The DM
+- part - The partitioner
+
+  Level: developer
+
+  Note: Any existing PetscPartitioner will be destroyed.
+
+.seealso DMPlexDistribute(), DMPlexGetPartitioner(), PetscPartitionerCreate()
+@*/
+PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
 {
-  /* const PetscInt  height = 0; */
-  const PetscInt *partArray;
-  PetscInt       *allPoints, *packPoints;
-  PetscInt        rStart, rEnd, rank, pStart, pEnd, newSize;
-  PetscErrorCode  ierr;
-  PetscBT         bt;
-  PetscSegBuffer  segpack,segpart;
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetChart(pointSection, &rStart, &rEnd);CHKERRQ(ierr);
-  ierr = ISGetIndices(pointPartition, &partArray);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), section);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*section, rStart, rEnd);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject)part);CHKERRQ(ierr);
+  ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
+  mesh->partitioner = part;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelClosure_Tree"
+static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point)
+{
+  PetscInt       parent, closureSize, *closure = NULL, i, pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
+  if (parent == point) PetscFunctionReturn(0);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = PetscBTCreate(pEnd-pStart,&bt);CHKERRQ(ierr);
-  ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&segpack);CHKERRQ(ierr);
-  ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&segpart);CHKERRQ(ierr);
-  for (rank = rStart; rank < rEnd; ++rank) {
-    PetscInt partSize = 0, numPoints, offset, p, *PETSC_RESTRICT placePoints;
+  ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  for (i = 0; i < closureSize; i++) {
+    PetscInt cpoint = closure[2*i];
 
-    ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+    ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
+    ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint);CHKERRQ(ierr);
+  }
+  ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelClosure"
+/*@
+  DMPlexPartitionLabelClosure - Add the closure of all points to the partition label
+
+  Input Parameters:
++ dm     - The DM
+- label  - DMLabel assinging ranks to remote roots
+
+  Level: developer
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
+{
+  IS              rankIS,   pointIS;
+  const PetscInt *ranks,   *points;
+  PetscInt        numRanks, numPoints, r, p, c, closureSize;
+  PetscInt       *closure = NULL;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetValueIS(label, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt rank = ranks[r];
+
+    ierr = DMLabelGetStratumIS(label, rank, &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
-      PetscInt  point   = partArray[offset+p], closureSize, c;
-      PetscInt *closure = NULL;
-
-      /* TODO Include support for height > 0 case */
-      ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (c=0; c<closureSize; c++) {
-        PetscInt cpoint = closure[c*2];
-        if (!PetscBTLookupSet(bt,cpoint-pStart)) {
-          PetscInt *PETSC_RESTRICT pt;
-          partSize++;
-          ierr = PetscSegBufferGetInts(segpart,1,&pt);CHKERRQ(ierr);
-          *pt = cpoint;
-        }
+      ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {
+        ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c]);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    ierr = PetscSectionSetDof(*section, rank, partSize);CHKERRQ(ierr);
-    ierr = PetscSegBufferGetInts(segpack,partSize,&placePoints);CHKERRQ(ierr);
-    ierr = PetscSegBufferExtractTo(segpart,placePoints);CHKERRQ(ierr);
-    ierr = PetscSortInt(partSize,placePoints);CHKERRQ(ierr);
-    for (p=0; p<partSize; p++) {ierr = PetscBTClear(bt,placePoints[p]-pStart);CHKERRQ(ierr);}
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
-  ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
-  ierr = PetscSegBufferDestroy(&segpart);CHKERRQ(ierr);
+  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);}
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(*section, &newSize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(newSize, &allPoints);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelAdjacency"
+/*@
+  DMPlexPartitionLabelAdjacency - Add one level of adjacent points to the partition label
 
-  ierr = PetscSegBufferExtractInPlace(segpack,&packPoints);CHKERRQ(ierr);
-  for (rank = rStart; rank < rEnd; ++rank) {
-    PetscInt numPoints, offset;
+  Input Parameters:
++ dm     - The DM
+- label  - DMLabel assinging ranks to remote roots
 
-    ierr = PetscSectionGetDof(*section, rank, &numPoints);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(*section, rank, &offset);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&allPoints[offset], packPoints, numPoints * sizeof(PetscInt));CHKERRQ(ierr);
-    packPoints += numPoints;
+  Level: developer
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
+{
+  IS              rankIS,   pointIS;
+  const PetscInt *ranks,   *points;
+  PetscInt        numRanks, numPoints, r, p, a, adjSize;
+  PetscInt       *adj = NULL;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetValueIS(label, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt rank = ranks[r];
+
+    ierr = DMLabelGetStratumIS(label, rank, &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      adjSize = PETSC_DETERMINE;
+      ierr = DMPlexGetAdjacency(dm, points[p], &adjSize, &adj);CHKERRQ(ierr);
+      for (a = 0; a < adjSize; ++a) {ierr = DMLabelSetValue(label, adj[a], rank);CHKERRQ(ierr);}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  ierr = PetscFree(adj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = PetscSegBufferDestroy(&segpack);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(pointPartition, &partArray);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), newSize, allPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelInvert"
+/*@
+  DMPlexPartitionLabelInvert - Create a partition label of remote roots from a local root label
+
+  Input Parameters:
++ dm        - The DM
+. rootLabel - DMLabel assinging ranks to local roots
+. processSF - A star forest mapping into the local index on each remote rank
+
+  Output Parameter:
+- leafLabel - DMLabel assinging ranks to remote roots
+
+  Note: The rootLabel defines a send pattern by mapping local points to remote target ranks. The
+  resulting leafLabel is a receiver mapping of remote roots to their parent rank.
+
+  Level: developer
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel)
+{
+  MPI_Comm           comm;
+  PetscMPIInt        rank, numProcs;
+  PetscInt           p, n, numNeighbors, size, l, nleaves;
+  PetscSF            sfPoint;
+  PetscSFNode       *rootPoints, *leafPoints;
+  PetscSection       rootSection, leafSection;
+  const PetscSFNode *remote;
+  const PetscInt    *local, *neighbors;
+  IS                 valueIS;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+
+  /* Convert to (point, rank) and use actual owners */
+  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, 0, numProcs);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(rootLabel, &valueIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  for (n = 0; n < numNeighbors; ++n) {
+    PetscInt numPoints;
+
+    ierr = DMLabelGetStratumSize(rootLabel, neighbors[n], &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(rootSection, neighbors[n], numPoints);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &rootPoints);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
+  for (n = 0; n < numNeighbors; ++n) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        off, numPoints, p;
+
+    ierr = PetscSectionGetOffset(rootSection, neighbors[n], &off);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(rootLabel, neighbors[n], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      if (local) {ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);}
+      else       {l = -1;}
+      if (l >= 0) {rootPoints[off+p] = remote[l];}
+      else        {rootPoints[off+p].index = points[p]; rootPoints[off+p].rank = rank;}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  /* Communicate overlap */
+  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
+  ierr = DMPlexDistributeData(dm, processSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
+  /* Filter remote contributions (ovLeafPoints) into the overlapSF */
+  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
+  for (p = 0; p < size; p++) {
+    ierr = DMLabelSetValue(leafLabel, leafPoints[p].index, leafPoints[p].rank);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(rootPoints);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscFree(leafPoints);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelCreateSF"
+/*@
+  DMPlexPartitionLabelCreateSF - Create a star forest from a label that assigns ranks to points
+
+  Input Parameters:
++ dm    - The DM
+. label - DMLabel assinging ranks to remote roots
+
+  Output Parameter:
+- sf    - The star forest communication context encapsulating the defined mapping
+
+  Note: The incoming label is a receiver mapping of remote points to their parent rank.
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
+{
+  PetscMPIInt     rank, numProcs;
+  PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0;
+  PetscSFNode    *remotePoints;
+  IS              remoteRootIS;
+  const PetscInt *remoteRoots;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+
+  for (numRemote = 0, n = 0; n < numProcs; ++n) {
+    ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
+    numRemote += numPoints;
+  }
+  ierr = PetscMalloc1(numRemote, &remotePoints);CHKERRQ(ierr);
+  /* Put owned points first */
+  ierr = DMLabelGetStratumSize(label, rank, &numPoints);CHKERRQ(ierr);
+  if (numPoints > 0) {
+    ierr = DMLabelGetStratumIS(label, rank, &remoteRootIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; p++) {
+      remotePoints[idx].index = remoteRoots[p];
+      remotePoints[idx].rank = rank;
+      idx++;
+    }
+    ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
+  }
+  /* Now add remote points */
+  for (n = 0; n < numProcs; ++n) {
+    ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
+    if (numPoints <= 0 || n == rank) continue;
+    ierr = DMLabelGetStratumIS(label, n, &remoteRootIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; p++) {
+      remotePoints[idx].index = remoteRoots[p];
+      remotePoints[idx].rank = n;
+      idx++;
+    }
+    ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
+  }
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), sf);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sf, pEnd-pStart, numRemote, NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

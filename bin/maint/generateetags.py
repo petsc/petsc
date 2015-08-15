@@ -111,7 +111,7 @@ def processDir(flist,dirname,names):
   # check for configure generated PETSC_ARCHes
   rmnames=[]
   for name in names:
-    if os.path.isdir(os.path.join(dirname,name,'conf')):
+    if os.path.isdir(os.path.join(dirname,name,'petsc','conf')):
       rmnames.append(name)
   for rmname in rmnames:
     names.remove(rmname)
@@ -121,7 +121,7 @@ def processFiles(dirname,flist):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['conf/*','src/docs/website/documentation/changes/dev.html']
+  lists=['petsc/conf/*','src/docs/website/documentation/changes/dev.html']
 
   for glist in lists:
     gfiles = glob.glob(glist)

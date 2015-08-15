@@ -34,7 +34,6 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
   PetscReal                    psi, ndpsi, normd, innerd, t=0;
   PetscReal                    delta, rho;
-  PetscInt                     iter=0,kspits;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
   PetscErrorCode               ierr;
@@ -56,18 +55,19 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,ssls->dpsi);CHKERRQ(ierr);
   ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
-  while (1) {
-    ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",iter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
+  while (PETSC_TRUE) {
+    ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
     /* Check the termination criteria */
-    ierr = TaoMonitor(tao,iter++,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
     if (reason!=TAO_CONTINUE_ITERATING) break;
+    tao->niter++;
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,
        rest of the code uses -d.) */
     ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ssls->ff,tao->stepdirection);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-    tao->ksp_its+=kspits;
+    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    tao->ksp_tot_its+=tao->ksp_its;
 
     ierr = VecCopy(tao->stepdirection,ssls->w);CHKERRQ(ierr);
     ierr = VecScale(ssls->w,-1.0);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
     ierr = VecDot(ssls->w,ssls->dpsi,&innerd);CHKERRQ(ierr);
 
     /* Make sure that we have a descent direction */
-    if (innerd >= -delta*pow(normd, rho)) {
+    if (innerd >= -delta*PetscPowReal(normd, rho)) {
       ierr = PetscInfo(tao, "newton direction not descent\n");CHKERRQ(ierr);
       ierr = VecCopy(ssls->dpsi,tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(ssls->w,ssls->dpsi,&innerd);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     innerd = -innerd;
 
-    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&psi,ssls->dpsi,tao->stepdirection,&t,&ls_reason);CHKERRQ(ierr);
     ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
   }
@@ -124,10 +124,9 @@ PetscErrorCode TaoDestroy_SSFLS(Tao tao)
    Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SSFLS"
-PetscErrorCode TaoCreate_SSFLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
   PetscErrorCode ierr;
@@ -139,7 +138,7 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
   tao->ops->solve=TaoSolve_SSFLS;
   tao->ops->setup=TaoSetUp_SSFLS;
   tao->ops->view=TaoView_SSLS;
-  tao->ops->setfromoptions=TaoSetFromOptions_SSLS;
+  tao->ops->setfromoptions = TaoSetFromOptions_SSLS;
   tao->ops->destroy = TaoDestroy_SSFLS;
 
   ssls->delta = 1e-10;
@@ -147,24 +146,27 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   /* Linesearch objective and objectivegradient routines are  set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
 
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 0;
-  tao->frtol = 0; 
-  tao->grtol=0; 
-  tao->grtol=0;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 0;
+  if (!tao->frtol_changed) tao->frtol = 0;
+  if (!tao->gttol_changed) tao->gttol = 0;
+  if (!tao->grtol_changed) tao->grtol = 0;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->gatol = 1.0e-6;
-  tao->fmin = 1.0e-4;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-6;
+  if (!tao->fmin_changed)  tao->fmin = 1.0e-4;
 #else
-  tao->gatol = 1.0e-16;
-  tao->fmin = 1.0e-8;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-16;
+  if (!tao->fmin_changed)  tao->fmin = 1.0e-8;
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

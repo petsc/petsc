@@ -31,7 +31,7 @@ cd /home/bsmith
 
 #
 #   Gets the C version of BLAS and LAPACK (these are excluded by the 
-#   regular PETSc distribution hence we need to tar them up seperately
+#   regular PETSc distribution hence we need to tar them up separately
 #
 #cd /home/bsmith/petsc/src
 #/bin/tar cFFXf /home/bsmith/petsc/maint/xcludecblas $tmpdir/cblas.tar blaslapack

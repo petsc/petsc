@@ -1,5 +1,9 @@
 
 Global Vector:
+Vec Object: 3 MPI processes
+  type: mpi
+Vec Object:Vec_0x84000004_0 3 MPI processes
+  type: mpi
 Process [0]
 1
 1
@@ -19,6 +23,8 @@ Process [2]
 
 
 Local Vector: processor 0
+Vec Object: 1 MPI processes
+  type: seq
 1
 1
 1
@@ -27,6 +33,8 @@ Local Vector: processor 0
 2
 
 Local Vector: processor 1
+Vec Object: 1 MPI processes
+  type: seq
 1
 2
 2
@@ -35,8 +43,31 @@ Local Vector: processor 1
 3
 
 Local Vector: processor 2
+Vec Object: 1 MPI processes
+  type: seq
 2
 3
 3
 3
 3
+
+Local to global mapping
+ISLocalToGlobalMapping Object: 3 MPI processes
+  type: basic
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 4
+[0] 5 5
+[1] 0 4
+[1] 1 5
+[1] 2 6
+[1] 3 7
+[1] 4 8
+[1] 5 9
+[2] 0 8
+[2] 1 9
+[2] 2 10
+[2] 3 11
+[2] 4 12

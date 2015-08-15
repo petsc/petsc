@@ -12,7 +12,7 @@ class ConfigReader(script.Script):
     import os
 
     argDB = RDict.RDict(None, None, 0, 0)
-    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
+    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'lib','petsc','conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
     return
@@ -22,7 +22,7 @@ class ConfigReader(script.Script):
     framework = self.loadConfigure()
     mpi = framework.require('config.packages.MPI', None)
     print mpi.include, mpi.lib
-    arch = framework.require('PETSc.utilities.arch', None)
+    arch = framework.require('PETSc.options.arch', None)
     print arch.arch
     print 'Configure is cached:',('configureCache' in self.argDB)
     for k in framework.argDB.keys():

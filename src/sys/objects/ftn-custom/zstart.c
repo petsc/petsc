@@ -11,13 +11,11 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#define PETSC_DESIRE_COMPLEX
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
-#include <petscthreadcomm.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
@@ -135,7 +133,7 @@ extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
 extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode  PetscLogBegin_Private(void);
+extern PetscErrorCode  PetscLogInitialize(void);
 #endif
 extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
@@ -210,12 +208,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;
 }
 
-/* -----------------------------------------------------------------------------------------------*/
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+extern PetscFPT PetscFPTData;
+#endif
 
-extern MPI_Op PetscADMax_Op;
-extern MPI_Op PetscADMin_Op;
-PETSC_EXTERN void MPIAPI PetscADMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-PETSC_EXTERN void MPIAPI PetscADMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+/* -----------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
@@ -384,10 +381,6 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = MPI_Type_commit(&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
 #endif
-  *ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
-  *ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
@@ -416,7 +409,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing SAWs\n");return;}
 #endif
 #if defined(PETSC_USE_LOG)
-  *ierr = PetscLogBegin_Private();
+  *ierr = PetscLogInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
 #endif
   *ierr = PetscInitialize_DynamicLibraries();
@@ -436,13 +429,14 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-  *ierr = PetscThreadCommInitializePackage();
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
-
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates pthread_key */
 #if defined(PETSC_USE_DEBUG)
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
+#endif
+
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  *ierr = PetscFPTCreate(10000);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
 #endif
 
 #if defined(PETSC_HAVE_CUDA)

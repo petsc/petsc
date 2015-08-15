@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
+#include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToAll"
@@ -29,8 +29,8 @@ $        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
 $        // destroy scatter context and local vector when no longer needed
-$        VecScatterDestroy(ctx);
-$        VecDestroy(vout);
+$        VecScatterDestroy(&ctx);
+$        VecDestroy(&vout);
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).

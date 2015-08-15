@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
@@ -30,9 +30,9 @@ $       ascii[:[filename][:[format][:append]]]    defaults to stdout - format ca
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-$       draw[:drawtype}                           for example, draw:tikz  or draw:x
+$       draw[:drawtype]                           for example, draw:tikz  or draw:x
 $       socket[:port]                             defaults to the standard output port
-$       ams[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
+$       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
@@ -48,10 +48,19 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscBool      flag;
+  PetscBool      flag,hashelp;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
+
+  ierr = PetscOptionsHasName(NULL,"-help",&hashelp);CHKERRQ(ierr);
+  if (hashelp) {
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers display of a PETSc object to screen or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers saving of a PETSc object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s draw[:drawtype]: %s (%s)\n",pre ? pre : "",name+1,"Triggers drawing of a PETSc object","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Triggers push of a PETSc object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"  -%s%s saws[:communicatorname]: %s (%s)\n",pre ? pre : "",name+1,"Triggers publishing of a PETSc object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
+  }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
   if (set) *set = PETSC_FALSE;
@@ -172,7 +181,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionBegin;
   *inviewer = 0;
   ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr         = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
+  ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,NULL);CHKERRQ(ierr);
   *inviewer    = viewer;
   viewer->data = 0;
   PetscFunctionReturn(0);
@@ -310,7 +319,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
     ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   }
   if (viewer->ops->setfromoptions) {
-    ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
+    ierr = (*viewer->ops->setfromoptions)(PetscOptionsObject,viewer);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

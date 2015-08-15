@@ -80,9 +80,9 @@ int main(int argc, char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&ref,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&ref,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(ref,&x_ptr);CHKERRQ(ierr);
   /*
    * [0,1], mu=10^-3
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetIntArray(NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1");CHKERRQ(ierr);
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8F %18.15F %18.15F %18.15F\n",eimex_rowcol[0],eimex_rowcol[1],dt,norm,PetscRealPart(x_ptr[0]),PetscRealPart(x_ptr[1]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1]));CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
 
   /* Write line in convergence log */
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_APPEND);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer,"eimex_nonstiff_vdp.txt");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D %D %10.8F %18.15F\n",eimex_rowcol[0],eimex_rowcol[1],dt,norm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D %D %10.8f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,15 +175,16 @@ int main(int argc, char **argv)
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = x[1];
   f[1] = 0.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -192,18 +193,20 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
-  User           user = (User)ptr;
-  PetscScalar    *x,*xdot,*f;
-
+  User              user = (User)ptr;
+  PetscScalar       *f;
+  const PetscScalar *x,*xdot;
+  PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
-  VecGetArray(X,&x);
-  VecGetArray(Xdot,&xdot);
-  VecGetArray(F,&f);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0];
   f[1] = xdot[1]-((1.-x[0]*x[0])*x[1]-x[0])/user->mu;
-  VecRestoreArray(X,&x);
-  VecRestoreArray(Xdot,&xdot);
-  VecRestoreArray(F,&f);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -211,20 +214,21 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr
 #define __FUNCT__ "IJacobian"
 static PetscErrorCode IJacobian(TS  ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ptr)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ptr;
-  PetscReal      mu = user->mu;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
+  PetscErrorCode    ierr;
+  User              user = (User)ptr;
+  PetscReal         mu = user->mu;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = a;
   J[0][1] = 0;
   J[1][0] = (2.*x[0]*x[1]+1.)/mu;
   J[1][1] = a - (1. - x[0]*x[0])/mu;
   ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

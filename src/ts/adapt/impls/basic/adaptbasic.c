@@ -1,4 +1,4 @@
-#include <petsc-private/tsimpl.h> /*I "petscts.h" I*/
+#include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 typedef struct {
   PetscBool always_accept;
@@ -27,7 +27,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
 
   safety = basic->safety;
-  ierr   = TSErrorNormWRMS(ts,Y,&enorm);CHKERRQ(ierr);
+  ierr   = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
@@ -46,7 +46,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   }
 
   /* The optimal new step based purely on local truncation error for this step. */
-  hfac_lte = safety * PetscRealPart(PetscPowScalar((PetscScalar)enorm,(PetscReal)(-1./order)));
+  hfac_lte = safety * PetscPowReal(enorm,-1./order);
   h_lte    = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
 
   *next_sc = 0;
@@ -56,21 +56,32 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy_Basic"
-static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
+#define __FUNCT__ "TSAdaptReset_Basic"
+static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDestroy(&basic->Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptDestroy_Basic"
+static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSAdaptReset_Basic(adapt);CHKERRQ(ierr);
   ierr = PetscFree(adapt->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetFromOptions_Basic"
-static PetscErrorCode TSAdaptSetFromOptions_Basic(TSAdapt adapt)
+static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode ierr;
@@ -78,7 +89,7 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(TSAdapt adapt)
   PetscBool      set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Basic adaptive controller options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Basic adaptive controller options");CHKERRQ(ierr);
   two  = 2;
   ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase in step size","",basic->clip,&two,&set);CHKERRQ(ierr);
   if (set && (two != 2 || basic->clip[0] > basic->clip[1])) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");

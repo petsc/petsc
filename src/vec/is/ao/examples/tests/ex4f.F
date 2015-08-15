@@ -3,13 +3,14 @@
 !
       program main
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscao.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscao.h>
 
       PetscErrorCode ierr
       AO             ao
       PetscInt       localvert(4),nlocal
       PetscMPIInt    rank
+      IS             is
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -31,6 +32,13 @@
 !     Test AOCreateMemoryScalable()
       call AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert,    &
      &     PETSC_NULL_INTEGER,ao,ierr)
+      call AODestroy(ao,ierr)
+
+      call AOCreate(PETSC_COMM_WORLD,ao,ierr)
+      call ISCreateStride(PETSC_COMM_WORLD,1,0,1,is,ierr)
+      call AOSetIS(ao,is,is,ierr)
+      call ISDestroy(is,ierr)
+      call AOSetType(ao,AOMEMORYSCALABLE,ierr)
       call AODestroy(ao,ierr)
 
       call PetscFinalize(ierr)

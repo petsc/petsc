@@ -1,6 +1,6 @@
 
 #include <petscsys.h>
-#include <petsc-private/drawimpl.h>
+#include <petsc/private/drawimpl.h>
 #include <../src/sys/classes/draw/impls/win32/win32draw.h>
 
 #define IDC_FOUR       109
@@ -640,7 +640,7 @@ static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
 
   PetscFunctionBegin;
   SendMessage(windraw->hWnd,WM_DESTROY,0,0);
-  PetscFree(windraw);
+  PetscFree(draw->data);
   PetscFunctionReturn(0);
 }
 
@@ -777,7 +777,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   ierr = PetscMemcpy((*popdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   pop->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,(unsigned long*)hThread);
+  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,(LPDWORD)hThread);
   CloseHandle(hThread);
   WaitForSingleObject(pop->hReadyEvent, INFINITE);
   CloseHandle(pop->hReadyEvent);
@@ -818,10 +818,9 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_Win32"
-PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
@@ -838,7 +837,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 
   windraw->hReadyEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */
-  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,(unsigned long*)hThread);
+  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,(LPDWORD)hThread);
   CloseHandle(hThread);
   WaitForSingleObject(windraw->hReadyEvent,INFINITE);
   CloseHandle(windraw->hReadyEvent);
@@ -878,7 +877,6 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   ReleaseMutex(g_hWindowListMutex);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /* FUNCTION: PetscWndProc(HWND, unsigned, WORD, LONG)

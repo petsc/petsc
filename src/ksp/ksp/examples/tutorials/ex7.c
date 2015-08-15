@@ -40,11 +40,11 @@ int main(int argc,char **args)
   PC             subpc;        /* PC context for subdomain */
   PetscReal      norm;         /* norm of solution error */
   PetscErrorCode ierr;
-  PetscInt       i,j,Ii,J,*blks,m = 8,n;
+  PetscInt       i,j,Ii,J,*blks,m = 4,n;
   PetscMPIInt    rank,size;
   PetscInt       its,nlocal,first,Istart,Iend;
   PetscScalar    v,one = 1.0,none = -1.0;
-  PetscBool      isbjacobi,flg = PETSC_FALSE;
+  PetscBool      isbjacobi;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int main(int argc,char **args)
       } else {
         ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
         ierr = KSPSetType(subksp[i],KSPGMRES);CHKERRQ(ierr);
-        ierr = KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+        ierr = KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
       }
     }
   }
@@ -207,14 +207,6 @@ int main(int argc,char **args)
      Solve the linear system
   */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-
-  /*
-     View info about the solver
-  */
-  ierr = PetscOptionsGetBool(NULL,"-nokspview",&flg,NULL);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
 
   /* -------------------------------------------------------------------
                       Check solution and clean up

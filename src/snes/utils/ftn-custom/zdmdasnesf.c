@@ -1,6 +1,6 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/dmdaimpl.h>
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/dmdaimpl.h>
+#include <petsc/private/snesimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdasnessetjacobianlocal_      DMDASNESSETJACOBIANLOCAL
 #define dmdasnessetfunctionlocal_      DMDASNESSETFUNCTIONLOCAL

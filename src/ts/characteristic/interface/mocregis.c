@@ -1,4 +1,4 @@
-#include <petsc-private/characteristicimpl.h>  /*I "petsccharacteristic.h" I*/
+#include <petsc/private/characteristicimpl.h>  /*I "petsccharacteristic.h" I*/
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
@@ -27,6 +27,7 @@ PetscErrorCode CharacteristicRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (CharacteristicRegisterAllCalled) PetscFunctionReturn(0);
   CharacteristicRegisterAllCalled = PETSC_TRUE;
 
   ierr = CharacteristicRegister(CHARACTERISTICDA,  CharacteristicCreate_DA);CHKERRQ(ierr);

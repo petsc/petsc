@@ -139,7 +139,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     if (it > 0) {
       PetscScalar *work;
-      if (!pgmres->orthogwork) {ierr = PetscMalloc1((pgmres->max_k + 2),&pgmres->orthogwork);CHKERRQ(ierr);}
+      if (!pgmres->orthogwork) {ierr = PetscMalloc1(pgmres->max_k + 2,&pgmres->orthogwork);CHKERRQ(ierr);}
       work = pgmres->orthogwork;
       /* Apply correction computed by the VecMDot in the last iteration to Znext. The original form is
        *
@@ -437,13 +437,13 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_PGMRES"
-PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("KSP pipelined GMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP pipelined GMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

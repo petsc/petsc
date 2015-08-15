@@ -30,8 +30,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B,PetscInt d_nz,con
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_MPIAIJViennaCL"
-PetscErrorCode  MatGetVecs_MPIAIJViennaCL(Mat mat,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_MPIAIJViennaCL"
+PetscErrorCode  MatCreateVecs_MPIAIJViennaCL(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
   PetscInt rbs,cbs;
@@ -76,7 +76,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJViennaCL);CHKERRQ(ierr);
-  A->ops->getvecs        = MatGetVecs_MPIAIJViennaCL;
+  A->ops->getvecs        = MatCreateVecs_MPIAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJVIENNACL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

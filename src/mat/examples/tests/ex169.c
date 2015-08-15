@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = PetscSubcommSetNumber(subc,ns);CHKERRQ(ierr);
   ierr = PetscSubcommSetType(subc,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
   ierr = PetscSubcommSetFromOptions(subc);CHKERRQ(ierr);
-  ierr = MatGetRedundantMatrix(A,0,subc->comm,MAT_INITIAL_MATRIX,&Ar);CHKERRQ(ierr);
+  ierr = MatCreateRedundantMatrix(A,0,PetscSubcommChild(subc),MAT_INITIAL_MATRIX,&Ar);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Copying matrix\n",ns);CHKERRQ(ierr);
   ierr = MatDuplicate(Ar,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&subc);CHKERRQ(ierr);

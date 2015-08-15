@@ -15,8 +15,8 @@ DOCS		 =
 DIRS		 =
 CLEANFILES       = plate2 jbearing2 plate2f jbearing2f
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 plate2: plate2.o chkopts
 	-${CLINKER} -o plate2 plate2.o ${PETSC_TAO_LIB}
@@ -102,4 +102,4 @@ TESTEXAMPLES_C_X_MPIUNI         = plate2.PETSc runplate2 plate2.rm jbearing2.PET
 TESTEXAMPLES_FORTRAN            = plate2f.PETSc runplate2f runplate2f_2 plate2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI     = plate2f.PETSc runplate2f plate2f.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

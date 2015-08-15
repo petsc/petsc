@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>    /*I "petscvec.h"  I*/
+#include <petsc/private/vecimpl.h>    /*I "petscvec.h"  I*/
 
 PetscFunctionList VecList              = NULL;
 PetscBool         VecRegisterAllCalled = PETSC_FALSE;
@@ -80,9 +80,7 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   PetscValidPointer(type,2);
-  if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll();CHKERRQ(ierr);
-  }
+  ierr = VecRegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(0);
 }

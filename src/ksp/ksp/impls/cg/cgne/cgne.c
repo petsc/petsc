@@ -95,7 +95,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
-  ierr     = MatMultTranspose(Amat,B,T);CHKERRQ(ierr);
+  ierr     = KSP_MatMultTranspose(ksp,Amat,B,T);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
@@ -151,8 +151,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);     /*     p <- z + b* p   */
     }
     betaold = beta;
-    ierr    = MatMult(Amat,P,T);CHKERRQ(ierr);
-    ierr    = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
+    ierr    = KSP_MatMult(ksp,Amat,P,T);CHKERRQ(ierr);
+    ierr    = KSP_MatMultTranspose(ksp,Amat,T,Z);CHKERRQ(ierr);
     ierr    = VecXDot(P,Z,&dpi);CHKERRQ(ierr);    /*     dpi <- z'p      */
     a       = beta/dpi;                            /*     a = beta/p'z    */
     if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
@@ -188,6 +188,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (eigs) cg->ned = ksp->its;
   PetscFunctionReturn(0);
 }
 
@@ -195,7 +196,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the
        function pointers for all the routines it needs to call (KSPSolve_CGNE() etc)
 
-    It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 
 /*MC
@@ -236,7 +237,7 @@ M*/
 extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
-extern PetscErrorCode KSPSetFromOptions_CG(KSP);
+extern PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP);
 PETSC_EXTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 #undef __FUNCT__

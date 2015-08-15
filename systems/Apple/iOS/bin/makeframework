@@ -23,17 +23,17 @@ cd A
 mkdir Headers
 cp  ${PETSC_DIR}/include/*.h Headers
 cp  ${PETSC_DIR}/${PETSC_ARCH}/include/*.h Headers
-cp -r  ${PETSC_DIR}/include/petsc-private Headers
-cp -r  ${PETSC_DIR}/include/mpiuni Headers
+cp -r  ${PETSC_DIR}/include/petsc Headers
 
 cd Headers
-sed -i "" "s?#include [ ]*<petsc-private?#import <PETSc/petsc-private?g" *.h petsc-private/*.h
-sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
-sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h mpiuni/*.h
-sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpiuni/mpi?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc/private/*.h petsc/mpiuni/*.h
+sed -i "" "s?#include [ ]*<mpi?#import <PETSc/petsc/mpiuni/mpi?g" *.h  petsc/private/*.h petsc/mpiuni/*.h
 cd ..
 
-cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.a PETSc
+echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map
+
+cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/PETSc PETSc
+install_name_tool -id /Library/Frameworks/PETSc-iOS/simulator/PETSc.framework/PETSc PETSc
 mkdir Resources
 cd Resources
 cat <<EOF > Info.plist
@@ -85,4 +85,5 @@ cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework
 ln -s Versions/Current/Headers Headers
 ln -s Versions/Current/PETSc PETSc
 ln -s Versions/Current/Resources Resources
+ln -s Versions/Current/module.map module.map
 

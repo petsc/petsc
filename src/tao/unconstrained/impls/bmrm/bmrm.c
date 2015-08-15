@@ -66,7 +66,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   PetscReal          lambda;
   PetscReal          bt;
   Vec_Chain          grad_list, *tail_glist, *pgrad;
-  PetscInt           iter = 0;
   PetscInt           i;
   PetscMPIInt        rank;
 
@@ -105,7 +104,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
   /* NOTE: In application pass the sub-gradient of Remp(W) */
   ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,iter,f,1.0,0.0,tao->step,&reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step,&reason);CHKERRQ(ierr);
   while (reason == TAO_CONTINUE_ITERATING) {
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
     ierr = VecDot(W, G, &bt);CHKERRQ(ierr);
@@ -117,26 +116,26 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
     /* Bring up the inner solver */
     if (!rank) {
-      ierr = ensure_df_space(iter+1, &df); CHKERRQ(ierr);
+      ierr = ensure_df_space(tao->niter+1, &df); CHKERRQ(ierr);
       ierr = make_grad_node(bmrm->local_w, &pgrad);CHKERRQ(ierr);
       tail_glist->next = pgrad;
       tail_glist = pgrad;
 
-      df.a[iter] = 1.0;
-      df.f[iter] = -bt;
-      df.u[iter] = 1.0;
-      df.l[iter] = 0.0;
+      df.a[tao->niter] = 1.0;
+      df.f[tao->niter] = -bt;
+      df.u[tao->niter] = 1.0;
+      df.l[tao->niter] = 0.0;
 
       /* set up the Q */
       pgrad = grad_list.next;
-      for (i=0; i<=iter; i++) {
+      for (i=0; i<=tao->niter; i++) {
         ierr = VecDot(pgrad->V, bmrm->local_w, &reg);CHKERRQ(ierr);
-        df.Q[i][iter] = df.Q[iter][i] = reg / lambda;
+        df.Q[i][tao->niter] = df.Q[tao->niter][i] = reg / lambda;
         pgrad = pgrad->next;
       }
 
-      if (iter > 0) {
-        df.x[iter] = 0.0;
+      if (tao->niter > 0) {
+        df.x[tao->niter] = 0.0;
         ierr = solve(&df); CHKERRQ(ierr);
       } else
         df.x[0] = 1.0;
@@ -145,7 +144,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       jtwt = 0.0;
       ierr = VecSet(bmrm->local_w, 0.0); CHKERRQ(ierr);
       pgrad = grad_list.next;
-      for (i=0; i<=iter; i++) {
+      for (i=0; i<=tao->niter; i++) {
         jtwt -= df.x[i] * df.f[i];
         ierr = VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V); CHKERRQ(ierr);
         pgrad = pgrad->next;
@@ -182,8 +181,8 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       df.tol = innerSolverTol*0.5;
     }
 
-    iter++;
-    ierr = TaoMonitor(tao,iter,min_jw,epsilon,0.0,tao->step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao,tao->niter,min_jw,epsilon,0.0,tao->step,&reason);CHKERRQ(ierr);
   }
 
   /* free all the memory */
@@ -229,15 +228,14 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BMRM"
-static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("BMRM for regularized risk minimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"BMRM for regularized risk minimization");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL); CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -269,10 +267,9 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BMRM"
-PetscErrorCode TaoCreate_BMRM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
 {
   TAO_BMRM       *bmrm;
   PetscErrorCode ierr;
@@ -288,17 +285,16 @@ PetscErrorCode TaoCreate_BMRM(Tao tao)
   bmrm->lambda = 1.0;
   tao->data = (void*)bmrm;
 
-  /* Note: May need to be tuned! */
-  tao->max_it = 2048;
-  tao->max_funcs = 300000;
-  tao->fatol = 1e-20;
-  tao->frtol = 1e-25;
-  tao->gatol = 1e-25;
-  tao->grtol = 1e-25;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-12;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-12;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-12;
+  if (!tao->grtol_changed) tao->grtol = 1.0e-12;
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "init_df_solver"

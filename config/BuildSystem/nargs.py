@@ -308,16 +308,7 @@ class ArgDir(Arg):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
       checkInteractive(self.key)
-      try:
-        import GUI.FileBrowser
-        import SIDL.Loader
-        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
-        if self.help: db.setTitle(self.help)
-        else:         db.setTitle('Select the directory for '+self.key)
-        db.setMustExist(self.exist)
-        self.value = db.getDirectory()
-      except Exception:
-        return Arg.getValue(self)
+      return Arg.getValue(self)
     return self.value
 
   def setValue(self, value):
@@ -348,16 +339,7 @@ class ArgDirList(Arg):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
       checkInteractive(self.key)
-      try:
-        import GUI.FileBrowser
-        import SIDL.Loader
-        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
-        if self.help: db.setTitle(self.help)
-        else:         db.setTitle('Select the directory for '+self.key)
-        db.setMustExist(self.exist)
-        self.value = db.getDirectory()
-      except Exception:
-        return Arg.getValue(self)
+      return Arg.getValue(self)
     return self.value
 
   def setValue(self, value):
@@ -369,7 +351,8 @@ class ArgDirList(Arg):
     # Should check whether it is a well-formed path
     nvalue = []
     for dir in value:
-      nvalue.append(os.path.expanduser(dir))
+      if dir:
+        nvalue.append(os.path.expanduser(dir))
     value = nvalue
     for dir in value:
       if self.mustExist and not os.path.isdir(dir):
@@ -391,16 +374,7 @@ class ArgLibrary(Arg):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
       checkInteractive(self.key)
-      try:
-        import GUI.FileBrowser
-        import SIDL.Loader
-        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
-        if self.help: db.setTitle(self.help)
-        else:         db.setTitle('Select the library for '+self.key)
-        db.setMustExist(self.exist)
-        self.value = db.getFile()
-      except Exception:
-        return Arg.getValue(self)
+      return Arg.getValue(self)
     return self.value
 
   def setValue(self, value):
@@ -428,16 +402,7 @@ class ArgExecutable(Arg):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
       checkInteractive(self.key)
-      try:
-        import GUI.FileBrowser
-        import SIDL.Loader
-        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
-        if self.help: db.setTitle(self.help)
-        else:         db.setTitle('Select the executable for '+self.key)
-        db.setMustExist(self.exist)
-        self.value = db.getFile()
-      except Exception:
-        return Arg.getValue(self)
+      return Arg.getValue(self)
     return self.value
 
   def checkExecutable(self, dir, name):

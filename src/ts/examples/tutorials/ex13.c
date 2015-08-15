@@ -146,7 +146,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,localU,&uarray);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localU,&uarray);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
@@ -167,7 +167,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,localU,&uarray);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localU,&uarray);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);

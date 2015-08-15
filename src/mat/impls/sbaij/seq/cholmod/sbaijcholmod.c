@@ -2,10 +2,10 @@
 /*
    Provides an interface to the CHOLMOD sparse solver available through SuiteSparse version 4.2.1
 
-   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
+   When build with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
-   that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
+   that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]
 
 */
 
@@ -22,14 +22,15 @@ static Mat static_F;
 #define __FUNCT__ "CholmodErrorHandler"
 static void CholmodErrorHandler(int status,const char *file,int line,const char *message)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (status > CHOLMOD_OK) {
-    PetscInfo4(static_F,"CHOLMOD warning %d at %s:%d: %s",status,file,line,message);
+    ierr = PetscInfo4(static_F,"CHOLMOD warning %d at %s:%d: %s\n",status,file,line,message);CHKERRV(ierr);
   } else if (status == CHOLMOD_OK) { /* Documentation says this can happen, but why? */
-    PetscInfo3(static_F,"CHOLMOD OK at %s:%d: %s",file,line,message);
+    ierr = PetscInfo3(static_F,"CHOLMOD OK at %s:%d: %s\n",file,line,message);CHKERRV(ierr);
   } else {
-    PetscErrorPrintf("CHOLMOD error %d at %s:%d: %s\n",status,file,line,message);
+    ierr = PetscErrorPrintf("CHOLMOD error %d at %s:%d: %s\n",status,file,line,message);CHKERRV(ierr);
   }
   PetscFunctionReturnVoid();
 }
@@ -45,7 +46,7 @@ PetscErrorCode  CholmodStart(Mat F)
 
   PetscFunctionBegin;
   if (chol->common) PetscFunctionReturn(0);
-  ierr = PetscMalloc(sizeof(*chol->common),&chol->common);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1,&chol->common);CHKERRQ(ierr);
   ierr = !cholmod_X_start(chol->common);CHKERRQ(ierr);
 
   c                = chol->common;
@@ -53,26 +54,26 @@ PetscErrorCode  CholmodStart(Mat F)
 
 #define CHOLMOD_OPTION_DOUBLE(name,help) do {                            \
     PetscReal tmp = (PetscReal)c->name;                                  \
-    ierr    = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (double)tmp;                                               \
 } while (0)
 
 #define CHOLMOD_OPTION_INT(name,help) do {                               \
     PetscInt tmp = (PetscInt)c->name;                                    \
-    ierr    = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
 } while (0)
 
 #define CHOLMOD_OPTION_SIZE_T(name,help) do {                            \
     PetscInt tmp = (PetscInt)c->name;                                    \
-    ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     if (tmp < 0) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"value must be positive"); \
     c->name = (size_t)tmp;                                               \
 } while (0)
 
-#define CHOLMOD_OPTION_TRUTH(name,help) do {                             \
+#define CHOLMOD_OPTION_BOOL(name,help) do {                             \
     PetscBool tmp = (PetscBool) !!c->name;                              \
-    ierr    = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
 } while (0)
 
@@ -80,7 +81,12 @@ PetscErrorCode  CholmodStart(Mat F)
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
   chol->pack = (PetscBool)c->final_pack;
 
-  ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
+#if defined(PETSC_USE_SUITESPARSE_GPU)
+  c->useGPU = 1;
+  CHOLMOD_OPTION_INT(useGPU,"Use GPU for BLAS 1, otherwise 0");
+#endif
+
+  ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,NULL);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
 
   CHOLMOD_OPTION_DOUBLE(dbound,"Minimum absolute value of diagonal entries of D");
@@ -90,19 +96,16 @@ PetscErrorCode  CholmodStart(Mat F)
   CHOLMOD_OPTION_SIZE_T(maxrank,"Max rank of update, larger values are faster but use more memory [2,4,8]");
   {
     static const char *const list[] = {"SIMPLICIAL","AUTO","SUPERNODAL","MatCholmodFactorType","MAT_CHOLMOD_FACTOR_",0};
-    PetscEnum                choice = (PetscEnum)c->supernodal;
-
-    ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,&choice,0);CHKERRQ(ierr);
-    c->supernodal = (int)choice;
+    ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,(PetscEnum*)&c->supernodal,NULL);CHKERRQ(ierr);
   }
   if (c->supernodal) CHOLMOD_OPTION_DOUBLE(supernodal_switch,"flop/nnz_L threshold for switching to supernodal factorization");
-  CHOLMOD_OPTION_TRUTH(final_asis,"Leave factors \"as is\"");
-  CHOLMOD_OPTION_TRUTH(final_pack,"Pack the columns when finished (use FALSE if the factors will be updated later)");
+  CHOLMOD_OPTION_BOOL(final_asis,"Leave factors \"as is\"");
+  CHOLMOD_OPTION_BOOL(final_pack,"Pack the columns when finished (use FALSE if the factors will be updated later)");
   if (!c->final_asis) {
-    CHOLMOD_OPTION_TRUTH(final_super,"Leave supernodal factors instead of converting to simplicial");
-    CHOLMOD_OPTION_TRUTH(final_ll,"Turn LDL' factorization into LL'");
-    CHOLMOD_OPTION_TRUTH(final_monotonic,"Ensure columns are monotonic when done");
-    CHOLMOD_OPTION_TRUTH(final_resymbol,"Remove numerically zero values resulting from relaxed supernodal amalgamation");
+    CHOLMOD_OPTION_BOOL(final_super,"Leave supernodal factors instead of converting to simplicial");
+    CHOLMOD_OPTION_BOOL(final_ll,"Turn LDL' factorization into LL'");
+    CHOLMOD_OPTION_BOOL(final_monotonic,"Ensure columns are monotonic when done");
+    CHOLMOD_OPTION_BOOL(final_resymbol,"Remove numerically zero values resulting from relaxed supernodal amalgamation");
   }
   {
     PetscReal tmp[] = {(PetscReal)c->zrelax[0],(PetscReal)c->zrelax[1],(PetscReal)c->zrelax[2]};
@@ -117,8 +120,8 @@ PetscErrorCode  CholmodStart(Mat F)
     if (flg && n != 3) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_nrelax");
     if (flg) while (n--) c->nrelax[n] = (size_t)tmp[n];
   }
-  CHOLMOD_OPTION_TRUTH(prefer_upper,"Work with upper triangular form [faster when using fill-reducing ordering, slower in natural ordering]");
-  CHOLMOD_OPTION_TRUTH(default_nesdis,"Use NESDIS instead of METIS for nested dissection");
+  CHOLMOD_OPTION_BOOL(prefer_upper,"Work with upper triangular form [faster when using fill-reducing ordering, slower in natural ordering]");
+  CHOLMOD_OPTION_BOOL(default_nesdis,"Use NESDIS instead of METIS for nested dissection");
   CHOLMOD_OPTION_INT(print,"Verbosity level");
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -151,16 +154,16 @@ static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool values,cholmod_spa
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecWrapCholmod"
-static PetscErrorCode VecWrapCholmod(Vec X,cholmod_dense *Y)
+#define __FUNCT__ "VecWrapCholmodRead"
+static PetscErrorCode VecWrapCholmodRead(Vec X,cholmod_dense *Y)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x;
-  PetscInt       n;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscInt          n;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(Y,sizeof(*Y));CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetSize(X,&n);CHKERRQ(ierr);
 
   Y->x     = (double*)x;
@@ -171,6 +174,17 @@ static PetscErrorCode VecWrapCholmod(Vec X,cholmod_dense *Y)
   Y->x     = (double*)x;
   Y->xtype = CHOLMOD_SCALAR_TYPE;
   Y->dtype = CHOLMOD_DOUBLE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecUnWrapCholmodRead"
+static PetscErrorCode VecUnWrapCholmodRead(Vec X,cholmod_dense *Y)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayRead(X,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -248,6 +262,9 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Common.ndbounds_hit      %g (number of times diagonal was modified by dbound)\n",c->ndbounds_hit);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.rowfacfl          %g (number of flops in last call to cholmod_rowfac)\n",c->rowfacfl);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.aatfl             %g (number of flops to compute A(:,f)*A(:,f)')\n",c->aatfl);CHKERRQ(ierr);CHKERRQ(ierr);
+#if defined(PETSC_USE_SUITESPARSE_GPU)
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.useGPU            %d\n",c->useGPU);CHKERRQ(ierr);CHKERRQ(ierr);
+#endif
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -282,10 +299,11 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = VecWrapCholmod(B,&cholB);CHKERRQ(ierr);
+  ierr     = VecWrapCholmodRead(B,&cholB);CHKERRQ(ierr);
   static_F = F;
   cholX    = cholmod_X_solve(CHOLMOD_A,chol->factor,&cholB,chol->common);
   if (!cholX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CHOLMOD failed");
+  ierr = VecUnWrapCholmodRead(B,&cholB);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,cholX->x,cholX->nrow*sizeof(*x));CHKERRQ(ierr);
   ierr = !cholmod_X_free_dense(&cholX,chol->common);CHKERRQ(ierr);
@@ -363,7 +381,9 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverP
   MATSOLVERCHOLMOD = "cholmod" - A matrix type providing direct solvers (Cholesky) for sequential matrices
   via the external package CHOLMOD.
 
-  ./configure --download-suitesparse to install PETSc to use CHOLMOD
+  Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
+
+  Use -pc_type lu -pc_factor_mat_solver_package cholmod to use this direct solver
 
   Consult CHOLMOD documentation for more information about the Common parameters
   which correspond to the options database keys below.
@@ -384,6 +404,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverP
 - -mat_cholmod_print <3>           - Verbosity level (None)
 
    Level: beginner
+
+   Note: CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
 .seealso: PCCHOLESKY, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/

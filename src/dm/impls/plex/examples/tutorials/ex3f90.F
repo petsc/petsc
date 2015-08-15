@@ -3,7 +3,7 @@
 ! Contributed by Adrian Croucher <a.croucher@auckland.ac.nz>
       program main
       implicit none
-#include <finclude/petsc.h90>
+#include <petsc/finclude/petsc.h90>
       DM :: dm, dmi
       PetscFV :: fvm
       PetscInt, parameter :: dim = 3
@@ -24,6 +24,17 @@
       PetscReal, pointer :: pcentroid(:)
       PetscReal, pointer :: pnormal(:)
 
+      PetscReal, target, dimension(dim)  ::                             &
+     & v0
+      PetscReal, target, dimension(dim*dim)  ::                         &
+     & J
+      PetscReal, target, dimension(dim*dim)  ::                         &
+     & invJ
+      PetscReal, pointer :: pv0(:)
+      PetscReal, pointer :: pJ(:)
+      PetscReal, pointer :: pinvJ(:)
+      PetscReal :: detJ
+
       PetscInt :: i
 
       numPoints = [12, 2]
@@ -37,6 +48,9 @@
       pcentroid => centroid
       pnormal => normal
 
+      pv0 => v0
+      pJ => J
+      pinvJ => invJ
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       CHKERRQ(ierr)
@@ -45,7 +59,7 @@
       CHKERRQ(ierr)
       call PetscObjectSetName(dm, "testplex", ierr)
       CHKERRQ(ierr)
-      call DMPlexSetDimension(dm, dim, ierr)
+      call DMSetDimension(dm, dim, ierr)
       CHKERRQ(ierr)
 
       call DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,   &
@@ -70,6 +84,8 @@
         write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))'),                   &
      &           'cell: ', i, ' volume: ', vol, ' centroid: ',          &
      &           pcentroid(1), pcentroid(2), pcentroid(3)
+        call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,  &
+     &  detJ, ierr)
       end do
 
       call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr)

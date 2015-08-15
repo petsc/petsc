@@ -141,7 +141,8 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   DM             da;
   DMDALocalInfo  info;
   PetscInt       i;
-  Field          *x,*xdot,*f;
+  Field          *f;
+  const Field    *x,*xdot;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -149,8 +150,8 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
@@ -160,8 +161,8 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -176,7 +177,8 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   DMDALocalInfo  info;
   PetscInt       i,j;
   PetscReal      hx;
-  Field          *x,*f;
+  Field          *f;
+  const Field    *x;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -195,7 +197,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
@@ -212,7 +214,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -231,15 +233,15 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   DMDALocalInfo  info;
   PetscInt       i;
   DM             da;
-  Field          *x,*xdot;
+  const Field    *x,*xdot;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -252,8 +254,8 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

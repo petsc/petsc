@@ -3,7 +3,8 @@
    Low-level routines for managing dynamic link libraries (DLLs).
 */
 
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
+#include <petscvalgrind.h>
 
 /* XXX Should be done better !!!*/
 #if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)

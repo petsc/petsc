@@ -1,12 +1,14 @@
 
-static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
+static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n \
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
-  -lidvelocity <lid>, where <lid> = dimensionless velocity of lid\n\
-  -grashof <gr>, where <gr> = dimensionless temperature gradent\n\
-  -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
-  -contours : draw contour plots of solution\n\n";
+  -lidvelocity &ltlid&gt, where &ltlid&gt = dimensionless velocity of lid\n\
+  -grashof &ltgr&gt, where &ltgr&gt = dimensionless temperature gradent\n\
+  -prandtl &ltpr&gt, where &ltpr&gt = dimensionless thermal/momentum diffusity ratio\n\
+ -contours : draw contour plots of solution\n\n";
+/* in HTML, '&lt' = '<' and '&gt' = '>' */
+
 /*
       See src/ksp/ksp/examples/tutorials/ex45.c
 */
@@ -200,6 +202,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscReal      grashof,dx;
   Field          **x;
 
+  PetscFunctionBeginUser;
   grashof = user->grashof;
 
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -238,7 +241,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
      Restore vector
   */
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -424,7 +427,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
   if (B) {
-    ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayRead(da,localB,&b);CHKERRQ(ierr);
   }
   /* looks like a combination of the formfunction / formjacobian routines */
   dhx   = (PetscReal)(info.mx-1);dhy   = (PetscReal)(info.my-1);
@@ -646,15 +649,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   }
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   if (B) {
-    ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,localB,&b);CHKERRQ(ierr);
   }
   ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = PetscLogFlops(tot_its*(84.0 + 41.0 + 26.0));CHKERRQ(ierr);
-  if (B) {
-    ierr = DMLocalToGlobalBegin(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
-  }
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
     ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);

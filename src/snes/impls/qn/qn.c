@@ -1,4 +1,5 @@
-#include <petsc-private/snesimpl.h> /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
+#include <petscdm.h>
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
@@ -33,7 +34,6 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   SNES_QN            *qn = (SNES_QN*)snes->data;
   Vec                W   = snes->work[3];
   Vec                *U  = qn->U;
-  KSPConvergedReason kspreason;
   PetscInt           m = qn->m;
   PetscInt           k,i,j,lits,l = m;
   PetscReal          unorm,a,b;
@@ -56,14 +56,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   }
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,D,W);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = VecCopy(W,Y);CHKERRQ(ierr);
@@ -128,8 +121,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   Vec            *U  = qn->U;
   Vec            *T  = qn->V;
 
-  /* ksp thing for jacobian scaling */
-  KSPConvergedReason kspreason;
+  /* ksp thing for Jacobian scaling */
   PetscInt           h,k,j,i,lits;
   PetscInt           m = qn->m;
   PetscScalar        gdot,udot;
@@ -149,14 +141,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = VecCopy(W,Y);CHKERRQ(ierr);
@@ -201,8 +186,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   PetscScalar    *dFtdX = qn->dFtdX;
   PetscScalar    *YtdX  = qn->YtdX;
 
-  /* ksp thing for jacobian scaling */
-  KSPConvergedReason kspreason;
+  /* ksp thing for Jacobian scaling */
   PetscInt           k,i,j,g,lits;
   PetscInt           m = qn->m;
   PetscScalar        t;
@@ -263,14 +247,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
-      }
-    }
+    SNESCheckKSPSolve(snes);
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = VecCopy(W, Y);CHKERRQ(ierr);
@@ -308,20 +285,26 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 #define __FUNCT__ "SNESSolve_QN"
 static PetscErrorCode SNESSolve_QN(SNES snes)
 {
-  PetscErrorCode      ierr;
-  SNES_QN             *qn = (SNES_QN*) snes->data;
-  Vec                 X,Xold;
-  Vec                 F,W;
-  Vec                 Y,D,Dold;
-  PetscInt            i, i_r;
-  PetscReal           fnorm,xnorm,ynorm,gnorm;
-  PetscBool           lssucceed,powell,periodic;
-  PetscScalar         DolddotD,DolddotDold;
-  SNESConvergedReason reason;
+  PetscErrorCode       ierr;
+  SNES_QN              *qn = (SNES_QN*) snes->data;
+  Vec                  X,Xold;
+  Vec                  F,W;
+  Vec                  Y,D,Dold;
+  PetscInt             i, i_r;
+  PetscReal            fnorm,xnorm,ynorm,gnorm;
+  SNESLineSearchReason lssucceed;
+  PetscBool            powell,periodic;
+  PetscScalar          DolddotD,DolddotDold;
+  SNESConvergedReason  reason;
 
-  /* basically just a regular newton's method except for the application of the jacobian */
+  /* basically just a regular newton's method except for the application of the Jacobian */
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   F    = snes->vec_func;                /* residual vector */
   Y    = snes->vec_sol_update;          /* search direction generated by J^-1D*/
@@ -351,17 +334,10 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
   }
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
@@ -400,6 +376,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
 
   for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
@@ -432,18 +409,14 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr  = VecCopy(X, Xold);CHKERRQ(ierr);
     ierr  = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
-    if (!lssucceed) {
+    ierr = SNESLineSearchGetReason(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         break;
       }
     }
-    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
       ierr = SNESLineSearchGetLambda(snes->linesearch, &qn->scaling);CHKERRQ(ierr);
     }
@@ -533,8 +506,15 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 {
   SNES_QN        *qn = (SNES_QN*)snes->data;
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
+
+  if (!snes->vec_sol) {
+    ierr             = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr             = DMCreateGlobalVector(dm,&snes->vec_sol);CHKERRQ(ierr);
+  }
+
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
   if (qn->type != SNES_QN_BROYDEN) ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
   ierr = PetscMalloc4(qn->m,&qn->alpha,qn->m,&qn->beta,qn->m,&qn->dXtdF,qn->m,&qn->lambda);CHKERRQ(ierr);
@@ -605,7 +585,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_QN"
-static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
+static PetscErrorCode SNESSetFromOptions_QN(PetscOptions *PetscOptionsObject,SNES snes)
 {
 
   PetscErrorCode    ierr;
@@ -617,7 +597,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   SNESQNType        qtype = qn->type;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES QN options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_downhill","Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, NULL);CHKERRQ(ierr);
@@ -629,8 +609,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   ierr = PetscOptionsEnum("-snes_qn_restart_type","Restart type","SNESQNSetRestartType",SNESQNRestartTypes,(PetscEnum)rtype,(PetscEnum*)&rtype,&flg);CHKERRQ(ierr);
   if (flg) ierr = SNESQNSetRestartType(snes,rtype);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,
-                          (PetscEnum)qtype,(PetscEnum*)&qtype,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,(PetscEnum)qtype,(PetscEnum*)&qtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESQNSetType(snes,qtype);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
@@ -681,8 +660,8 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 -   rtype - restart type
 
     Options Database:
-+   -snes_qn_restart_type<powell,periodic,none> - set the restart type
--   -snes_qn_m - sets the number of stored updates and the restart period for periodic
++   -snes_qn_restart_type <powell,periodic,none> - set the restart type
+-   -snes_qn_m <m> - sets the number of stored updates and the restart period for periodic
 
     Level: intermediate
 
@@ -691,7 +670,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 .   SNES_QN_RESTART_POWELL - restart based upon descent criteria
 -   SNES_QN_RESTART_PERIODIC - restart after a fixed number of iterations
 
-.keywords: SNES, SNESQN, restart, type, set SNESLineSearch
+.keywords: SNES, SNESQN, restart, type, set SNESLineSearch, SNESQNRestartType
 @*/
 PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 {
@@ -706,7 +685,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNSetScaleType"
 /*@
-    SNESQNSetScaleType - Sets the scaling type for the inner inverse jacobian in SNESQN.
+    SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in SNESQN.
 
     Logically Collective on SNES
 
@@ -715,17 +694,20 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 -   stype - scale type
 
     Options Database:
-.   -snes_qn_scale_type<shanno,none,linesearch,jacobian>
+.   -snes_qn_scale_type <shanno,none,linesearch,jacobian>
 
     Level: intermediate
 
-    SNESQNSelectTypes:
+    SNESQNScaleTypes:
 +   SNES_QN_SCALE_NONE - don't scale the problem
 .   SNES_QN_SCALE_SHANNO - use shanno scaling
 .   SNES_QN_SCALE_LINESEARCH - scale based upon line search lambda
--   SNES_QN_SCALE_JACOBIAN - scale by inverting a previously computed Jacobian.
+-   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration 
+                             of QN and at ever restart.
 
-.keywords: SNES, SNESQN, scaling, type, set SNESLineSearch
+.keywords: scaling type
+
+.seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESetJacobian()
 @*/
 
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
@@ -772,7 +754,7 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 -   qtype - variant type
 
     Options Database:
-.   -snes_qn_scale_type<lbfgs,broyden,badbroyden>
+.   -snes_qn_type <lbfgs,broyden,badbroyden>
 
     Level: beginner
 
@@ -781,7 +763,7 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 .   SNES_QN_BROYDEN - Broyden variant
 -   SNES_QN_BADBROYDEN - Bad Broyden variant
 
-.keywords: SNES, SNESQN, type, set
+.keywords: SNES, SNESQN, type, set, SNESQNType
 @*/
 
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
@@ -811,11 +793,14 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 
       Options Database:
 
-+     -snes_qn_m - Number of past states saved for the L-Broyden methods.
++     -snes_qn_m <m> - Number of past states saved for the L-Broyden methods.
++     -snes_qn_restart_type <powell,periodic,none> - set the restart type
 .     -snes_qn_powell_angle - Angle condition for restart.
 .     -snes_qn_powell_descent - Descent condition for restart.
+.     -snes_qn_type <lbfgs,broyden,badbroyden> - QN type
+.     -snes_qn_scale_type <shanno,none,linesearch,jacobian> - scaling performed on inner Jacobian
 .     -snes_linesearch_type <cp, l2, basic> - Type of line search.
--     -snes_qn_monitor - Monitors the quasi-newton jacobian.
+-     -snes_qn_monitor - Monitors the quasi-newton Jacobian.
 
       Notes: This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of F(x) = b using
       previous change in F(x) and x to form the approximate inverse Jacobian using a series of multiplicative rank-one
@@ -823,8 +808,8 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 
       When using a nonlinear preconditioner, one has two options as to how the preconditioner is applied.  The first of
       these options, sequential, uses the preconditioner to generate a new solution and function and uses those at this
-      iteration as the current iteration's values when constructing the approximate jacobian.  The second, composed,
-      perturbs the problem the jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
+      iteration as the current iteration's values when constructing the approximate Jacobian.  The second, composed,
+      perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
 
       References:
 

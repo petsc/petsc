@@ -90,9 +90,7 @@ typedef const char* MatType;
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
 
-    For example: "petsc" indicates what PETSc provides, "superlu" indicates either
-       SuperLU or SuperLU_Dist etc.
-
+    For example: "petsc" indicates what PETSc provides, "superlu_dist" the parallel SuperLU_DIST package etc
 
    Level: beginner
 
@@ -107,6 +105,7 @@ J*/
 #define MATSOLVERLUSOL        "lusol"
 #define MATSOLVERMUMPS        "mumps"
 #define MATSOLVERMKL_PARDISO  "mkl_pardiso"
+#define MATSOLVERMKL_CPARDISO "mkl_cpardiso"
 #define MATSOLVERPASTIX       "pastix"
 #define MATSOLVERMATLAB       "matlab"
 #define MATSOLVERPETSC        "petsc"
@@ -123,7 +122,7 @@ J*/
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatSolverPackage, MatGetFactor()
 E*/
@@ -134,6 +133,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,const MatSolverPackage,MatFactorTyp
 PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatFactorGetSolverPackage(Mat,const MatSolverPackage*);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister(const MatSolverPackage,const MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
+PETSC_EXTERN PetscErrorCode MatSolverPackageGet(const MatSolverPackage,const MatType,MatFactorType,PetscBool*,PetscBool*,PetscErrorCode (**)(Mat,MatFactorType,Mat*));
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -153,7 +154,7 @@ PETSC_EXTERN PetscClassId MATMFFD_CLASSID;
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices(), MatConvert()
 E*/
@@ -175,15 +176,14 @@ PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
-PETSC_STATIC_INLINE PetscErrorCode MatViewFromOptions(Mat A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
-PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
+PETSC_STATIC_INLINE PetscErrorCode MatViewFromOptions(Mat A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
 
-PETSC_EXTERN PetscBool         MatRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
 PETSC_EXTERN PetscFunctionList MatPartitioningList;
@@ -194,7 +194,7 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatCopy(), MatAXPY()
 E*/
@@ -246,6 +246,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFFT(MPI_Comm,PetscInt,const PetscInt[],MatT
 PETSC_EXTERN PetscErrorCode MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreateTranspose(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateHermitianTranspose(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatSubMatrixUpdate(Mat,Mat,IS,IS);
 PETSC_EXTERN PetscErrorCode MatCreateLocalRef(Mat,IS,IS,Mat*);
@@ -314,16 +315,14 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
    Developer Notes: Entries that are negative need not be called collectively by all processes.
 
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_OPTION_MIN = -5,
-              MAT_NEW_NONZERO_LOCATION_ERR = -4,
-              MAT_UNUSED_NONZERO_LOCATION_ERR = -3,
-              MAT_NEW_NONZERO_ALLOCATION_ERR = -2,
+typedef enum {MAT_OPTION_MIN = -3,
+              MAT_UNUSED_NONZERO_LOCATION_ERR = -2,
               MAT_ROW_ORIENTED = -1,
               MAT_SYMMETRIC = 1,
               MAT_STRUCTURALLY_SYMMETRIC = 2,
@@ -335,7 +334,7 @@ typedef enum {MAT_OPTION_MIN = -5,
               MAT_USE_INODES = 8,
               MAT_HERMITIAN = 9,
               MAT_SYMMETRY_ETERNAL = 10,
-              MAT_DUMMY = 11,
+              MAT_NEW_NONZERO_LOCATION_ERR = 11,
               MAT_IGNORE_LOWER_TRIANGULAR = 12,
               MAT_ERROR_LOWER_TRIANGULAR = 13,
               MAT_GETROW_UPPERTRIANGULAR = 14,
@@ -343,11 +342,13 @@ typedef enum {MAT_OPTION_MIN = -5,
               MAT_NO_OFF_PROC_ZERO_ROWS = 16,
               MAT_NO_OFF_PROC_ENTRIES = 17,
               MAT_NEW_NONZERO_LOCATIONS = 18,
-              MAT_SUBSET_OFF_PROC_ENTRIES = 19,
-              MAT_OPTION_MAX = 20} MatOption;
+              MAT_NEW_NONZERO_ALLOCATION_ERR = 19,
+              MAT_SUBSET_OFF_PROC_ENTRIES = 20,
+              MAT_OPTION_MAX = 21} MatOption;
 
-PETSC_EXTERN const char *MatOptions[];
-PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );
+PETSC_EXTERN const char *MatOptions[];
+PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
+PETSC_EXTERN PetscErrorCode MatGetOption(Mat,MatOption,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatGetType(Mat,MatType*);
 
 PETSC_EXTERN PetscErrorCode MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
@@ -392,7 +393,7 @@ PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 $   MAT_SHARE_NONZERO_PATTERN - the i and j arrays in the new matrix will be shared with the original matrix
 $                               this also triggers the MAT_DO_NOT_COPY_VALUES option. This is used when you
@@ -448,7 +449,7 @@ typedef struct {
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatGetInfo(), MatInfo
 E*/
@@ -490,7 +491,7 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipRangesColumn(Mat,const PetscInt**);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 
 PETSC_EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_EXTERN PetscErrorCode MatGetSubMatricesParallel(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_EXTERN PetscErrorCode MatGetSubMatricesMPI(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,MatReuse,Mat *);
 PETSC_EXTERN PetscErrorCode MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
@@ -498,9 +499,6 @@ PETSC_EXTERN PetscErrorCode MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSeqNonzeroStructure(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatDestroySeqNonzeroStructure(Mat*);
 
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm,Mat,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat,Mat);
@@ -555,11 +553,13 @@ PETSC_EXTERN PetscErrorCode MatStashGetInfo(Mat,PetscInt*,PetscInt*,PetscInt*,Pe
 PETSC_EXTERN PetscErrorCode MatInterpolate(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatInterpolateAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatRestrict(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode MatGetVecs(Mat,Vec*,Vec*);
-PETSC_EXTERN PetscErrorCode MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateVecs(Mat,Vec*,Vec*);
+PETSC_DEPRECATED("Use MatCreateVecs()") PETSC_STATIC_INLINE PetscErrorCode MatGetVecs(Mat mat,Vec *x,Vec *y) {return MatCreateVecs(mat,x,y);}
+PETSC_EXTERN PetscErrorCode MatCreateRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat,IS*);
 PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 /*MC
    MatSetValue - Set a single entry into a matrix.
@@ -938,6 +938,7 @@ PETSC_EXTERN PetscErrorCode MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat,Mat*);
 
+PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetLDA(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatDenseGetLocalMatrix(Mat,Mat*);
 
@@ -973,8 +974,6 @@ typedef const char* MatOrderingType;
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);
 PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
-PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(void);
-PETSC_EXTERN PetscBool         MatOrderingRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList MatOrderingList;
 
 PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
@@ -991,7 +990,7 @@ PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
 /*S
-   MatFactorInfo - Data passed into the matrix factorization routines
+   MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
 $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
@@ -1050,7 +1049,7 @@ PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
 
    May be bitwise ORd together
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
    MatSORType may be bitwise ORd together, so do not change the numbers
 
@@ -1104,7 +1103,7 @@ typedef const  char*           MatColoringType;
 
     Level: intermediate
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
 E*/
@@ -1121,9 +1120,7 @@ PETSC_EXTERN PetscErrorCode MatColoringGetDistance(MatColoring,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringSetMaxColors(MatColoring,PetscInt);
 PETSC_EXTERN PetscErrorCode MatColoringGetMaxColors(MatColoring,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringApply(MatColoring,ISColoring*);
-PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(MatColoring));
-PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
@@ -1214,9 +1211,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode (*)(MatPartitioning));
 
-PETSC_EXTERN PetscBool MatPartitioningRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
@@ -1323,27 +1318,24 @@ PETSC_EXTERN PetscErrorCode MatCoarsenSetType(MatCoarsen,MatCoarsenType);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetAdjacency(MatCoarsen,Mat);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen,const IS);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen,PetscBool);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetVerbose(MatCoarsen,PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenGetData( MatCoarsen, PetscCoarsenData ** );
 PETSC_EXTERN PetscErrorCode MatCoarsenApply(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenDestroy(MatCoarsen*);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],PetscErrorCode (*)(MatCoarsen));
 
-PETSC_EXTERN PetscBool MatCoarsenRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen,MatCoarsenType*);
-PETSC_STATIC_INLINE PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
 
 /*
-    If you add entries here you must also add them to finclude/petscmat.h
+    If you add entries here you must also add them to petsc/finclude/petscmat.h
 */
 typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW=1,
@@ -1487,7 +1479,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_BLOCK_SIZES=139,
                MATOP_AYPX=140,
                MATOP_RESIDUAL=141,
-               MATOP_FDCOLORING_SETUP= 142
+               MATOP_FDCOLORING_SETUP=142,
+               MATOP_MPICONCATENATESEQ=144
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1507,6 +1500,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.
@@ -1528,6 +1522,8 @@ PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode 
 PETSC_EXTERN PetscErrorCode MatNullSpaceDestroy(MatNullSpace*);
 PETSC_EXTERN PetscErrorCode MatNullSpaceRemove(MatNullSpace,Vec);
 PETSC_EXTERN PetscErrorCode MatGetNullSpace(Mat, MatNullSpace *);
+PETSC_EXTERN PetscErrorCode MatGetTransposeNullSpace(Mat, MatNullSpace *);
+PETSC_EXTERN PetscErrorCode MatSetTransposeNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNearNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatGetNearNullSpace(Mat,MatNullSpace*);
@@ -1554,7 +1550,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunction(Mat,PetscErrorCode(*)(void*,Vec,Vec),void*);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioni(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioniBase(Mat,PetscErrorCode (*)(void*,Vec));
-PETSC_EXTERN PetscErrorCode MatMFFDAddNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatMFFDSetHHistory(Mat,PetscScalar[],PetscInt);
 PETSC_EXTERN PetscErrorCode MatMFFDResetHHistory(Mat);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctionError(Mat,PetscReal);
@@ -1592,7 +1587,6 @@ typedef const char* MatMFFDType;
 PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,MatMFFDType);
 PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],PetscErrorCode (*)(MatMFFD));
 
-PETSC_EXTERN PetscErrorCode MatMFFDRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatMFFDDSSetUmin(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatMFFDWPSetComputeNormU(Mat,PetscBool );
 
@@ -1612,6 +1606,14 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode MatMumpsSetSchurIndices(Mat,PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatMumpsInvertSchurComplement(Mat);
+PETSC_EXTERN PetscErrorCode MatMumpsCreateSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsRestoreSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMumpsSolveSchurComplement(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatMumpsSolveSchurComplementTranspose(Mat,Vec,Vec);
 #endif
 
 /*
@@ -1619,6 +1621,13 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
 */
 #ifdef PETSC_HAVE_MKL_PARDISO
 PETSC_EXTERN PetscErrorCode MatMkl_PardisoSetCntl(Mat,PetscInt,PetscInt);
+#endif
+
+/*
+   PETSc interface to Mkl_CPardiso
+*/
+#ifdef PETSC_HAVE_MKL_CPARDISO
+PETSC_EXTERN PetscErrorCode MatMkl_CPardisoSetCntl(Mat,PetscInt,PetscInt);
 #endif
 
 /*
@@ -1631,7 +1640,7 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
-    matrices. 
+    matrices.
 
     Not Collective
 
@@ -1641,7 +1650,7 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 
     Level: intermediate
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatCUSPARSESetFormat(), MatCUSPARSEFormatOperation
 E*/
@@ -1653,7 +1662,7 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
 /*E
     MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU)
-    matrices whose operation should use a particular storage format. 
+    matrices whose operation should use a particular storage format.
 
     Not Collective
 
@@ -1679,7 +1688,7 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt
 
 /*E
     MatCUSPStorageFormat - indicates the storage format for CUSP (GPU)
-    matrices. 
+    matrices.
 
     Not Collective
 
@@ -1689,7 +1698,7 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt
 
     Level: intermediate
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
 E*/
@@ -1700,7 +1709,7 @@ PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
 /*E
     MatCUSPFormatOperation - indicates the operation of CUSP (GPU)
-    matrices whose operation should use a particular storage format. 
+    matrices whose operation should use a particular storage format.
 
     Not Collective
 
@@ -1711,7 +1720,7 @@ PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
     Level: intermediate
 
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatCUSPSetFormat(), MatCUSPStorageFormat
 E*/
@@ -1731,10 +1740,18 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm,PetscInt,PetscInt,Pets
 #if defined(PETSC_HAVE_FFTW)
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #endif
 
+/*
+   PETSc interface to ELEMENTAL
+*/
 #if defined(PETSC_HAVE_ELEMENTAL)
+#if defined(PETSC_USE_COMPLEX)
+typedef El::Complex<PetscReal> PetscElemScalar;
+#else
+typedef PetscScalar PetscElemScalar;
+#endif
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
@@ -1751,5 +1768,7 @@ PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,IS**);
 
 #endif

@@ -119,6 +119,7 @@
         <li><a href="#redistribute">When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions and yet keep the matrix symmetric?</a></li>
         <li><a href="#matlab">How can I use PETSc with MATLAB? How can I get PETSc Vecs and Mats to MATLAB or vice versa?</a></li>
         <li><a href="#cython">How do I get started with Cython so that I can extend petsc4py?</a></li>
+        <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -270,7 +271,7 @@
         </p>
 
 
-          The software <a href="http://open-mx.org">http://open-mx.org</a>
+          The software <a href="http://open-mx.gforge.inria.fr">http://open-mx.gforge.inria.fr</a>
           provides faster speed for ethernet systems, we have not tried it but it
           claims it can dramatically reduce latency and increase bandwidth on
           Linux system. You must first install this software and then install
@@ -606,7 +607,7 @@
       <h3><a name="packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE??</a></h3>
 
       <p>
-        grep "self.download " config/PETSc/packages/*.py config/BuildSystem/config/packages/*.py
+        grep "self.download "  config/BuildSystem/config/packages/*.py
       </p>
 
       <hr>
@@ -955,7 +956,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <p>
        To write the code (rather than use the options above) use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
        SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
-       the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() seperately on BOTH
+       the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() separately on BOTH
        matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
       </p>
 
@@ -1179,6 +1180,14 @@ PETSC_COMM_WORLD = NewComm;
         </li>
       </ol>
 
+     <h3><a name="customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></h3>
+
+     You need to call <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBuildResidual.html">KSPBuildResidual</a>() on your KSP object and then
+      compute the     appropriate norm on the resulting residual. Note that depending on the 
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetNormType.html">KSPSetNormType</a>() of the method you may not return the same
+      norm as provided by the method. See also
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
+
       <hr>
 
       <h2><a name="execution">Execution</a></h2>
@@ -1275,7 +1284,7 @@ PETSC_COMM_WORLD = NewComm;
       Some makefiles use ${DATAFILESPATH}/matrices/medium and other files. These
       test matrices in PETSc binary format can be found with anonymous ftp from
       <a href="http://ftp.mcs.anl.gov">ftp.mcs.anl.gov</a> in the directory
-      pub/petsc/matrices. The are not included with the PETSc distribution in the
+      pub/petsc/Datafiles/matrices. The are not included with the PETSc distribution in the
       interest of reducing the distribution size.
 
       <h3><a name="info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></h3>
@@ -1497,13 +1506,14 @@ PETSC_COMM_WORLD = NewComm;
 
         <li>
           The equations are intentionally singular (e.g.  constant null space),
-          but the Krylov method was not informed, see KSPSetNullSpace().
+          but the Krylov method was not informed, see MatSetNullSpace().
         </li>
 
         <li>
-          The equations are intentionally singular and KSPSetNullSpace() was
+          The equations are intentionally singular and MatSetNullSpace() was
           used, but the right hand side is not consistent. You may have to call
           MatNullSpaceRemove() on the right hand side before calling KSPSolve().
+          See MatSetTransposeNullSpace()
         </li>
 
         <li>
@@ -1760,7 +1770,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         grid solver.  See PCFactorSetShiftType(), PCFactorSetAmount().
       </p>
 
-      <p>This error can also happen if your matrix is singular, see KSPSetNullSpace() for how to handle this.</p>
+      <p>This error can also happen if your matrix is singular, see MatSetNullSpace() for how to handle this.</p>
 
       <p>
         If this error occurs in the zeroth row of the matrix, it is likely you have

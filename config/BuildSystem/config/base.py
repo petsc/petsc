@@ -108,11 +108,11 @@ class Configure(script.Script):
       exitstr = ' exit code ' + str(status)
     else:
       exitstr = ''
-    self.framework.log.write('Possible ERROR while running %s:%s\n' % (component, exitstr))
+    self.logWrite('Possible ERROR while running %s:%s\n' % (component, exitstr))
     if output:
-      self.framework.log.write('stdout:\n' + output)
+      self.logWrite('stdout:\n' + output)
     if error:
-      self.framework.log.write('stderr:\n' + error)
+      self.logWrite('stderr:\n' + error)
 
   def executeTest(self, test, args = [], kargs = {}):
     import time
@@ -131,14 +131,14 @@ class Configure(script.Script):
   # Define and Substitution Supported
   def addMakeRule(self, name, dependencies, rule = []):
     '''Designate that "name" should be rule in the makefile header (bmake file)'''
-    self.framework.logPrint('Defined make rule "'+name+'" with dependencies "'+str(dependencies)+'" and code '+str(rule))
+    self.logPrint('Defined make rule "'+name+'" with dependencies "'+str(dependencies)+'" and code '+str(rule))
     if not isinstance(rule,list): rule = [rule]
     self.makeRules[name] = [dependencies,rule]
     return
 
   def addMakeMacro(self, name, value):
     '''Designate that "name" should be defined to "value" in the makefile header (bmake file)'''
-    self.framework.logPrint('Defined make macro "'+name+'" to "'+str(value)+'"')
+    self.logPrint('Defined make macro "'+name+'" to "'+str(value)+'"')
     self.makeMacros[name] = value
     return
 
@@ -147,25 +147,25 @@ class Configure(script.Script):
 
   def delMakeMacro(self, name):
     '''Designate that "name" should be deleted (never put in) configuration header'''
-    self.framework.logPrint('Deleting "'+name+'"')
+    self.logPrint('Deleting "'+name+'"')
     if name in self.makeMacros: del self.makeMacros[name]
     return
 
   def addDefine(self, name, value):
     '''Designate that "name" should be defined to "value" in the configuration header'''
-    self.framework.logPrint('Defined "'+name+'" to "'+str(value)+'"')
+    self.logPrint('Defined "'+name+'" to "'+str(value)+'"')
     self.defines[name] = value
     return
 
   def delDefine(self, name):
     '''Designate that "name" should be deleted (never put in)  configuration header'''
-    self.framework.logPrint('Deleting "'+name+'"')
+    self.logPrint('Deleting "'+name+'"')
     if name in self.defines: del self.defines[name]
     return
 
   def addTypedef(self, name, value):
     '''Designate that "name" should be typedefed to "value" in the configuration header'''
-    self.framework.logPrint('Typedefed "'+name+'" to "'+str(value)+'"')
+    self.logPrint('Typedefed "'+name+'" to "'+str(value)+'"')
     self.typedefs[value] = name
     return
 
@@ -173,7 +173,7 @@ class Configure(script.Script):
     '''Add a missing function prototype
        - The language argument defaults to "All"
        - Other language choices are C, Cxx, extern C'''
-    self.framework.logPrint('Added prototype '+prototype+' to language '+language)
+    self.logPrint('Added prototype '+prototype+' to language '+language)
     language = language.replace('+', 'x')
     if not language in self.prototypes:
       self.prototypes[language] = []
@@ -182,13 +182,13 @@ class Configure(script.Script):
 
   def addSubstitution(self, name, value):
     '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
-    self.framework.logPrint('Substituting "'+name+'" with "'+str(value)+'"')
+    self.logPrint('Substituting "'+name+'" with "'+str(value)+'"')
     self.subst[name] = value
     return
 
   def addArgumentSubstitution(self, name, arg):
     '''Designate that "@name@" should be replaced by "arg" in all files which experience substitution'''
-    self.framework.logPrint('Substituting "'+name+'" with '+str(arg)+'('+str(self.framework.argDB[arg])+')')
+    self.logPrint('Substituting "'+name+'" with '+str(arg)+'('+str(self.argDB[arg])+')')
     self.argSubst[name] = arg
     return
 
@@ -199,12 +199,12 @@ class Configure(script.Script):
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
     prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
     found = 0
-    self.framework.log.write('Checking for program '+prog+'...')
+    self.logWrite('Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
       found = 1
-      self.framework.log.write('found\n')
+      self.logWrite('found\n')
     else:
-      self.framework.log.write('not found\n')
+      self.logWrite('not found\n')
     return found
 
   def getExecutable(self, names, path = [], getFullPath = 0, useDefaultPath = 0, resultName = '', setMakeMacro = 1):
@@ -255,7 +255,7 @@ class Configure(script.Script):
             break
         if found: break
     if not found:
-      dirs = self.framework.argDB['search-dirs']
+      dirs = self.argDB['search-dirs']
       if not isinstance(dirs, list): dirs = [dirs]
       for d in dirs:
         for name in names:
@@ -424,7 +424,7 @@ class Configure(script.Script):
     def report(command, status, output, error):
       if error or status:
         self.logError('preprocessor', status, output, error)
-        self.framework.log.write('Source:\n'+self.getCode(codeStr))
+        self.logWrite('Source:\n'+self.getCode(codeStr))
 
     command = self.getPreprocessorCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
@@ -432,7 +432,7 @@ class Configure(script.Script):
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.framework.log, lineLimit = 100000)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, lineLimit = 100000)
     if self.cleanup:
       for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource]:
         if os.path.isfile(filename): os.remove(filename)
@@ -440,7 +440,7 @@ class Configure(script.Script):
 
   def outputPreprocess(self, codeStr):
     '''Return the contents of stdout when preprocessing "codeStr"'''
-    self.framework.log.write('Source:\n'+self.getCode(codeStr))
+    self.logWrite('Source:\n'+self.getCode(codeStr))
     return self.preprocess(codeStr)[0]
 
   def checkPreprocess(self, codeStr, timeout = 600.0):
@@ -475,8 +475,8 @@ class Configure(script.Script):
       if error or status:
         self.logError('compiler', status, output, error)
       else:
-        self.framework.log.write('Successful compile:\n')
-      self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+        self.logWrite('Successful compile:\n')
+      self.logWrite('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
 
     cleanup = cleanup and self.framework.doCleanup
     command = self.getCompilerCmd()
@@ -485,7 +485,7 @@ class Configure(script.Script):
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.log)
     if not os.path.isfile(self.compilerObj):
       err += '\nPETSc Error: No output file produced'
     if cleanup:
@@ -530,7 +530,7 @@ class Configure(script.Script):
     examineOutput(ret, out, err)
     out = self.filterCompileOutput(out+'\n'+err)
     if ret or len(out):
-      self.framework.logPrint('Compile failed inside link\n'+out)
+      self.logPrint('Compile failed inside link\n'+out)
       self.linkerObj = ''
       return (out, ret)
 
@@ -553,7 +553,7 @@ class Configure(script.Script):
         self.logError('linker', status, output, error)
         examineOutput(status, output, error)
       return
-    (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
+    (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.log)
     self.linkerObj = linkerObj
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup:
@@ -581,13 +581,17 @@ class Configure(script.Script):
 
   def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
-    if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
-      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable\n')
+    self.logWrite('Testing executable '+self.linkerObj+' to see if it can be run\n')
+    if not os.path.isfile(self.linkerObj):
+      self.logWrite('ERROR executable '+self.linkerObj+' does not exist\n')
       return ('', 1)
-    if self.framework.argDB['with-batch']:
+    if not os.access(self.linkerObj, os.X_OK):
+      self.logWrite('ERROR while running executable: '+self.linkerObj+' is not executable\n')
+      return ('', 1)
+    if self.argDB['with-batch']:
       if defaultOutputArg:
-        if defaultOutputArg in self.framework.argDB:
-          return (self.framework.argDB[defaultOutputArg], 0)
+        if defaultOutputArg in self.argDB:
+          return (self.argDB[defaultOutputArg], 0)
         else:
           raise ConfigureSetupError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
       else:
@@ -600,22 +604,22 @@ class Configure(script.Script):
     output  = ''
     error   = ''
     status  = 1
-    self.framework.log.write('Executing: '+command+'\n')
+    self.logWrite('Executing: '+command+'\n')
     try:
-      (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
+      (output, error, status) = Configure.executeShellCommand(command, log = self.log)
     except RuntimeError, e:
-      self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
+      self.logWrite('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj):
       try:
         os.remove(self.compilerObj)
       except RuntimeError, e:
-        self.framework.log.write('ERROR while removing object file: '+str(e)+'\n')
+        self.logWrite('ERROR while removing object file: '+str(e)+'\n')
     if cleanup and os.path.isfile(self.linkerObj):
       try:
         if os.path.exists('/usr/bin/cygcheck.exe'): time.sleep(1)
         os.remove(self.linkerObj)
       except RuntimeError, e:
-        self.framework.log.write('ERROR while removing executable file: '+str(e)+'\n')
+        self.logWrite('ERROR while removing executable file: '+str(e)+'\n')
     return (output+error, status)
 
   def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None):

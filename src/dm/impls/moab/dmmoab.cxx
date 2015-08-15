@@ -1,4 +1,4 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
+#include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
@@ -683,7 +683,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, Pe
 
 .seealso: DMMoabGetVertexConnectivity()
 @*/
-PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos)
+PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscReal *vpos)
 {
   DM_Moab         *dmmoab;
   PetscErrorCode  ierr;
@@ -695,7 +695,7 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::Entit
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!vpos) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*nconn*3, &vpos);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nconn*3, &vpos);CHKERRQ(ierr);
   }
 
   /* Get connectivity information in MOAB canonical ordering */
@@ -964,10 +964,8 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
   delete dmmoab->bndyelems;
 
   ierr = PetscFree(dmmoab->gsindices);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->lidmap);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->gidmap);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->llmap);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->lgmap);CHKERRQ(ierr);
+  ierr = PetscFree2(dmmoab->gidmap,dmmoab->lidmap);CHKERRQ(ierr);
+  ierr = PetscFree2(dmmoab->lgmap,dmmoab->llmap);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->ofill);CHKERRQ(ierr);
   if (dmmoab->fieldNames) {
@@ -985,14 +983,14 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Moab"
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
   DM_Moab        *dmmoab = (DM_Moab*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscOptionsHead("DMMoab Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMMoab Options");CHKERRQ(ierr);
   ierr  = PetscOptionsInt("-dm_moab_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "DMView", dmmoab->rw_dbglevel, &dmmoab->rw_dbglevel, NULL);CHKERRQ(ierr);
   ierr  = PetscOptionsBool("-dm_moab_partiton_by_rank", "Use partition by rank when reading MOAB meshes from file", "DMView", dmmoab->partition_by_rank, &dmmoab->partition_by_rank, NULL);CHKERRQ(ierr);
   /* TODO: typically, the read options are needed before a DM is completely created and available in which case, the options wont be available ?? */
@@ -1078,7 +1076,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
   totsize=dmmoab->vlocal->size();
   if (totsize != dmmoab->nloc+dmmoab->nghost) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %D != %D.",totsize,dmmoab->nloc+dmmoab->nghost);
-  ierr = PetscMalloc(totsize*sizeof(PetscInt), &dmmoab->gsindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totsize,&dmmoab->gsindices);CHKERRQ(ierr);
   {
     /* first get the local indices */
     merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vowned,&dmmoab->gsindices[0]);MBERRNM(merr);
@@ -1108,10 +1106,11 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   if(!(dmmoab->bs==dmmoab->numFields || dmmoab->bs == 1)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.",dmmoab->bs,dmmoab->bs,dmmoab->numFields);
 
   {
-    ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->gidmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->lidmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->llmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->lgmap);CHKERRQ(ierr);
+    i=(PetscInt)dmmoab->vlocal->back()+1;
+    //i=(PetscInt)(dmmoab->vlocal->back()-dmmoab->vlocal->front())+1;
+    j=totsize*dmmoab->numFields;
+    ierr = PetscMalloc2(i,&dmmoab->gidmap,i,&dmmoab->lidmap);CHKERRQ(ierr);
+    ierr = PetscMalloc2(j,&dmmoab->lgmap,j,&dmmoab->llmap);CHKERRQ(ierr);
 
     i=j=0;
     /* set the owned vertex data first */
@@ -1213,7 +1212,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Moab"
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
@@ -1253,5 +1251,4 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   dm->ops->localtoglobalend         = DMLocalToGlobalEnd_Moab;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

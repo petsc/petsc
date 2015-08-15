@@ -1,4 +1,4 @@
-#include <petsc-private/pcimpl.h>               /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>               /*I "petscpc.h" I*/
 
 typedef struct {
   PetscReal  lambda; /* damping parameter */
@@ -84,15 +84,15 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Kaczmarz"
-PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc)
+PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Kaczmarz options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Kaczmarz options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

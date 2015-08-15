@@ -1,6 +1,6 @@
 
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_IBCGS"
@@ -104,11 +104,11 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   /* f0   = A'*rn_1; */
   if (ksp->pc_side == PC_RIGHT) { /* B' A' */
-    ierr = MatMultTranspose(A,R0,Tn);CHKERRQ(ierr);
-    ierr = PCApplyTranspose(ksp->pc,Tn,F0);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,A,R0,Tn);CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,Tn,F0);CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_LEFT) { /* A' B' */
-    ierr = PCApplyTranspose(ksp->pc,R0,Tn);CHKERRQ(ierr);
-    ierr = MatMultTranspose(A,Tn,F0);CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,R0,Tn);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,A,Tn,F0);CHKERRQ(ierr);
   }
 
   /*qn_1 = vn_1 = zn_1 = 0.0; */

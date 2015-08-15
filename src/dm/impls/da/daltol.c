@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLocalToLocalCreate_DA"
@@ -19,7 +19,7 @@
 PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
 {
   PetscErrorCode ierr;
-  PetscInt       *idx,left,j,count,up,down,i,bottom,top,k;
+  PetscInt       *idx,left,j,count,up,down,i,bottom,top,k,dim=da->dim;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
@@ -33,11 +33,11 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
   */
   ierr = VecScatterCopy(dd->gtol,&dd->ltol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ltol);CHKERRQ(ierr);
-  if (dd->dim == 1) {
+  if (dim == 1) {
     left = dd->xs - dd->Xs;
-    ierr = PetscMalloc1((dd->xe-dd->xs),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->xe-dd->xs,&idx);CHKERRQ(ierr);
     for (j=0; j<dd->xe-dd->xs; j++) idx[j] = left + j;
-  } else if (dd->dim == 2) {
+  } else if (dim == 2) {
     left  = dd->xs - dd->Xs; down  = dd->ys - dd->Ys; up    = down + dd->ye-dd->ys;
     ierr  = PetscMalloc1((dd->xe-dd->xs)*(up - down),&idx);CHKERRQ(ierr);
     count = 0;
@@ -46,7 +46,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
         idx[count++] = left + i*(dd->Xe-dd->Xs) + j;
       }
     }
-  } else if (dd->dim == 3) {
+  } else if (dim == 3) {
     left   = dd->xs - dd->Xs;
     bottom = dd->ys - dd->Ys; top = bottom + dd->ye-dd->ys;
     down   = dd->zs - dd->Zs; up  = down + dd->ze-dd->zs;
@@ -60,7 +60,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
         }
       }
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);
+  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dim);
 
   ierr = VecScatterRemap(dd->ltol,idx,NULL);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);

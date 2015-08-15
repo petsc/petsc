@@ -22,8 +22,8 @@ EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 FLOW_OBJSF       = $(EXAMPLESF:.F=.o)
 #
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 flow: flow.o $(FLOW_OBJSF) chkopts
 	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_SNES_LIB)
@@ -59,6 +59,6 @@ runbm4:
 
 TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
 
-include $(PETSC_DIR)/conf/test
+include $(PETSC_DIR)/lib/petsc/conf/test
 
 

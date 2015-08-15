@@ -1,6 +1,6 @@
 #include <petscdmda.h>          /*I "petscdmda.h" I*/
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {
@@ -109,6 +109,9 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    ierr = VecSetInf(F);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +148,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_DMDA"
-static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
+PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -221,15 +224,16 @@ static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void 
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
-   Calling sequence for func:
+   Calling sequence:
+   For PetscErrorCode (*func)(DMDALocalInfo *info,void *x, void *f, void *ctx),
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
+.  x - dimensional pointer to state at which to evaluate residual (e.g. PetscScalar *x or **x or ***x)
+.  f - dimensional pointer to residual, write the residual here (e.g. PetscScalar *f or **f or ***f)
 -  ctx - optional context passed above
 
    Level: beginner
 
-.seealso: DMSNESSetFunction(), DMDASNESSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMDASNESSetJacobianLocal(), DMSNESSetFunction(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*func)(DMDALocalInfo*,void*,void*,void*),void *ctx)
 {
@@ -262,18 +266,20 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
 
    Input Arguments:
 +  dm - DM to associate callback with
-.  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+.  func - local Jacobian evaluation
+-  ctx - optional context for local Jacobian evaluation
 
-   Calling sequence for func:
-+  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
+   Calling sequence:
+   For PetscErrorCode (*func)(DMDALocalInfo *info,void *x,Mat J,Mat M,void *ctx),
++  info - DMDALocalInfo defining the subdomain to evaluate the Jacobian at
+.  x - dimensional pointer to state at which to evaluate Jacobian (e.g. PetscScalar *x or **x or ***x)
+.  J - Mat object for the Jacobian
+.  M - Mat object for the Jacobian preconditioner matrix
 -  ctx - optional context passed above
 
    Level: beginner
 
-.seealso: DMSNESSetJacobian(), DMDASNESSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMDASNESSetFunctionLocal(), DMSNESSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalInfo*,void*,Mat,Mat,void*),void *ctx)
 {
@@ -314,7 +320,7 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalIn
 
    Level: beginner
 
-.seealso: DMSNESSetFunction(), DMDASNESSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMSNESSetFunction(), DMDASNESSetJacobianLocal(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode DMDASNESSetObjectiveLocal(DM dm,DMDASNESObjective func,void *ctx)
 {

@@ -1,4 +1,4 @@
-#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 typedef struct {
   PetscBool  check_gradient;
@@ -128,13 +128,13 @@ PetscErrorCode TaoDestroy_Test(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_Test"
-static PetscErrorCode TaoSetFromOptions_Test(Tao tao)
+static PetscErrorCode TaoSetFromOptions_Test(PetscOptions *PetscOptionsObject,Tao tao)
 {
   Tao_Test        *fd = (Tao_Test *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Hand-coded Hessian tester options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Hand-coded Hessian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_test_display","Display difference between hand-coded and finite difference Hessians","None",fd->complete_print,&fd->complete_print,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,NULL);CHKERRQ(ierr);
@@ -157,10 +157,9 @@ static PetscErrorCode TaoSetFromOptions_Test(Tao tao)
 .seealso:  TaoCreate(), TaoSetType()
 
 */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_Test"
-PetscErrorCode  TaoCreate_Test(Tao  tao)
+PETSC_EXTERN PetscErrorCode  TaoCreate_Test(Tao  tao)
 {
   Tao_Test        *fd;
   PetscErrorCode ierr;
@@ -178,4 +177,4 @@ PetscErrorCode  TaoCreate_Test(Tao  tao)
   fd->check_hessian         = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

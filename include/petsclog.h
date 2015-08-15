@@ -257,6 +257,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent, PetscBool )
 PETSC_EXTERN PetscErrorCode PetscLogEventActivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventDeactivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventGetId(const char[],PetscLogEvent*);
+PETSC_EXTERN PetscErrorCode PetscLogEventGetPerfInfo(int, PetscLogEvent, PetscEventPerfInfo *);
 
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_irecv_ct;
@@ -297,7 +298,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
      These are used internally in the PETSc routines to keep a count of MPI messages and
    their sizes.
 
-     This does not work for MPI-Uni because our include/mpiuni/mpi.h file
+     This does not work for MPI-Uni because our include/petsc/mpiuni/mpi.h file
    uses macros to defined the MPI operations.
 
      It does not work correctly from HP-UX because it processes the

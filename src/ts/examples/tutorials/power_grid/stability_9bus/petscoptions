@@ -2,7 +2,7 @@
 #-ts_arkimex_type 2e
 -ts_exact_final_time MATCHSTEP
 -ts_theta_endpoint
--ts_monitor
+#-ts_monitor
 #-snes_type ls
 -snes_linesearch_type basic
 -pc_type lu

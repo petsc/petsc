@@ -61,7 +61,7 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   /* determine rows of matrices owned by each process */
-  ierr       = PetscMalloc1((size+1),&rowners);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(size+1,&rowners);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {

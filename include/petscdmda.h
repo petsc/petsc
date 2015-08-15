@@ -41,7 +41,6 @@ typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
 #define MATSEQUSFFT        "sequsfft"
 
 PETSC_EXTERN PetscErrorCode DMDACreate(MPI_Comm,DM*);
-PETSC_EXTERN PetscErrorCode DMDASetDim(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetSizes(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDACreate1d(MPI_Comm,DMBoundaryType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
 PETSC_EXTERN PetscErrorCode DMDACreate2d(MPI_Comm,DMBoundaryType,DMBoundaryType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);
@@ -68,8 +67,11 @@ PETSC_EXTERN PetscErrorCode DMDANaturalAllToGlobalCreate(DM,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDAGetScatter(DM,VecScatter*,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM,const PetscMPIInt**);
 
+PETSC_EXTERN PetscErrorCode DMDASetAOType(DM,AOType);
 PETSC_EXTERN PetscErrorCode DMDAGetAO(DM,AO*);
 PETSC_EXTERN PetscErrorCode DMDASetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode DMDAGetCoordinateArray(DM,void*);
+PETSC_EXTERN PetscErrorCode DMDARestoreCoordinateArray(DM,void*);
 PETSC_EXTERN PetscErrorCode DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,PetscScalar,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*);
@@ -80,6 +82,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
+PETSC_EXTERN PetscErrorCode DMDASetFieldNames(DM,const char * const *);
+PETSC_EXTERN PetscErrorCode DMDAGetFieldNames(DM,const char * const **);
 PETSC_EXTERN PetscErrorCode DMDASetCoordinateName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM,PetscInt,const char**);
 
@@ -104,6 +108,12 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArray(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOF(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOF(DM,Vec,void *);
+
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayRead(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayRead(DM,Vec,void *);
+
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOFRead(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFRead(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
@@ -186,8 +196,9 @@ PETSC_EXTERN PetscErrorCode DMDAGetCellPoint(DM, PetscInt, PetscInt, PetscInt, P
 PETSC_EXTERN PetscErrorCode DMDAGetNumVertices(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMDAGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, const PetscInt[], const PetscInt[], const PetscInt[], PetscSection *);
-PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometry(DM, PetscInt, PetscQuadrature, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
+PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
 PETSC_EXTERN PetscErrorCode DMDAGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDARestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar **);
@@ -203,9 +214,9 @@ PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM,PetscReal,PetscReal,Pets
 PETSC_EXTERN PetscErrorCode DMDASetPreallocationCenterDimension(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetPreallocationCenterDimension(DM, PetscInt*);
 
-PETSC_EXTERN PetscErrorCode DMDAProjectFunction(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMDAProjectFunctionLocal(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMDAComputeL2Diff(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, Vec, PetscReal *);
-PETSC_EXTERN PetscErrorCode DMDAComputeL2GradientDiff(DM, void (**)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **, Vec, const PetscReal[], PetscReal *);
+PETSC_EXTERN PetscErrorCode DMDAProjectFunction(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMDAProjectFunctionLocal(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMDAComputeL2Diff(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMDAComputeL2GradientDiff(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, const PetscReal[], PetscReal *);
 
 #endif

@@ -294,13 +294,15 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 #define __FUNCT__ "constantResidual"
 PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int j, PetscReal hx, PetscReal hy, Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-  PetscScalar phi[3]    = {0.0, 0.0, 0.0};
-  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy;
-  Field       res;
-  PetscInt    q, k;
+  PetscErrorCode ierr;
+  Field          rLocal[3];
+  PetscScalar    phi[3]    = {0.0, 0.0, 0.0};
+  PetscReal      xI = i*hx, yI = j*hy, hxhy = hx*hy;
+  Field          res;
+  PetscInt       q, k;
 
   PetscFunctionBeginUser;
+  ierr = PetscMemzero(&rLocal,sizeof(rLocal));CHKERRQ(ierr);
   for (q = 0; q < 4; q++) {
     PETSC_UNUSED PetscReal x, y;
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
@@ -335,12 +337,14 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
 #define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-  PetscScalar phi[3]    = {0.0, 0.0, 0.0};
-  Field       res;
-  PetscInt    q;
+  PetscErrorCode ierr;
+  Field          rLocal[3];
+  PetscScalar    phi[3]    = {0.0, 0.0, 0.0};
+  Field          res;
+  PetscInt       q;
 
   PetscFunctionBeginUser;
+  ierr = PetscMemzero(&rLocal,sizeof(rLocal));CHKERRQ(ierr);
   for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
@@ -876,7 +880,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
   ierr = CreateNullSpace(info->da,&N);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,1,&N,&nullspace);CHKERRQ(ierr);
   ierr = VecDestroy(&N);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(A,nullspace);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -949,8 +953,6 @@ PetscErrorCode L_2Error(DM da, Vec fVec, PetscReal *error, AppCtx *user)
   }
 
   ierr = DMDAVecRestoreArray(da, fLocalVec, &f);CHKERRQ(ierr);
-  /* ierr = DMLocalToGlobalBegin(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
-  /* ierr = DMLocalToGlobalEnd(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
   ierr = DMRestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

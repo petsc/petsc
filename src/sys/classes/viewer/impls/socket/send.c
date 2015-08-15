@@ -131,7 +131,7 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
       } else if (errno == ECONNREFUSED) {
         refcnt++;
         if (refcnt > 5) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
-        ierr = PetscInfo(0,"Connection refused in attaching socket, trying again");CHKERRQ(ierr);
+        ierr = PetscInfo(0,"Connection refused in attaching socket, trying again\n");CHKERRQ(ierr);
         sleep((unsigned) 1);
       } else {
         perror(NULL); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
@@ -292,7 +292,7 @@ PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int por
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Socket"
-static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptions *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscInt       def = -1;
@@ -304,7 +304,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
        These options are not processed here, they are processed in PetscViewerSocketSetConnection(), they
     are listed here for the GUI to display
   */
-  ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Socket PetscViewer Options");CHKERRQ(ierr);
   ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
   if (tflg) {
     ierr = PetscOptionsStringToInt(sdef,&def);CHKERRQ(ierr);

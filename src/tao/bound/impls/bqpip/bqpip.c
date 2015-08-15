@@ -185,7 +185,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 {
   TAO_BQPIP          *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode     ierr;
-  PetscInt           iter=0,its;
+  PetscInt           its;
   PetscReal          d1,d2,ksptol,sigma;
   PetscReal          sigmamu;
   PetscReal          dstep,pstep,step=0;
@@ -224,12 +224,13 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   ierr = QPIPComputeResidual(qp,tao);CHKERRQ(ierr);
 
   /* Enter main loop */
-  while (1){
+  while (PETSC_TRUE){
 
     /* Check Stopping Condition      */
-    ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),
-                            qp->pinfeas, step, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas, step, &reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
+    tao->niter++;
+    tao->ksp_its=0;
 
     /*
        Dual Infeasibility Direction should already be in the right
@@ -238,7 +239,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     ierr = QPIPComputeNormFromCentralPath(qp,&d1);CHKERRQ(ierr);
 
-    if (iter > 0 && (qp->rnorm>5*qp->mu || d1*d1>qp->m*qp->mu*qp->mu) ) {
+    if (tao->niter > 0 && (qp->rnorm>5*qp->mu || d1*d1>qp->m*qp->mu*qp->mu) ) {
       sigma=1.0;sigmamu=qp->mu;
       sigma=0.0;sigmamu=0;
     } else {
@@ -283,6 +284,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = KSPSolve(tao->ksp, qp->RHS, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
 
     ierr = VecScale(qp->DiagAxpy, -1.0);CHKERRQ(ierr);
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
@@ -337,6 +339,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
       ierr = KSPSolve(tao->ksp, qp->RHS2, tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
 
       ierr = MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -516,13 +519,13 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BQPIP"
-static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bqpip_predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -551,10 +554,9 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BQPIP"
-PetscErrorCode TaoCreate_BQPIP(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
 {
   TAO_BQPIP      *qp;
   PetscErrorCode ierr;
@@ -568,20 +570,17 @@ PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->ops->destroy = TaoDestroy_BQPIP;
   tao->ops->computedual = TaoComputeDual_BQPIP;
 
-  tao->max_it=100;
-  tao->max_funcs = 500;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it=100;
+  if (!tao->max_funcs_changed) tao->max_funcs = 500;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol=1e-6;
-  tao->frtol=1e-6;
-  tao->gatol=1e-6;
-  tao->grtol=1e-6;
-  tao->catol=1e-6;
+  if (!tao->fatol_changed) tao->fatol=1e-6;
+  if (!tao->frtol_changed) tao->frtol=1e-6;
+  if (!tao->catol_changed) tao->catol=1e-6;
 #else
-  tao->fatol=1e-12;
-  tao->frtol=1e-12;
-  tao->gatol=1e-12;
-  tao->grtol=1e-12;
-  tao->catol=1e-12;
+  if (!tao->fatol_changed) tao->fatol=1e-12;
+  if (!tao->frtol_changed) tao->frtol=1e-12;
+  if (!tao->catol_changed) tao->catol=1e-12;
 #endif
 
   /* Initialize pointers and variables */
@@ -593,8 +592,9 @@ PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->data = (void*)qp;
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp, KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h>
 #include <petscblaslapack.h>
 
@@ -221,16 +221,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   ierr = VecCopy(ksp->vec_rhs, r);CHKERRQ(ierr);        /* r = -grad         */
   ierr = VecDot(r, r, &rr);CHKERRQ(ierr);               /* rr = r^T r        */
-  if (PetscIsInfOrNanScalar(rr)) {
-    /*************************************************************************/
-    /* The right-hand side contains not-a-number or an infinite value.       */
-    /* The gradient step does not work; return a zero value for the step.    */
-    /*************************************************************************/
-
-    ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad right-hand side: rr=%g\n", (double)rr);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  KSPCheckDot(ksp,rr);
 
   /***************************************************************************/
   /* Check the preconditioner for numerical problems and for positive        */
@@ -1433,13 +1424,13 @@ static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GLTR"
-PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GLTR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg = (KSP_GLTR*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GLTR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GLTR options");CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-ksp_gltr_radius", "Trust Region Radius", "KSPGLTRSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 

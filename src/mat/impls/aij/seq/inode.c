@@ -28,7 +28,7 @@ static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt *size,PetscInt **ns)
     *size = i;
     PetscFunctionReturn(0);
   }
-  ierr = PetscMalloc1((n+1),&ns_col);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&ns_col);CHKERRQ(ierr);
 
   /* Use the same row structure wherever feasible. */
   for (count=0,i=0; count<min_mn; count+=ns_row[i],i++) {
@@ -77,8 +77,8 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
   ns_col    = ns_row;
 
   /* allocate space for reformated inode structure */
-  ierr = PetscMalloc1((nslim_col+1),&tns);CHKERRQ(ierr);
-  ierr = PetscMalloc1((n+1),&tvc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_col+1,&tns);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&tvc);CHKERRQ(ierr);
   for (i1=0,tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1]+ ns_row[i1];
 
   for (i1=0,col=0; i1<nslim_col; ++i1) {
@@ -86,10 +86,10 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
     for (i2=0; i2<nsz; ++i2,++col) tvc[col] = i1;
   }
   /* allocate space for row pointers */
-  ierr = PetscMalloc1((nslim_row+1),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_row+1,&ia);CHKERRQ(ierr);
   *iia = ia;
   ierr = PetscMemzero(ia,(nslim_row+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1((nslim_row+1),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_row+1,&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = oshift;
@@ -164,8 +164,8 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
   ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
 
   /* allocate space for reformated column_inode structure */
-  ierr = PetscMalloc1((nslim_col +1),&tns);CHKERRQ(ierr);
-  ierr = PetscMalloc1((n +1),&tvc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_col +1,&tns);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n + 1,&tvc);CHKERRQ(ierr);
   for (i1=0,tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1] + ns_col[i1];
 
   for (i1=0,col=0; i1<nslim_col; ++i1) {
@@ -173,10 +173,10 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
     for (i2=0; i2<nsz; ++i2,++col) tvc[col] = i1;
   }
   /* allocate space for row pointers */
-  ierr = PetscMalloc1((nslim_row+1),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_row+1,&ia);CHKERRQ(ierr);
   *iia = ia;
   ierr = PetscMemzero(ia,(nslim_row+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1((nslim_row+1),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_row+1,&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = oshift;
@@ -282,8 +282,8 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
   ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
 
   /* allocate space for reformated column_inode structure */
-  ierr = PetscMalloc1((nslim_col + 1),&tns);CHKERRQ(ierr);
-  ierr = PetscMalloc1((n + 1),&tvc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_col + 1,&tns);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n + 1,&tvc);CHKERRQ(ierr);
   for (i1=0,tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1] + ns_col[i1];
 
   for (i1=0,col=0; i1<nslim_col; ++i1) {
@@ -291,10 +291,10 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
     for (i2=0; i2<nsz; ++i2,++col) tvc[col] = i1;
   }
   /* allocate space for column pointers */
-  ierr = PetscMalloc1((nslim_col+1),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_col+1,&ia);CHKERRQ(ierr);
   *iia = ia;
   ierr = PetscMemzero(ia,(nslim_col+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1((nslim_col+1),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslim_col+1,&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = oshift;
@@ -596,12 +596,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   ns       = a->inode.size;     /* Node Size array */
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  } else {
-    z = y;
-  }
+  ierr = VecGetArrayPair(zz,yy,&z,&y);CHKERRQ(ierr);
   zt = z;
 
   idx = a->j;
@@ -764,10 +759,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
     }
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayPair(zz,yy,&z,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1233,7 +1225,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
   /* If max inode size > 4, split it into two inodes.*/
   /* also map the inode sizes according to the ordering */
-  ierr = PetscMalloc1((n+1),&tmp_vec1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&tmp_vec1);CHKERRQ(ierr);
   for (i=0,j=0; i<node_max; ++i,++j) {
     if (ns[i] > 4) {
       tmp_vec1[j] = 4;
@@ -1248,8 +1240,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
   /* Now reorder the inode info based on mat re-ordering info */
   /* First create a row -> inode_size_array_index map */
-  ierr = PetscMalloc(n*sizeof(PetscInt)+1,&nsmap);CHKERRQ(ierr);
-  ierr = PetscMalloc(node_max*sizeof(PetscInt)+1,&tmp_vec2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&nsmap);CHKERRQ(ierr);
+  ierr = PetscMalloc1(node_max+1,&tmp_vec2);CHKERRQ(ierr);
   for (i=0,row=0; i<node_max; i++) {
     nodesz = tmp_vec1[i];
     for (j=0; j<nodesz; j++,row++) {
@@ -1962,7 +1954,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
 
   /* If max inode size > 3, split it into two inodes.*/
   /* also map the inode sizes according to the ordering */
-  ierr = PetscMalloc1((n+1),&tmp_vec1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&tmp_vec1);CHKERRQ(ierr);
   for (i=0,j=0; i<node_max; ++i,++j) {
     if (ns[i]>3) {
       tmp_vec1[j] = ns[i]/2; /* Assuming ns[i] < =5  */
@@ -1977,8 +1969,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
 
   /* Now reorder the inode info based on mat re-ordering info */
   /* First create a row -> inode_size_array_index map */
-  ierr = PetscMalloc(n*sizeof(PetscInt)+1,&nsmap);CHKERRQ(ierr);
-  ierr = PetscMalloc(node_max*sizeof(PetscInt)+1,&tmp_vec2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&nsmap);CHKERRQ(ierr);
+  ierr = PetscMalloc1(node_max+1,&tmp_vec2);CHKERRQ(ierr);
   for (i=0,row=0; i<node_max; i++) {
     nodesz = tmp_vec1[i];
     for (j=0; j<nodesz; j++,row++) {
@@ -2317,7 +2309,7 @@ endofwhile:;
     }
   }
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
-  ierr = Mat_CheckInode(C,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSeqAIJCheckInode(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2723,7 +2715,7 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
   ISColoringValue *newcolor;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1((n+1),&newcolor);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&newcolor);CHKERRQ(ierr);
   /* loop over inodes, marking a color for each column*/
   row = 0;
   for (i=0; i<m; i++) {
@@ -2746,12 +2738,12 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
     newcolor[i] = colorused[newcolor[i]]-1;
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mat),ncolors,n,newcolor,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mat),ncolors,n,newcolor,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSOR_SeqAIJ_Inode"
@@ -2771,6 +2763,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   PetscFunctionBegin;
   if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
+  if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   if (fshift != 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
 
   if (!a->inode.ibdiagvalid) {
@@ -4074,8 +4067,8 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
     do not need to recompute the inodes
 */
 #undef __FUNCT__
-#define __FUNCT__ "Mat_CheckInode"
-PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
+#define __FUNCT__ "MatSeqAIJCheckInode"
+PetscErrorCode MatSeqAIJCheckInode(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -4085,13 +4078,12 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
 
   PetscFunctionBegin;
   if (!a->inode.use) PetscFunctionReturn(0);
-  if (a->inode.checked && samestructure) PetscFunctionReturn(0);
-
+  if (a->inode.checked && A->nonzerostate == a->inode.mat_nonzerostate) PetscFunctionReturn(0);
 
   m = A->rmap->n;
   if (a->inode.size) ns = a->inode.size;
   else {
-    ierr = PetscMalloc1((m+1),&ns);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m+1,&ns);CHKERRQ(ierr);
   }
 
   i          = 0;
@@ -4150,7 +4142,8 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
     a->inode.size       = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
   }
-  a->inode.checked = PETSC_TRUE;
+  a->inode.checked          = PETSC_TRUE;
+  a->inode.mat_nonzerostate = A->nonzerostate;
   PetscFunctionReturn(0);
 }
 
@@ -4168,10 +4161,10 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   c->inode.limit     = a->inode.limit;
   c->inode.max_limit = a->inode.max_limit;
   if (a->inode.size) {
-    ierr                = PetscMalloc1((m+1),&c->inode.size);CHKERRQ(ierr);
+    ierr                = PetscMalloc1(m+1,&c->inode.size);CHKERRQ(ierr);
     c->inode.node_count = a->inode.node_count;
     ierr                = PetscMemcpy(c->inode.size,a->inode.size,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    /* note the table of functions below should match that in Mat_CheckInode() */
+    /* note the table of functions below should match that in MatSeqAIJCheckInode() */
     if (!B->factortype) {
       B->ops->mult              = MatMult_SeqAIJ_Inode;
       B->ops->sor               = MatSOR_SeqAIJ_Inode;
@@ -4212,16 +4205,16 @@ PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt 
   PetscFunctionReturn(0);
 }
 /*
-   Mat_CheckInode_FactorLU - Check Inode for factored seqaij matrix.
-   Modified from Mat_CheckInode().
+   MatSeqAIJCheckInode_FactorLU - Check Inode for factored seqaij matrix.
+   Modified from MatSeqAIJCheckInode().
 
    Input Parameters:
 .  Mat A - ILU or LU matrix factor
 
 */
 #undef __FUNCT__
-#define __FUNCT__ "Mat_CheckInode_FactorLU"
-PetscErrorCode Mat_CheckInode_FactorLU(Mat A)
+#define __FUNCT__ "MatSeqAIJCheckInode_FactorLU"
+PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -4237,7 +4230,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A)
   m = A->rmap->n;
   if (a->inode.size) ns = a->inode.size;
   else {
-    ierr = PetscMalloc1((m+1),&ns);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m+1,&ns);CHKERRQ(ierr);
   }
 
   i          = 0;
@@ -4335,7 +4328,7 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
   if (a->inode.node_count == m) PetscFunctionReturn(0); /* all inodes are of size 1 */
 
   ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
-  ierr = PetscMalloc1((((nslim_row>nslim_col) ? nslim_row : nslim_col)+1),&tns);CHKERRQ(ierr);
+  ierr = PetscMalloc1(((nslim_row>nslim_col) ? nslim_row : nslim_col)+1,&tns);CHKERRQ(ierr);
   ierr = PetscMalloc2(m,&permr,n,&permc);CHKERRQ(ierr);
 
   ierr = ISGetIndices(ris,&ridx);CHKERRQ(ierr);

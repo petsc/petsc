@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscsys.h>
 #include <petscviewer.h>
 
@@ -59,8 +59,9 @@ PETSC_EXTERN void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR mes
 
   FIXCHAR(message,len,msg);
   *ierr = PetscFixSlashN(msg,&tmp);if (*ierr) return;
-  PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = PetscMemoryShowUsage(v,tmp);
   FREECHAR(message,msg);
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = PetscMemoryShowUsage(v,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 

@@ -1,16 +1,16 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
+#include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
 #include <petscdmda.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Network"
-PetscErrorCode  DMSetFromOptions_Network(DM dm)
+PetscErrorCode  DMSetFromOptions_Network(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMNetwork Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMNetwork Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -24,6 +24,7 @@ extern PetscErrorCode DMGlobalToLocalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMLocalToGlobalBegin_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMLocalToGlobalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMSetUp_Network(DM);
+extern PetscErrorCode DMClone_Network(DM, DM*);
 
 
 #undef __FUNCT__
@@ -61,7 +62,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
 
   dm->ops->view                            = NULL;
   dm->ops->setfromoptions                  = DMSetFromOptions_Network;
-  dm->ops->clone                           = NULL;
+  dm->ops->clone                           = DMClone_Network;
   dm->ops->setup                           = DMSetUp_Network;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Network;
   dm->ops->createlocalvector               = DMCreateLocalVector_Network;
@@ -84,6 +85,21 @@ PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->destroy                         = DMDestroy_Network;
   dm->ops->createsubdm                     = NULL;
   dm->ops->locatepoints                    = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClone_Network"
+PetscErrorCode DMClone_Network(DM dm, DM *newdm)
+{
+  DM_Network     *network = (DM_Network *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  network->refct++;
+  (*newdm)->data = network;
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMNETWORK);CHKERRQ(ierr);
+  ierr = DMInitialize_Network(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

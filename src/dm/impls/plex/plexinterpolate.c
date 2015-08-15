@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <../src/sys/utils/hash.h>
 
 #undef __FUNCT__
@@ -152,7 +152,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &cellDim);CHKERRQ(ierr);
   /* HACK: I need a better way to determine face dimension, or an alternative to GetFaces() */
   ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
   if (subpointMap) ++cellDim;
@@ -190,7 +190,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         key.l = 0;
       } else {
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
-        ierr = PetscSortInt(faceSize, (PetscInt *) &key);
+        ierr = PetscSortInt(faceSize, (PetscInt *) &key);CHKERRQ(ierr);
       }
       ierr = PetscHashIJKLPut(faceTable, key, &missing, &iter);CHKERRQ(ierr);
       if (missing) {ierr = PetscHashIJKLSet(faceTable, iter, face++);CHKERRQ(ierr);}
@@ -259,7 +259,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         key.l = 0;
       } else {
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
-        ierr = PetscSortInt(faceSize, (PetscInt *) &key);
+        ierr = PetscSortInt(faceSize, (PetscInt *) &key);CHKERRQ(ierr);
       }
       ierr = PetscHashIJKLPut(faceTable, key, &missing, &iter);CHKERRQ(ierr);
       if (missing) {
@@ -333,7 +333,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     idm  = dm;
@@ -343,7 +343,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     if ((d == dim-1) && *dmInt) {idm  = *dmInt;}
     else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexSetDimension(idm, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
     if (depth > 0) {ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);}
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
@@ -485,7 +485,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     *dmUnint = dm;
@@ -495,7 +495,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), &udm);CHKERRQ(ierr);
   ierr = DMSetType(udm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(udm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(udm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(udm, cStart, vEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
@@ -527,6 +527,40 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   ierr = PetscFree(cone);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(udm);CHKERRQ(ierr);
   ierr = DMPlexStratify(udm);CHKERRQ(ierr);
+  /* Reduce SF */
+  {
+    PetscSF            sfPoint, sfPointUn;
+    const PetscSFNode *remotePoints;
+    const PetscInt    *localPoints;
+    PetscSFNode       *remotePointsUn;
+    PetscInt          *localPointsUn;
+    PetscInt           vEnd, numRoots, numLeaves, l;
+    PetscInt           numLeavesUn = 0, n = 0;
+    PetscErrorCode     ierr;
+
+    /* Get original SF information */
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    ierr = DMGetPointSF(udm, &sfPointUn);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, NULL, &vEnd);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+    /* Allocate space for cells and vertices */
+    for (l = 0; l < numLeaves; ++l) if (localPoints[l] < vEnd) numLeavesUn++;
+    /* Fill in leaves */
+    if (vEnd >= 0) {
+      ierr = PetscMalloc1(numLeavesUn, &remotePointsUn);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numLeavesUn, &localPointsUn);CHKERRQ(ierr);
+      for (l = 0; l < numLeaves; l++) {
+        if (localPoints[l] < vEnd) {
+          localPointsUn[n]        = localPoints[l];
+          remotePointsUn[n].rank  = remotePoints[l].rank;
+          remotePointsUn[n].index = remotePoints[l].index;
+          ++n;
+        }
+      }
+      if (n != numLeavesUn) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %d != %d", n, numLeavesUn);
+      ierr = PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+  }
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }

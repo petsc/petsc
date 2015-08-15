@@ -1,4 +1,4 @@
-#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetInitialVector"
@@ -118,7 +118,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
     ierr = PetscLogEventEnd(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
   } else if (tao->ops->computeobjectiveandgradient) {
-    ierr = PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine");CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine\n");CHKERRQ(ierr);
     ierr = VecDuplicate(X,&temp);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(Tao_ObjGradientEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user objective/gradient evaluation routine");
@@ -352,9 +352,10 @@ PetscErrorCode TaoSetGradientRoutine(Tao tao,  PetscErrorCode (*func)(Tao, Vec, 
         routine (may be NULL)
 
   Calling sequence of func:
-$      func (Tao tao, Vec x, Vec g, void *ctx);
+$      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
 + x - input vector
+. f - objective value (output)
 . g - gradient value (output)
 - ctx - [optional] user-defined function context
 

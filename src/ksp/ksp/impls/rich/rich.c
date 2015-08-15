@@ -2,7 +2,7 @@
 /*
             This implements Richardson Iteration.
 */
-#include <petsc-private/kspimpl.h>              /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>              /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>
 
 #undef __FUNCT__
@@ -34,6 +34,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
   PetscBool      exists,diagonalscale;
+  MatNullSpace   nullsp;
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -63,11 +64,14 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
-  if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !ksp->nullsp) {
+  ierr = MatGetNullSpace(Pmat,&nullsp);CHKERRQ(ierr);
+  if (exists && richardsonP->scale == 1.0 && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
     PCRichardsonConvergedReason reason;
     ierr        = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason);CHKERRQ(ierr);
     ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(0);
+  } else if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
+    ierr  = PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson() because scale factor is not 1.0\n");CHKERRQ(ierr);
   }
 
   scale = richardsonP->scale;
@@ -186,7 +190,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Richardson"
-PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
+PetscErrorCode KSPSetFromOptions_Richardson(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
   PetscErrorCode ierr;
@@ -194,7 +198,7 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
   PetscBool      flg,flg2;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP Richardson Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP Richardson Options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
   ierr = PetscOptionsBool("-ksp_richardson_self_scale","dynamically determine optimal damping factor","KSPRichardsonSetSelfScale",rich->selfscale,&flg2,&flg);CHKERRQ(ierr);

@@ -3,7 +3,7 @@
     Routines to set PC methods and options.
 */
 
-#include <petsc-private/pcimpl.h>      /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>      /*I "petscpc.h" I*/
 #include <petscdm.h>
 
 PetscBool PCRegisterAllCalled = PETSC_FALSE;
@@ -153,7 +153,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll();CHKERRQ(ierr);}
+  ierr = PCRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
@@ -168,12 +168,16 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg);CHKERRQ(ierr);
+  if (flg) goto skipoptions;
+
   ierr = PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL);CHKERRQ(ierr);
 
   if (pc->ops->setfromoptions) {
-    ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
+    ierr = (*pc->ops->setfromoptions)(PetscOptionsObject,pc);CHKERRQ(ierr);
   }
 
+  skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)pc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

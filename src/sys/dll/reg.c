@@ -3,7 +3,7 @@
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
-#include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
 /*
@@ -37,6 +37,21 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
   PetscFunctionReturn(0);
 }
 
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+extern PetscErrorCode AOInitializePackage(void);
+extern PetscErrorCode PetscSFInitializePackage(void);
+extern PetscErrorCode CharacteristicInitializePackage(void);
+extern PetscErrorCode ISInitializePackage(void);
+extern PetscErrorCode VecInitializePackage(void);
+extern PetscErrorCode MatInitializePackage(void);
+extern PetscErrorCode DMInitializePackage(void);
+extern PetscErrorCode PCInitializePackage(void);
+extern PetscErrorCode KSPInitializePackage(void);
+extern PetscErrorCode SNESInitializePackage(void);
+extern PetscErrorCode TSInitializePackage(void);
+static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
 #endif
 
 #undef __FUNCT__
@@ -103,6 +118,23 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+  /* These must be done here because it is not safe for individual threads to call these initialize routines */
+  ierr = AOInitializePackage();CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
+  ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
+  ierr = VecInitializePackage();CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
+  ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PCInitializePackage();CHKERRQ(ierr);
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
+  ierr = SNESInitializePackage();CHKERRQ(ierr);
+  ierr = TSInitializePackage();CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&PETSC_COMM_SELF_INNER,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD_INNER,NULL);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -120,6 +152,11 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   ierr = PetscOptionsGetBool(NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+  ierr = PetscCommDestroy(&PETSC_COMM_SELF_INNER);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&PETSC_COMM_WORLD_INNER);CHKERRQ(ierr);
+#endif
 
   PetscDLLibrariesLoaded = 0;
   PetscFunctionReturn(0);
@@ -183,6 +220,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     entry->next    = 0;
     *fl            = entry;
 
+#if defined(PETSC_USE_LOG)
     /* add this new list to list of all lists */
     if (!dlallhead) {
       dlallhead        = *fl;
@@ -192,6 +230,8 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
       dlallhead        = *fl;
       (*fl)->next_list = ne;
     }
+#endif
+
   } else {
     /* search list to see if it is already there */
     ne = *fl;
@@ -394,7 +434,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc1((count+1),array);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(count+1,array);CHKERRQ(ierr);
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;
@@ -428,10 +468,9 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 
 .seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
+ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {
   PetscErrorCode ierr;
-  PetscInt       count = 0;
   char           p[64];
 
   PetscFunctionBegin;
@@ -444,8 +483,6 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
     list = list->next;
-    count++;
-    if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
   ierr = PetscFPrintf(comm,fd," (%s)\n",man);CHKERRQ(ierr);
   PetscFunctionReturn(0);

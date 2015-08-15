@@ -1,0 +1,71 @@
+SUCCESS
+Species 0: CH4 0.0948178
+Species 1: O2 0.189636
+Species 2: N2 0.706766
+Species 3: AR 0.00878027
+      TSAdapt 'basic': step   0 accepted t=0          + 1.000e-10 wlte=4.24e-22 family='arkimex' scheme=0:'4' dt=1.000e-09 
+      TSAdapt 'basic': step   1 accepted t=1e-10      + 1.000e-09 wlte=3.21e-18 family='arkimex' scheme=0:'4' dt=1.000e-08 
+      TSAdapt 'basic': step   2 accepted t=1.1e-09    + 1.000e-08 wlte=5.46e-15 family='arkimex' scheme=0:'4' dt=1.000e-07 
+      TSAdapt 'basic': step   3 accepted t=1.11e-08   + 1.000e-07 wlte=4.57e-11 family='arkimex' scheme=0:'4' dt=1.000e-06 
+      TSAdapt 'basic': step   4 accepted t=1.111e-07  + 1.000e-06 wlte=5.4e-08 family='arkimex' scheme=0:'4' dt=1.000e-05 
+      TSAdapt 'basic': step   5 accepted t=1.1111e-06 + 1.000e-05 wlte=7.69e-08 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step   6 accepted t=1.11111e-05+ 1.000e-04 wlte=3.12e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step   7 accepted t=0.000111111+ 1.000e-04 wlte=1.2e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step   8 accepted t=0.000211111+ 1.000e-04 wlte=6.76e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step   9 accepted t=0.000311111+ 1.000e-04 wlte=9.44e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  10 accepted t=0.000411111+ 1.000e-04 wlte=6.29e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  11 accepted t=0.000511111+ 1.000e-04 wlte=2.79e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  12 accepted t=0.000611111+ 1.000e-04 wlte=1.11e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  13 accepted t=0.000711111+ 1.000e-04 wlte=1.5e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  14 accepted t=0.000811111+ 1.000e-04 wlte=2.4e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  15 accepted t=0.000911111+ 1.000e-04 wlte=3.76e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  16 accepted t=0.00101111 + 1.000e-04 wlte=6.25e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  17 accepted t=0.00111111 + 1.000e-04 wlte=1.15e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  18 accepted t=0.00121111 + 1.000e-04 wlte=2.44e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  19 accepted t=0.00131111 + 1.000e-04 wlte=6.23e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  20 accepted t=0.00141111 + 1.000e-04 wlte=0.000212 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  21 accepted t=0.00151111 + 1.000e-04 wlte=0.00123 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  22 accepted t=0.00161111 + 1.000e-04 wlte=0.0796 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  23 stage rejected t=0.00171111 + 1.000e-04 retrying with dt=2.500e-05 
+      TSAdapt 'basic': step  23 accepted t=0.00171111 + 2.500e-05 wlte=0.0037 family='arkimex' scheme=0:'4' dt=9.124e-05 
+      TSAdapt 'basic': step  24 stage rejected t=0.00173611 + 9.124e-05 retrying with dt=2.281e-05 
+      TSAdapt 'basic': step  24 accepted t=0.00173611 + 2.281e-05 wlte=0.023 family='arkimex' scheme=0:'4' dt=5.270e-05 
+      TSAdapt 'basic': step  25 rejected t=0.00175892 + 5.270e-05 wlte= 4.92 family='arkimex' scheme=0:'4' dt=3.185e-05 
+      TSAdapt 'basic': step  25 rejected t=0.00175892 + 3.185e-05 wlte= 3.95 family='arkimex' scheme=0:'4' dt=2.033e-05 
+      TSAdapt 'basic': step  25 accepted t=0.00175892 + 2.033e-05 wlte=0.473 family='arkimex' scheme=0:'4' dt=2.206e-05 
+      TSAdapt 'basic': step  26 accepted t=0.00177925 + 2.206e-05 wlte=0.921 family='arkimex' scheme=0:'4' dt=2.027e-05 
+      TSAdapt 'basic': step  27 accepted t=0.00180131 + 2.027e-05 wlte=0.0237 family='arkimex' scheme=0:'4' dt=4.649e-05 
+      TSAdapt 'basic': step  28 accepted t=0.00182158 + 4.649e-05 wlte=0.00615 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  29 accepted t=0.00186807 + 1.000e-04 wlte=0.00318 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  30 accepted t=0.00196807 + 1.000e-04 wlte=0.000394 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  31 accepted t=0.00206807 + 1.000e-04 wlte=0.000241 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  32 accepted t=0.00216807 + 1.000e-04 wlte=0.000127 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  33 accepted t=0.00226807 + 1.000e-04 wlte=5.56e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  34 accepted t=0.00236807 + 1.000e-04 wlte=2.04e-05 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  35 accepted t=0.00246807 + 1.000e-04 wlte=6.59e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  36 accepted t=0.00256807 + 1.000e-04 wlte=2.03e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  37 accepted t=0.00266807 + 1.000e-04 wlte=6.98e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  38 accepted t=0.00276807 + 1.000e-04 wlte=3.21e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  39 accepted t=0.00286807 + 1.000e-04 wlte=1.08e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  40 accepted t=0.00296807 + 1.000e-04 wlte=2.84e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  41 accepted t=0.00306807 + 1.000e-04 wlte=2.52e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  42 accepted t=0.00316807 + 1.000e-04 wlte=3.07e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  43 accepted t=0.00326807 + 1.000e-04 wlte=2.67e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  44 accepted t=0.00336807 + 1.000e-04 wlte=3.26e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  45 accepted t=0.00346807 + 1.000e-04 wlte=2.83e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  46 accepted t=0.00356807 + 1.000e-04 wlte=2.43e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  47 accepted t=0.00366807 + 1.000e-04 wlte=2.07e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  48 accepted t=0.00376807 + 1.000e-04 wlte=3.7e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  49 accepted t=0.00386807 + 1.000e-04 wlte=3.14e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  50 accepted t=0.00396807 + 1.000e-04 wlte=2.65e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  51 accepted t=0.00406807 + 1.000e-04 wlte=2.23e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  52 accepted t=0.00416807 + 1.000e-04 wlte=1.87e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  53 accepted t=0.00426807 + 1.000e-04 wlte=1.56e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  54 accepted t=0.00436807 + 1.000e-04 wlte=1.3e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  55 accepted t=0.00446807 + 1.000e-04 wlte=1.07e-06 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  56 accepted t=0.00456807 + 1.000e-04 wlte=8.84e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  57 accepted t=0.00466807 + 1.000e-04 wlte=7.21e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  58 accepted t=0.00476807 + 1.000e-04 wlte=5.83e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  59 accepted t=0.00486807 + 1.000e-04 wlte=4.66e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+      TSAdapt 'basic': step  60 accepted t=0.00496807 + 1.000e-04 wlte=3.67e-07 family='arkimex' scheme=0:'4' dt=1.000e-04 
+CONVERGED_TIME at time 0.00506807 after 61 steps

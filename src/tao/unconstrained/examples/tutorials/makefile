@@ -14,8 +14,8 @@ DOCS		 =
 DIRS		 =
 CLEANFILES       = eptorsion1 eptorsion2 minsurf2 rosenbrock1 eptorsion2f rosenbrock1f
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 rosenbrock1: rosenbrock1.o chkopts
 	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${PETSC_TAO_LIB}
@@ -162,7 +162,7 @@ TESTEXAMPLES_FORTRAN_MPIUNI = rosenbrock1f.PETSc runrosenbrock1f rosenbrock1f.rm
                         eptorsion2f.PETSc runeptorsion2f eptorsion2f.rm
 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 
 

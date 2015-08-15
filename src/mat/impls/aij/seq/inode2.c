@@ -1,9 +1,9 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-extern PetscErrorCode Mat_CheckInode(Mat,PetscBool);
-extern PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
-extern PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
+extern PetscErrorCode MatSeqAIJCheckInode(Mat);
+extern PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
+extern PetscErrorCode MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SeqAIJ_Inode"
@@ -36,14 +36,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscBool      samestructure;
 
   PetscFunctionBegin;
-  /* info.nz_unneeded of zero denotes no structural change was made to the matrix during Assembly */
-  samestructure = (PetscBool)(!A->info.nz_unneeded);
-  /* check for identical nodes. If found, use inode functions */
-  ierr = Mat_CheckInode(A,samestructure);CHKERRQ(ierr);
-
+  ierr = MatSeqAIJCheckInode(A);CHKERRQ(ierr);
   a->inode.ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
 #requiresdefine   'PETSC_USING_F90'
 #
-#   Makes Fortran module functions from *.h90 files in include/finclude
+#   Makes Fortran module functions from *.h90 files in include/petsc/finclude
 #
 ALL: buildmod
 speciallib: buildmod
@@ -19,6 +19,6 @@ MANSEC	   = Sys
 LOCDIR	   = src/sys/mpiuni/f90-mod/
 CLEANFILES = *.mod
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

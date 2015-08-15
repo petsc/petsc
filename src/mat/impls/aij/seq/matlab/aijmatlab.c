@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatlabEngineGet_SeqAIJ"
-PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            mat = (Mat)obj;
@@ -164,7 +164,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"%s = 0;",_A);CHKERRQ(ierr);
 
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((len+2),&name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+2,&name);CHKERRQ(ierr);
     sprintf(name,"_%s",_A);
     ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
     ierr = PetscFree(name);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,dtcol);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"%s = 0;",_A);CHKERRQ(ierr);
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((len+2),&name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+2,&name);CHKERRQ(ierr);
     sprintf(name,"_%s",_A);
     ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
     ierr = PetscFree(name);CHKERRQ(ierr);
@@ -222,6 +222,18 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
   (*F)->factortype = ftype;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Matlab"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERMATLAB,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -42,8 +42,8 @@ const int VPERE=4;
 extern PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS_MOAB(KSP,Vec,void*);
 
-extern PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[3*4], int n, PetscScalar pts[], PetscScalar *phi, PetscScalar *dphidx, PetscScalar *dphidy );
-extern PetscErrorCode ComputeQuadraturePointsPhysical(const PetscScalar verts[VPERE*3], PetscScalar quad[NQPTS*3], PetscScalar jxw[NQPTS]);
+extern PetscErrorCode Compute_Quad4_Basis ( PetscReal coords[3*4], int n, PetscReal pts[], PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy );
+extern PetscErrorCode ComputeQuadraturePointsPhysical(const PetscReal verts[VPERE*3], PetscReal quad[NQPTS*3], PetscReal jxw[NQPTS]);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -166,12 +166,12 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   DM                dm;
   PetscInt          dof_indices[VPERE];
   PetscBool         dbdry[VPERE];
-  PetscScalar       vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
+  PetscReal         vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS],phi[VPERE*NQPTS];
   PetscInt          i,q,num_conn;
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
-  PetscScalar       phi[VPERE*NQPTS],localv[VPERE];
+  PetscScalar       localv[VPERE];
   PetscBool         elem_on_boundary;
   PetscErrorCode    ierr;
 
@@ -272,14 +272,14 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
   DM                dm;
   PetscInt          i,j,q,num_conn;
   PetscInt          dof_indices[VPERE];
-  PetscScalar       vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
+  PetscReal         vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
   PetscBool         dbdry[VPERE];
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
   PetscScalar       array[VPERE*VPERE];
-  PetscScalar       phi[VPERE*NQPTS], dphidx[VPERE*NQPTS], dphidy[VPERE*NQPTS];
+  PetscReal         phi[VPERE*NQPTS], dphidx[VPERE*NQPTS], dphidy[VPERE*NQPTS];
   PetscReal         rho;
   PetscErrorCode    ierr;
  
@@ -366,7 +366,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
     MatNullSpace nullspace;
 
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -417,9 +417,9 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "Compute_Quad4_Basis"
-PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, PetscScalar *pts, PetscScalar *phi, PetscScalar *dphidx, PetscScalar *dphidy)
+PetscErrorCode Compute_Quad4_Basis ( PetscReal coords[VPERE*3], PetscInt n, PetscReal *pts, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy)
 {
-  PetscScalar ejac;
+  PetscReal ejac;
   int i,j;
 
   PetscFunctionBegin;
@@ -486,13 +486,13 @@ PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, Pe
 */
 #undef __FUNCT__
 #define __FUNCT__ "ComputeQuadraturePointsPhysical"
-PetscErrorCode ComputeQuadraturePointsPhysical(const PetscScalar verts[VPERE*3], PetscScalar quad[NQPTS*3], PetscScalar jxw[NQPTS])
+PetscErrorCode ComputeQuadraturePointsPhysical(const PetscReal verts[VPERE*3], PetscReal quad[NQPTS*3], PetscReal jxw[NQPTS])
 {
   int i,j;
-  PetscScalar centroid[3];
-  const PetscScalar GLG_QUAD[3] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
-  PetscScalar dx = fabs(verts[0+2*3] - verts[0+0*3])/2, dy = fabs( verts[1+2*3] - verts[1+0*3] )/2;
-  PetscScalar ejac = dx*dy;
+  PetscReal centroid[3];
+  const PetscReal GLG_QUAD[3] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
+  PetscReal dx = fabs(verts[0+2*3] - verts[0+0*3])/2, dy = fabs( verts[1+2*3] - verts[1+0*3] )/2;
+  PetscReal ejac = dx*dy;
   
   centroid[0] = centroid[1] = centroid[2] = 0.0;
   for (i=0; i<VPERE; ++i) {

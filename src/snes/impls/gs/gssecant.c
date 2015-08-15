@@ -106,6 +106,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
         g = ga[idx[j]-s];
         w = wa[idx[j]-s];
         if (PetscAbsScalar(g-f) > atol) {
+          /* This is equivalent to d = x - (h*f) / PetscRealPart(g-f) */
           d = (x*g-w*f) / PetscRealPart(g-f);
         } else {
           d = x;

@@ -1,8 +1,8 @@
 # -*- mode: makefile-gmake -*-
 
 # If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
-include ./$(PETSC_ARCH)/conf/petscvariables
-include ./conf/variables
+include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
 MODDIR := $(PETSC_ARCH)/include
@@ -52,7 +52,7 @@ else
 endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
 
-generated := $(PETSC_ARCH)/conf/files
+generated := $(PETSC_ARCH)/lib/petsc/conf/files
 
 all : $(generated) $(libpetscall)
 
@@ -73,8 +73,8 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-$(PETSC_ARCH)/conf/files : $(PETSC_ARCH)/include/petscconf.h
-	$(PYTHON) conf/gmakegen.py --petsc-arch=$(PETSC_ARCH)
+$(PETSC_ARCH)/lib/petsc/conf/files : $(PETSC_ARCH)/include/petscconf.h
+	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)
 
@@ -177,6 +177,7 @@ endif
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpi.mod
+  $(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o: $(PETSC_ARCH)/include/petscconf.h src/sys/mpiuni/f90-mod/mpiunimod.F
 endif
 $(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
 $(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
@@ -198,7 +199,7 @@ $(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnes
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
 
 # make print VAR=the-variable
 print:

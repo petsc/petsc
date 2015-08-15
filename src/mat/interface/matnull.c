@@ -3,7 +3,7 @@
     Routines to project vectors out of null spaces.
 */
 
-#include <petsc-private/matimpl.h>      /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
 
 PetscClassId MAT_NULLSPACE_CLASSID;
 
@@ -24,7 +24,7 @@ PetscClassId MAT_NULLSPACE_CLASSID;
 
 .keywords: PC, null space, create
 
-.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), MatSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
 PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx)
 {
@@ -51,6 +51,9 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 -  vecs - orthonormal vectors that span the null space (excluding the constant vector)
 
    Level: developer
+
+   Notes:
+      These vectors and the array are owned by the MatNullSpace and should not be destroyed or freeded by the caller
 
 .seealso: MatNullSpaceCreate(), MatGetNullSpace(), MatGetNearNullSpace()
 @*/
@@ -236,7 +239,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
 .keywords: PC, null space, create
 
-.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceSetFunction()
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), MatSetNullSpace(), MatNullSpace, MatNullSpaceSetFunction()
 @*/
 PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
 {
@@ -253,7 +256,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   *SP = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst;
   sp->n        = n;
@@ -397,7 +400,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   if (n) {
     ierr = VecDuplicate(sp->vecs[0],&l);CHKERRQ(ierr);
   } else {
-    ierr = MatGetVecs(mat,&l,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(mat,&l,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);

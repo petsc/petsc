@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   ierr = DMCreateInterpolation(daf3,daf4,&interp_m4,NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer_in);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer_in,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer_in,values,1048576,NULL,PETSC_DOUBLE);CHKERRQ(ierr);
   ierr = MatRestrict(interp_p1,x,yp1);
   ierr = VecPointwiseMult(yp1,yp1,scaling_p1);CHKERRQ(ierr);
   ierr = MatRestrict(interp_p2,yp1,yp2);

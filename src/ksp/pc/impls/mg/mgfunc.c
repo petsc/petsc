@@ -1,5 +1,5 @@
 
-#include <../src/ksp/pc/impls/mg/mgimpl.h>       /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>       /*I "petscksp.h" I*/
 
 /* ---------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -342,7 +342,7 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
     Vec      X,Y,coarse,fine;
     PetscInt M,N;
     ierr = PCMGGetRestriction(pc,l,&R);CHKERRQ(ierr);
-    ierr = MatGetVecs(R,&X,&Y);CHKERRQ(ierr);
+    ierr = MatCreateVecs(R,&X,&Y);CHKERRQ(ierr);
     ierr = MatGetSize(R,&M,&N);CHKERRQ(ierr);
     if (M < N) {
       fine = X;
@@ -376,6 +376,11 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
 
    Ouput Parameters:
 .  ksp - the smoother
+
+   Notes:
+   Once you have called this routine, you can call KSPSetOperators(ksp,...) on the resulting ksp to provide the operators for the smoother for this level.
+   You can also modify smoother options by calling the various KSPSetXXX() options on this ksp. In addition you can call KSPGetPC(ksp,&pc)
+   and modify PC options for the smoother; for example PCSetType(pc,PCSOR); to use SOR smoothing.
 
    Level: advanced
 
@@ -450,6 +455,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = PCGetType(ipc,&pctype);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&mglevels[l]->smoothu);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(mglevels[l]->smoothu,pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[l]->smoothu,(PetscObject)pc,mglevels[0]->levels-l);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mglevels[l]->smoothu,prefix);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits);CHKERRQ(ierr);

@@ -4,7 +4,7 @@
 #if !defined(__FACTOR_H)
 #define __FACTOR_H
 
-#include <petsc-private/pcimpl.h>                /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>                /*I "petscpc.h" I*/
 
 typedef struct {
   Mat              fact;              /* factored matrix */
@@ -24,13 +24,14 @@ PETSC_INTERN PetscErrorCode PCFactorSetFill_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCFactorSetMatOrderingType_Factor(PC,MatOrderingType);
 PETSC_INTERN PetscErrorCode PCFactorGetLevels_Factor(PC,PetscInt*);
 PETSC_INTERN PetscErrorCode PCFactorSetLevels_Factor(PC,PetscInt);
-PETSC_INTERN PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC);
+PETSC_INTERN PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC,PetscBool);
+PETSC_INTERN PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC,PetscBool*);
 PETSC_INTERN PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC,PetscBool);
 PETSC_INTERN PetscErrorCode PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
 PETSC_INTERN PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC);
 PETSC_INTERN PetscErrorCode PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
 PETSC_INTERN PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
-PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PC);
+PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);
 
 #endif

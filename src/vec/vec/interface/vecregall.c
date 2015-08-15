@@ -1,5 +1,6 @@
 
 #include <petscvec.h>
+#include <petsc/private/vecimpl.h>
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec);
@@ -32,6 +33,7 @@ PetscErrorCode  VecRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (VecRegisterAllCalled) PetscFunctionReturn(0);
   VecRegisterAllCalled = PETSC_TRUE;
 
   ierr = VecRegister(VECSEQ,        VecCreate_Seq);CHKERRQ(ierr);

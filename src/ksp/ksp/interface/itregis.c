@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP);
@@ -11,6 +11,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP);
@@ -32,7 +33,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP);
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP);
 #endif
@@ -62,6 +62,7 @@ PetscErrorCode  KSPRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (KSPRegisterAllCalled) PetscFunctionReturn(0);
   KSPRegisterAllCalled = PETSC_TRUE;
 
   ierr = KSPRegister(KSPCG,          KSPCreate_CG);CHKERRQ(ierr);
@@ -75,6 +76,7 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPCHEBYSHEV,   KSPCreate_Chebyshev);CHKERRQ(ierr);
   ierr = KSPRegister(KSPGMRES,       KSPCreate_GMRES);CHKERRQ(ierr);
   ierr = KSPRegister(KSPTCQMR,       KSPCreate_TCQMR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPFCG  ,       KSPCreate_FCG);CHKERRQ(ierr);
   ierr = KSPRegister(KSPBCGS,        KSPCreate_BCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPIBCGS,       KSPCreate_IBCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFBCGS,       KSPCreate_FBCGS);CHKERRQ(ierr);
@@ -95,7 +97,6 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPLCD,         KSPCreate_LCD);CHKERRQ(ierr);
   ierr = KSPRegister(KSPGCR,         KSPCreate_GCR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPPGMRES,      KSPCreate_PGMRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPSPECEST,     KSPCreate_SpecEst);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   ierr = KSPRegister(KSPDGMRES,      KSPCreate_DGMRES);CHKERRQ(ierr);
 #endif

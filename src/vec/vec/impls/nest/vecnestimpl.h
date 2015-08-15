@@ -2,7 +2,7 @@
 #if !defined(VecNest_impl_h)
 #define VecNest_impl_h
 
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 typedef struct {
   PetscInt  nb;           /* n blocks */

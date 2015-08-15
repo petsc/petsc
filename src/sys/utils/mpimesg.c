@@ -186,8 +186,8 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
-  ierr = PetscMalloc1((nrecvs+1),olengths1);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nrecvs+1),olengths2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,olengths1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,olengths2);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
     buf_j = buf_r + (2*i);
     ierr  = MPI_Irecv(buf_j,2,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
@@ -203,13 +203,14 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
       j++;
     }
   }
+  if (j != nsends) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d\n",j,nsends);
 
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRQ(ierr);}
 
 
   /* Pack up the received data */
-  ierr = PetscMalloc1((nrecvs+1),onodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,onodes);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     (*onodes)[i]    = w_status[i].MPI_SOURCE;
     buf_j           = buf_r + (2*i);
@@ -240,7 +241,7 @@ PetscErrorCode  PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrec
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
 
   /* allocate memory for recv buffers */
-  ierr = PetscMalloc1((nrecvs+1),&rbuf_t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,&rbuf_t);CHKERRQ(ierr);
   ierr = PetscMalloc1(len,&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
@@ -270,7 +271,7 @@ PetscErrorCode  PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt n
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
 
   /* allocate memory for recv buffers */
-  ierr = PetscMalloc1((nrecvs+1),&rbuf_t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,&rbuf_t);CHKERRQ(ierr);
   ierr = PetscMalloc1(len,&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 

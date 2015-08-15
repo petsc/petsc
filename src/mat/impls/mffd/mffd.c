@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
 PetscFunctionList MatMFFDList              = 0;
@@ -206,20 +206,6 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDAddNullSpace_MFFD"
-PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)
-{
-  PetscErrorCode ierr;
-  MatMFFD        ctx = (MatMFFD)J->data;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (ctx->sp) { ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr); }
-  ctx->sp = nullsp;
-  PetscFunctionReturn(0);
-}
-
 /* ----------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MFFD"
@@ -237,7 +223,6 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
     ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  ierr      = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
   ierr      = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
   mat->data = 0;
 
@@ -249,7 +234,6 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetCheckh_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetPeriod_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDResetHHistory_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDAddNullSpace_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +346,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
-  if (PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
+  if (mat->erroriffpe && PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }
@@ -407,7 +391,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = VecAXPY(y,1.0,U);CHKERRQ(ierr);
   }
 
-  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
+  if (mat->nullsp) {ierr = MatNullSpaceRemove(mat->nullsp,y);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -546,7 +530,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
     ctx->current_f           = F;
     ctx->current_f_allocated = PETSC_FALSE;
   } else if (!ctx->current_f_allocated) {
-    ierr = MatGetVecs(J,NULL,&ctx->current_f);CHKERRQ(ierr);
+    ierr = MatCreateVecs(J,NULL,&ctx->current_f);CHKERRQ(ierr);
 
     ctx->current_f_allocated = PETSC_TRUE;
   }
@@ -608,7 +592,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MFFD"
-PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
+PetscErrorCode  MatSetFromOptions_MFFD(PetscOptions *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -633,7 +617,7 @@ PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
     ierr = MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,0);CHKERRQ(ierr);
   }
   if (mfctx->ops->setfromoptions) {
-    ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
+    ierr = (*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -692,9 +676,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscFunctionBegin;
   ierr = MatMFFDInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mfctx,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
 
-  mfctx->sp                       = 0;
   mfctx->error_rel                = PETSC_SQRT_MACHINE_EPSILON;
   mfctx->recomputeperiod          = 1;
   mfctx->count                    = 0;
@@ -748,7 +731,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetPeriod_C",MatMFFDSetPeriod_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctionError_C",MatMFFDSetFunctionError_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDResetHHistory_C",MatMFFDResetHHistory_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDAddNullSpace_C",MatMFFDAddNullSpace_MFFD);CHKERRQ(ierr);
 
   mfctx->mat = A;
 
@@ -1046,36 +1028,6 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
 
   PetscFunctionBegin;
   ierr = PetscTryMethod(mat,"MatMFFDSetFunctionError_C",(Mat,PetscReal),(mat,error));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDAddNullSpace"
-/*@
-   MatMFFDAddNullSpace - Provides a null space that an operator is
-   supposed to have.  Since roundoff will create a small component in
-   the null space, if you know the null space you may have it
-   automatically removed.
-
-   Logically Collective on Mat
-
-   Input Parameters:
-+  J - the matrix-free matrix context
--  nullsp - object created with MatNullSpaceCreate()
-
-   Level: advanced
-
-.keywords: SNES, matrix-free, null space
-
-.seealso: MatNullSpaceCreate(), MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory()
-@*/
-PetscErrorCode  MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscTryMethod(J,"MatMFFDAddNullSpace_C",(Mat,MatNullSpace),(J,nullsp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

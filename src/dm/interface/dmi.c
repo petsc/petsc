@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
 #undef __FUNCT__
@@ -142,7 +142,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
         nf       = f;
       }
     }
-    if (haveNull) {
+    if (haveNull && is) {
       MatNullSpace nullSpace;
 
       ierr = (*(*subdm)->nullspaceConstructors[nf])(*subdm, nf, &nullSpace);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
         ierr = DMGetField(dm, fields[f], &disc);CHKERRQ(ierr);
         ierr = DMSetField(*subdm, f, disc);CHKERRQ(ierr);
       }
-      if (numFields == 1) {
+      if (numFields == 1 && is) {
         PetscObject disc, space, pmat;
 
         ierr = DMGetField(*subdm, 0, &disc);CHKERRQ(ierr);

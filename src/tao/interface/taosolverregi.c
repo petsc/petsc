@@ -1,6 +1,6 @@
 #define TAO_DLL
 
-#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 
 PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao);
@@ -67,6 +67,7 @@ PetscErrorCode TaoRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TaoRegisterAllCalled) PetscFunctionReturn(0);
   TaoRegisterAllCalled = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
   ierr = TaoRegister(TAOLMVM,TaoCreate_LMVM);CHKERRQ(ierr);

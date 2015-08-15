@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,"-allocate",&flg);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc1((nlocal+nghost),&tarray);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nlocal+nghost,&tarray);CHKERRQ(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
   } else if (flg2) {
     ierr = VecCreate(PETSC_COMM_WORLD,&gxs);CHKERRQ(ierr);

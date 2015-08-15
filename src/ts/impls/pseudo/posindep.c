@@ -1,7 +1,7 @@
 /*
        Code for Timestepping with implicit backwards Euler.
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;       /* work vector where new solution is formed */
@@ -338,7 +338,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
-static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -346,7 +346,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Pseudo-timestepping options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&viewer);CHKERRQ(ierr);
@@ -357,8 +357,8 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   if (flg) {
     ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

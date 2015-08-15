@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_CR"
@@ -146,7 +146,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
    Level: beginner
 
    Notes: The operator and the preconditioner must be symmetric for this method. The
-          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE
+          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE.
           Support only for left preconditioning.
 
    References:

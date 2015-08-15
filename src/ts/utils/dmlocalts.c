@@ -1,5 +1,5 @@
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/tsimpl.h>   /*I "petscts.h" I*/
 
 typedef struct {
   PetscErrorCode (*ifunctionlocal)(DM,PetscReal,Vec,Vec,Vec,void*);
@@ -94,9 +94,6 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
 {
   DM             dm;
   Vec            locX;
-#if 0
-  Vec            locF;
-#endif
   DMTS_Local    *dmlocalts = (DMTS_Local *) ctx;
   PetscErrorCode ierr;
 

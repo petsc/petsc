@@ -597,7 +597,7 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   XCloseDisplay(win->disp);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   ierr = PetscFree(win->font);CHKERRQ(ierr);
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -663,7 +663,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   ierr = PetscObjectChangeTypeName((PetscObject)*sdraw,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
-  (*sdraw)->ops->destroy = 0;
+  (*sdraw)->ops->destroy = NULL;
 
   (*sdraw)->pause   = draw->pause;
   (*sdraw)->coor_xl = draw->coor_xl;

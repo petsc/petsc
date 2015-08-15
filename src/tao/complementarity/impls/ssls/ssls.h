@@ -50,7 +50,7 @@
 
 #ifndef __TAO_SSLS_H
 #define __TAO_SSLS_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 typedef struct {
   Vec ff;       /* fischer function */
@@ -93,7 +93,7 @@ typedef struct {
   IS free;
 } TAO_SSLS;
 
-PetscErrorCode TaoSetFromOptions_SSLS(Tao);
+PetscErrorCode TaoSetFromOptions_SSLS(PetscOptions *,Tao);
 PetscErrorCode TaoView_SSLS(Tao,PetscViewer);
 
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch, Vec, PetscReal *, void *);

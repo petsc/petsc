@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 
 /*
@@ -31,7 +31,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   ierr = MatGetLocalSize(pc->pmat,&cp->m,&cp->n);CHKERRQ(ierr);
   if (cp->m != cp->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
 
-  if (!cp->work) {ierr = MatGetVecs(pc->pmat,&cp->work,NULL);CHKERRQ(ierr);}
+  if (!cp->work) {ierr = MatCreateVecs(pc->pmat,&cp->work,NULL);CHKERRQ(ierr);}
   if (!cp->d) {ierr = PetscMalloc1(cp->n,&cp->d);CHKERRQ(ierr);}
   if (cp->a && pc->flag != SAME_NONZERO_PATTERN) {
     ierr  = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ static PetscErrorCode PCDestroy_CP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_CP"
-static PetscErrorCode PCSetFromOptions_CP(PC pc)
+static PetscErrorCode PCSetFromOptions_CP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

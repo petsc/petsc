@@ -11,7 +11,7 @@
 /*
       These are the debugger and display used if the debugger is started up
 */
-static char      Debugger[PETSC_MAX_PATH_LEN];
+static char      PetscDebugger[PETSC_MAX_PATH_LEN];
 static char      DebugTerminal[PETSC_MAX_PATH_LEN];
 static PetscBool Xterm = PETSC_TRUE;
 
@@ -86,7 +86,7 @@ PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool xterm)
 
   PetscFunctionBegin;
   if (debugger) {
-    ierr = PetscStrcpy(Debugger,debugger);CHKERRQ(ierr);
+    ierr = PetscStrcpy(PetscDebugger,debugger);CHKERRQ(ierr);
   }
   Xterm = xterm;
   PetscFunctionReturn(0);
@@ -254,20 +254,20 @@ PetscErrorCode  PetscAttachDebugger(void)
 #endif
     sprintf(pid,"%d",child);
 
-    ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"kdbg",&iskdbg);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"idb",&isidb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
-    ierr = PetscStrcmp(Debugger,"lldb",&islldb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"ddd",&isddd);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"kdbg",&iskdbg);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"ups",&isups);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"xldb",&isxldb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"xdb",&isxdb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"dbx",&isdbx);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"idb",&isidb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"workshop",&isworkshop);CHKERRQ(ierr);
+    ierr = PetscStrcmp(PetscDebugger,"lldb",&islldb);CHKERRQ(ierr);
 
     if (isxxgdb || isups || isddd) {
       args[1] = program; args[2] = pid; args[3] = "-display";
-      args[0] = Debugger; args[4] = display; args[5] = 0;
+      args[0] = PetscDebugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -275,7 +275,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (iskdbg) {
       args[1] = "-p"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = Debugger; args[5] = display; args[6] = 0;
+      args[0] = PetscDebugger; args[5] = display; args[6] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[3],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -283,7 +283,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (isxldb) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = Debugger; args[5] = display; args[6] = 0;
+      args[0] = PetscDebugger; args[5] = display; args[6] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -291,7 +291,7 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
     } else if (isworkshop) {
       args[1] = "-s"; args[2] = pid; args[3] = "-D"; args[4] = "-";
-      args[0] = Debugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = 0;
+      args[0] = PetscDebugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s on %s\n",args[0],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
@@ -316,7 +316,7 @@ PetscErrorCode  PetscAttachDebugger(void)
           args[j++] = tmp;
         }
       }
-      args[j++] = Debugger;
+      args[j++] = PetscDebugger;
       jj = j;
       args[j++] = program; args[j++] = pid; args[j++] = 0;
 
@@ -357,15 +357,15 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = 0;
       }
       if (Xterm) {
-        if (display[0]) (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
-        else            (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
+        if (display[0]) (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",PetscDebugger,program,pid,display,hostname);
+        else            (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",PetscDebugger,program,pid,hostname);
 
         if (execvp(args[0],(char**)args)  < 0) {
           perror("Unable to start debugger in xterm");
           exit(0);
         }
       } else {
-        (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on %s\n",Debugger,program,pid,hostname);
+        (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on %s\n",PetscDebugger,program,pid,hostname);
         if (execvp(args[0],(char**)args)  < 0) {
           perror("Unable to start debugger");
           exit(0);
@@ -518,29 +518,29 @@ PetscErrorCode  PetscStopForDebugger(void)
 
   ppid = getpid();
 
-  ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"kdbg",&iskdbg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
-  ierr = PetscStrcmp(Debugger,"lldb",&islldb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"ddd",&isddd);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"kdbg",&iskdbg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"ups",&isups);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"xldb",&isxldb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"xdb",&isxdb);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"dbx",&isdbx);CHKERRQ(ierr);
+  ierr = PetscStrcmp(PetscDebugger,"lldb",&islldb);CHKERRQ(ierr);
 
-  if (isxxgdb || isups || isddd || iskdbg) (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
-  else if (isxldb) (*PetscErrorPrintf)("[%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
-  else if (islldb) (*PetscErrorPrintf)("[%d]%s>>%s -p %d\n",rank,hostname,Debugger,ppid);
+  if (isxxgdb || isups || isddd || iskdbg) (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,PetscDebugger,program,ppid);
+  else if (isxldb) (*PetscErrorPrintf)("[%d]%s>>%s -a %d %s\n",rank,hostname,PetscDebugger,ppid,program);
+  else if (islldb) (*PetscErrorPrintf)("[%d]%s>>%s -p %d\n",rank,hostname,PetscDebugger,ppid);
   else if (isdbx) {
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
-     (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
+     (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,PetscDebugger,ppid,program);
 #elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
-     (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
+     (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,PetscDebugger,ppid,program);
 #elif defined(PETSC_USE_A_FOR_DEBUGGER)
-     (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,Debugger,ppid);
+     (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,PetscDebugger,ppid);
 #elif defined(PETSC_USE_PID_FOR_DEBUGGER)
-     (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
+     (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,PetscDebugger,ppid,program);
 #else
-     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,PetscDebugger,program,ppid);
 #endif
   }
 #endif /* PETSC_CANNOT_START_DEBUGGER */

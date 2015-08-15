@@ -10,7 +10,7 @@ struct _TSGLAdaptOps {
   PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool*);
   PetscErrorCode (*destroy)(TSGLAdapt);
   PetscErrorCode (*view)(TSGLAdapt,PetscViewer);
-  PetscErrorCode (*setfromoptions)(TSGLAdapt);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,TSGLAdapt);
 };
 
 struct _p_TSGLAdapt {
@@ -79,6 +79,8 @@ PetscErrorCode  TSGLAdaptRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSGLAdaptRegisterAllCalled) PetscFunctionReturn(0);
+  TSGLAdaptRegisterAllCalled = PETSC_TRUE;
   ierr = TSGLAdaptRegister(TSGLADAPT_NONE,TSGLAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,TSGLAdaptCreate_Size);CHKERRQ(ierr);
   ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,TSGLAdaptCreate_Both);CHKERRQ(ierr);
@@ -195,7 +197,7 @@ PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt *adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetFromOptions"
-PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt adapt)
+PetscErrorCode  TSGLAdaptSetFromOptions(PetscOptions *PetscOptionsObject,TSGLAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSGLADAPT_BOTH;
@@ -204,13 +206,13 @@ PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt adapt)
   PetscFunctionBegin;
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TSGL, but currently this
   * function can only be called from inside TSSetFromOptions_GL()  */
-  ierr = PetscOptionsHead("TSGL Adaptivity options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"TSGL Adaptivity options");CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSGLAdaptSetType",TSGLAdaptList,
                           ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSGLAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
-  if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
+  if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(PetscOptionsObject,adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -241,8 +243,8 @@ PetscErrorCode  TSGLAdaptCreate(MPI_Comm comm,TSGLAdapt *inadapt)
   TSGLAdapt      adapt;
 
   PetscFunctionBegin;
-  *inadapt = 0;
-  ierr     = PetscHeaderCreate(adapt,_p_TSGLAdapt,struct _TSGLAdaptOps,TSGLADAPT_CLASSID,"TSGLAdapt","General Linear adaptivity","TS",comm,TSGLAdaptDestroy,TSGLAdaptView);CHKERRQ(ierr);
+  *inadapt = NULL;
+  ierr     = PetscHeaderCreate(adapt,TSGLADAPT_CLASSID,"TSGLAdapt","General Linear adaptivity","TS",comm,TSGLAdaptDestroy,TSGLAdaptView);CHKERRQ(ierr);
   *inadapt = adapt;
   PetscFunctionReturn(0);
 }

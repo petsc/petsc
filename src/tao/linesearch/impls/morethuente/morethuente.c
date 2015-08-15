@@ -1,4 +1,4 @@
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/morethuente/morethuente.h>
 
 /*
@@ -23,13 +23,13 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
     ierr = PetscObjectDereference((PetscObject)mt->x);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&mt->work);CHKERRQ(ierr);
-  ierr = PetscFree(ls->data);
+  ierr = PetscFree(ls->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_MT"
-static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -120,7 +120,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ls->stepmax = PetscMin(bstepmax,1.0e15);
   }
 
-  ierr = VecDot(g,s,&dginit);
+  ierr = VecDot(g,s,&dginit);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(dginit)) {
     ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",(double)dginit);CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_INFORNAN;
@@ -306,10 +306,9 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_MT"
-PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
   PetscErrorCode   ierr;
   TaoLineSearch_MT *ctx;
@@ -329,7 +328,6 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ls->ops->setfromoptions=TaoLineSearchSetFromOptions_MT;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.

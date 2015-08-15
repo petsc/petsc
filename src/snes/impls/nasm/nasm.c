@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>             /*I   "petscsnes.h"   I*/
+#include <petsc/private/snesimpl.h>             /*I   "petscsnes.h"   I*/
 #include <petscdm.h>
 
 typedef struct {
@@ -173,7 +173,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NASM"
-PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
+PetscErrorCode SNESSetFromOptions_NASM(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode    ierr;
   PCASMType         asmtype;
@@ -181,7 +181,7 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   SNES_NASM         *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Nonlinear Additive Schwartz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Additive Schwartz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESNASMSetType(snes,asmtype);CHKERRQ(ierr);}
   flg    = PETSC_FALSE;
@@ -661,6 +661,17 @@ PetscErrorCode SNESNASMGetDamping_NASM(SNES snes,PetscReal *dmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
+/*
+  Input Parameters:
++ snes - The solver
+. B - The RHS vector
+- X - The initial guess
+
+  Output Parameters:
+. Y - The solution update
+
+  TODO: All scatters should be packed into one
+*/
 PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
@@ -710,6 +721,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     } else Bl = NULL;
     ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    /* Could scatter directly from X */
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = VecCopy(Xl,Yl);CHKERRQ(ierr);
@@ -805,6 +817,11 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   SNES_NASM        *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   Y = snes->vec_sol_update;
@@ -821,17 +838,10 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
     /* compute the initial function and preconditioned update delX */
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
@@ -859,15 +869,8 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
     ierr = SNESNASMSolveLocal_Private(snes,B,Y,X);CHKERRQ(ierr);
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        break;
-      }
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        break;
-      }
+      SNESCheckFunctionNorm(snes,fnorm);
     }
     /* Monitor convergence */
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);

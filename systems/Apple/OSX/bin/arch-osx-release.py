@@ -11,7 +11,10 @@ if __name__ == '__main__':
     '--with-shared-libraries',
     '--download-mpich-shared=0',
     '--with-valgrind=0',
+    '--with-hwloc=0',
     '--with-debugging=0',
+    '--download-sowing=1',
+    '--download-c2html=1',
     'PETSC_ARCH=arch-osx-release',
   ]
   configure.petsc_configure(configure_options)

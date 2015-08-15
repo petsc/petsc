@@ -292,15 +292,14 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_OWLQN"
-static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao)
+static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Orthant-Wise Limited-memory method for Quasi-Newton unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight","", 100,&lmP->lambda,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Orthant-Wise Limited-memory method for Quasi-Newton unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight","", 100,&lmP->lambda,NULL); CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -337,10 +336,9 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 M*/
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_OWLQN"
-PetscErrorCode TaoCreate_OWLQN(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;
   const char     *owarmijo_type = TAOLINESEARCHOWARMIJO;
@@ -362,15 +360,17 @@ PetscErrorCode TaoCreate_OWLQN(Tao tao)
   lmP->lambda = 1.0;
 
   tao->data = (void*)lmP;
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,owarmijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

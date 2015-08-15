@@ -1,10 +1,12 @@
+#define PETSC_SKIP_COMPLEX
+
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscbt.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
@@ -341,15 +343,9 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
     procSendDispls[p] = procSendDispls[p-1] + procSendSizes[p-1];
     procRecvDispls[p] = procRecvDispls[p-1] + procRecvSizes[p-1];
   }
-#if 0
-  thrust::copy(nondiagonalRows.begin(), nondiagonalRows.begin()+nonlocalSize, sendRows);
-  thrust::copy(nondiagonalCols.begin(), nondiagonalCols.begin()+nonlocalSize, sendCols);
-  thrust::copy(nondiagonalVals.begin(), nondiagonalVals.begin()+nonlocalSize, sendVals);
-#else
   thrust::copy(thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.begin(), nondiagonalCols.begin(), nondiagonalVals.begin())),
                thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.begin(), nondiagonalCols.begin(), nondiagonalVals.begin()))+nonlocalSize,
                thrust::make_zip_iterator(thrust::make_tuple(sendRows,                sendCols,                sendVals)));
-#endif
   //   could pack into a struct and unpack
   ierr = MPI_Alltoallv(sendRows, procSendSizes, procSendDispls, MPIU_INT,    recvRows, procRecvSizes, procRecvDispls, MPIU_INT,    comm);CHKERRQ(ierr);
   ierr = MPI_Alltoallv(sendCols, procSendSizes, procSendDispls, MPIU_INT,    recvCols, procRecvSizes, procRecvDispls, MPIU_INT,    comm);CHKERRQ(ierr);
@@ -366,15 +362,9 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   IndexArray d_recvRows(recvRows, recvRows+numRecvEntries);
   IndexArray d_recvCols(recvCols, recvCols+numRecvEntries);
   ValueArray d_recvVals(recvVals, recvVals+numRecvEntries);
-#if 0
-  thrust::copy(nondiagonalRows.end()-offdiagonalSize, nondiagonalRows.end(), offdiagCOO.row_indices.begin());
-  thrust::copy(nondiagonalCols.end()-offdiagonalSize, nondiagonalCols.end(), offdiagCOO.column_indices.begin());
-  thrust::copy(nondiagonalVals.end()-offdiagonalSize, nondiagonalVals.end(), offdiagCOO.values.begin());
-#else
   thrust::copy(thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.end(),          nondiagonalCols.end(),             nondiagonalVals.end()))-offdiagonalSize,
                thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.end(),          nondiagonalCols.end(),             nondiagonalVals.end())),
                thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin(), offdiagCOO.values.begin())));
-#endif
   thrust::fill(diagCOO.row_indices.begin()+diagonalSize,       diagCOO.row_indices.end(),    -1);
   thrust::fill(offdiagCOO.row_indices.begin()+offdiagonalSize, offdiagCOO.row_indices.end(), -1);
   thrust::partition_copy(thrust::make_zip_iterator(thrust::make_tuple(d_recvRows.begin(), d_recvCols.begin(), d_recvVals.begin())),
@@ -461,16 +451,6 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   if (firstCol) {
     thrust::transform(A.column_indices.begin(), A.column_indices.end(), thrust::make_constant_iterator(firstCol), A.column_indices.begin(), thrust::minus<IndexType>());
   }
-#if 0 // This is done by MatSetUpMultiply_MPIAIJ()
-  //   TODO: Get better code from Nathan
-  IndexArray d_colmap(Nc);
-  thrust::unique_copy(B.column_indices.begin(), B.column_indices.end(), d_colmap.begin());
-  IndexHostArray colmap(d_colmap.begin(), d_colmap.end());
-  IndexType newCol = 0;
-  for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++newCol) {
-    thrust::replace(B.column_indices.begin(), B.column_indices.end(), *c_iter, newCol);
-  }
-#endif
 
   // print the final matrix
   if (PetscLogPrintInfo) {
@@ -496,16 +476,6 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
     ierr = PetscInfo(J, "Copying to CPU matrix");CHKERRQ(ierr);
     ierr = MatCUSPCopyFromGPU(j->A, Agpu);CHKERRQ(ierr);
     ierr = MatCUSPCopyFromGPU(j->B, Bgpu);CHKERRQ(ierr);
-#if 0 // This is done by MatSetUpMultiply_MPIAIJ()
-
-    // Create the column map
-    ierr = PetscFree(j->garray);CHKERRQ(ierr);
-    ierr = PetscMalloc1(Nc, &j->garray);CHKERRQ(ierr);
-    PetscInt c = 0;
-    for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
-      j->garray[c] = *c_iter;
-    }
-#endif
   }
   ierr = PetscLogEventEnd(MAT_SetValuesBatchIV,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

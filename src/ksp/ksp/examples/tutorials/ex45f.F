@@ -1,13 +1,13 @@
       program main
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
        PetscInt is,js,iw,jw
        PetscInt one,three
@@ -49,26 +49,43 @@
        PetscInt ctx(*)
        Vec b
        PetscScalar  h
+
        h=0.0
        call VecSet(b,h,ierr)
        end subroutine
 
        subroutine ComputeRHS(ksp,b,dummy,ierr)
        implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
        PetscErrorCode  ierr
        KSP ksp
        Vec b
        integer dummy(*)
-       PetscScalar  h
-       h=1.0
+       PetscScalar  h,Hx,Hy
+       PetscInt  mx,my
+       DM dm
+
+       call KSPGetDM(ksp,dm,ierr)
+       call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,  &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,ierr)
+
+       Hx = 1.d0 / (mx-1)
+       Hy = 1.d0 / (my-1)
+       h=Hx*Hy
        call VecSet(b,h,ierr)
        end subroutine
 
        subroutine ComputeMatrix(ksp,A,B,dummy,ierr)
        implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
        PetscErrorCode  ierr
        KSP ksp
        Mat A,B

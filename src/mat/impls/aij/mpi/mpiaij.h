@@ -73,9 +73,6 @@ typedef struct {
   /* used by MatMatMatMult() */
   Mat_MatMatMatMult *matmatmatmult;
 
-  /* used by MatGetRedundantMatrix() */
-  Mat_Redundant *redundant;
-
   /* Used by MPICUSP and MPICUSPARSE classes */
   void * spptr;
 
@@ -92,8 +89,9 @@ PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,PetscInt,IS [],PetscIn
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatGetSubMatricesMPI_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat,MatGetSubMatrixOption,MatReuse,Mat *[]);
-PETSC_INTERN PetscErrorCode MatGetSubMatricesParallel_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+
 
 PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat*);
@@ -135,8 +133,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(
 PETSC_INTERN PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
-
-PETSC_INTERN PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
 extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
@@ -151,5 +147,10 @@ PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt,const 
 
 extern PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat,Mat*);
 extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
+
+PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
+PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
+
+
 
 #endif

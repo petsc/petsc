@@ -2,18 +2,16 @@
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
-#define PETSC_DESIRE_COMPLEX
-#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
 
-#include <petscthreadcomm.h>
-
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode PetscLogBegin_Private(void);
+extern PetscErrorCode PetscLogInitialize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -240,54 +238,6 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 }
 
 /* ----------------------------------------------------------------------------*/
-MPI_Op  PetscADMax_Op = 0;
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscADMax_Local"
-PETSC_EXTERN void MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
-  PetscInt    i,count = *cnt;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_2SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_2SCALAR data (i.e. double or complex) types");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    if (PetscRealPart(xout[2*i]) < PetscRealPart(xin[2*i])) {
-      xout[2*i]   = xin[2*i];
-      xout[2*i+1] = xin[2*i+1];
-    }
-  }
-  PetscFunctionReturnVoid();
-}
-
-MPI_Op PetscADMin_Op = 0;
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscADMin_Local"
-PETSC_EXTERN void MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
-  PetscInt    i,count = *cnt;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_2SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_2SCALAR data (i.e. double or complex) types");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    if (PetscRealPart(xout[2*i]) > PetscRealPart(xin[2*i])) {
-      xout[2*i]   = xin[2*i];
-      xout[2*i+1] = xin[2*i+1];
-    }
-  }
-  PetscFunctionReturnVoid();
-}
-/* ---------------------------------------------------------------------------------------*/
 
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 MPI_Op MPIU_SUM = 0;
@@ -459,7 +409,7 @@ PetscErrorCode PetscCitationsInitialize()
 
   PetscFunctionBegin;
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Karl Rupp and Barry F. Smith\n            and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.5},\n  Institution = {Argonne National Laboratory},\n  Year = {2014}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Karl Rupp and Barry F. Smith\n            and Stefano Zampini and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.6},\n  Institution = {Argonne National Laboratory},\n  Year = {2015}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -580,7 +530,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
     size_t         applinelen,introlen;
     PetscErrorCode ierr;
-
+    /* char           sawsurl[256]; */
+    
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
       char  sawslog[PETSC_MAX_PATH_LEN];
@@ -604,6 +555,12 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     if (flg) {
       PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
       ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
+    } else {
+      ierr = PetscOptionsHasName(NULL,"-saws_options",&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscStrreplace(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/saws",root,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
+      }
     }
     ierr = PetscOptionsHasName(NULL,"-saws_local",&flg2);CHKERRQ(ierr);
     if (flg2) {
@@ -617,7 +574,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
     ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
     introlen   = 4096 + applinelen;
-    applinelen += 256;
+    applinelen += 1024;
     ierr = PetscMalloc(applinelen,&appline);CHKERRQ(ierr);
     ierr = PetscMalloc(introlen,&intro);CHKERRQ(ierr);
 
@@ -629,7 +586,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     if (rootlocal && help) {
       ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
     } else if (help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>\n",programname,options,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>",programname,options,help);
     } else {
       ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s %s</center><br>\n",programname,options);
     }
@@ -643,11 +600,13 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Initialize,());
-    ierr = PetscCitationsRegister("@TechReport{ saws,"
-                                  "Author = {Matt Otten and Jed Brown and Barry Smith},"
-                                  "Title  = {Scientific Application Web Server (SAWs) Users Manual},"
-                                  "Institution = {Argonne National Laboratory},"
-                                  "Year   = 2013}",NULL);CHKERRQ(ierr);
+    /* PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr); */
+    ierr = PetscCitationsRegister("@TechReport{ saws,\n"
+                                  "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
+                                  "  Title  = {Scientific Application Web Server (SAWs) Users Manual},\n"
+                                  "  Institution = {Argonne National Laboratory},\n"
+                                  "  Year   = 2013\n}\n",NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -736,11 +695,11 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use NULL_CHARACTER to not check for
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 
    Important Fortran Note:
-   In Fortran, you MUST use NULL_CHARACTER to indicate a
+   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
    null character string; you CANNOT just use NULL as
    in the C version. See Users-Manual: ch_fortran for details.
 
@@ -860,8 +819,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRQ(ierr);
-  ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
@@ -897,9 +854,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
 #endif
 
-  /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
+  /* Creates the logging data structures; this is enabled even if logging is not turned on */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
+  ierr = PetscLogInitialize();CHKERRQ(ierr);
 #endif
 
   /*
@@ -912,9 +869,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
-
-  /* Ensure that threadcomm-related keyval exists, so that PetscOptionsSetFromOptions can use PetscCommDuplicate. */
-  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
@@ -952,7 +906,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       Setup building of stack frames for all function calls
   */
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates pthread_key */
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
@@ -972,6 +925,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_USE_LOG)
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+extern PetscBool   PetscObjectsLog;
 #endif
 
 #undef __FUNCT__
@@ -1090,6 +1044,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
@@ -1098,6 +1053,7 @@ PetscErrorCode  PetscFinalize(void)
   if (flg2) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
+#endif
 
 #if defined(PETSC_USE_LOG)
   flg1 = PETSC_FALSE;
@@ -1151,7 +1107,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
   ierr = PetscStackDestroy();CHKERRQ(ierr);
-  PetscThreadLocalDestroy((PetscThreadKey)petscstack); /* Deletes pthread_key */
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
@@ -1218,28 +1173,23 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-  {
-    PetscThreadComm tcomm_world;
-    ierr = PetscGetThreadCommWorld(&tcomm_world);CHKERRQ(ierr);
-    /* Free global thread communicator */
-    ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
-  }
-
 #if defined(PETSC_USE_LOG)
   /*
        List all objects the user may have forgot to free
   */
-  ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    MPI_Comm local_comm;
-    char     string[64];
+  if (PetscObjectsLog) {
+    ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      MPI_Comm local_comm;
+      char     string[64];
 
-    ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
-    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
+      ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+    }
   }
 #endif
 
@@ -1254,14 +1204,14 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   /*
+     Close any open dynamic libraries
+  */
+  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
+
+  /*
      Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
-
-  /*
-     Destroy all the function registration lists created
-  */
-  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
   /*
      Print PetscFunctionLists that have not been properly freed
@@ -1276,6 +1226,7 @@ PetscErrorCode  PetscFinalize(void)
 
   ierr = PetscInfoAllow(PETSC_FALSE,NULL);CHKERRQ(ierr);
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
@@ -1334,6 +1285,7 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr);
     }
   }
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;
@@ -1378,8 +1330,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
 #endif
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
   /*
      Destroy any known inner MPI_Comm's and attributes pointing to them

@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 #include <petscis.h>
 
 /*
@@ -68,7 +68,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
   }
 
   /* initialization */
-  ierr  = PetscMalloc1((mbs+1),&iu);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(mbs+1,&iu);CHKERRQ(ierr);
   umax  = (PetscInt)(f*ai[mbs] + 1); umax += mbs + 1;
   ierr  = PetscMalloc1(umax,&ju);CHKERRQ(ierr);
   iu[0] = mbs+1;
@@ -179,7 +179,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;
 
-  ierr    = PetscMalloc((iu[mbs]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
+  ierr    = PetscMalloc1((iu[mbs]+1)*bs2,&b->a);CHKERRQ(ierr);
   b->j    = ju;
   b->i    = iu;
   b->diag = 0;
@@ -193,7 +193,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
 
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr    = PetscMalloc1((bs*mbs+bs),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(bs*mbs+bs,&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate idnew, solve_work, new a, new j */
   ierr     = PetscLogObjectMemory((PetscObject)F,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
@@ -247,8 +247,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   ierr       = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   /* initialization */
-  ierr  = PetscMalloc1((mbs+1),&ui);CHKERRQ(ierr);
-  ierr  = PetscMalloc1((mbs+1),&udiag);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(mbs+1,&ui);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(mbs+1,&udiag);CHKERRQ(ierr);
   ui[0] = 0;
 
   /* jl: linked list for storing indices of the pivot rows
@@ -329,7 +329,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   ierr = PetscFree4(ui_ptr,il,jl,cols);CHKERRQ(ierr);
 
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((ui[mbs]+1),&uj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[mbs]+1,&uj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous_Cholesky(&free_space,uj,mbs,ui,udiag);CHKERRQ(ierr); /* store matrix factor */
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
@@ -341,7 +341,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
 
-  ierr = PetscMalloc1((ui[mbs]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[mbs]+1,&b->a);CHKERRQ(ierr);
 
   b->j         = uj;
   b->i         = ui;
@@ -357,7 +357,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
 
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
-  ierr = PetscMalloc1((mbs+1),&b->solve_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs+1,&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)fact,ui[mbs]*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
 
   b->maxnz = b->nz = ui[mbs];
@@ -426,17 +426,19 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
     ai = a->i; aj = a->j;
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
+#if 0
     /* There are bugs for reordeing. Needs further work.
        MatReordering for sbaij cannot be efficient. User should use aij formt! */
     a->permute = PETSC_TRUE;
 
     ierr = MatReorderingSeqSBAIJ(A,perm);CHKERRQ(ierr);
     ai   = a->inew; aj = a->jnew;
+#endif
   }
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   /* initialization */
-  ierr  = PetscMalloc1((mbs+1),&ui);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(mbs+1,&ui);CHKERRQ(ierr);
   ui[0] = 0;
 
   /* jl: linked list for storing indices of the pivot rows
@@ -517,7 +519,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
   ierr = PetscFree4(ui_ptr,il,jl,cols);CHKERRQ(ierr);
 
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1((ui[mbs]+1),&uj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[mbs]+1,&uj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
@@ -529,7 +531,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
 
-  ierr = PetscMalloc1((ui[mbs]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[mbs]+1,&b->a);CHKERRQ(ierr);
 
   b->j    = uj;
   b->i    = ui;
@@ -543,7 +545,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
   ierr     = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   b->icol  = perm;
   ierr     = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr     = PetscMalloc1((mbs+1),&b->solve_work);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(mbs+1,&b->solve_work);CHKERRQ(ierr);
   ierr     = PetscLogObjectMemory((PetscObject)fact,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[mbs];
 

@@ -113,7 +113,7 @@ PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
   if (!dgmres->neig) PetscFunctionReturn(0);
 
   /* Allocate workspace for the Schur vectors*/
-  ierr          = PetscMalloc1((neig) *max_k, &SR);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(neig*max_k, &SR);CHKERRQ(ierr);
   dgmres->wr    = NULL;
   dgmres->wi    = NULL;
   dgmres->perm  = NULL;
@@ -317,7 +317,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
 
   for (i = 0; i < dgmres->r; i++) {
-    ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(UU[i],(PetscObject)ksp,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -500,7 +500,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   dgmres->vv_allocated += nalloc;
 
-  ierr = KSPGetVecs(ksp,nalloc,&dgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,nalloc,&dgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,dgmres->user_work[nwork]);CHKERRQ(ierr);
 
   dgmres->mwork_alloc[nwork] = nalloc;
@@ -614,11 +614,11 @@ static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
+extern PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_DGMRES"
-PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       neig;
@@ -627,8 +627,8 @@ PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("KSP DGMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP DGMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_dgmres_eigen","Number of smallest eigenvalues to extract at each restart","KSPDGMRESSetEigen",dgmres->neig, &neig, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPDGMRESSetEigen(ksp, neig);CHKERRQ(ierr);

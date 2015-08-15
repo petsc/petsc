@@ -1194,14 +1194,14 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_GL"
-static PetscErrorCode TSSetFromOptions_GL(TS ts)
+static PetscErrorCode TSSetFromOptions_GL(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_GL          *gl        = (TS_GL*)ts->data;
   char           tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("General Linear ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"General Linear ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
     ierr = PetscOptionsFList("-ts_gl_type","Type of GL method","TSGLSetType",TSGLList,gl->type_name[0] ? gl->type_name : tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
@@ -1236,7 +1236,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     {
       TSGLAdapt adapt;
       ierr = TSGLGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSGLAdaptSetFromOptions(adapt);CHKERRQ(ierr);
+      ierr = TSGLAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

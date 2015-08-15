@@ -4,8 +4,8 @@
    Note: Something non-obvious breaks -pc_mg_type ADDITIVE for parallel runs
                                     Jed Brown, see [PETSC #18321, #18449].
 */
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
-#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscdm.h>            /* for DMDestroy(&pc->mg) hack */
@@ -94,13 +94,13 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
 #define __FUNCT__ "PetscML_comm"
 static PetscErrorCode PetscML_comm(double p[],void *ML_data)
 {
-  PetscErrorCode ierr;
-  FineGridCtx    *ml = (FineGridCtx*)ML_data;
-  Mat            A   = ml->A;
-  Mat_MPIAIJ     *a  = (Mat_MPIAIJ*)A->data;
-  PetscMPIInt    size;
-  PetscInt       i,in_length=A->rmap->n,out_length=ml->Aloc->cmap->n;
-  PetscScalar    *array;
+  PetscErrorCode    ierr;
+  FineGridCtx       *ml = (FineGridCtx*)ML_data;
+  Mat               A   = ml->A;
+  Mat_MPIAIJ        *a  = (Mat_MPIAIJ*)A->data;
+  PetscMPIInt       size;
+  PetscInt          i,in_length=A->rmap->n,out_length=ml->Aloc->cmap->n;
+  const PetscScalar *array;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
@@ -110,9 +110,9 @@ static PetscErrorCode PetscML_comm(double p[],void *ML_data)
   ierr = VecScatterBegin(a->Mvctx,ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecResetArray(ml->y);CHKERRQ(ierr);
-  ierr = VecGetArray(a->lvec,&array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(a->lvec,&array);CHKERRQ(ierr);
   for (i=in_length; i<out_length; i++) p[i] = array[i-in_length];
-  ierr = VecRestoreArray(a->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(a->lvec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,19 +147,20 @@ static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_
 #define __FUNCT__ "MatMult_ML"
 static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-  Mat_MLShell    *shell;
-  PetscScalar    *xarray,*yarray;
-  PetscInt       x_length,y_length;
+  PetscErrorCode    ierr;
+  Mat_MLShell       *shell;
+  PetscScalar       *yarray;
+  const PetscScalar *xarray;
+  PetscInt          x_length,y_length;
 
   PetscFunctionBegin;
   ierr     = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
-  ierr     = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr     = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr     = VecGetArray(y,&yarray);CHKERRQ(ierr);
   x_length = shell->mlmat->invec_leng;
   y_length = shell->mlmat->outvec_leng;
-  PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat,x_length,xarray,y_length,yarray));
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat,x_length,(PetscScalar*)xarray,y_length,yarray));
+  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -171,10 +172,11 @@ static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 */
 static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 {
-  Mat_MLShell    *shell;
-  PetscScalar    *xarray,*yarray;
-  PetscInt       x_length,y_length;
-  PetscErrorCode ierr;
+  Mat_MLShell       *shell;
+  PetscScalar       *yarray;
+  const PetscScalar *xarray;
+  PetscInt          x_length,y_length;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A, (void**) &shell);CHKERRQ(ierr);
@@ -182,21 +184,21 @@ static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
     if (!shell->work) {
       ierr = VecDuplicate(y, &shell->work);CHKERRQ(ierr);
     }
-    ierr     = VecGetArray(x,           &xarray);CHKERRQ(ierr);
+    ierr     = VecGetArrayRead(x,           &xarray);CHKERRQ(ierr);
     ierr     = VecGetArray(shell->work, &yarray);CHKERRQ(ierr);
     x_length = shell->mlmat->invec_leng;
     y_length = shell->mlmat->outvec_leng;
-    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray));
-    ierr = VecRestoreArray(x,           &xarray);CHKERRQ(ierr);
+    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, (PetscScalar*)xarray, y_length, yarray));
+    ierr = VecRestoreArrayRead(x,           &xarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(shell->work, &yarray);CHKERRQ(ierr);
     ierr = VecAXPY(y, 1.0, shell->work);CHKERRQ(ierr);
   } else {
-    ierr     = VecGetArray(x, &xarray);CHKERRQ(ierr);
+    ierr     = VecGetArrayRead(x, &xarray);CHKERRQ(ierr);
     ierr     = VecGetArray(y, &yarray);CHKERRQ(ierr);
     x_length = shell->mlmat->invec_leng;
     y_length = shell->mlmat->outvec_leng;
-    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray));
-    ierr = VecRestoreArray(x, &xarray);CHKERRQ(ierr);
+    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, (PetscScalar *)xarray, y_length, yarray));
+    ierr = VecRestoreArrayRead(x, &xarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(y, &yarray);CHKERRQ(ierr);
     ierr = VecAXPY(y, 1.0, w);CHKERRQ(ierr);
   }
@@ -220,11 +222,11 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   if (am != an) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
 
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr  = PetscMalloc1((1+am),&ci);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(1+am,&ci);CHKERRQ(ierr);
     ci[0] = 0;
     for (i=0; i<am; i++) ci[i+1] = ci[i] + (ai[i+1] - ai[i]) + (bi[i+1] - bi[i]);
-    ierr = PetscMalloc1((1+ci[am]),&cj);CHKERRQ(ierr);
-    ierr = PetscMalloc1((1+ci[am]),&ca);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+ci[am],&cj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+ci[am],&ca);CHKERRQ(ierr);
 
     k = 0;
     for (i=0; i<am; i++) {
@@ -307,7 +309,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
       aij->a = ml_vals;
     } else {
       /* sort ml_cols and ml_vals */
-      ierr = PetscMalloc1((m+1),&nnz);
+      ierr = PetscMalloc1(m+1,&nnz);
       for (i=0; i<m; i++) nnz[i] = ml_rowptr[i+1] - ml_rowptr[i];
       aj = ml_cols; aa = ml_vals;
       for (i=0; i<m; i++) {
@@ -419,7 +421,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     /* keep track of block size for A matrices */
     ierr = MatSetBlockSize (A,mlmat->num_PDEs);CHKERRQ(ierr);
     ierr = PetscMalloc3(m,&nnzA,m,&nnzB,m,&nnz);CHKERRQ(ierr);
-    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPIU_SUM,mlmat->comm->USR_comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPI_SUM,mlmat->comm->USR_comm);CHKERRQ(ierr);
     rstart -= m;
 
     for (i=0; i<m; i++) {
@@ -487,7 +489,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_ml->coords==0 || (oldarrsz != arrsz)) {
     ierr = PetscFree(pc_ml->coords);CHKERRQ(ierr);
-    ierr = PetscMalloc1((arrsz), &pc_ml->coords);CHKERRQ(ierr);
+    ierr = PetscMalloc1(arrsz, &pc_ml->coords);CHKERRQ(ierr);
   }
   for (kk=0; kk<arrsz; kk++) pc_ml->coords[kk] = -999.;
   /* copy data in - column oriented */
@@ -567,7 +569,7 @@ PetscErrorCode PCReset_ML(PC pc)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-extern PetscErrorCode PCSetFromOptions_MG(PC);
+extern PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC);
 extern PetscErrorCode PCReset_MG(PC);
 
 #undef __FUNCT__
@@ -686,7 +688,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /* create and initialize struct 'PetscMLdata' */
   ierr               = PetscNewLog(pc,&PetscMLdata);CHKERRQ(ierr);
   pc_ml->PetscMLdata = PetscMLdata;
-  ierr               = PetscMalloc1((Aloc->cmap->n+1),&PetscMLdata->pwork);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(Aloc->cmap->n+1,&PetscMLdata->pwork);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr);
   ierr = VecSetSizes(PetscMLdata->x,Aloc->cmap->n,Aloc->cmap->n);CHKERRQ(ierr);
@@ -887,7 +889,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
-  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
+  ierr = PCSetFromOptions_MG(PetscOptionsObject,pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscMalloc1(Nlevels,&gridctx);CHKERRQ(ierr);
@@ -1035,7 +1037,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ML"
-PetscErrorCode PCSetFromOptions_ML(PC pc)
+PetscErrorCode PCSetFromOptions_ML(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx,PrintLevel,partindx;
@@ -1053,7 +1055,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("ML options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"ML options");CHKERRQ(ierr);
 
   PrintLevel = 0;
   indx       = 0;
@@ -1084,7 +1086,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   */
   if (pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
   if (pc_ml->EnergyMinimization == 4 && size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
-  if (pc_ml->EnergyMinimization == 4) {ierr = PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2");CHKERRQ(ierr);}
+  if (pc_ml->EnergyMinimization == 4) {ierr = PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2\n");CHKERRQ(ierr);}
   if (pc_ml->EnergyMinimization) {
     ierr = PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,NULL);CHKERRQ(ierr);
   }

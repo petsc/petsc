@@ -1,5 +1,5 @@
-#include <petsc-private/dmdaimpl.h>   /*I      "petscdmda.h"   I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/dmdaimpl.h>   /*I      "petscdmda.h"   I*/
+#include <petsc/private/isimpl.h>
 #include <petscsf.h>
 
 #undef __FUNCT__
@@ -246,7 +246,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   /* Create leaf adjacency */
   ierr = PetscSectionSetUp(leafSectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(leafSectionAdj, &adjSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(adjSize * sizeof(PetscInt), &adj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(adjSize, &adj);CHKERRQ(ierr);
   ierr = PetscMemzero(adj, adjSize * sizeof(PetscInt));CHKERRQ(ierr);
   for (l = 0; l < nleaves; ++l) {
     PetscInt dof, off, d, q;
@@ -285,7 +285,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   }
   /* Gather adjacenct indices to root */
   ierr = PetscSectionGetStorageSize(rootSectionAdj, &adjSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(adjSize * sizeof(PetscInt), &rootAdj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(adjSize, &rootAdj);CHKERRQ(ierr);
   for (r = 0; r < adjSize; ++r) rootAdj[r] = -1;
   if (size > 1) {
     ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
@@ -418,7 +418,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   }
   /* Get adjacent indices */
   ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
-  ierr = PetscMalloc(numCols * sizeof(PetscInt), &cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numCols, &cols);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt  numAdj = maxAdjSize, dof, cdof, off, goff, d, q;
     PetscBool found  = PETSC_TRUE;
@@ -535,8 +535,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
       ierr      = PetscSectionGetDof(sectionAdj, r, &len);CHKERRQ(ierr);
       maxRowLen = PetscMax(maxRowLen, len);
     }
-    ierr = PetscMalloc(maxRowLen * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(maxRowLen, &values);CHKERRQ(ierr);
     for (r = rStart; r < rEnd; ++r) {
       PetscInt numCols, cStart;
 

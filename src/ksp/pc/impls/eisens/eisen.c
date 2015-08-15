@@ -5,7 +5,7 @@
  method. But it requires actually solving the preconditioned problem
  with both left and right preconditioning.
 */
-#include <petsc-private/pcimpl.h>           /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>           /*I "petscpc.h" I*/
 
 typedef struct {
   Mat       shell,A;
@@ -133,18 +133,18 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Eisenstat"
-static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
+static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      set,flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Eisenstat SSOR options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatSetNoDiagonalScaling",eis->usediag ? PETSC_FALSE : PETSC_TRUE,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PCEisenstatSetNoDiagonalScaling(pc,flg);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -193,7 +193,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
-    ierr = MatGetVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->diag);CHKERRQ(ierr);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
@@ -206,24 +206,44 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 #define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
 static PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
-  PC_Eisenstat *eis;
+  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
-  eis        = (PC_Eisenstat*)pc->data;
   eis->omega = omega;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCEisenstatNoDiagonalScaling_Eisenstat"
-static PetscErrorCode  PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
+#define __FUNCT__ "PCEisenstatSetNoDiagonalScaling_Eisenstat"
+static PetscErrorCode  PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc,PetscBool flg)
 {
-  PC_Eisenstat *eis;
+  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
-  eis          = (PC_Eisenstat*)pc->data;
-  eis->usediag = PETSC_FALSE;
+  eis->usediag = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCEisenstatGetOmega_Eisenstat"
+static PetscErrorCode  PCEisenstatGetOmega_Eisenstat(PC pc,PetscReal *omega)
+{
+  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+
+  PetscFunctionBegin;
+  *omega = eis->omega;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCEisenstatGetNoDiagonalScaling_Eisenstat"
+static PetscErrorCode  PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc,PetscBool *flg)
+{
+  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+
+  PetscFunctionBegin;
+  *flg = eis->usediag;
   PetscFunctionReturn(0);
 }
 
@@ -270,19 +290,20 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCEisenstatNoDiagonalScaling"
+#define __FUNCT__ "PCEisenstatSetNoDiagonalScaling"
 /*@
-   PCEisenstatNoDiagonalScaling - Causes the Eisenstat preconditioner
+   PCEisenstatSetNoDiagonalScaling - Causes the Eisenstat preconditioner
    not to do additional diagonal preconditioning. For matrices with a constant
    along the diagonal, this may save a small amount of work.
 
    Logically Collective on PC
 
-   Input Parameter:
-.  pc - the preconditioner context
+   Input Parameters:
++  pc - the preconditioner context
+-  flg - PETSC_TRUE turns off diagonal scaling inside the algorithm  
 
    Options Database Key:
-.  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatNoDiagonalScaling()
+.  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
 
    Level: intermediate
 
@@ -294,13 +315,94 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCEisenstatSetOmega()
 @*/
-PetscErrorCode  PCEisenstatNoDiagonalScaling(PC pc)
+PetscErrorCode  PCEisenstatSetNoDiagonalScaling(PC pc,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCEisenstatNoDiagonalScaling_C",(PC),(pc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCEisenstatSetNoDiagonalScaling_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCEisenstatGetOmega"
+/*@
+   PCEisenstatGetOmega - Gets the SSOR relaxation coefficient, omega,
+   to use with Eisenstat's trick (where omega = 1.0 by default).
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  omega - relaxation coefficient (0 < omega < 2)
+
+   Options Database Key:
+.  -pc_eisenstat_omega <omega> - Sets omega
+
+   Notes:
+   The Eisenstat trick implementation of SSOR requires about 50% of the
+   usual amount of floating point operations used for SSOR + Krylov method;
+   however, the preconditioned problem must be solved with both left
+   and right preconditioning.
+
+   To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner,
+   which can be chosen with the database options
+$    -pc_type  sor  -pc_sor_symmetric
+
+   Level: intermediate
+
+.keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
+
+.seealso: PCSORGetOmega(), PCEisenstatSetOmega()
+@*/
+PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCEisenstatGetOmega_C",(PC,PetscReal*),(pc,omega));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCEisenstatGetNoDiagonalScaling"
+/*@
+   PCEisenstatGetNoDiagonalScaling - Causes the Eisenstat preconditioner
+   not to do additional diagonal preconditioning. For matrices with a constant
+   along the diagonal, this may save a small amount of work.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flg - PETSC_TRUE means there is no diagonal scaling applied
+
+   Options Database Key:
+.  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
+
+   Level: intermediate
+
+   Note:
+     If you use the KPSSetDiagonalScaling() or -ksp_diagonal_scale option then you will
+   likley want to use this routine since it will save you some unneeded flops.
+
+.keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
+
+.seealso: PCEisenstatGetOmega()
+@*/
+PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCEisenstatGetNoDiagonalScaling_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -312,7 +414,7 @@ PetscErrorCode  PCEisenstatNoDiagonalScaling(PC pc)
 
    Options Database Keys:
 +  -pc_eisenstat_omega <omega> - Sets omega
--  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatNoDiagonalScaling()
+-  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
 
    Level: beginner
 
@@ -323,7 +425,7 @@ PetscErrorCode  PCEisenstatNoDiagonalScaling(PC pc)
           Jacobi with SOR on each block.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCEisenstatNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
+           PCEisenstatSetNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
 M*/
 
 #undef __FUNCT__
@@ -354,6 +456,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   eis->usediag = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C",PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetNoDiagonalScaling_C",PCEisenstatSetNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatGetOmega_C",PCEisenstatGetOmega_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatGetNoDiagonalScaling_C",PCEisenstatGetNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

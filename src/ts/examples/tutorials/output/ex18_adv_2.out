@@ -1,0 +1,175 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 16
+  1-cells: 24
+  2-cells: 21 (12)
+Labels:
+  ghost: 0 strata of sizes ()
+  vtk: 1 strata of sizes (9)
+  Face Sets: 4 strata of sizes (3, 3, 3, 3)
+  marker: 1 strata of sizes (24)
+  depth: 3 strata of sizes (16, 24, 21)
+  0  time        0  |x| (       0,    3.333)  
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 34
+  1  time   0.9934  |x| (       0,    2.024)  
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 35
+  2  time    1.987  |x| (       0,    1.554)  
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 32
+  3  time     2.98  |x| (       0,    1.401)  
+TS Object: 1 MPI processes
+  type: beuler
+  maximum steps=1000
+  maximum time=2
+  total number of nonlinear solver iterations=101
+  total number of nonlinear solve failures=0
+  total number of linear solver iterations=103
+  total number of rejected steps=0
+  SNES Object:   1 MPI processes
+    type: newtonls
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=33
+    total number of function evaluations=64
+    norm schedule ALWAYS
+    SNESLineSearch Object:     1 MPI processes
+      type: bt
+        interpolation: cubic
+        alpha=1.000000e-04
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=40
+    KSP Object:     1 MPI processes
+      type: gmres
+        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        GMRES: happy breakdown tolerance 1e-30
+      maximum iterations=100, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object:     1 MPI processes
+      type: ilu
+        ILU: out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1, needed 1
+          Factored matrix follows:
+            Mat Object:             1 MPI processes
+              type: seqaij
+              rows=27, cols=27
+              package used to perform factorization: petsc
+              total: nonzeros=81, allocated nonzeros=81
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 9 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object:       1 MPI processes
+        type: seqaij
+        rows=27, cols=27
+        total: nonzeros=81, allocated nonzeros=81
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 9 nodes, limit used is 5
+CONVERGED_TIME at time 2.98018 after 3 steps

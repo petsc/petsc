@@ -1,7 +1,7 @@
 #define PETSC_USE_FORTRAN_MODULES 1
-#include <finclude/petscsysdef.h>
-#include <finclude/petscbagdef.h>
-#include <finclude/petscviewerdef.h>
+#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscbagdef.h>
+#include <petsc/finclude/petscviewerdef.h>
 
       module Bag_data_module
 !     Data structure used to contain information about the problem

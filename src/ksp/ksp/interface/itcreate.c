@@ -2,7 +2,7 @@
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include <petsc-private/kspimpl.h>      /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>      /*I "petscksp.h" I*/
 
 /* Logging support */
 PetscClassId  KSP_CLASSID;
@@ -57,9 +57,9 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (classid != KSP_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = KSPSetType(newdm, type);CHKERRQ(ierr);
   if (newdm->ops->load) {
     ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscBool      iascii,isbinary,isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -122,7 +122,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
@@ -147,7 +147,6 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     }
     if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess method %D with size %D\n",ksp->guess->method,ksp->guess->maxl);CHKERRQ(ierr);}
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
-    if (ksp->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
     if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -178,14 +177,14 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (!flg) {
       ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
       ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
-      ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+      ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
       bottom = y;
     }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
     const char  *name;
 
@@ -207,8 +206,10 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   } else if (ksp->ops->view) {
     ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
   }
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+  if (!ksp->skippcsetfromoptions) {
+    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+    ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+  }
   if (isdraw) {
     PetscDraw draw;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -248,11 +249,12 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
    Developer Notes:
    Supported combinations of norm and preconditioner side are set using KSPSetSupportedNorm().
 
+
    Level: advanced
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide()
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
@@ -472,6 +474,9 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
    Notes:
 
+    If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+    space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
+
     All future calls to KSPSetOperators() must use the same size matrices!
 
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.
@@ -525,7 +530,6 @@ $           set size, type, etc of mat and pmat
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
-  MatNullSpace   nullsp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -539,12 +543,6 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
-  }
-  if (Pmat) {
-    ierr = MatGetNullSpace(Pmat, &nullsp);CHKERRQ(ierr);
-    if (nullsp) {
-      ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
-    }
   }
   PetscFunctionReturn(0);
 }
@@ -703,7 +701,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   *inksp = 0;
   ierr = KSPInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ksp,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
   ksp->max_it  = 10000;
   ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
@@ -887,59 +885,3 @@ PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
   ierr = PetscFunctionListAdd(&KSPList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetNullSpace"
-/*@
-  KSPSetNullSpace - Sets the null space of the operator
-
-  Logically Collective on KSP
-
-  Input Parameters:
-+  ksp - the Krylov space object
--  nullsp - the null space of the operator
-
-  Notes: If the Mat provided to KSP has a nullspace added to it with MatSetNullSpace() then
-         KSP will automatically use the MatNullSpace and you don't need to call KSPSetNullSpace().
-
-  Level: advanced
-
-.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace(), MatSetNullSpace()
-@*/
-PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (ksp->nullsp) { ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr); }
-  ksp->nullsp = nullsp;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetNullSpace"
-/*@
-  KSPGetNullSpace - Gets the null space of the operator
-
-  Not Collective
-
-  Input Parameters:
-+  ksp - the Krylov space object
--  nullsp - the null space of the operator
-
-  Level: advanced
-
-.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPSetNullSpace()
-@*/
-PetscErrorCode  KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(nullsp,2);
-  *nullsp = ksp->nullsp;
-  PetscFunctionReturn(0);
-}
-

@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetOptionsPrefix"
@@ -73,7 +73,7 @@ PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix
 
   ierr = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
   ierr = PetscStrlen(buf,&len2);CHKERRQ(ierr);
-  ierr = PetscMalloc1((1+len1+len2),&obj->prefix);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1+len1+len2,&obj->prefix);CHKERRQ(ierr);
   ierr = PetscStrcpy(obj->prefix,buf);CHKERRQ(ierr);
   ierr = PetscStrcat(obj->prefix,prefix);CHKERRQ(ierr);
   ierr = PetscFree(buf);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ PetscErrorCode  PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefi
 
   ierr = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
   ierr = PetscStrlen(buf,&len2);CHKERRQ(ierr);
-  ierr = PetscMalloc1((1+len1+len2),&obj->prefix);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1+len1+len2,&obj->prefix);CHKERRQ(ierr);
   ierr = PetscStrcpy(obj->prefix,prefix);CHKERRQ(ierr);
   ierr = PetscStrcat(obj->prefix,buf);CHKERRQ(ierr);
   ierr = PetscFree(buf);CHKERRQ(ierr);

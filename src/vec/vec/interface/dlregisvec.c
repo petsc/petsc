@@ -1,5 +1,6 @@
 
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscpf.h>
 #include <petscsf.h>
 #include <petscao.h>

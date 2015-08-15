@@ -3,16 +3,15 @@
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_SSLS"
-PetscErrorCode TaoSetFromOptions_SSLS(Tao tao)
+PetscErrorCode TaoSetFromOptions_SSLS(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Semismooth method with a linesearch for complementarity problems");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ssls_delta", "descent test fraction", "",ssls->delta, &(ssls->delta), &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ssls_rho", "descent test power", "",ssls->rho, &(ssls->rho), &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Semismooth method with a linesearch for complementarity problems");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ssls_delta", "descent test fraction", "",ssls->delta, &ssls->delta, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ssls_rho", "descent test power", "",ssls->rho, &ssls->rho, NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

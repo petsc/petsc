@@ -1,4 +1,0 @@
-#if !defined(PETSC_USE_FORTRAN_MODULES)
-#include "finclude/ftn-custom/petsckspdef.h90"
-#endif
-#include "finclude/ftn-custom/petscksphide.h90"

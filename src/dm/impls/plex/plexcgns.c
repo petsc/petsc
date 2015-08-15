@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #if defined(PETSC_HAVE_CGNS)
 #include <cgnslib.h>
@@ -80,7 +80,8 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   PetscMPIInt    num_proc, rank;
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar    *coords;
+  PetscScalar   *coords;
+  PetscInt      *cellStart, *vertStart;
   PetscInt       coordSize, v;
   PetscErrorCode ierr;
   /* Read from file */
@@ -104,19 +105,25 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     if (nbases > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single base, not %d\n",nbases);
     ierr = cg_base_read(cgid, 1, basename, &dim, &physDim);CHKERRQ(ierr);
     ierr = cg_nzones(cgid, 1, &nzones);CHKERRQ(ierr);
+    ierr = PetscCalloc2(nzones+1, &cellStart, nzones+1, &vertStart);CHKERRQ(ierr);
     for (z = 1; z <= nzones; ++z) {
       cgsize_t sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
 
       ierr = cg_zone_read(cgid, 1, z, buffer, sizes);CHKERRQ(ierr);
       numVertices += sizes[0];
       numCells    += sizes[1];
+      cellStart[z] += sizes[1] + cellStart[z-1];
+      vertStart[z] += sizes[0] + vertStart[z-1];
+    }
+    for (z = 1; z <= nzones; ++z) {
+      vertStart[z] += numCells;
     }
   }
   ierr = MPI_Bcast(basename, CGIO_MAX_NAME_LENGTH+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&nzones, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, basename);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
 
   /* Read zone information */
@@ -207,9 +214,9 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
           }
           /* Hexahedra are inverted */
           if (elements[v] == HEXA_8) {
-            PetscInt tmp = cone[1];
-            cone[1] = cone[3];
-            cone[3] = tmp;
+            PetscInt tmp = cone[5];
+            cone[5] = cone[7];
+            cone[7] = tmp;
           }
           ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(*dm, "zone", c, z);CHKERRQ(ierr);
@@ -234,11 +241,11 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
             cone[0] = cone[1];
             cone[1] = tmp;
           }
-          /* Hexahedra are inverted */
+          /* Hexahedra are inverted, and they give the top first */
           if (cellType == HEXA_8) {
-            PetscInt tmp = cone[1];
-            cone[1] = cone[3];
-            cone[3] = tmp;
+            PetscInt tmp = cone[5];
+            cone[5] = cone[7];
+            cone[7] = tmp;
           }
           ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(*dm, "zone", c, z);CHKERRQ(ierr);
@@ -320,6 +327,64 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  /* Read boundary conditions */
+  if (!rank) {
+    DMLabel        label;
+    BCType_t       bctype;
+    DataType_t     datatype;
+    PointSetType_t pointtype;
+    cgsize_t      *points;
+    PetscReal     *normals;
+    int            normal[3];
+    char          *bcname = buffer;
+    cgsize_t       npoints, nnormals;
+    int            z, nbc, bc, c, ndatasets;
+
+    for (z = 1; z <= nzones; ++z) {
+      ierr = cg_nbocos(cgid, 1, z, &nbc);CHKERRQ(ierr);
+      for (bc = 1; bc <= nbc; ++bc) {
+        ierr = cg_boco_info(cgid, 1, z, bc, bcname, &bctype, &pointtype, &npoints, normal, &nnormals, &datatype, &ndatasets);CHKERRQ(ierr);
+        ierr = DMPlexCreateLabel(*dm, bcname);CHKERRQ(ierr);
+        ierr = DMPlexGetLabel(*dm, bcname, &label);CHKERRQ(ierr);
+        ierr = PetscMalloc2(npoints, &points, nnormals, &normals);CHKERRQ(ierr);
+        ierr = cg_boco_read(cgid, 1, z, bc, points, (void *) normals);CHKERRQ(ierr);
+        if (pointtype == ElementRange) {
+          /* Range of cells: assuming half-open interval since the documentation sucks */
+          for (c = points[0]; c < points[1]; ++c) {
+            ierr = DMLabelSetValue(label, c - cellStart[z-1], 1);CHKERRQ(ierr);
+          }
+        } else if (pointtype == ElementList) {
+          /* List of cells */
+          for (c = 0; c < npoints; ++c) {
+            ierr = DMLabelSetValue(label, points[c] - cellStart[z-1], 1);CHKERRQ(ierr);
+          }
+        } else if (pointtype == PointRange) {
+          GridLocation_t gridloc;
+
+          /* List of points: Oh please, someone get the CGNS developers away from a computer. This is unconscionable. */
+          ierr = cg_goto(cgid, 1, "Zone_t", z, "BC_t", bc, "end");CHKERRQ(ierr);
+          ierr = cg_gridlocation_read(&gridloc);CHKERRQ(ierr);
+          /* Range of points: assuming half-open interval since the documentation sucks */
+          for (c = points[0]; c < points[1]; ++c) {
+            if (gridloc == Vertex) {ierr = DMLabelSetValue(label, c - vertStart[z-1], 1);CHKERRQ(ierr);}
+            else                   {ierr = DMLabelSetValue(label, c - cellStart[z-1], 1);CHKERRQ(ierr);}
+          }
+        } else if (pointtype == PointList) {
+          GridLocation_t gridloc;
+
+          /* List of points: Oh please, someone get the CGNS developers away from a computer. This is unconscionable. */
+          ierr = cg_goto(cgid, 1, "Zone_t", z, "BC_t", bc, "end");
+          ierr = cg_gridlocation_read(&gridloc);
+          for (c = 0; c < npoints; ++c) {
+            if (gridloc == Vertex) {ierr = DMLabelSetValue(label, points[c] - vertStart[z-1], 1);CHKERRQ(ierr);}
+            else                   {ierr = DMLabelSetValue(label, points[c] - cellStart[z-1], 1);CHKERRQ(ierr);}
+          }
+        } else SETERRQ1(comm, PETSC_ERR_SUP, "Unsupported point set type %d", (int) pointtype);
+        ierr = PetscFree2(points, normals);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree2(cellStart, vertStart);CHKERRQ(ierr);
+  }
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires CGNS support. Reconfigure using --with-cgns-dir");
 #endif

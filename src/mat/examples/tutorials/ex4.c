@@ -90,7 +90,7 @@ int main(int argc,char **args)
 }
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "LowRankUpdate"

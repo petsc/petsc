@@ -1,6 +1,6 @@
 #include <../src/tao/bound/impls/tron/tron.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 
@@ -25,21 +25,21 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->H_sub);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_TRON"
-static PetscErrorCode TaoSetFromOptions_TRON(Tao tao)
+static PetscErrorCode TaoSetFromOptions_TRON(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
-  PetscInt                     iter=0,its;
+  PetscInt                     its;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
@@ -132,9 +132,9 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   }
 
   tron->stepsize=tao->trust;
-  ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
   while (reason==TAO_CONTINUE_ITERATING){
-
+    tao->ksp_its=0;
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
     f=tron->f; delta=tao->trust;
     tron->n_free_last = tron->n_free;
@@ -145,7 +145,14 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     /* If no free variables */
     if (tron->n_free == 0) {
       actred=0;
-      PetscInfo(tao,"No free variables in tron iteration.");
+      ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
+      ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+      if (!reason) {
+        reason = TAO_CONVERGED_STEPTOL;
+        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      }
+
       break;
 
     }
@@ -172,6 +179,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
 
       /* Add dxfree matrix to compute step direction vector */
@@ -244,8 +252,8 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
-    iter++;
-    ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
 
   PetscFunctionReturn(0);
@@ -338,10 +346,9 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_TRON"
-PetscErrorCode TaoCreate_TRON(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
   PetscErrorCode ierr;
@@ -356,19 +363,22 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
   tao->ops->computedual = TaoComputeDual_TRON;
 
   ierr = PetscNewLog(tao,&tron);CHKERRQ(ierr);
-
-  tao->max_it = 50;
-#if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-5;
-  tao->frtol = 1e-5;
-  tao->steptol = 1e-6;
-#else
-  tao->fatol = 1e-10;
-  tao->frtol = 1e-10;
-  tao->steptol = 1e-12;
-#endif
   tao->data = (void*)tron;
-  tao->trust0       = 1.0;
+
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 50;
+
+#if defined(PETSC_USE_REAL_SINGLE)
+  if (!tao->fatol_changed) tao->fatol = 1e-6;
+  if (!tao->frtol_changed) tao->frtol = 1e-6;
+  if (!tao->steptol_changed) tao->steptol = 1.0e-6;
+#else
+  if (!tao->fatol_changed) tao->fatol = 1e-12;
+  if (!tao->frtol_changed) tao->frtol = 1e-12;
+  if (!tao->steptol_changed) tao->steptol = 1.0e-12;
+#endif
+
+  if (!tao->trust0_changed) tao->trust0 = 1.0;
 
   /* Initialize pointers and variables */
   tron->n            = 0;
@@ -401,9 +411,11 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

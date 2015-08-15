@@ -2,9 +2,11 @@
    Implements the various scatter operations on cusp vectors
 */
 
+#define PETSC_SKIP_COMPLEX
+
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
 PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
@@ -44,6 +46,8 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
       stos_scatter->fromFirst = fromFirst;
       stos_scatter->fromStep = fromStep;
       stos_scatter->fromMode = VEC_SCATTER_CUSP_STRIDED;
+    } else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide fslots or fromStep.");
     }
   }
 
@@ -64,6 +68,8 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
       stos_scatter->toFirst = toFirst;
       stos_scatter->toStep = toStep;
       stos_scatter->toMode = VEC_SCATTER_CUSP_STRIDED;
+    } else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide tslots or toStep.");
     }
   }
 
@@ -273,7 +279,7 @@ PetscErrorCode VecScatterCUSP_StoS(Vec x,Vec y,PetscCUSPIndices ci,InsertMode ad
   ierr = VecCUSPAllocateCheck(x);CHKERRQ(ierr);
   ierr = VecCUSPAllocateCheck(y);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   if (stos_scatter->n) {
     if (addv == INSERT_VALUES)
       VecScatterCUSP_StoS_Dispatcher(xarray,yarray,ci,mode,Insert());
@@ -288,6 +294,6 @@ PetscErrorCode VecScatterCUSP_StoS(Vec x,Vec y,PetscCUSPIndices ci,InsertMode ad
     err = cudaStreamSynchronize(stos_scatter->stream);CHKERRCUSP((int)err);
   }
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

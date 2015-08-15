@@ -109,7 +109,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
   }
 
   ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(MPI_Comm),&addr_local_comm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1,&addr_local_comm);CHKERRQ(ierr);
 
   *addr_local_comm = local_comm;
 

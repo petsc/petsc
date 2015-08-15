@@ -3,7 +3,7 @@
    This provides a matrix that consists of Mats
 */
 
-#include <petsc-private/matimpl.h>              /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>              /*I "petscmat.h" I*/
 #include <../src/mat/impls/baij/seq/baij.h>    /* use the common AIJ data-structure */
 
 typedef struct {
@@ -311,6 +311,8 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   Mat_BlockMat      *amat;
 
   PetscFunctionBegin;
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&tmpA);CHKERRQ(ierr);
   ierr = MatSetType(tmpA,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad_SeqAIJ(tmpA,viewer);CHKERRQ(ierr);
@@ -794,7 +796,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        0,
                                /* 44*/ 0,
                                        0,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                /* 49*/ 0,

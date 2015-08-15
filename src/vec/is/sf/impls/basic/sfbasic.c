@@ -1,5 +1,5 @@
-#define PETSC_DESIRE_COMPLEX
-#include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
+
+#include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 
 typedef struct _n_PetscSFBasicPack *PetscSFBasicPack;
 struct _n_PetscSFBasicPack {
@@ -778,7 +778,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nrootranks+nleafranks),&link->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
 
 found:
   link->key  = key;
@@ -802,7 +802,7 @@ static PetscErrorCode PetscSFBasicGetPackInUse(PetscSF sf,MPI_Datatype unit,cons
   for (p=&bas->inuse; (link=*p); p=&link->next) {
     PetscBool match;
     ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-    if (match) {
+    if (match && (key == link->key)) {
       switch (cmode) {
       case PETSC_OWN_POINTER: *p = link->next; break; /* Remove from inuse list */
       case PETSC_USE_POINTER: break;
@@ -832,12 +832,12 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Basic"
-static PetscErrorCode PetscSFSetFromOptions_Basic(PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptions *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PetscSF Basic options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSF Basic options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

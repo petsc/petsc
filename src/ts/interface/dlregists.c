@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>
+#include <petsc/private/tsimpl.h>
 
 static PetscBool TSPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -19,6 +19,7 @@ PetscErrorCode  TSFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&TSList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSTrajectoryList);CHKERRQ(ierr);
   TSPackageInitialized = PETSC_FALSE;
   TSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -57,8 +58,10 @@ PetscErrorCode  TSInitializePackage(void)
   /* Register Classes */
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("TSTrajectory",&TSTRAJECTORY_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = TSRegisterAll();CHKERRQ(ierr);
+  ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("TSStep",           TS_CLASSID,&TS_Step);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TSPseudoCmptTStp", TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);

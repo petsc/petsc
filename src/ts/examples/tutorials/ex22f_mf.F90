@@ -20,9 +20,9 @@
 
 #ifdef MF_EX22F_MF
   module PETScShiftMod
-#include <finclude/petscsys.h>
-#include <finclude/petscts.h>
-#include <finclude/petscmat.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscmat.h>
     PetscScalar::PETSC_SHIFT
     TS::tscontext
     Mat::Jmat
@@ -35,13 +35,13 @@ program main
   use PETScShiftMod, only :  tscontext,Jmat
 #endif
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   !
   !     Create an application context to contain data needed by the
   !     application-provided call-back routines, FormJacobian() and
@@ -208,9 +208,9 @@ end program main
 ! Small helper to extract the layout, result uses 1-based indexing.
 subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   DM da
   PetscInt mx,xs,xe,gxs,gxe
   PetscErrorCode ierr
@@ -250,13 +250,13 @@ end subroutine FormIFunctionLocal
 
 subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   TS ts
   PetscReal t
   Vec X,Xdot,F
@@ -348,13 +348,13 @@ end subroutine FormRHSFunctionLocal
 
 subroutine FormRHSFunction(ts,t,X,F,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   TS ts
   PetscReal t
   Vec X,F
@@ -399,13 +399,13 @@ end subroutine FormRHSFunction
 !
 subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
   Vec X,Xdot
@@ -471,13 +471,13 @@ end subroutine FormInitialSolutionLocal
 
 subroutine FormInitialSolution(ts,X,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   TS ts
   PetscReal t
   Vec X
@@ -512,13 +512,13 @@ end subroutine FormInitialSolution
 subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   use PETScShiftMod, only :  PETSC_SHIFT,MFuser
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
   Vec X,Xdot
@@ -546,12 +546,12 @@ subroutine  MyMult(A,X,F,ierr)
   use PETScShiftMod, only :  PETSC_SHIFT,tscontext,Jmat,MFuser
   implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
-#include <finclude/petscvec.h90>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscvec.h90>
 
   Mat     A
   Vec     X,F
@@ -611,13 +611,13 @@ end subroutine MyMult
 !
 subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdm.h>
-#include <finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
   Vec X,Xloc
   DM             da

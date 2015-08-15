@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatConvert(C,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
 
   /* Create vectors for error checking */
-  ierr = MatGetVecs(C,&x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(C,&x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&ytmp);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);

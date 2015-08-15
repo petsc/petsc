@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist).\n\
+static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist and mumps).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
 #include <petscmat.h>
@@ -47,10 +47,28 @@ int main(int argc,char **args)
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-
+  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  /* #define DEBUGEX */
+#if defined(DEBUGEX)   
+  {
+    PetscInt    row,j,M,cols[nrhs];
+    PetscScalar vals[nrhs];
+    ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
+    if (!rank) {
+      for (j=0; j<nrhs; j++) cols[j] = j;
+      for (row = 0; row < M; row++){
+        for (j=0; j<nrhs; j++) vals[j] = row;
+        ierr = MatSetValues(C,1,&row,nrhs,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+#else
   ierr = MatSetRandom(C,rand);CHKERRQ(ierr);
+#endif
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
 
   /* Create vectors */
@@ -112,13 +130,7 @@ int main(int argc,char **args)
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatMatSolve() */
-    /*
-    if ((ipack == 0 || ipack == 2) && testMatMatSolve) {
-      printf("   MatMatSolve() is not implemented for this package. Skip the testing.\n");
-      testMatMatSolve = PETSC_FALSE;
-    }
-     */
-    if (testMatMatSolve) {
+    if (testMatMatSolve) { 
       if (!nfact) {
         ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       } else {
@@ -133,7 +145,7 @@ int main(int argc,char **args)
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
         if (norm > tol) {
           if (!rank) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"1st MatMatSolve: Norm of error %g, nsolve %d\n",norm,nsolve);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"%d-the MatMatSolve: Norm of error %g, nsolve %d\n",nsolve,norm,nsolve);CHKERRQ(ierr);
           }
         }
       }

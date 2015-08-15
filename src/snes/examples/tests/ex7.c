@@ -101,11 +101,12 @@ int main(int argc,char **argv)
 
 PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscScalar    *xx,*ff,*FF,d;
-  PetscInt       i,n;
-  PetscErrorCode ierr;
+  const PetscScalar *xx;
+  PetscScalar       *ff,*FF,d;  
+  PetscInt          i,n;
+  PetscErrorCode    ierr;
 
-  ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr  = VecGetArray(f,&ff);CHKERRQ(ierr);
   ierr  = VecGetArray((Vec) dummy,&FF);CHKERRQ(ierr);
   ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
@@ -113,7 +114,7 @@ PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ff[0] = xx[0];
   for (i=1; i<n-1; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   ff[n-1] = xx[n-1] - 1.0;
-  ierr    = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr    = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   ierr    = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
   return 0;
@@ -154,12 +155,13 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 
 PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
-  PetscScalar    *xx,A[3],d;
-  PetscInt       i,n,j[3];
-  PetscErrorCode ierr;
-  AppCtx         *user = (AppCtx*) dummy;
+  const PetscScalar *xx;
+  PetscScalar       A[3],d;
+  PetscInt          i,n,j[3];
+  PetscErrorCode    ierr;
+  AppCtx            *user = (AppCtx*) dummy;
 
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d    = (PetscReal)(n - 1); d = d*d;
 
@@ -174,7 +176,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   ierr  = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr  = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   if (user->variant) {
     ierr = MatMFFDSetBase(jac,x,NULL);CHKERRQ(ierr);

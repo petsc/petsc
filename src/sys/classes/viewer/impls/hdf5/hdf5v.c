@@ -1,4 +1,4 @@
-#include <petsc-private/viewerimpl.h>    /*I   "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 
 typedef struct GroupList {
@@ -12,7 +12,24 @@ typedef struct {
   hid_t         file_id;
   PetscInt      timestep;
   GroupList     *groups;
+  PetscBool     basedimension2;  /* save vectors and DMDA vectors with a dimension of at least 2 even if the bs/dof is 1 */
+  PetscBool     spoutput;  /* write data in single precision even if PETSc is compiled with double precision PetscReal */
 } PetscViewer_HDF5;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerSetFromOptions_HDF5"
+static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptions *PetscOptionsObject,PetscViewer v)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)v->data;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"HDF5 PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_hdf5_base_dimension2","1d Vectors get 2 dimensions in HDF5","PetscViewerHDF5SetBaseDimension2",hdf5->basedimension2,&hdf5->basedimension2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_hdf5_sp_output","Force data to be written in single precision","PetscViewerHDF5SetSPOutput",hdf5->spoutput,&hdf5->spoutput,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileClose_HDF5"
@@ -23,7 +40,7 @@ static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);
-  if (hdf5->file_id) H5Fclose(hdf5->file_id);
+  if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
   PetscFunctionReturn(0);
 }
 
@@ -62,6 +79,162 @@ PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode ty
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetBaseDimension2_HDF5"
+PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscBool flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  hdf5->basedimension2 = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetBaseDimension2"
+/*@C
+     PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+       dimension of 2.
+
+    Logically Collective on PetscViewer
+
+  Input Parameters:
++  viewer - the PetscViewer; if it is not hdf5 then this command is ignored
+-  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
+
+  Options Database:
+.  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+
+
+  Notes: Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+         of one when the dimension is lower. Others think the option is crazy.
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+
+@*/
+PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTryMethod(viewer,"PetscViewerHDF5SetBaseDimension2_C",(PetscViewer,PetscBool),(viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5GetBaseDimension2"
+/*@C
+     PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+       dimension of 2.
+
+    Logically Collective on PetscViewer
+
+  Input Parameter:
+.  viewer - the PetscViewer, must be of type HDF5
+
+  Output Parameter:
+.  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
+
+  Notes: Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+         of one when the dimension is lower. Others think the option is crazy.
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+
+@*/
+PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer,PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *flg = hdf5->basedimension2;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetSPOutput_HDF5"
+PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  hdf5->spoutput = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetSPOutput"
+/*@C
+     PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
+       compiled with double precision PetscReal.
+
+    Logically Collective on PetscViewer
+
+  Input Parameters:
++  viewer - the PetscViewer; if it is not hdf5 then this command is ignored
+-  flg - if PETSC_TRUE the data will be written to disk with single precision
+
+  Options Database:
+.  -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
+
+
+  Notes: Setting this option does not make any difference if PETSc is compiled with single precision
+         in the first place. It does not affect reading datasets (HDF5 handle this internally).
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen(),
+          PetscReal
+
+@*/
+PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTryMethod(viewer,"PetscViewerHDF5SetSPOutput_C",(PetscViewer,PetscBool),(viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5GetSPOutput"
+/*@C
+     PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
+       compiled with double precision PetscReal.
+
+    Logically Collective on PetscViewer
+
+  Input Parameter:
+.  viewer - the PetscViewer, must be of type HDF5
+
+  Output Parameter:
+.  flg - if PETSC_TRUE the data will be written to disk with single precision
+
+  Notes: Setting this option does not make any difference if PETSc is compiled with single precision
+         in the first place. It does not affect reading datasets (HDF5 handle this internally).
+
+  Level: intermediate
+
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen(),
+          PetscReal
+
+@*/
+PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer,PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *flg = hdf5->spoutput;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetName_HDF5"
 PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
@@ -70,32 +243,31 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   MPI_Info          info = MPI_INFO_NULL;
 #endif
   hid_t             plist_id;
-  herr_t            herr;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
-  plist_id = H5Pcreate(H5P_FILE_ACCESS);
+  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  herr = H5Pset_fapl_mpio(plist_id, PetscObjectComm((PetscObject)viewer), info);CHKERRQ(herr);
+  PetscStackCallHDF5(H5Pset_fapl_mpio,(plist_id, PetscObjectComm((PetscObject)viewer), info));
 #endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
   case FILE_MODE_READ:
-    hdf5->file_id = H5Fopen(name, H5F_ACC_RDONLY, plist_id);
+    PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDONLY, plist_id));
     break;
   case FILE_MODE_APPEND:
-    hdf5->file_id = H5Fopen(name, H5F_ACC_RDWR, plist_id);
+    PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
     break;
   case FILE_MODE_WRITE:
-    hdf5->file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
+    PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
   if (hdf5->file_id < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
-  H5Pclose(plist_id);
+  PetscStackCallHDF5(H5Pclose,(plist_id));
   PetscFunctionReturn(0);
 }
 
@@ -109,16 +281,19 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   PetscFunctionBegin;
   ierr = PetscNewLog(v,&hdf5);CHKERRQ(ierr);
 
-  v->data         = (void*) hdf5;
-  v->ops->destroy = PetscViewerDestroy_HDF5;
-  v->ops->flush   = 0;
-  hdf5->btype     = (PetscFileMode) -1;
-  hdf5->filename  = 0;
-  hdf5->timestep  = -1;
-  hdf5->groups    = NULL;
+  v->data                = (void*) hdf5;
+  v->ops->destroy        = PetscViewerDestroy_HDF5;
+  v->ops->setfromoptions = PetscViewerSetFromOptions_HDF5;
+  v->ops->flush          = 0;
+  hdf5->btype            = (PetscFileMode) -1;
+  hdf5->filename         = 0;
+  hdf5->timestep         = -1;
+  hdf5->groups           = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -140,6 +315,10 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Output Parameter:
 .  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
 
+  Options Database:
+.  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+.  -viewer_hdf5_sp_output - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
+
    Level: beginner
 
    Note:
@@ -148,9 +327,9 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Concepts: HDF5 files
    Concepts: PetscViewerHDF5^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
-          VecView(), MatView(), VecLoad(), MatLoad(),
-          PetscFileMode, PetscViewer
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
+          PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),
+          MatLoad(), PetscFileMode, PetscViewer
 @*/
 PetscErrorCode  PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *hdf5v)
 {
@@ -360,7 +539,6 @@ PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timeste
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscDataTypeToHDF5DataType"
 /*@C
@@ -455,7 +633,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 @*/
 PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
 {
-  hid_t          h5, dataspace, dataset, attribute, dtype, status;
+  hid_t          h5, dataspace, dataset, attribute, dtype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -467,26 +645,22 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   if (datatype == PETSC_STRING) {
     size_t len;
     ierr = PetscStrlen((const char *) value, &len);CHKERRQ(ierr);
-    status = H5Tset_size(dtype, len+1);CHKERRQ(status);
+    PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
   }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  dataspace = H5Screate(H5S_SCALAR);
-  if (dataspace < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create dataspace for attribute %s of %s", name, parent);
+  PetscStackCallHDF5Return(dataspace,H5Screate,(H5S_SCALAR));
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
-  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
-  attribute = H5Acreate2(dataset, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+  PetscStackCallHDF5Return(dataset,H5Dopen2,(h5, parent, H5P_DEFAULT));
+  PetscStackCallHDF5Return(attribute,H5Acreate2,(dataset, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT));
 #else
-  dataset = H5Dopen(h5, parent);
-  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
-  attribute = H5Acreate(dataset, name, dtype, dataspace, H5P_DEFAULT);
+  PetscStackCallHDF5Return(dataset,H5Dopen,(h5, parent));
+  PetscStackCallHDF5Return(attribute,H5Acreate,(dataset, name, dtype, dataspace, H5P_DEFAULT));
 #endif
-  if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create attribute %s of %s", name, parent);
-  status = H5Awrite(attribute, dtype, value);CHKERRQ(status);
-  if (datatype == PETSC_STRING) {status = H5Tclose(dtype);CHKERRQ(status);}
-  status = H5Aclose(attribute);CHKERRQ(status);
-  status = H5Dclose(dataset);CHKERRQ(status);
-  status = H5Sclose(dataspace);CHKERRQ(status);
+  PetscStackCallHDF5(H5Awrite,(attribute, dtype, value));
+  if (datatype == PETSC_STRING) PetscStackCallHDF5(H5Tclose,(dtype));
+  PetscStackCallHDF5(H5Aclose,(attribute));
+  PetscStackCallHDF5(H5Dclose,(dataset));
+  PetscStackCallHDF5(H5Sclose,(dataspace));
   PetscFunctionReturn(0);
 }
 
@@ -510,7 +684,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 @*/
 PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *value)
 {
-  hid_t          h5, dataspace, dataset, attribute, dtype, status;
+  hid_t          h5, dataspace, dataset, attribute, dtype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -520,21 +694,17 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscValidPointer(value, 4);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  dataspace = H5Screate(H5S_SCALAR);
-  if (dataspace < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create dataspace for attribute %s of %s", name, parent);
+  PetscStackCallHDF5Return(dataspace,H5Screate,(H5S_SCALAR));
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
-  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
+  PetscStackCallHDF5Return(dataset,H5Dopen2,(h5, parent, H5P_DEFAULT));
 #else
-  dataset = H5Dopen(h5, parent);
-  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
+  PetscStackCallHDF5Return(dataset,H5Dopen,(h5, parent));
 #endif
-  attribute = H5Aopen_name(dataset, name);
-  if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open attribute %s of %s", name, parent);
-  status = H5Aread(attribute, dtype, value);CHKERRQ(status);
-  status = H5Aclose(attribute);CHKERRQ(status);
-  status = H5Dclose(dataset);CHKERRQ(status);
-  status = H5Sclose(dataspace);CHKERRQ(status);
+  PetscStackCallHDF5Return(attribute,H5Aopen_name,(dataset, name));
+  PetscStackCallHDF5(H5Aread,(attribute, dtype, value));
+  PetscStackCallHDF5(H5Aclose,(attribute));
+  PetscStackCallHDF5(H5Dclose,(dataset));
+  PetscStackCallHDF5(H5Sclose,(dataspace));
   PetscFunctionReturn(0);
 }
 
@@ -554,12 +724,11 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
   if (H5Lexists(h5, name, H5P_DEFAULT)) {
     H5O_info_t info;
     hid_t      obj;
-    herr_t     err;
 
-    obj = H5Oopen(h5, name, H5P_DEFAULT);if (obj < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open object %s", name);
-    err = H5Oget_info(obj, &info);CHKERRQ(err);
+    PetscStackCallHDF5Return(obj,H5Oopen,(h5, name, H5P_DEFAULT));
+    PetscStackCallHDF5(H5Oget_info,(obj, &info));
     if (otype == info.type) *has = PETSC_TRUE;
-    err = H5Oclose(obj);CHKERRQ(err);
+    PetscStackCallHDF5(H5Oclose,(obj));
   }
   PetscFunctionReturn(0);
 }
@@ -583,7 +752,7 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
-  hid_t          h5, dataset, status;
+  hid_t          h5, dataset;
   htri_t         hhas;
   PetscBool      exists;
   PetscErrorCode ierr;
@@ -598,15 +767,17 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   ierr = PetscViewerHDF5HasObject(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
   if (exists) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
-    if (dataset < 0) PetscFunctionReturn(0);
+    PetscStackCall("H5Dopen2",dataset = H5Dopen2(h5, parent, H5P_DEFAULT));
 #else
-    dataset = H5Dopen(h5, parent);
-    if (dataset < 0) PetscFunctionReturn(0);
+    PetscStackCall("H5Dopen",dataset = H5Dopen(h5, parent));
 #endif
-    hhas = H5Aexists(dataset, name);
-    if (hhas < 0) {status = H5Dclose(dataset);CHKERRQ(status); PetscFunctionReturn(0);}
-    status = H5Dclose(dataset);CHKERRQ(status);
+    if (dataset < 0) PetscFunctionReturn(0);
+    PetscStackCall("H5Aexists",hhas = H5Aexists(dataset, name));
+    if (hhas < 0) {
+      PetscStackCallHDF5(H5Dclose,(dataset));
+      PetscFunctionReturn(0);
+    }
+    PetscStackCallHDF5(H5Dclose,(dataset));
     *has = hhas ? PETSC_TRUE : PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -677,26 +848,3 @@ PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm)
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
-
-#if defined(oldhdf4stuff)
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5WriteSDS"
-PetscErrorCode  PetscViewerHDF5WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
-{
-  int              i;
-  PetscViewer_HDF5 *vhdf5 = (PetscViewer_HDF5*)viewer->data;
-  int32            sds_id,zero32[3],dims32[3];
-
-  PetscFunctionBegin;
-  for (i = 0; i < d; i++) {
-    zero32[i] = 0;
-    dims32[i] = dims[i];
-  }
-  sds_id = SDcreate(vhdf5->sd_id, "Vec", DFNT_FLOAT32, d, dims32);
-  if (sds_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SDcreate failed");
-  SDwritedata(sds_id, zero32, 0, dims32, xf);
-  SDendaccess(sds_id);
-  PetscFunctionReturn(0);
-}
-
-#endif

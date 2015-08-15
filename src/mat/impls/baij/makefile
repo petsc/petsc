@@ -4,6 +4,6 @@ ALL: lib
 DIRS     = seq mpi
 LOCDIR   = src/mat/impls/baij/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

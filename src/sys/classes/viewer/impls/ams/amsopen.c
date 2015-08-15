@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  */
+#include <petsc/private/viewerimpl.h>   /*I  "petscsys.h"  */
 #include <petscviewersaws.h>
 
 #undef __FUNCT__
@@ -16,10 +16,10 @@
 .   lab - the PetscViewer
 
     Options Database Keys:
-+   -ams_port <port number> - port number where you are running SAWs client
-.   -xxx_view ams - publish the object xxx
++   -saws_port <port number> - port number where you are running SAWs client
+.   -xxx_view saws - publish the object xxx
 -   -xxx_saws_block - blocks the program at the end of a critical point (for KSP and SNES it is the end of a solve) until
-                    the user unblocks the problem with an external tool that access the object with the AMS
+                    the user unblocks the problem with an external tool that access the object with SAWS
 
     Level: advanced
 

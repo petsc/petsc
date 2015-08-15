@@ -1,5 +1,5 @@
-#define PETSC_DESIRE_COMPLEX
-#include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
+
+#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdraw.h>
 
 /* ------------------------------------------------------------------------*/

@@ -1,0 +1,18 @@
+!
+!  Single Fortran 90 include file
+!
+#include "petsc/finclude/petsc.h"
+#include "petsc/finclude/petscviewer.h90"
+#include "petsc/finclude/petscis.h90"
+#include "petsc/finclude/petscvec.h90"
+#include "petsc/finclude/petscmat.h90"
+#include "petsc/finclude/petscdm.h90"
+#include "petsc/finclude/petscdt.h90"
+#include "petsc/finclude/petscdmda.h90"
+#include "petsc/finclude/petscdmplex.h90"
+#include "petsc/finclude/petscdmcomposite.h90"
+#include "petsc/finclude/petscdmredundant.h90"
+#include "petsc/finclude/petscpc.h90"
+#include "petsc/finclude/petscksp.h90"
+#include "petsc/finclude/petscsnes.h90"
+#include "petsc/finclude/petscts.h90"

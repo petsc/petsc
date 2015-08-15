@@ -16,6 +16,8 @@
    Output Parameter:
 .   flg - PETSC_TRUE if the text was sent
 
+   Level: intermediate
+
    Notes: TextBelt is run for testing purposes only, please do not use this feature often
 
 @*/

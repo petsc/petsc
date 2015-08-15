@@ -101,7 +101,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_String"
-PetscErrorCode PFSetFromOptions_String(PF pf)
+PetscErrorCode PFSetFromOptions_String(PetscOptions *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
   PetscBool      flag;
@@ -109,7 +109,7 @@ PetscErrorCode PFSetFromOptions_String(PF pf)
   PetscErrorCode (*f)(void*,PetscInt,const PetscScalar*,PetscScalar*) = 0;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("String function options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"String function options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr           = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);

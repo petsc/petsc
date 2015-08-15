@@ -60,13 +60,13 @@ Input parameters include:\n\
 
    dG   [       0       ;         0        ]
    -- = [                                  ]
-   du   [ -2 \mu u_1 - 1;  \mu (1 - u_1^2) ]
+   du   [ -2 \mu u_1*u_2 - 1;  \mu (1 - u_1^2) ]
 
    Hence,
 
           [      a       ;          0          ]
    J(G) = [                                    ]
-          [ 2 \mu u_1 + 1; a - \mu (1 - u_1^2) ]
+          [ 2 \mu u_1*u_2 + 1; a - \mu (1 - u_1^2) ]
 
   ------------------------------------------------------------------------- */
 
@@ -86,16 +86,17 @@ struct _n_User {
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscScalar    *x,*f;
+  PetscErrorCode    ierr;
+  User              user = (User)ctx;
+  PetscScalar       *f;
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = (user->imex ? x[1] : 0);
   f[1] = 0.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -104,18 +105,19 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 #define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscScalar    *x,*xdot,*f;
+  PetscErrorCode    ierr;
+  User              user = (User)ctx;
+  const PetscScalar *x,*xdot;
+  PetscScalar       *f;  
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] + (user->imex ? 0 : x[1]);
   f[1] = xdot[1] - user->mu*(1. - x[0]*x[0])*x[1] + x[0];
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,18 +126,19 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 #define __FUNCT__ "IJacobian"
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user     = (User)ctx;
-  PetscReal      mu       = user->mu;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
+  PetscErrorCode    ierr;
+  User              user     = (User)ctx;
+  PetscReal         mu       = user->mu;
+  PetscInt          rowcol[] = {0,1};
+  const PetscScalar *x;
+  PetscScalar       J[2][2];
 
   PetscFunctionBeginUser;
-  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
   J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -238,7 +241,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

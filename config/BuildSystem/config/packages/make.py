@@ -1,67 +1,73 @@
-from __future__ import generators
 import config.package
+import os
 
-class Configure(config.package.Package):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    config.package.Package.__init__(self, framework)
+    config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://ftp.gnu.org/gnu/make/make-3.82.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-3.82.tar.gz']
     self.complex           = 1
     self.double            = 0
-    self.requires32bitint  = 0
     self.downloadonWindows = 1
     self.useddirectly      = 0
 
     self.printdirflag      = ''
     self.noprintdirflag    = ''
     self.haveGNUMake       = 0
+    self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
+    self.parallelMake      = 0  # sowing does not support make -j np
     return
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Make', '-with-make=<prog>',                            nargs.Arg(None, 'gmake', 'Specify GNU make'))
-    help.addArgument('Make', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
-    help.addArgument('Make', '-download-make=<no,yes,filename>',             nargs.ArgDownload(None, 0, 'Download and install GNU make'))
-    help.addArgument('Make', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
-    help.addArgument('Make', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
+    config.package.GNUPackage.setupHelp(self, help)
+    help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
+    help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
+    help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     return
 
+  def formGNUConfigureArgs(self):
+    '''Does not use the standard arguments at all since this does not use the MPI compilers etc
+       Sowing will chose its own compilers if they are not provided explicitly here'''
+    args = ['--prefix='+self.confDir]
+    if 'download-make-cc' in self.argDB and self.argDB['download-make-cc']:
+      args.append('CC="'+self.argDB['download-make-cc']+'"')
+    if 'download-make-configure-options' in self.argDB and self.argDB['download-make-configure-options']:
+      args.append(self.argDB['download-make-configure-options'])
+    return args
+
   def Install(self):
-    import os
-    args = ['--prefix='+self.installDir]
-    args.append('--program-prefix=g')
-    if self.framework.argDB.has_key('download-make-cc'):
-      args.append('CC="'+self.framework.argDB['download-make-cc']+'"')
-    if self.framework.argDB.has_key('download-make-configure-options'):
-      args.append(self.framework.argDB['download-make-configure-options'])
+    ''' Cannot use GNUPackage Install because that one uses make which does not yet exist
+        This is almost a copy of GNUPackage Install just avoiding the use of make'''
+    args = self.formGNUConfigureArgs()
     args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,'make.args'), 'w')
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
+    fd = file(conffile, 'w')
     fd.write(args)
     fd.close()
-    if self.installNeeded('make.args'):
-      try:
-        self.logPrintBox('Configuring GNU Make; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on GNU make (install manually): '+str(e))
-      try:
-        self.logPrintBox('Compiling GNU Make; this may take several minutes')
-        if self.getExecutable('make', getFullPath = 1,resultName='make',setMakeMacro = 0):
-          output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make+' &&  '+self.make+' install && '+self.make+' clean', timeout=2500, log = self.framework.log)
-        else:
-          output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on GNU Make (install manually): '+str(e))
-      self.postInstall(output+err,'make.args')
-    self.binDir = os.path.join(self.installDir, 'bin')
-    self.make = os.path.join(self.binDir, 'gmake')
-    self.addMakeMacro('MAKE',self.make)
+    ### Use conffile to check whether a reconfigure/rebuild is required
+    if not self.installNeeded(conffile):
+      return self.installDir
+    ### Configure and Build package
+    self.gitPreInstallCheck()
+    try:
+      self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
+      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
+    except RuntimeError, e:
+      raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
+    try:
+      self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.framework.\
+log)
+    except RuntimeError, e:
+      raise RuntimeError('Error building or installing make '+self.PACKAGE+': '+str(e))
+    self.postInstall(output1+err1, conffile)
     return self.installDir
 
   def configureMake(self):
     '''Check for user specified make - or gmake, make'''
     if self.framework.clArgDB.has_key('with-make'):
-      if not self.getExecutable(self.framework.argDB['with-make'],getFullPath = 1,resultName = 'make'):
-        raise RuntimeError('Error! User provided make not found :'+self.framework.argDB['with-make'])
+      if not self.getExecutable(self.argDB['with-make'],getFullPath = 1,resultName = 'make'):
+        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make'])
       self.found = 1
       return
     if not self.getExecutable('gmake', getFullPath = 1,resultName = 'make') and not self.getExecutable('make', getFullPath = 1,resultName = 'make'):
@@ -80,7 +86,7 @@ class Configure(config.package.Package):
     try:
       import re
       # set self.haveGNUMake only if using gnumake version > 3.80 [as older version break with gmakefile]
-      (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.framework.log)
+      (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.log)
       gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
       if not status and gver:
         major = int(gver.group(1))
@@ -88,7 +94,7 @@ class Configure(config.package.Package):
         if ((major > 3) or (major == 3 and minor > 80)):
           self.haveGNUMake = 1
     except RuntimeError, e:
-      self.framework.log.write('GNUMake check failed: '+str(e)+'\n')
+      self.log.write('GNUMake check failed: '+str(e)+'\n')
 
     # Setup make flags
     if self.haveGNUMake:
@@ -112,9 +118,9 @@ class Configure(config.package.Package):
 
   def configureMakeNP(self):
     '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
-    make_np = self.framework.argDB.get('with-make-np')
+    make_np = self.argDB.get('with-make-np')
     if make_np is not None:
-      self.framework.logPrint('using user-provided make_np = %d' % make_np)
+      self.logPrint('using user-provided make_np = %d' % make_np)
     else:
       def compute_make_np(i):
         f16 = .80
@@ -132,20 +138,19 @@ class Configure(config.package.Package):
         import multiprocessing # python-2.6 feature
         cores = multiprocessing.cpu_count()
         make_np = compute_make_np(cores)
-        self.framework.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
+        self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
       except (ImportError), e:
         make_np = 2
-        self.framework.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+        self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
     self.make_jnp = self.make + ' -j ' + str(self.make_np)
     return
 
   def configure(self):
-    '''Determine whether (GNU) make exist or not'''
-
-    if (self.framework.argDB['download-make']):
-      config.package.Package.configure(self)
+    if (self.argDB['download-make']):
+      config.package.GNUPackage.configure(self)
+      self.getExecutable('make', path=os.path.join(self.installDir,'bin'), getFullPath = 1)
     else:
       self.executeTest(self.configureMake)
     self.executeTest(self.configureCheckGNUMake)

@@ -3,7 +3,7 @@
    Support for the parallel BAIJ matrix vector multiply
 */
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
-#include <petsc-private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
+#include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
 extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
@@ -41,7 +41,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   /* form array of columns we need */
-  ierr = PetscMalloc1((ec+1),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
   while (tpos) {
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc1((ec+1),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
   ec   = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -111,7 +111,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* create two temporary index sets for building scatter-gather */
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((ec+1),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec+1,&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) stmp[i] = i;
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
@@ -188,6 +188,11 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
   ((Mat_SeqBAIJ*)Bnew->data)->nonew = Bbaij->nonew; /* Inherit insertion error options. */
 
   ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  /*
+   Ensure that B's nonzerostate is monotonically increasing.
+   Or should this follow the MatSetValuesBlocked() loop to preserve B's nonzerstate across a MatDisAssemble() call?
+   */
+  Bnew->nonzerostate = B->nonzerostate;
 
   for (i=0; i<mbs; i++) {
     for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
@@ -229,7 +234,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(inA,&cstart,&cend);CHKERRQ(ierr);
   ierr = MatGetSize(ina->A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscCalloc1((inA->rmap->mapping->n+1),&r_rmapd);CHKERRQ(ierr);
+  ierr = PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapd);CHKERRQ(ierr);
   nt   = 0;
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (inA->rmap->mapping->indices[i]*bs >= cstart && inA->rmap->mapping->indices[i]*bs < cend) {
@@ -238,7 +243,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
     }
   }
   if (nt*bs != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt*bs %D n %D",nt*bs,n);
-  ierr = PetscMalloc1((n+1),&uglyrmapd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&uglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
       for (j=0; j<bs; j++) {
@@ -249,12 +254,12 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   ierr = PetscFree(r_rmapd);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&uglydd);CHKERRQ(ierr);
 
-  ierr = PetscCalloc1((ina->Nbs+1),&lindices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ina->Nbs+1,&lindices);CHKERRQ(ierr);
   for (i=0; i<B->nbs; i++) {
     lindices[garray[i]] = i+1;
   }
   no   = inA->rmap->mapping->n - nt;
-  ierr = PetscCalloc1((inA->rmap->mapping->n+1),&r_rmapo);CHKERRQ(ierr);
+  ierr = PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapo);CHKERRQ(ierr);
   nt   = 0;
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (lindices[inA->rmap->mapping->indices[i]]) {
@@ -264,7 +269,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   }
   if (nt > no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nt*bs+1),&uglyrmapo);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nt*bs+1,&uglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapo[i]) {
       for (j=0; j<bs; j++) {
@@ -325,5 +330,3 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
   ierr = MatDiagonalScale(a->B,NULL,uglyoo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

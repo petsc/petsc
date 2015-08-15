@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <petsc-private/logimpl.h>  /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>  /*I    "petscsys.h"   I*/
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
@@ -566,6 +566,38 @@ PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscLogEventGetPerfInfo"
+/*@C
+  PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
+
+  Input Parameters:
++ stage - The stage number or PETSC_DETERMINE for the current stage
+- event - The event number
+
+  Output Parameters:
+. info - This structure is filled with the performance information
+
+  Level: Intermediate
+
+.seealso: PetscLogEventGetFlops()
+@*/
+PetscErrorCode PetscLogEventGetPerfInfo(int stage, PetscLogEvent event, PetscEventPerfInfo *info)
+{
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog = NULL;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(info, 3);
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (stage < 0) {ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);}
+  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  *info = eventLog->eventInfo[event];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogEventGetFlops"
 PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
 {
@@ -575,6 +607,7 @@ PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr   = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   ierr   = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
@@ -602,9 +635,6 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD)
-#include <CHUD/CHUD.h>
-#endif
 #if defined(PETSC_HAVE_PAPI)
 #include <papi.h>
 extern int PAPIEventSet;
@@ -631,9 +661,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   eventLog->eventInfo[event].timeTmp = 0.0;
   PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].flopsTmp = 0.0;
-#if defined(PETSC_HAVE_CHUD)
-  eventLog->eventInfo[event].flopsTmp -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
-#elif defined(PETSC_HAVE_PAPI)
+#if defined(PETSC_HAVE_PAPI)
   { long_long values[2];
     ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
 
@@ -670,9 +698,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time  += eventLog->eventInfo[event].timeTmp;
   eventLog->eventInfo[event].time2 += eventLog->eventInfo[event].timeTmp*eventLog->eventInfo[event].timeTmp;
-#if defined(PETSC_HAVE_CHUD)
-  eventLog->eventInfo[event].flopsTmp += chudGetPMCEventCount(chudCPU1Dev,PMC_1);
-#elif defined(PETSC_HAVE_PAPI)
+#if defined(PETSC_HAVE_PAPI)
   { long_long values[2];
     ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
 

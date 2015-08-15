@@ -1,4 +1,4 @@
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/armijo/armijo.h>
 
 #define REPLACE_FIFO 1
@@ -40,21 +40,21 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_Armijo"
-static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Armijo linesearch options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_armijo_alpha", "initial reference constant", "", armP->alpha, &armP->alpha, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_armijo_beta_inf", "decrease constant one", "", armP->beta_inf, &armP->beta_inf, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_armijo_beta", "decrease constant", "", armP->beta, &armP->beta, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ls_armijo_sigma", "acceptance constant", "", armP->sigma, &armP->sigma, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_ls_armijo_memory_size", "number of historical elements", "", armP->memorySize, &armP->memorySize, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_ls_armijo_reference_policy", "policy for updating reference value", "", armP->referencePolicy, &armP->referencePolicy, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_ls_armijo_replacement_policy", "policy for updating memory", "", armP->replacementPolicy, &armP->replacementPolicy, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_ls_armijo_nondescending","Use nondescending armijo algorithm","",armP->nondescending,&armP->nondescending, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Armijo linesearch options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_armijo_alpha", "initial reference constant", "", armP->alpha, &armP->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_armijo_beta_inf", "decrease constant one", "", armP->beta_inf, &armP->beta_inf,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_armijo_beta", "decrease constant", "", armP->beta, &armP->beta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ls_armijo_sigma", "acceptance constant", "", armP->sigma, &armP->sigma,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_ls_armijo_memory_size", "number of historical elements", "", armP->memorySize, &armP->memorySize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_ls_armijo_reference_policy", "policy for updating reference value", "", armP->referencePolicy, &armP->referencePolicy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_ls_armijo_replacement_policy", "policy for updating memory", "", armP->replacementPolicy, &armP->replacementPolicy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_ls_armijo_nondescending","Use nondescending armijo algorithm","",armP->nondescending,&armP->nondescending,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -105,15 +105,6 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
 .  X - new iterate
 -  step - final step length
 
-   Info is set to one of:
-.   0 - the line search succeeds; the sufficient decrease
-   condition and the directional derivative condition hold
-
-   negative number if an input parameter is invalid
--   -1 -  step < 0
-
-   positive number > 1 if the line search otherwise terminates
-+    1 -  Step is at the lower bound, stepmin.
 @ */
 static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
@@ -281,6 +272,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   }
 
   /* Successful termination, update memory */
+  ls->reason = TAOLINESEARCH_SUCCESS;
   armP->lastReference = ref;
   if (armP->replacementPolicy == REPLACE_FIFO) {
     armP->memory[armP->current++] = *f;
@@ -301,10 +293,9 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_Armijo"
-PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP;
   PetscErrorCode       ierr;
@@ -332,4 +323,4 @@ PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Armijo;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

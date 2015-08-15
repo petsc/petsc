@@ -45,9 +45,7 @@ PETSC_EXTERN PetscErrorCode PFSet(PF,PetscErrorCode(*)(void*,PetscInt,const Pets
 PETSC_EXTERN PetscErrorCode PFApply(PF,PetscInt,const PetscScalar*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
-PETSC_EXTERN PetscBool PFRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PFRegister(const char[],PetscErrorCode (*)(PF,void*));
 
@@ -56,7 +54,7 @@ PETSC_EXTERN PetscErrorCode PFSetFromOptions(PF);
 PETSC_EXTERN PetscErrorCode PFGetType(PF,PFType*);
 
 PETSC_EXTERN PetscErrorCode PFView(PF,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PFViewFromOptions(PF A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode PFViewFromOptions(PF A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 #define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
 

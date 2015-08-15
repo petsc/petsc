@@ -58,33 +58,32 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
     ierr = VecScatterDestroy(&lclP->state_scatter);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&lclP->design_scatter);CHKERRQ(ierr);
   }
-  ierr = PetscFree(tao->data);
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LCL"
-static PetscErrorCode TaoSetFromOptions_LCL(Tao tao)
+static PetscErrorCode TaoSetFromOptions_LCL(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_eps1","epsilon 1 tolerance","",lclP->eps1,&lclP->eps1,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_eps1","epsilon 1 tolerance","",lclP->eps1,&lclP->eps1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,NULL);CHKERRQ(ierr);
   lclP->phase2_niter = 1;
-  ierr = PetscOptionsInt("-tao_lcl_phase2_niter","Number of phase 2 iterations in LCL algorithm","",lclP->phase2_niter,&lclP->phase2_niter,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_lcl_phase2_niter","Number of phase 2 iterations in LCL algorithm","",lclP->phase2_niter,&lclP->phase2_niter,NULL);CHKERRQ(ierr);
   lclP->verbose = PETSC_FALSE;
-  ierr = PetscOptionsBool("-tao_lcl_verbose","Print verbose output","",lclP->verbose,&lclP->verbose,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lcl_verbose","Print verbose output","",lclP->verbose,&lclP->verbose,NULL);CHKERRQ(ierr);
   lclP->tau[0] = lclP->tau[1] = lclP->tau[2] = lclP->tau[3] = 1.0e-4;
-  ierr = PetscOptionsReal("-tao_lcl_tola","Tolerance for first forward solve","",lclP->tau[0],&lclP->tau[0],&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",lclP->tau[1],&lclP->tau[1],&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",lclP->tau[2],&lclP->tau[2],&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_tola","Tolerance for first forward solve","",lclP->tau[0],&lclP->tau[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",lclP->tau[1],&lclP->tau[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",lclP->tau[2],&lclP->tau[2],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -184,7 +183,7 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
 static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
   TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
-  PetscInt                     iter=0,phase2_iter,nlocal,its;
+  PetscInt                     phase2_iter,nlocal,its;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step=1.0,f, descent, aldescent;
@@ -239,7 +238,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
     }
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-    tao->ksp_its += its;
+    tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
   }
   ierr = VecCopy(lclP->lamda,lclP->lamda0);CHKERRQ(ierr);
   ierr = LCLComputeAugmentedLagrangianAndGradient(tao->linesearch,tao->solution,&lclP->aug,lclP->GAugL,tao);CHKERRQ(ierr);
@@ -252,9 +252,10 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
 
   /* Monitor convergence */
-  ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
+    tao->ksp_its=0;
     /* Compute a descent direction for the linearly constrained subproblem
        minimize f(u+du, v+dv)
        s.t. A(u0,v0)du + B(u0,v0)dv = -g(u0,v0) */
@@ -287,7 +288,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre);CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tao->constraints,  lclP->r);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its += its;
+      tao->ksp_its+=its;
+      tao->ksp_tot_its+=tao->ksp_its;
     }
 
     /* Set design step direction dv to zero */
@@ -313,7 +315,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     adec = lclP->eps1 * r2;
 
     if (rWU < adec) {
-      ierr = PetscInfo(tao,"Newton direction not descent for constraint, feasibility phase required");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Newton direction not descent for constraint, feasibility phase required\n");CHKERRQ(ierr);
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent for constraint: %g -- using steepest descent\n",(double)descent);CHKERRQ(ierr);
       }
@@ -340,13 +342,13 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
        Check r'GL_U - rho*r'WU <= adec
     */
 
-    ierr = VecDot(lclP->r,lclP->GL_U,&rGL_U);
+    ierr = VecDot(lclP->r,lclP->GL_U,&rGL_U);CHKERRQ(ierr);
     aldescent =  rGL_U - lclP->rho*rWU;
     if (aldescent > -adec) {
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
       }
-      ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %g\n",(double)aldescent);CHKERRQ(ierr);
       lclP->rho =  (rGL_U - adec)/rWU;
       if (lclP->rho > lclP->rhomax) {
         lclP->rho = lclP->rhomax;
@@ -355,7 +357,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
       }
-      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g",(double)lclP->rho);
+      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
     }
 
     ierr = LCLComputeAugmentedLagrangianAndGradient(tao->linesearch,tao->solution,&lclP->aug,lclP->GAugL,tao);CHKERRQ(ierr);
@@ -388,7 +390,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     /* Check convergence */
     ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
     ierr = VecNorm(tao->constraints, NORM_2, &cnorm);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING){
       break;
     }
@@ -438,13 +440,14 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
           ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its += its;
+        tao->ksp_its+=its;
+        tao->ksp_tot_its+=its;
       }
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g1);CHKERRQ(ierr);
       ierr = VecAXPY(lclP->g1,-1.0,lclP->GAugL_V);CHKERRQ(ierr);
 
       /* Compute the limited-memory quasi-newton direction */
-      if (iter > 0) {
+      if (tao->niter > 0) {
         ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
         ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
         if (descent <= 0) {
@@ -468,6 +471,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
         ierr = KSPSolve(tao->ksp, lclP->WU, lclP->r);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
         tao->ksp_its += its;
+        tao->ksp_tot_its+=its;
       }
 
       /* We now minimize the augmented Lagrangian along the direction -r,s */
@@ -527,6 +531,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
         }
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
         tao->ksp_its += its;
+        tao->ksp_tot_its += its;
       }
 
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g2);CHKERRQ(ierr);
@@ -536,7 +541,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* Update the quasi-newton approximation */
       if (phase2_iter >= 0){
-        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);
+        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);CHKERRQ(ierr);
       }
       ierr = MatLMVMUpdate(lclP->R,lclP->V,lclP->g2);CHKERRQ(ierr);
       /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with Matlab code */
@@ -562,8 +567,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     ierr = VecNorm(tao->constraints, NORM_2, &cnorm);CHKERRQ(ierr);
 
     /* Monitor convergence */
-    iter++;
-    ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -573,9 +578,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
  TAOLCL - linearly constrained lagrangian method for pde-constrained optimization
 
 + -tao_lcl_eps1 - epsilon 1 tolerance
-. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,&flg);CHKERRQ(ierr);
-. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,&flg);CHKERRQ(ierr);
-. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,&flg);CHKERRQ(ierr);
+. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);CHKERRQ(ierr);
+. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);CHKERRQ(ierr);
+. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,NULL);CHKERRQ(ierr);
 . -tao_lcl_phase2_niter - Number of phase 2 iterations in LCL algorithm
 . -tao_lcl_verbose - Print verbose output if True
 . -tao_lcl_tola - Tolerance for first forward solve
@@ -585,10 +590,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LCL"
-PetscErrorCode TaoCreate_LCL(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 {
   TAO_LCL        *lclP;
   PetscErrorCode ierr;
@@ -603,19 +607,21 @@ PetscErrorCode TaoCreate_LCL(Tao tao)
   ierr = PetscNewLog(tao,&lclP);CHKERRQ(ierr);
   tao->data = (void*)lclP;
 
-  tao->max_it=200;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 200;
+  
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol=1e-5;
-  tao->frtol=1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol=1e-8;
-  tao->frtol=1e-8;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
 #endif
-  tao->catol=1e-4;
-  tao->crtol=1e-4;
-  tao->gttol=1e-4;
-  tao->gatol=1e-4;
-  tao->grtol=1e-4;
+
+  if (!tao->catol_changed) tao->catol = 1.0e-4;
+  if (!tao->gatol_changed) tao->gttol = 1.0e-4;
+  if (!tao->grtol_changed) tao->gttol = 1.0e-4;
+  if (!tao->gttol_changed) tao->gttol = 1.0e-4;
   lclP->rho0 = 1.0e-4;
   lclP->rhomax=1e5;
   lclP->eps1 = 1.0e-8;
@@ -624,13 +630,14 @@ PetscErrorCode TaoCreate_LCL(Tao tao)
   lclP->tau[0] = lclP->tau[1] = lclP->tau[2] = lclP->tau[3] = 1.0e-4;
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "LCLComputeLagrangianAndGradient"
@@ -678,7 +685,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   ierr = LCLGather(lclP,lclP->GL_U,lclP->GL_V,lclP->GL);CHKERRQ(ierr);
 
   f[0] = lclP->lgn;
-  ierr = VecCopy(lclP->GL,G);
+  ierr = VecCopy(lclP->GL,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

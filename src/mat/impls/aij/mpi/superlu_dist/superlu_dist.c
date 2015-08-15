@@ -59,6 +59,15 @@ extern PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat,Mat,IS,IS,const MatFa
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonal_SuperLU_DIST"
+PetscErrorCode MatGetDiagonal_SuperLU_DIST(Mat A,Vec v)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: SuperLU_DIST factor");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SuperLU_DIST"
 PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
@@ -352,11 +361,19 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       lu->row[i] = nz;
       countA     = ai[i+1] - ai[i];
       countB     = bi[i+1] - bi[i];
-      ajj        = aj + ai[i]; /* ptr to the beginning of this row */
-      bjj        = bj + bi[i];
+      if (aj) {
+        ajj = aj + ai[i]; /* ptr to the beginning of this row */
+      } else {
+        ajj = NULL;
+      }
+      bjj = bj + bi[i];
 
       /* B part, smaller col index */
-      colA_start = rstart + ajj[0]; /* the smallest global col index of A */
+      if (aj) {
+        colA_start = rstart + ajj[0]; /* the smallest global col index of A */
+      } else { /* superlu_dist does not require matrix has diagonal entries, thus aj=NULL would work */
+        colA_start = rstart;
+      }
       jB         = 0;
       for (j=0; j<countB; j++) {
         jcol = garray[bjj[j]];
@@ -374,7 +391,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
         lu->col[nz]   = rstart + ajj[j];
         lu->val[nz++] = *av++;
       }
-
+       
       /* B part, larger col index */
       for (j=jB; j<countB; j++) {
         lu->col[nz]   = garray[bjj[j]];
@@ -439,7 +456,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatF
 
   /* Initialize ScalePermstruct and LUstruct. */
   PetscStackCall("SuperLU_DIST:ScalePermstructInit",ScalePermstructInit(M, N, &lu->ScalePermstruct));
-  PetscStackCall("SuperLU_DIST:LUstructInit",LUstructInit(M, N, &lu->LUstruct));
+  PetscStackCall("SuperLU_DIST:LUstructInit",LUstructInit(N, &lu->LUstruct));
   F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU_DIST;
   F->ops->solve           = MatSolve_SuperLU_DIST;
   F->ops->matsolve        = MatMatSolve_SuperLU_DIST;
@@ -470,6 +487,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   const char        *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
   const char        *rowperm[]     = {"LargeDiag","NATURAL"};
   const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
+  PetscBool         set;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -482,6 +500,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->view             = MatView_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
+  B->ops->getdiagonal      = MatGetDiagonal_SuperLU_DIST;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
 
@@ -526,8 +545,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,NULL);CHKERRQ(ierr);
   if (lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
-  ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr);
-  if (!flg) options.Equil = NO;
+  ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && !flg) options.Equil = NO;
 
   ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -564,19 +583,25 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
     }
   }
 
-  ierr = PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr);
-  if (!flg) options.ReplaceTinyPivot = NO;
+  ierr = PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && !flg) options.ReplaceTinyPivot = NO;
 
   options.ParSymbFact = NO;
 
-  ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) {
-#if defined(PETSC_HAVE_PARMETIS)
-    options.ParSymbFact = YES;
-    options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
-#else
-    printf("parsymbfact needs PARMETIS");
+  ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && flg && size>1) {
+    if (lu->MatInputMode == GLOBAL) {
+#if defined(PETSC_USE_INFO)
+      ierr = PetscInfo(A,"Warning: '-mat_superlu_dist_parsymbfact' is ignored because MatInputMode=GLOBAL\n");CHKERRQ(ierr);
 #endif
+    } else {
+#if defined(PETSC_HAVE_PARMETIS)
+      options.ParSymbFact = YES;
+      options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
+#else
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"parsymbfact needs PARMETIS");
+#endif
+    }
   }
 
   lu->FactPattern = SamePattern_SameRowPerm;
@@ -594,13 +619,15 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   }
 
   options.IterRefine = NOREFINE;
-  ierr               = PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) options.IterRefine = SLU_DOUBLE;
+  ierr               = PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE ,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    if (flg) options.IterRefine = SLU_DOUBLE;
+    else options.IterRefine = NOREFINE;
+  }
 
   if (PetscLogPrintInfo) options.PrintStat = YES;
   else options.PrintStat = NO;
-  ierr = PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",
-                          (PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
 
   lu->options              = options;
@@ -613,24 +640,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_superlu_dist"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
+#define __FUNCT__ "MatSolverPackageRegister_SuperLU_DIST"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 {
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatGetFactor_aij_superlu_dist(A,ftype,F);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_mpiaij_superlu_dist"
-PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetFactor_aij_superlu_dist(A,ftype,F);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -708,6 +724,10 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 
 /*MC
   MATSOLVERSUPERLU_DIST - Parallel direct solver package for LU factorization
+
+  Use ./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with SuperLU_DIST
+
+  Use -pc_type lu -pc_factor_mat_solver_package superlu_dist to us this direct solver
 
    Works with AIJ matrices
 

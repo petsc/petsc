@@ -36,10 +36,10 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  ierr = PetscMalloc1((m+1),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&ia);CHKERRQ(ierr);
   *iia = ia;
   ierr = PetscMemzero(ia,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1((m+1),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;

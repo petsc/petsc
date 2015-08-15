@@ -1,4 +1,4 @@
-#include <petsc-private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 #include <petscviewersaws.h>
 
 typedef struct {
@@ -86,13 +86,11 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {
   PetscErrorCode  ierr;
   KSPMonitor_SAWs *mon   = (KSPMonitor_SAWs*)ctx;
-  PetscViewer     viewer = mon->viewer;
   PetscReal       emax,emin;
   PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
 
   ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);

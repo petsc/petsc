@@ -6,7 +6,7 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
 #include <cusp/version.h>
@@ -121,7 +121,11 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = VecCUSPGetArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+  cusp::monitor<PetscReal> monitor(*barray,its,rtol,abstol);
+#else
   cusp::default_monitor<PetscReal> monitor(*barray,its,rtol,abstol);
+#endif
 #if defined(PETSC_USE_COMPLEX)
   CHKERRQ(1);
   /* TODO */
@@ -219,12 +223,12 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SACUSP"
-static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_SACUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SACUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -90,6 +90,8 @@ int main(int argc,char **argv)
   Vec            r               = NULL;
   PetscBool      matlab_function = PETSC_FALSE;
 #endif
+  KSP            ksp;
+  PetscInt       lits,slits;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -108,6 +110,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetCountersReset(snes,PETSC_FALSE);CHKERRQ(ierr);
   ierr = SNESSetNGS(snes, NonlinearGS, NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,6 +161,10 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
+  ierr = SNESGetLinearSolveIterations(snes,&slits);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetTotalIterations(ksp,&lits);CHKERRQ(ierr);
+  if (lits != slits) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -354,7 +361,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat jacpre,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k;
@@ -387,7 +394,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
       /* boundary points */
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         v[0] =  2.0*(hydhx + hxdhy);
-        ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jacpre,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         k = 0;
         /* interior grid points */
@@ -414,7 +421,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
           col[k].j = j + 1; col[k].i = i;
           k++;
         }
-        ierr = MatSetValuesStencil(jac,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jacpre,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -423,8 +430,8 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jacpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jacpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.

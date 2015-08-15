@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>  /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h>  /*I "petscsnes.h" I*/
 #include <petscviewersaws.h>
 
 typedef struct {
@@ -81,14 +81,11 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 PetscErrorCode SNESMonitorSAWs(SNES snes,PetscInt n,PetscReal rnorm,void *ctx)
 {
   PetscErrorCode   ierr;
-  SNESMonitor_SAWs *mon   = (SNESMonitor_SAWs*)ctx;
-  PetscViewer      viewer = mon->viewer;
   PetscMPIInt      rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     PetscStackCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/its",&snes->iter,1,SAWs_READ,SAWs_INT));

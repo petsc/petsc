@@ -1,6 +1,6 @@
       program DMPlexTestField
       implicit none
-#include "finclude/petsc.h90"
+#include "petsc/finclude/petsc.h90"
       DM :: dm
       DMLabel :: label
       Vec :: u
@@ -17,7 +17,10 @@
      &     bcField
       PetscInt, pointer :: pBcField(:)
       IS, target, dimension(1) ::                                       &
+     &     bcCompIS
+      IS, target, dimension(1) ::                                       &
      &     bcPointIS
+      IS, pointer :: pBcCompIS(:)
       IS, pointer :: pBcPointIS(:)
       PetscBool :: interpolate
       PetscErrorCode :: ierr
@@ -68,14 +71,19 @@
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
       pBcField => bcField
+      call ISCreateStride(PETSC_COMM_WORLD, 1, 0, 1, bcCompIS(1), ierr)
+      CHKERRQ(ierr)
+      pBcCompIS => bcCompIS
       call DMPlexGetStratumIS(dm, "marker", 1, bcPointIS(1),
      $     ierr)
       CHKERRQ(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
       call DMPlexCreateSection(dm, dim, numFields, pNumComp,
-     $     pNumDof, numBC, pBcField, pBcPointIS, PETSC_NULL_OBJECT,
-     $     section, ierr)
+     $     pNumDof, numBC, pBcField, pBcCompIS, pBcPointIS,
+     $     PETSC_NULL_OBJECT, section, ierr)
+      CHKERRQ(ierr)
+      call ISDestroy(bcCompIS(1), ierr)
       CHKERRQ(ierr)
       call ISDestroy(bcPointIS(1), ierr)
       CHKERRQ(ierr)

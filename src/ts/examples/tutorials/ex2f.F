@@ -36,7 +36,7 @@
 !  problem-specific data in several common blocks.
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/finclude.  This
+!  PETSc include files in the directory petsc/include/petsc/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
@@ -479,7 +479,7 @@
       call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Access directly the values in our local INPUT work vector
-      call VecGetArray(u_local,localptr,idx_l,ierr)
+      call VecGetArrayRead(u_local,localptr,idx_l,ierr)
 
 !  Access directly the values in our local OUTPUT work vector
       call VecGetArray(localwork,copyptr,idx_c,ierr)
@@ -513,7 +513,7 @@
      &     (localptr(il+1) + localptr(il-1) - two_d0*localptr(il))
  10   continue
 
-      call VecRestoreArray(u_local,localptr,idx_l,ierr)
+      call VecRestoreArrayRead(u_local,localptr,idx_l,ierr)
       call VecRestoreArray(localwork,copyptr,idx_c,ierr)
 
 !  Return the values from our local OUTPUT vector into our global
@@ -595,7 +595,7 @@
       call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Get pointer to vector data
-      call VecGetArray(u_local,localptr,idx,ierr)
+      call VecGetArrayRead(u_local,localptr,idx,ierr)
 
 !  Get starting and ending locally owned rows of the matrix
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
@@ -645,7 +645,7 @@
  10   continue
 
 !  Restore vector
-      call VecRestoreArray(u_local,localptr,idx,ierr)
+      call VecRestoreArrayRead(u_local,localptr,idx,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Complete the matrix assembly process and set some options

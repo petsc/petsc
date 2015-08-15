@@ -7,7 +7,7 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultcrl_      fortranmultcrl
 #endif
-PETSC_EXTERN void fortranmultcrl_(PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
+PETSC_EXTERN void fortranmultcrl_(PetscInt*,PetscInt*,const PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
 #endif
 #endif
 

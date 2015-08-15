@@ -1,4 +1,4 @@
-#include <petsc-private/characteristicimpl.h>
+#include <petsc/private/characteristicimpl.h>
 
 static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -9,7 +9,7 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
+.keywords: Petsc, destroy, package, finalize
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)

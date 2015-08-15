@@ -2,14 +2,18 @@
 #define __CUSPVECIMPL
 
 #include <petsccusp.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #include <algorithm>
 #include <vector>
 #include <string>
 
 #include <cublas.h>
+#if defined(CUSP_VERSION) && CUSP_VERSION >= 500
+#include <cusp/blas/blas.h>
+#else
 #include <cusp/blas.h>
+#endif
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/constant_iterator.h>
@@ -49,6 +53,8 @@ PETSC_INTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
+PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUSP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec,Vec);
 
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);

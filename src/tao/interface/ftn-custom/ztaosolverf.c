@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/taoimpl.h>
 
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -20,7 +20,7 @@
 #define taosetmonitor_                      TAOSETMONITOR
 #define taosettype_                         TAOSETTYPE
 #define taoview_                            TAOVIEW
-#define taogethistory_                      TAOGETHISTORY
+#define taogetconvergencehistory_           TAOGETCONVERGENCEHISTORY
 #define taosetconvergencetest_              TAOSETCONVERGENCETEST
 #define taogetoptionsprefix_                TAOGETOPTIONSPREFIX
 #define taosetoptionsprefix_                TAOSETOPTIONSPREFIX
@@ -45,7 +45,7 @@
 #define taosetmonitor_                      taosetmonitor
 #define taosettype_                         taosettype
 #define taoview_                            taoview
-#define taogethistory_                      taogethistory
+#define taogetconvergencehistory_           taogetconvergencehistory
 #define taosetconvergencetest_              taosetconvergencetest
 #define taogetoptionsprefix_                taogetoptionsprefix
 #define taosetoptionsprefix_                taosetoptionsprefix
@@ -398,10 +398,9 @@ void PETSC_STDCALL taoview_(Tao *tao, PetscViewer *viewer, PetscErrorCode *ierr)
     *ierr = TaoView(*tao,v);
 }
 
-void PETSC_STDCALL taogethistory_(Tao *tao, PetscInt *nhist, PetscErrorCode *ierr)
+void PETSC_STDCALL taogetconvergencehistory_(Tao *tao, PetscInt *nhist, PetscErrorCode *ierr)
 {
-  *nhist  = (*tao)->hist_len;
-  *ierr = 0;
+  *ierr = TaoGetConvergenceHistory(*tao,NULL,NULL,NULL,NULL,nhist);
 }
 
 void PETSC_STDCALL taogetoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))

@@ -17,8 +17,9 @@
    3) fix to set the block size based on the matrix block size
 
 */
+#define PETSC_SKIP_COMPLEX /* since spai uses I which conflicts with some complex implementations */
 
-#include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/spai/petscspai.h>
 
 /*
@@ -521,7 +522,7 @@ PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SPAI"
-static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
+static PetscErrorCode PCSetFromOptions_SPAI(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -530,7 +531,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SPAI options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCSPAISetEpsilon(pc,epsilon1);CHKERRQ(ierr);

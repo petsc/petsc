@@ -178,20 +178,21 @@ int main(int Argc,char **Args)
 #define __FUNCT__ "residual"
 PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
-  PetscInt       i,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *b,*x,*r;
+  PetscInt          i,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *x,*r;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
   n1--;
   r[0]  = b[0] + x[1] - 2.0*x[0];
   r[n1] = b[n1] + x[n1-1] - 2.0*x[n1];
   for (i=1; i<n1; i++) r[i] = b[i] + x[i+1] + x[i-1] - 2.0*x[i];
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -200,19 +201,20 @@ PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 #define __FUNCT__ "amult"
 PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 {
-  PetscInt       i,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *y,*x;
+  PetscInt          i,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   n1--;
   y[0] =  -x[1] + 2.0*x[0];
   y[n1] = -x[n1-1] + 2.0*x[n1];
   for (i=1; i<n1; i++) y[i] = -x[i+1] - x[i-1] + 2.0*x[i];
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -221,15 +223,16 @@ PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 #define __FUNCT__ "gauss_seidel"
 PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
-  PetscInt       i,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*b;
+  PetscInt          i,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   *its    = m;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   ierr    = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
-  ierr    = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
   while (m--) {
     x[0] =  .5*(x[1] + b[0]);
@@ -238,7 +241,7 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
     for (i=n1-1; i>0; i--) x[i] = .5*(x[i+1] + x[i-1] + b[i]);
     x[0] =  .5*(x[1] + b[0]);
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -247,15 +250,16 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
 #define __FUNCT__ "jacobi"
 PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
-  PetscInt       i,n,n1;
-  PetscErrorCode ierr;
-  PetscScalar    *r,*b,*x;
+  PetscInt          i,n,n1;
+  PetscErrorCode    ierr;
+  PetscScalar       *r,*x;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   *its    = m;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   ierr    = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
-  ierr    = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr    = VecGetArray(w,&r);CHKERRQ(ierr);
 
@@ -265,7 +269,7 @@ PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,
     r[n1] = .5*(x[n1-1] + b[n1]);
     for (i=0; i<n; i++) x[i] = (2.0*r[i] + x[i])/3.0;
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(w,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -278,13 +282,14 @@ PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,
 #define __FUNCT__ "interpolate"
 PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  PetscInt       i,n,N,i2;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
+  PetscInt          i,n,N,i2;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   n    = N/2;
   for (i=0; i<n; i++) {
@@ -293,7 +298,7 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
     y[i2+1] +=    x[i];
     y[i2+2] += .5*x[i];
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -302,13 +307,14 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "restrct"
 PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
 {
-  PetscInt       i,n,N,i2;
-  PetscErrorCode ierr;
-  PetscScalar    *r,*b;
+  PetscInt          i,n,N,i2;
+  PetscErrorCode    ierr;
+  PetscScalar       *b;
+  const PetscScalar *r;
 
   PetscFunctionBegin;
   ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   n    = N/2;
 
@@ -316,7 +322,7 @@ PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
     i2   = 2*i;
     b[i] = (r[i2] + 2.0*r[i2+1] + r[i2+2]);
   }
-  ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

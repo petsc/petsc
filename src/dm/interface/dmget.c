@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h> /*I "petscdm.h" I*/
+#include <petsc/private/dmimpl.h> /*I "petscdm.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetLocalVector"
@@ -22,6 +22,10 @@
 
    The output parameter, g, is a regular PETSc vector that should be returned with
    DMRestoreLocalVector() DO NOT call VecDestroy() on it.
+
+   This is intended to be used for vectors you need for a short time, like within a single function call.
+   For vectors that you intend to keep around (for example in a C struct) or pass around large parts of your
+   code you should use DMCreateLocalVector().
 
    VecStride*() operations can be useful when using DM with dof > 1
 
@@ -100,6 +104,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -125,6 +130,10 @@ alldone:
 
    The output parameter, g, is a regular PETSc vector that should be returned with
    DMRestoreGlobalVector() DO NOT call VecDestroy() on it.
+
+   This is intended to be used for vectors you need for a short time, like within a single function call.
+   For vectors that you intend to keep around (for example in a C struct) or pass around large parts of your
+   code you should use DMCreateGlobalVector().
 
    VecStride*() operations can be useful when using DM with dof > 1
 
@@ -242,6 +251,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +294,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr            = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr            = PetscNew(&link);CHKERRQ(ierr);
   ierr            = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr            = DMCreateGlobalVector(dm,&link->X);CHKERRQ(ierr);
   link->next      = dm->namedglobal;
@@ -378,7 +388,7 @@ PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr           = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr           = PetscNew(&link);CHKERRQ(ierr);
   ierr           = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr           = DMCreateLocalVector(dm,&link->X);CHKERRQ(ierr);
   link->next     = dm->namedlocal;

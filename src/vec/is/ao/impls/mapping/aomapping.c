@@ -264,7 +264,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   *aoout = 0;
   ierr = AOInitializePackage();CHKERRQ(ierr);
 
-  ierr     = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr     = PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr     = PetscNewLog(ao,&aomap);CHKERRQ(ierr);
   ierr     = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
@@ -287,7 +287,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc1((napp+1), &petsc);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(napp+1, &petsc);CHKERRQ(ierr);
     for (i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt*)mypetsc;

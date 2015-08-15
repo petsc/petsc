@@ -1,6 +1,6 @@
 
-#include <petsc-private/snesimpl.h>
-#include <petsc-private/linesearchimpl.h>
+#include <petsc/private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h>
 
 static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
@@ -24,6 +24,7 @@ PetscErrorCode  SNESFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
+  SNESLineSearchRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

@@ -45,7 +45,8 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
-  PetscScalar    *x_array,*y_array;
+  const PetscScalar *x_array;
+  PetscScalar    *y_array;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_64BIT_INDICES) 
   fftw_iodim64   *iodims;
@@ -57,7 +58,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscInt       ndim = fft->ndim,*dim = fft->dim;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward) { /* create a plan, then excute it */
     switch (ndim) {
@@ -112,11 +113,11 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
 #endif
       break;
     }
-    fftw->finarray  = x_array;
+    fftw->finarray  = (PetscScalar *) x_array;
     fftw->foutarray = y_array;
     /* Warning: if (fftw->p_flag!==FFTW_ESTIMATE) The data in the in/out arrays is overwritten!
                 planning should be done before x is initialized! See FFTW manual sec2.1 or sec4 */
-    fftw_execute(fftw->p_forward); 
+    fftw_execute(fftw->p_forward);
   } else { /* use existing plan */
     if (fftw->finarray != x_array || fftw->foutarray != y_array) { /* use existing plan on new arrays */
       fftw_execute_dft(fftw->p_forward,(fftw_complex*)x_array,(fftw_complex*)y_array);
@@ -125,7 +126,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
     }
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +146,8 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
-  PetscScalar    *x_array,*y_array;
+  const PetscScalar *x_array;
+  PetscScalar    *y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -156,7 +158,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
 #endif
  
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward) { /* create a plan, then excute it */
     switch (ndim) {
@@ -193,7 +195,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
 #endif
       break;
     }
-    fftw->binarray  = x_array;
+    fftw->binarray  = (PetscScalar *) x_array;
     fftw->boutarray = y_array;
     fftw_execute(fftw->p_backward);CHKERRQ(ierr);
   } else { /* use existing plan */
@@ -204,7 +206,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
     }
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -223,13 +225,14 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
-  PetscScalar    *x_array,*y_array;
+  const PetscScalar *x_array;
+  PetscScalar    *y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward) { /* create a plan, then excute it */
     switch (ndim) {
@@ -262,7 +265,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
 #endif
       break;
     }
-    fftw->finarray  = x_array;
+    fftw->finarray  = (PetscScalar *) x_array;
     fftw->foutarray = y_array;
     /* Warning: if (fftw->p_flag!==FFTW_ESTIMATE) The data in the in/out arrays is overwritten!
                 planning should be done before x is initialized! See FFTW manual sec2.1 or sec4 */
@@ -275,7 +278,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
     }
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -294,13 +297,14 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
-  PetscScalar    *x_array,*y_array;
+  const PetscScalar *x_array;
+  PetscScalar    *y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward) { /* create a plan, then excute it */
     switch (ndim) {
@@ -333,7 +337,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
 #endif
       break;
     }
-    fftw->binarray  = x_array;
+    fftw->binarray  = (PetscScalar *) x_array;
     fftw->boutarray = y_array;
     fftw_execute(fftw->p_backward);CHKERRQ(ierr);
   } else { /* use existing plan */
@@ -344,7 +348,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
     }
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -385,9 +389,9 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecsFFTW"
+#define __FUNCT__ "MatCreateVecsFFTW"
 /*@
-   MatGetVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
+   MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
 
    Collective on Mat
@@ -417,18 +421,18 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 
 .seealso: MatCreateFFTW()
 @*/
-PetscErrorCode MatGetVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
+PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatGetVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatCreateVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecsFFTW_FFTW"
-PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
+#define __FUNCT__ "MatCreateVecsFFTW_FFTW"
+PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -748,8 +752,8 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
 
       if (dim[1]%2==0) {
         NM = dim[1]+2;
@@ -797,8 +801,8 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 3D real transform");
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
 
       if (dim[2]%2==0) NM = dim[2]+2;
       else             NM = dim[2]+1;
@@ -853,8 +857,8 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       partial_dim = fftw->partial_dim;
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
 
       if (dim[ndim-1]%2==0) NM = 2;
       else                  NM = 1;
@@ -983,8 +987,8 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
 
       if (dim[1]%2==0) NM = dim[1]+2;
       else             NM = dim[1]+1;
@@ -1027,8 +1031,8 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
 
       if (dim[2]%2==0) NM = dim[2]+2;
       else             NM = dim[2]+1;
@@ -1081,8 +1085,8 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       partial_dim = fftw->partial_dim;
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
 
       if (dim[ndim-1]%2==0) NM = 2;
       else                  NM = 1;
@@ -1273,7 +1277,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetVecsFFTW_C",MatGetVecsFFTW_FFTW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCreateVecsFFTW_C",MatCreateVecsFFTW_FFTW);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterPetscToFFTW_C",VecScatterPetscToFFTW_FFTW);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterFFTWToPetsc_C",VecScatterFFTWToPetsc_FFTW);CHKERRQ(ierr);
 

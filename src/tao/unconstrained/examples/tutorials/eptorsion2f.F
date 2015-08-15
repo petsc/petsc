@@ -69,7 +69,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 !     Specify default parameters
-      param = 5.0d0
+      param = 5.0
       mx = 10
       my = 10
       Nx = PETSC_DECIDE
@@ -187,8 +187,8 @@
       PetscInt         i1
 
       i1 = 1
-      hx = 1.0d0/(mx + 1)
-      hy = 1.0d0/(my + 1)
+      hx = 1.0/(mx + 1)
+      hy = 1.0/(my + 1)
 
 !  Get corner information
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
@@ -272,11 +272,11 @@
 
       i1 = 1
       ierr  = 0
-      cdiv3 = param/3.0d0
-      zero = 0.0d0
-      p5   = 0.5d0
-      hx = 1.0d0/(mx + 1)
-      hy = 1.0d0/(my + 1)
+      cdiv3 = param/3.0
+      zero = 0.0
+      p5   = 0.5
+      hx = 1.0/(mx + 1)
+      hy = 1.0/(my + 1)
       fquad = zero
       flin = zero
 
@@ -404,8 +404,8 @@
 !  Sum function contributions from all processes
       call MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPIU_SUM,                   &
      &                   PETSC_COMM_WORLD,ierr)
-      call PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16.0d0,     &
-     &                    ierr)
+      call PetscLogFlops(20.0d0*(ye-ysm)*(xe-xsm)+                        &
+     &                   16.0d0*(xep-xs)*(yep-ys),ierr)
       return
       end
 
@@ -443,29 +443,29 @@
 
             k = 0
             if (j .gt. gys) then
-               v(k) = -1.0d0
+               v(k) = -1.0
                col(k) = row-gxm
                k = k + 1
             endif
 
             if (i .gt. gxs) then
-               v(k) = -1.0d0
+               v(k) = -1.0
                col(k) = row - 1
                k = k +1
             endif
 
-            v(k) = 4.0d0
+            v(k) = 4.0
             col(k) = row
             k = k + 1
 
             if (i+1 .lt. gxs + gxm) then
-               v(k) = -1.0d0
+               v(k) = -1.0
                col(k) = row + 1
                k = k + 1
             endif
 
             if (j+1 .lt. gys + gym) then
-               v(k) = -1.0d0
+               v(k) = -1.0
                col(k) = row + gxm
                k = k + 1
             endif

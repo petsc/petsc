@@ -1,14 +1,14 @@
 
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscao.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define aoview_          AOVIEW
-#define aodestroy_       AODESTROY
+#define aosettype_       AOSETTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define aoview_          aoview
-#define aodestroy_       aodestroy
+#define aosettype_       aosettype
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCode *ierr)
@@ -18,7 +18,11 @@ PETSC_EXTERN void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCo
   *ierr = AOView(*ao,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL aodestroy_(AO *ao, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL aosettype_(AO *ao,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  *__ierr = AODestroy(ao);
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = AOSetType(*ao,t);
+  FREECHAR(type,t);
 }

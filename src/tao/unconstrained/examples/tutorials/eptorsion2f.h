@@ -3,8 +3,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  TAO include files in the directories $TAO_DIR/include/finclude and
-!  $PETSC_DIR/include/finclude.  This convention enables use of the CPP
+!  TAO include files in the directories $TAO_DIR/include/petsc/finclude and
+!  $PETSC_DIR/include/petsc/finclude.  This convention enables use of the CPP
 !  preprocessor, which allows the use of the #include statements that
 !  define TAO objects and variables.
 !
@@ -27,16 +27,16 @@
 !     petscdm.h    - distributed arrays (DA)
 !     petscis.h    - index sets (IS)
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscdm.h"
-#include "finclude/petscis.h"
-#include "finclude/petsctao.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscksp.h"
+#include "petsc/finclude/petscpc.h"
+#include "petsc/finclude/petscsnes.h"
+#include "petsc/finclude/petscdmda.h"
+#include "petsc/finclude/petscdm.h"
+#include "petsc/finclude/petscis.h"
+#include "petsc/finclude/petsctao.h"
 
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the

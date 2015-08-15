@@ -1,5 +1,5 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/matorderimpl.h> /*I      "petscmat.h"      I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateOrderingClosure_Static"
@@ -12,8 +12,8 @@ PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, con
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pEnd-pStart), &perm);CHKERRQ(ierr);
-  ierr = PetscMalloc((pEnd-pStart) * sizeof(PetscInt) ,&iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd-pStart,&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd-pStart,&iperm);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) iperm[p] = -1;
   for (d = depth; d > 0; --d) {
     ierr = DMPlexGetDepthStratum(dm, d,   &pStart, &pEnd);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
   /* Shift for Fortran numbering */
   for (c = 0; c < numCells; ++c) --cperm[c];
   /* Construct closure */
-  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);
+  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);CHKERRQ(ierr);
   ierr = PetscFree3(cperm,mask,xls);CHKERRQ(ierr);
   ierr = PetscFree(clperm);CHKERRQ(ierr);
   /* Invert permutation */
@@ -135,8 +135,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   PetscValidPointer(pdm, 3);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), pdm);CHKERRQ(ierr);
   ierr = DMSetType(*pdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*pdm, dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
@@ -184,17 +184,14 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   }
   /* Reorder labels */
   {
-    DMLabel label = plex->labels, labelNew = NULL;
+    PetscInt numLabels, l;
+    DMLabel  label, labelNew;
 
-    while (label) {
-      if (!plexNew->labels) {
-        ierr = DMLabelPermute(label, perm, &plexNew->labels);CHKERRQ(ierr);
-        labelNew = plexNew->labels;
-      } else {
-        ierr = DMLabelPermute(label, perm, &labelNew->next);CHKERRQ(ierr);
-        labelNew = labelNew->next;
-      }
-      label = label->next;
+    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    for (l = numLabels-1; l >= 0; --l) {
+      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
+      ierr = DMPlexAddLabel(*pdm, labelNew);CHKERRQ(ierr);
     }
     if (plex->subpointMap) {ierr = DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap);CHKERRQ(ierr);}
   }

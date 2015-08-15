@@ -8,8 +8,8 @@ EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
 MANSEC          = SNES
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
@@ -29,7 +29,7 @@ runex10_2:
 
 TESTEXAMPLES_C_NOCOMPLEX	 = ex10.PETSc runex10 runex10_2 ex10.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 
 

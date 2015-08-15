@@ -2,7 +2,7 @@
 /*
       Code that allows one to set the error handlers
 */
-#include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
 typedef struct _EH *EH;
@@ -231,7 +231,7 @@ static const char *PetscErrorStrings[] = {
           "Invalid pointer",
   /*69 */ "Arguments must have same type",
   /*70 */ "Attempt to use a pointer that does not point to a valid accessible location",
-  /*71 */ "Zero pivot in LU factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
+  /*71 */ "Zero pivot in LU factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#zeropivot",
   /*72 */ "Floating point exception",
   /*73 */ "Object is in wrong state",
           "Corrupted Petsc object",
@@ -241,7 +241,7 @@ static const char *PetscErrorStrings[] = {
           "Memory corruption: http://www.mcs.anl.gov/petsc/documentation/installation.html#valgrind",
           "Unexpected data in file",
   /*80 */ "Arguments must have same communicators",
-  /*81 */ "Zero pivot in Cholesky factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
+  /*81 */ "Zero pivot in Cholesky factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#zeropivot",
           "  ",
           "  ",
           "Overflow in integer operation: http://www.mcs.anl.gov/petsc/documentation/faq.html#64-bit-indices",
@@ -252,8 +252,8 @@ static const char *PetscErrorStrings[] = {
   /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset"
   /*90 */ "  ",
   /*   */ "  ",
-  /*   */ "  ",
-  /*   */ "  ",
+  /*92 */ " ",
+  /*   */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
   /*   */ "  ",
   /*95 */ "  ",
 };

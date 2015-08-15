@@ -82,7 +82,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   ierr = PetscInfo1(A,"Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(aijcrl->nz))/((double)(rmax*m)));CHKERRQ(ierr);
 
   ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
-  ierr = PetscMalloc1((a->B->cmap->n+nd),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc1(a->B->cmap->n+nd,&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
   ierr = VecDestroy(&aijcrl->xwork);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),1,nd,PETSC_DECIDE,array,&aijcrl->xwork);CHKERRQ(ierr);

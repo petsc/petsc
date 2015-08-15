@@ -1,5 +1,5 @@
 
-#include <petscmat.h>  /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>  /*I "petscmat.h" I*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
@@ -82,6 +82,7 @@ PetscErrorCode  MatRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatRegisterAllCalled) PetscFunctionReturn(0);
   MatRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatRegister(MATMFFD,           MatCreate_MFFD);CHKERRQ(ierr);

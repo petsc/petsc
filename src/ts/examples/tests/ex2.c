@@ -116,12 +116,12 @@ PetscErrorCode Initial(Vec global,void *ctx)
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
-  VecScatter     scatter;
-  IS             from,to;
-  PetscInt       i,n,*idx;
-  Vec            tmp_vec;
-  PetscErrorCode ierr;
-  PetscScalar    *tmp;
+  VecScatter        scatter;
+  IS                from,to;
+  PetscInt          i,n,*idx;
+  Vec               tmp_vec;
+  PetscErrorCode    ierr;
+  const PetscScalar *tmp;
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
@@ -140,12 +140,12 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecScatterBegin(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
                      time,PetscRealPart(tmp[0]),PetscRealPart(tmp[1]),PetscRealPart(tmp[2]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
                      time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
-  ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -158,12 +158,13 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 #define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  PetscScalar    *inptr,*outptr;
-  PetscInt       i,n,*idx;
-  PetscErrorCode ierr;
-  IS             from,to;
-  VecScatter     scatter;
-  Vec            tmp_in,tmp_out;
+  PetscScalar       *outptr;
+  const PetscScalar *inptr;
+  PetscInt          i,n,*idx;
+  PetscErrorCode    ierr;
+  IS                from,to;
+  VecScatter        scatter;
+  Vec               tmp_in,tmp_out;
 
   /* Get the length of parallel vector */
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
@@ -185,7 +186,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   /*Extract income array */
-  ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
 
   /* Extract outcome array*/
   ierr = VecGetArray(tmp_out,&outptr);CHKERRQ(ierr);
@@ -194,7 +195,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2.0*inptr[2];
 
-  ierr = VecRestoreArray(tmp_in,&inptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
@@ -215,12 +216,13 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 #define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ctx)
 {
-  PetscScalar    v[3],*tmp;
-  PetscInt       idx[3],i;
-  PetscErrorCode ierr;
+  PetscScalar       v[3];
+  const PetscScalar *tmp;
+  PetscInt          idx[3],i;
+  PetscErrorCode    ierr;
 
   idx[0]=0; idx[1]=1; idx[2]=2;
-  ierr  = VecGetArray(x,&tmp);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(x,&tmp);CHKERRQ(ierr);
 
   i    = 0;
   v[0] = 2.0; v[1] = 1.0; v[2] = 0.0;
@@ -237,7 +239,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ctx)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(x,&tmp);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&tmp);CHKERRQ(ierr);
 
   return 0;
 }

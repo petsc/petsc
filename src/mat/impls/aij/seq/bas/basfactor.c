@@ -29,13 +29,13 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   /* ICC(0) without matrix ordering: simply copies fill pattern */
   if (!levels && perm_identity) {
-    ierr  = PetscMalloc1((am+1),&ui);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(am+1,&ui);CHKERRQ(ierr);
     ui[0] = 0;
 
     for (i=0; i<am; i++) {
       ui[i+1] = ui[i] + ai[i+1] - a->diag[i];
     }
-    ierr = PetscMalloc1((ui[am]+1),&uj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ui[am]+1,&uj);CHKERRQ(ierr);
     cols = uj;
     for (i=0; i<am; i++) {
       aj    = a->j + a->diag[i];
@@ -69,7 +69,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
   b               = (Mat_SeqSBAIJ*)(fact)->data;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr = PetscMalloc1((ui[am]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[am]+1,&b->a);CHKERRQ(ierr);
 
   b->j    = uj;
   b->i    = ui;
@@ -84,7 +84,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   b->icol          = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
-  ierr             = PetscMalloc1((am+1),&b->solve_work);CHKERRQ(ierr);
+  ierr             = PetscMalloc1(am+1,&b->solve_work);CHKERRQ(ierr);
   ierr             = PetscLogObjectMemory((PetscObject)(fact),(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz         = b->nz = ui[am];
   b->free_a        = PETSC_TRUE;

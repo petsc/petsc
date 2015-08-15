@@ -56,7 +56,7 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
 
     ierr = MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5);CHKERRQ(ierr);
     ierr = MatSetUp(G);CHKERRQ(ierr);
-    ierr = MatGetVecs(G, &D, NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(G, &D, NULL);CHKERRQ(ierr);
     ierr = VecSet(D, 1.0);CHKERRQ(ierr);
     ierr = MatDiagonalSet(G, D, INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecDestroy(&D);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     ierr = MatShellSetOperation(a->B, MATOP_MULT_ADD, (void (*)) MatMultAddMax_SeqAIJ);CHKERRQ(ierr);
   }
   /* Initialize each vertex as a separate component */
-  ierr = MatGetVecs(A, &c, NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &c, NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = VecGetArray(c, &carray);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {

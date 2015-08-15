@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files)
  */
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
 #undef __FUNCT__
@@ -58,7 +58,7 @@ PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
       During the ith iteration this returns i-1
 .keywords: KSP, get, residual norm
 
-.seealso: KSPBuildResidual(), KSPGetResidualNorm()
+.seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetTotalIterations()
 @*/
 PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
@@ -66,6 +66,37 @@ PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidIntPointer(its,2);
   *its = ksp->its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGetTotalIterations"
+/*@
+   KSPGetTotalIterations - Gets the total number of iterations this KSP object has performed since was created, counted over all linear solves
+
+   Not Collective
+
+   Input Parameters:
+.  ksp - the iterative context
+
+   Output Parameters:
+.  its - total number of iterations
+
+   Level: intermediate
+
+   Notes: Use KSPGetIterationNumber() to get the count for the most recent solve only
+   If this is called within a linear solve (such as in a KSPMonitor routine) then it does not include iterations within that current solve
+
+.keywords: KSP, get, residual norm
+
+.seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetIterationNumber()
+@*/
+PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidIntPointer(its,2);
+  *its = ksp->totalits;
   PetscFunctionReturn(0);
 }
 
@@ -161,6 +192,10 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+#define KSPMonitorDefault KSPMonitorDefaultUnsafe
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDefault"
 /*@C
@@ -198,6 +233,17 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+#undef KSPMonitorDefault
+PetscErrorCode KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode ierr;
+#pragma omp critical
+  ierr = KSPMonitorDefaultUnsafe(ksp,n,rnorm,dummy);
+  return ierr;
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorTrueResidualNorm"
@@ -748,7 +794,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 
   if (n <= ksp->chknorm) PetscFunctionReturn(0);
 
-  if (PetscIsInfOrNanScalar(rnorm)) {
+  if (PetscIsInfOrNanReal(rnorm)) {
     ierr    = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
     *reason = KSP_DIVERGED_NANORINF;
   } else if (rnorm <= ksp->ttol) {
@@ -890,9 +936,9 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPGetVecs"
+#define __FUNCT__ "KSPCreateVecs"
 /*@C
-  KSPGetVecs - Gets a number of work vectors.
+  KSPCreateVecs - Gets a number of work vectors.
 
   Input Parameters:
 + ksp  - iterative context
@@ -906,38 +952,51 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
    Note: The right vector has as many elements as the matrix has columns. The left
      vector has as many elements as the matrix has rows.
 
+   The vectors are new vectors that are not owned by the KSP, they should be destroyed with calls to VecDestroyVecs() when no longer needed.
+
+   Developers Note: First tries to duplicate the rhs and solution vectors of the KSP, if they do not exist tries to get them from the matrix, if
+                    that does not exist tries to get them from the DM (if it is provided).
+
    Level: advanced
 
-.seealso:   MatGetVecs()
+.seealso:   MatCreateVecs(), VecDestroyVecs()
 
 @*/
-PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Vec **left)
+PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Vec **left)
 {
   PetscErrorCode ierr;
-  Vec            vecr,vecl;
+  Vec            vecr = NULL,vecl = NULL;
+  PetscBool      matset,pmatset;
+  Mat            mat = NULL;
 
   PetscFunctionBegin;
   if (rightn) {
     if (!right) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
-      ierr = 0;
-      if (ksp->dm) {
-        ierr = DMGetGlobalVector(ksp->dm,&vecr); /* don't check for errors -- if any errors, pass down to next block */
+      if (ksp->pc) {
+        ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
+        if (matset) {
+          ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
+        } else if (pmatset) {
+          ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
+        }
       }
-      if (!ksp->dm || ierr) {
-        Mat mat;
-        if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-        ierr = MatGetVecs(mat,&vecr,NULL);CHKERRQ(ierr);
+      if (!vecr) {
+        if (ksp->dm) {
+          ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
+        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
       }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
-      if (ksp->dm) {
-        ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
-      } else {
+      if (mat) {
         ierr = VecDestroy(&vecr);CHKERRQ(ierr);
+      } else if (ksp->dm) {
+        ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       }
     }
   }
@@ -945,23 +1004,29 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (!left) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
-      ierr = 0;
-      if (ksp->dm) {
-        ierr = DMGetGlobalVector(ksp->dm,&vecl); /* don't check for errors -- if any errors, pass down to next block */
+      if (ksp->pc) {
+        ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
+        if (matset) {
+          ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
+        } else if (pmatset) {
+          ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
+        }
       }
-      if (!ksp->dm || ierr) {
-        Mat mat;
-        if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-        ierr = MatGetVecs(mat,NULL,&vecl);CHKERRQ(ierr);
+      if (!vecl) {
+        if (ksp->dm) {
+          ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
+        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
       }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {
-      if (ksp->dm) {
-        ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
-      } else {
+      if (mat) {
         ierr = VecDestroy(&vecl);CHKERRQ(ierr);
+      } else if (ksp->dm) {
+        ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       }
     }
   }
@@ -987,7 +1052,7 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp,PetscInt nw)
   PetscFunctionBegin;
   ierr       = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ksp->nwork = nw;
-  ierr       = KSPGetVecs(ksp,nw,&ksp->work,0,NULL);CHKERRQ(ierr);
+  ierr       = KSPCreateVecs(ksp,nw,&ksp->work,0,NULL);CHKERRQ(ierr);
   ierr       = PetscLogObjectParents(ksp,nw,ksp->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1063,7 +1128,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetDM"
 /*@

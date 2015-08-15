@@ -94,9 +94,13 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
   PetscBool           conv   = PETSC_FALSE,breakout = PETSC_FALSE;
-  PetscBool           domainerror;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
+    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  }
+
   maxits = snes->max_its;               /* maximum number of iterations */
   X      = snes->vec_sol;               /* solution vector */
   F      = snes->vec_func;              /* residual vector */
@@ -110,23 +114,15 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
-    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-    if (domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
-  if (PetscIsInfOrNanReal(fnorm)) {
-    snes->reason = SNES_DIVERGED_FNORM_NAN;
-    PetscFunctionReturn(0);
-  }
-
+  SNESCheckFunctionNorm(snes,fnorm);
+  ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  delta      = neP->delta0*fnorm;
+  delta      = xnorm ? neP->delta0*xnorm : neP->delta0;
   neP->delta = delta;
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
@@ -277,21 +273,21 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NEWTONTR"
-static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NEWTONTR  *ctx = (SNES_NEWTONTR*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES trust region options for nonlinear equations");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES trust region options for nonlinear equations");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_mu","mu","None",ctx->mu,&ctx->mu,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_eta","eta","None",ctx->eta,&ctx->eta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -321,7 +317,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 .    -snes_tr_mu <mu>
 .    -snes_tr_eta <eta>
 .    -snes_tr_sigma <sigma>
-.    -snes_tr_delta0 <delta0>
+.    -snes_tr_delta0 <delta0> -  initial size of the trust region is delta0*norm2(x)
 .    -snes_tr_delta1 <delta1>
 .    -snes_tr_delta2 <delta2>
 -    -snes_tr_delta3 <delta3>
@@ -329,10 +325,6 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
    The basic algorithm is taken from "The Minpack Project", by More',
    Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development
    of Mathematical Software", Wayne Cowell, editor.
-
-   This is intended as a model implementation, since it does not
-   necessarily have many of the bells and whistles of other
-   implementations.
 
    Level: intermediate
 

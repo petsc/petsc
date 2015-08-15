@@ -82,8 +82,8 @@ PetscInt main(PetscInt argc,char **args)
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m,&iu));CHKERRQ(ierr);
     printf(" LAPACKsyevx: compute %D to %D-th eigensolutions...\n",il,iu);
-    ierr  = PetscMalloc1((m*n+1),&evecs_array);CHKERRQ(ierr);
-    ierr  = PetscMalloc1((6*n+1),&iwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
 
     /* in the case "I", vl and vu are not referenced */
@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   /* Check residuals and orthogonality */
-  ierr = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevs+1,&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);

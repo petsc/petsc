@@ -97,7 +97,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ICC"
-static PetscErrorCode PCSetFromOptions_ICC(PC pc)
+static PetscErrorCode PCSetFromOptions_ICC(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscBool      flg;
@@ -105,8 +105,8 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
   /* PetscReal      dt[3];*/
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("ICC Options");CHKERRQ(ierr);
-  ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"ICC Options");CHKERRQ(ierr);
+  ierr = PCSetFromOptions_Factor(PetscOptionsObject,pc);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
   /*dt[0] = ((PC_Factor*)icc)->info.dt;
@@ -134,6 +134,15 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 }
 
 extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetUseInPlace_ICC"
+PetscErrorCode  PCFactorGetUseInPlace_ICC(PC pc,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners.
@@ -221,6 +230,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

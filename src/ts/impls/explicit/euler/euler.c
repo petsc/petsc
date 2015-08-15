@@ -1,7 +1,7 @@
 /*
        Code for Timestepping with explicit Euler.
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;     /* work vector where new solution is formed  */
@@ -66,7 +66,7 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Euler"
-static PetscErrorCode TSSetFromOptions_Euler(TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

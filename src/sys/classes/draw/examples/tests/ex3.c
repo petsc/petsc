@@ -48,7 +48,7 @@ int main(int argc,char **argv)
     xd   = (PetscReal)(i - 5); yd = xd*xd;
     ierr = PetscDrawLGAddPoint(lg,&xd,&yd);CHKERRQ(ierr);
   }
-  ierr = PetscDrawLGIndicateDataPoints(lg,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetUseMarkers(lg,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,-3.,150.0,PETSC_DRAW_BLUE,"A legend");CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);

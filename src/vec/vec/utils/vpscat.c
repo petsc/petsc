@@ -285,11 +285,11 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   PetscInt               ny,bs = in_from->bs;
 
   PetscFunctionBegin;
-  out->begin   = in->begin;
-  out->end     = in->end;
-  out->copy    = in->copy;
-  out->destroy = in->destroy;
-  out->view    = in->view;
+  out->ops->begin   = in->ops->begin;
+  out->ops->end     = in->ops->end;
+  out->ops->copy    = in->ops->copy;
+  out->ops->destroy = in->ops->destroy;
+  out->ops->view    = in->ops->view;
 
   /* allocate entire send scatter context */
   ierr = PetscNewLog(out,&out_to);CHKERRQ(ierr);
@@ -418,11 +418,11 @@ PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)in),&size);CHKERRQ(ierr);
 
-  out->begin     = in->begin;
-  out->end       = in->end;
-  out->copy      = in->copy;
-  out->destroy   = in->destroy;
-  out->view      = in->view;
+  out->ops->begin     = in->ops->begin;
+  out->ops->end       = in->ops->end;
+  out->ops->copy      = in->ops->copy;
+  out->ops->destroy   = in->ops->destroy;
+  out->ops->view      = in->ops->view;
 
   /* allocate entire send scatter context */
   ierr = PetscNewLog(out,&out_to);CHKERRQ(ierr);
@@ -2511,7 +2511,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ctx,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tagr);CHKERRQ(ierr);
-  ctx->destroy = VecScatterDestroy_PtoP;
+  ctx->ops->destroy = VecScatterDestroy_PtoP;
 
   ctx->reproduce = PETSC_FALSE;
   to->sendfirst  = PETSC_FALSE;
@@ -2602,12 +2602,12 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
           ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
       }
-    } else ctx->copy = VecScatterCopy_PtoP_AllToAll;
+    } else ctx->ops->copy = VecScatterCopy_PtoP_AllToAll;
 
 #else
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
-    ctx->copy           = VecScatterCopy_PtoP_AllToAll;
+    ctx->ops->copy      = VecScatterCopy_PtoP_AllToAll;
 #endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   } else if (to->use_window) {
@@ -2703,7 +2703,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     }
 
-    ctx->copy = VecScatterCopy_PtoP_X;
+    ctx->ops->copy = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
 
@@ -2715,59 +2715,59 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 
   switch (bs) {
   case 12:
-    ctx->begin = VecScatterBegin_12;
-    ctx->end   = VecScatterEnd_12;
+    ctx->ops->begin = VecScatterBegin_12;
+    ctx->ops->end   = VecScatterEnd_12;
     break;
   case 11:
-    ctx->begin = VecScatterBegin_11;
-    ctx->end   = VecScatterEnd_11;
+    ctx->ops->begin = VecScatterBegin_11;
+    ctx->ops->end   = VecScatterEnd_11;
     break;
   case 10:
-    ctx->begin = VecScatterBegin_10;
-    ctx->end   = VecScatterEnd_10;
+    ctx->ops->begin = VecScatterBegin_10;
+    ctx->ops->end   = VecScatterEnd_10;
     break;
   case 9:
-    ctx->begin = VecScatterBegin_9;
-    ctx->end   = VecScatterEnd_9;
+    ctx->ops->begin = VecScatterBegin_9;
+    ctx->ops->end   = VecScatterEnd_9;
     break;
   case 8:
-    ctx->begin = VecScatterBegin_8;
-    ctx->end   = VecScatterEnd_8;
+    ctx->ops->begin = VecScatterBegin_8;
+    ctx->ops->end   = VecScatterEnd_8;
     break;
   case 7:
-    ctx->begin = VecScatterBegin_7;
-    ctx->end   = VecScatterEnd_7;
+    ctx->ops->begin = VecScatterBegin_7;
+    ctx->ops->end   = VecScatterEnd_7;
     break;
   case 6:
-    ctx->begin = VecScatterBegin_6;
-    ctx->end   = VecScatterEnd_6;
+    ctx->ops->begin = VecScatterBegin_6;
+    ctx->ops->end   = VecScatterEnd_6;
     break;
   case 5:
-    ctx->begin = VecScatterBegin_5;
-    ctx->end   = VecScatterEnd_5;
+    ctx->ops->begin = VecScatterBegin_5;
+    ctx->ops->end   = VecScatterEnd_5;
     break;
   case 4:
-    ctx->begin = VecScatterBegin_4;
-    ctx->end   = VecScatterEnd_4;
+    ctx->ops->begin = VecScatterBegin_4;
+    ctx->ops->end   = VecScatterEnd_4;
     break;
   case 3:
-    ctx->begin = VecScatterBegin_3;
-    ctx->end   = VecScatterEnd_3;
+    ctx->ops->begin = VecScatterBegin_3;
+    ctx->ops->end   = VecScatterEnd_3;
     break;
   case 2:
-    ctx->begin = VecScatterBegin_2;
-    ctx->end   = VecScatterEnd_2;
+    ctx->ops->begin = VecScatterBegin_2;
+    ctx->ops->end   = VecScatterEnd_2;
     break;
   case 1:
-    ctx->begin = VecScatterBegin_1;
-    ctx->end   = VecScatterEnd_1;
+    ctx->ops->begin = VecScatterBegin_1;
+    ctx->ops->end   = VecScatterEnd_1;
     break;
   default:
-    ctx->begin = VecScatterBegin_bs;
-    ctx->end   = VecScatterEnd_bs;
+    ctx->ops->begin = VecScatterBegin_bs;
+    ctx->ops->end   = VecScatterEnd_bs;
 
   }
-  ctx->view = VecScatterView_MPI;
+  ctx->ops->view = VecScatterView_MPI;
   /* Check if the local scatter is actually a copy; important special case */
   if (to->local.n) {
     ierr = VecScatterLocalOptimizeCopy_Private(ctx,&to->local,&from->local,bs);CHKERRQ(ierr);

@@ -4,7 +4,7 @@
    File created by Peter Mell  7/14/95
  */
 
-#include <petsc-private/dmdaimpl.h>     /*I   "petscdmda.h"    I*/
+#include <petsc/private/dmdaimpl.h>     /*I   "petscdmda.h"    I*/
 
 #include <petscdraw.h>
 #undef __FUNCT__
@@ -1428,7 +1428,7 @@ PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,D
 
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(*da, bx, by, bz);CHKERRQ(ierr);

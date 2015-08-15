@@ -8,10 +8,9 @@
       accessible to users. The private API is defined in logimpl.h and the utils directory.
 
 */
-#include <petsc-private/logimpl.h>        /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>        /*I    "petscsys.h"   I*/
 #include <petsctime.h>
 #include <petscviewer.h>
-#include <petscthreadcomm.h>
 
 PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 {
@@ -23,6 +22,7 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 {
+  if (!p) return 0;
   p->mem += m;
   return 0;
 }
@@ -76,7 +76,7 @@ int              petsc_tracelevel            = 0;
 const char       *petsc_traceblanks          = "                                                                                                    ";
 char             petsc_tracespace[128]       = " ";
 PetscLogDouble   petsc_tracetime             = 0.0;
-static PetscBool PetscLogBegin_PrivateCalled = PETSC_FALSE;
+static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__
@@ -148,7 +148,7 @@ PetscErrorCode  PetscLogDestroy(void)
   PETSC_LARGEST_CLASSID       = PETSC_SMALLEST_CLASSID;
   PETSC_OBJECT_CLASSID        = 0;
   petsc_stageLog              = 0;
-  PetscLogBegin_PrivateCalled = PETSC_FALSE;
+  PetscLogInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -176,9 +176,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD)
-#include <CHUD/CHUD.h>
-#endif
 #if defined(PETSC_HAVE_PAPI)
 #include <papi.h>
 int PAPIEventSet = PAPI_NULL;
@@ -186,16 +183,20 @@ int PAPIEventSet = PAPI_NULL;
 
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "PetscLogBegin_Private"
-PetscErrorCode  PetscLogBegin_Private(void)
+#define __FUNCT__ "PetscLogInitialize"
+/*
+    The data structures for logging are always created even if no logging is turned on. This is so events etc can
+  be registered in the code before the actually logging is turned on.
+ */
+PetscErrorCode  PetscLogInitialize(void)
 {
   int            stage;
   PetscBool      opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscLogBegin_PrivateCalled) PetscFunctionReturn(0);
-  PetscLogBegin_PrivateCalled = PETSC_TRUE;
+  if (PetscLogInitializeCalled) PetscFunctionReturn(0);
+  PetscLogInitializeCalled = PETSC_TRUE;
 
   ierr = PetscOptionsHasName(NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) petsc_logActions = PETSC_FALSE;
@@ -212,24 +213,6 @@ PetscErrorCode  PetscLogBegin_Private(void)
   /* Setup default logging structures */
   ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CHUD)
-  ierr = chudInitialize();CHKERRQ(ierr);
-  ierr = chudAcquireSamplingFacility(CHUD_BLOCKING);CHKERRQ(ierr);
-  ierr = chudSetSamplingDevice(chudCPU1Dev);CHKERRQ(ierr);
-  ierr = chudSetStartDelay(0,chudNanoSeconds);CHKERRQ(ierr);
-  ierr = chudClearPMCMode(chudCPU1Dev,chudUnused);CHKERRQ(ierr);
-  ierr = chudClearPMCs();CHKERRQ(ierr);
-  /* ierr = chudSetPMCMuxPosition(chudCPU1Dev,0,0);CHKERRQ(ierr); */
-  printf("%s\n",chudGetEventName(chudCPU1Dev,PMC_1,193));
-  printf("%s\n",chudGetEventDescription(chudCPU1Dev,PMC_1,193));
-  printf("%s\n",chudGetEventNotes(chudCPU1Dev,PMC_1,193));
-  ierr = chudSetPMCEvent(chudCPU1Dev,PMC_1,193);CHKERRQ(ierr);
-  ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
-  ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
-  ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0xFE);CHKERRQ(ierr);
-  if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Event is not valid %d",193);
-  ierr = chudStartPMCs();CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_PAPI)
   ierr = PAPI_library_init(PAPI_VER_CURRENT);
   if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot initialize PAPI");
@@ -284,7 +267,6 @@ PetscErrorCode  PetscLogBegin(void)
 
   PetscFunctionBegin;
   ierr = PetscLogSet(PetscLogEventBeginDefault, PetscLogEventEndDefault);CHKERRQ(ierr);
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -324,7 +306,6 @@ PetscErrorCode  PetscLogAllBegin(void)
 
   PetscFunctionBegin;
   ierr = PetscLogSet(PetscLogEventBeginComplete, PetscLogEventEndComplete);CHKERRQ(ierr);
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +343,6 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   petsc_tracefile = file;
 
   ierr = PetscLogSet(PetscLogEventBeginTrace, PetscLogEventEndTrace);CHKERRQ(ierr);
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -663,7 +643,7 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
 . name  - The stage name
 
   Output Parameter:
-. stage - The stage
+. stage - The stage, , or -1 if no stage with that name exists
 
   Level: intermediate
 
@@ -1325,7 +1305,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   PetscErrorCode     ierr;
   char               version[256];
   MPI_Comm           comm;
-  PetscInt           nthreads;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -1349,10 +1328,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   } else {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
-  }
-  ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
-  if (nthreads > 1) {
-    ierr = PetscFPrintf(comm,fd,"With %d threads per MPI_Comm\n", (int)nthreads);CHKERRQ(ierr);
   }
 
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
@@ -1795,7 +1770,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscStageLog     stageLog;
 
   PetscFunctionBegin;
-  if (!PetscLogBegin_PrivateCalled) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogView()");
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;
   ierr      = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);

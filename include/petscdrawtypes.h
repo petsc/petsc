@@ -71,4 +71,15 @@ typedef struct _p_PetscDrawSP*   PetscDrawSP;
 S*/
 typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
+/*S
+     PetscDrawBar - Manages drawing bar graphs
+
+   Level: advanced
+
+  Concepts: graphics, histograms
+
+.seealso:  PetscDrawBarCreate()
+S*/
+typedef struct _p_PetscDrawBar*   PetscDrawBar;
+
 #endif

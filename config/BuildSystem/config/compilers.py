@@ -21,6 +21,7 @@ class Configure(config.base.Configure):
     self.cRestrict = ' '
     self.cxxRestrict = ' '
     self.cxxdialect = ''
+    self.c99flag = None
     self.f90Guess = None
     return
 
@@ -389,7 +390,7 @@ class Configure(config.base.Configure):
           const double x = dist(mt);
           """
     self.setCompilers.pushLanguage('Cxx')
-    cxxdialect = self.framework.argDB.get('with-cxx-dialect','').upper().replace('X','+')
+    cxxdialect = self.argDB.get('with-cxx-dialect','').upper().replace('X','+')
     flags_to_try = ['']
     if cxxdialect == 'C++11':
       flags_to_try += ['-std=c++11','-std=c++0x']
@@ -400,12 +401,12 @@ class Configure(config.base.Configure):
         break
     if cxxdialect == 'C++11':
       if self.cxxdialect != 'C++11':
-        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s, use CXXFLAGS' % (self.framework.argDB['with-cxx-dialect']))
+        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s, use CXXFLAGS' % (self.argDB['with-cxx-dialect']))
     elif cxxdialect in ['C++98', 'C++03', '']:
       self.cxxdialect = cxxdialect
       pass                    # The user can set CXXFLAGS if they want to be strict
     else:
-      raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.framework.argDB['with-cxx-dialect']))
+      raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.argDB['with-cxx-dialect']))
     self.setCompilers.popLanguage()
     return
 
@@ -640,7 +641,7 @@ class Configure(config.base.Configure):
     for mangler in key_list:
       cfunc = self.manglerFuncs[mangler][1]
       ffunc = self.manglerFuncs[mangler][2]
-      self.framework.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
+      self.logWrite('Testing Fortran mangling type '+mangler+' with code '+cfunc)
       if self.testMangling(cfunc, ffunc):
         self.fortranMangling = mangler
         break
@@ -936,7 +937,7 @@ class Configure(config.base.Configure):
             self.logPrint('Already in rpathflags so skipping: '+arg, 4, 'compilers')
           continue
         if arg.startswith('-zallextract') or arg.startswith('-zdefaultextract') or arg.startswith('-zweakextract'):
-          self.framework.log.write( 'Found Solaris -z option: '+arg+'\n')
+          self.logWrite( 'Found Solaris -z option: '+arg+'\n')
           flibs.append(arg)
           continue
         # Check for ???
@@ -958,7 +959,7 @@ class Configure(config.base.Configure):
         if arg.startswith('COMPILER_PATH=') or arg.startswith('LIBRARY_PATH='):
           self.logPrint('Skipping arg '+arg, 4, 'compilers')
           continue
-        # HPUX lists a bunch of library directories seperated by :
+        # HPUX lists a bunch of library directories separated by :
         if arg.find(':') >=0:
           founddir = 0
           for l in arg.split(':'):
@@ -998,11 +999,11 @@ class Configure(config.base.Configure):
     # on OS X, mixing g77 3.4 with gcc-3.3 requires using -lcc_dynamic
     for l in self.flibs:
       if l.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
-        self.framework.log.write('Detected Apple Mac Fink libraries')
+        self.logWrite('Detected Apple Mac Fink libraries')
         appleLib = 'libcc_dynamic.so'
         if self.libraries.check(appleLib, 'foo'):
           self.flibs.append(self.libraries.getLibArgument(appleLib))
-          self.framework.log.write('Adding '+self.libraries.getLibArgument(appleLib)+' so that Fortran can work with C++')
+          self.logWrite('Adding '+self.libraries.getLibArgument(appleLib)+' so that Fortran can work with C++')
         break
 
     self.logPrint('Libraries needed to link Fortran code with the C linker: '+str(self.flibs), 3, 'compilers')
@@ -1132,7 +1133,7 @@ class Configure(config.base.Configure):
       self.logPrint('Not a Fortran90 compiler - hence skipping f90-array test')
       return
     # do an apporximate test when batch mode is used, as we cannot run the proper test..
-    if self.framework.argDB['with-batch']:
+    if self.argDB['with-batch']:
       if config.setCompilers.Configure.isPGI(self.setCompilers.FC):
         self.addDefine('HAVE_F90_2PTR_ARG', 1)
         self.logPrint('PGI F90 compiler detected & using --with-batch, so use two arguments for array pointers', 3, 'compilers')
@@ -1161,7 +1162,7 @@ class Configure(config.base.Configure):
   } else {
     printf("pointers do not match! [%p %p] [%p]\\n",p1,p3,p2);
     fflush(stdout);
-    abort();
+    exit(111);
   }
   return;
 }\n'''
@@ -1328,8 +1329,8 @@ class Configure(config.base.Configure):
     '''Check if -MMD works for dependency generation, and add it if it does'''
     self.generateDependencies       = {}
     self.dependenciesGenerationFlag = {}
-    if not self.framework.argDB['with-dependencies'] :
-      self.framework.logPrint("Skip checking dependency compiler options on user request")
+    if not self.argDB['with-dependencies'] :
+      self.logPrint("Skip checking dependency compiler options on user request")
       return
     languages = ['C']
     if hasattr(self, 'CXX'):
@@ -1349,7 +1350,7 @@ class Configure(config.base.Configure):
                        # Cray only supports -M, which writes to stdout
                      ]:
         try:
-          self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
+          self.logPrint('Trying '+language+' compiler flag '+testFlag)
           if self.setCompilers.checkCompilerFlag(testFlag, compilerOnly = 1):
             depFilename = os.path.splitext(self.setCompilers.compilerObj)[0]+'.d'
             if os.path.isfile(depFilename):
@@ -1360,12 +1361,34 @@ class Configure(config.base.Configure):
               self.generateDependencies[language]       = 1
               break
             else:
-              self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because no dependency file ('+depFilename+') was generated')
+              self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because no dependency file ('+depFilename+') was generated')
           else:
-            self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
+            self.logPrint('Rejected '+language+' compiler flag '+testFlag)
         except RuntimeError:
-          self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
+          self.logPrint('Rejected '+language+' compiler flag '+testFlag)
       self.setCompilers.popLanguage()
+    return
+
+  def checkC99Flag(self):
+    '''Check for -std=c99 or equivalent flag'''
+    includes = ""
+    body = """
+    int x[2],y;
+    y = 5;
+    // c++ comment
+    int j = 2;
+    for (int i=0; i<2; i++){
+      x[i] = i*j*y;
+    }
+    """
+    self.setCompilers.pushLanguage('C')
+    flags_to_try = ['','-std=c99','-std=gnu99','-std=c11''-std=gnu11']
+    for flag in flags_to_try:
+      if self.setCompilers.checkCompilerFlag(flag, includes, body):
+        self.c99flag = flag
+        self.framework.logPrint('Accepted C99 compile flag: '+flag)
+        break
+    self.setCompilers.popLanguage()
     return
 
   def configure(self):
@@ -1376,9 +1399,10 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCStaticInline)
       self.executeTest(self.checkDynamicLoadFlag)
-      if self.framework.argDB['with-clib-autodetect']:
+      if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
       self.executeTest(self.checkDependencyGenerationFlag)
+      self.executeTest(self.checkC99Flag)
     else:
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
@@ -1387,7 +1411,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxStaticInline)
-      if self.framework.argDB['with-cxxlib-autodetect']:
+      if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       self.executeTest(self.checkCxx11)
     else:
@@ -1398,7 +1422,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranNameManglingDouble)
       self.executeTest(self.checkFortranPreprocessor)
       self.executeTest(self.checkFortranDefineCompilerOption)
-      if self.framework.argDB['with-fortranlib-autodetect']:
+      if self.argDB['with-fortranlib-autodetect']:
         self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)

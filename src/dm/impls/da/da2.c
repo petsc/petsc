@@ -1,5 +1,5 @@
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 #include <petscdraw.h>
 
 #undef __FUNCT__
@@ -103,7 +103,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
         base++;
       }
     }
-    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -259,6 +259,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  dd->p = 1;
   if (m != PETSC_DECIDE) {
     if (m < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
     else if (m > size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
@@ -849,7 +850,7 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,D
 
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 2);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, 1);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(*da, bx, by, DM_BOUNDARY_NONE);CHKERRQ(ierr);

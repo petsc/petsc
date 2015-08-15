@@ -36,7 +36,7 @@
 !
 
       module f90module
-#include <finclude/petscdmdef.h>
+#include <petsc/finclude/petscdmdef.h>
       use petscdmdef
       type userctx
         type(DM) da
@@ -70,7 +70,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormFunction(snesIn,X,F,user,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
 
 !  Input/output variables:
@@ -126,7 +126,7 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
         use petscsnes
         use f90module
           type(SNES)    snesIn
@@ -137,7 +137,7 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
         use petscsnes
         use f90module
           type(SNES)     snesIn
@@ -148,8 +148,8 @@
       end module f90moduleinterfaces
 
       program main
-#include <finclude/petscdmdef.h>
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscdm
       use petscsnes
       use f90module
@@ -353,7 +353,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,X,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use f90module
       use f90moduleinterfaces
@@ -365,7 +365,6 @@
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
-      type(Vec)      localX
 
       ierr = 0
       call SNESGetApplicationContext(mysnes,puser,ierr)
@@ -377,19 +376,15 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call DMGetLocalVector(puser%da,localX,ierr)
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(X,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
       call InitialGuessLocal(puser,lx_v,ierr)
 
 !  Restore vector
-      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr)
 
 !  Insert values into global vector
-      call DMLocalToGlobalBegin(puser%da,localX,INSERT_VALUES,X,ierr)
-      call DMLocalToGlobalEnd(puser%da,localX,INSERT_VALUES,X,ierr)
-      call DMRestoreLocalVector(puser%da,localX,ierr)
 
       return
       end
@@ -410,13 +405,13 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(user,x,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
       use f90module
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,                                 &
-     &              user%gys:user%gye)
+      PetscScalar  x(user%xs:user%xe,                                             &
+     &              user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:
@@ -464,7 +459,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionLocal(x,f,user,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
       use f90module
 !  Input/output variables:
@@ -554,7 +549,7 @@
 !  used in this example.
 !
       subroutine FormJacobian(mysnes,X,jac,jac_prec,user,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       use f90module
 !  Input/output variables:
@@ -644,7 +639,7 @@
 !  used in this example.
 !
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
-#include <finclude/petscmatdef.h>
+#include <petsc/finclude/petscmatdef.h>
       use petscmat
       use f90module
 !  Input/output variables:

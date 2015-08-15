@@ -137,7 +137,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 {
   TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
   PetscReal                    psi,ndpsi, normd, innerd, t=0;
-  PetscInt                     iter=0, nf;
+  PetscInt                     nf;
   PetscErrorCode               ierr;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
@@ -157,9 +157,10 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   while (1) {
     /* Check the termination criteria */
-    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",iter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, iter++, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
+    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
     if (TAO_CONTINUE_ITERATING != reason) break;
+    tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to
        set the tolerances for the solve so that we maintain an asymptotic
@@ -199,8 +200,8 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
-    ierr = TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);
-    ierr = TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);
+    ierr = TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(asls->r1,asls->r1,asls->r2);CHKERRQ(ierr);
     ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
     ierr = VecISAXPY(tao->stepdirection, asls->fixed,1.0,asls->r1);CHKERRQ(ierr);
@@ -246,9 +247,11 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
     /* Calculate the reduced direction.  (Really negative of Newton
        direction.  Therefore, rest of the code uses -d.) */
-    ierr = KSPReset(tao->ksp);
+    ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    tao->ksp_tot_its+=tao->ksp_its;
 
     /* Add the direction in the free variables back into the real direction. */
     ierr = VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree);CHKERRQ(ierr);
@@ -260,7 +263,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
     if (innerd <= asls->delta*pow(normd, asls->rho)) {
       ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", iter);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(asls->dpsi, tao->stepdirection, &innerd);CHKERRQ(ierr);
     }
@@ -288,10 +291,9 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   Level: beginner 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASILS"
-PetscErrorCode TaoCreate_ASILS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
@@ -324,24 +326,28 @@ PetscErrorCode TaoCreate_ASILS(Tao tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, armijo_type);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 0;
-  tao->frtol = 0;
-  tao->gttol = 0;
-  tao->grtol = 0;
+
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 0;
+  if (!tao->frtol_changed) tao->frtol = 0;
+  if (!tao->gttol_changed) tao->gttol = 0;
+  if (!tao->grtol_changed) tao->grtol = 0;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->gatol = 1.0e-6;
-  tao->fmin = 1.0e-4;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-6;
+  if (!tao->fmin_changed)  tao->fmin = 1.0e-4;
 #else
-  tao->gatol = 1.0e-16;
-  tao->fmin = 1.0e-8;
+  if (!tao->gatol_changed) tao->gatol = 1.0e-16;
+  if (!tao->fmin_changed) tao->fmin = 1.0e-8;
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
 PetscStageLog petsc_stageLog = 0;
 
@@ -579,7 +579,7 @@ PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, Petsc
 - name     - The stage name
 
   Output Parameter:
-. stage    - The stage id
+. stage    - The stage id, or -1 if it does not exist
 
   Level: developer
 
@@ -598,10 +598,9 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   *stage = -1;
   for (s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
+    *stage = s;
     if (match) break;
   }
-  if (s == stageLog->numStages) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "No stage named %s", name);
-  *stage = s;
   PetscFunctionReturn(0);
 }
 

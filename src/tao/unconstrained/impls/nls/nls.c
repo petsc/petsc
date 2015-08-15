@@ -4,8 +4,8 @@
 
 #include <petscksp.h>
 #include <petscpc.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/pcimpl.h>
 
 #define NLS_KSP_CG      0
 #define NLS_KSP_NASH    1
@@ -85,7 +85,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscReal                    norm_d = 0.0, e_min;
 
   PetscInt                     stepType;
-  PetscInt                     iter = 0;
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     n,N,kspits;
   PetscInt                     needH;
@@ -102,6 +101,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Initialized variables */
   pert = nlsP->sval;
 
+  /* Number of times ksp stopped because of these reasons */
   nlsP->ksp_atol = 0;
   nlsP->ksp_rtol = 0;
   nlsP->ksp_dtol = 0;
@@ -171,7 +171,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* create vectors for the limited memory preconditioner */
@@ -186,24 +186,18 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   switch(nlsP->pc_type) {
   case NLS_PC_NONE:
     ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     break;
 
   case NLS_PC_AHESS:
     ierr = PCSetType(pc, PCJACOBI);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
-    ierr = PCJacobiSetUseAbs(pc);CHKERRQ(ierr);
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
     break;
 
   case NLS_PC_BFGS:
     ierr = PCSetType(pc, PCSHELL);CHKERRQ(ierr);
-    if (pc->ops->setfromoptions) {
-      (*pc->ops->setfromoptions)(pc);
-    }
+    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
     ierr = PCShellSetContext(pc, nlsP->M);CHKERRQ(ierr);
     ierr = PCShellSetApply(pc, MatLMVMSolveShell);CHKERRQ(ierr);
@@ -318,7 +312,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
 
-          ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+          ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
           if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
         }
       }
@@ -356,7 +350,8 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
-    ++iter;
+    ++tao->niter;
+    tao->ksp_its=0;
 
     /* Compute the Hessian */
     if (needH) {
@@ -374,7 +369,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
     /* Shift the Hessian matrix */
     if (pert > 0) {
-      ierr = MatShift(tao->hessian, pert);
+      ierr = MatShift(tao->hessian, pert);CHKERRQ(ierr);
       if (tao->hessian != tao->hessian_pre) {
         ierr = MatShift(tao->hessian_pre, pert);CHKERRQ(ierr);
       }
@@ -408,6 +403,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
       tao->ksp_its+=kspits;
+      tao->ksp_tot_its+=kspits;
 
       if (NLS_KSP_NASH == nlsP->ksp_type) {
         ierr = KSPNASHGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
@@ -445,6 +441,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
           tao->ksp_its+=kspits;
+          tao->ksp_tot_its+=kspits;
           if (NLS_KSP_NASH == nlsP->ksp_type) {
             ierr = KSPNASHGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
           } else if (NLS_KSP_STCG == nlsP->ksp_type) {
@@ -460,6 +457,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
       tao->ksp_its += kspits;
+      tao->ksp_tot_its+=kspits;
     }
     ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
@@ -755,9 +753,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           /*  Get predicted reduction */
 
           if (NLS_KSP_STCG == nlsP->ksp_type) {
-            ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);
+            ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else if (NLS_KSP_NASH == nlsP->ksp_type)  {
-            ierr = KSPNASHGetObjFcn(tao->ksp,&prered);
+            ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else {
             ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           }
@@ -814,9 +812,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         if (stepType == NLS_NEWTON) {
 
           if (NLS_KSP_STCG == nlsP->ksp_type) {
-              ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);
+              ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else if (NLS_KSP_NASH == nlsP->ksp_type)  {
-              ierr = KSPNASHGetObjFcn(tao->ksp,&prered);
+              ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           } else {
               ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
           }
@@ -896,7 +894,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
-    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -945,63 +943,63 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NLS"
-static PetscErrorCode TaoSetFromOptions_NLS(Tao tao)
+static PetscErrorCode TaoSetFromOptions_NLS(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Newton line search method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Newton line search method for unconstrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_ksp_type", "ksp type", "", NLS_KSP, NLS_KSP_TYPES, NLS_KSP[nlsP->ksp_type], &nlsP->ksp_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_pc_type", "pc type", "", NLS_PC, NLS_PC_TYPES, NLS_PC[nlsP->pc_type], &nlsP->pc_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[nlsP->bfgs_scale_type], &nlsP->bfgs_scale_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_init_type", "radius initialization type", "", NLS_INIT, NLS_INIT_TYPES, NLS_INIT[nlsP->init_type], &nlsP->init_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_update_type", "radius update type", "", NLS_UPDATE, NLS_UPDATE_TYPES, NLS_UPDATE[nlsP->update_type], &nlsP->update_type, 0);CHKERRQ(ierr);
- ierr = PetscOptionsReal("-tao_nls_sval", "perturbation starting value", "", nlsP->sval, &nlsP->sval, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_imin", "minimum initial perturbation", "", nlsP->imin, &nlsP->imin, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_imax", "maximum initial perturbation", "", nlsP->imax, &nlsP->imax, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_imfac", "initial merit factor", "", nlsP->imfac, &nlsP->imfac, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_pmin", "minimum perturbation", "", nlsP->pmin, &nlsP->pmin, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_pmax", "maximum perturbation", "", nlsP->pmax, &nlsP->pmax, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_pgfac", "growth factor", "", nlsP->pgfac, &nlsP->pgfac, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_psfac", "shrink factor", "", nlsP->psfac, &nlsP->psfac, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_pmgfac", "merit growth factor", "", nlsP->pmgfac, &nlsP->pmgfac, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_pmsfac", "merit shrink factor", "", nlsP->pmsfac, &nlsP->pmsfac, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_eta1", "poor steplength; reduce radius", "", nlsP->eta1, &nlsP->eta1, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_eta2", "reasonable steplength; leave radius alone", "", nlsP->eta2, &nlsP->eta2, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_eta3", "good steplength; increase radius", "", nlsP->eta3, &nlsP->eta3, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_eta4", "excellent steplength; greatly increase radius", "", nlsP->eta4, &nlsP->eta4, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_alpha1", "", "", nlsP->alpha1, &nlsP->alpha1, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_alpha2", "", "", nlsP->alpha2, &nlsP->alpha2, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_alpha3", "", "", nlsP->alpha3, &nlsP->alpha3, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_alpha4", "", "", nlsP->alpha4, &nlsP->alpha4, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_alpha5", "", "", nlsP->alpha5, &nlsP->alpha5, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_nu1", "poor steplength; reduce radius", "", nlsP->nu1, &nlsP->nu1, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_nu2", "reasonable steplength; leave radius alone", "", nlsP->nu2, &nlsP->nu2, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_nu3", "good steplength; increase radius", "", nlsP->nu3, &nlsP->nu3, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_nu4", "excellent steplength; greatly increase radius", "", nlsP->nu4, &nlsP->nu4, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_omega1", "", "", nlsP->omega1, &nlsP->omega1, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_omega2", "", "", nlsP->omega2, &nlsP->omega2, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_omega3", "", "", nlsP->omega3, &nlsP->omega3, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_omega4", "", "", nlsP->omega4, &nlsP->omega4, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_omega5", "", "", nlsP->omega5, &nlsP->omega5, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_mu1_i", "", "", nlsP->mu1_i, &nlsP->mu1_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_mu2_i", "", "", nlsP->mu2_i, &nlsP->mu2_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma1_i", "", "", nlsP->gamma1_i, &nlsP->gamma1_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma2_i", "", "", nlsP->gamma2_i, &nlsP->gamma2_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma3_i", "", "", nlsP->gamma3_i, &nlsP->gamma3_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma4_i", "", "", nlsP->gamma4_i, &nlsP->gamma4_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_theta_i", "", "", nlsP->theta_i, &nlsP->theta_i, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_mu1", "", "", nlsP->mu1, &nlsP->mu1, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_mu2", "", "", nlsP->mu2, &nlsP->mu2, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma1", "", "", nlsP->gamma1, &nlsP->gamma1, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma2", "", "", nlsP->gamma2, &nlsP->gamma2, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma3", "", "", nlsP->gamma3, &nlsP->gamma3, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_gamma4", "", "", nlsP->gamma4, &nlsP->gamma4, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_theta", "", "", nlsP->theta, &nlsP->theta, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_min_radius", "lower bound on initial radius", "", nlsP->min_radius, &nlsP->min_radius, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_max_radius", "upper bound on radius", "", nlsP->max_radius, &nlsP->max_radius, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_epsilon", "tolerance used when computing actual and predicted reduction", "", nlsP->epsilon, &nlsP->epsilon, 0);CHKERRQ(ierr);
+ ierr = PetscOptionsReal("-tao_nls_sval", "perturbation starting value", "", nlsP->sval, &nlsP->sval,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_imin", "minimum initial perturbation", "", nlsP->imin, &nlsP->imin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_imax", "maximum initial perturbation", "", nlsP->imax, &nlsP->imax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_imfac", "initial merit factor", "", nlsP->imfac, &nlsP->imfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_pmin", "minimum perturbation", "", nlsP->pmin, &nlsP->pmin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_pmax", "maximum perturbation", "", nlsP->pmax, &nlsP->pmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_pgfac", "growth factor", "", nlsP->pgfac, &nlsP->pgfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_psfac", "shrink factor", "", nlsP->psfac, &nlsP->psfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_pmgfac", "merit growth factor", "", nlsP->pmgfac, &nlsP->pmgfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_pmsfac", "merit shrink factor", "", nlsP->pmsfac, &nlsP->pmsfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_eta1", "poor steplength; reduce radius", "", nlsP->eta1, &nlsP->eta1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_eta2", "reasonable steplength; leave radius alone", "", nlsP->eta2, &nlsP->eta2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_eta3", "good steplength; increase radius", "", nlsP->eta3, &nlsP->eta3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_eta4", "excellent steplength; greatly increase radius", "", nlsP->eta4, &nlsP->eta4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_alpha1", "", "", nlsP->alpha1, &nlsP->alpha1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_alpha2", "", "", nlsP->alpha2, &nlsP->alpha2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_alpha3", "", "", nlsP->alpha3, &nlsP->alpha3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_alpha4", "", "", nlsP->alpha4, &nlsP->alpha4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_alpha5", "", "", nlsP->alpha5, &nlsP->alpha5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_nu1", "poor steplength; reduce radius", "", nlsP->nu1, &nlsP->nu1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_nu2", "reasonable steplength; leave radius alone", "", nlsP->nu2, &nlsP->nu2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_nu3", "good steplength; increase radius", "", nlsP->nu3, &nlsP->nu3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_nu4", "excellent steplength; greatly increase radius", "", nlsP->nu4, &nlsP->nu4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_omega1", "", "", nlsP->omega1, &nlsP->omega1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_omega2", "", "", nlsP->omega2, &nlsP->omega2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_omega3", "", "", nlsP->omega3, &nlsP->omega3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_omega4", "", "", nlsP->omega4, &nlsP->omega4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_omega5", "", "", nlsP->omega5, &nlsP->omega5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_mu1_i", "", "", nlsP->mu1_i, &nlsP->mu1_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_mu2_i", "", "", nlsP->mu2_i, &nlsP->mu2_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma1_i", "", "", nlsP->gamma1_i, &nlsP->gamma1_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma2_i", "", "", nlsP->gamma2_i, &nlsP->gamma2_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma3_i", "", "", nlsP->gamma3_i, &nlsP->gamma3_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma4_i", "", "", nlsP->gamma4_i, &nlsP->gamma4_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_theta_i", "", "", nlsP->theta_i, &nlsP->theta_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_mu1", "", "", nlsP->mu1, &nlsP->mu1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_mu2", "", "", nlsP->mu2, &nlsP->mu2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma1", "", "", nlsP->gamma1, &nlsP->gamma1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma2", "", "", nlsP->gamma2, &nlsP->gamma2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma3", "", "", nlsP->gamma3, &nlsP->gamma3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_gamma4", "", "", nlsP->gamma4, &nlsP->gamma4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_theta", "", "", nlsP->theta, &nlsP->theta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_min_radius", "lower bound on initial radius", "", nlsP->min_radius, &nlsP->min_radius,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_max_radius", "upper bound on radius", "", nlsP->max_radius, &nlsP->max_radius,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_epsilon", "tolerance used when computing actual and predicted reduction", "", nlsP->epsilon, &nlsP->epsilon,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -1102,10 +1100,9 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NLS"
-PetscErrorCode TaoCreate_NLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
 {
   TAO_NLS        *nlsP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -1120,16 +1117,18 @@ PetscErrorCode TaoCreate_NLS(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NLS;
   tao->ops->destroy = TaoDestroy_NLS;
 
-  tao->max_it = 50;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 50;
+  if (!tao->trust0_changed) tao->trust0 = 100.0;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-5;
-  tao->frtol = 1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol = 1e-10;
-  tao->frtol = 1e-10;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-10;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-10;
 #endif
+
   tao->data = (void*)nlsP;
-  tao->trust0 = 100.0;
 
   nlsP->sval   = 0.0;
   nlsP->imin   = 1.0e-4;
@@ -1203,12 +1202,13 @@ PetscErrorCode TaoCreate_NLS(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSolveShell"

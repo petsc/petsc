@@ -3,7 +3,7 @@
   Contains the data structure for plotting a histogram in a window with an axis.
 */
 #include <petscdraw.h>         /*I "petscdraw.h" I*/
-#include <petsc-private/petscimpl.h>         /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
 #include <petscviewer.h>         /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_DRAWHG_CLASSID = 0;
@@ -53,15 +53,13 @@ struct _p_PetscDrawHG {
 PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
 {
   PetscDrawHG    h;
-  MPI_Comm       comm;
   PetscBool      isnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   PetscValidPointer(hist,3);
-  ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(h, _p_PetscDrawHG, int, PETSC_DRAWHG_CLASSID,  "PetscDrawHG", "Histogram", "Draw", comm, PetscDrawHGDestroy, NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID,  "PetscDrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL);CHKERRQ(ierr);
 
   h->view        = NULL;
   h->destroy     = NULL;
@@ -212,7 +210,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     PetscReal      *tmp;
     PetscErrorCode ierr;
 
-    ierr = PetscMalloc1((hist->maxValues+CHUNKSIZE), &tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(hist->maxValues+CHUNKSIZE, &tmp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);

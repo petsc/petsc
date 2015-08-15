@@ -1,7 +1,7 @@
 
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h>
 
@@ -19,12 +19,11 @@
   PetscScalar *sor_work;             /* work array for SOR */                                        \
   MatScalar   *saved_values;                                                                    \
                                                                                                      \
-  Mat sbaijMat;                      /* mat in sbaij format */                                       \
+  Mat         sbaijMat;                      /* mat in sbaij format */                                       \
                                                                                                      \
                                                                                                      \
-  MatScalar *idiag;                  /* inverse of block diagonal  */                                \
-  PetscBool idiagvalid              /* if above has correct/current values */
-
+  MatScalar     *idiag;            /* inverse of block diagonal  */                                \
+  PetscBool     idiagvalid         /* if above has correct/current values */ 
 
 typedef struct {
   SEQAIJHEADER(MatScalar);
@@ -229,6 +228,9 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool);
 
 PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ_private(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscInt*,PetscScalar*);
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat,Mat,PetscInt*);
+
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 /* used by mpibaij.c */
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat);

@@ -3,7 +3,7 @@
     Creates hypre ijmatrix from PETSc matrix
 */
 #include <petscsys.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscdmda.h>                /*I "petscdmda.h" I*/
 #include <../src/dm/impls/da/hypre/mhyp.h>
 
@@ -111,14 +111,15 @@ extern PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat,HYPRE_IJMatrix);
 PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,ncols;
+  PetscInt          i,rstart,rend,ncols,nr,nc;
   const PetscScalar *values;
   const PetscInt    *cols;
   PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
+  ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
+  if (flg && nr == nc) {
     ierr = MatHYPRE_IJMatrixFastCopy_MPIAIJ(A,ij);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -310,6 +311,7 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
   Mat_HYPREStruct   *ex     = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
+  if (PetscUnlikely(ncol >= 7)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %D >= 7 too large",ncol);
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];

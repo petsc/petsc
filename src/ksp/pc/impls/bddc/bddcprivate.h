@@ -14,20 +14,18 @@ PetscErrorCode PCBDDCResetSolvers(PC);
 PetscErrorCode PCBDDCResetCustomization(PC);
 
 /* graph */
-PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
-PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
-PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping);
-PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
-PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
-PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscBool,PetscBool,PetscBool,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
-
-/* application of local Schur complements */
-PetscErrorCode PCBDDCApplySchur(PC,Vec,Vec,Vec,Vec,Vec);
-PetscErrorCode PCBDDCApplySchurTranspose(PC,Vec,Vec,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph,IS*);
 
 /* interface for scaling operator */
 PetscErrorCode PCBDDCScalingSetUp(PC);
@@ -36,22 +34,20 @@ PetscErrorCode PCBDDCScalingRestriction(PC,Vec,Vec);
 PetscErrorCode PCBDDCScalingExtension(PC,Vec,Vec);
 
 /* nullspace stuffs */
-PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC,IS);
+PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC,PetscBool,IS);
 PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC);
 PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,Mat,MatNullSpace*);
 
 /* utils */
+PetscErrorCode PCBDDCComputeLocalMatrix(PC,Mat);
 PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
 PetscErrorCode PCBDDCSetUpSolvers(PC);
 PetscErrorCode PCBDDCSetUpLocalScatters(PC);
-PetscErrorCode PCBDDCSetUpLocalMatrices(PC);
-PetscErrorCode PCBDDCSetUpLocalSolvers(PC);
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC,PetscBool,PetscBool);
 PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
-PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm,ISLocalToGlobalMapping,PetscInt,PetscInt[],PetscInt[],PetscInt*,PetscInt*[]);
+PetscErrorCode PCBDDCSubsetNumbering(IS,IS,PetscInt*,IS*);
 PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
-PetscErrorCode PCBDDCGetPrimalVerticesLocalIdx(PC,PetscInt*,PetscInt**);
-PetscErrorCode PCBDDCGetPrimalConstraintsLocalIdx(PC,PetscInt*,PetscInt**);
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,PetscBool);
@@ -59,6 +55,8 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
 PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
+PetscErrorCode PCBDDCAdaptiveSelection(PC);
+PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
@@ -69,6 +67,17 @@ PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
 PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
+
+/* interface to SubSchurs */
+PetscErrorCode PCBDDCInitSubSchurs(PC);
+PetscErrorCode PCBDDCSetUpSubSchurs(PC);
+
+/* sub schurs */
+PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
+PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping);
+PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
+PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscInt[],PetscInt[],PetscInt,PetscBool,PetscBool,PetscBool);
 
 #endif
 

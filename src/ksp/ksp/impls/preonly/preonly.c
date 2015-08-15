@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_PREONLY"
@@ -36,7 +36,7 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
                   commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
 
    Options Database Keys:
-.   see KSPSolve()
+.   -ksp_type preonly
 
    Level: beginner
 

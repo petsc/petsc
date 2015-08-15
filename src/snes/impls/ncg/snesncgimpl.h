@@ -4,8 +4,8 @@
 
 #if !defined(__SNES_NCG_H)
 #define __SNES_NCG_H
-#include <petsc-private/snesimpl.h>
-#include <petsc-private/linesearchimpl.h>
+#include <petsc/private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h>
 
 typedef struct {
   SNESNCGType type;     /* Fletcher-Reeves, Polak-Ribiere-Polyak, Hestenes-Steifel, Dai-Yuan, Conjugate Descent */

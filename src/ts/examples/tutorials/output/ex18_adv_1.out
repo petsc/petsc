@@ -1,0 +1,25 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 16
+  1-cells: 24
+  2-cells: 21 (12)
+Labels:
+  ghost: 0 strata of sizes ()
+  vtk: 1 strata of sizes (9)
+  Face Sets: 4 strata of sizes (3, 3, 3, 3)
+  marker: 1 strata of sizes (24)
+  depth: 3 strata of sizes (16, 24, 21)
+  0  time        0  |x| (       0,    3.333)  
+  1  time   0.9934  |x| (       0,    1.464)  
+  2  time    1.987  |x| (       0,    1.892)  
+  3  time     2.98  |x| (       0,    1.978)  
+TS Object: 1 MPI processes
+  type: ssp
+  maximum steps=1000
+  maximum time=2
+  total number of nonlinear solver iterations=0
+  total number of nonlinear solve failures=0
+  total number of linear solver iterations=0
+  total number of rejected steps=0
+CONVERGED_TIME at time 2.98018 after 3 steps

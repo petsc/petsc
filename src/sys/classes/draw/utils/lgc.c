@@ -112,8 +112,8 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
-        if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+        if (lg->use_markers) {
+          ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
         }
       }
     }
@@ -122,7 +122,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
     nopts = sp->nopts;
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
-        ierr = PetscDrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+        ierr = PetscDrawMarker(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
       }
     }
   }
@@ -167,10 +167,10 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
     ierr = PetscDrawOpenNull(PetscObjectComm((PetscObject)obj),(PetscDraw*)outctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)obj),PetscDrawLGDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)obj),PetscDrawLGDestroy,NULL);CHKERRQ(ierr);
 
-  lg->view    = 0;
-  lg->destroy = 0;
+  lg->view    = NULL;
+  lg->destroy = NULL;
   lg->nopts   = 0;
   lg->win     = draw;
   lg->dim     = dim;
@@ -184,7 +184,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
 
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
-  lg->use_dots= PETSC_FALSE;
+  lg->use_markers= PETSC_FALSE;
 
   ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis);CHKERRQ(ierr);
@@ -402,30 +402,30 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGIndicateDataPoints"
+#define __FUNCT__ "PetscDrawLGSetUseMarkers"
 /*@
-   PetscDrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
+   PetscDrawLGSetUseMarkers - Causes LG to draw a marker for each data-point.
 
    Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
 +  lg - the linegraph context
--  flg - should mark each data point 
+-  flg - should mark each data point
 
    Options Database:
-.  -lg_indicate_data_points  <true,false>
+.  -lg_use_markers  <true,false>
 
    Level: intermediate
 
    Concepts: line graph^showing points
 
 @*/
-PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG lg,PetscBool flg)
+PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
-  lg->use_dots = flg;
+  lg->use_markers = flg;
   PetscFunctionReturn(0);
 }
 
@@ -485,19 +485,18 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
   if (!rank) {
-
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
         if (lg->colors) cl = lg->colors[i];
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
-        if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl,"x");CHKERRQ(ierr);
+        if (lg->use_markers) {
+          ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         }
       }
     }
   }
-  if (lg->legend) {
+  if (!rank && lg->legend) {
     PetscReal xl,yl,xr,yr,tw,th;
     size_t    len,mlen = 0;
     int       cl;
@@ -517,7 +516,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     ierr = PetscDrawLine(draw,xr - 2*tw,yr - 3*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   }
-  ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);}
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
   XSetIOErrorHandler(NULL);
@@ -582,12 +581,10 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 PetscErrorCode  PetscDrawLGSetFromOptions(PetscDrawLG lg)
 {
   PetscErrorCode ierr;
-  PetscBool      flg,set;
+  PetscBool      flg=PETSC_FALSE, set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,"-lg_indicate_data_points",&flg,&set);CHKERRQ(ierr);
-  if (set) {
-    ierr = PetscDrawLGIndicateDataPoints(lg,flg);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsGetBool(NULL,"-lg_use_markers",&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscDrawLGSetUseMarkers(lg,flg);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

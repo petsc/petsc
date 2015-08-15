@@ -86,7 +86,7 @@ int main(int argc,char **args)
   return 0;
 }
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 /* This is modified from MatGetOrdering_Natural() */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_myordering"

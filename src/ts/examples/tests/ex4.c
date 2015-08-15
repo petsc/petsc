@@ -256,15 +256,15 @@ PetscErrorCode Initial(Vec global,void *ctx)
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
-  VecScatter     scatter;
-  IS             from,to;
-  PetscInt       i,n,*idx,nsteps,maxsteps;
-  Vec            tmp_vec;
-  PetscErrorCode ierr;
-  PetscScalar    *tmp;
-  PetscReal      maxtime;
-  Data           *data  = (Data*)ctx;
-  PetscReal      tfinal = data->tfinal;
+  VecScatter        scatter;
+  IS                from,to;
+  PetscInt          i,n,*idx,nsteps,maxsteps;
+  Vec               tmp_vec;
+  PetscErrorCode    ierr;
+  const PetscScalar *tmp;
+  PetscReal         maxtime;
+  Data              *data  = (Data*)ctx;
+  PetscReal         tfinal = data->tfinal;
 
   PetscFunctionBeginUser;
   if (time > tfinal) PetscFunctionReturn(0);
@@ -291,9 +291,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecScatterBegin(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%D] =%14.2e u= %14.2e at the center \n",nsteps,(double)time,(double)PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
-  ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
@@ -394,18 +394,19 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ptr)
 #define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  Data           *data = (Data*)ctx;
-  PetscInt       m,n,mn;
-  PetscReal      dx,dy;
-  PetscReal      xc,xl,xr,yl,yr;
-  PetscReal      a,epsilon;
-  PetscScalar    *inptr,*outptr;
-  PetscInt       i,j,len;
-  PetscErrorCode ierr;
-  IS             from,to;
-  PetscInt       *idx;
-  VecScatter     scatter;
-  Vec            tmp_in,tmp_out;
+  Data              *data = (Data*)ctx;
+  PetscInt          m,n,mn;
+  PetscReal         dx,dy;
+  PetscReal         xc,xl,xr,yl,yr;
+  PetscReal         a,epsilon;
+  PetscScalar       *outptr;
+  const PetscScalar *inptr;
+  PetscInt          i,j,len;
+  PetscErrorCode    ierr;
+  IS                from,to;
+  PetscInt          *idx;
+  VecScatter        scatter;
+  Vec               tmp_in,tmp_out;
 
   PetscFunctionBeginUser;
   m       = data->m;
@@ -442,7 +443,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   /*Extract income array - include ghost points */
-  ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
 
   /* Extract outcome array*/
   ierr = VecGetArray(tmp_out,&outptr);CHKERRQ(ierr);
@@ -450,29 +451,24 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   outptr[0]   = xc*inptr[0]+xr*inptr[1]+yr*inptr[m];
   outptr[m-1] = 2.0*xl*inptr[m-2]+xc*inptr[m-1]+yr*inptr[m-1+m];
   for (i=1; i<m-1; i++) {
-    outptr[i] = xc*inptr[i]+xl*inptr[i-1]+xr*inptr[i+1]
-      +yr*inptr[i+m];
+    outptr[i] = xc*inptr[i]+xl*inptr[i-1]+xr*inptr[i+1]+yr*inptr[i+m];
   }
 
   for (j=1; j<n-1; j++) {
-    outptr[j*m] = xc*inptr[j*m]+xr*inptr[j*m+1]+
-                  yl*inptr[j*m-m]+yr*inptr[j*m+m];
-    outptr[j*m+m-1] = xc*inptr[j*m+m-1]+2.0*xl*inptr[j*m+m-1-1]+
-                      yl*inptr[j*m+m-1-m]+yr*inptr[j*m+m-1+m];
+    outptr[j*m] = xc*inptr[j*m]+xr*inptr[j*m+1]+ yl*inptr[j*m-m]+yr*inptr[j*m+m];
+    outptr[j*m+m-1] = xc*inptr[j*m+m-1]+2.0*xl*inptr[j*m+m-1-1]+ yl*inptr[j*m+m-1-m]+yr*inptr[j*m+m-1+m];
     for (i=1; i<m-1; i++) {
-      outptr[j*m+i] = xc*inptr[j*m+i]+xl*inptr[j*m+i-1]+xr*inptr[j*m+i+1]
-                      +yl*inptr[j*m+i-m]+yr*inptr[j*m+i+m];
+      outptr[j*m+i] = xc*inptr[j*m+i]+xl*inptr[j*m+i-1]+xr*inptr[j*m+i+1]+yl*inptr[j*m+i-m]+yr*inptr[j*m+i+m];
     }
   }
 
   outptr[mn-m] = xc*inptr[mn-m]+xr*inptr[mn-m+1]+2.0*yl*inptr[mn-m-m];
   outptr[mn-1] = 2.0*xl*inptr[mn-2]+xc*inptr[mn-1]+2.0*yl*inptr[mn-1-m];
   for (i=1; i<m-1; i++) {
-    outptr[mn-m+i] = xc*inptr[mn-m+i]+xl*inptr[mn-m+i-1]+xr*inptr[mn-m+i+1]
-                     +2*yl*inptr[mn-m+i-m];
+    outptr[mn-m+i] = xc*inptr[mn-m+i]+xl*inptr[mn-m+i-1]+xr*inptr[mn-m+i+1]+2*yl*inptr[mn-m+i-m];
   }
 
-  ierr = VecRestoreArray(tmp_in,&inptr);
+  ierr = VecRestoreArrayRead(tmp_in,&inptr);
   ierr = VecRestoreArray(tmp_out,&outptr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);

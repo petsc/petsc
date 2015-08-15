@@ -15,8 +15,8 @@ DOCS		 =
 DIRS		 = 
 CLEANFILES       = chwirut1 chwirut2 chwirut1f chwirut2f
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 chwirut1: chwirut1.o chkopts
 	-${CLINKER} -o chwirut1 chwirut1.o ${PETSC_TAO_LIB}
@@ -40,7 +40,7 @@ runchwirut1:
 	${RM} -f chwirut1_1.tmp
 
 runchwirut2:
-	-@${MPIEXEC} -n 3 ./chwirut2 -tao_smonitor -tao_fatol 0 -tao_frtol 0 -tao_max_it 100 -tao_type pounders > chwirut2_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./chwirut2 -tao_fatol 0 -tao_frtol 0 -tao_max_it 100 -tao_type pounders > chwirut2_1.tmp 2>&1;\
 	${DIFF} output/chwirut2_1.out chwirut2_1.tmp || printf '${PWD}\nPossible problem with chwirut2_1 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut2_1.tmp
 
@@ -62,6 +62,6 @@ TESTEXAMPLES_FORTRAN       = chwirut1f.PETSc runchwirut1f chwirut1f.rm \
 TESTEXAMPLES_FORTRAN_MPIUNI= chwirut1f.PETSc runchwirut1f chwirut1f.rm 
 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 

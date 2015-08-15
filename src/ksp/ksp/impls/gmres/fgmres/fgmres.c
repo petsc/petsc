@@ -42,11 +42,11 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&fgmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&fgmres->prevecs_user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs_user_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
-  ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
@@ -69,7 +69,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   /* put A*x into VEC_TEMP */
-  ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
   /* now put residual (-A*x + f) into vec_vv(0) */
   ierr = VecWAXPY(VEC_VV(0),-1.0,VEC_TEMP,ksp->vec_rhs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -169,7 +169,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
-    ierr = MatMult(Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
 
 
     /* update hessenberg matrix and do Gram-Schmidt - new direction is in
@@ -500,7 +500,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
   /* work vectors */
-  ierr = KSPGetVecs(ksp,nalloc,&fgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,nalloc,&fgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
@@ -509,7 +509,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   fgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors */
-  ierr = KSPGetVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork],0,NULL);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
@@ -563,14 +563,14 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
-PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_FGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP flexible GMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsBoolGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);}
   ierr = PetscOptionsBoolGroupEnd("-ksp_fgmres_modifypcksp","vary the KSP based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);

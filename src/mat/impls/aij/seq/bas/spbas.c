@@ -418,12 +418,12 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscMalloc(sizeof(PetscInt) * (nrows+1), &irow);CHKERRQ(ierr);
-  ierr      = PetscMalloc(sizeof(PetscInt) * nnz, &icol);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(nrows+1, &irow);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(nnz, &icol);CHKERRQ(ierr);
   *icol_out = icol;
   *irow_out = irow;
   if (do_values) {
-    ierr     = PetscMalloc(sizeof(MatScalar) * nnz, &val);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(nnz, &val);CHKERRQ(ierr);
     *val_out = val; *icol_out = icol; *irow_out=irow;
   }
 
@@ -670,10 +670,10 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern\n");
 
   if (do_values) {
-    ierr = PetscMalloc(sizeof(PetscScalar*)*nrows, &vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nrows, &vals);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(sizeof(PetscInt)*nrows, &row_nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt*)*nrows, &icols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows, &row_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows, &icols);CHKERRQ(ierr);
 
   for (i=0; i<nrows; i++) {
     ip = permutation[i];

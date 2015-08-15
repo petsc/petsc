@@ -1,0 +1,31 @@
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.647213;-0.774692], Cost function f=0.001841
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649874;-0.760609], Cost function f=0.000006
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649859;-0.760687], Cost function f=0.000005
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649846;-0.760756], Cost function f=0.000004
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649835;-0.760819], Cost function f=0.000003
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649824;-0.760874], Cost function f=0.000002
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649815;-0.760924], Cost function f=0.000002
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649806;-0.760969], Cost function f=0.000002
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649799;-0.761009], Cost function f=0.000001
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649792;-0.761045], Cost function f=0.000001
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649786;-0.761078], Cost function f=0.000001
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649781;-0.761107], Cost function f=0.000001
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649776;-0.761133], Cost function f=0.000001
+Observed value y_ob=[1.649733; -0.761360], ODE solution y=[1.649771;-0.761156], Cost function f=0.000000
+Tao Object: 1 MPI processes
+  type: cg
+      CG Type: prp
+      Gradient steps: 0
+      Reset steps: 0
+  TaoLineSearch Object:   1 MPI processes
+    type: more-thuente
+  convergence tolerances: fatol=1e-07,   frtol=1e-07
+  convergence tolerances: gatol=1e-07,   steptol=0,   gttol=1e-07
+  Residual in Function/Gradient:=0.000297677
+  Objective value=4.327e-07
+  total number of iterations=13,                          (max: 2000)
+  total number of function/gradient evaluations=14,      (max: 4000)
+  Solution converged:   estimated f(x)-f(X*) <= fatol
+Vec Object: 1 MPI processes
+  type: seq
+0.997091

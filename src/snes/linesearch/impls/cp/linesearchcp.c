@@ -1,11 +1,11 @@
-#include <petsc-private/linesearchimpl.h>
+#include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchApply_CP"
 static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 {
-  PetscBool      changed_y, changed_w, domainerror;
+  PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
   Vec            X, Y, F, W;
   SNES           snes;
@@ -23,7 +23,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
   /* precheck */
@@ -91,7 +91,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     /* switch directions if we stepped out of bounds */
     if (lambda_update < steptol) lambda_update = lambda + PetscRealPart(fty / s);
 
-    if (PetscIsInfOrNanScalar(lambda_update)) break;
+    if (PetscIsInfOrNanReal(lambda_update)) break;
     if (lambda_update > maxstep) break;
 
     /* compute the new state of the line search */
@@ -116,11 +116,6 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }
   ierr = (*linesearch->ops->snesfunc)(snes,X,F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-  if (domainerror) {
-    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
 
   ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
@@ -133,7 +128,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
   }
   if (lambda <= steptol) {
-    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

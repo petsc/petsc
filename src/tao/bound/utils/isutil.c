@@ -1,6 +1,6 @@
 #include <petsctao.h> /*I "petsctao.h" I*/
-#include <petsc-private/taoimpl.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/taoimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 #undef __FUNCT__
@@ -113,7 +113,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 {
   PetscErrorCode ierr;
   IS             iscomp;
-  PetscBool      flg;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(M,MAT_CLASSID,1);
@@ -129,8 +129,10 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
      Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
      Msub[i,j] = 0      if i!=j and i or j not in Free_Local
      */
-    ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",PETSC_FALSE,&flg,NULL);
-    if (flg == PETSC_TRUE) {
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)M),NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",flg,&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (flg) {
       ierr = MatDuplicate(M, MAT_COPY_VALUES, Msub);CHKERRQ(ierr);
     } else {
       /* Act on hessian directly (default) */

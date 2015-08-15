@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>    /*I  "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>    /*I  "petscsnes.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobianDefault"
@@ -40,18 +40,19 @@
 @*/
 PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
-  Vec            j1a,j2a,x2;
-  PetscErrorCode ierr;
-  PetscInt       i,N,start,end,j,value,root;
-  PetscScalar    dx,*y,*xx,wscale;
-  PetscReal      amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
-  PetscReal      dx_min = 1.e-16,dx_par = 1.e-1,unorm;
-  MPI_Comm       comm;
-  PetscErrorCode (*eval_fct)(SNES,Vec,Vec)=0;
-  PetscBool      assembled,use_wp = PETSC_TRUE,flg;
-  const char     *list[2] = {"ds","wp"};
-  PetscMPIInt    size;
-  const PetscInt *ranges;
+  Vec               j1a,j2a,x2;
+  PetscErrorCode    ierr;
+  PetscInt          i,N,start,end,j,value,root;
+  PetscScalar       dx,*y,wscale;
+  const PetscScalar *xx;
+  PetscReal         amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal         dx_min = 1.e-16,dx_par = 1.e-1,unorm;
+  MPI_Comm          comm;
+  PetscErrorCode    (*eval_fct)(SNES,Vec,Vec)=0;
+  PetscBool         assembled,use_wp = PETSC_TRUE,flg;
+  const char        *list[2] = {"ds","wp"};
+  PetscMPIInt       size;
+  const PetscInt    *ranges;
 
   PetscFunctionBegin;
   ierr     = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
@@ -75,7 +76,9 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
   ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
 
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg && !value) use_wp = PETSC_FALSE;
 
   if (use_wp) {
@@ -88,10 +91,10 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   for (i=0; i<N; i++) {
     ierr = VecCopy(x1,x2);CHKERRQ(ierr);
     if (i>= start && i<end) {
-      ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
-      if (use_wp) dx = 1.0 + unorm;
+      ierr = VecGetArrayRead(x1,&xx);CHKERRQ(ierr);
+      if (use_wp) dx = PetscSqrtReal(1.0 + unorm);
       else        dx = xx[i-start];
-      ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(x1,&xx);CHKERRQ(ierr);
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;
       dx    *= epsilon;
       wscale = 1.0/dx;

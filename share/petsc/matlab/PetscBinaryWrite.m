@@ -7,7 +7,7 @@ function PetscBinaryWrite(inarg,varargin)
 %  a sparse matrix: for example PetscBinaryWrite('myfile',sparse(A));
 %
 %
-%   PetscBinaryWrite(inarg,args to write,['indices','int32' or 'int64'],['precision','float64' or 'float32'])
+%   PetscBinaryWrite(inarg,args to write,['indices','int32' or 'int64'],['precision','float64' or 'float32'],['complex',true,false])
 %   inarg may be:
 %      filename 
 %      socket number (0 for PETSc default)
@@ -28,6 +28,7 @@ end
 
 indices = 'int32';
 precision = 'float64';
+ispetsccomplex = false;
 tnargin = nargin;
 for l=1:nargin-2
   if ischar(varargin{l}) && strcmpi(varargin{l},'indices')
@@ -37,6 +38,10 @@ for l=1:nargin-2
   if ischar(varargin{l}) && strcmpi(varargin{l},'precision')
     tnargin = min(l,tnargin-1);
     precision = varargin{l+1};
+  end
+  if ischar(varargin{l}) && strcmpi(varargin{l},'complex')
+    tnargin = min(l,tnargin-1);
+    ispetsccomplex = varargin{l+1};
   end
 end
 
@@ -61,7 +66,7 @@ for l=1:nargin-1
     write(fd,n_nz,indices);   %nonzeros per row
     [i,j,s] = find(A');
     write(fd,i-1,indices);
-    if ~isreal(s)
+    if ~isreal(s) || ispetsccomplex
       s = conj(s);
       ll = length(s);
       sr = real(s);
@@ -73,7 +78,7 @@ for l=1:nargin-1
   else
     [m,n] = size(A);
     write(fd,[1211214,m*n],indices);
-    if ~isreal(A)
+    if ~isreal(A) || ispetsccomplex
       ll = length(A);
       sr = real(A);
       si = imag(A);

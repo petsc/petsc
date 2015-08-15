@@ -1,5 +1,5 @@
 
-#include <petsc-private/isimpl.h>                    /*I "petscis.h"  I*/
+#include <petsc/private/isimpl.h>                    /*I "petscis.h"  I*/
 #include <petscbt.h>
 
 #undef __FUNCT__
@@ -281,7 +281,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
     }
   } else imin = imax = 0;
 
-  ierr = PetscMalloc1((n1+n2),&iout);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n1+n2,&iout);CHKERRQ(ierr);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */
@@ -413,7 +413,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(listlen, &colors);CHKERRQ(ierr);
-  ierr = PetscObjectsGetGlobalNumbering(comm, listlen, (PetscObject*)islist,&ncolors, colors);CHKERRQ(ierr);
+  ierr = PetscObjectsListGetGlobalNumbering(comm, listlen, (PetscObject*)islist,&ncolors, colors);CHKERRQ(ierr);
   len  = 0;
   for (i = 0; i < listlen; ++i) {
     ierr = ISGetLocalSize(islist[i], &leni);CHKERRQ(ierr);
@@ -570,7 +570,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 
 /*@
    ISEmbed   -   embed IS a into IS b by finding the locations in b that have the same indices as in a.
-                 If c is the IS of these locations, we have a = b*c, regarded as a composition of the 
+                 If c is the IS of these locations, we have a = b*c, regarded as a composition of the
                  corresponding ISLocalToGlobalMaps.
 
   Not collective.
@@ -620,6 +620,65 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
     ierr      = PetscMemcpy(cindices,cindices2,clen*sizeof(PetscInt));CHKERRQ(ierr);
     ierr      = PetscFree(cindices2);CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, clen, cindices, PETSC_OWN_POINTER, c);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,clen,cindices,PETSC_OWN_POINTER,c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+  ISSortPermutation  -  calculate the permutation of the indices into a nondecreasing order.
+
+  Not collective.
+
+  Input arguments:
++ f      -  IS to sort
+- always -  build the permutation even when f's indices are nondecreasin.
+
+  Output argument:
+. h    -  permutation or NULL, if f is nondecreasing and always == PETSC_TRUE.
+
+
+  Note: Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
+        If always == PETSC_FALSE, an extra check is peformed to see whether
+	the f indices are nondecreasing. h is built on PETSC_COMM_SELF, since
+	the permutation has a local meaning only.
+
+  Level: advanced
+
+.seealso ISLocalToGlobalMapping, ISSort(), PetscIntSortWithPermutation()
+ @*/
+#undef  __FUNCT__
+#define __FUNCT__ "ISSortPermutation"
+PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
+{
+  PetscErrorCode  ierr;
+  const PetscInt  *findices;
+  PetscInt        fsize,*hindices,i;
+  PetscBool       isincreasing;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(f,IS_CLASSID,1);
+  PetscValidPointer(h,3);
+  ierr = ISGetLocalSize(f,&fsize);CHKERRQ(ierr);
+  ierr = ISGetIndices(f,&findices);CHKERRQ(ierr);
+  *h = NULL;
+  if (!always) {
+    isincreasing = PETSC_TRUE;
+    for (i = 1; i < fsize; ++i) {
+      if (findices[i] <= findices[i-1]) {
+	isincreasing = PETSC_FALSE;
+	break;
+      }
+    }
+    if (isincreasing) {
+      ierr = ISRestoreIndices(f,&findices);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  ierr = PetscMalloc1(fsize,&hindices);CHKERRQ(ierr);
+  for (i = 0; i < fsize; ++i) hindices[i] = i;
+  ierr = PetscSortIntWithPermutation(fsize,findices,hindices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(f,&findices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,fsize,hindices,PETSC_OWN_POINTER,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

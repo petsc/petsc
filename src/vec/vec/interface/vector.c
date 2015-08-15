@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petsc-private/vecimpl.h>    /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>    /*I  "petscvec.h"   I*/
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
@@ -482,8 +482,8 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
    Collective on Vec
 
    Input Parameters:
-+  vv - pointer to pointer to array of vector pointers
--  m - the number of vectors previously obtained
++  vv - pointer to pointer to array of vector pointers, if NULL no vectors are destroyed
+-  m - the number of vectors previously obtained, if zero no vectors are destroyed
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -503,6 +503,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
   if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  if (!m) PetscFunctionReturn(0);
+  if (!*vv) PetscFunctionReturn(0);
   ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv  = 0;
   PetscFunctionReturn(0);
@@ -521,11 +523,9 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
    Notes:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
++     PETSC_VIEWER_STDOUT_SELF - for sequential vectors
+.     PETSC_VIEWER_STDOUT_WORLD - for parallel vectors created on PETSC_COMM_WORLD
+-     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
    option PetscViewerSetFormat().
@@ -546,10 +546,21 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types
 
+   Notes: You can pass any number of vector objects, or other PETSc objects to the same viewer.
+
+   Notes for binary viewer: If you pass multiply vectors to a binary viewer you can read them back in in the same order
+$     with VecLoad().
+$
+$    If the blocksize of the vector is greater than one then you must provide a unique prefix to
+$    the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
+$    vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
+$    information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
+$    filename. If you copy the binary file, make sure you copy the associated .info file with it.
+
    Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
-   for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
-   obviously) several times, you must change its name each time before calling the VecView(). The name you use
-   here should equal the name that you use in the Vec object that you use with VecLoad().
+$    for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
+$    obviously) several times, you must change its name each time before calling the VecView(). The name you use
+$    here should equal the name that you use in the Vec object that you use with VecLoad().
 
    See the manual page for VecLoad() on the exact format the binary viewer stores
    the values in the file.
@@ -598,11 +609,13 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
+  ierr = VecLockPush(vec);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_NATIVE && vec->ops->viewnative) {
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   }
+  ierr = VecLockPop(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -845,7 +858,6 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
 
   PetscFunctionBegin;
   PetscValidPointer(v,1);
-  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(&v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -905,10 +917,16 @@ PetscErrorCode  VecResetArray(Vec vec)
   written by the routine VecView().
 
   If the type or size of newvec is not set before a call to VecLoad, PETSc
-  sets the type and the local and global sizes.If type and/or
+  sets the type and the local and global sizes. If type and/or
   sizes are already set, then the same are used.
 
-  IF using HDF5, you must assign the Vec the same name as was used in the Vec
+  If using binary and the blocksize of the vector is greater than one then you must provide a unique prefix to
+  the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
+  vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
+  information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
+  filename. If you copy the binary file, make sure you copy the associated .info file with it.
+
+  If using HDF5, you must assign the Vec the same name as was used in the Vec
   that was stored in the file using PetscObjectSetName(). Otherwise you will
   get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
 
@@ -1265,7 +1283,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
-static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
+static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,Vec vec)
 {
   PetscBool      opt;
   VecType        defaultType;
@@ -1281,7 +1299,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
     else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
+  ierr = VecRegisterAll();CHKERRQ(ierr);
   ierr = PetscOptionsFList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);
@@ -1321,11 +1339,11 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
 
   ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
   /* Handle vector type options */
-  ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
+  ierr = VecSetTypeFromOptions_Private(PetscOptionsObject,vec);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {
-    ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
+    ierr = (*vec->ops->setfromoptions)(PetscOptionsObject,vec);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
@@ -1619,6 +1637,7 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
   if (x == y) PetscFunctionReturn(0);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (x->map->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", x->map->n, y->map->n);
+  VecLocked(y,2);
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {
@@ -1738,7 +1757,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 
   Input Parameters:
 + obj   - the VecStash object
-. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+. bobj - optional other object that provides the prefix
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -1746,17 +1765,16 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   Developer Note: This cannot use PetscObjectViewFromOptions() because it takes a Vec as an argument but does not use VecView
 
 */
-PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char optionname[])
+PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
+  prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -1764,7 +1782,6 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char op
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1844,8 +1861,8 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscOptionsVec"
-PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man[],Vec v,PetscBool *set)
+#define __FUNCT__ "PetscOptionsGetVec"
+PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,PetscBool *set)
 {
   PetscInt       i,N,rstart,rend;
   PetscErrorCode ierr;
@@ -1857,7 +1874,7 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];
@@ -1919,5 +1936,21 @@ PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetInf"
+PetscErrorCode VecSetInf(Vec xin)
+{
+  PetscInt       i,n = xin->map->n;
+  PetscScalar    *xx;
+  PetscScalar    zero=0.0,one=1.0,inf=one/zero;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  for (i=0; i<n; i++) xx[i] = inf;
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

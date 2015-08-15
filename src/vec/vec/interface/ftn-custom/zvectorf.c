@@ -1,5 +1,5 @@
-#include <petsc-private/fortranimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/fortranimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -8,8 +8,10 @@
 #define vecload_                  VECLOAD
 #define vecview_                  VECVIEW
 #define vecgetarray_              VECGETARRAY
+#define vecgetarrayread_          VECGETARRAYREAD
 #define vecgetarrayaligned_       VECGETARRAYALIGNED
 #define vecrestorearray_          VECRESTOREARRAY
+#define vecrestorearrayread_      VECRESTOREARRAYREAD
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecdestroyvecs_           VECDESTROYVECS
 #define vecmax_                   VECMAX
@@ -24,6 +26,9 @@
 #define vecview_                  vecview
 #define vecgetarray_              vecgetarray
 #define vecrestorearray_          vecrestorearray
+#define vecgetarrayaligned_       vecgetarrayaligned
+#define vecgetarrayread_          vecgetarrayread
+#define vecrestorearrayread_      vecrestorearrayread
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecdestroyvecs_           vecdestroyvecs
 #define vecmax_                   vecmax
@@ -120,6 +125,31 @@ PETSC_EXTERN void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *
   *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*x,fa,*ia,m,&lx);if (*ierr) return;
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
+}
+
+PETSC_EXTERN void PETSC_STDCALL vecgetarrayread_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscScalar *lx;
+  PetscInt          m,bs;
+
+  *ierr = VecGetArrayRead(*x,&lx); if (*ierr) return;
+  *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
+  bs    = 1;
+  if (VecGetArrayAligned) {
+    *ierr = VecGetBlockSize(*x,&bs);if (*ierr) return;
+  }
+  *ierr = PetscScalarAddressToFortran((PetscObject)*x,bs,fa,(PetscScalar*)lx,m,ia);
+}
+
+/* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
+PETSC_EXTERN void PETSC_STDCALL vecrestorearrayread_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  PetscInt          m;
+  const PetscScalar *lx;
+
+  *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
+  *ierr = PetscScalarAddressFromFortran((PetscObject)*x,fa,*ia,m,(PetscScalar**)&lx);if (*ierr) return;
+  *ierr = VecRestoreArrayRead(*x,&lx);if (*ierr) return;
 }
 
 /*

@@ -169,20 +169,20 @@ int main(int argc,char **args)
   info.zeropivot     = 1.e-14;
   info.pivotinblocks = 1.0;
 
-  ierr = MatGetFactor(A,"petsc",MAT_FACTOR_LU,&Fact);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(Fact,A,is1,is2,&info);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(Fact,A,&info);CHKERRQ(ierr);
-  ierr = VecSetRandom(yy,rdm);CHKERRQ(ierr);
-  ierr = MatForwardSolve(Fact,yy,xx);CHKERRQ(ierr);
-  ierr = MatBackwardSolve(Fact,xx,s1);CHKERRQ(ierr);
-  ierr = MatDestroy(&Fact);CHKERRQ(ierr);
-  ierr = VecScale(s1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,s1,yy,yy);CHKERRQ(ierr);
-  ierr = VecNorm(yy,NORM_2,&rnorm);CHKERRQ(ierr);
-  if (rnorm<-tol || rnorm>tol) {
-
-
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatForwardSolve/MatBackwardSolve - Norm1=%16.14e bs = %D\n",rnorm,bs);CHKERRQ(ierr);
+  if (bs < 4) {
+    ierr = MatGetFactor(A,"petsc",MAT_FACTOR_LU,&Fact);CHKERRQ(ierr);
+    ierr = MatLUFactorSymbolic(Fact,A,is1,is2,&info);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(Fact,A,&info);CHKERRQ(ierr);
+    ierr = VecSetRandom(yy,rdm);CHKERRQ(ierr);
+    ierr = MatForwardSolve(Fact,yy,xx);CHKERRQ(ierr);
+    ierr = MatBackwardSolve(Fact,xx,s1);CHKERRQ(ierr);
+    ierr = MatDestroy(&Fact);CHKERRQ(ierr);
+    ierr = VecScale(s1,-1.0);CHKERRQ(ierr);
+    ierr = MatMultAdd(A,s1,yy,yy);CHKERRQ(ierr);
+    ierr = VecNorm(yy,NORM_2,&rnorm);CHKERRQ(ierr);
+    if (rnorm<-tol || rnorm>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatForwardSolve/MatBackwardSolve - Norm1=%16.14e bs = %D\n",rnorm,bs);CHKERRQ(ierr);
+    }
   }
 
   ierr = MatLUFactor(B,is1,is2,&info);CHKERRQ(ierr);

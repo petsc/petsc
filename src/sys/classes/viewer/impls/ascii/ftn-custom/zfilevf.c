@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -48,9 +48,9 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR
   PetscPatchDefaultViewers_Fortran(viewer,v);
   FIXCHAR(str,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscViewerASCIIPrintf(v,tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(str,c1);
+  *ierr = PetscViewerASCIIPrintf(v,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
@@ -61,9 +61,9 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer 
   PetscPatchDefaultViewers_Fortran(viewer,v);
   FIXCHAR(str,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscViewerASCIISynchronizedPrintf(v,tmp);if (*ierr) return;
-  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(str,c1);
+  *ierr = PetscViewerASCIISynchronizedPrintf(v,tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedallow_(PetscViewer *viewer,PetscBool *allow,PetscErrorCode *ierr)

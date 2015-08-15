@@ -1,5 +1,5 @@
 
-#include <petsc-private/bagimpl.h>     /*I  "petscbag.h"   I*/
+#include <petsc/private/bagimpl.h>     /*I  "petscbag.h"   I*/
 #include <petscviewer.h>
 
 #undef __FUNCT__
@@ -207,7 +207,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
    Level: beginner
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
-           PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
+           PetscBagRegister64bitInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
@@ -235,6 +235,58 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
   item->next       = 0;
   item->msize      = 1;
   *(PetscInt*)addr = mdefault;
+  ierr             = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBagRegister64bitInt"
+/*@C
+   PetscBagRegister64bitInt - add an integer value to the bag
+
+   Logically Collective on PetscBag
+
+   Input Parameter:
++  bag - the bag of values
+.  addr - location of integer in struct
+.  mdefault - the initial value
+.  name - name of the integer
+-  help - longer string with more information about the value
+
+   Level: beginner
+
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
+           PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+
+@*/
+PetscErrorCode PetscBagRegister64bitInt(PetscBag bag,void *addr,Petsc64bitInt mdefault,const char *name,const char *help)
+{
+  PetscErrorCode ierr;
+  PetscBagItem   item;
+  char           nname[PETSC_BAG_NAME_LENGTH+1];
+  PetscBool      printhelp;
+  PetscInt       odefault = (PetscInt)mdefault;
+  PetscBool      flg;
+  
+  PetscFunctionBegin;
+  nname[0] = '-';
+  nname[1] = 0;
+  ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
+  ierr     = PetscOptionsHasName(NULL,"-help",&printhelp);CHKERRQ(ierr);
+  if (printhelp) {
+    ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%d>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,odefault,help);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsGetInt(bag->bagprefix,nname,&odefault,&flg);CHKERRQ(ierr);
+  if (flg) mdefault = (Petsc64bitInt)odefault;
+
+  ierr         = PetscNew(&item);CHKERRQ(ierr);
+  item->dtype  = PETSC_INT;
+  item->offset = ((char*)addr) - ((char*)bag);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  item->next       = 0;
+  item->msize      = 1;
+  *(Petsc64bitInt*)addr = mdefault;
   ierr             = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -562,7 +614,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
   ierr = PetscStrcpy(helpname,bag->bagname);CHKERRQ(ierr);
   ierr = PetscStrcat(helpname," ");CHKERRQ(ierr);
   ierr = PetscStrcat(helpname,bag->baghelp);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,0);
+  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,0);CHKERRQ(ierr);
   while (nitem) {
     name[0] = '-';
     name[1] = 0;
@@ -772,35 +824,35 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this viewer type");
 
-  ierr = PetscViewerBinaryRead(view,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(view,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (classid != PETSC_BAG_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
-  ierr = PetscViewerBinaryRead(view,&deprecatedbagsize,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(view,&bagcount,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(view,&deprecatedbagsize,1,NULL,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(view,&bagcount,1,NULL,PETSC_INT);CHKERRQ(ierr);
   if (bagcount != bag->count) SETERRQ2(comm,PETSC_ERR_ARG_INCOMP,"Bag in file has different number of entries %d then passed in bag %d\n",(int)bagcount,(int)bag->count);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(view,bag->bagname,PETSC_BAG_NAME_LENGTH,NULL,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,NULL,PETSC_CHAR);CHKERRQ(ierr);
 
   nitem = bag->bagitems;
   for (i=0; i<bagcount; i++) {
-    ierr = PetscViewerBinaryRead(view,&offset,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(view,&offset,1,NULL,PETSC_INT);CHKERRQ(ierr);
     /* ignore the offset in the file */
-    ierr = PetscViewerBinaryRead(view,&dtype,1,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(view,name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(view,help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(view,&msize,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(view,&dtype,1,NULL,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(view,name,PETSC_BAG_NAME_LENGTH,NULL,PETSC_CHAR);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(view,help,PETSC_BAG_HELP_LENGTH,NULL,PETSC_CHAR);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(view,&msize,1,NULL,PETSC_INT);CHKERRQ(ierr);
 
     if (dtype == (PetscInt) PETSC_CHAR) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_CHAR);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_CHAR);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_REAL) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_REAL);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_REAL);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_SCALAR) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_INT) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_INT);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_BOOL) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_BOOL);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_BOOL);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_ENUM) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,PETSC_ENUM);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,NULL,PETSC_ENUM);CHKERRQ(ierr);
       ierr = PetscViewerBinaryReadStringArray(view,&list);CHKERRQ(ierr);
       /* don't need to save list because it is already registered in the bag */
       ierr = PetscFree(list);CHKERRQ(ierr);

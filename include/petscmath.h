@@ -29,12 +29,16 @@ typedef float PetscReal;
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
 #define PetscLog10Real(a)   log10(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2(a)
+#endif
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
 #define PetscTanReal(a)     tan(a)
 #define PetscAsinReal(a)    asin(a)
 #define PetscAcosReal(a)    acos(a)
 #define PetscAtanReal(a)    atan(a)
+#define PetscAtan2Real(a,b) atan2(a,b)
 #define PetscSinhReal(a)    sinh(a)
 #define PetscCoshReal(a)    cosh(a)
 #define PetscTanhReal(a)    tanh(a)
@@ -50,12 +54,16 @@ typedef double PetscReal;
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
 #define PetscLog10Real(a)   log10(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2(a)
+#endif
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
 #define PetscTanReal(a)     tan(a)
 #define PetscAsinReal(a)    asin(a)
 #define PetscAcosReal(a)    acos(a)
 #define PetscAtanReal(a)    atan(a)
+#define PetscAtan2Real(a,b) atan2(a,b)
 #define PetscSinhReal(a)    sinh(a)
 #define PetscCoshReal(a)    cosh(a)
 #define PetscTanhReal(a)    tanh(a)
@@ -79,13 +87,16 @@ typedef __float128 PetscReal;
 #define PetscExpReal(a)     expq(a)
 #define PetscLogReal(a)     logq(a)
 #define PetscLog10Real(a)   log10q(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2q(a)
+#endif
 #define PetscSinReal(a)     sinq(a)
 #define PetscCosReal(a)     cosq(a)
 #define PetscTanReal(a)     tanq(a)
 #define PetscAsinReal(a)    asinq(a)
 #define PetscAcosReal(a)    acosq(a)
 #define PetscAtanReal(a)    atanq(a)
-#define PetscAtan2Real(a)   atan2q(a)
+#define PetscAtan2Real(a,b) atan2q(a,b)
 #define PetscSinhReal(a)    sinhq(a)
 #define PetscCoshReal(a)    coshq(a)
 #define PetscTanhReal(a)    tanhq(a)
@@ -100,7 +111,7 @@ typedef __float128 PetscReal;
     Complex number definitions
  */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
+#if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
 #if defined(PETSC_HAVE_CUSP)
@@ -136,12 +147,10 @@ typedef complexlib::complex<double> PetscComplex;
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
-#endif  /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
+#endif  /* ! PETSC_SKIP_COMPLEX */
 
 #elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
-/* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
-/* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
+#if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
 
@@ -209,7 +218,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #endif /* PETSC_USE_REAL_* */
 #elif (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
-#endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
+#endif /* !PETSC_SKIP_COMPLEX */
 #endif /* (__cplusplus && PETSC_HAVE_CXX_COMPLEX) else-if (!__cplusplus && PETSC_HAVE_C99_COMPLEX) */
 
 #if defined(PETSC_HAVE_COMPLEX)
@@ -489,10 +498,10 @@ M*/
 #define PETSC_INFINITY                PETSC_MAX_REAL/4.0
 #define PETSC_NINFINITY              -PETSC_INFINITY
 
-PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
-PETSC_EXTERN PetscBool PetscIsNormalScalar(PetscScalar);
 PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
 /* ----------------------------------------------------------------------------*/
 #define PassiveReal   PetscReal
@@ -515,7 +524,7 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 #define MPIU_2INT MPI_2INT
 #endif
 
-PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) 
+PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
 {
   PetscInt result = 1;
   while (power) {
@@ -526,7 +535,7 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) 
+PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
 {
   PetscReal result = 1;
   if (power < 0) {
@@ -541,7 +550,7 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) 
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power)
 {
   PetscScalar result = 1;
   if (power < 0) {
@@ -561,4 +570,11 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
   PetscScalar cpower = power;
   return PetscPowScalar(base,cpower);
 }
+
+#ifndef PETSC_HAVE_LOG2
+PETSC_STATIC_INLINE PetscReal PetscLog2Real(PetscReal n)
+{
+  return PetscLogReal(n)/PetscLogReal(2);
+}
+#endif
 #endif

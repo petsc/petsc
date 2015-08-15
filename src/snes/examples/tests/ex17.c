@@ -189,8 +189,9 @@ Output Parameter:
 */
 static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xx,*ff;
+  PetscErrorCode    ierr;
+  const PetscScalar *xx;
+  PetscScalar       *ff;
 
   PetscFunctionBeginUser;
   /*
@@ -200,7 +201,7 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   - You MUST call VecRestoreArray() when you no longer need access to
   the array.
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
   /*
@@ -213,7 +214,7 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   /*
   Restore vectors
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -235,15 +236,16 @@ Output Parameters:
 */
 static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
-  PetscScalar    *xx,A[4];
-  PetscErrorCode ierr;
-  PetscInt       idx[2] = {0,1};
+  const PetscScalar *xx;
+  PetscScalar       A[4];
+  PetscErrorCode    ierr;
+  PetscInt          idx[2] = {0,1};
 
   PetscFunctionBeginUser;
   /*
   Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
   Compute Jacobian entries and insert into matrix.
@@ -257,7 +259,7 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   /*
   Restore vector
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
   Assemble matrix
@@ -273,8 +275,9 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 #define __FUNCT__ "FormFunction2"
 static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xx,*ff;
+  PetscErrorCode    ierr;
+  const PetscScalar *xx;
+  PetscScalar       *ff;
 
   PetscFunctionBeginUser;
   /*
@@ -284,7 +287,7 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   - You MUST call VecRestoreArray() when you no longer need access to
   the array.
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
   /*
@@ -296,7 +299,7 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   /*
   Restore vectors
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -306,15 +309,16 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 #define __FUNCT__ "FormJacobian2"
 static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
-  PetscScalar    *xx,A[4];
-  PetscErrorCode ierr;
-  PetscInt       idx[2] = {0,1};
+  const PetscScalar *xx;
+  PetscScalar       A[4];  
+  PetscErrorCode    ierr;
+  PetscInt          idx[2] = {0,1};
 
   PetscFunctionBeginUser;
   /*
   Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
   Compute Jacobian entries and insert into matrix.
@@ -328,7 +332,7 @@ static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   /*
   Restore vector
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
   Assemble matrix
@@ -613,8 +617,9 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat jac,Mat B,void *du
 #define __FUNCT__ "FormFunction2_block"
 static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xx,*ff;
+  PetscErrorCode    ierr;
+  PetscScalar       *ff;
+  const PetscScalar *xx;
 
   PetscFunctionBeginUser;
   /*
@@ -624,7 +629,7 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
   - You MUST call VecRestoreArray() when you no longer need access to
   the array.
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
   /*
@@ -636,7 +641,7 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
   /*
   Restore vectors
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -646,15 +651,16 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
 #define __FUNCT__ "FormJacobian2_block"
 static PetscErrorCode FormJacobian2_block(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
-  PetscScalar    *xx,A[4];
-  PetscErrorCode ierr;
-  PetscInt       idx[2] = {0,1};
+  const PetscScalar *xx;
+  PetscScalar       A[4];
+  PetscErrorCode    ierr;
+  PetscInt          idx[2] = {0,1};
 
   PetscFunctionBeginUser;
   /*
   Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
   Compute Jacobian entries and insert into matrix.
@@ -668,7 +674,7 @@ static PetscErrorCode FormJacobian2_block(SNES snes,Vec x,Mat jac,Mat B,void *du
   /*
   Restore vector
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
   Assemble matrix

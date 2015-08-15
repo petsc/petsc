@@ -33,9 +33,9 @@ LOCDIR   = src/docs/
 
 CLEANFILES = website/publications/petscapps.html website/publications/petscapps-bib.html
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 # petscapps* get built with 'builddist' and 'rsync'ed over to petsc web via the crontab
 bib2html: clean

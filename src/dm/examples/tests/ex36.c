@@ -215,7 +215,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
 
   for (i=sx; i<sx+nx; i++) {
@@ -252,7 +252,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -272,7 +272,7 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&sx,&sy,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   }
 
   ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -304,7 +304,7 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   }
 
   ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

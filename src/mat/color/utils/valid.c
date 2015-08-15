@@ -1,4 +1,4 @@
-#include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
 PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring,PetscSF *,PetscSF *);
@@ -31,10 +31,10 @@ PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring color
   ierr = PetscSFGetGraph(etor,&nrows,&nleafrows,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etoc,&ncols,&nleafcols,NULL,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(m,&s,&e);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&statecol);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nrows,&staterow);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nleafcols,&stateleafcol);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nleafrows,&stateleafrow);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncols,&statecol);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows,&staterow);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleafcols,&stateleafcol);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleafrows,&stateleafrow);CHKERRQ(ierr);
 
   for (l=0;l<ncolors;l++) {
     if (l > maxcolors) break;

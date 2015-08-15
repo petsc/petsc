@@ -11,9 +11,9 @@ EXAMPLESF     =
 TESTS         = BasicVersion OpenMPVersion
 MANSEC        = Sys
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 
 BasicVersion: BasicVersion.o  chkopts
 	-@${CLINKER} -o BasicVersion BasicVersion.o ${PETSC_LIB}
@@ -44,7 +44,10 @@ stream:  MPIVersion
 	-@echo "------------------------------------------------"
 	-@${PYTHON} process.py createfile
 
-streams: stream
+hwloc:
+	-@if [ "${LSTOPO}foo" != "foo" ]; then ${LSTOPO} --no-icaches --no-io --ignore PU ; fi
+
+streams: stream hwloc
 	-@${PYTHON} process.py
 
 

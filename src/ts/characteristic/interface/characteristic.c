@@ -1,5 +1,5 @@
 
-#include <petsc-private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
+#include <petsc/private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
 #include <petscdmda.h>
 #include <petscviewer.h>
 
@@ -85,8 +85,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   *c = NULL;
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
-  ierr = PetscLogObjectCreate(newC);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(newC, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
   *c   = newC;
 
   newC->structured          = PETSC_TRUE;
@@ -794,9 +793,9 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 
   neighbors[0] = rank;
   rank = 0;
-  ierr = PetscMalloc(sizeof(PetscInt*)*PJ,&procs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PJ,&procs);CHKERRQ(ierr);
   for (pj=0; pj<PJ; pj++) {
-    ierr = PetscMalloc(sizeof(PetscInt)*PI,&(procs[pj]));CHKERRQ(ierr);
+    ierr = PetscMalloc1(PI,&(procs[pj]));CHKERRQ(ierr);
     for (pi=0; pi<PI; pi++) {
       procs[pj][pi] = rank;
       rank++;

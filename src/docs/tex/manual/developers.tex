@@ -40,8 +40,8 @@
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 3.5}}
-{}{June 2014}
+{\rm This document is intended for use with PETSc 3.6}}
+{}{June 2015}
 
 \newpage
 
@@ -113,6 +113,18 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 
 \tableofcontents
 
+\chapter{Answering petsc-maint@mcs.anl.gov and petsc-users@mcs.anl.gov}
+
+\begin{itemize}
+\item Try to be polite (this is not always easy)
+\item Address the person by name (when it is possible to determine their name)
+\item Appologize for the problem when it is appropriate (but not otherwise)
+\item Thank the person for their patience if it is more than six hours since the report came in.
+\item if the person drops the petsc-maint or petsc-users from the mailing list add it back in.
+\end{itemize}
+
+Often it pays to not ask too many questions or give to many suggestions in the same email. The user often only responds to the first of them anyways.
+
 \chapter{Style Guide}
 
 The PETSc team uses certain conventions to make our source code consistent. Groups
@@ -158,7 +170,7 @@ Within the PETSc source code, we adhere to the following guidelines
 so that the code is uniform and easily maintainable:
 
 \begin{itemize}
-\item Public PETSc includes, \trl{petsc*.h}, cannot include private PETSc \trl{petsc-private/*impl.h} includes.
+\item Public PETSc includes, \trl{petsc*.h}, cannot include private PETSc \trl{petsc/private/*impl.h} includes.
 \item Public and private PETSc includes, cannot include include files in the PETSc source tree.
 \item All PETSc function bodies are indented two characters.
 \item Each additional level of loops, if statements, etc. is indented
@@ -249,7 +261,6 @@ never
    else \{.
 \end{tabbing}
  The closing bracket \} should {\bf always} be on its own line.
-\item Do not use NULL in the source code, use PETSC\_NULL.
 \item Do not leave chunks of commented out code in the source files.
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
@@ -285,7 +296,7 @@ instead write
 \item Do not use the {\em register} directive.
 \item Never use a local variable counter like PetscInt flops = 0; to accumulate flops and then call PetscLogFlops() {\em always} just
       call PetscLogFlops() directly when needed.
-\item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)}
+\item Do not use {\em if (rank == 0)} or {\em if (v == NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)}
 instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
 \item Do not use {\em \#ifdef} or {\em \#ifndef} rather use {\em \#if defined(...} or {\em \#if !defined(...}
 \item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate ./configure checks and \#if defined() checks the code. Code should also be provided that works if the MPI feature is not available. For example,
@@ -615,7 +626,7 @@ Each class has
 \item Its own, application public, include file \trl{include/petsc<class>.h}
 \item Its own directory, \trl{src/<class>}
 \item A data structure defined in  the file
-      \trl{include/petsc-private/<class>impl.h}.
+      \trl{include/petsc/private/<class>impl.h}.
       This data structure is shared by all the different PETSc implementations of the
       class. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
@@ -658,7 +669,7 @@ without altering or recompiling the application code.
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/petscimpl.h.html}{include/petsc-private/petscimpl.h}
+defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/petscimpl.h.html}{include/petsc/private/petscimpl.h}
 
 \begin{tabbing}
 \\
@@ -961,13 +972,13 @@ vs \_p\_Vec.
 
 \subsection{Preconditioners: PC}
 
-The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/pcimpl.h.html}{include/petsc-private/pcimpl.h} include file.
+The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/pcimpl.h.html}{include/petsc/private/pcimpl.h} include file.
 A carefully commented implementation of a PC object can be found in
 \href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/pc/impls/jacobi/jacobi.c.html}{src/ksp/pc/impls/jacobi/jacobi.c}.
 
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/kspimpl.h.html}{include/petsc-private/kspimpl.h} include file.
+The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/kspimpl.h.html}{include/petsc/private/kspimpl.h} include file.
 A carefully commented implementation of a KSP object can be found in
 \href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/ksp/impls/cg/cg.c.html}{src/ksp/ksp/impls/cg/cg.c}.
 

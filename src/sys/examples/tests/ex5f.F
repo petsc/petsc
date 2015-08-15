@@ -2,7 +2,7 @@
 !  Simple PETSc Program written in Fortran 77.
 !
        program main
-#include <finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
        PetscErrorCode  ierr
        PetscMPIInt     rank
        character*(80) arch

@@ -3,7 +3,7 @@
       Routines to handle signals the program will receive.
     Usually this will call the error handlers.
 */
-#include <petsc-private/petscimpl.h>             /*I   "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>             /*I   "petscsys.h"   I*/
 #include <signal.h>
 
 static PetscClassId SIGNAL_CLASSID = 0;

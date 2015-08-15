@@ -1,12 +1,1 @@
-  0 KSP Residual norm 136.489 
-  1 KSP Residual norm 24.8665 
-  2 KSP Residual norm 13.8277 
-  3 KSP Residual norm 6.06183 
-  4 KSP Residual norm 1.54083 
-  5 KSP Residual norm 1.07245 
-  6 KSP Residual norm 0.200025 
-  7 KSP Residual norm 0.0804962 
-  8 KSP Residual norm 0.0426512 
-  9 KSP Residual norm 0.0165238 
- 10 KSP Residual norm 0.00212451 
- 11 KSP Residual norm 0.0004532 
+Linear solve did not converge due to DIVERGED_INDEFINITE_PC iterations 7

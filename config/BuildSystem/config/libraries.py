@@ -52,8 +52,8 @@ class Configure(config.base.Configure):
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
           return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
-        if flagSubst in self.framework.argDB:
-          return [self.framework.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
+        if flagSubst in self.argDB:
+          return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
         else:
           return ['-L'+dirname,' -l'+name]
       else:
@@ -182,9 +182,9 @@ class Configure(config.base.Configure):
     if fortranMangle:
       funcs = map(self.compilers.mangleFortranFunction, funcs)
     if not funcs:
-      self.framework.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
+      self.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
       return True
-    self.framework.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
+    self.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
     if self.language[-1] == 'FC':
       includes = ''
     else:
@@ -290,6 +290,15 @@ extern "C" {
       self.logPrint('Warning: <fenv.h> with FE_DFL_ENV not found')
     return
 
+  def checkMathLog2(self):
+    '''Check for log2() in libm, the math library'''
+    if not self.math is None and self.check(self.math, ['log2'], prototype = ['double log2(double);'], call = ['double x = 1,y; y = log2(x);\n']):
+      self.logPrint('log2() found')
+      self.addDefine('HAVE_LOG2', 1)
+    else:
+      self.logPrint('Warning: log2() not found')
+    return
+
   def checkCompression(self):
     '''Check for libz, the compression library'''
     self.compression = None
@@ -329,7 +338,7 @@ extern "C" {
 
   def checkDynamic(self):
     '''Check for the header and libraries necessary for dynamic library manipulation'''
-    if 'with-dynamic-loading' in self.framework.argDB and not self.framework.argDB['with-dynamic-loading']: return
+    if 'with-dynamic-loading' in self.argDB and not self.argDB['with-dynamic-loading']: return
     self.check(['dl'], 'dlopen')
     self.headers.check('dlfcn.h')
     return
@@ -465,10 +474,22 @@ int checkInit(void) {
     if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)
     if os.path.isfile(lib2Name) and self.framework.doCleanup: os.remove(lib2Name)
     if isShared:
-      self.framework.logPrint('Library was shared')
+      self.logPrint('Library was shared')
     else:
-      self.framework.logPrint('Library was not shared')
+      self.logPrint('Library was not shared')
     return isShared
+
+  def isBGL(self):
+    '''Returns true if compiler is IBM cross compiler for BGL'''
+    if not hasattr(self, '_isBGL'):
+      self.logPrint('**********Checking if running on BGL/IBM detected')
+      if (self.check('', 'bgl_perfctr_void') or self.check('','ADIOI_BGL_Open')) and self.check('', '_xlqadd'):
+        self.logPrint('*********BGL/IBM detected')
+        self._isBGL = 1
+      else:
+        self.logPrint('*********BGL/IBM test failure')
+        self._isBGL = 0
+    return self._isBGL
 
   def configure(self):
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
@@ -476,6 +497,7 @@ int checkInit(void) {
     self.executeTest(self.checkMathErf)
     self.executeTest(self.checkMathTgamma)
     self.executeTest(self.checkMathFenv)
+    self.executeTest(self.checkMathLog2)
     self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)

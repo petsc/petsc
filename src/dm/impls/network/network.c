@@ -1,4 +1,4 @@
-#include <petsc-private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
+#include <petsc/private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 
@@ -120,21 +120,21 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(network->plex,0,&network->eStart,&network->eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(network->plex,1,&network->vStart,&network->vEnd);CHKERRQ(ierr);
-  
+
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&network->DofSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DataSection,network->pStart,network->pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscMalloc1((network->pEnd-network->pStart),&network->header);CHKERRQ(ierr);
+  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
     ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
     network->header[i].offset[ndata] = 0;
   }
-  ierr = PetscMalloc1((network->pEnd-network->pStart),&network->cvalue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->cvalue);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -486,13 +486,13 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
     ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
     /* Copy header */
     header = &network->header[p];
-    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));
+    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     /* Copy data */
     cvalue = &network->cvalue[p];
     ncomp = header->ndata;
     for (i = 0; i < ncomp; i++) {
       offset = offsetp + network->dataheadersize + header->offset[i];
-      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));
+      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -546,7 +546,6 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
 
   Input Parameter:
 + oldDM - the original DMNetwork object
-. partitioner - The partitioning package, or NULL for the default
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
@@ -561,7 +560,7 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
 
 .seealso: DMNetworkCreate
 @*/
-PetscErrorCode DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM)
+PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
 {
   PetscErrorCode ierr;
   DM_Network     *oldDMnetwork = (DM_Network*)oldDM->data;
@@ -574,7 +573,7 @@ PetscErrorCode DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt 
   newDMnetwork = (DM_Network*)newDM->data;
   newDMnetwork->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   /* Distribute plex dm and dof section */
-  ierr = DMPlexDistribute(oldDMnetwork->plex,partitioner,overlap,&pointsf,&newDMnetwork->plex);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(oldDMnetwork->plex,overlap,&pointsf,&newDMnetwork->plex);CHKERRQ(ierr);
   /* Distribute dof section */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(pointsf,oldDMnetwork->DofSection,NULL,newDMnetwork->DofSection);CHKERRQ(ierr);
@@ -735,6 +734,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
   DM_Network     *network = (DM_Network*) dm->data;
 
   PetscFunctionBegin;
+  if (--network->refct > 0) PetscFunctionReturn(0);
   ierr = DMDestroy(&network->plex);CHKERRQ(ierr);
   network->edges = NULL;
   ierr = PetscSectionDestroy(&network->DataSection);CHKERRQ(ierr);

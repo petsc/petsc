@@ -261,9 +261,9 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
   }
 
   /* malloc space for nonzeros */
-  ierr = PetscMalloc1((nzeros+1),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc1((N+1),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nzeros+1),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nzeros+1,&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N+1,&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nzeros+1,&ja);CHKERRQ(ierr);
 
   nzeros = 0;
   ia[0]  = 0;
@@ -342,7 +342,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                 /*44*/ 0,
                                        0,
-                                       0,
+                                       MatShift_Basic,
                                        0,
                                        0,
                                 /*49*/ 0,

@@ -1,6 +1,6 @@
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Shell"
@@ -21,7 +21,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc1((m+1),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,&mat);CHKERRQ(ierr);

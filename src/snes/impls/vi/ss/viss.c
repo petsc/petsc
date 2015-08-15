@@ -1,8 +1,8 @@
 
 #include <../src/snes/impls/vi/ss/vissimpl.h> /*I "petscsnes.h" I*/
-#include <../include/petsc-private/kspimpl.h>
-#include <../include/petsc-private/matimpl.h>
-#include <../include/petsc-private/dmimpl.h>
+#include <../include/petsc/private/kspimpl.h>
+#include <../include/petsc/private/matimpl.h>
+#include <../include/petsc/private/dmimpl.h>
 
 
 /*
@@ -49,7 +49,7 @@ PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 
    Input Parameters:
 .  snes - the SNES context
-.  x - current iterate
+.  X - current iterate
 .  functx - user defined function context
 
    Output Parameters:
@@ -63,13 +63,14 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
   PetscErrorCode    ierr;
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*)snes->data;
   Vec               Xl  = snes->xl,Xu = snes->xu,F = snes->vec_func;
-  PetscScalar       *phi_arr,*x_arr,*f_arr,*l,*u;
+  PetscScalar       *phi_arr,*f_arr,*l,*u;
+  const PetscScalar *x_arr;
   PetscInt          i,nlocal;
 
   PetscFunctionBegin;
   ierr = (*vi->computeuserfunction)(snes,X,F,functx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x_arr);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecGetArray(Xl,&l);CHKERRQ(ierr);
   ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
@@ -89,7 +90,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
     }
   }
 
-  ierr = VecRestoreArray(X,&x_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xl,&l);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xu,&u);CHKERRQ(ierr);
@@ -218,15 +219,12 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
    Input Parameters:
 .  snes - the SNES context
 
-   Output Parameter:
-.  outits - number of iterations until termination
-
    Application Interface Routine: SNESSolve()
 
    Notes:
    This implements essentially a semismooth Newton method with a
-   line search. The default line search does not do any line seach
-   but rather takes a full newton step.
+   line search. The default line search does not do any line search
+   but rather takes a full Newton step.
 
    Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
@@ -235,15 +233,15 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 #define __FUNCT__ "SNESSolve_VINEWTONSSLS"
 PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
-  SNES_VINEWTONSSLS  *vi = (SNES_VINEWTONSSLS*)snes->data;
-  PetscErrorCode     ierr;
-  PetscInt           maxits,i,lits;
-  PetscBool          lssucceed;
-  PetscReal          gnorm,xnorm=0,ynorm;
-  Vec                Y,X,F;
-  KSPConvergedReason kspreason;
-  DM                 dm;
-  DMSNES             sdm;
+  SNES_VINEWTONSSLS    *vi = (SNES_VINEWTONSSLS*)snes->data;
+  PetscErrorCode       ierr;
+  PetscInt             maxits,i,lits;
+  SNESLineSearchReason lssucceed;
+  PetscReal            gnorm,xnorm=0,ynorm;
+  Vec                  Y,X,F;
+  KSPConvergedReason   kspreason;
+  DM                   dm;
+  DMSNES               sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -278,7 +276,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  SNESCheckFunctionNorm(snes,vi->merit);
 
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
@@ -344,7 +342,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
     ierr = SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetReason(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -353,7 +351,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
-    if (!lssucceed) {
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -392,7 +390,6 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
    Input Parameter:
 .  snes - the SNES context
-.  x - the solution vector
 
    Application Interface Routine: SNESSetUp()
 
@@ -448,14 +445,14 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions_VI(snes);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
+  ierr = SNESSetFromOptions_VI(PetscOptionsObject,snes);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES semismooth method options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set up the default line search */
   if (!snes->linesearch) {
@@ -472,7 +469,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
       SNESVINEWTONSSLS - Semi-smooth solver for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
++   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner
@@ -480,10 +477,10 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
    References:
    - T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
+   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
+     Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
-           SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
 #undef __FUNCT__

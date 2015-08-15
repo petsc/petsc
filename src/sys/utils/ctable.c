@@ -13,7 +13,7 @@
 +     n - expected number of keys
 -     maxkey- largest possible key
 
-   Notes: keys are between 1 and N inclusive
+   Notes: keys are between 1 and maxkey inclusive
 
 */
 PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rta)
@@ -51,8 +51,8 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   PetscFunctionBegin;
   ierr          = PetscNew(&ta);CHKERRQ(ierr);
   ta->tablesize = intable->tablesize;
-  ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
-  ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   for (i = 0; i < ta->tablesize; i++) {
     ta->keytable[i] = intable->keytable[i];
     ta->table[i]    = intable->table[i];

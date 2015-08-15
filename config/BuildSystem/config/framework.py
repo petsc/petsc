@@ -147,6 +147,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
       self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
+      if not os.access(self._tmpDir, os.X_OK):
+        raise RuntimeError('Cannot execute things in tmp directory '+self._tmpDir+'. Consider setting TMPDIR to something else.')
       self.logPrint('All intermediate test results are stored in '+self._tmpDir)
     return self._tmpDir
   def setTmpDir(self, temp):
@@ -214,7 +216,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Change titles and setup all children'''
     argDB = script.Script.setupArguments(self, argDB)
 
-    self.help.title = 'Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-external-packages-dir=/Users/bsmith/external\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
+    self.help.title = 'Configure Help\n   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-external-packages-dir=/Users/bsmith/external\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
     self.actions.title = 'Configure Actions\n   These are the actions performed by configure on the filesystem'
 
     for child in self.childGraph.vertices:
@@ -236,7 +238,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputMakeRuleHeader(self.makeRuleHeader)
       self.log.write('**** ' + self.makeRuleHeader + ' ****\n')
       self.outputMakeRuleHeader(self.log)
-      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeRuleHeader)
     if self.header:
       self.outputHeader(self.header)
       self.log.write('**** ' + self.header + ' ****\n')
@@ -280,7 +282,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if isinstance(child, type):
         config = child
         break
-    if config is None and not self.configureParent is None:
+    if config is None and hasattr(self, 'configureParent') and not self.configureParent is None:
       for child in self.configureParent.childGraph.vertices:
         if isinstance(child, type):
           config = child
@@ -322,7 +324,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def require(self, moduleName, depChild, keywordArgs = {}):
     '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
     config = self.getChild(moduleName, keywordArgs)
-    self.childGraph.addEdges(depChild, [config])
+    if not config is depChild:
+      self.childGraph.addEdges(depChild, [config])
     return config
 
   ###############################################
@@ -890,7 +893,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchCleanup)
       # pretty print repr(args.values())
       for itm in args:
-        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=PETSc.compilerOptions'):
+        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
           body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
@@ -926,22 +929,156 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       sys.exit(0)
     return
 
-  def configure(self, out = None):
-    '''Configure the system
-       - Must delay database initialization until children have contributed variable types
-       - Any child with the "_configured" attribute will not be configured'''
+  def parallelQueueEvaluation(self, depGraph, numThreads = 1):
+    import graph
+    import Queue
+    from threading import Thread
+
+    if numThreads < 1: raise RuntimeError('Parallel configure must use at least one thread')
+    # TODO Insert a cycle check
+    todo = Queue.Queue()
+    done = Queue.Queue()
+    numChildren = len(depGraph.vertices)
+    for child in graph.DirectedGraph.getRoots(depGraph):
+      if not hasattr(child, '_configured'):
+        #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
+        todo.put(child)
+
+    def processChildren(num, q):
+      emsg = ''
+      while 1:
+        child = q.get() # Might have to indicate blocking
+        ret = 1
+        child.saveLog()
+        try:
+          if not hasattr(child, '_configured'):
+            child.configure()
+          else:
+            child.no_configure()
+          ret = 0
+        except (RuntimeError, config.base.ConfigureSetupError), e:
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'         UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except (TypeError, ValueError), e:
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except ImportError, e :
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                     UNABLE to FIND MODULE for ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except OSError, e :
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                    UNABLE to EXECUTE BINARIES for ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except SystemExit, e:
+          if e.code is None or e.code == 0:
+            return
+          msg ='*******************************************************************************\n'\
+              +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+              +'*******************************************************************************\n'
+          se  = str(e)
+        except Exception, e:
+          msg ='*******************************************************************************\n'\
+              +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+              +'*******************************************************************************\n'
+          se  = str(e)
+        if ret:
+          self.logWrite(msg+'\n'+se+'\n')
+          try:
+            import sys,traceback
+            traceback.print_tb(sys.exc_info()[2], file = self.log)
+          except: pass
+        out = child.restoreLog()
+        # Udpate queue
+        done.put((ret, out, emsg, child))
+        q.task_done()
+        if ret: break
+      return
+
+    # Set up some threads to fetch the enclosures
+    for i in range(numThreads):
+      worker = Thread(target = processChildren, args = (i, todo,))
+      worker.setDaemon(True)
+      worker.start()
+
+    while numChildren > 0:
+      ret, msg, emsg, vertex = done.get()
+      vertex._configured = 1
+      numChildren = numChildren - 1
+      #self.logPrint('POP  %s from DONE %d LEFT' % (vertex.__class__.__module__, numChildren))
+      self.logWrite(msg)
+      if ret:
+        self.logWrite(emsg)
+        raise RuntimeError(emsg)
+      for child in depGraph.outEdges[vertex]:
+        push = True
+        for v in depGraph.inEdges[child]:
+          if not hasattr(v, '_configured'):
+            #self.logPrint('DENY %s since %s is not configured' % (child.__class__.__module__, v.__class__.__module__))
+            push = False
+            break
+        if push:
+          #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
+          todo.put(child)
+      done.task_done()
+    todo.join()
+    done.join()
+    return
+
+  def serialEvaluation(self, depGraph):
     import graph
 
-    self.setup()
-    self.outputBanner()
-    self.updateDependencies()
-    self.executeTest(self.configureExternalPackagesDir)
-    for child in graph.DirectedGraph.topologicalSort(self.childGraph):
+    for child in graph.DirectedGraph.topologicalSort(depGraph):
       if not hasattr(child, '_configured'):
         child.configure()
       else:
         child.no_configure()
       child._configured = 1
+    return
+
+  def processChildren(self):
+    import script
+
+    useParallel = False
+    if script.useThreads:
+      try:
+        import Queue
+        from threading import Thread
+        if hasattr(Queue.Queue(), 'join'): useParallel = True
+      except: pass
+    if useParallel:
+      self.parallelQueueEvaluation(self.childGraph, script.useThreads)
+    else:
+      self.serialEvaluation(self.childGraph)
+    return
+
+  def configure(self, out = None):
+    '''Configure the system
+       - Must delay database initialization until children have contributed variable types
+       - Any child with the "_configured" attribute will not be configured'''
+    self.setup()
+    self.outputBanner()
+    self.updateDependencies()
+    self.executeTest(self.configureExternalPackagesDir)
+    self.processChildren()
     if self.argDB['with-batch']:
       self.configureBatch()
     self.dumpConfFiles()

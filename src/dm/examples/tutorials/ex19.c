@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 1D -- boundary_none */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"1D -- DM_BOUNDARY_NONE\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 1);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 1);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, 1, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 1);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 1D -- boundary_ghosted */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"1D -- DM_BOUNDARY_GHOSTED\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 1);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 1);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, 1, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 1D -- boundary_periodic */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"1D -- DM_BOUNDARY_PERIODIC\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 1);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 1);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, 1, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 2D -- boundary_none */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"2D -- DM_BOUNDARY_NONE\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 2);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, -8, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 2D -- boundary_ghosted */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"2D -- DM_BOUNDARY_GHOSTED\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 2);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, -8, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 2D -- boundary_periodic */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"2D -- DM_BOUNDARY_PERIODIC\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 2);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, -8, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 3D -- boundary_none */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"3D -- DM_BOUNDARY_NONE\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 3);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, -8, -8);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 3D -- boundary_ghosted */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"3D -- DM_BOUNDARY_GHOSTED\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 3);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, -8, -8);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
   /* Build of the DMDA -- 3D -- boundary_periodic */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"3D -- DM_BOUNDARY_PERIODIC\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da, 3);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, -8, -8, -8);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);

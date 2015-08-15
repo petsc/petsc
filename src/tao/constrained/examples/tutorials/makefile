@@ -14,8 +14,8 @@ MANSEC		 =
 DOCS		 = 
 DIRS		 = 
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 maros: maros.o chkopts
 	-${CLINKER} -o maros maros.o ${PETSC_TAO_LIB}
@@ -33,5 +33,5 @@ toyf: toyf.o chkopts
 TESTEXAMPLES_C             =  maros.PETSc maros.rm toy.PETSc toy.rm
 TEXTEXAMPLES_FORTRAN       = toyf.PETSc toyf.rm 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test
 

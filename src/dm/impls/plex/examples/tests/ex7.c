@@ -355,14 +355,14 @@ PetscErrorCode CheckMesh(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) {
     refVol *= 2.0;
   }
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexComputeCellGeometry(dm, c, NULL, J, NULL, &detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
     if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FEM Volume: %g\n", detJ*refVol);CHKERRQ(ierr);}
     if (depth > 1) {
@@ -412,7 +412,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   PetscBool      cellSimplex  = user->cellSimplex;
   PetscBool      useGenerator = user->useGenerator;
   const char    *filename     = user->filename;
-  const char    *partitioner  = "chaco";
   size_t         len;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -421,8 +420,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
-    ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
-    ierr = DMPlexGetDimension(*dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
   } else if (useGenerator) {
     if (cellSimplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
@@ -434,7 +433,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
     switch (dim) {
     case 2:
       if (cellSimplex) {
@@ -468,7 +467,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     DM distributedMesh = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);

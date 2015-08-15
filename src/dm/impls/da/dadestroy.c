@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
 PetscLogEvent DMDA_LocalADFunction;
@@ -72,6 +72,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = VecDestroy(&dd->natural);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->gton);CHKERRQ(ierr);
   ierr = AODestroy(&dd->ao);CHKERRQ(ierr);
+  ierr = PetscFree(dd->aotype);CHKERRQ(ierr);
 
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
@@ -84,7 +85,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = PetscFree(dd->fieldname);CHKERRQ(ierr);
   }
   if (dd->coordinatename) {
-    for (i=0; i<dd->dim; i++) {
+    for (i=0; i<da->dim; i++) {
       ierr = PetscFree(dd->coordinatename[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dd->coordinatename);CHKERRQ(ierr);

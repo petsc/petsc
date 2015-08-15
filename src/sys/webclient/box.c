@@ -101,6 +101,8 @@ $    cat newkey.pem newcert.pem > sslclient.pem
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
     silly but it was all I could figure out.
 
+   Level: intermediate
+
 .seealso: PetscBoxRefresh(), PetscBoxUpload(), PetscURLShorten()
 
 @*/
@@ -173,6 +175,8 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
    Output Parameter:
 +   access_token - token that can be passed to PetscBoxUpload()
 -   new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
+
+   Level: intermediate
 
 .seealso: PetscURLShorten(), PetscBoxAuthorize(), PetscBoxUpload()
 
@@ -269,6 +273,8 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
     PetscBoxAuthorize(comm,access_token,refresh_token,sizeof(access_token));
     PetscBoxUpload(comm,access_token,filename);
 
+   Level: intermediate
+
 .seealso: PetscURLShorten(), PetscBoxAuthorize(), PetscBoxRefresh()
 
 @*/
@@ -315,7 +321,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     fclose(fd);
     body[blen + rd] = 0;
     ierr = PetscStrcat(body,"\r\n\r\n"
-                            "--foo_bar_baz\r\n");
+                            "--foo_bar_baz\r\n");CHKERRQ(ierr);
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
     ierr = PetscHTTPSConnect("www.boxapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
     ierr = PetscHTTPSRequest("POST","www.boxapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);

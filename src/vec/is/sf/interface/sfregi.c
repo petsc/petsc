@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h>     /*I  "petscsf.h"  I*/
+#include <petsc/private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
@@ -25,6 +25,7 @@ PetscErrorCode  PetscSFRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
   ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);

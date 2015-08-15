@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-12,-12,-12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);
 
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

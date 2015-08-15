@@ -1,0 +1,19 @@
+iter =   0, Function value: -1.06062,  Residual: 0.00225015 
+iter =   1, Function value: -1.06062,  Residual: 2.98023e-08 
+Tao Object: 1 MPI processes
+  type: blmvm
+      Gradient steps: 0
+  TaoLineSearch Object:   1 MPI processes
+    type: more-thuente
+  Active Set subset type: subvec
+  convergence tolerances: fatol=1e-15,   frtol=1e-15
+  convergence tolerances: gatol=1e-15,   steptol=0,   gttol=1e-15
+  Residual in Function/Gradient:=2.98023e-08
+  Objective value=-1.06062
+  total number of iterations=1,                          (max: 2000)
+  total number of function evaluations=12,                  max: 4000
+  total number of gradient evaluations=4,                  max: 4000
+  Solution converged:   estimated f(x)-f(X*) <= fatol
+Vec Object: 1 MPI processes
+  type: seq
+1.0616

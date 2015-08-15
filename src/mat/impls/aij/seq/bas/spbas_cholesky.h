@@ -368,21 +368,21 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
     /* Calculate the new diagonal */
     diag[i] = val[i];
     if (PetscRealPart(diag[i])<droptol) {
-      ierr = PetscInfo(NULL,"Error in spbas_incomplete_cholesky:\n");
-      ierr = PetscInfo1(NULL,"Negative diagonal in row %d\n",i+1);
+      ierr = PetscInfo(NULL,"Error in spbas_incomplete_cholesky:\n");CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Negative diagonal in row %d\n",i+1);CHKERRQ(ierr);
 
       /* Delete the whole matrix at once. */
-      ierr = spbas_delete(retval);
+      ierr = spbas_delete(retval);CHKERRQ(ierr);
       return NEGATIVE_DIAGONAL;
     }
 
     /* If necessary, allocate arrays */
     if (r_nnz==0) {
-      ierr = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);CHKERRQ(ierr);
+      ierr = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);
       if (ierr == PETSC_ERR_MEM) {
         ierr = spbas_cholesky_garbage_collect(&retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
-        ierr = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);
-      }
+        ierr = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);CHKERRQ(ierr);
+      } else CHKERRQ(ierr);
       r_icol = retval.icols[i];
       r_val  = retval.values[i];
     }
@@ -415,7 +415,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
             ierr   = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);CHKERRQ(ierr);
             r_icol = retval.icols[i];
             r_val  = retval.values[i];
-          }
+          } else CHKERRQ(ierr);
         }
 
         retval.icols[k][retval.row_nnz[k]]  = i;

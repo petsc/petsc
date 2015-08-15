@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mat.h>   /* MATLAB include file */
@@ -151,7 +151,7 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (dim) *dim = dd->dim;
+  if (dim) *dim = da->dim;
   if (M) {
     if (dd->Mo < 0) *M = dd->M;
     else *M = dd->Mo;
@@ -204,7 +204,7 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(info,2);
   info->da  = da;
-  info->dim = dd->dim;
+  info->dim = da->dim;
   if (dd->Mo < 0) info->mx = dd->M;
   else info->mx = dd->Mo;
   if (dd->No < 0) info->my = dd->N;

@@ -72,6 +72,10 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatR
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (A->rmap->bs > 1) {
+    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {

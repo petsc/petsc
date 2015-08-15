@@ -38,36 +38,15 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices = to->indices;
   sstarts = to->starts;
 #if defined(PETSC_HAVE_CUSP)
-
+  VecCUSPAllocateCheckHost(xin);
   if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
     if (xin->spptr && ctx->spptr) {
       ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUSPCopyFromGPU(xin);CHKERRQ(ierr);
     }
   }
-  xv = *(PetscScalar**)xin->data;
-
-#if 0
-  if (!xin->map->n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
-    if (!ctx->spptr) {
-      PetscInt k,*tindices,n = sstarts[nsends],*sindices;
-      ierr = PetscMalloc1(n,&tindices);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tindices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscSortRemoveDupsInt(&n,tindices);CHKERRQ(ierr);
-      ierr = PetscMalloc1(bs*n,&sindices);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-        for (k=0; k<bs; k++) sindices[i*bs+k] = tindices[i]+k;
-      }
-      ierr = PetscFree(tindices);CHKERRQ(ierr);
-      ierr = VecScatterCUSPIndicesCreate_PtoP(n*bs,sindices,n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
-      ierr = PetscFree(sindices);CHKERRQ(ierr);
-    }
-    ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
-    xv   = *(PetscScalar**)xin->data;
-  } else {
-    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  }
-#endif
-
+  xv = *((PetscScalar**)xin->data);
 #else
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #endif
@@ -121,9 +100,16 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   /* take care of local scatters */
   if (to->local.n) {
     if (to->local.is_copy && addv == INSERT_VALUES) {
-      ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+      if (yv != xv || from->local.copy_start !=  to->local.copy_start) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+      }
     } else {
-      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv,bs);CHKERRQ(ierr);
+      if (xv == yv && addv == INSERT_VALUES && to->local.nonmatching_computed) {
+        /* only copy entries that do not share identical memory locations */
+        ierr = PETSCMAP1(Scatter)(to->local.n_nonmatching,to->local.slots_nonmatching,xv,from->local.slots_nonmatching,yv,addv,bs);CHKERRQ(ierr);
+      } else {
+        ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv,bs);CHKERRQ(ierr);
+      }
     }
   }
 #if defined(PETSC_HAVE_CUSP)

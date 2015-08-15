@@ -180,22 +180,22 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   PetscErrorCode ierr;
   DMDALocalInfo  info;
   PetscInt       i;
-  RDNode         *x,*xdot,*f;
+  const RDNode   *x,*xdot,*f;
   MPI_Comm       comm;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject)rd->da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,Xdot,(void*)&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,F,(void*)&f);CHKERRQ(ierr);
   for (i=info.xs; i<info.xs+info.xm; i++) {
     ierr = PetscSynchronizedPrintf(comm,"x[%D] (%10.2G,%10.2G) (%10.2G,%10.2G) (%10.2G,%10.2G)\n",i,PetscRealPart(x[i].E),PetscRealPart(x[i].T),
                                    PetscRealPart(xdot[i].E),PetscRealPart(xdot[i].T), PetscRealPart(f[i].E),PetscRealPart(f[i].T));CHKERRQ(ierr);
   }
-  ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,Xdot,(void*)&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,F,(void*)&f);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -804,7 +804,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   Vec            Y;
-  RDNode         *x;
+  const RDNode   *x;
   PetscScalar    *y;
   PetscInt       i,m,M;
   const PetscInt *lx;
@@ -827,10 +827,10 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 
   /* Compute the radiation temperature from the solution at each node */
   ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(X,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   for (i=0; i<m; i++) y[i] = RDRadiationTemperature(rd,x[i].E);
-  ierr = VecRestoreArray(X,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
 
   ierr = VecView(Y,viewer);CHKERRQ(ierr);
@@ -890,7 +890,14 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     PetscInt    i;
     PetscReal   hx = 1.;
     PetscScalar a0;
-    RDNode      n0[3] = {{1.,1.},{5.,3.},{4.,2.}},n1[3],d[3],fd[3];
+    RDNode      n0[3],n1[3],d[3],fd[3];
+
+    n0[0].E = 1.;
+    n0[0].T = 1.;
+    n0[1].E = 5.;
+    n0[1].T = 3.;
+    n0[2].E = 4.;
+    n0[2].T = 2.;
     a0 = RDDiffusion(rd,hx,n0,1,d);
     for (i=0; i<3; i++) {
       ierr    = PetscMemcpy(n1,n0,sizeof(n0));CHKERRQ(ierr); n1[i].E += epsilon;
@@ -964,13 +971,13 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     Joule    = rd->unit.Joule;
     Watt     = rd->unit.Watt;
 
-    ierr = PetscOptionsBool("-rd_monitor_residual","Display residuals every time they are evaluated","",rd->monitor_residual,&rd->monitor_residual,0);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-rd_discretization","Discretization type","",DiscretizationTypes,(PetscEnum)rd->discretization,(PetscEnum*)&rd->discretization,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_monitor_residual","Display residuals every time they are evaluated","",rd->monitor_residual,&rd->monitor_residual,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_discretization","Discretization type","",DiscretizationTypes,(PetscEnum)rd->discretization,(PetscEnum*)&rd->discretization,NULL);CHKERRQ(ierr);
     if (rd->discretization == DISCRETIZATION_FE) {
       rd->quadrature = QUADRATURE_GAUSS2;
-      ierr = PetscOptionsEnum("-rd_quadrature","Finite element quadrature","",QuadratureTypes,(PetscEnum)rd->quadrature,(PetscEnum*)&rd->quadrature,0);CHKERRQ(ierr);
+      ierr = PetscOptionsEnum("-rd_quadrature","Finite element quadrature","",QuadratureTypes,(PetscEnum)rd->quadrature,(PetscEnum*)&rd->quadrature,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,NULL);CHKERRQ(ierr);
     switch (rd->initial) {
     case 1:
       rd->leftbc     = BC_ROBIN;
@@ -998,16 +1005,16 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
       break;
     default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Initial %D",rd->initial);
     }
-    ierr = PetscOptionsEnum("-rd_leftbc","Left boundary condition","",BCTypes,(PetscEnum)rd->leftbc,(PetscEnum*)&rd->leftbc,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-rd_E_applied","Radiation flux at left end of domain","",rd->Eapplied,&rd->Eapplied,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-rd_beta","Thermal exponent for photon absorption","",rd->beta,&rd->beta,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-rd_gamma","Thermal exponent for diffusion coefficient","",rd->gamma,&rd->gamma,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-rd_view_draw","Draw final solution","",rd->view_draw,&rd->view_draw,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-rd_endpoint","Discretize using endpoints (like trapezoid rule) instead of midpoint","",rd->endpoint,&rd->endpoint,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-rd_bcmidpoint","Impose the boundary condition at the midpoint (Theta) of the interval","",rd->bcmidpoint,&rd->bcmidpoint,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-rd_bclimit","Limit diffusion coefficient in definition of Robin boundary condition","",rd->bclimit,&rd->bclimit,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-rd_test_diff","Test differentiation in constitutive relations","",rd->test_diff,&rd->test_diff,0);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-rd_view_binary","File name to hold final solution","",rd->view_binary,rd->view_binary,sizeof(rd->view_binary),0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_leftbc","Left boundary condition","",BCTypes,(PetscEnum)rd->leftbc,(PetscEnum*)&rd->leftbc,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-rd_E_applied","Radiation flux at left end of domain","",rd->Eapplied,&rd->Eapplied,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-rd_beta","Thermal exponent for photon absorption","",rd->beta,&rd->beta,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-rd_gamma","Thermal exponent for diffusion coefficient","",rd->gamma,&rd->gamma,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_view_draw","Draw final solution","",rd->view_draw,&rd->view_draw,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_endpoint","Discretize using endpoints (like trapezoid rule) instead of midpoint","",rd->endpoint,&rd->endpoint,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_bcmidpoint","Impose the boundary condition at the midpoint (Theta) of the interval","",rd->bcmidpoint,&rd->bcmidpoint,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_bclimit","Limit diffusion coefficient in definition of Robin boundary condition","",rd->bclimit,&rd->bclimit,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_test_diff","Test differentiation in constitutive relations","",rd->test_diff,&rd->test_diff,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-rd_view_binary","File name to hold final solution","",rd->view_binary,rd->view_binary,sizeof(rd->view_binary),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

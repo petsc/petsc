@@ -436,7 +436,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Draw"
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v)
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptions *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscReal      bounds[16];
@@ -444,7 +444,7 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Draw PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Draw PetscViewer Options");CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-draw_bounds","Bounds to put on plots axis","PetscViewerDrawSetBounds",bounds,&nbounds,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerDrawSetBounds(v,nbounds/2,bounds);CHKERRQ(ierr);
@@ -651,7 +651,7 @@ PetscErrorCode  PetscViewerDrawSetHold(PetscViewer viewer,PetscBool hold)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDrawGetHold"
 /*@
-    PetscViewerDrawGetHold - Holds previous image when drawing new image
+    PetscViewerDrawGetHold - Checks if holds previous image when drawing new image
 
     Not Collective
 

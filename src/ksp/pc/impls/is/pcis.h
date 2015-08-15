@@ -2,7 +2,7 @@
 #if !defined(__pcis_h)
 #define __pcis_h
 
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/pcimpl.h>
 #include <../src/mat/impls/is/matis.h>
 #include <petscksp.h>
 
@@ -48,12 +48,11 @@ typedef struct {
   VecScatter  global_to_D;        /* scattering context from global to local interior nodes */
   VecScatter  N_to_B;             /* scattering context from all local nodes to local interface nodes */
   VecScatter  global_to_B;        /* scattering context from global to local interface nodes */
-  PetscBool   computesolvers;
   PetscBool   pure_neumann;
   PetscScalar scaling_factor;
   PetscBool   use_stiffness_scaling;
 
-  PetscBool ISLocalToGlobalMappingGetInfoWasCalled;
+  ISLocalToGlobalMapping mapping;
   PetscInt  n_neigh;     /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
                          /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
   PetscInt *neigh;       /* list of neighbouring subdomains                                                          */
@@ -73,9 +72,11 @@ typedef struct {
   /* We need:                                                                                 */
   /* proc[k].loc_to_glob(proc[k].shared[i][m]) == proc[l].loc_to_glob(proc[l].shared[j][m])   */
   /* for all 0 <= m < proc[k].n_shared[i], or equiv'ly, for all 0 <= m < proc[l].n_shared[j]  */
+  ISLocalToGlobalMapping BtoNmap;
+  PetscBool reusesubmatrices;
 } PC_IS;
 
-PETSC_EXTERN PetscErrorCode PCISSetUp(PC pc);
+PETSC_EXTERN PetscErrorCode PCISSetUp(PC pc, PetscBool computesolvers);
 PETSC_EXTERN PetscErrorCode PCISDestroy(PC pc);
 PETSC_EXTERN PetscErrorCode PCISCreate(PC pc);
 PETSC_EXTERN PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
