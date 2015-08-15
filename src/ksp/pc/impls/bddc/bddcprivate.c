@@ -1021,7 +1021,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecResetArray(pcis->vec1_D);CHKERRQ(ierr);
-        y[n_D*i+p0_lidx_I] = 0.0;
+        if (n_benign) y[n_D*i+p0_lidx_I] = 0.0;
         ierr = MatDenseRestoreArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
       }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
