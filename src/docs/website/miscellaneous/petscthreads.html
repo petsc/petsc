@@ -99,7 +99,7 @@
 
       <p>
         <b><u>An alternative simple model of PETSc with
-        threads</u></b> is to have individual OpenMP threads to each
+        threads</u></b> is to have individual threads (OpenMP or others) to each
         manage their own (sequential) PETSc objects (and each thread
         can interact only with its own objects). This is useful when
         one has many small systems (or sets of ODEs) that must be
@@ -107,7 +107,7 @@
       </ol>
 
       <p>
-        To use this feature one must ./configure PETSc with the option --with-threadsafety --with-log=0 --with-openmp. src/ksp/ksp/examples/tutorials/ex61f.F90 demonstrates how this may be used. The code uses a small number of #pragma omp critical in non-time-critical locations in the code and thus only works with OpenMP and not with pthreads.
+        To use this feature one must ./configure PETSc with the option --with-threadsafety --with-log=0 [--with-openmp or --download-concurrencykit]. src/ksp/ksp/examples/tutorials/ex61f.F90 demonstrates how this may be used with OpenMP. The code uses a small number of #pragma omp critical in non-time-critical locations in the code and thus only works with OpenMP and not with pthreads.
       </p>
 
 
@@ -121,7 +121,7 @@
         "software threads" as opposed to "hardware threads."
       </p>
 
-      <p>Threads are used in 2 main ways:</p>
+      <p>Threads are used in 2 main ways in HPC:</p>
 
       <ol>
         <li>

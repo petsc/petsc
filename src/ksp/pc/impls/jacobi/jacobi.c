@@ -392,7 +392,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptions *PetscOptionsObject,P
      PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
-+    -pc_jacobi_type <diagonal,rowmax,rowsum>
++    -pc_jacobi_type <diagonal,rowmax,rowsum> - approach for forming the preconditioner
 -    -pc_jacobi_abs - use the absolute value of the diagonal entry
 
    Level: beginner
@@ -400,7 +400,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptions *PetscOptionsObject,P
   Concepts: Jacobi, diagonal scaling, preconditioners
 
   Notes: By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
-         can scale each side of the matrix by the squareroot of the diagonal entries.
+         can scale each side of the matrix by the square root of the diagonal entries.
 
          Zero entries along the diagonal are replaced with the value 1.0
 

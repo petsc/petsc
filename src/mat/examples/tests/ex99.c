@@ -32,7 +32,6 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscInt       m,n,i,j;
   PetscBLASInt   il,iu,nevs,nn;
-  PetscLogStage  stages[2];
   PetscReal      vl,vu,abstol=1.e-8;
   PetscBLASInt   *iwork,*ifail,lone=1,lwork,lierr,bn;
   PetscInt       ievbd_loc[2],offset=0,cklvl=2;
@@ -42,6 +41,9 @@ int main(int argc,char **args)
   PetscInt       *ai,*aj;
   PetscInt       nzeros[2],nz;
   PetscReal      ratio;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage  stages[2];
+#endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

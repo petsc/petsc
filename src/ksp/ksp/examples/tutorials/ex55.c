@@ -137,7 +137,7 @@ int main(int argc,char **args)
       DD[7][5] =  6.66666666666666519E-002;
       DD[7][6] = -0.20000000000000001;
       DD[7][7] =  0.53333333333333321;
-    
+
     /* BC version of element */
     for (i=0; i<8; i++) {
       for (j=0; j<8; j++) {
@@ -158,12 +158,13 @@ int main(int argc,char **args)
       x            = h*(Ii % (ne+1)); y = h*(Ii/(ne+1));
       coords[2*ix] = x; coords[2*ix+1] = y;
       if (i<ne && j<ne) {
-        PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
+        PetscInt jj,ii,idx[4];
         /* radius */
         PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
         PetscReal alpha  = 1.0;
         if (radius < 0.25) alpha = soft_alpha;
 
+        idx[0] = Ii; idx[1] = Ii+1; idx[2] = Ii + (ne+1) + 1;  idx[3] = Ii + (ne+1);
         for (ii=0; ii<8; ii++) {
           for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }

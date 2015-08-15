@@ -15,7 +15,7 @@
 +  snes - the SNES context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
--  dummy - either a viewer or NULL
+-  dummy -  a viewer
 
    Level: intermediate
 
@@ -31,11 +31,6 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
-  if (!viewer) {
-    MPI_Comm comm;
-    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -52,7 +47,7 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void
 +  snes - the SNES context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
--  dummy - either a viewer or NULL
+-  dummy -  a viewer
 
    Level: intermediate
 
@@ -68,11 +63,6 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void
 
   PetscFunctionBegin;
   ierr = SNESGetFunction(snes,&x,0,0);CHKERRQ(ierr);
-  if (!viewer) {
-    MPI_Comm comm;
-    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -89,7 +79,7 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void
 +  snes - the SNES context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
--  dummy - either a viewer or NULL
+-  dummy - a viewer
 
    Level: intermediate
 
@@ -105,11 +95,6 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
 
   PetscFunctionBegin;
   ierr = SNESGetSolutionUpdate(snes,&x);CHKERRQ(ierr);
-  if (!viewer) {
-    MPI_Comm comm;
-    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -532,10 +517,6 @@ PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
   PetscReal               *history;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),"stdout",&viewer);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
-  }
   ierr = PetscNewLog(snes,&ctx);CHKERRQ(ierr);
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,NULL);CHKERRQ(ierr);
   if (!history) {

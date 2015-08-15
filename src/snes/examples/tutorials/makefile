@@ -347,7 +347,7 @@ runex5_5_newton_asm_dmda:
 
 runex5_5_newton_gasm_dmda:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
-        -snes_type newtonls -pc_type gasm -pc_gasm_dm_subdomains -malloc_dump > ex5_5_newton_gasm_dmda.tmp 2>&1; \
+        -snes_type newtonls -pc_type gasm -malloc_dump > ex5_5_newton_gasm_dmda.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_newton_gasm_dmda.out ex5_5_newton_gasm_dmda.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_newton_gasm_dmda, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_newton_gasm_dmda.tmp

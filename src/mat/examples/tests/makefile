@@ -2448,6 +2448,6 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
 TESTEXAMPLES_MUMPS             = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm \
-                                 ex192.PETSc runex192_mumps runex192_mumps_2 ex192.rm
+                                 ex192.PETSc runex192 ex192.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

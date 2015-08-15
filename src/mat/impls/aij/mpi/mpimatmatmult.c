@@ -407,6 +407,55 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric_MPIDense"
+/*
+    This is a "dummy function" that handles the case where matrix C was created as a dense matrix
+  directly by the user and passed to MatMatMult() with the MAT_REUSE_MATRIX option
+
+  It is the same as MatMatMultSymbolic_MPIAIJ_MPIDense() except does not create C
+*/
+PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode         ierr;
+  PetscBool              flg;
+  Mat_MPIAIJ             *aij = (Mat_MPIAIJ*) A->data;
+  PetscInt               nz   = aij->B->cmap->n;
+  PetscContainer         container;
+  MPIAIJ_MPIDense        *contents;
+  VecScatter             ctx   = aij->Mvctx;
+  VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
+  VecScatter_MPI_General *to   = (VecScatter_MPI_General*) ctx->todata;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATMPIDENSE,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Second matrix must be mpidense");
+
+  /* Handle case where where user provided the final C matrix rather than calling MatMatMult() with MAT_INITIAL_MATRIX*/
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"First matrix must be MPIAIJ");
+
+  C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
+
+  ierr = PetscNew(&contents);CHKERRQ(ierr);
+  /* Create work matrix used to store off processor rows of B needed for local product */
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap->N,NULL,&contents->workB);CHKERRQ(ierr);
+  /* Create work arrays needed */
+  ierr = PetscMalloc4(B->cmap->N*from->starts[from->n],&contents->rvalues,
+                      B->cmap->N*to->starts[to->n],&contents->svalues,
+                      from->n,&contents->rwaits,
+                      to->n,&contents->swaits);CHKERRQ(ierr);
+
+  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)A),&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,contents);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,MatMPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)C,"workB",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+
+  ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIDense"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {

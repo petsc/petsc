@@ -133,19 +133,19 @@ int main(int argc, char **args)
       ss = gsubdomainperm[s];
       if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
         PetscViewer subviewer = NULL;
-        ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(subviewer,"Row IS %D\n",gs);CHKERRQ(ierr);
         ierr = ISView(rowis[ss],subviewer);CHKERRQ(ierr);
         ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(subviewer,"Col IS %D\n",gs);CHKERRQ(ierr);
         ierr = ISView(colis[ss],subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)rowis[ss]),&subviewer);CHKERRQ(ierr);
         ++s;
       }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = ISSort(rowis[0]);CHKERRQ(ierr);
   ierr = ISSort(colis[0]);CHKERRQ(ierr);
   nsubdomains = 1;
@@ -165,15 +165,15 @@ int main(int argc, char **args)
       ss = gsubdomainperm[s];
       if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
         PetscViewer subviewer = NULL;
-        ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
         ierr = MatView(submats[ss],subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
         ++s;
       }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   if (rep == 1) goto cleanup;
   nsubdomains = 1;
   ierr = MatGetSubMatricesMPI(A,nsubdomains,rowis,colis,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
@@ -192,10 +192,9 @@ int main(int argc, char **args)
       ss = gsubdomainperm[s];
       if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
         PetscViewer subviewer = NULL;
-        ierr = PetscViewerGetSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
         ierr = MatView(submats[ss],subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerRestoreSubcomm(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)submats[ss]),&subviewer);CHKERRQ(ierr);
         ++s;
       }
     }
