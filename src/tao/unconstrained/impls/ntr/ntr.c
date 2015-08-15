@@ -111,7 +111,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
-  ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
@@ -282,7 +282,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         ierr = VecAXPY(tao->solution, sigma, tao->gradient);CHKERRQ(ierr);
         ierr = TaoComputeGradient(tao,tao->solution, tao->gradient);CHKERRQ(ierr);
 
-        ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+        ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
 
         if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
         needH = 1;
@@ -606,7 +606,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       ierr = VecCopy(tr->W, tao->solution);CHKERRQ(ierr);
       f = ftrial;
       ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);CHKERRQ(ierr);
-      ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+      ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       needH = 1;
       ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);

@@ -91,6 +91,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->IU = NULL;
   tao->DI = NULL;
   tao->DE = NULL;
+  tao->gradient_norm = NULL;
+  tao->gradient_norm_tmp = NULL;
   tao->hessian = NULL;
   tao->hessian_pre = NULL;
   tao->jacobian = NULL;
@@ -292,6 +294,11 @@ PetscErrorCode TaoDestroy(Tao *tao)
   }
   ierr = VecDestroy(&(*tao)->solution);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->gradient);CHKERRQ(ierr);
+
+  if ((*tao)->gradient_norm) {
+    ierr = PetscObjectDereference((PetscObject)(*tao)->gradient_norm);CHKERRQ(ierr);
+    ierr = VecDestroy(&(*tao)->gradient_norm_tmp);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(&(*tao)->XL);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->XU);CHKERRQ(ierr);
@@ -2697,3 +2704,102 @@ PetscErrorCode  TaoGetApplicationContext(Tao tao,void *usrP)
   *(void**)usrP = tao->user;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetGradientNorm"
+/*@
+   TaoSetGradientNorm - Sets the matrix used to define the inner product that measures the size of the gradient.
+
+   Collective on tao
+
+   Input Parameters:
++  tao  - the Tao context
+-  M    - gradient norm
+
+   Level: beginner
+
+.seealso: TaoGetGradientNorm(), TaoGradientNorm()
+@*/
+PetscErrorCode  TaoSetGradientNorm(Tao tao, Mat M)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+
+  if (tao->gradient_norm) {
+    ierr = PetscObjectDereference((PetscObject)tao->gradient_norm);CHKERRQ(ierr);
+    ierr = VecDestroy(&tao->gradient_norm_tmp);CHKERRQ(ierr);
+  }
+
+  ierr = PetscObjectReference((PetscObject)M);CHKERRQ(ierr);
+  tao->gradient_norm = M;
+  ierr = MatCreateVecs(M, NULL, &tao->gradient_norm_tmp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetGradientNorm"
+/*@
+   TaoGetGradientNorm - Returns the matrix used to define the inner product for measuring the size of the gradient.
+
+   Not Collective
+
+   Input Parameter:
+.  tao  - Tao context
+
+   Output Parameter:
+.  M - gradient norm
+
+   Level: beginner
+
+.seealso: TaoSetGradientNorm(), TaoGradientNorm()
+@*/
+PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  *M = tao->gradient_norm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGradientNorm"
+/*c
+   TaoGradientNorm - Compute the norm with respect to the inner product the user has set.
+
+   Collective on tao
+
+   Input Parameter:
+.  tao      - the Tao context
+.  gradient - the gradient to be computed
+.  norm     - the norm type
+
+   Output Parameter:
+.  gnorm    - the gradient norm
+
+   Level: developer
+
+.seealso: TaoSetGradientNorm(), TaoGetGradientNorm()
+@*/
+PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *gnorm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(gradient,VEC_CLASSID,1);
+
+  if (tao->gradient_norm) {
+    PetscScalar gnorms;
+
+    if (type != NORM_2) SETERRQ(PetscObjectComm((PetscObject)gradient), PETSC_ERR_ARG_WRONGSTATE, "Norm type must be NORM_2 if an inner product for the gradient norm is set.");
+    ierr = MatMult(tao->gradient_norm, gradient, tao->gradient_norm_tmp);CHKERRQ(ierr);
+    ierr = VecDot(gradient, tao->gradient_norm_tmp, &gnorms);CHKERRQ(ierr);
+    *gnorm = (PetscReal) PetscSqrtScalar(gnorms);
+  } else {
+    ierr = VecNorm(gradient, type, gnorm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
