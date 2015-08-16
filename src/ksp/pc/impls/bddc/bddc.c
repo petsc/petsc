@@ -1429,8 +1429,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         /* pop B0 mat from pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
       } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
-        pcbddc->benign_p0_lidx = -1;
-        pcbddc->benign_p0_gidx = -1;
         ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
         pcbddc->local_mat = matis->A;
@@ -2491,6 +2489,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->benign_vec                 = 0;
   pcbddc->benign_original_mat        = 0;
   pcbddc->benign_sf                  = 0;
+  pcbddc->benign_p0_lidx             = -1;
+  pcbddc->benign_p0_gidx             = -1;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
