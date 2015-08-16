@@ -56,6 +56,7 @@ typedef struct {
   PetscBool     benign_saddle_point;
   Mat           benign_change;
   Mat           benign_original_mat;
+  Vec           benign_vec;
   PetscInt      B0_ncol;
   PetscInt      *B0_cols;
   PetscScalar   *B0_vals;

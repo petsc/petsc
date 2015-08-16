@@ -141,6 +141,7 @@ struct _PCBDDCChange_ctx {
   Mat original_mat;
   Mat global_change;
   Vec *work;
+  PC  pc;
 };
 typedef struct _PCBDDCChange_ctx *PCBDDCChange_ctx;
 

@@ -26,6 +26,9 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
+/* temporarily declare it */
+PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
+
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BDDC"
@@ -1026,7 +1029,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
     pcbddc->rhs_change = PETSC_TRUE;
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
-    ierr = MatMultAdd(pc->pmat,used_vec,rhs,rhs);CHKERRQ(ierr);
+    ierr = MatMultAdd(pc->mat,used_vec,rhs,rhs);CHKERRQ(ierr);
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
     ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
     if (ksp) {
@@ -1035,8 +1038,11 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
   ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
 
-  /* If using the benign trick, change rhs on pressures (iteration matrix is surely of type MATIS) */
-  if (pcbddc->benign_saddle_point) {
+  /* When using the benign trick: (TODO: what about FETI-DP?)
+     - change rhs on pressures (iteration matrix is surely of type MATIS)
+     - compute initial vector in benign space
+  */
+  if (rhs && pcbddc->benign_saddle_point) {
     Mat_IS *matis = (Mat_IS*)(pc->mat->data);
 
     /* store the original rhs */
@@ -1066,21 +1072,52 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
     pcbddc->rhs_change = PETSC_TRUE;
-  }
 
-  /* store partially computed solution and set initial guess */
-  if (x && pcbddc->use_exact_dirichlet_trick) {
-    ierr = VecSet(x,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    if (ksp) {
-      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    /* compute u^*_h as in Xuemin Tu's thesis (see Section 4.8.1) */
+    /* TODO: what about Stokes? */
+    if (!pcbddc->benign_vec) {
+      ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
+    }
+    ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
+    pcbddc->benign_p0 = 0.;
+    if (pcbddc->benign_p0_lidx >= 0) {
+      const PetscScalar *array;
+
+      ierr = VecGetArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
+      pcbddc->benign_p0 = array[pcbddc->benign_p0_lidx];
+      ierr = VecRestoreArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] benign u* should be %1.4e\n",PetscGlobalRank,pcbddc->benign_p0);CHKERRQ(ierr);
+    ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
+    pcbddc->benign_p0 = 0.;
+    ierr = PCBDDCBenignPopOrPushP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
+    if (pcbddc->benign_saddle_point) {
+      Mat_IS* matis = (Mat_IS*)(pc->mat->data);
+      ierr = VecScatterBegin(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      if (pcbddc->benign_p0_lidx >=0) {
+        Mat B0;
+        Vec dummy_vec;
+        PetscScalar *array;
+        PetscInt ii[2];
+
+        ii[0] = 0;
+        ii[1] = pcbddc->B0_ncol;
+        ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,1,pcis->n,ii,pcbddc->B0_cols,pcbddc->B0_vals,&B0);CHKERRQ(ierr);
+        ierr = MatCreateVecs(B0,NULL,&dummy_vec);CHKERRQ(ierr);
+        ierr = MatMult(B0,matis->x,dummy_vec);CHKERRQ(ierr);
+        ierr = VecGetArray(dummy_vec,&array);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] benign u* is %1.4e\n",PetscGlobalRank,array[0]);CHKERRQ(ierr);
+        ierr = VecRestoreArray(dummy_vec,&array);CHKERRQ(ierr);
+        ierr = MatDestroy(&B0);CHKERRQ(ierr);
+        ierr = VecDestroy(&dummy_vec);CHKERRQ(ierr);
+      }
     }
   }
 
+  /* change rhs and iteration matrix if using the change of basis */
   if (pcbddc->ChangeOfBasisMatrix) {
     PCBDDCChange_ctx change_ctx;
 
@@ -1107,6 +1144,32 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = MatMultTranspose(change_ctx->global_change,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecCopy(pcis->vec1_global,rhs);CHKERRQ(ierr);
     pcbddc->rhs_change = PETSC_TRUE;
+  }
+
+  /* remove non-benign solution from the rhs */
+  if (pcbddc->benign_saddle_point) {
+    /* store the original rhs */
+    if (copy_rhs) {
+      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+      copy_rhs = PETSC_FALSE;
+    }
+    ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
+    ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
+    ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
+    pcbddc->rhs_change = PETSC_TRUE;
+  }
+
+  /* set initial guess if using PCG */
+  if (x && pcbddc->use_exact_dirichlet_trick) {
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    if (ksp) {
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
   }
 
   /* remove nullspace if present */
@@ -1161,11 +1224,14 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (x) {
       PC_IS *pcis = (PC_IS*)(pc->data);
 
-      ierr = MatMult(change_ctx->global_change,x,pcis->vec1_global);CHKERRQ(ierr);
       /* restore solution on pressures */
       if (pcbddc->benign_saddle_point) {
         Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
+        /* add non-benign solution */
+        ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
+
+        /* change basis on pressures for x */
         ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         if (pcbddc->benign_change) {
@@ -1178,6 +1244,8 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
           ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         }
       }
+      /* change basis on x */
+      ierr = MatMult(change_ctx->global_change,x,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecCopy(pcis->vec1_global,x);CHKERRQ(ierr);
     }
   }
@@ -1297,7 +1365,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       PetscInt  nz;
       PetscBool sorted;
 
-      /* should I also include nonzero pressures? */
       ierr = MatFindZeroDiagonals(matis->A,&zerodiag);CHKERRQ(ierr);
       ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
       if (!sorted) {
@@ -1613,6 +1680,123 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* SetUp Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
+
+  /* check BDDC operator */
+  if (pcbddc->dbg_flag && (
+      (pcbddc->n_vertices == pcbddc->local_primal_size) || pcbddc->benign_saddle_point) ) {
+    PC_IS          *pcis = (PC_IS*)(pc->data);
+    Mat            S_j,B0=NULL,B0_B=NULL;
+    Vec            dummy_vec=NULL,vec_check_B,vec_scale_P;
+    PetscScalar    norm,p0_check,*array,*array2;
+    PetscInt       i;
+
+    /* B0 and B0_B */
+    if (zerodiag) {
+      IS       dummy;
+      PetscInt ii[2];
+
+      ii[0] = 0;
+      ii[1] = pcbddc->B0_ncol;
+      ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,1,pcis->n,ii,pcbddc->B0_cols,pcbddc->B0_vals,&B0);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,1,0,1,&dummy);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(B0,dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);CHKERRQ(ierr);
+      ierr = MatCreateVecs(B0_B,NULL,&dummy_vec);CHKERRQ(ierr);
+      ierr = ISDestroy(&dummy);CHKERRQ(ierr);
+    }
+    /* I need a primal vector to scale primal nodes since BDDC sums contibutions */
+    ierr = VecDuplicate(pcbddc->vec1_P,&vec_scale_P);CHKERRQ(ierr);
+    ierr = VecSet(pcbddc->vec1_P,1.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,pcbddc->vec1_P,pcbddc->coarse_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,pcbddc->vec1_P,pcbddc->coarse_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,pcbddc->coarse_vec,vec_scale_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,pcbddc->coarse_vec,vec_scale_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecReciprocal(vec_scale_P);CHKERRQ(ierr);
+    /* S_j */
+    ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&S_j);CHKERRQ(ierr);
+    ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
+
+    /* mimic vector in \widetilde{W}_\Gamma */
+    ierr = VecSetRandom(pcis->vec1_N,NULL);CHKERRQ(ierr);
+    /* continuous in primal space */
+    ierr = VecSetRandom(pcbddc->coarse_vec,NULL);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    if (zerodiag) {
+      p0_check = array[pcbddc->local_primal_size-1];
+    } else {
+      p0_check = 0;
+    }
+    ierr = VecSetValues(pcis->vec1_N,pcbddc->local_primal_size,pcbddc->local_primal_ref_node,array,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecRestoreArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec2_B,&vec_check_B);CHKERRQ(ierr);
+    ierr = VecCopy(pcis->vec2_B,vec_check_B);CHKERRQ(ierr);
+
+    /* assemble rhs for coarse problem */
+    /* widetilde{S}_\Gamma w_\Gamma + \widetilde{B0}^T_B p0 */
+    /* local with Schur */
+    ierr = MatMult(S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
+    if (zerodiag) {
+      ierr = VecGetArray(dummy_vec,&array);CHKERRQ(ierr);
+      array[0] = p0_check;
+      ierr = VecRestoreArray(dummy_vec,&array);CHKERRQ(ierr);
+      ierr = MatMultTransposeAdd(B0_B,dummy_vec,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
+    }
+    /* sum on primal nodes the local contributions */
+    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_B,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_B,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = VecGetArray(pcbddc->vec1_P,&array2);CHKERRQ(ierr);
+    for (i=0;i<pcbddc->local_primal_size;i++) array2[i] = array[pcbddc->local_primal_ref_node[i]];
+    ierr = VecRestoreArray(pcbddc->vec1_P,&array2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = VecSet(pcbddc->coarse_vec,0.);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,pcbddc->vec1_P,pcbddc->coarse_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,pcbddc->vec1_P,pcbddc->coarse_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    /* scale primal nodes (BDDC sums contibutions) */
+    ierr = VecPointwiseMult(pcbddc->vec1_P,vec_scale_P,pcbddc->vec1_P);CHKERRQ(ierr);
+    ierr = VecSetValues(pcis->vec1_N,pcbddc->local_primal_size,pcbddc->local_primal_ref_node,array,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecRestoreArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    /* global: \widetilde{B0}_B w_\Gamma */
+    if (zerodiag) {
+      ierr = MatMult(B0_B,pcis->vec2_B,dummy_vec);CHKERRQ(ierr);
+      ierr = VecGetArray(dummy_vec,&array);CHKERRQ(ierr);
+      pcbddc->benign_p0 = array[0];
+      ierr = VecRestoreArray(dummy_vec,&array);CHKERRQ(ierr);
+    } else {
+      pcbddc->benign_p0 = 0.;
+    }
+    /* BDDC */
+    ierr = VecSet(pcis->vec1_D,0.);CHKERRQ(ierr);
+    ierr = PCBDDCApplyInterfacePreconditioner(pc,PETSC_FALSE);CHKERRQ(ierr);
+
+    ierr = VecCopy(pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
+    ierr = VecAXPY(pcis->vec1_B,-1.0,vec_check_B);CHKERRQ(ierr);
+    ierr = VecNorm(pcis->vec1_B,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_SELF,"[%d] BDDC local error is %1.4e\n",PetscGlobalRank,norm);
+    if (pcbddc->benign_p0_lidx >= 0) {
+      PetscPrintf(PETSC_COMM_SELF,"[%d] BDDC p0 error is %1.4e\n",PetscGlobalRank,PetscAbsScalar(pcbddc->benign_p0-p0_check));
+    }
+
+    ierr = VecDestroy(&vec_scale_P);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec_check_B);CHKERRQ(ierr);
+    ierr = VecDestroy(&dummy_vec);CHKERRQ(ierr);
+    ierr = MatDestroy(&S_j);CHKERRQ(ierr);
+    ierr = MatDestroy(&B0);CHKERRQ(ierr);
+    ierr = MatDestroy(&B0_B);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
@@ -2304,6 +2488,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->B0_cols                    = NULL;
   pcbddc->B0_vals                    = NULL;
   pcbddc->benign_change              = 0;
+  pcbddc->benign_vec                 = 0;
+  pcbddc->benign_original_mat        = 0;
+  pcbddc->benign_sf                  = 0;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
