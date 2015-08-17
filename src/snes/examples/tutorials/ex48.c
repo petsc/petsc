@@ -976,6 +976,7 @@ static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,co
       min[j] *= thi->units->year / thi->units->meter;
       max[j] *= thi->units->year / thi->units->meter;
     }
+    if (min[0] == 0.0) min[0] = 0.0;
     ierr = PetscPrintf(comm,"|X|_2 %g   %g <= u <=  %g   %g <= v <=  %g   %g <= c <=  %g \n",(double)nrm2,(double)min[0],(double)max[0],(double)min[1],(double)max[1],(double)min[2],(double)max[2]);CHKERRQ(ierr);
     {
       PetscReal umin,umax,umean;
