@@ -891,7 +891,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       for (i=0;i<is_size;i++){
         if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
           k = is_indices[i];
-          if (graph->count[k] && !PetscBTLookup(graph->touched,k)) {
+          if (!PetscBTLookup(graph->touched,k)) {
             if (PetscRealPart(array[k]) > 0.1) {
               SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong\n",k);
             }
