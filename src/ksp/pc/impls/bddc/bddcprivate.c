@@ -1468,7 +1468,6 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
 PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
 {
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
-  PC_IS*         pcis = (PC_IS*)pc->data;
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat            new_mat;
   IS             is_local,is_global;
