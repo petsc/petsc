@@ -47,14 +47,12 @@ int main(int argc,char **args)
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
   PetscBool      flg = PETSC_FALSE;
-  PetscScalar    a   = 1.0+PETSC_i;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif
 
-  a=1.0+PETSC_i;
   ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   dim  = n*n;
