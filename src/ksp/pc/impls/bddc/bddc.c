@@ -1357,6 +1357,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the iteration matrix to be of type MATIS");
   }
 
+  /* raise error if the user has provided the change of basis and the benign trick has been requested */
+  if (pcbddc->benign_saddle_point && pcbddc->user_ChangeOfBasisMatrix) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot apply the benign trick with a user defined change of basis");
+  }
+
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
@@ -1375,7 +1380,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (!pcbddc->benign_saddle_point) {
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
-    } else { /* TODO: handle user change of basis */
+    } else {
       PetscInt  nz;
       PetscBool sorted;
 
