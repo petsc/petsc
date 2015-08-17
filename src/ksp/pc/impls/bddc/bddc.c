@@ -1457,6 +1457,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     }
   }
 
+  /* propagate relevant information */
   /* workaround for reals */
 #if !defined(PETSC_USE_COMPLEX)
   if (matis->A->symmetric_set) {
@@ -1490,6 +1491,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* check b(v_I,p_0) = 0 for all v_I */
   if (pcbddc->dbg_flag && zerodiag) {
     PC_IS          *pcis = (PC_IS*)(pc->data);
+    Mat            A;
+    Vec            vec3_N;
     IS             dirIS = NULL;
     PetscScalar    *vals;
     const PetscInt *idxs;
@@ -1526,11 +1529,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(pcis->vec2_N);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
-    ierr = VecSet(matis->x,0.);CHKERRQ(ierr);
-    ierr = MatMult(matis->A,pcis->vec1_N,matis->x);CHKERRQ(ierr);
-    ierr = VecDot(matis->x,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
+    ierr = VecSet(vec3_N,0.);CHKERRQ(ierr);
+    ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
+    ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
+    ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] check original mat: %1.4e\n",PetscGlobalRank,vals[0]);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
   }
 
   /* check PCBDDCBenignPopOrPush */
@@ -1625,6 +1631,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
         if (pcbddc->dbg_flag) {
           PC_IS          *pcis = (PC_IS*)(pc->data);
+          Vec            vec3_N;
           IS             dirIS = NULL;
           PetscScalar    *vals;
           const PetscInt *idxs;
@@ -1661,22 +1668,25 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
           ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
           ierr = VecAssemblyBegin(pcis->vec2_N);CHKERRQ(ierr);
           ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
-          ierr = VecSet(matis->x,0.);CHKERRQ(ierr);
-          ierr = MatMult(pcbddc->local_mat,pcis->vec1_N,matis->x);CHKERRQ(ierr);
-          ierr = VecDot(matis->x,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
+          ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
+          ierr = VecSet(vec3_N,0.);CHKERRQ(ierr);
+          ierr = MatMult(pcbddc->local_mat,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
+          ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
+          ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
           ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] check new mat: %1.4e\n",PetscGlobalRank,vals[0]);CHKERRQ(ierr);
           ierr = PetscFree(vals);CHKERRQ(ierr);
         }
-        /* hack: swap pointers */
-        temp_mat = matis->A;
-        matis->A = pcbddc->local_mat;
-        pcbddc->local_mat = NULL;
+        /* swap local matrices */
+        ierr = MatISGetLocalMat(pc->pmat,&temp_mat);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)temp_mat);CHKERRQ(ierr);
+        ierr = MatISSetLocalMat(pc->pmat,pcbddc->local_mat);CHKERRQ(ierr);
+        ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
       }
       ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
       if (zerodiag) {
         /* restore original matrix */
-        ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
-        matis->A = temp_mat;
+        ierr = MatISSetLocalMat(pc->pmat,temp_mat);CHKERRQ(ierr);
+        ierr = PetscObjectDereference((PetscObject)temp_mat);CHKERRQ(ierr);
         /* pop B0 from pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
       }
