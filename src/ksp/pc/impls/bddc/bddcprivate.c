@@ -49,6 +49,7 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
   /* TODO: add error checking
     - avoid nested pop (or push) calls.
     - cannot push before pop.
+    - cannot call this if pcbddc->local_mat is NULL
   */
   if (pcbddc->benign_p0_lidx < 0) {
     PetscFunctionReturn(0);
