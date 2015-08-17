@@ -1087,7 +1087,9 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->benign_p0 = array[pcbddc->benign_p0_lidx];
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
     }
+#if 0
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] benign u* should be %1.4e\n",PetscGlobalRank,pcbddc->benign_p0);CHKERRQ(ierr);
+#endif
     ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
     pcbddc->benign_p0 = 0.;
@@ -1097,6 +1099,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = VecScatterBegin(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
+#if 0
       if (pcbddc->benign_p0_lidx >=0) {
         Mat B0;
         Vec dummy_vec;
@@ -1114,6 +1117,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
         ierr = MatDestroy(&B0);CHKERRQ(ierr);
         ierr = VecDestroy(&dummy_vec);CHKERRQ(ierr);
       }
+#endif
     }
   }
 
@@ -1155,7 +1159,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
     ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
     ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
-    ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
     pcbddc->rhs_change = PETSC_TRUE;
   }
 
@@ -1220,16 +1223,27 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PetscObjectReference((PetscObject)change_ctx->original_mat);CHKERRQ(ierr);
     pc->mat = change_ctx->original_mat;
 
+    /* need to restore the local matrices */
+    if (pcbddc->benign_saddle_point && pcbddc->benign_change) {
+      Mat_IS *matis = (Mat_IS*)pc->mat->data;
+
+      ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)pcbddc->benign_original_mat);CHKERRQ(ierr);
+      matis->A = pcbddc->benign_original_mat;
+      ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+    }
+
     /* get solution in original basis */
     if (x) {
       PC_IS *pcis = (PC_IS*)(pc->data);
+
 
       /* restore solution on pressures */
       if (pcbddc->benign_saddle_point) {
         Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
         /* add non-benign solution */
-        ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
+        ierr = VecAXPY(x,-1.0,pcbddc->benign_vec);CHKERRQ(ierr);
 
         /* change basis on pressures for x */
         ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
