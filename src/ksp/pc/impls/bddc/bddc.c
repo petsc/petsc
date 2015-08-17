@@ -1340,6 +1340,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
   }
   computeconstraintsmatrix = PETSC_FALSE;
+
+  /* check parameters' compatibility */
   if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
   }
