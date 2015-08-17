@@ -1107,6 +1107,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatDestroy(&B0_R);CHKERRQ(ierr);
     ierr = MatDestroy(&B0_V);CHKERRQ(ierr);
     ierr = VecDestroy(&vec_R_benign);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec_R_benign_2);CHKERRQ(ierr);
   }
 
   /* compute other basis functions for non-symmetric problems */
@@ -4389,11 +4390,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = MatDenseGetArray(coarse_submat_dense,&array);CHKERRQ(ierr);
   ierr = PetscMemcpy(array,coarse_submat_vals,sizeof(*coarse_submat_vals)*pcbddc->local_primal_size*pcbddc->local_primal_size);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(coarse_submat_dense,&array);CHKERRQ(ierr);
-#if 1
+#if 0
   {
     PetscViewer viewer;
     char filename[256];
-    sprintf(filename,"local_coarse_mat%d.m",PetscGlobalRank);
+    sprintf(filename,"local_coarse_mat%d_level%d.m",PetscGlobalRank,pcbddc->current_level);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(coarse_submat_dense,viewer);CHKERRQ(ierr);
@@ -4717,12 +4718,12 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     coarse_mat = 0;
   }
   ierr = PetscFree(isarray);CHKERRQ(ierr);
-#if 1
+#if 0
   {
     PetscViewer viewer;
     char filename[256];
-    sprintf(filename,"coarse_mat.m");
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
+    sprintf(filename,"coarse_mat_level%d.m",pcbddc->current_level);
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)coarse_mat),filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(coarse_mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
