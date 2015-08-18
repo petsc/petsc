@@ -1087,9 +1087,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->benign_p0 = array[pcbddc->benign_p0_lidx];
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
     }
-#if 0
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] benign u* should be %1.4e\n",PetscGlobalRank,pcbddc->benign_p0);CHKERRQ(ierr);
-#endif
     ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
     pcbddc->benign_p0 = 0.;
@@ -1098,26 +1095,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       Mat_IS* matis = (Mat_IS*)(pc->mat->data);
       ierr = VecScatterBegin(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-#if 0
-      if (pcbddc->benign_p0_lidx >=0) {
-        Mat B0;
-        Vec dummy_vec;
-        PetscScalar *array;
-        PetscInt ii[2];
-
-        ii[0] = 0;
-        ii[1] = pcbddc->B0_ncol;
-        ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,1,pcis->n,ii,pcbddc->B0_cols,pcbddc->B0_vals,&B0);CHKERRQ(ierr);
-        ierr = MatCreateVecs(B0,NULL,&dummy_vec);CHKERRQ(ierr);
-        ierr = MatMult(B0,matis->x,dummy_vec);CHKERRQ(ierr);
-        ierr = VecGetArray(dummy_vec,&array);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] benign u* is %1.4e\n",PetscGlobalRank,array[0]);CHKERRQ(ierr);
-        ierr = VecRestoreArray(dummy_vec,&array);CHKERRQ(ierr);
-        ierr = MatDestroy(&B0);CHKERRQ(ierr);
-        ierr = VecDestroy(&dummy_vec);CHKERRQ(ierr);
-      }
-#endif
     }
   }
 
@@ -1359,11 +1336,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the iteration matrix to be of type MATIS");
   }
 
-  /* raise error if the user has provided the change of basis and the benign trick has been requested */
-  if (pcbddc->benign_saddle_point && pcbddc->user_ChangeOfBasisMatrix) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot apply the benign trick with a user defined change of basis");
-  }
-
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
@@ -1379,81 +1351,84 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   } else {
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-    if (!pcbddc->benign_saddle_point) {
-      ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
-      pcbddc->local_mat = matis->A;
-    } else {
-      PetscInt  nz;
-      PetscBool sorted;
+    ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+    pcbddc->local_mat = matis->A;
+  }
 
-      ierr = MatFindZeroDiagonals(matis->A,&zerodiag);CHKERRQ(ierr);
-      ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
-      if (!sorted) {
-        ierr = ISSort(zerodiag);CHKERRQ(ierr);
+  /* change basis on local pressures (aka zerodiag dofs) */
+  if (pcbddc->benign_saddle_point) {
+    PetscInt  nz;
+    PetscBool sorted;
+
+    /* get reference to mat */
+    ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
+    pcbddc->benign_original_mat = pcbddc->local_mat;
+
+    ierr = MatFindZeroDiagonals(pcbddc->benign_original_mat,&zerodiag);CHKERRQ(ierr);
+    ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
+    if (!sorted) {
+      ierr = ISSort(zerodiag);CHKERRQ(ierr);
+    }
+    ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
+    if (nz) {
+      IS                zerodiagc;
+      PetscScalar       *array;
+      const PetscInt    *idxs,*idxsc;
+      PetscInt          i,n,*nnz;
+
+      /* TODO: add check for shared dofs and raise error */
+      ierr = MatGetLocalSize(pcbddc->benign_original_mat,&n,NULL);CHKERRQ(ierr);
+      ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
+      ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
+      ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
+      /* local change of basis for pressures */
+      ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)pcbddc->benign_original_mat),&pcbddc->benign_change);CHKERRQ(ierr);
+      ierr = MatSetType(pcbddc->benign_change,MATAIJ);CHKERRQ(ierr);
+      ierr = MatSetSizes(pcbddc->benign_change,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&nnz);CHKERRQ(ierr);
+      for (i=0;i<n-nz;i++) nnz[idxsc[i]] = 1; /* identity on velocities */
+      for (i=0;i<nz-1;i++) nnz[idxs[i]] = 2; /* change on pressures */
+      nnz[idxs[nz-1]] = nz; /* last local pressure dof: _0 set */
+      ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
+      ierr = PetscFree(nnz);CHKERRQ(ierr);
+      /* set identity on velocities */
+      for (i=0;i<n-nz;i++) {
+        ierr = MatSetValue(pcbddc->benign_change,idxsc[i],idxsc[i],1.,INSERT_VALUES);CHKERRQ(ierr);
       }
-      ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
-      if (nz) {
-        IS                zerodiagc;
-        PetscScalar       *array;
-        const PetscInt    *idxs,*idxsc;
-        PetscInt          i,n,*nnz;
+      /* set change on pressures */
+      for (i=0;i<nz-1;i++) {
+        PetscScalar vals[2];
+        PetscInt    cols[2];
 
-        /* TODO: add check for shared dofs */
-        pcbddc->use_change_of_basis = PETSC_TRUE;
-        pcbddc->use_change_on_faces = PETSC_TRUE;
-        ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
-        ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
-        ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-        ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
-        /* local change of basis for pressures */
-        ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
-        ierr = MatCreate(PetscObjectComm((PetscObject)matis->A),&pcbddc->benign_change);CHKERRQ(ierr);
-        ierr = MatSetType(pcbddc->benign_change,MATAIJ);CHKERRQ(ierr);
-        ierr = MatSetSizes(pcbddc->benign_change,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = PetscMalloc1(n,&nnz);CHKERRQ(ierr);
-        for (i=0;i<n-nz;i++) nnz[idxsc[i]] = 1; /* identity on velocities */
-        for (i=0;i<nz-1;i++) nnz[idxs[i]] = 2; /* change on pressures */
-        nnz[idxs[nz-1]] = nz; /* last local pressure dof: _0 set */
-        ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
-        ierr = PetscFree(nnz);CHKERRQ(ierr);
-        /* set identity on velocities */
-        for (i=0;i<n-nz;i++) {
-          ierr = MatSetValue(pcbddc->benign_change,idxsc[i],idxsc[i],1.,INSERT_VALUES);CHKERRQ(ierr);
-        }
-        /* set change on pressures */
-        for (i=0;i<nz-1;i++) {
-          PetscScalar vals[2];
-          PetscInt    cols[2];
-
-          /* TODO: add quadrature */
-          cols[0] = idxs[i];
-          cols[1] = idxs[nz-1];
-          vals[0] = 1.;
-          vals[1] = 1./nz;
-          ierr = MatSetValues(pcbddc->benign_change,1,idxs+i,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-        }
-        ierr = PetscMalloc1(nz,&array);CHKERRQ(ierr);
-        for (i=0;i<nz-1;i++) array[i] = -1.;
-        array[nz-1] = 1./nz;
-        ierr = MatSetValues(pcbddc->benign_change,1,idxs+nz-1,nz,idxs,array,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = PetscFree(array);CHKERRQ(ierr);
-        ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        /* TODO: need optimization? */
-        ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
-        /* store local and global idxs for p0 */
-        pcbddc->benign_p0_lidx = idxs[nz-1];
-        ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,1,&idxs[nz-1],&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
-        ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
-        /* pop B0 mat from pcbddc->local_mat */
-        ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
-      } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
-        ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
-        pcbddc->local_mat = matis->A;
+        /* TODO: add quadrature */
+        cols[0] = idxs[i];
+        cols[1] = idxs[nz-1];
+        vals[0] = 1.;
+        vals[1] = 1./nz;
+        ierr = MatSetValues(pcbddc->benign_change,1,idxs+i,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
       }
+      ierr = PetscMalloc1(nz,&array);CHKERRQ(ierr);
+      for (i=0;i<nz-1;i++) array[i] = -1.;
+      array[nz-1] = 1./nz;
+      ierr = MatSetValues(pcbddc->benign_change,1,idxs+nz-1,nz,idxs,array,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = PetscFree(array);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      /* TODO: need optimization? */
+      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatPtAP(pcbddc->benign_original_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+      /* store local and global idxs for p0 */
+      pcbddc->benign_p0_lidx = idxs[nz-1];
+      ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,1,&idxs[nz-1],&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
+      ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
+      /* pop B0 mat from pcbddc->local_mat */
+      ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
+    } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
+      ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
     }
   }
 
@@ -1488,7 +1463,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computeconstraintsmatrix = PETSC_TRUE;
   }
 
-  /* check b(v_I,p_0) = 0 for all v_I */
+  /* check b(v_I,p_0) = 0 for all v_I (raise error if not) */
   if (pcbddc->dbg_flag && zerodiag) {
     PC_IS          *pcis = (PC_IS*)(pc->data);
     Mat            A;
@@ -1503,7 +1478,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PetscMalloc1(pcis->n,&vals);CHKERRQ(ierr);
     ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
     ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-    for (i=0;i<nz;i++) vals[i] = 1.;
+    for (i=0;i<nz;i++) vals[i] = 1.; /* TODO add quadrature */
     ierr = VecSetValues(pcis->vec1_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
@@ -1531,10 +1506,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
     ierr = VecSet(vec3_N,0.);CHKERRQ(ierr);
-    ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
+    ierr = MatISGetLocalMat(pc->mat,&A);CHKERRQ(ierr);
     ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
     ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] check original mat: %1.4e\n",PetscGlobalRank,vals[0]);CHKERRQ(ierr);
+    if (PetscAbsScalar(vals[0]) > PETSC_SMALL) { /* TODO: should I add the A-norm in test? */
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %f (should be numerically 0.)",PetscAbsScalar(vals[0]));
+    }
     ierr = PetscFree(vals);CHKERRQ(ierr);
     ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
   }
@@ -1629,53 +1606,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       if (zerodiag) {
         /* insert B0 in pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
-        if (pcbddc->dbg_flag) {
-          PC_IS          *pcis = (PC_IS*)(pc->data);
-          Vec            vec3_N;
-          IS             dirIS = NULL;
-          PetscScalar    *vals;
-          const PetscInt *idxs;
-          PetscInt       i,nz;
-
-          /* p0 */
-          ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
-          ierr = PetscMalloc1(pcis->n,&vals);CHKERRQ(ierr);
-          ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
-          ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-          vals[0] = 1.;
-          ierr = VecSetValues(pcis->vec1_N,1,&idxs[nz-1],vals,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
-          ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
-          /* v_I */
-          ierr = VecSetRandom(pcis->vec2_N,NULL);CHKERRQ(ierr);
-          for (i=0;i<nz;i++) vals[i] = 0.;
-          ierr = VecSetValues(pcis->vec2_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
-          ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-          for (i=0;i<pcis->n_B;i++) vals[i] = 0.;
-          ierr = VecSetValues(pcis->vec2_N,pcis->n_B,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-          ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
-          if (dirIS) {
-            PetscInt n;
-
-            ierr = ISGetLocalSize(dirIS,&n);CHKERRQ(ierr);
-            ierr = ISGetIndices(dirIS,&idxs);CHKERRQ(ierr);
-            for (i=0;i<n;i++) vals[i] = 0.;
-            ierr = VecSetValues(pcis->vec2_N,n,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = ISRestoreIndices(dirIS,&idxs);CHKERRQ(ierr);
-          }
-          ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
-          ierr = VecAssemblyBegin(pcis->vec2_N);CHKERRQ(ierr);
-          ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
-          ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
-          ierr = VecSet(vec3_N,0.);CHKERRQ(ierr);
-          ierr = MatMult(pcbddc->local_mat,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
-          ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
-          ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] check new mat: %1.4e\n",PetscGlobalRank,vals[0]);CHKERRQ(ierr);
-          ierr = PetscFree(vals);CHKERRQ(ierr);
-        }
         /* swap local matrices */
         ierr = MatISGetLocalMat(pc->pmat,&temp_mat);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)temp_mat);CHKERRQ(ierr);
@@ -1711,8 +1641,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* check BDDC operator */
-  if (pcbddc->dbg_flag && (
-      (pcbddc->n_vertices == pcbddc->local_primal_size) || pcbddc->benign_saddle_point) ) {
+  if (pcbddc->dbg_flag && (pcbddc->n_vertices == pcbddc->local_primal_size) ) {
     PC_IS          *pcis = (PC_IS*)(pc->data);
     Mat            S_j,B0=NULL,B0_B=NULL;
     Vec            dummy_vec=NULL,vec_check_B,vec_scale_P;
