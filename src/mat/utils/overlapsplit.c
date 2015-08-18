@@ -1,3 +1,9 @@
+/*
+ * overlapsplit.c: increase the overlap of a 'big' subdomain across several processor cores
+ *
+ * Author: Fande Kong <fdkong.jd@gmail.com>
+ */
+
 #include <petscsf.h>
 #include <petsc/private/matimpl.h>
 
@@ -15,7 +21,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   PetscInt         *indices_ov_rd,nroots,nleaves,*localoffsets,*indices_recv,*sources_sc,*sources_sc_rd;
   const PetscInt   *indices;
   PetscMPIInt      srank,ssize,issamecomm,k,grank;
-  IS               is_sc,allis_sc,allis_sc_tmp,partitioning;
+  IS               is_sc,allis_sc,partitioning;
   MPI_Comm         gcomm,dcomm,scomm;
   PetscSF          sf;
   PetscSFNode      *remote;
@@ -32,14 +38,16 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = PetscCommDuplicate(dcomm,&scomm,NULL);CHKERRQ(ierr);
   /*get a global communicator, where mat should be a global matrix  */
   ierr = PetscObjectGetComm((PetscObject)mat,&gcomm);CHKERRQ(ierr);
-#if 1
-  ierr = PetscPrintf(gcomm,"before mat->ops->increaseoverlap\n");CHKERRQ(ierr);
+#if 0
+  ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"before mat->ops->increaseoverlap\n");CHKERRQ(ierr);
 #endif
   /*increase overlap on each individual subdomain*/
   ierr = (*mat->ops->increaseoverlap)(mat,1,is,ov);CHKERRQ(ierr);
-#if 1
+#if 0
   ierr = PetscPrintf(gcomm,"after mat->ops->increaseoverlap \n");CHKERRQ(ierr);
   ierr = ISView(*is,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
   /*compare communicators */
   ierr = MPI_Comm_compare(gcomm,scomm,&issamecomm);CHKERRQ(ierr);
@@ -70,7 +78,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = ISCreateGeneral(scomm,nindx,indices_sc,PETSC_OWN_POINTER,&is_sc);CHKERRQ(ierr);
   /*gather all indices within  the sub communicator*/
   ierr = ISAllGather(is_sc,&allis_sc);CHKERRQ(ierr);
-#if 1
+#if 0
   ierr = ISView(allis_sc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
@@ -79,7 +87,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = PetscMalloc1(ssize,&localsizes_sc);CHKERRQ(ierr);
   /*get individual local sizes for all index sets*/
   ierr = MPI_Gather(&nindx,1,MPIU_INT,localsizes_sc,1,MPIU_INT,0,scomm);CHKERRQ(ierr);
-#if 1
+#if 0
   if(!srank){
 	for(i=0; i<ssize; i++){
 	  ierr = PetscPrintf(PETSC_COMM_SELF," localsize[%d]: %d \n",i,localsizes_sc[i]);CHKERRQ(ierr);
@@ -150,6 +158,8 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
 #endif
   }else{
    ierr = ISDestroy(&allis_sc);CHKERRQ(ierr);
+   /*Allocate a 'zero' pointer */
+   ierr = PetscCalloc1(0,&remote);CHKERRQ(ierr);
    nleaves = 0;
    indices_ov_rd = 0;
    sources_sc_rd = 0;
@@ -176,17 +186,10 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = PetscFree2(indices_ov_rd,sources_sc_rd);CHKERRQ(ierr);
   /*create a index set*/
   ierr = ISCreateGeneral(scomm,nroots,indices_recv,PETSC_OWN_POINTER,&is_sc);CHKERRQ(ierr);
-#if 1
+#if 0
   ierr = ISView(is_sc,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
-  /*create a index set for cols */
-  ierr = ISAllGather(is_sc,&allis_sc_tmp);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(allis_sc_tmp,&localsize_tmp);CHKERRQ(ierr);
-  ierr = ISGetIndices(allis_sc_tmp,&indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(scomm,localsize_tmp,indices,PETSC_COPY_VALUES,&allis_sc);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(allis_sc_tmp,&indices);CHKERRQ(ierr);
-  ierr = ISDestroy(&allis_sc_tmp);CHKERRQ(ierr);
   /*construct a parallel submatrix */
   ierr = PetscCalloc1(1,&smat);CHKERRQ(ierr);
 #if 0
@@ -205,15 +208,16 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   	ierr=PetscPrintf(gcomm,"different communicator \n");CHKERRQ(ierr);
   }
 #endif
-#if 1
-  ierr = ISView(allis_sc,PETSC_NULL);CHKERRQ(ierr);
+#if 0
   ierr = ISView(is_sc,PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = MatGetSubMatricesMPI(mat,1,&is_sc,&allis_sc,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+  /*Get square sub matrices */
+  ierr = MatGetSubMatricesMPI(mat,1,&is_sc,&is_sc,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
   /* we do not need them any more */
   ierr = ISDestroy(&allis_sc);CHKERRQ(ierr);
-#if 1
+#if 0
   ierr = MatView(smat[0],PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
   /*create a partitioner to repartition the sub-matrix*/
   ierr = MatPartitioningCreate(scomm,&part);CHKERRQ(ierr);
@@ -236,11 +240,16 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
   ierr = MatDestroy(&(smat[0]));CHKERRQ(ierr);
   ierr = PetscFree(smat);CHKERRQ(ierr);
-#if 1
+#if 0
   ierr = ISView(partitioning,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
   /* get local rows including  overlap */
   ierr = ISBuildTwoSided(partitioning,is_sc,is);CHKERRQ(ierr);
+#if 0
+  ierr = ISView(*is,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
+#endif
   /* destroy */
   ierr = ISDestroy(&is_sc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
