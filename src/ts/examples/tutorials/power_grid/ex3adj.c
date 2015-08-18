@@ -8,18 +8,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - P_max \sin(\theta) -D(\omega - \omega_s)\\
 \end{eqnarray}
 
-
-
-  Ensemble of initial conditions
-   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Fault at .1 seconds
-   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Initial conditions same as when fault is ended
-   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
-
-
 F*/
 
 /*
@@ -338,12 +326,9 @@ int main(int argc,char **argv)
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,PETSC_DEFAULT,10.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-#if 0
-  ierr = TSSetPostStep(ts,PostStepFunction);CHKERRQ(ierr);
-#endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -355,7 +340,7 @@ int main(int argc,char **argv)
       u[0] += du[0];
       u[1] += du[1];
       ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-      ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+      ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
       ierr = TSSolve(ts,U);CHKERRQ(ierr);
     }
   } else {
