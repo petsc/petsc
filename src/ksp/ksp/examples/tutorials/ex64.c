@@ -2,7 +2,7 @@
  * ex64.c
  *
  *  Created on: Aug 10, 2015
- *      Author: Fande Kong fdkong.jd@gmail.com
+ *      Author: Fande Kong  <fdkong.jd@gmail.com>
  */
 
 static char help[] = "Illustrates use of the preconditioner GASM.\n \
