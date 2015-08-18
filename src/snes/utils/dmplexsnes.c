@@ -755,7 +755,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 + snes   - the SNES context
 . its    - iteration number
 . fgnorm - 2-norm of residual
-- dummy  - unused context
+- dummy  - PetscViewer of type ASCII
 
   Notes:
   This routine prints the residual norm at each iteration.
@@ -767,7 +767,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 @*/
 PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
 {
-  PetscViewer        viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject) snes));
+  PetscViewer        viewer = (PetscViewer) dummy;
   Vec                res;
   DM                 dm;
   PetscSection       s;
@@ -777,6 +777,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = SNESGetFunction(snes, &res, 0, 0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);

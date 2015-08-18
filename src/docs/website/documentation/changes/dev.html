@@ -112,9 +112,12 @@
          -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())
           see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG
       <h4>KSP:</h4>
+         KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>SNES:</h4>
+         SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+         TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>

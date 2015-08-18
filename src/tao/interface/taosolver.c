@@ -1573,7 +1573,7 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
 
    Input Parameters:
 +  tao - the Tao context
--  ctx - PetscViewer context or NULL
+-  ctx - PetscViewer context of type ASCII
 
    Options Database Keys:
 .  -tao_smonitor
@@ -1587,14 +1587,10 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
   PetscErrorCode ierr;
   PetscInt       its;
   PetscReal      fct,gnorm;
-  PetscViewer    viewer;
+  PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
