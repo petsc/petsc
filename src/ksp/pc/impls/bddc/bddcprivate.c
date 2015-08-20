@@ -2393,35 +2393,13 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* vertices */
     if (n_vertices) {
       ierr = ISGetIndices(ISForVertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-      if (nnsp_has_cnst) { /* it considers all possible vertices */
-        ierr = PetscMemcpy(constraints_idxs,is_indices,n_vertices*sizeof(PetscInt));CHKERRQ(ierr);
-        for (i=0;i<n_vertices;i++) {
-          constraints_n[total_counts] = 1;
-          constraints_data[total_counts] = 1.0;
-          constraints_idxs_ptr[total_counts+1] = constraints_idxs_ptr[total_counts]+1;
-          constraints_data_ptr[total_counts+1] = constraints_data_ptr[total_counts]+1;
-          total_counts++;
-        }
-      } else { /* consider vertices for which exist at least a localnearnullsp which is not null there */
-        PetscBool used_vertex;
-        for (i=0;i<n_vertices;i++) {
-          used_vertex = PETSC_FALSE;
-          k = 0;
-          while (!used_vertex && k<nnsp_size) {
-            ierr = VecGetArrayRead(localnearnullsp[k],(const PetscScalar**)&array);CHKERRQ(ierr);
-            if (PetscAbsScalar(array[is_indices[i]])>0.0) {
-              constraints_n[total_counts] = 1;
-              constraints_idxs[total_counts] = is_indices[i];
-              constraints_data[total_counts] = 1.0;
-              constraints_idxs_ptr[total_counts+1] = constraints_idxs_ptr[total_counts]+1;
-              constraints_data_ptr[total_counts+1] = constraints_data_ptr[total_counts]+1;
-              total_counts++;
-              used_vertex = PETSC_TRUE;
-            }
-            ierr = VecRestoreArrayRead(localnearnullsp[k],(const PetscScalar**)&array);CHKERRQ(ierr);
-            k++;
-          }
-        }
+      ierr = PetscMemcpy(constraints_idxs,is_indices,n_vertices*sizeof(PetscInt));CHKERRQ(ierr);
+      for (i=0;i<n_vertices;i++) {
+        constraints_n[total_counts] = 1;
+        constraints_data[total_counts] = 1.0;
+        constraints_idxs_ptr[total_counts+1] = constraints_idxs_ptr[total_counts]+1;
+        constraints_data_ptr[total_counts+1] = constraints_data_ptr[total_counts]+1;
+        total_counts++;
       }
       ierr = ISRestoreIndices(ISForVertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
       n_vertices = total_counts;
