@@ -282,6 +282,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   PetscInt       num_subdomains    = 0;
   DM             *subdomain_dm     = NULL;
   char           **subdomain_names = NULL;
+  PetscInt       *numbering;
 
 
   PetscFunctionBegin;
@@ -395,8 +396,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     for (i=0; i<osm->n; i++) {
       ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
       ierr = ISGetIndices(osm->ois[i],&oidxi);CHKERRQ(ierr);
-      ierr = PetscMemcpy(oidx+on, oidxi, sizeof(PetscInt)*oni);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(osm->ois[i], &oidxi);CHKERRQ(ierr);
+      ierr = PetscMemcpy(oidx+on,oidxi,sizeof(PetscInt)*oni);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(osm->ois[i],&oidxi);CHKERRQ(ierr);
       on  += oni;
     }
     ierr = ISCreateGeneral(((PetscObject)(pc))->comm,on,oidx,PETSC_OWN_POINTER,&gois);CHKERRQ(ierr);
@@ -407,57 +408,74 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),on,gostart,1, &goid);CHKERRQ(ierr);
     /*gois might indices not on local */
     ierr = VecScatterCreate(x,gois,osm->gx,goid, &(osm->gorestriction));CHKERRQ(ierr);
+    ierr = PetscMalloc1(osm->n,&numbering);CHKERRQ(ierr);
+    ierr = PetscObjectsListGetGlobalNumbering(PetscObjectComm((PetscObject)pc),osm->n,(PetscObject*)osm->ois,NULL,numbering);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = ISDestroy(&gois);CHKERRQ(ierr);
 
     /* Merge inner subdomain ISs and construct a restriction onto the disjoint union of local inner subdomains. */
     {
-      PetscInt  ini;           /* Number of indices the i-th a local inner subdomain. */
-      PetscInt  in;            /* Number of indices in the disjoint uniont of local inner subdomains. */
-      PetscInt *iidx;         /* Global indices in the merged local inner subdomain. */
-      PetscInt *ioidx;        /* Global indices of the disjoint union of inner subdomains within the disjoint union of outer subdomains. */
-      IS        giis;          /* IS for the disjoint union of inner subdomains. */
-      IS        giois;         /* IS for the disjoint union of inner subdomains within the disjoint union of outer subdomains. */
+      PetscInt        ini;           /* Number of indices the i-th a local inner subdomain. */
+      PetscInt        in;            /* Number of indices in the disjoint uniont of local inner subdomains. */
+      PetscInt       *iidx;          /* Global indices in the merged local inner subdomain. */
+      PetscInt       *ioidx;         /* Global indices of the disjoint union of inner subdomains within the disjoint union of outer subdomains. */
+      IS              giis;          /* IS for the disjoint union of inner subdomains. */
+      IS              giois;         /* IS for the disjoint union of inner subdomains within the disjoint union of outer subdomains. */
+      PetscScalar    *array;
+      const PetscInt *indices;
+      PetscInt        k;
       /**/
-      in = 0;
+      on = 0;
       for (i=0; i<osm->n; i++) {
-        ierr = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
-        in  += ini;
+        ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
+        on  += oni;
       }
-      ierr = PetscMalloc1(in, &iidx);CHKERRQ(ierr);
-      ierr = PetscMalloc1(in, &ioidx);CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(osm->gx,&gostart, NULL);CHKERRQ(ierr);
+      /*allocate memory */
+      ierr = PetscMalloc1(on, &iidx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(on, &ioidx);CHKERRQ(ierr);
+      ierr = VecGetArray(y,&array);CHKERRQ(ierr);
+      /*set communicator id */
       in   = 0;
-      on   = 0;
       for (i=0; i<osm->n; i++) {
-        const PetscInt         *iidxi; /* Global indices of the i-th local inner subdomain. */
-        ISLocalToGlobalMapping ltogi; /* Map from global to local indices of the i-th outer local subdomain. */
-        PetscInt               *ioidxi; /* Local indices of the i-th local inner subdomain within the local outer subdomain. */
-        PetscInt               ioni;  /* Number of indices in ioidxi; if ioni != ini the inner subdomain is not a subdomain of the outer subdomain (error). */
-        PetscInt               k;
         ierr   = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
-        ierr   = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
-        ierr   = ISGetIndices(osm->iis[i],&iidxi);CHKERRQ(ierr);
-        ierr   = PetscMemcpy(iidx+in, iidxi, sizeof(PetscInt)*ini);CHKERRQ(ierr);
-        ierr   = ISLocalToGlobalMappingCreateIS(osm->ois[i],&ltogi);CHKERRQ(ierr);
-        ioidxi = ioidx+in;
-        /*This function is not scalable */
-        ierr   = ISGlobalToLocalMappingApply(ltogi,IS_GTOLM_DROP,ini,iidxi,&ioni,ioidxi);CHKERRQ(ierr);
-        ierr   = ISLocalToGlobalMappingDestroy(&ltogi);CHKERRQ(ierr);
-        ierr   = ISRestoreIndices(osm->iis[i], &iidxi);CHKERRQ(ierr);
-        if (ioni != ini) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner subdomain %D contains %D indices outside of its outer subdomain", i, ini - ioni);
-        for (k = 0; k < ini; ++k) ioidxi[k] += gostart+on;
+        for (k = 0; k < ini; ++k){
+          array[in+k] = numbering[i];
+        }
         in += ini;
-        on += oni;
       }
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc), in, iidx,  PETSC_OWN_POINTER, &giis);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc), in, ioidx, PETSC_OWN_POINTER, &giois);CHKERRQ(ierr);
+      ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
+      ierr = VecScatterBegin(osm->gorestriction,y,osm->gy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->gorestriction,y,osm->gy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+#if 0
+      ierr = VecView(osm->gy,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
+      ierr = VecGetOwnershipRange(osm->gy,&gostart, NULL);CHKERRQ(ierr);
+      ierr = VecGetArray(osm->gy,&array);CHKERRQ(ierr);
+      on  = 0;
+      in  = 0;
+      for(i=0; i<osm->n;i++){
+    	ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
+    	ierr = ISGetIndices(osm->ois[i],&indices);CHKERRQ(ierr);
+    	for(k=0; k<oni; k++){
+    	 /*skip overlapping indices */
+         if(array[on+k] != numbering[i]) continue;
+         /*record inner indices */
+         iidx[in]    = indices[k];
+         ioidx[in++] = gostart+on+k;
+    	}
+    	ierr   = ISRestoreIndices(osm->ois[i], &indices);CHKERRQ(ierr);
+    	on += oni;
+      }
+      ierr = VecRestoreArray(osm->gy,&array);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),in,iidx,PETSC_OWN_POINTER,&giis);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),in,ioidx,PETSC_OWN_POINTER,&giois);CHKERRQ(ierr);
       ierr = VecScatterCreate(y,giis,osm->gy,giois,&osm->girestriction);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = ISDestroy(&giis);CHKERRQ(ierr);
       ierr = ISDestroy(&giois);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&goid);CHKERRQ(ierr);
+    ierr = PetscFree(numbering);CHKERRQ(ierr);
 
     /* Create the subdomain work vectors. */
     ierr = PetscMalloc1(osm->n,&osm->x);CHKERRQ(ierr);
