@@ -57,7 +57,7 @@ PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
 PetscErrorCode PCBDDCAdaptiveSelection(PC);
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
-PetscErrorCode PCBDDCBenignPopOrPushP0(PC,Vec,PetscBool);
+PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 
 /* feti-dp */

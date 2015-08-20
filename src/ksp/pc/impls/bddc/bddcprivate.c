@@ -6,8 +6,8 @@ static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y);
 static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCBenignPopOrPushP0"
-PetscErrorCode PCBDDCBenignPopOrPushP0(PC pc, Vec v, PetscBool pop)
+#define __FUNCT__ "PCBDDCBenignGetOrSetP0"
+PetscErrorCode PCBDDCBenignGetOrSetP0(PC pc, Vec v, PetscBool get)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -21,7 +21,7 @@ PetscErrorCode PCBDDCBenignPopOrPushP0(PC pc, Vec v, PetscBool pop)
       ierr = PetscSFSetGraphLayout(pcbddc->benign_sf,pc->pmat->rmap,0,NULL,PETSC_OWN_POINTER,&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
     }
   }
-  if (pop) { /* use SF to get values */
+  if (get) { /* use SF to get values */
     PetscScalar *array;
 
     ierr = VecGetArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);

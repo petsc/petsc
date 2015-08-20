@@ -1087,10 +1087,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->benign_p0 = array[pcbddc->benign_p0_lidx];
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
     }
-    ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
     pcbddc->benign_p0 = 0.;
-    ierr = PCBDDCBenignPopOrPushP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
     if (pcbddc->benign_saddle_point) {
       Mat_IS* matis = (Mat_IS*)(pc->mat->data);
       ierr = VecScatterBegin(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1516,17 +1516,17 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
   }
 
-  /* check PCBDDCBenignPopOrPush */
+  /* check PCBDDCBenignGetOrSetP0 */
   if (pcbddc->dbg_flag && pcbddc->benign_saddle_point) {
     PC_IS  *pcis = (PC_IS*)(pc->data);
 
     ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
     pcbddc->benign_p0 = -PetscGlobalRank;
-    ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->benign_p0 = 1;
-    ierr = PCBDDCBenignPopOrPushP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
     if (pcbddc->benign_p0_gidx >=0 && pcbddc->benign_p0 != -PetscGlobalRank) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignPopOrPushP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
     }
   }
 
@@ -1792,8 +1792,8 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static == PETSC_TRUE) */
 
   PetscFunctionBegin;
-  if (pcbddc->benign_saddle_point) { /* extract p0 from r */
-    ierr = PCBDDCBenignPopOrPushP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
+  if (pcbddc->benign_saddle_point) { /* get p0 from r */
+    ierr = PCBDDCBenignGetOrSetP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
   }
   if (!pcbddc->use_exact_dirichlet_trick) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
@@ -1859,8 +1859,8 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     ierr = VecScatterEnd(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
 
-  if (pcbddc->benign_saddle_point) { /* push p0 (computed in PCBDDCApplyInterface) */
-    ierr = PCBDDCBenignPopOrPushP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
+  if (pcbddc->benign_saddle_point) { /* set p0 (computed in PCBDDCApplyInterface) */
+    ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
