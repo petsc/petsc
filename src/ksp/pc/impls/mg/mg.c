@@ -398,7 +398,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC pc)
     ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);
   }
   if (mg->am == PC_MG_MULTIPLICATIVE) {
-    ierr = PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGSetLevels",mg->cyclesperpcapply,&cycles,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGMultiplicativeSetCycles",mg->cyclesperpcapply,&cycles,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGMultiplicativeSetCycles(pc,cycles);CHKERRQ(ierr);
     }
