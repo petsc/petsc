@@ -906,6 +906,8 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCMGGetType"
 /*@
    PCMGGetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
