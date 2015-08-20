@@ -191,7 +191,6 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
 #endif
   /*construct a parallel submatrix */
-  ierr = PetscCalloc1(1,&smat);CHKERRQ(ierr);
 #if 0
   ierr = ISView(allis_sc,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Barrier(gcomm);CHKERRQ(ierr);
@@ -252,6 +251,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
 #endif
   /* destroy */
   ierr = ISDestroy(&is_sc);CHKERRQ(ierr);
+  ierr = ISDestroy(&partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
