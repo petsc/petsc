@@ -10,7 +10,7 @@
 #include <petscbt.h>
 #include <petsctime.h>
 
-/* #define PTAP_PROFILE */
+#define PTAP_PROFILE 
 
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__
@@ -29,6 +29,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
+    ierr = MatDestroy(&ptap->R);CHKERRQ(ierr); 
     if (ptap->api) {ierr = PetscFree(ptap->api);CHKERRQ(ierr);}
     if (ptap->apj) {ierr = PetscFree(ptap->apj);CHKERRQ(ierr);}
     if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
@@ -463,11 +464,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
        0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa;
        1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
   /* set default scalable */
-  ptap->scalable = PETSC_TRUE;
+  ptap->scalable = PETSC_FALSE; //PETSC_TRUE;
 
   ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
   if (!ptap->scalable) {  /* Do dense axpy */
     ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
+    ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->R);CHKERRQ(ierr);
   } else {
     ierr = PetscCalloc1(ap_rmax+1,&ptap->apa);CHKERRQ(ierr);
   }
@@ -511,7 +513,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt            *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend;
   PetscBool           scalable;
 #if defined(PTAP_PROFILE)
-  PetscLogDouble t0,t1,t2,t3,t4,et2_AP=0.0,et2_PtAP=0.0,t2_0,t2_1,t2_2;
+  PetscLogDouble t0,t1,t2,t3,t4,et2_AP=0.0,et2_PtAP=0.0,t2_0,t2_1,t2_2,t_tran0,t_tran1;
 #endif
 
   PetscFunctionBegin;
@@ -558,9 +560,74 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   api = ptap->api; apj = ptap->apj;
 
-  if (!scalable) { /* Do dense axpy on apa (length of pN, stores A[i,:]*P) - nonscalable, but fast */
+  if (!scalable) { /* Do dense axpy on apa (length of pN, stores A[i,:]*P) - nonscalable, but faster (could take 1/3 scalable time) */
     ierr = PetscInfo(C,"Using non-scalable dense axpy\n");CHKERRQ(ierr);
     /*-----------------------------------------------------------------------------------------------------*/
+    ierr = PetscTime(&t_tran0);CHKERRQ(ierr);
+    ierr = MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->R);CHKERRQ(ierr);
+    ierr = PetscTime(&t_tran1);CHKERRQ(ierr);
+
+    Mat         R = ptap->R;
+    Mat_SeqAIJ  *r = (Mat_SeqAIJ*)R->data;
+    PetscInt    *ri=r->i,*rj=r->j,rnz,arow,l,prow,pcol,pN=P->cmap->N;
+    PetscScalar *ra=r->a,tmp,cdense[pN];
+
+    ierr = PetscMemzero(cdense,pN*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (i=0; i<cm; i++) { /* each row of C or R */
+      rnz = ri[i+1] - ri[i];
+
+      for (j=0; j<rnz; j++) { /* each nz of R */
+        arow = rj[ri[i] + j];
+
+        /* diagonal portion of A */
+        anz  = ad->i[arow+1] - ad->i[arow];
+        for (k=0; k<anz; k++) { /* each nz of Ad */
+          tmp  = ra[ri[i] + j]*ad->a[ad->i[arow] + k];
+          prow = ad->j[ad->i[arow] + k];
+          pnz  = pi_loc[prow+1] - pi_loc[prow];
+
+          for (l=0; l<pnz; l++) { /* each nz of P_loc */
+            pcol = pj_loc[pi_loc[prow] + l];
+            cdense[pcol] += tmp*pa_loc[pi_loc[prow] + l];
+          }
+        }
+
+        /* off-diagonal portion of A */
+        anz  = ao->i[arow+1] - ao->i[arow];
+        for (k=0; k<anz; k++) { /* each nz of Ao */
+          tmp  = ra[ri[i] + j]*ao->a[ao->i[arow] + k];
+          prow = ao->j[ao->i[arow] + k];
+          pnz  = pi_oth[prow+1] - pi_oth[prow];
+
+          for (l=0; l<pnz; l++) { /* each nz of P_oth */
+            pcol = pj_oth[pi_oth[prow] + l];
+            cdense[pcol] += tmp*pa_oth[pi_oth[prow] + l];
+          }
+        }
+
+      } //for (j=0; j<rnz; j++) 
+
+      /* copy cdense[] into ca; zero cdense[] */
+      cnz = bi[i+1] - bi[i];
+      cj  = bj + bi[i];
+      ca  = ba + bi[i];
+      for (j=0; j<cnz; j++) {
+        ca[j] += cdense[cj[j]];
+        cdense[cj[j]] = 0.0;
+      }
+#if 0
+      if (rank == 0) {
+        printf("[%d] row %d: ",rank,i);
+        for (j=0; j<pN; j++) printf(" %g,",cdense[j]);
+        printf("\n");
+      }
+      for (j=0; j<pN; j++) cdense[j]=0.0; // zero cdnese[]
+#endif
+    } //for (i=0; i<cm; i++) {
+
+    //==========================================
+    
+
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
       ierr = PetscTime(&t2_0);CHKERRQ(ierr);
@@ -628,7 +695,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
       }
-
+#if 0
       /* put the value into Cd (diagonal part) */
       pnz = pd->i[i+1] - pd->i[i];
       pdJ = pd->j + pd->i[i];
@@ -645,7 +712,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
       }
-
+#endif      
       /* zero the current row of A*P */
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
 #if defined(PTAP_PROFILE)
@@ -653,6 +720,16 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       et2_PtAP += t2_2 - t2_1;
 #endif
     }
+
+    if (rank == 100) {
+    for (row=0; row<cm; row++) {
+      printf("[%d] row %d: ",rank,row);
+      cnz = bi[row+1] - bi[row];
+      for (j=0; j<cnz; j++) printf(" %g,",ba[bi[row]+j]);
+      printf("\n");
+    }
+    }
+
   } else { /* Do sparse axpy on apa (length of ap_rmax, stores A[i,:]*P) - scalable, but slower */
     ierr = PetscInfo(C,"Using scalable sparse axpy\n");CHKERRQ(ierr);
     /*-----------------------------------------------------------------------------------------*/
@@ -808,7 +885,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t4);CHKERRQ(ierr);
-  if (rank==1) PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPNum %g/P + %g/PtAP( %g + %g ) + %g/comm + %g/Cloc = %g\n\n",rank,t1-t0,t2-t1,et2_AP,et2_PtAP,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
+  if (rank==1) {
+    ierr = PetscPrintf(MPI_COMM_SELF," R=Pd^T %g\n", t_tran1 - t_tran0);CHKERRQ(ierr);
+    ierr = PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPNum %g/P + %g/PtAP( %g/A*P + %g/Pt*AP ) + %g/comm + %g/Cloc = %g\n\n",rank,t1-t0,t2-t1,et2_AP,et2_PtAP,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
+  }
 #endif
   PetscFunctionReturn(0);
 }
