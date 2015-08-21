@@ -276,6 +276,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex16': [{'numProcs': 1, 'args': '-dm_view ascii::ascii_info_detail -dmlabel_view'},
                                                                   ],
+                        'src/dm/impls/plex/examples/tests/ex17': [{'numProcs': 1, 'args': '-test_partition 0 -dm_view ascii::ascii_info_detail'},
+                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},

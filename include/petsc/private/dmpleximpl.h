@@ -97,7 +97,6 @@ typedef struct {
   int tags[4];       /* Tag array */
 } GmshElement;
 
-
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int   index;    /* Type of section */
@@ -122,6 +121,18 @@ struct _n_Boundary {
   PetscInt   *ids;
   void       *ctx;
   DMBoundary  next;
+};
+
+struct _PetscGridHash {
+  PetscInt     dim;
+  PetscReal    lower[3];    /* The lower-left corner */
+  PetscReal    upper[3];    /* The upper-right corner */
+  PetscReal    extent[3];   /* The box size */
+  PetscReal    h[3];        /* The subbox size */
+  PetscInt     n[3];        /* The number of subboxes */
+  PetscSection cellSection; /* Offsets for cells in each subbox*/
+  IS           cells;       /* List of cells in each subbox */
+  DMLabel      cellsSparse; /* Sparse storage for cell map */
 };
 
 typedef struct {
@@ -190,7 +201,7 @@ typedef struct {
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
-
+  PetscGridHash        lbox;              /* Local box for searching */
 
   /* Debugging */
   PetscBool            printSetValues;
