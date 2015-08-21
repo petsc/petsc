@@ -58,6 +58,7 @@ PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
 PetscErrorCode PCBDDCAdaptiveSelection(PC);
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
 PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
+PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,IS*);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 
 /* feti-dp */

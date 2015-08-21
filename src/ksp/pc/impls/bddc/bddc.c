@@ -1357,79 +1357,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* change basis on local pressures (aka zerodiag dofs) */
   if (pcbddc->benign_saddle_point) {
-    PetscInt  nz;
-    PetscBool sorted;
-
-    /* get reference to mat */
-    ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
-    pcbddc->benign_original_mat = pcbddc->local_mat;
-
-    ierr = MatFindZeroDiagonals(pcbddc->benign_original_mat,&zerodiag);CHKERRQ(ierr);
-    ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
-    if (!sorted) {
-      ierr = ISSort(zerodiag);CHKERRQ(ierr);
-    }
-    ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
-    if (nz) {
-      IS                zerodiagc;
-      PetscScalar       *array;
-      const PetscInt    *idxs,*idxsc;
-      PetscInt          i,n,*nnz;
-
-      /* TODO: add check for shared dofs and raise error */
-      ierr = MatGetLocalSize(pcbddc->benign_original_mat,&n,NULL);CHKERRQ(ierr);
-      ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
-      ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-      ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
-      /* local change of basis for pressures */
-      ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
-      ierr = MatCreate(PetscObjectComm((PetscObject)pcbddc->benign_original_mat),&pcbddc->benign_change);CHKERRQ(ierr);
-      ierr = MatSetType(pcbddc->benign_change,MATAIJ);CHKERRQ(ierr);
-      ierr = MatSetSizes(pcbddc->benign_change,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = PetscMalloc1(n,&nnz);CHKERRQ(ierr);
-      for (i=0;i<n-nz;i++) nnz[idxsc[i]] = 1; /* identity on velocities */
-      for (i=0;i<nz-1;i++) nnz[idxs[i]] = 2; /* change on pressures */
-      nnz[idxs[nz-1]] = nz; /* last local pressure dof: _0 set */
-      ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
-      ierr = PetscFree(nnz);CHKERRQ(ierr);
-      /* set identity on velocities */
-      for (i=0;i<n-nz;i++) {
-        ierr = MatSetValue(pcbddc->benign_change,idxsc[i],idxsc[i],1.,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      /* set change on pressures */
-      for (i=0;i<nz-1;i++) {
-        PetscScalar vals[2];
-        PetscInt    cols[2];
-
-        /* TODO: add quadrature */
-        cols[0] = idxs[i];
-        cols[1] = idxs[nz-1];
-        vals[0] = 1.;
-        vals[1] = 1./nz;
-        ierr = MatSetValues(pcbddc->benign_change,1,idxs+i,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = PetscMalloc1(nz,&array);CHKERRQ(ierr);
-      for (i=0;i<nz-1;i++) array[i] = -1.;
-      array[nz-1] = 1./nz;
-      ierr = MatSetValues(pcbddc->benign_change,1,idxs+nz-1,nz,idxs,array,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = PetscFree(array);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      /* TODO: need optimization? */
-      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = MatPtAP(pcbddc->benign_original_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
-      /* store local and global idxs for p0 */
-      pcbddc->benign_p0_lidx = idxs[nz-1];
-      ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,1,&idxs[nz-1],&pcbddc->benign_p0_gidx);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
-      ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
-      /* pop B0 mat from pcbddc->local_mat */
-      ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
-    } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
-      ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
-    }
+    /* detect local saddle point and change the basis in pcbddc->local_mat */
+    ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
+    /* pop B0 mat from pcbddc->local_mat */
+    ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* propagate relevant information */
