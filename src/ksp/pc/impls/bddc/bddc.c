@@ -1398,7 +1398,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
      b(v_I,p_0) = 0 for all v_I (raise error if not).
      Also, check that PCBDDCBenignGetOrSetP0 works */
 #if defined(PETSC_USE_DEBUG)
-  ierr = PCBDDCBenignCheck(pc,zerodiag);CHKERRQ(ierr);
+  if (pcbddc->benign_saddle_point) {
+    ierr = PCBDDCBenignCheck(pc,zerodiag);CHKERRQ(ierr);
+  }
 #endif
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */

@@ -66,15 +66,13 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   }
 
   /* check PCBDDCBenignGetOrSetP0 */
-  if (pcbddc->benign_saddle_point) {
-    ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
-    pcbddc->benign_p0 = -PetscGlobalRank;
-    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
-    pcbddc->benign_p0 = 1;
-    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-    if (pcbddc->benign_p0_gidx >=0 && pcbddc->benign_p0 != -PetscGlobalRank) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
-    }
+  ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
+  pcbddc->benign_p0 = -PetscGlobalRank;
+  ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+  pcbddc->benign_p0 = 1;
+  ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
+  if (pcbddc->benign_p0_gidx >=0 && pcbddc->benign_p0 != -PetscGlobalRank) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
