@@ -9,6 +9,7 @@
 PetscClassId  PC_CLASSID;
 PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
 PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks, PC_ApplyOnMproc;
+PetscInt      PetscMGLevelId;
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGetDefaultType_Private"
