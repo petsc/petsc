@@ -1394,72 +1394,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computeconstraintsmatrix = PETSC_TRUE;
   }
 
-  /* check b(v_I,p_0) = 0 for all v_I (raise error if not) */
-  if (pcbddc->dbg_flag && zerodiag) {
-    PC_IS          *pcis = (PC_IS*)(pc->data);
-    Mat            A;
-    Vec            vec3_N;
-    IS             dirIS = NULL;
-    PetscScalar    *vals;
-    const PetscInt *idxs;
-    PetscInt       i,nz;
-
-    /* p0 */
-    ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
-    ierr = PetscMalloc1(pcis->n,&vals);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
-    ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-    for (i=0;i<nz;i++) vals[i] = 1.; /* TODO add quadrature */
-    ierr = VecSetValues(pcis->vec1_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
-    /* v_I */
-    ierr = VecSetRandom(pcis->vec2_N,NULL);CHKERRQ(ierr);
-    for (i=0;i<nz;i++) vals[i] = 0.;
-    ierr = VecSetValues(pcis->vec2_N,nz,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-    for (i=0;i<pcis->n_B;i++) vals[i] = 0.;
-    ierr = VecSetValues(pcis->vec2_N,pcis->n_B,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
-    if (dirIS) {
-      PetscInt n;
-
-      ierr = ISGetLocalSize(dirIS,&n);CHKERRQ(ierr);
-      ierr = ISGetIndices(dirIS,&idxs);CHKERRQ(ierr);
-      for (i=0;i<n;i++) vals[i] = 0.;
-      ierr = VecSetValues(pcis->vec2_N,n,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(dirIS,&idxs);CHKERRQ(ierr);
-    }
-    ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(pcis->vec2_N);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
-    ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
-    ierr = VecSet(vec3_N,0.);CHKERRQ(ierr);
-    ierr = MatISGetLocalMat(pc->mat,&A);CHKERRQ(ierr);
-    ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
-    ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
-    if (PetscAbsScalar(vals[0]) > PETSC_SMALL) { /* TODO: should I add the A-norm in test? */
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %f (should be numerically 0.)",PetscAbsScalar(vals[0]));
-    }
-    ierr = PetscFree(vals);CHKERRQ(ierr);
-    ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
-  }
-
-  /* check PCBDDCBenignGetOrSetP0 */
-  if (pcbddc->dbg_flag && pcbddc->benign_saddle_point) {
-    PC_IS  *pcis = (PC_IS*)(pc->data);
-
-    ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
-    pcbddc->benign_p0 = -PetscGlobalRank;
-    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
-    pcbddc->benign_p0 = 1;
-    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-    if (pcbddc->benign_p0_gidx >=0 && pcbddc->benign_p0 != -PetscGlobalRank) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
-    }
-  }
+  /* check existence of a divergence free extension, i.e.
+     b(v_I,p_0) = 0 for all v_I (raise error if not).
+     Also, check that PCBDDCBenignGetOrSetP0 works */
+#if defined(PETSC_USE_DEBUG)
+  ierr = PCBDDCBenignCheck(pc,zerodiag);CHKERRQ(ierr);
+#endif
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
   if (computesolvers) {

@@ -56,10 +56,13 @@ PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
 PetscErrorCode PCBDDCAdaptiveSelection(PC);
+PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
+
+/* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
 PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,IS*);
-PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
+PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
