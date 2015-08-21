@@ -1649,6 +1649,9 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   const PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
+  if (pcbddc->benign_saddle_point) { /* get p0 from r */
+    ierr = PCBDDCBenignGetOrSetP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
+  }
   if (!pcbddc->use_exact_dirichlet_trick) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     /* First Dirichlet solve */
@@ -1710,6 +1713,9 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     }
     ierr = VecScatterBegin(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
+  if (pcbddc->benign_saddle_point) { /* set p0 (computed in PCBDDCApplyInterface) */
+    ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
