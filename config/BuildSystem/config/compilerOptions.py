@@ -29,7 +29,11 @@ class CompilerOptions(config.base.Configure):
         else:
           flags.append('-g3')
       elif bopt == 'O':
-        flags.append('-O')
+        flags.append('-g')
+        if config.setCompilers.Configure.isClang(compiler, self.log):
+          flags.append('-O3')
+        else:
+          flags.append('-O')
     else:
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
@@ -40,6 +44,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
@@ -95,8 +100,12 @@ class CompilerOptions(config.base.Configure):
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
       elif bopt in ['O']:
+        flags.append('-g')
         if os.environ.has_key('USER'):
-          flags.append('-O')
+          if config.setCompilers.Configure.isClang(compiler, self.log):
+            flags.append('-O3')
+          else:
+            flags.append('-O')
     # IBM
     elif compiler.find('mpCC') >= 0 or compiler.find('xlC') >= 0:
       if bopt == '':
@@ -113,6 +122,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
@@ -166,6 +176,7 @@ class CompilerOptions(config.base.Configure):
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
       elif bopt == 'O':
+        flags.append('-g')
         flags.extend(['-O'])
     else:
       # Portland Group Fortran 90
@@ -179,6 +190,7 @@ class CompilerOptions(config.base.Configure):
         if bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
