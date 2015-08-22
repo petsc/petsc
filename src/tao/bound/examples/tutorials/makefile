@@ -57,7 +57,7 @@ runplate2_5:
         ${RM} -f plate2_5.tmp
 
 runplate2_6:
-	-@${MPIEXEC} -n 3 ./plate2 -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none -tao_type blmvm > plate2_6.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./plate2 -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree  -tao_type blmvm > plate2_6.tmp 2>&1;\
         ${DIFF} output/plate2_6.out plate2_6.tmp || printf '${PWD}\nPossible problem with plate2_6 stdout, diffs above \n=========================================\n';\
         ${RM} -f plate2_6.tmp
 
