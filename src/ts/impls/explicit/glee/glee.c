@@ -1055,6 +1055,23 @@ static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetAuxSolution_GLEE"
+PetscErrorCode TSGetAuxSolution_GLEE(TS ts,PetscInt *n,Vec *Y)
+{
+  TS_GLEE     *glee = (TS_GLEE*)ts->data;
+  GLEETableau tab   = glee->tableau;
+
+  PetscFunctionBegin;
+  if (!Y) *n = tab->r - 1;
+  else {
+    if ((*n > 0) && (*n < tab->r)) *Y = glee->Y[*n];
+    else {
+      /* Error message for invalid value of n */
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------ */
 /*MC
@@ -1097,6 +1114,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ts->ops->getstages      = TSGetStages_GLEE;
   ts->ops->snesfunction   = SNESTSFormFunction_GLEE;
   ts->ops->snesjacobian   = SNESTSFormJacobian_GLEE;
+  ts->ops->getauxsolution = TSGetAuxSolution_GLEE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

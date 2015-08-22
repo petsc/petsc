@@ -50,6 +50,7 @@ struct _TSOps {
   PetscErrorCode (*adjointsetup)(TS);
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardintegral)(TS);
+  PetscErrorCode (*getauxsolution)(TS,PetscInt*,Vec*);
 };
 
 /*

@@ -2232,7 +2232,7 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime()
+.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetAuxSolution()
 
 .keywords: TS, timestep, get, solution
 @*/
@@ -2242,6 +2242,44 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(v,2);
   *v = ts->vec_sol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetAuxSolution"
+/*@
+   TSGetAuxSolution - Returns any auxiliary solutions at the present 
+   timestep, if available for the time integration method being used. 
+   Auxiliary solutions are quantities that share the same size and 
+   structure as the solution vector.
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Parameters :
+.  ts - the TS context obtained from TSCreate() (input parameter).
+.  n - If v is PETSC_NULL, then the number of auxiliary solutions is
+       returned through n, else the n-th auxiliary solution is 
+       returned in v.
+.  v - the vector containing the n-th auxiliary solution 
+       (may be PETSC_NULL to use this function to find out
+        the number of auxiliary solutions).
+
+   Level: intermediate
+
+.seealso: TSGetSolution()
+
+.keywords: TS, timestep, get, solution
+@*/
+PetscErrorCode  TSGetAuxSolution(TS ts,PetscInt *n,Vec *v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->ops->getauxsolution) *n = 0;
+  else { 
+    ierr = (*ts->ops->getauxsolution)(ts,n,v);CHKERRQ(ierr); 
+  }
   PetscFunctionReturn(0);
 }
 
