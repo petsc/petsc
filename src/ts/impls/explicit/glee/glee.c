@@ -36,12 +36,15 @@ struct _GLEETableauLink {
 static GLEETableauLink GLEETableauList;
 
 typedef struct {
-  GLEETableau   tableau;
-  Vec          *Y;         /*Solution vector (along with auxiliary solution y~ or eps)*/
+  GLEETableau  tableau;
+  Vec          *Y;         /* Solution vector (along with auxiliary solution y~ or eps) */
   Vec          *X;         /* Temporary solution vector */
   Vec          *YStage;    /* Stage values */
   Vec          *YdotStage; /* Stage right hand side */
+  Vec          W;          /* Right-hand-side for implicit stage solve */
+  Vec          Ydot;       /* Work vector holding Ydot during residual evaluation */
   PetscScalar  *work;      /* Scalar work */
+  PetscReal    scoeff;     /* shift = scoeff/dt */
   PetscReal    stage_time;
   TSStepStatus status;
 } TS_GLEE;
@@ -533,10 +536,12 @@ static PetscErrorCode TSStep_GLEE(TS ts)
                   *c = tab->c;
   Vec             *Y = glee->Y, *X = glee->X,
                   *YStage = glee->YStage, 
-                  *YdotStage = glee->YdotStage;
+                  *YdotStage = glee->YdotStage,
+                  W = glee->W;
+  SNES            snes;
   PetscScalar     *w = glee->work;
   TSAdapt         adapt;
-  PetscInt        i,j,reject,next_scheme;
+  PetscInt        i,j,reject,next_scheme,its,lits;
   PetscReal       next_time_step;
   PetscReal       t;
   PetscBool       accept;
@@ -553,6 +558,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
 
   for (i=0; i<r; i++) { ierr = VecCopy(Y[i],X[i]); CHKERRQ(ierr); }
 
+  ierr           = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   next_time_step = ts->time_step;
   t              = ts->ptime;
   accept         = PETSC_TRUE;
@@ -568,15 +574,31 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       glee->stage_time = t + h*c[i];
       ierr = TSPreStage(ts,glee->stage_time); CHKERRQ(ierr);
 
-      ierr = VecZeroEntries(YStage[i]);CHKERRQ(ierr);
-      ierr = VecMAXPY(YStage[i],r,(U+i*r),X);CHKERRQ(ierr);
-      for (j=0; j<i; j++) w[j] = h*A[i*s+j];
-      ierr = VecMAXPY(YStage[i],i,w,YdotStage);CHKERRQ(ierr);
-      ierr = TSPostStage(ts,glee->stage_time,i,YStage); CHKERRQ(ierr);
-
+      if (A[i*s+i] == 0) {  /* Explicit stage */
+        ierr = VecZeroEntries(YStage[i]);CHKERRQ(ierr);
+        ierr = VecMAXPY(YStage[i],r,(U+i*r),X);CHKERRQ(ierr);
+        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
+        ierr = VecMAXPY(YStage[i],i,w,YdotStage);CHKERRQ(ierr);
+      } else {              /* Implicit stage */
+        glee->scoeff = 1.0/A[i*s+i];
+        /* compute right-hand-side */
+        ierr = VecZeroEntries(W);CHKERRQ(ierr);
+        ierr = VecMAXPY(W,r,(U+i*r),X);CHKERRQ(ierr);
+        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
+        ierr = VecMAXPY(W,i,w,YdotStage);CHKERRQ(ierr);
+        ierr = VecScale(W,glee->scoeff/h);CHKERRQ(ierr);
+        /* set initial guess */
+        ierr = VecCopy(i>0 ? YStage[i-1] : ts->vec_sol,YStage[i]);CHKERRQ(ierr);
+        /* solve for this stage */
+        ierr = SNESSolve(snes,W,YStage[i]);CHKERRQ(ierr);
+        ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+        ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+        ts->snes_its += its; ts->ksp_its += lits;
+      }
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
       ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
       if (!accept) goto reject_step;
+      ierr = TSPostStage(ts,glee->stage_time,i,YStage); CHKERRQ(ierr);
       ierr = TSComputeRHSFunction(ts,t+h*c[i],YStage[i],YdotStage[i]);CHKERRQ(ierr);
     }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
@@ -661,6 +683,8 @@ static PetscErrorCode TSReset_GLEE(TS ts)
   ierr = VecDestroyVecs(r,&glee->X);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&glee->YStage);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&glee->YdotStage);CHKERRQ(ierr);
+  ierr = VecDestroy(&glee->Ydot);CHKERRQ(ierr);
+  ierr = VecDestroy(&glee->W);CHKERRQ(ierr);
   ierr = PetscFree(glee->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -679,6 +703,90 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGLEEGetVecs"
+static PetscErrorCode TSGLEEGetVecs(TS ts,DM dm,Vec *Ydot)
+{
+  TS_GLEE     *glee = (TS_GLEE*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Ydot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSGLEE_Ydot",Ydot);CHKERRQ(ierr);
+    } else *Ydot = glee->Ydot;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGLEERestoreVecs"
+static PetscErrorCode TSGLEERestoreVecs(TS ts,DM dm,Vec *Ydot)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Ydot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSGLEE_Ydot",Ydot);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  This defines the nonlinear equation that is to be solved with SNES
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESTSFormFunction_GLEE"
+static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes,Vec X,Vec F,TS ts)
+{
+  TS_GLEE       *glee = (TS_GLEE*)ts->data;
+  DM             dm,dmsave;
+  Vec            Ydot;
+  PetscReal      shift = glee->scoeff / ts->time_step;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr   = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr   = TSGLEEGetVecs(ts,dm,&Ydot);CHKERRQ(ierr);
+  /* Set Ydot = shift*X */
+  ierr   = VecCopy(X,Ydot);CHKERRQ(ierr);
+  ierr   = VecScale(Ydot,shift);CHKERRQ(ierr);
+  dmsave = ts->dm;
+  ts->dm = dm;
+
+  ierr = TSComputeIFunction(ts,glee->stage_time,X,Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
+
+  ts->dm = dmsave;
+  ierr   = TSGLEERestoreVecs(ts,dm,&Ydot);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESTSFormJacobian_GLEE"
+static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes,Vec X,Mat A,Mat B,TS ts)
+{
+  TS_GLEE        *glee = (TS_GLEE*)ts->data;
+  DM             dm,dmsave;
+  Vec            Ydot;
+  PetscReal      shift = glee->scoeff / ts->time_step;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSGLEEGetVecs(ts,dm,&Ydot);CHKERRQ(ierr);
+  /* glee->Ydot has already been computed in SNESTSFormFunction_GLEE (SNES guarantees this) */
+  dmsave = ts->dm;
+  ts->dm = dm;
+
+  ierr = TSComputeIJacobian(ts,glee->stage_time,X,Ydot,shift,A,B,PETSC_FALSE);CHKERRQ(ierr);
+
+  ts->dm = dmsave;
+  ierr   = TSGLEERestoreVecs(ts,dm,&Ydot);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsenHook_TSGLEE"
@@ -734,6 +842,8 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   ierr = VecDuplicateVecs(ts->vec_sol,r,&glee->X);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&glee->YStage);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&glee->YdotStage);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&glee->Ydot);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&glee->W);CHKERRQ(ierr);
   ierr = PetscMalloc1(s,&glee->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
@@ -825,11 +935,17 @@ static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
 static PetscErrorCode TSLoad_GLEE(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  SNES           snes;
   TSAdapt        tsadapt;
 
   PetscFunctionBegin;
   ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
   ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
+  /* function and Jacobian context for SNES when used with TS is always ts object */
+  ierr = SNESSetFunction(snes,NULL,NULL,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,NULL,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -977,6 +1093,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ts->ops->evaluatestep   = TSEvaluateStep_GLEE;
   ts->ops->setfromoptions = TSSetFromOptions_GLEE;
   ts->ops->getstages      = TSGetStages_GLEE;
+  ts->ops->snesfunction   = SNESTSFormFunction_GLEE;
+  ts->ops->snesjacobian   = SNESTSFormJacobian_GLEE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
