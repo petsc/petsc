@@ -8,15 +8,17 @@ See ~petsc/matrices/indefinite/readme \n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C;
-  PetscScalar none = -1.0;
-  int         ierr,rank,size,its,k;
-  double      err_norm,res_norm;
-  Vec         x,b,u,u_tmp;
-  PC          pc;
-  KSP         ksp;
-  PetscViewer view;
-  char        filein[128];     /* input file name */
+  Mat            C;
+  PetscScalar    none = -1.0;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscInt       its,k;
+  PetscReal      err_norm,res_norm;
+  Vec            x,b,u,u_tmp;
+  PC             pc;
+  KSP            ksp;
+  PetscViewer    view;
+  char           filein[128];     /* input file name */
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
