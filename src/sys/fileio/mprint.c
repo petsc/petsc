@@ -103,7 +103,6 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   char           *newformat;
   char           formatbuf[8*1024];
   size_t         oldLength,length;
-  int            fullLengthInt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -121,18 +120,42 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   if (length > len) newformat[len] = '\0';
 #endif
 #if defined(PETSC_HAVE_VSNPRINTF_CHAR)
-  fullLengthInt = vsnprintf(str,len,newformat,(char*)Argp);
+  (void) vsnprintf(str,len,newformat,(char*)Argp);
 #elif defined(PETSC_HAVE_VSNPRINTF)
-  fullLengthInt = vsnprintf(str,len,newformat,Argp);
+  (void) vsnprintf(str,len,newformat,Argp);
 #elif defined(PETSC_HAVE__VSNPRINTF)
-  fullLengthInt = _vsnprintf(str,len,newformat,Argp);
+  (void) _vsnprintf(str,len,newformat,Argp);
 #else
 #error "vsnprintf not found"
 #endif
-  if (fullLengthInt < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"vsnprintf() failed");
-  if (fullLength) *fullLength = (size_t)fullLengthInt;
   if (oldLength >= 8*1024) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
+  }
+#if defined(PETSC_HAVE_WINDOWS_H) && !defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
+  /* older Windows OS always produces e-00n for floating point output; remove the extra 0 */
+  {
+    size_t cnt = 0,ncnt = 0,leng;
+    ierr = PetscStrlen(str,&leng);CHKERRQ(ierr);
+    if (leng > 5) {
+      for (cnt=0; cnt<leng-4; cnt++) {
+        if (str[cnt] == 'e' && (str[cnt+1] == '-' || str[cnt+1] == '+') && str[cnt+2] == '0' && str[cnt+3] == '0' && str[cnt+4] >= '0' && str[cnt+4] <= '9') {
+          str[ncnt] = str[cnt]; ncnt++; cnt++;
+          str[ncnt] = str[cnt]; ncnt++; cnt++;
+          str[ncnt] = str[cnt]; cnt++;
+        } else {
+          str[ncnt] = str[cnt];
+        }
+        ncnt++;
+      }
+      while (cnt < leng) {
+        str[ncnt] = str[cnt]; ncnt++; cnt++;
+      }
+      str[ncnt] = 0;
+    }
+  }
+#endif
+  if (fullLength) {
+    ierr = PetscStrlen(str,fullLength);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -175,31 +198,13 @@ $    PetscVFPrintf = mypetscvfprintf;
 @*/
 PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
-  char           *newformat;
-  char           formatbuf[8*1024];
-  size_t         oldLength;
+  char           str[8*1024];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
-  if (oldLength < 8*1024) {
-    newformat = formatbuf;
-    oldLength = 8*1024-1;
-  } else {
-    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
-    ierr      = PetscMalloc1(oldLength, &newformat);CHKERRQ(ierr);
-  }
-  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_VFPRINTF_CHAR)
-  vfprintf(fd,newformat,(char*)Argp);
-#else
-  vfprintf(fd,newformat,Argp);
-#endif
+  ierr = PetscVSNPrintf(str,sizeof(str),format,NULL,Argp);CHKERRQ(ierr);
+  fprintf(fd,"%s",str);CHKERRQ(ierr);
   fflush(fd);
-  if (oldLength >= 8*1024) {
-    ierr = PetscFree(newformat);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
