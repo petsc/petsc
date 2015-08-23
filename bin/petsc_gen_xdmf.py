@@ -233,4 +233,5 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
   return
 
 if __name__ == '__main__':
-  generateXdmf(sys.argv[1])
+  for f in sys.argv[1:]:
+    generateXdmf(f)

@@ -28,7 +28,7 @@ Options Database:
 .   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
 .   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
 .   -snes_fas_monitor -  Monitor progress of all of the levels
-.   -snes_fas_full_downsweepsmooth<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
+.   -snes_fas_full_downsweep<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
 .   -fas_levels_snes_ -  SNES options for all smoothers
 .   -fas_levels_cycle_snes_ -  SNES options for all cycles
 .   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
@@ -857,6 +857,7 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
     } else {
+      /* The smoother on the coarse level is the coarse solver */
       ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
     }
     fas->full_stage = 1;
