@@ -29,7 +29,9 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
-    ierr = MatDestroy(&ptap->R);CHKERRQ(ierr); 
+    ierr = MatDestroy(&ptap->Rd);CHKERRQ(ierr); 
+    ierr = MatDestroy(&ptap->Ro);CHKERRQ(ierr); 
+    ierr = MatDestroy(&ptap->AP);CHKERRQ(ierr); 
     if (ptap->api) {ierr = PetscFree(ptap->api);CHKERRQ(ierr);}
     if (ptap->apj) {ierr = PetscFree(ptap->apj);CHKERRQ(ierr);}
     if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
@@ -469,7 +471,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
   if (!ptap->scalable) {  /* Do dense axpy */
     ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
-    ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->R);CHKERRQ(ierr);
+    ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
+    ierr = MatTranspose_SeqAIJ(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
+    ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,2.0,&ptap->AP);CHKERRQ(ierr);
   } else {
     ierr = PetscCalloc1(ap_rmax+1,&ptap->apa);CHKERRQ(ierr);
   }
@@ -513,7 +517,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt            *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend;
   PetscBool           scalable;
 #if defined(PTAP_PROFILE)
-  PetscLogDouble t0,t1,t2,t3,t4,et2_AP=0.0,et2_PtAP=0.0,t2_0,t2_1,t2_2,t_tran0,t_tran1;
+  PetscLogDouble t0,t1,t2,eP,t3,t4,et2_AP=0.0,ePtAP=0.0,t2_0,t2_1,t2_2,t_tran0,t_tran1,t_tran2,t_tran3;
+  PetscLogDouble eR,eAP,eCseq,eCmpi;
 #endif
 
   PetscFunctionBegin;
@@ -541,7 +546,14 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   }
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t1);CHKERRQ(ierr);
+  eP = t1-t0;
 #endif
+  /*
+  printf("[%d] Ad: %d, %d; Ao: %d, %d; P_loc: %d, %d; P_oth %d, %d;\n",rank,
+         a->A->rmap->N,a->A->cmap->N,a->B->rmap->N,a->B->cmap->N,
+         ptap->P_loc->rmap->N,ptap->P_loc->cmap->N,
+         ptap->P_oth->rmap->N,ptap->P_oth->cmap->N);
+   */
 
   /* 2) compute numeric C_seq = P_loc^T*A_loc*P - dominating part */
   /*--------------------------------------------------------------*/
@@ -563,10 +575,76 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   if (!scalable) { /* Do dense axpy on apa (length of pN, stores A[i,:]*P) - nonscalable, but faster (could take 1/3 scalable time) */
     ierr = PetscInfo(C,"Using non-scalable dense axpy\n");CHKERRQ(ierr);
     /*-----------------------------------------------------------------------------------------------------*/
-    ierr = PetscTime(&t_tran0);CHKERRQ(ierr);
-    ierr = MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->R);CHKERRQ(ierr);
-    ierr = PetscTime(&t_tran1);CHKERRQ(ierr);
+    Mat AP_loc,C_loc,Co;
 
+    // R = Pd^T,Ro = Po^T
+    ierr = MatZeroEntries(C);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+    ierr = MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->Rd);CHKERRQ(ierr);
+    ierr = MatTranspose_SeqAIJ(p->B,MAT_REUSE_MATRIX,&ptap->Ro);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    eR = t1 - t0;
+
+    // AP = A*P
+    ierr = MatMatMult(A,P,MAT_REUSE_MATRIX,2.0,&ptap->AP);CHKERRQ(ierr);
+    
+    // Get AP_loc
+    ierr = MatMPIAIJGetLocalMat(ptap->AP,MAT_INITIAL_MATRIX,&AP_loc);CHKERRQ(ierr);
+    ierr = PetscTime(&t2);CHKERRQ(ierr);
+    eAP = t2 - t1;
+
+    // C_loc = R*AP_loc, Co = Ro*AP_loc
+    ierr = MatMatMult(ptap->Rd,AP_loc,MAT_INITIAL_MATRIX,2.0,&C_loc);CHKERRQ(ierr);
+    ierr = MatMatMult(ptap->Ro,AP_loc,MAT_INITIAL_MATRIX,2.0,&Co);CHKERRQ(ierr);
+    //printf("[%d] Co %d, %d\n", rank,Co->rmap->N,Co->cmap->N);
+    ierr = PetscTime(&t3);CHKERRQ(ierr);
+    eCseq = t3 - t2;
+
+    // SetValues in C
+    PetscInt rstart,rend,cm,ncols,row;
+    const PetscInt    *cols;
+    const PetscScalar *vals;
+
+    ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+    //if (cm != rend - rstart) SETERRQ(MPI_COMM_SELF,0,"cm != rend - rstart");
+
+    // C_loc -> C
+    cm = C_loc->rmap->N;
+    for (i=0; i<cm; i++) {
+      ierr = MatGetRow(C_loc,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+      row = rstart + i;
+      ierr = MatSetValues(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(C_loc,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    }
+    
+    // Co -> C, off-diagonal part, send to others
+    //printf("[%d] p->B %d, %d\n",rank,p->B->rmap->N,p->B->cmap->N);
+    for (i=0; i<Co->rmap->N; i++) {
+      ierr = MatGetRow(Co,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+      row = p->garray[i];
+      //printf("[%d] row[%d] = %d\n",rank,i,row);
+      ierr = MatSetValues(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Co,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscTime(&t4);CHKERRQ(ierr);
+    eCmpi = t4 - t3;
+
+    ierr = MatDestroy(&AP_loc);CHKERRQ(ierr);
+    ierr = MatDestroy(&C_loc);CHKERRQ(ierr);
+    ierr = MatDestroy(&Co);CHKERRQ(ierr);
+
+    ierr = PetscFree(ba);CHKERRQ(ierr);
+    ierr = PetscFree(coa);CHKERRQ(ierr);
+
+    
+    if (rank==1) {
+      ierr = PetscPrintf(MPI_COMM_SELF," R %g, AP %g, Cseq %g, Cmpi %g = %g\n", eR,eAP,eCseq,eCmpi,eR+eAP+eCseq+eCmpi);CHKERRQ(ierr);
+    }
+
+    PetscFunctionReturn(0);
+#if 0
     Mat         R = ptap->R;
     Mat_SeqAIJ  *r = (Mat_SeqAIJ*)R->data;
     PetscInt    *ri=r->i,*rj=r->j,rnz,arow,l,prow,pcol,pN=P->cmap->N;
@@ -624,10 +702,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       for (j=0; j<pN; j++) cdense[j]=0.0; // zero cdnese[]
 #endif
     } //for (i=0; i<cm; i++) {
+#endif
+    ierr = PetscTime(&t_tran3);CHKERRQ(ierr);
 
     //==========================================
     
-
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
       ierr = PetscTime(&t2_0);CHKERRQ(ierr);
@@ -695,7 +775,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         }
         ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
       }
-#if 0
+#if 1
       /* put the value into Cd (diagonal part) */
       pnz = pd->i[i+1] - pd->i[i];
       pdJ = pd->j + pd->i[i];
@@ -717,7 +797,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
 #if defined(PTAP_PROFILE)
       ierr      = PetscTime(&t2_2);CHKERRQ(ierr);
-      et2_PtAP += t2_2 - t2_1;
+      ePtAP += t2_2 - t2_1;
 #endif
     }
 
@@ -809,7 +889,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
       ierr      = PetscTime(&t2_2);CHKERRQ(ierr);
-      et2_PtAP += t2_2 - t2_1;
+      ePtAP += t2_2 - t2_1;
 #endif
     }
   }
@@ -886,8 +966,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t4);CHKERRQ(ierr);
   if (rank==1) {
-    ierr = PetscPrintf(MPI_COMM_SELF," R=Pd^T %g\n", t_tran1 - t_tran0);CHKERRQ(ierr);
-    ierr = PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPNum %g/P + %g/PtAP( %g/A*P + %g/Pt*AP ) + %g/comm + %g/Cloc = %g\n\n",rank,t1-t0,t2-t1,et2_AP,et2_PtAP,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
+    ierr = PetscPrintf(MPI_COMM_SELF," R=Pd^T %g; AP %g\n", t_tran1-t_tran0,t_tran2-t_tran1);CHKERRQ(ierr);
+    ierr = PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPNum %g/P + %g/PtAP( %g/A*P + %g/Pt*AP ) + %g/comm + %g/Cloc = %g\n\n",rank,eP,t2-t1,et2_AP,ePtAP,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);

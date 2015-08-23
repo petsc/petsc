@@ -27,7 +27,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   Mat         A_loc;           /* used by MatTransposeMatMult(), contains api and apj */
   Mat         Pt;              /* used by MatTransposeMatMult(), Pt = P^T */
   PetscBool   scalable;        /* flag determines scalable or non-scalable implementation */
-  Mat         R;
+  Mat         Rd,Ro,AP;
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
