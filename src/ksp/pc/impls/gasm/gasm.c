@@ -370,14 +370,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         ierr = ISSort(osm->iis[i]);CHKERRQ(ierr);
       }
     }
-#if 1
-    for (i=0; i<osm->n; i++){
-       ierr = ISView(osm->ois[i],NULL);CHKERRQ(ierr);
-       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-       ierr = ISView(osm->iis[i],NULL);CHKERRQ(ierr);
-       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
-#endif
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = PCGASMPrintSubdomains(pc);CHKERRQ(ierr);
 
@@ -1475,16 +1467,6 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
 
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(0);
-  if (iis) {
-    PetscValidPointer(iis,2);
-    if (*iis) {
-      PetscValidPointer(*iis,2);
-      for (i=0; i<n; i++) {
-        ierr = ISDestroy(&(*iis)[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree((*iis));CHKERRQ(ierr);
-    }
-  }
   if (ois) {
     PetscValidPointer(ois,3);
     if (*ois) {
@@ -1493,6 +1475,16 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
         ierr = ISDestroy(&(*ois)[i]);CHKERRQ(ierr);
       }
       ierr = PetscFree((*ois));CHKERRQ(ierr);
+    }
+  }
+  if (iis) {
+    PetscValidPointer(iis,2);
+    if (*iis) {
+      PetscValidPointer(*iis,2);
+      for (i=0; i<n; i++) {
+        ierr = ISDestroy(&(*iis)[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree((*iis));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
