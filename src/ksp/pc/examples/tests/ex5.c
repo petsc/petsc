@@ -29,7 +29,8 @@ PetscErrorCode  amult(Mat,Vec,Vec);
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  PetscInt       x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
+  PetscInt       x_mesh = 15,levels = 3,use_jacobi = 0;
+  PCMGCycleType  cycles = PC_MG_CYCLE_V;
   PetscInt       i,smooths = 1,*N,its;
   PetscErrorCode ierr;
   PCMGType       am = PC_MG_MULTIPLICATIVE;
@@ -45,7 +46,7 @@ int main(int Argc,char **Args)
 
   ierr = PetscOptionsGetInt(NULL,"-x",&x_mesh,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-l",&levels,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-c",&cycles,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-c",PCMGCycleTypes,(PetscEnum*)&cycles,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-smooths",&smooths,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-a",&flg);CHKERRQ(ierr);
 
@@ -85,7 +86,7 @@ int main(int Argc,char **Args)
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void (*)(void))interpolate);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
     ierr = PCMGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
-    ierr = PCMGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
+    ierr = PCMGSetCycleTypeOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
 
     /* set smoother */
     ierr = PCMGGetSmoother(pcmg,levels - 1 - i,&ksp[i]);CHKERRQ(ierr);
