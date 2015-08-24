@@ -15,7 +15,7 @@ Tao Object: 3 MPI processes
       total number of gradient evaluations=0
       total number of function/gradient evaluations=1
       using variable bounds
-      Termination reason: 0
+      Termination reason: 1
   TaoLineSearch Object:   3 MPI processes
     type: gpcg
   KSP Object:   3 MPI processes

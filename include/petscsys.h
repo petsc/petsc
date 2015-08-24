@@ -152,7 +152,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #endif
 
 /* Support for Clang (>=3.2) matching type tag arguments with void* buffer types */
-#if defined(__has_attribute)
+#if defined(__has_attribute) && defined(works_with_const_which_is_not_true)
 #  if __has_attribute(argument_with_type_tag) && __has_attribute(pointer_with_type_tag) && __has_attribute(type_tag_for_datatype)
 #    define PetscAttrMPIPointerWithType(bufno,typeno) __attribute__((pointer_with_type_tag(MPI,bufno,typeno)))
 #    define PetscAttrMPITypeTag(type)                 __attribute__((type_tag_for_datatype(MPI,type)))
