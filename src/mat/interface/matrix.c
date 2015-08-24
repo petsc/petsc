@@ -10169,7 +10169,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
 PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[])
 {
   MPI_Comm        comm,subcomm;
-  PetscMPIInt     size,rank,color,subsize,subrank;
+  PetscMPIInt     size,rank,color;
   PetscInt        rstart,rend,k;
   PetscErrorCode  ierr;
 
@@ -10182,10 +10182,8 @@ PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss
   k = ((PetscInt)size)/N + ((PetscInt)size%N>0); /* There are up to k ranks to a color */
   color = rank/k;
   ierr = MPI_Comm_split(comm,color,rank,&subcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subrank);CHKERRQ(ierr);
   ierr = PetscMalloc1(1,iss);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,*iss);CHKERRQ(ierr);
+  ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,iss[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
