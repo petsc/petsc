@@ -11,13 +11,14 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   PC_IS*         pcis = (PC_IS*)(pc->data);
+  IS             dirIS = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
   if (zerodiag) {
     Mat            A;
     Vec            vec3_N;
-    IS             dirIS = NULL;
     PetscScalar    *vals;
     const PetscInt *idxs;
     PetscInt       i,nz;
@@ -40,7 +41,6 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     for (i=0;i<pcis->n_B;i++) vals[i] = 0.;
     ierr = VecSetValues(pcis->vec2_N,pcis->n_B,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
     if (dirIS) {
       PetscInt n;
 
@@ -50,7 +50,6 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
       ierr = VecSetValues(pcis->vec2_N,n,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
       ierr = ISRestoreIndices(dirIS,&idxs);CHKERRQ(ierr);
     }
-    ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(pcis->vec2_N);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
@@ -64,6 +63,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     ierr = PetscFree(vals);CHKERRQ(ierr);
     ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
 
   /* check PCBDDCBenignGetOrSetP0 */
   ierr = VecSetRandom(pcis->vec1_global,NULL);CHKERRQ(ierr);
