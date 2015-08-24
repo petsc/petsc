@@ -475,6 +475,53 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexShiftTree_Internal"
+static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM dmNew)
+{
+  DM             refTree;
+  PetscSection   pSec;
+  PetscInt       *parents, *childIDs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  ierr = DMPlexSetReferenceTree(dmNew,refTree);CHKERRQ(ierr);
+  ierr = DMPlexGetTree(dm,&pSec,&parents,&childIDs,NULL,NULL);CHKERRQ(ierr);
+  if (pSec) {
+    PetscInt d, p, pStart, pEnd, *parentsShifted, pStartShifted, pEndShifted, depth, *depthMax, *depthEnd;
+    PetscSection pSecShifted;
+
+    ierr = PetscSectionGetChart(pSec,&pStart,&pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+    ierr = PetscMalloc2(depth+1,&depthMax,depth+1,&depthEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &depthMax[depth] : NULL, depth>1 ? &depthMax[depth-1] : NULL, depth>2 ? &depthMax[1] : NULL, depth >= 0 ? &depthMax[0] : NULL);CHKERRQ(ierr);
+    for (d = 0; d <= depth; ++d) {
+      ierr = DMPlexGetDepthStratum(dm, d, NULL, &depthEnd[d]);CHKERRQ(ierr);
+      depthMax[d] = depthMax[d] < 0 ? depthEnd[d] : depthMax[d];
+    }
+    pStartShifted = DMPlexShiftPoint_Internal(pStart,depth,depthMax,depthEnd,depthShift);
+    pEndShifted   = DMPlexShiftPoint_Internal(pEnd,depth,depthMax,depthEnd,depthShift);
+    ierr = PetscMalloc1(pEndShifted - pStartShifted,&parentsShifted);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dmNew),&pSecShifted);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(pSecShifted,pStartShifted,pEndShifted);CHKERRQ(ierr);
+    for (p = 0; p < pEndShifted - pStartShifted; p++) {
+      parentsShifted[p] = DMPlexShiftPoint_Internal(parents[p],depth,depthMax,depthEnd,depthShift);
+    }
+    for (p = pStartShifted; p < pEndShifted; p++) {
+      PetscInt dof, pShifted;
+
+      pShifted = DMPlexShiftPoint_Internal(parents[p],depth,depthMax,depthEnd,depthShift);
+      ierr = PetscSectionGetDof(pSec,p,&dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(pSecShifted,pShifted,dof);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(pSecShifted);CHKERRQ(ierr);
+    ierr = DMPlexSetTree(dmNew,pSecShifted,parentsShifted,childIDs);CHKERRQ(ierr);
+    ierr = PetscFree2(depthMax,depthEnd);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexConstructGhostCells_Internal"
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
 {
@@ -504,8 +551,12 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
+      PetscInt numChildren;
+
       ierr = PetscFindInt(faces[f], nleaves, leaves, &loc);CHKERRQ(ierr);
-      if (loc >= 0) continue;
+      ierr = DMPlexGetTreeChildren(dm,faces[f],&numChildren,NULL);CHKERRQ(ierr);
+      /* non-local and ancestors points don't get to register ghosts */
+      if (loc >= 0 || numChildren) continue;
       if ((faces[f] >= fStart) && (faces[f] < fEnd)) ++numBdFaces;
     }
     Ng += numBdFaces;
@@ -531,10 +582,11 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
-      PetscInt size;
+      PetscInt size, numChildren;
 
       ierr = PetscFindInt(faces[f], nleaves, leaves, &loc);CHKERRQ(ierr);
-      if (loc >= 0) continue;
+      ierr = DMPlexGetTreeChildren(dm,faces[f],&numChildren,NULL);CHKERRQ(ierr);
+      if (loc >= 0 || numChildren) continue;
       if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       ierr = DMPlexGetSupportSize(dm, faces[f], &size);CHKERRQ(ierr);
       if (size != 1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
@@ -557,10 +609,11 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
-      PetscInt newFace = faces[f] + Ng;
+      PetscInt newFace = faces[f] + Ng, numChildren;
 
       ierr = PetscFindInt(faces[f], nleaves, leaves, &loc);CHKERRQ(ierr);
-      if (loc >= 0) continue;
+      ierr = DMPlexGetTreeChildren(dm,faces[f],&numChildren,NULL);CHKERRQ(ierr);
+      if (loc >= 0 || numChildren) continue;
       if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       ierr = DMPlexSetCone(gdm, ghostCell, &newFace);CHKERRQ(ierr);
       ierr = DMPlexInsertSupport(gdm, newFace, 1, ghostCell);CHKERRQ(ierr);
@@ -576,6 +629,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftCoordinates_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftSF_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
+  ierr = DMPlexShiftTree_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = PetscFree(depthShift);CHKERRQ(ierr);
   /* Step 7: Periodicity */
   if (dm->maxCell) {
