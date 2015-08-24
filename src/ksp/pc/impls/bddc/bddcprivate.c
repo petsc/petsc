@@ -82,7 +82,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  IS             zerodiag;
+  IS             pressures,zerodiag;
   PetscInt       nz;
   PetscBool      sorted;
   PetscErrorCode ierr;
@@ -91,12 +91,50 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
   pcbddc->benign_original_mat = pcbddc->local_mat;
+  /* if a local info on dofs is present, assumes the last field is represented by "pressures", otherwise, uses only zerodiagonal dofs (ok if the pressure block is all zero) */
+  if (pcbddc->n_ISForDofsLocal) {
+    PetscInt p = pcbddc->n_ISForDofsLocal-1;
+    ierr = PetscObjectReference((PetscObject)pcbddc->ISForDofsLocal[p]);CHKERRQ(ierr);
+    pressures = pcbddc->ISForDofsLocal[p];
+    ierr = ISSorted(pressures,&sorted);CHKERRQ(ierr);
+    if (!sorted) {
+      ierr = ISSort(pressures);CHKERRQ(ierr);
+    }
+  } else {
+    pressures = NULL;
+  }
   ierr = MatFindZeroDiagonals(pcbddc->benign_original_mat,&zerodiag);CHKERRQ(ierr);
   ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
   if (!sorted) {
     ierr = ISSort(zerodiag);CHKERRQ(ierr);
   }
+  /*
+     Check if all the pressure dofs have a zero diagonal
+     If not, a change of basis on pressures is not needed
+     since the local Schur complements are SPD
+  */
   ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
+  if (pressures) {
+    PetscInt  np;
+    PetscBool sameis;
+
+    sameis = PETSC_FALSE;
+    ierr = ISGetLocalSize(pressures,&np);CHKERRQ(ierr);
+    if (nz == np) {
+      const PetscInt *idxs,*pidxs;
+
+      ierr = ISGetIndices(pressures,&pidxs);CHKERRQ(ierr);
+      ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
+      ierr = PetscMemcmp(pidxs,idxs,np*sizeof(PetscInt),&sameis);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(pressures,&pidxs);CHKERRQ(ierr);
+    }
+    if (!sameis) { /* destroy index sets and set nz to 0 to avoid next code branch */
+      ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
+      nz = 0;
+    }
+    ierr = ISDestroy(&pressures);CHKERRQ(ierr);
+  }
   if (nz) {
     IS                zerodiagc;
     PetscScalar       *array;
@@ -151,8 +189,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
     ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
     ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
-  } else { /* this is unlikely to happen but, just in case, destroy the empty IS */
-    ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
   }
   *zerodiaglocal = zerodiag;
   PetscFunctionReturn(0);
