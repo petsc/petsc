@@ -132,16 +132,16 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_WINDOWS_H) && !defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
-  /* older Windows OS always produces e-00n for floating point output; remove the extra 0 */
+  /* older Windows OS always produces e-+0np for floating point output; remove the extra 0 */
   {
     size_t cnt = 0,ncnt = 0,leng;
     ierr = PetscStrlen(str,&leng);CHKERRQ(ierr);
     if (leng > 5) {
       for (cnt=0; cnt<leng-4; cnt++) {
-        if (str[cnt] == 'e' && (str[cnt+1] == '-' || str[cnt+1] == '+') && str[cnt+2] == '0' && str[cnt+3] == '0' && str[cnt+4] >= '0' && str[cnt+4] <= '9') {
+        if (str[cnt] == 'e' && (str[cnt+1] == '-' || str[cnt+1] == '+') && str[cnt+2] == '0'  && str[cnt+3] >= '0' && str[cnt+3] <= '9' && str[cnt+4] >= '0' && str[cnt+4] <= '9') {
           str[ncnt] = str[cnt]; ncnt++; cnt++;
-          str[ncnt] = str[cnt]; ncnt++; cnt++;
-          str[ncnt] = str[cnt]; cnt++;
+          str[ncnt] = str[cnt]; ncnt++; cnt++; cnt++;
+          str[ncnt] = str[cnt];
         } else {
           str[ncnt] = str[cnt];
         }
