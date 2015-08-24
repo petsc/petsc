@@ -73,7 +73,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'O':
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default optimization C flags '+' '.join(flags)+'\nYou might consider manually set optimal optimization flags for your system with COPTFLAGS=""\nSee config/examples/arch-*-opt.py for examples')
+      self.logPrintBox('***** WARNING: Using default optimization C flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n COPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCxxFlags(self, compiler, bopt):
@@ -153,7 +153,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt in ['O']:
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default C++ optimization flags '+' '.join(flags)+'\nYou might consider manually set optimal optimization flags for your system with CXXOPTFLAGS=""\nSee config/examples/arch-*-opt.py for examples')
+      self.logPrintBox('***** WARNING: Using default C++ optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n CXXOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
@@ -219,7 +219,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'O':
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default FORTRAN optimization flags '+' '.join(flags)+'\nYou might consider manually set optimal optimization flags for your system with FCOPTFLAGS=""\nSee config/examples/arch-*-opt.py for examples')
+      self.logPrintBox('***** WARNING: Using default FORTRAN optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n FCOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCompilerFlags(self, language, compiler, bopt):
