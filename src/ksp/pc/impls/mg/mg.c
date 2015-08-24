@@ -175,7 +175,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   MPI_Comm       comm;
   PC_MG_Levels   **mglevels = mg->levels;
   PCMGType       mgtype     = mg->am;
-  PCMGCycleType  mgctype    = PC_MG_CYCLE_V;
+  PetscInt       mgctype    = (PetscInt) PC_MG_CYCLE_V;
   PetscInt       i;
   PetscMPIInt    size;
   const char     *prefix;
