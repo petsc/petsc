@@ -1543,7 +1543,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetTransitiveClosure_Internal"
-/*@
+/*@C
   DMPlexGetTransitiveClosure_Internal - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG with a specified initial orientation
 
   Not collective
