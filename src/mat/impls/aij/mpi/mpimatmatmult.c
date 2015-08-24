@@ -16,7 +16,7 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 {
   PetscErrorCode ierr;
   const char     *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt       alg=0; /* set default algorithm */
+  PetscInt       alg=1; /* set default algorithm */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -1913,7 +1913,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     bi[i+1] = bi[i] + nnz;
     if (nnz > rmax) rmax = nnz;
   }
-  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
+  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); //mpiexec -n 2 ./ex94 -f0 $D/tiny -f1 $D/tiny
 
   ierr      = PetscMalloc1(bi[pn]+1,&bj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
