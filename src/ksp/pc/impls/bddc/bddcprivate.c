@@ -3403,8 +3403,8 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   ierr = PCBDDCGraphInit(pcbddc->mat_graph,pcis->mapping,N);CHKERRQ(ierr);
 
   /* Check validity of the csr graph passed in by the user */
-  if (pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) {
-    ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
+  if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
   }
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
