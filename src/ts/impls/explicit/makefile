@@ -3,7 +3,7 @@ ALL: lib
 
 MANSEC   = TS
 LOCDIR   = src/ts/impls/explicit/
-DIRS     = euler glee rk ssp
+DIRS     = euler rk ssp
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
