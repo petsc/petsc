@@ -850,19 +850,12 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
 PetscErrorCode TSStartingMethod_GLEE(TS ts)
 {
   TS_GLEE        *glee = (TS_GLEE*)ts->data;
-  GLEETableau    tab;
-  PetscInt       r,i;
-  PetscReal      *S;
+  GLEETableau    tab  = glee->tableau;
+  PetscInt       r=tab->r,i;
+  PetscReal      *S=tab->S;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!glee->tableau) {
-    ierr = TSGLEESetType(ts,TSGLEEDefaultType);CHKERRQ(ierr);
-  }
-  tab  = glee->tableau;
-  r    = tab->r;
-  S    = tab->S;
-  ierr = VecDuplicateVecs(ts->vec_sol,r,&glee->Y);CHKERRQ(ierr);
   for (i=0; i<r; i++) { 
     ierr = VecZeroEntries(glee->Y[i]);CHKERRQ(ierr); 
     ierr = VecAXPY(glee->Y[i],S[i],ts->vec_sol);CHKERRQ(ierr);
@@ -1075,14 +1068,16 @@ static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
 #define __FUNCT__ "TSGetAuxSolution_GLEE"
 PetscErrorCode TSGetAuxSolution_GLEE(TS ts,PetscInt *n,Vec *Y)
 {
-  TS_GLEE     *glee = (TS_GLEE*)ts->data;
-  GLEETableau tab   = glee->tableau;
+  TS_GLEE         *glee = (TS_GLEE*)ts->data;
+  GLEETableau     tab   = glee->tableau;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!Y) *n = tab->r - 1;
   else {
-    if ((*n > 0) && (*n < tab->r)) *Y = glee->Y[*n];
-    else {
+    if ((*n >= 0) && (*n < tab->r-1)) {
+      ierr = VecCopy(glee->Y[*n],*Y); CHKERRQ(ierr);
+    } else {
       /* XXX: Error message for invalid value of n */
     }
   }

@@ -244,6 +244,8 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
 PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSGetAuxSolution(TS,PetscInt*,Vec*);
+
 
 /*S
      TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step)
