@@ -513,27 +513,44 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
   ierr = DMPlexGetTree(dm,&pSec,&parents,&childIDs,NULL,NULL);CHKERRQ(ierr);
   if (pSec) {
     PetscInt p, pStart, pEnd, *parentsShifted, pStartShifted, pEndShifted, depth;
+    PetscInt *childIDsShifted;
     PetscSection pSecShifted;
 
     ierr = PetscSectionGetChart(pSec,&pStart,&pEnd);CHKERRQ(ierr);
     ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
     pStartShifted = DMPlexShiftPoint_Internal(pStart,depth,depthShift);
     pEndShifted   = DMPlexShiftPoint_Internal(pEnd,depth,depthShift);
-    ierr = PetscMalloc1(pEndShifted - pStartShifted,&parentsShifted);CHKERRQ(ierr);
+    ierr = PetscMalloc2(pEndShifted - pStartShifted,&parentsShifted,pEndShifted-pStartShifted,&childIDsShifted);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dmNew),&pSecShifted);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(pSecShifted,pStartShifted,pEndShifted);CHKERRQ(ierr);
-    for (p = 0; p < pEndShifted - pStartShifted; p++) {
-      parentsShifted[p] = DMPlexShiftPoint_Internal(parents[p],depth,depthShift);
-    }
     for (p = pStartShifted; p < pEndShifted; p++) {
-      PetscInt dof, pShifted;
+      /* start off assuming no children */
+      ierr = PetscSectionSetDof(pSecShifted,p,0);CHKERRQ(ierr);
+    }
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof;
+      PetscInt pNew = DMPlexShiftPoint_Internal(p,depth,depthShift);
 
-      pShifted = DMPlexShiftPoint_Internal(parents[p],depth,depthShift);
       ierr = PetscSectionGetDof(pSec,p,&dof);CHKERRQ(ierr);
-      ierr = PetscSectionSetDof(pSecShifted,pShifted,dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(pSecShifted,pNew,dof);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(pSecShifted);CHKERRQ(ierr);
-    ierr = DMPlexSetTree(dmNew,pSecShifted,parentsShifted,childIDs);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof;
+      PetscInt pNew = DMPlexShiftPoint_Internal(p,depth,depthShift);
+
+      ierr = PetscSectionGetDof(pSec,p,&dof);CHKERRQ(ierr);
+      if (dof) {
+        PetscInt off, offNew;
+
+        ierr = PetscSectionGetOffset(pSec,p,&off);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pSecShifted,pNew,&offNew);CHKERRQ(ierr);
+        parentsShifted[offNew] = DMPlexShiftPoint_Internal(parents[off],depth,depthShift);
+        childIDsShifted[offNew] = childIDs[off];
+      }
+    }
+    ierr = DMPlexSetTree(dmNew,pSecShifted,parentsShifted,childIDsShifted);CHKERRQ(ierr);
+    ierr = PetscFree2(parentsShifted,childIDsShifted);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
