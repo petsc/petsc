@@ -69,6 +69,8 @@ class Configure(config.base.Configure):
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
+        if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+          rjobs.append('DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
