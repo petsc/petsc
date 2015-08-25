@@ -727,6 +727,11 @@ ex191: ex191.o chkopts
 ex192: ex192.o chkopts
 	-${CLINKER} -o ex192 ex192.o ${PETSC_MAT_LIB}
 	${RM} ex192.o
+	
+ex194: ex194.o chkopts
+	-${CLINKER} -o ex194 ex194.o ${PETSC_MAT_LIB}
+	${RM} ex194.o
+		
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -2350,6 +2355,11 @@ runex191:
 	  -@${MPIEXEC} -n 2 ./ex191   > ex191.tmp 2>&1; \
 	   ${DIFF} output/ex191_1.out ex191.tmp || printf "${PWD}\nPossible problem with ex191, diffs above\n=========================================\n"; \
 	   ${RM} -f ex191.tmp
+	   
+runex194:
+	  -@${MPIEXEC} -n 2 ./ex194   > ex194.tmp 2>&1; \
+	   ${DIFF} output/ex194.out ex194.tmp || printf "${PWD}\nPossible problem with ex194, diffs above\n=========================================\n"; \
+	   ${RM} -f ex194.tmp	   
 
 runex192:
 	  -@${MPIEXEC} -n 1 ./ex192 > ex192.tmp 2>&1; \
