@@ -75,6 +75,10 @@ struct _p_TS {
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void**);
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
+  PetscErrorCode (*adjointmonitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
+  PetscErrorCode (*adjointmonitordestroy[MAXTSMONITORS])(void**);
+  void *adjointmonitorcontext[MAXTSMONITORS];
+  PetscInt  numberadjointmonitors;
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
