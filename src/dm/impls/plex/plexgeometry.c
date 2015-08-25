@@ -1,22 +1,59 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLineIntersection_2D_Internal"
+static PetscErrorCode DMPlexGetLineIntersection_2D_Internal(const PetscReal segmentA[], const PetscReal segmentB[], PetscReal intersection[], PetscBool *hasIntersection)
+{
+  const PetscReal p0_x  = segmentA[0*2+0];
+  const PetscReal p0_y  = segmentA[0*2+1];
+  const PetscReal p1_x  = segmentA[1*2+0];
+  const PetscReal p1_y  = segmentA[1*2+1];
+  const PetscReal p2_x  = segmentB[0*2+0];
+  const PetscReal p2_y  = segmentB[0*2+1];
+  const PetscReal p3_x  = segmentB[1*2+0];
+  const PetscReal p3_y  = segmentB[1*2+1];
+  const PetscReal s1_x  = p1_x - p0_x;
+  const PetscReal s1_y  = p1_y - p0_y;
+  const PetscReal s2_x  = p3_x - p2_x;
+  const PetscReal s2_y  = p3_y - p2_y;
+  const PetscReal denom = (-s2_x * s1_y + s1_x * s2_y);
+
+  PetscFunctionBegin;
+  *hasIntersection = PETSC_FALSE;
+  /* Non-parallel lines */
+  if (denom != 0.0) {
+    const PetscReal s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / denom;
+    const PetscReal t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / denom;
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+      *hasIntersection = PETSC_TRUE;
+      if (intersection) {
+        intersection[0] = p0_x + (t * s1_x);
+        intersection[1] = p0_y + (t * s1_y);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexLocatePoint_Simplex_2D_Internal"
 static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
-  const PetscInt embedDim = 2;
-  PetscReal      x        = PetscRealPart(point[0]);
-  PetscReal      y        = PetscRealPart(point[1]);
-  PetscReal      v0[2], J[4], invJ[4], detJ;
-  PetscReal      xi, eta;
-  PetscErrorCode ierr;
+  const PetscInt  embedDim = 2;
+  const PetscReal eps      = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal       x        = PetscRealPart(point[0]);
+  PetscReal       y        = PetscRealPart(point[1]);
+  PetscReal       v0[2], J[4], invJ[4], detJ;
+  PetscReal       xi, eta;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
   xi  = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]);
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
-  if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) *cell = c;
+  if ((xi >= -eps) && (eta >= -eps) && (xi + eta <= 2.0+eps)) *cell = c;
   else *cell = -1;
   PetscFunctionReturn(0);
 }
@@ -131,71 +168,307 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscGridHashInitialize_Internal"
+static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscInt dim, const PetscScalar point[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  box->dim = dim;
+  for (d = 0; d < dim; ++d) box->lower[d] = box->upper[d] = PetscRealPart(point[d]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashCreate"
+PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScalar point[], PetscGridHash *box)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(1, box);CHKERRQ(ierr);
+  ierr = PetscGridHashInitialize_Internal(*box, dim, point);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashEnlarge"
+PetscErrorCode PetscGridHashEnlarge(PetscGridHash box, const PetscScalar point[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  for (d = 0; d < box->dim; ++d) {
+    box->lower[d] = PetscMin(box->lower[d], PetscRealPart(point[d]));
+    box->upper[d] = PetscMax(box->upper[d], PetscRealPart(point[d]));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashSetGrid"
+PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const PetscReal h[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  for (d = 0; d < box->dim; ++d) {
+    box->extent[d] = box->upper[d] - box->lower[d];
+    if (n[d] == PETSC_DETERMINE) {
+      box->h[d] = h[d];
+      box->n[d] = PetscCeilReal(box->extent[d]/h[d]);
+    } else {
+      box->n[d] = n[d];
+      box->h[d] = box->extent[d]/n[d];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashGetEnclosingBox"
+PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
+{
+  const PetscReal *lower = box->lower;
+  const PetscReal *upper = box->upper;
+  const PetscReal *h     = box->h;
+  const PetscInt  *n     = box->n;
+  const PetscInt   dim   = box->dim;
+  PetscInt         d, p;
+
+  PetscFunctionBegin;
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      PetscInt dbox = PetscFloorReal((PetscRealPart(points[p*dim+d]) - lower[d])/h[d]);
+
+      if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
+      if (dbox < 0 || dbox >= n[d]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %d (%g, %g, %g) is outside of our bounding box",
+                                             p, PetscRealPart(points[p*dim+0]), dim > 1 ? PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? PetscRealPart(points[p*dim+2]) : 0.0);
+      dboxes[p*dim+d] = dbox;
+    }
+    if (boxes) for (d = 1, boxes[p] = dboxes[p*dim]; d < dim; ++d) boxes[p] += dboxes[p*dim+d]*n[d-1];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscGridHashDestroy"
+PetscErrorCode PetscGridHashDestroy(PetscGridHash *box)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (*box) {
+    ierr = PetscSectionDestroy(&(*box)->cellSection);CHKERRQ(ierr);
+    ierr = ISDestroy(&(*box)->cells);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&(*box)->cellsSparse);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(*box);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexLocatePoint_Internal"
+PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cellStart, PetscInt *cell)
+{
+  PetscInt       coneSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (dim) {
+  case 2:
+    ierr = DMPlexGetConeSize(dm, cellStart, &coneSize);CHKERRQ(ierr);
+    switch (coneSize) {
+    case 3:
+      ierr = DMPlexLocatePoint_Simplex_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = DMPlexLocatePoint_General_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
+    }
+    break;
+  case 3:
+    ierr = DMPlexGetConeSize(dm, cellStart, &coneSize);CHKERRQ(ierr);
+    switch (coneSize) {
+    case 4:
+      ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
+      break;
+    case 6:
+      ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
+    }
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for mesh dimension %D", dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeGridHash_Internal"
+PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
+{
+  MPI_Comm           comm;
+  PetscGridHash      lbox;
+  Vec                coordinates;
+  PetscSection       coordSection;
+  Vec                coordsLocal;
+  const PetscScalar *coords;
+  PetscInt          *dboxes, *boxes;
+  PetscInt           n[3] = {10, 10, 10};
+  PetscInt           dim, N, cStart, cEnd, c, i;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscGridHashCreate(comm, dim, coords, &lbox);CHKERRQ(ierr);
+  for (i = 0; i < N; i += dim) {ierr = PetscGridHashEnlarge(lbox, &coords[i]);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscGridHashSetGrid(lbox, n, NULL);CHKERRQ(ierr);
+#if 0
+  /* Could define a custom reduction to merge these */
+  ierr = MPI_Allreduce(lbox->lower, gbox->lower, 3, MPIU_REAL, MPI_MIN, comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(lbox->upper, gbox->upper, 3, MPIU_REAL, MPI_MAX, comm);CHKERRQ(ierr);
+#endif
+  /* Is there a reason to snap the local bounding box to a division of the global box? */
+  /* Should we compute all overlaps of local boxes? We could do this with a rendevouz scheme partitioning the global box */
+  /* Create label */
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMLabelCreate("cells", &lbox->cellsSparse);CHKERRQ(ierr);
+  ierr = DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd);CHKERRQ(ierr);
+  /* Compute boxes which overlap each cell: http://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
+  ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscCalloc2((dim+1) * dim, &dboxes, dim+1, &boxes);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    const PetscReal *h       = lbox->h;
+    PetscScalar     *ccoords = NULL;
+    PetscScalar      point[3];
+    PetscInt         dlim[6], d, e, i, j, k;
+
+    /* Find boxes enclosing each vertex */
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
+    ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, boxes);CHKERRQ(ierr);
+    /* Mark cells containing the vertices */
+    for (e = 0; e < dim+1; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
+    /* Get grid of boxes containing these */
+    for (d = 0;   d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
+    for (d = dim; d < 3;   ++d) {dlim[d*2+0] = dlim[d*2+1] = 0;}
+    for (e = 1; e < dim+1; ++e) {
+      for (d = 0; d < dim; ++d) {
+        dlim[d*2+0] = PetscMin(dlim[d*2+0], dboxes[e*dim+d]);
+        dlim[d*2+1] = PetscMax(dlim[d*2+1], dboxes[e*dim+d]);
+      }
+    }
+    /* Check for intersection of box with cell */
+    for (k = dlim[2*2+0], point[2] = lbox->lower[2] + k*h[2]; k <= dlim[2*2+1]; ++k, point[2] += h[2]) {
+      for (j = dlim[1*2+0], point[1] = lbox->lower[1] + j*h[1]; j <= dlim[1*2+1]; ++j, point[1] += h[1]) {
+        for (i = dlim[0*2+0], point[0] = lbox->lower[0] + i*h[0]; i <= dlim[0*2+1]; ++i, point[0] += h[0]) {
+          const PetscInt box = (k*lbox->n[1] + j)*lbox->n[0] + i;
+          PetscScalar    cpoint[3];
+          PetscInt       cell, edge, ii, jj, kk;
+
+          /* Check whether cell contains any vertex of these subboxes TODO vectorize this */
+          for (kk = 0, cpoint[2] = point[2]; kk < (dim > 2 ? 2 : 1); ++kk, cpoint[2] += h[2]) {
+            for (jj = 0, cpoint[1] = point[1]; jj < (dim > 1 ? 2 : 1); ++jj, cpoint[1] += h[1]) {
+              for (ii = 0, cpoint[0] = point[0]; ii < 2; ++ii, cpoint[0] += h[0]) {
+
+                ierr = DMPlexLocatePoint_Internal(dm, dim, cpoint, c, &cell);CHKERRQ(ierr);
+                if (cell >= 0) {DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); ii = jj = kk = 2;}
+              }
+            }
+          }
+          /* Check whether cell edge intersects any edge of these subboxes TODO vectorize this */
+          for (edge = 0; edge < dim+1; ++edge) {
+            PetscReal segA[6], segB[6];
+
+            for (d = 0; d < dim; ++d) {segA[d] = PetscRealPart(ccoords[edge*dim+d]); segA[dim+d] = PetscRealPart(ccoords[((edge+1)%(dim+1))*dim+d]);}
+            for (kk = 0; kk < (dim > 2 ? 2 : 1); ++kk) {
+              if (dim > 2) {segB[2]     = PetscRealPart(point[2]);
+                            segB[dim+2] = PetscRealPart(point[2]) + kk*h[2];}
+              for (jj = 0; jj < (dim > 1 ? 2 : 1); ++jj) {
+                if (dim > 1) {segB[1]     = PetscRealPart(point[1]);
+                              segB[dim+1] = PetscRealPart(point[1]) + jj*h[1];}
+                for (ii = 0; ii < 2; ++ii) {
+                  PetscBool intersects;
+
+                  segB[0]     = PetscRealPart(point[0]);
+                  segB[dim+0] = PetscRealPart(point[0]) + ii*h[0];
+                  ierr = DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects);CHKERRQ(ierr);
+                  if (intersects) {DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); edge = ii = jj = kk = dim+1;}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(dboxes, boxes);CHKERRQ(ierr);
+  ierr = DMLabelConvertToSection(lbox->cellsSparse, &lbox->cellSection, &lbox->cells);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&lbox->cellsSparse);CHKERRQ(ierr);
+  *localBox = lbox;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints_Plex"
 /*
  Need to implement using the guess
 */
 PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 {
-  PetscInt       cell = -1 /*, guess = -1*/;
-  PetscInt       bs, numPoints, p;
-  PetscInt       dim, cStart, cEnd, cMax, c, coneSize;
-  PetscInt      *cells;
-  PetscScalar   *a;
-  PetscErrorCode ierr;
+  DM_Plex        *mesh = (DM_Plex *) dm->data;
+  PetscInt        bs, numPoints, p;
+  PetscInt        dim, cStart, cEnd, cMax, numCells, c;
+  const PetscInt *boxCells;
+  PetscInt       *cells;
+  PetscScalar    *a;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (!mesh->lbox) {ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
+  if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = VecGetLocalSize(v, &numPoints);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
   numPoints /= bs;
   ierr       = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
+  /* Designate the local box for each point */
+  /* Send points to correct process */
+  /* Search cells that lie in each subbox */
+  /*   Should we bin points before doing search? */
+  ierr = ISGetIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
+    PetscInt           dbin[3], bin, cell, cellOffset;
 
-    switch (dim) {
-    case 2:
-      for (c = cStart; c < cEnd; ++c) {
-        ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-        switch (coneSize) {
-        case 3:
-          ierr = DMPlexLocatePoint_Simplex_2D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
-          break;
-        case 4:
-          ierr = DMPlexLocatePoint_General_2D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
-          break;
-        default:
-          SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
-        }
-        if (cell >= 0) break;
-      }
-      break;
-    case 3:
-      for (c = cStart; c < cEnd; ++c) {
-        ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-        switch (coneSize) {
-        case 4:
-          ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
-          break;
-        case 6:
-          ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
-          break;
-        default:
-          SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
-        }
-        if (cell >= 0) break;
-      }
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for mesh dimension %D", dim);
+    ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
+    /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
+    ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
+    for (c = cellOffset; c < cellOffset + numCells; ++c) {
+      ierr = DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell);CHKERRQ(ierr);
+      if (cell >= 0) break;
     }
+    if (cell < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in mesh", p);
     cells[p] = cell;
   }
+  ierr = ISRestoreIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
+  /* Check for highest numbered proc that claims a point (do we care?) */
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints, cells, PETSC_OWN_POINTER, cellIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);

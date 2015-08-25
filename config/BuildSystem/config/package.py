@@ -389,12 +389,13 @@ class Package(config.base.Configure):
         libs  = []
         slibs = 'NoneNeeded'
       inc  = []
+      d  = None
       if self.includes:
         inc = self.argDB['with-'+self.package+'-include']
-      # hope that package root is one level above first include directory specified
-        d   = os.path.dirname(inc[0])
-      else:
-        d   = None
+        # hope that package root is one level above first include directory specified
+        if inc:
+          d   = os.path.dirname(inc[0])
+
       if not isinstance(inc, list): inc = inc.split(' ')
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]

@@ -1,7 +1,6 @@
-setup done: grid  Mx,My = 11,11  with spacing  dx,dy = 0.400,0.400
-  0 SNES Function norm 15.6304 
-  1 SNES Function norm 3.72485 
-  2 SNES Function norm 8.31691e-06 
-  3 SNES Function norm 2.004e-11 
-number of Newton iterations = 3 ... CONVERGED_FNORM_RELATIVE
-errors:    av |u-uexact|  = 7.156e-03    |u-uexact|_inf = 2.550e-02
+setup done: grid  Mx,My = 11,11  with spacing  dx,dy = 0.4000,0.4000
+  0 SNES Function norm 3.8949 
+  1 SNES Function norm 0.595977 
+  2 SNES Function norm 1.33042e-06 
+  3 SNES Function norm < 1.e-11
+errors:     av |u-uexact|  = 7.156e-03    |u-uexact|_inf = 2.550e-02

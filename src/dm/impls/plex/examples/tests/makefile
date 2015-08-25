@@ -31,6 +31,10 @@ ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
 	${RM} -f ex9.o
 
+ex14: ex14.o chkopts
+	-${CLINKER} -o ex14 ex14.o ${PETSC_DM_LIB}
+	${RM} -f ex14.o
+
 ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o ${PETSC_DM_LIB}
 	${RM} -f ex15.o
@@ -50,6 +54,13 @@ runex1_2:
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true ;  \
 	   else printf "${PWD}\nPossible problem with runex1_2, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1_1.tmp
+
+runex1_test_shape:
+	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape > ex1_test_shape.tmp 2>&1;\
+	   if (${DIFF} output/ex1_test_shape.out ex1_test_shape.tmp) then true ;  \
+	   else printf "${PWD}\nPossible problem with runex1_test_shape, diffs above\n=================================\n"; fi ;\
+	   ${RM} -f ex1_test_shape.tmp
+
 
 runex1f90:
 	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_0.tmp 2>&1;\
@@ -143,7 +154,7 @@ runex15_0:
 TESTEXAMPLES_C        = ex3.PETSc runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 ex3.rm
 TESTEXAMPLES_HDF5     = ex15.PETSc runex15_0 ex15.rm
 TESTEXAMPLES_TRIANGLE = ex3.PETSc runex3_constraints runex3_nonconforming_simplex_2 ex3.rm
-TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 runex3_nonconforming_simplex_3 ex3.rm
+TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 runex3_nonconforming_simplex_3 ex3.rm
 TESTEXAMPLES_FORTRAN  = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

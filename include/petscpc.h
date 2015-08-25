@@ -293,6 +293,7 @@ PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainDiagonalScaling(PC,Vec);
 
+PETSC_EXTERN PetscInt PetscMGLevelId;
 PETSC_EXTERN PetscErrorCode PCMGSetType(PC,PCMGType);
 PETSC_EXTERN PetscErrorCode PCMGGetType(PC,PCMGType*);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);

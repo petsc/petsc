@@ -102,7 +102,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     PetscInt ncrs_eq_glob;
     ierr     = MatGetSize(Cmat, &ncrs_eq_glob, NULL);CHKERRQ(ierr);
     new_size = (PetscMPIInt)((float)ncrs_eq_glob/(float)pc_gamg->min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
-    if (new_size == 0) new_size = 1; /* not likely, posible? */
+    if (!new_size) new_size = 1; /* not likely, posible? */
     else if (new_size >= nactive) new_size = nactive; /* no change, rare */
   }
 
@@ -229,7 +229,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         PetscReal best_fact = 0.;
         jj = -1;
         for (kk = 1 ; kk <= size ; kk++) {
-          if (size%kk==0) { /* a candidate */
+          if (!(size%kk)) { /* a candidate */
             PetscReal nactpe = (PetscReal)size/(PetscReal)kk, fact = nactpe/(PetscReal)new_size;
             if (fact > 1.0) fact = 1./fact; /* keep fact < 1 */
             if (fact > best_fact) {
@@ -423,7 +423,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   /* outout matrix data */
   if (!PETSC_TRUE) {
     PetscViewer viewer; char fname[32]; static int llev=0; Cmat = *a_Amat_crs;
-    if (llev==0) {
+    if (!llev) {
       sprintf(fname,"Cmat_%d.m",llev++);
       PetscViewerASCIIOpen(comm,fname,&viewer);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
@@ -547,7 +547,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
   /* Get A_i and R_i */
   for (level=0, Aarr[0]=Pmat, nactivepe = size; /* hard wired stopping logic */
-       level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit);
+       level < (pc_gamg->Nlevels-1) && (!level || M>pc_gamg->coarse_eq_limit);
        level++) {
     pc_gamg->current_level = level;
     level1 = level + 1;
@@ -591,7 +591,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
 #endif
-    if (level==0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
+    if (!level) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) {
       ierr =  PetscInfo1(pc,"Stop gridding, level %D\n",level);CHKERRQ(ierr);
 #if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
@@ -673,7 +673,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         is   = ASMLocalIDsArr[level];
         ierr = PCSetType(subpc, PCGASM);CHKERRQ(ierr);
         ierr = PCGASMSetOverlap(subpc, 0);CHKERRQ(ierr);
-        if (sz==0) {
+        if (!sz) {
           IS       is;
           PetscInt my0,kk;
           ierr = MatGetOwnershipRange(Aarr[level], &my0, &kk);CHKERRQ(ierr);
@@ -1242,7 +1242,7 @@ $       See the Users Manual Chapter 4 for more details
 
   Concepts: algebraic multigrid
 
-.seealso:  PCCreate(), PCSetType(), MatSetBlockSize(), PCMGType, PCSetCoordinates(), MatSetNearNullSpace(), PCGAMGSetType(), PCGAMGAGG, PCGAMGGEO, PCGAMGCLASSICAL, PCGAMGSetProcEqLim(), 
+.seealso:  PCCreate(), PCSetType(), MatSetBlockSize(), PCMGType, PCSetCoordinates(), MatSetNearNullSpace(), PCGAMGSetType(), PCGAMGAGG, PCGAMGGEO, PCGAMGCLASSICAL, PCGAMGSetProcEqLim(),
            PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(), PCGAMGRegister(), PCGAMGSetReuseInterpolation(), PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(), PCGAMGSetThreshold(), PCGAMGGetType()
 M*/
 

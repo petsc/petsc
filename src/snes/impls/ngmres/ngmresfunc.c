@@ -250,7 +250,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESSelectRestart_Private"
-PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,PetscBool *selectRestart)
+PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fMnorm, PetscReal fAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,PetscBool *selectRestart)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*)snes->data;
   PetscErrorCode ierr;
@@ -271,5 +271,14 @@ PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fA
     }
     *selectRestart = PETSC_TRUE;
   }
+
+  /* F_M stagnation restart */
+  if (ngmres->restart_fm_rise && fMnorm > snes->norm) {
+    if (ngmres->monitor) {
+      ierr = PetscViewerASCIIPrintf(ngmres->monitor,"F_M rise restart: %e > %e\n",fMnorm,snes->norm);CHKERRQ(ierr);
+    }
+    *selectRestart = PETSC_TRUE;
+  }
+
   PetscFunctionReturn(0);
 }

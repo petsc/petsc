@@ -138,7 +138,7 @@ PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetBoundary"
 /*@C
-  DMPlexAddBoundary - Add a boundary condition to the model
+  DMPlexGetBoundary - Add a boundary condition to the model
 
   Input Parameters:
 + dm          - The mesh object

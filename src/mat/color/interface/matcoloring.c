@@ -197,7 +197,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 {
   PetscBool      flg;
-  MatColoringType deft        = MATCOLORINGSL;
+  MatColoringType deft = MATCOLORINGSL;
   char           type[256];
   PetscErrorCode ierr;
   PetscInt       dist,maxcolors;
@@ -205,6 +205,8 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
   ierr = MatColoringGetDistance(mc,&dist);CHKERRQ(ierr);
+  if (dist == 2) deft = MATCOLORINGSL;
+  else           deft = MATCOLORINGGREEDY;
   ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
   ierr = MatColoringRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)mc);CHKERRQ(ierr);
