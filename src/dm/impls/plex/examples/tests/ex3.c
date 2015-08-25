@@ -491,9 +491,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = PetscFVSetSpatialDimension(fv,user->dim);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
   ierr = PetscFVSetUp(fv);CHKERRQ(ierr);
-  ierr = DMClone(dm,&dmfv);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dmfv,user->dim,coordSection);CHKERRQ(ierr);
+  ierr = DMPlexConstructGhostCells(dm,NULL,NULL,&dmfv);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
   ierr = DMPlexCreateRigidBody(dmfv,&nsp);CHKERRQ(ierr);
