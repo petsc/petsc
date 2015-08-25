@@ -104,9 +104,9 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,Pet
       ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerBinaryRead(viewer,&timepre,1,NULL,PETSC_REAL);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,-(*t)+timepre);CHKERRQ(ierr);
   }
 
-  ierr = TSSetTimeStep(ts,-(*t)+timepre);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
