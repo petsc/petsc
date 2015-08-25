@@ -168,9 +168,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth
 
   PetscFunctionBegin;
   /* sort by (oldend): yes this is an O(n^2) sort, we expect depth <= 3 */
-  for (d = 0; d <= depth; d++) {
+  for (d = 0; d < depth; d++) {
     PetscInt firstd = d;
-    PetscInt firstStart = depthShift[2*d+1];
+    PetscInt firstStart = depthShift[2*d];
     PetscInt e;
 
     for (e = d+1; e <= depth; e++) {
@@ -192,12 +192,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth
     }
   }
   /* convert (oldstart, added) to (oldstart, newstart) */
-  for (d = 0; d < depth; d++) {
+  for (d = 0; d <= depth; d++) {
     off += depthShift[2*d+1];
     depthShift[2*d+1] = depthShift[2*d] + off;
   }
-  depthShift[2*depth]   = PETSC_MAX_INT;
-  depthShift[2*depth+1] = PETSC_MAX_INT;
   PetscFunctionReturn(0);
 }
 
@@ -213,7 +211,7 @@ PETSC_STATIC_INLINE PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt dept
     if (p < depthShift[2*d]) return p + newOff;
     else newOff = depthShift[2*d+1] - depthShift[2*d];
   }
-  return p;
+  return p + newOff;
 }
 
 #undef __FUNCT__
@@ -228,7 +226,7 @@ PETSC_STATIC_INLINE PetscInt DMPlexShiftPointInverse_Internal(PetscInt p, PetscI
     if (p < depthShift[2*d+1]) return p + newOff;
     else newOff = depthShift[2*d] - depthShift[2*d+1];
   }
-  return p;
+  return p + newOff;
 }
 
 #undef __FUNCT__
@@ -243,6 +241,7 @@ static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM
   if (depth < 0) PetscFunctionReturn(0);
   /* Step 1: Expand chart */
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  pEnd = DMPlexShiftPoint_Internal(pEnd,depth,depthShift);
   ierr = DMPlexSetChart(dmNew, pStart, pEnd);CHKERRQ(ierr);
   /* Step 2: Set cone and support sizes */
   for (d = 0; d <= depth; ++d) {
@@ -585,7 +584,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   for (d = 0; d <= depth; d++) {
     PetscInt dEnd;
 
-    ierr = DMPlexGetDepthStratum(dm,d,&dEnd,NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm,d,NULL,&dEnd);CHKERRQ(ierr);
     depthShift[2*d]   = dEnd;
     depthShift[2*d+1] = 0;
   }
