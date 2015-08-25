@@ -2469,6 +2469,12 @@ PetscErrorCode  TSSetUp(TS ts)
   if (!jac && (ijac || i2jac || rhsjac)) {
     ierr = DMSNESSetJacobian(dm,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
+
+  /* if time integration scheme has a starting method, call it */
+  if (ts->ops->startingmethod) {
+    ierr = (*ts->ops->startingmethod)(ts);CHKERRQ(ierr);
+  }
+
   ts->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

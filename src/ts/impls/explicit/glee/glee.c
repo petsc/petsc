@@ -819,8 +819,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
 {
   TS_GLEE        *glee = (TS_GLEE*)ts->data;
   GLEETableau    tab;
-  PetscInt       s,r,i;
-  PetscReal      *S;
+  PetscInt       s,r;
   PetscErrorCode ierr;
   DM             dm;
 
@@ -831,7 +830,6 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   tab  = glee->tableau;
   s    = tab->s;
   r    = tab->r;
-  S    = tab->S;
   ierr = VecDuplicateVecs(ts->vec_sol,r,&glee->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,r,&glee->X);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&glee->YStage);CHKERRQ(ierr);
@@ -844,9 +842,27 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
 
-  /* Initialize the auxiliary solution: TSSetUp is called after TSSetSolution,
-     so initializing the auxiliary solution here is okay */
+#undef __FUNCT__
+#define __FUNCT__ "TSStartingMethod_GLEE"
+PetscErrorCode TSStartingMethod_GLEE(TS ts)
+{
+  TS_GLEE        *glee = (TS_GLEE*)ts->data;
+  GLEETableau    tab;
+  PetscInt       r,i;
+  PetscReal      *S;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!glee->tableau) {
+    ierr = TSGLEESetType(ts,TSGLEEDefaultType);CHKERRQ(ierr);
+  }
+  tab  = glee->tableau;
+  r    = tab->r;
+  S    = tab->S;
+  ierr = VecDuplicateVecs(ts->vec_sol,r,&glee->Y);CHKERRQ(ierr);
   for (i=0; i<r; i++) { 
     ierr = VecZeroEntries(glee->Y[i]);CHKERRQ(ierr); 
     ierr = VecAXPY(glee->Y[i],S[i],ts->vec_sol);CHKERRQ(ierr);
@@ -1067,7 +1083,7 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts,PetscInt *n,Vec *Y)
   else {
     if ((*n > 0) && (*n < tab->r)) *Y = glee->Y[*n];
     else {
-      /* Error message for invalid value of n */
+      /* XXX: Error message for invalid value of n */
     }
   }
   PetscFunctionReturn(0);
@@ -1115,6 +1131,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_GLEE;
   ts->ops->snesjacobian   = SNESTSFormJacobian_GLEE;
   ts->ops->getauxsolution = TSGetAuxSolution_GLEE;
+  ts->ops->startingmethod = TSStartingMethod_GLEE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
