@@ -79,8 +79,9 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
   PetscFunctionReturn(0);
 }
 
-/* compute apa = A[i,:]*P */
-#define AProw(i,ad,ao,p_loc,p_oth,apa) \
+#if 0
+/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */
+#define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
 {\
   PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
   PetscScalar *_aa,_valtmp,*_pa;                             \
@@ -121,6 +122,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
     PetscLogFlops(2.0*_pnz);                     \
   }                                              \
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable"
@@ -167,7 +169,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   apj = ptap->apj;
   for (i=0; i<cm; i++) {
     /* compute apa = A[i,:]*P */
-    AProw(i,ad,ao,p_loc,p_oth,apa);
+    AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa);
 
     /* set values in C */
     apJ  = apj + api[i];
