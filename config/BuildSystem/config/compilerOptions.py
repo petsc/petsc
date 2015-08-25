@@ -28,9 +28,12 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
         else:
           flags.append('-g3')
-        flags.append('-O0') # MPICH puts CFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt == 'O':
-        flags.append('-O')
+        flags.append('-g')
+        if config.setCompilers.Configure.isClang(compiler, self.log):
+          flags.append('-O3')
+        else:
+          flags.append('-O')
     else:
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
@@ -41,6 +44,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
@@ -68,6 +72,8 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt == 'O':
         flags.append('-O')
+    if bopt == 'O':
+      self.logPrintBox('***** WARNING: Using default optimization C flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n COPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCxxFlags(self, compiler, bopt):
@@ -95,10 +101,13 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
-        flags.append('-O0') # MPICH puts CXXFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt in ['O']:
+        flags.append('-g')
         if os.environ.has_key('USER'):
-          flags.append('-O')
+          if config.setCompilers.Configure.isClang(compiler, self.log):
+            flags.append('-O3')
+          else:
+            flags.append('-O')
     # IBM
     elif compiler.find('mpCC') >= 0 or compiler.find('xlC') >= 0:
       if bopt == '':
@@ -115,6 +124,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
@@ -142,6 +152,8 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt in ['O']:
         flags.append('-O')
+    if bopt == 'O':
+      self.logPrintBox('***** WARNING: Using default C++ optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n CXXOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
@@ -167,8 +179,8 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
-        flags.append('-O0') # MPICH puts FFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt == 'O':
+        flags.append('-g')
         flags.extend(['-O'])
     else:
       # Portland Group Fortran 90
@@ -182,6 +194,7 @@ class CompilerOptions(config.base.Configure):
         if bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
@@ -205,6 +218,8 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt == 'O':
         flags.append('-O')
+    if bopt == 'O':
+      self.logPrintBox('***** WARNING: Using default FORTRAN optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n FCOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCompilerFlags(self, language, compiler, bopt):

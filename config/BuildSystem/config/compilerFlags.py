@@ -64,6 +64,7 @@ class Configure(config.base.Configure):
     try:
       mod     = __import__(self.argDB['optionsModule'], locals(), globals(), ['CompilerOptions'])
       options = mod.CompilerOptions(self.framework)
+      options.setup()
     except ImportError:
       self.logPrint('ERROR: Failed to load user options module '+str(self.argDB['optionsModule']))
     return options
