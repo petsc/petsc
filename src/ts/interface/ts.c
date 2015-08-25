@@ -3463,6 +3463,8 @@ PetscErrorCode TSAdjointSolve(TS ts)
     }
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
   }
+  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
+  ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
   ts->solvetime = ts->ptime;
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
