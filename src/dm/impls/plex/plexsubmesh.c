@@ -160,13 +160,14 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexShiftPointSetUp_Internal"
-/* take (oldstart, added) pairs (ordered by height) and convert them to (oldstart, newstart) pairs (sorted, skipping first) */
+/* take (oldEnd, added) pairs, ordered by height and convert them to (oldstart, newstart) pairs, ordered by ascending
+ * index (skipping first, which is (0,0)) */
 PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth, PetscInt depthShift[])
 {
   PetscInt d, off = 0;
 
   PetscFunctionBegin;
-  /* sort by (oldstart): yes this is an O(n^2) sort, we expect depth <= 3 */
+  /* sort by (oldend): yes this is an O(n^2) sort, we expect depth <= 3 */
   for (d = 0; d <= depth; d++) {
     PetscInt firstd = d;
     PetscInt firstStart = depthShift[2*d+1];
@@ -193,8 +194,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth
   /* convert (oldstart, added) to (oldstart, newstart) */
   for (d = 0; d < depth; d++) {
     off += depthShift[2*d+1];
-    depthShift[2*d]   = depthShift[2*(d + 1)];
-    depthShift[2*d+1] = depthShift[2*(d + 1)] + off;
+    depthShift[2*d+1] = depthShift[2*d] + off;
   }
   depthShift[2*depth]   = PETSC_MAX_INT;
   depthShift[2*depth+1] = PETSC_MAX_INT;
@@ -583,10 +583,10 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*(depth+1), &depthShift);CHKERRQ(ierr);
   for (d = 0; d <= depth; d++) {
-    PetscInt dStart;
+    PetscInt dEnd;
 
-    ierr = DMPlexGetDepthStratum(dm,d,&dStart,NULL);CHKERRQ(ierr);
-    depthShift[2*d]   = dStart;
+    ierr = DMPlexGetDepthStratum(dm,d,&dEnd,NULL);CHKERRQ(ierr);
+    depthShift[2*d]   = dEnd;
     depthShift[2*d+1] = 0;
   }
   if (depth >= 0) depthShift[2*depth+1] = Ng;
@@ -767,13 +767,6 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   ierr = PetscMalloc5(depth+1,&depthMax,depth+1,&depthEnd,2*(depth+1),&depthShift,depth+1,&pMaxNew,depth+1,&numHybridPointsOld);CHKERRQ(ierr);
   ierr = PetscMalloc7(depth+1,&splitIS,depth+1,&unsplitIS,depth+1,&numSplitPoints,depth+1,&numUnsplitPoints,depth+1,&numHybridPoints,depth+1,&splitPoints,depth+1,&unsplitPoints);CHKERRQ(ierr);
-  for (d = 0; d <= depth; d++) {
-    PetscInt pStart;
-
-    ierr = DMPlexGetDepthStratum(dm, d, &pStart, NULL);CHKERRQ(ierr);
-    depthShift[2*d] = pStart;
-    depthShift[2*d+1] = 0;
-  }
   ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &depthMax[depth] : NULL, depth>1 ? &depthMax[depth-1] : NULL, depth>2 ? &depthMax[1] : NULL, depth >= 0 ? &depthMax[0] : NULL);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, NULL, &pMaxNew[d]);CHKERRQ(ierr);
@@ -787,6 +780,10 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     unsplitPoints[d]      = NULL;
     splitIS[d]            = NULL;
     unsplitIS[d]          = NULL;
+    /* we are shifting the existing hybrid points with the stratum behind them, so
+     * the split comes at the end of the normal points, i.e., at depthMax[d] */
+    depthShift[2*d]       = depthMax[d];
+    depthShift[2*d+1]     = 0;
   }
   if (label) {
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
@@ -812,6 +809,9 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   for (d = 1; d <= depth; ++d) numHybridPoints[d]     = numSplitPoints[d-1] + numUnsplitPoints[d-1]; /* There is a hybrid cell/face/edge for every split face/edge/vertex   */
   for (d = 0; d <= depth; ++d) depthShift[2*d+1]      = numSplitPoints[d] + numHybridPoints[d];
   ierr = DMPlexShiftPointSetUp_Internal(depth,depthShift);
+  /* the end of the points in this stratum that come before the new points:
+   * shifting pMaxNew[d] gets the new start of the next stratum, then count back the old hybrid points and the newly
+   * added points */
   for (d = 0; d <= depth; ++d) pMaxNew[d]             = DMPlexShiftPoint_Internal(pMaxNew[d],depth,depthShift) - (numHybridPointsOld[d] + numSplitPoints[d] + numHybridPoints[d]);
   ierr = DMPlexShiftSizes_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
   /* Step 3: Set cone/support sizes for new points */
