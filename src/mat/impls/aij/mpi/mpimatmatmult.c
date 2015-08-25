@@ -79,6 +79,49 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
   PetscFunctionReturn(0);
 }
 
+/* compute apa = A[i,:]*P */
+#define AProw(i,ad,ao,p_loc,p_oth,apa) \
+{\
+  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
+  PetscScalar *_aa,_valtmp,*_pa;                             \
+  /* diagonal portion of A */\
+  _ai  = ad->i;\
+  _anz = _ai[i+1] - _ai[i];\
+  _aj  = ad->j + _ai[i];\
+  _aa  = ad->a + _ai[i];\
+  for (_j=0; _j<_anz; _j++) {\
+    _row = _aj[_j]; \
+    _pi  = p_loc->i;                                 \
+    _pnz = _pi[_row+1] - _pi[_row];         \
+    _pj  = p_loc->j + _pi[_row];                 \
+    _pa  = p_loc->a + _pi[_row];                 \
+    /* perform dense axpy */                    \
+    valtmp = _aa[_j];                           \
+    for (_k=0; _k<_pnz; _k++) {                    \
+      apa[_pj[_k]] += valtmp*_pa[_k];               \
+    }                                           \
+    PetscLogFlops(2.0*_pnz);                    \
+  }                                             \
+  /* off-diagonal portion of A */               \
+  _ai  = ao->i;\
+  _anz = _ai[i+1] - _ai[i];                     \
+  _aj  = ao->j + _ai[i];                         \
+  _aa  = ao->a + _ai[i];                         \
+  for (_j=0; _j<_anz; _j++) {                      \
+    _row = _aj[_j];    \
+    _pi  = p_oth->i;                         \
+    _pnz = _pi[_row+1] - _pi[_row];          \
+    _pj  = p_oth->j + _pi[_row];                  \
+    _pa  = p_oth->a + _pi[_row];                  \
+    /* perform dense axpy */                     \
+    _valtmp = _aa[_j];                             \
+    for (_k=0; _k<_pnz; _k++) {                     \
+      apa[_pj[_k]] += _valtmp*_pa[_k];                \
+    }                                            \
+    PetscLogFlops(2.0*_pnz);                     \
+  }                                              \
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable"
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
@@ -87,14 +130,12 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   Mat_MPIAIJ     *a  =(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ     *ad =(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ     *cd =(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
-  PetscInt       *adi=ad->i,*adj,*aoi=ao->i,*aoj;
-  PetscScalar    *ada,*aoa,*cda=cd->a,*coa=co->a;
+  PetscScalar    *cda=cd->a,*coa=co->a;
   Mat_SeqAIJ     *p_loc,*p_oth;
-  PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pj;
-  PetscScalar    *pa_loc,*pa_oth,*pa,*apa,valtmp,*ca;
-  PetscInt       cm   =C->rmap->n,anz,pnz;
+  PetscScalar    *apa,valtmp,*ca;
+  PetscInt       cm   =C->rmap->n;
   Mat_PtAPMPI    *ptap=c->ptap;
-  PetscInt       *api,*apj,*apJ,i,j,k,row;
+  PetscInt       *api,*apj,*apJ,i,k;
   PetscInt       cstart=C->cmap->rstart;
   PetscInt       cdnz,conz,k0,k1;
   MPI_Comm       comm;
@@ -114,13 +155,10 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   /*----------------------------------------------------------*/
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  pi_loc=p_loc->i; pj_loc=p_loc->j; pa_loc=p_loc->a;
+  p_oth = NULL;
   if (size >1) {
     p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-    pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
-  } else {
-    pi_oth=NULL; pj_oth=NULL; pa_oth=NULL;
-  }
+  } 
 
   /* get apa for storing dense row A[i,:]*P */
   apa = ptap->apa;
@@ -128,41 +166,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   api = ptap->api;
   apj = ptap->apj;
   for (i=0; i<cm; i++) {
-    /* diagonal portion of A */
-    anz = adi[i+1] - adi[i];
-    adj = ad->j + adi[i];
-    ada = ad->a + adi[i];
-    for (j=0; j<anz; j++) {
-      row = adj[j];
-      pnz = pi_loc[row+1] - pi_loc[row];
-      pj  = pj_loc + pi_loc[row];
-      pa  = pa_loc + pi_loc[row];
-
-      /* perform dense axpy */
-      valtmp = ada[j];
-      for (k=0; k<pnz; k++) {
-        apa[pj[k]] += valtmp*pa[k];
-      }
-      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-    }
-
-    /* off-diagonal portion of A */
-    anz = aoi[i+1] - aoi[i];
-    aoj = ao->j + aoi[i];
-    aoa = ao->a + aoi[i];
-    for (j=0; j<anz; j++) {
-      row = aoj[j];
-      pnz = pi_oth[row+1] - pi_oth[row];
-      pj  = pj_oth + pi_oth[row];
-      pa  = pa_oth + pi_oth[row];
-
-      /* perform dense axpy */
-      valtmp = aoa[j];
-      for (k=0; k<pnz; k++) {
-        apa[pj[k]] += valtmp*pa[k];
-      }
-      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-    }
+    /* compute apa = A[i,:]*P */
+    AProw(i,ad,ao,p_loc,p_oth,apa);
 
     /* set values in C */
     apJ  = apj + api[i];
