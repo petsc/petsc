@@ -40,7 +40,7 @@
 .   mem - memory usage in bytes
 
    Options Database Key:
-.  -memory_info - Print memory usage at end of run
+.  -memory_view - Print memory usage at end of run
 .  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
@@ -52,7 +52,7 @@
    usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
    hardwired arrays.
 
-.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetMaximumUsage(), PetscMallocGetCurrentUsage()
+.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetMaximumUsage(), PetscMallocGetCurrentUsage(), PetscMemorySetGetMaximumUsage(), PetscMemoryView()
 
    Concepts: resident set size
    Concepts: memory usage
@@ -128,7 +128,7 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 .   mem - memory usage in bytes
 
    Options Database Key:
-.  -memory_info - Print memory usage at end of run
+.  -memory_view - Print memory usage at end of run
 .  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
@@ -164,7 +164,7 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
    Not Collective
 
    Options Database Key:
-.  -memory_info - Print memory usage at end of run
+.  -memory_view - Print memory usage at end of run
 .  -malloc_log - Activate logging of memory usage
 
    Level: intermediate

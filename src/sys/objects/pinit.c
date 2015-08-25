@@ -648,7 +648,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
--  -memory_info - Print memory usage at end of run
+-  -memory_view - Print memory usage at end of run
 
    Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
@@ -1039,10 +1039,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-memory_info",&flg2,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-memory_view",&flg2,NULL);CHKERRQ(ierr);
   }
   if (flg2) {
-    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
+    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
 #endif
 
