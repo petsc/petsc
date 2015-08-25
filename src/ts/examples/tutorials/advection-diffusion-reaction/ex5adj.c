@@ -64,6 +64,7 @@ int main(int argc,char **argv)
   AppCtx         appctx;
   Vec            lambda[1];
   PetscScalar    *x_ptr;
+  PetscInt       xsize;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -127,7 +128,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&lambda[0]);CHKERRQ(ierr);
   /*   Reset initial conditions for the adjoint integration */
   ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
-  x_ptr[65*65] = 1.0; 
+  ierr = VecGetSize(x,&xsize);CHKERRQ(ierr);
+  x_ptr[xsize/2] = 1.0; 
   ierr = VecRestoreArray(lambda[0],&x_ptr);CHKERRQ(ierr);
 
   ierr = TSSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
