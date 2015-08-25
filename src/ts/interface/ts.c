@@ -3519,7 +3519,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 .  numcost - number of cost functions (dimension of lambda  or mu)
 .  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
 -  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
- 
+
    Notes:
    TSAdjointMonitor() is typically used within the adjoint implementations.
    Users might call this function when using the TSAdjointStep() interface instead of TSAdjointSolve().
