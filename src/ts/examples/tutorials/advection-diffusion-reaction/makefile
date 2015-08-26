@@ -91,7 +91,7 @@ runex4_sundials:
 	   ${RM} -f ex4.tmp
 
 runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 10 -ts_monitor  > ex5_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 10 -ts_monitor   > ex5_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
