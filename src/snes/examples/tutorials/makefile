@@ -251,8 +251,9 @@ runex1_2:
           ${MPIEXEC} -n 1 ./ex1 -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append >> ex1_2.tmp 2>&1; \
           ${MPIEXEC} -n 1 ./ex1 -ksp_view_solution ascii:ex1_2_sol.tmp:default:append >> ex1_2.tmp 2>&1; \
           ${DIFF} output/ex1_2.out ex1_2.tmp || printf '${PWD}\nPossible problem with ex1_2 stdout, diffs above\n=========================================\n'; \
-          ${DIFF} output/ex1_2_sol.out ex1_2_sol.tmp || printf '${PWD}\nPossible problem with ex1_2_sol, diffs above\n=========================================\n'; \
-          ${RM} -f ex1_2.tmp ex1_2_sol.tmp
+          ${GREP} -v Vec_ ex1_2_sol.tmp > ex1_2_sol.tmp2; \
+          ${DIFF} output/ex1_2_sol.out ex1_2_sol.tmp2 || printf '${PWD}\nPossible problem with ex1_2_sol, diffs above\n=========================================\n'; \
+          ${RM} -f ex1_2.tmp ex1_2_sol.tmp ex1_2_sol.tmp2
 
 runex1_X:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short > ex1_X.tmp 2>&1;   \
