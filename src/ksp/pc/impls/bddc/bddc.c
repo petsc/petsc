@@ -1091,11 +1091,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
     pcbddc->benign_p0 = 0.;
     ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
-    if (pcbddc->benign_saddle_point) {
-      Mat_IS* matis = (Mat_IS*)(pc->mat->data);
-      ierr = VecScatterBegin(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->rctx,pcbddc->benign_vec,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    }
   }
 
   /* change rhs and iteration matrix if using the change of basis */
@@ -1213,7 +1208,6 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     /* get solution in original basis */
     if (x) {
       PC_IS *pcis = (PC_IS*)(pc->data);
-
 
       /* restore solution on pressures */
       if (pcbddc->benign_saddle_point) {
