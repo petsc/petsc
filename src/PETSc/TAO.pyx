@@ -502,12 +502,12 @@ cdef class TAO(Object):
         PetscINCREF(vec.obj)
         return vec
 
-    def setGradientNormMat(self, Mat mat):
+    def setGradientNorm(self, Mat mat):
         """
         """
         CHKERR( TaoSetGradientNorm(self.tao, mat.mat) )
 
-    def getGradientNormMat(self):
+    def getGradientNorm(self):
         """
         """
         cdef Mat mat = Mat()
@@ -560,26 +560,21 @@ cdef class TAO(Object):
 
     getFunctionValue = getObjectiveValue
 
-    def getGradientNorm(self):
-        """
-        """
-        cdef PetscReal gnorm=0
-        CHKERR( TaoGetSolutionStatus(self.tao, NULL, NULL, &gnorm, NULL, NULL, NULL) )
-        return toReal(gnorm)
-
-    def getConstraintsNorm(self):
-        """
-        """
-        cdef PetscReal cnorm=0
-        CHKERR( TaoGetSolutionStatus(self.tao, NULL, NULL, NULL, &cnorm, NULL, NULL) )
-        return toReal(cnorm)
-
     def getConvergedReason(self):
         """
         """
         cdef PetscTAOConvergedReason reason = TAO_CONTINUE_ITERATING
         CHKERR( TaoGetConvergedReason(self.tao, &reason) )
         return reason
+
+    def getSolutionNorm(self):
+        """
+        """
+        cdef PetscReal gnorm=0
+        cdef PetscReal cnorm=0
+        cdef PetscReal fval=0
+        CHKERR( TaoGetSolutionStatus(self.tao, NULL, &fval, &gnorm, &cnorm, NULL, NULL) )
+        return (toReal(fval), toReal(gnorm), toReal(cnorm))
 
     def getSolutionStatus(self):
         """
@@ -659,11 +654,11 @@ cdef class TAO(Object):
 
     property gnorm:
         def __get__(self):
-            return self.getGradientNorm()
+            return self.getSolutionNorm()[1]
 
     property cnorm:
         def __get__(self):
-            return self.getConstraintNorm()
+            return self.getSolutionNorm()[2]
 
     property solution:
         def __get__(self):
