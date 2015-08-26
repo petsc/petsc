@@ -1068,7 +1068,9 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   PetscInt        N;                /* Size of the system of equations        */
   TSType          time_scheme;      /* Type of time-integration scheme        */
   Mat             Jac = NULL;       /* Jacobian matrix                        */
-
+  PetscInt        iAuxSize,i;       /* Work vectors                           */
+  Vec             YAux;             /* Auxiliary solution vector              */
+ 
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
   if (N < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.\n");
@@ -1093,7 +1095,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSSetSolution(ts,Y);CHKERRQ(ierr);
   /* Specify left/right-hand side functions                               */
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
-  if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
+  if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP) || (!strcmp(time_scheme,TSGLEE)))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
   } else if ((!strcmp(time_scheme,TSTHETA)) || (!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSCN)) || (!strcmp(time_scheme,TSALPHA)) || (!strcmp(time_scheme,TSARKIMEX))) {
@@ -1109,7 +1111,23 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
-
+  
+  if (!strcmp(time_scheme,TSGLEE)) {
+    /* call it first with the last argument as NULL to get the number of auxiliary solutions
+       in the parameter iAuxSize – here TSGLEE will return the value r-1 */
+    ierr = TSGetAuxSolution(ts,&iAuxSize,NULL);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_SELF,"Number of auxiliary solutions = %d\n",iAuxSize);
+    /* then, iterating from 0 to iAuxSize-1, get each auxiliary solution in the vector Yaux (which
+       must be preallocated and have the same structure/size as the solution – TSGLEE 
+       Will return each of the y~ or eps from 0 to r-1 */
+    for (i=0; i<iAuxSize; i++) {
+      ierr = VecDuplicate(Y,&YAux);CHKERRQ(ierr);
+      ierr = TSGetAuxSolution(ts,&i,&YAux);CHKERRQ(ierr);
+      ierr = VecView(YAux,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      ierr = VecDestroy(&YAux);CHKERRQ(ierr);
+    }
+  } 
+  
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
   ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);CHKERRQ(ierr);
