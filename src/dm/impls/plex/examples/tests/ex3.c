@@ -559,7 +559,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       maxDiff  = PetscMax(maxDiff,FrobDiff);
     }
     ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)dmgrad));CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dmfv),"Vec %D, max cell gradient error %g\n",maxDiffGlob);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dmfv),"Vec %D, max cell gradient error %g\n",v,maxDiffGlob);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
   }
