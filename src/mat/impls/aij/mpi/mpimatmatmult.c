@@ -134,7 +134,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   Mat_SeqAIJ     *cd =(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
   PetscScalar    *cda=cd->a,*coa=co->a;
   Mat_SeqAIJ     *p_loc,*p_oth;
-  PetscScalar    *apa,valtmp,*ca;
+  PetscScalar    *apa,*ca;
   PetscInt       cm   =C->rmap->n;
   Mat_PtAPMPI    *ptap=c->ptap;
   PetscInt       *api,*apj,*apJ,i,k;
