@@ -474,12 +474,11 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm comm;
-  DM dmfv, dmgrad;
+  DM dmfv, dmgrad, dmCell;
   PetscFV fv;
-  const Vec *modes;
-  MatNullSpace nsp;
-  PetscInt nvecs, fstart, fend;
-  PetscSection coordSection;
+  PetscInt nvecs, v, fStart, fEnd, cStart, cEnd;
+  Vec cellgeom, facegeom, grad, locGrad;
+  const PetscScalar *cgeom;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -494,11 +493,48 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMPlexConstructGhostCells(dm,NULL,NULL,&dmfv);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
-  ierr = DMPlexCreateRigidBody(dmfv,&nsp);CHKERRQ(ierr);
-  ierr = MatNullSpaceGetVecs(nsp,NULL,&nvecs,&modes);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dmfv,1,&fstart,&fend);CHKERRQ(ierr);
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmfv,1,&fStart,&fEnd);CHKERRQ(ierr);
+  nvecs = user->dim * (user->dim+1) / 2;
+  ierr = DMPlexComputeGeometryFVM(dmfv,&cellgeom,&facegeom);CHKERRQ(ierr);
+  ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
+  for (v = 0; v < nvecs; v++) {
+    Vec locX;
+    PetscInt c;
+
+    ierr = DMGetLocalVector(dmfv,&locX);CHKERRQ(ierr);
+    /* get the local projection of the rigid body mode */
+    for (c = cStart; c < cEnd; c++) {
+      const PetscFVCellGeom *cg;
+      PetscScalar cx[3] = {0.,0.,0.};
+
+      ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+      if (v < user->dim) {
+        cx[v] = 1.;
+      }
+      else {
+        PetscInt w = v - user->dim;
+
+        cx[(w + 1) % user->dim] =  cg->centroid[(w + 2) % user->dim];
+        cx[(w + 2) % user->dim] = -cg->centroid[(w + 1) % user->dim];
+      }
+      ierr = DMPlexVecSetClosure(dmfv,NULL,locX,c,cx,INSERT_ALL_VALUES);CHKERRQ(ierr);
+    }
+    /* TODO: this isn't in any header */
+    ierr = DMPlexReconstructGradients_Internal(dmfv,fStart,fEnd,facegeom,cellgeom,locX,grad);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
+  ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
+  ierr = VecDestroy(&facegeom);CHKERRQ(ierr);
   ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
