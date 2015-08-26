@@ -1146,6 +1146,23 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
   }
+  if (pcbddc->benign_null) {
+    MatNullSpace null_space;
+    Vec          nullv;
+    PetscBool    isnull;
+
+    pcbddc->benign_p0 = 1.;
+    ierr = VecDuplicate(pcis->vec1_global,&nullv);CHKERRQ(ierr);
+    ierr = VecSet(nullv,0.);CHKERRQ(ierr);
+    ierr = PCBDDCBenignGetOrSetP0(pc,nullv,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = VecNormalize(nullv,NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,1,&nullv,&null_space);CHKERRQ(ierr);
+    ierr = MatNullSpaceTest(null_space,pc->mat,&isnull);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(pc->mat,null_space);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&null_space);CHKERRQ(ierr);
+    ierr = VecDestroy(&nullv);CHKERRQ(ierr);
+  }
+
 
   /* remove nullspace if present */
   if (ksp && x && pcbddc->NullSpace) {
@@ -2209,6 +2226,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->benign_sf                  = 0;
   pcbddc->benign_p0_lidx             = -1;
   pcbddc->benign_p0_gidx             = -1;
+  pcbddc->benign_null                = PETSC_FALSE;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);

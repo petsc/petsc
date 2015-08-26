@@ -83,8 +83,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   IS             pressures,zerodiag;
-  PetscInt       nz;
-  PetscBool      sorted;
+  PetscInt       nz,n;
+  PetscBool      sorted,have_null;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -139,7 +139,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     IS                zerodiagc;
     PetscScalar       *array;
     const PetscInt    *idxs,*idxsc;
-    PetscInt          i,n,*nnz;
+    PetscInt          i,*nnz;
 
     /* TODO: add check for shared dofs and raise error */
     ierr = MatGetLocalSize(pcbddc->benign_original_mat,&n,NULL);CHKERRQ(ierr);
@@ -170,12 +170,12 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       cols[0] = idxs[i];
       cols[1] = idxs[nz-1];
       vals[0] = 1.;
-      vals[1] = 1./nz;
+      vals[1] = 1.;
       ierr = MatSetValues(pcbddc->benign_change,1,idxs+i,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(nz,&array);CHKERRQ(ierr);
     for (i=0;i<nz-1;i++) array[i] = -1.;
-    array[nz-1] = 1./nz;
+    array[nz-1] = 1.;
     ierr = MatSetValues(pcbddc->benign_change,1,idxs+nz-1,nz,idxs,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = PetscFree(array);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -189,7 +189,15 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
     ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
     ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
+  } else { /* if nz == 0, destroy local IS */
+    ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
   }
+
+  /* determines if the coarse solver will be singular or not */
+  ierr = MatGetLocalSize(pcbddc->benign_original_mat,&n,NULL);CHKERRQ(ierr);
+  have_null = PETSC_TRUE;
+  if (!zerodiag && n) have_null = PETSC_FALSE;
+  ierr = MPI_Allreduce(&have_null,&pcbddc->benign_null,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   *zerodiaglocal = zerodiag;
   PetscFunctionReturn(0);
 }
@@ -4890,29 +4898,65 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
   }
 #endif
-
+  /* hack */
   if (pcbddc->coarse_ksp) {
     Vec crhs,csol;
-    PetscBool ispreonly;
 
-    if (CoarseNullSpace) {
-      if (isbddc) {
-        ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
-      } else {
-        ierr = MatSetNullSpace(coarse_mat,CoarseNullSpace);CHKERRQ(ierr);
-      }
-    }
-    /* setup coarse ksp */
-    ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
     ierr = KSPGetSolution(pcbddc->coarse_ksp,&csol);CHKERRQ(ierr);
     ierr = KSPGetRhs(pcbddc->coarse_ksp,&crhs);CHKERRQ(ierr);
-    /* hack */
     if (!csol) {
       ierr = MatCreateVecs(coarse_mat,&((pcbddc->coarse_ksp)->vec_sol),NULL);CHKERRQ(ierr);
     }
     if (!crhs) {
       ierr = MatCreateVecs(coarse_mat,NULL,&((pcbddc->coarse_ksp)->vec_rhs));CHKERRQ(ierr);
     }
+  }
+
+  /* compute null space for coarse solver if the benign trick has been requested */
+  if (pcbddc->benign_null) {
+
+    ierr = VecSet(pcbddc->vec1_P,0.);CHKERRQ(ierr);
+    ierr = VecSetValue(pcbddc->vec1_P,pcbddc->local_primal_size-1,1.0,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(pcbddc->vec1_P);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(pcbddc->vec1_P);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,pcbddc->vec1_P,pcbddc->coarse_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,pcbddc->vec1_P,pcbddc->coarse_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (coarse_mat) {
+      Vec         nullv;
+      PetscScalar *array,*array2;
+      PetscInt    nl;
+
+      ierr = MatCreateVecs(coarse_mat,&nullv,NULL);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(nullv,&nl);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(pcbddc->coarse_vec,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = VecGetArray(nullv,&array2);CHKERRQ(ierr);
+      ierr = PetscMemcpy(array2,array,nl*sizeof(*array));CHKERRQ(ierr);
+      ierr = VecRestoreArray(nullv,&array2);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(pcbddc->coarse_vec,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = VecNormalize(nullv,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)coarse_mat),PETSC_FALSE,1,&nullv,&CoarseNullSpace);CHKERRQ(ierr);
+      ierr = VecDestroy(&nullv);CHKERRQ(ierr);
+    }
+  }
+
+  if (pcbddc->coarse_ksp) {
+    PetscBool ispreonly;
+
+    if (CoarseNullSpace) {
+      PetscBool isnull;
+      ierr = MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull);CHKERRQ(ierr);
+      if (isnull) {
+        if (isbddc) {
+          ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
+        } else {
+          ierr = MatSetNullSpace(coarse_mat,CoarseNullSpace);CHKERRQ(ierr);
+        }
+      } else {
+        ierr = MatNullSpaceDestroy(&CoarseNullSpace);CHKERRQ(ierr);
+      }
+    }
+    /* setup coarse ksp */
+    ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
     /* Check coarse problem if in debug mode or if solving with an iterative method */
     ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
     if (pcbddc->dbg_flag || (!ispreonly && pcbddc->use_coarse_estimates) ) {
@@ -4992,6 +5036,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(check_pc),dbg_viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem exact infty_error   : %1.6e\n",infty_error);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem residual infty_error: %1.6e\n",abs_infty_error);CHKERRQ(ierr);
+        if (CoarseNullSpace) {
+          ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem is singular\n");CHKERRQ(ierr);
+        }
         if (compute_eigs) {
           PetscReal lambda_max_s,lambda_min_s;
           ierr = KSPGetType(check_ksp,&check_ksp_type);CHKERRQ(ierr);
