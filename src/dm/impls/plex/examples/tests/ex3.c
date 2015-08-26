@@ -497,7 +497,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,1,&fStart,&fEnd);CHKERRQ(ierr);
   nvecs = user->dim * (user->dim+1) / 2;
-  ierr = DMPlexComputeGeometryFVM(dmfv,&cellgeom,&facegeom);CHKERRQ(ierr);
+  ierr = DMPlexSNESGetGeometryFVM(dmfv,&facegeom,&cellgeom,NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
