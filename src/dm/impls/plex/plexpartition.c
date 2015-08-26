@@ -878,14 +878,75 @@ PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer vi
 #define __FUNCT__ "PetscPartitionerPartition_Simple"
 PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
+  MPI_Comm       comm;
   PetscInt       np;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
-  for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
+  if (size == 1) {
+    for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);}
+  }
+  else {
+    PetscMPIInt rank;
+    PetscInt nvGlobal, *offsets, myFirst, myLast;
+
+    ierr = PetscMalloc1(size+1,&offsets);
+    offsets[0] = 0;
+    ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRQ(ierr);
+    for (np = 2; np <= size; np++) {
+      offsets[np] += offsets[np-1];
+    }
+    nvGlobal = offsets[size];
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    myFirst = offsets[rank];
+    myLast  = offsets[rank + 1] - 1;
+    ierr = PetscFree(offsets);CHKERRQ(ierr);
+    if (numVertices) {
+      PetscInt firstPart = 0, firstLargePart = 0;
+      PetscInt lastPart = 0, lastLargePart = 0;
+      PetscInt rem = nvGlobal % nparts;
+      PetscInt pSmall = nvGlobal/nparts;
+      PetscInt pBig = nvGlobal/nparts + 1;
+
+
+      if (rem) {
+        firstLargePart = myFirst / pBig;
+        lastLargePart  = myLast  / pBig;
+
+        if (firstLargePart < rem) {
+          firstPart = firstLargePart;
+        }
+        else {
+          firstPart = rem + (myFirst - (rem * pBig)) / pSmall;
+        }
+        if (lastLargePart < rem) {
+          lastPart = lastLargePart;
+        }
+        else {
+          lastPart = rem + (myLast - (rem * pBig)) / pSmall;
+        }
+      }
+      else {
+        firstPart = myFirst / (nvGlobal/nparts);
+        lastPart  = myLast  / (nvGlobal/nparts);
+      }
+
+      for (np = firstPart; np <= lastPart; np++) {
+        PetscInt PartStart =  np    * (nvGlobal/nparts) + PetscMin(nvGlobal % nparts,np);
+        PetscInt PartEnd   = (np+1) * (nvGlobal/nparts) + PetscMin(nvGlobal % nparts,np+1);
+
+        PartStart = PetscMax(PartStart,myFirst);
+        PartEnd   = PetscMin(PartEnd,myLast+1);
+        ierr = PetscSectionSetDof(partSection,np,PartEnd-PartStart);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
