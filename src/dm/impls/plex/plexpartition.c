@@ -1401,23 +1401,44 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexPartitionLabelClosure_Tree"
-static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point)
+static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point, PetscBool up, PetscBool down)
 {
-  PetscInt       parent, closureSize, *closure = NULL, i, pStart, pEnd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
-  if (parent == point) PetscFunctionReturn(0);
-  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-  for (i = 0; i < closureSize; i++) {
-    PetscInt cpoint = closure[2*i];
+  if (up) {
+    PetscInt parent;
 
-    ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
-    ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
+    if (parent != point) {
+      PetscInt closureSize, *closure = NULL, i;
+
+      ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      for (i = 0; i < closureSize; i++) {
+        PetscInt cpoint = closure[2*i];
+
+        ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    }
   }
-  ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  if (down) {
+    PetscInt numChildren;
+    const PetscInt *children;
+
+    ierr = DMPlexGetTreeChildren(dm,point,&numChildren,&children);CHKERRQ(ierr);
+    if (numChildren) {
+      PetscInt i;
+
+      for (i = 0; i < numChildren; i++) {
+        PetscInt cpoint = children[i];
+
+        ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1456,7 +1477,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
         ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);
-        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c]);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c],PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
