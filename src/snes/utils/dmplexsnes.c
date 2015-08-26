@@ -1335,7 +1335,7 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexApplyLimiter_Internal"
-static PetscErrorCode DMPlexApplyLimiter_Internal (DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt totDim, PetscInt cell, PetscInt face, PetscReal *cellPhi, const PetscScalar *x,
+static PetscErrorCode DMPlexApplyLimiter_Internal (DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt totDim, PetscInt cell, PetscInt face, PetscInt fStart, PetscInt fEnd, PetscReal *cellPhi, const PetscScalar *x,
                                                    const PetscScalar *cellgeom, const PetscFVCellGeom *cg, const PetscScalar *cx, const PetscScalar *cgrad)
 {
   const PetscInt        *children;
@@ -1349,7 +1349,10 @@ static PetscErrorCode DMPlexApplyLimiter_Internal (DM dm, DM dmCell, PetscLimite
 
     for (c = 0; c < numChildren; c++) {
       PetscInt childFace = children[c];
-      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,totDim,cell,childFace,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+
+      if (childFace >= fStart && childFace < fEnd) {
+        ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,totDim,cell,childFace,fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+      }
     }
   }
   else {
@@ -1456,7 +1459,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscInt fStart, Petsc
     /* Limiter will be minimum value over all neighbors */
     for (d = 0; d < totDim; ++d) cellPhi[d] = PETSC_MAX_REAL;
     for (f = 0; f < coneSize; ++f) {
-      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,totDim,cell,faces[f],cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,totDim,cell,faces[f],fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
     }
     /* Apply limiter to gradient */
     for (pd = 0; pd < totDim; ++pd)
