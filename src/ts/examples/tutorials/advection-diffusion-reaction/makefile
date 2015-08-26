@@ -96,11 +96,8 @@ runex5:
 	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
 
-runex5adj_0:
-	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -da_grid_x 3 -da_grid_y 3 | tee output/ex5adj_1.out
-
 runex5adj:
-	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_monitor -da_grid_x 3 -da_grid_y 3> ex5adj_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -da_grid_x 3 -da_grid_y 3 > ex5adj_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_1.out ex5adj_1.tmp) then true; \
 	   else printf "${PWD}\n Possible problem with ex5adj_1, diffs above\n=======================================\n"; fi; \
 	   ${RM} -f ex5adj_1.tmp
