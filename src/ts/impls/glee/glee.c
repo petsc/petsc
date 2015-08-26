@@ -144,6 +144,23 @@ PetscErrorCode TSGLEERegisterAll(void)
   {
     /* y-eps form */
     const PetscInt
+      p = 1,
+      s = 3,
+      r = 2;
+    const PetscReal
+      gamma     = 0.5,
+      A[3][3]   = {{1.0,0,0},{0,0.5,0},{0,0.5,0.5}},
+      B[2][3]   = {{1.0,0,0},{-2.0,1.0,1.0}},
+      U[3][2]   = {{1.0,0},{1.0,0.5},{1.0,0.5}},
+      V[2][2]   = {{1,0},{0,1}},
+      S[2]      = {1,0},
+      F[2]      = {1,0},
+      Fembed[2] = {1,1};
+    ierr = TSGLEERegister(TSGLEEi1,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,0,NULL);CHKERRQ(ierr);
+  }
+  {
+    /* y-eps form */
+    const PetscInt
       p = 2,
       s = 3,
       r = 2;

@@ -710,6 +710,7 @@ PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
 .seealso: TSGLEESetType(), TS, TSGLEE, TSGLEERegister()
 J*/
 typedef const char* TSGLEEType;
+#define TSGLEEi1      "BE1"
 #define TSGLEE23      "23"
 #define TSGLEE24      "24"
 #define TSGLEE25I     "25i"
