@@ -1435,7 +1435,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
       for (c = 0; c < 2; c++) {
         PetscInt cell = fcells[c];
 
-        if (cell >= cStart && cell <= cEndInterior) {
+        if (cell >= cStart && cell < cEndInterior) {
           ierr = PetscSectionAddDof(neighSec,cell,1);CHKERRQ(ierr);
         }
       }
@@ -1464,7 +1464,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
       for (c = 0; c < 2; c++) {
         PetscInt cell = fcells[c], off;
 
-        if (cell >= cStart && cell <= cEndInterior) {
+        if (cell >= cStart && cell < cEndInterior) {
           ierr = PetscSectionGetOffset(neighSec,cell,&off);CHKERRQ(ierr);
           off += counter[cell - cStart]++;
           neighbors[off][0] = f;

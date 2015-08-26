@@ -551,6 +551,7 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
     }
     ierr = DMPlexSetTree(dmNew,pSecShifted,parentsShifted,childIDsShifted);CHKERRQ(ierr);
     ierr = PetscFree2(parentsShifted,childIDsShifted);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&pSecShifted);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
