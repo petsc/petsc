@@ -102,6 +102,9 @@ runex5adj:
 	   else printf "${PWD}\n Possible problem with ex5adj_1, diffs above\n=======================================\n"; fi; \
 	   ${RM} -f ex5adj_1.tmp
 
+runex5adj_2:
+	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi -draw_pause -2
+
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5 -ts_monitor  > ex7_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
