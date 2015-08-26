@@ -476,7 +476,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   MPI_Comm comm;
   DM dmfv, dmgrad, dmCell;
   PetscFV fv;
-  PetscInt nvecs, v, fStart, fEnd, cStart, cEnd;
+  PetscInt nvecs, v, fStart, fEnd, cStart, cEnd, cEndInterior;
   Vec cellgeom, facegeom, grad, locGrad;
   const PetscScalar *cgeom;
   PetscErrorCode ierr;
@@ -502,9 +502,14 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dmgrad,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+  cEndInterior = (cEndInterior < 0) ? cEnd: cEndInterior;
   for (v = 0; v < nvecs; v++) {
     Vec locX;
     PetscInt c;
+    PetscScalar trueGrad[3][3] = {{0.}};
+    const PetscScalar *gradArray;
+    PetscReal maxDiff, maxDiffGlob;
 
     ierr = DMGetLocalVector(dmfv,&locX);CHKERRQ(ierr);
     /* get the local projection of the rigid body mode */
@@ -528,6 +533,34 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     ierr = DMPlexReconstructGradients_Internal(dmfv,fStart,fEnd,facegeom,cellgeom,locX,grad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
+    /* compare computed gradient to exact gradient */
+    if (v >= user->dim) {
+      PetscInt w = v - user->dim;
+
+      trueGrad[(w + 1) % user->dim][(w + 2) % user->dim] =  1.;
+      trueGrad[(w + 2) % user->dim][(w + 1) % user->dim] = -1.;
+    }
+    maxDiff = 0.;
+    for (c = cStart; c < cEndInterior; c++) {
+      const PetscScalar *compGrad;
+      PetscInt i, j, k;
+      PetscReal FrobDiff = 0.;
+
+      ierr = DMPlexPointLocalRead(dmgrad, c, gradArray, &compGrad);CHKERRQ(ierr);
+
+      for (i = 0, k = 0; i < user->dim; i++) {
+        for (j = 0; j < user->dim; j++, k++) {
+          PetscScalar diff = compGrad[k] - trueGrad[i][j];
+          FrobDiff += PetscRealPart(diff * PetscConj(diff));
+        }
+      }
+      FrobDiff = PetscSqrtReal(FrobDiff);
+      maxDiff  = PetscMax(maxDiff,FrobDiff);
+    }
+    ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)dmgrad));CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dmfv),"Vec %D, max cell gradient error %g\n",maxDiffGlob);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
