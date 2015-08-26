@@ -800,12 +800,44 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetTrueSupportSize"
+static PetscErrorCode DMPlexGetTrueSupportSize(DM dm,PetscInt p,PetscInt *dof,PetscInt *numTrueSupp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (numTrueSupp[p] == -1) {
+    PetscInt i, alldof;
+    const PetscInt *supp;
+    PetscInt count = 0;
+
+    ierr = DMPlexGetSupportSize(dm,p,&alldof);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm,p,&supp);CHKERRQ(ierr);
+    for (i = 0; i < alldof; i++) {
+      PetscInt q = supp[i], numCones, j;
+      const PetscInt *cone;
+
+      ierr = DMPlexGetConeSize(dm,q,&numCones);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm,q,&cone);CHKERRQ(ierr);
+      for (j = 0; j < numCones; j++) {
+        if (cone[j] == p) break;
+      }
+      if (j < numCones) count++;
+    }
+    numTrueSupp[p] = count;
+  }
+  *dof = numTrueSupp[p];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexTreeExchangeSupports"
 static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscSection newSupportSection;
   PetscInt newSize, *newSupports, pStart, pEnd, p, d, depth;
+  PetscInt *numTrueSupp;
   PetscInt *offsets;
   PetscErrorCode ierr;
 
@@ -817,21 +849,23 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newSupportSection,pStart,pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc1(pEnd,&offsets);CHKERRQ(ierr);
-  /* if a point is in the support of q, it should be in the support of
+  ierr = PetscMalloc1(pEnd,&numTrueSupp);CHKERRQ(ierr);
+  for (p = 0; p < pEnd; p++) numTrueSupp[p] = -1;
+  /* if a point is in the (true) support of q, it should be in the support of
    * parent(q) */
   for (d = 0; d <= depth; d++) {
     ierr = DMPlexGetHeightStratum(dm,d,&pStart,&pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, q, qdof, parent;
 
-      ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
+      ierr = DMPlexGetTrueSupportSize(dm,p,&dof,numTrueSupp);CHKERRQ(ierr);
       ierr = PetscSectionAddDof(newSupportSection, p, dof);CHKERRQ(ierr);
       q    = p;
       ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
       while (parent != q && parent >= pStart && parent < pEnd) {
         q = parent;
 
-        ierr = PetscSectionGetDof(mesh->supportSection, q, &qdof);CHKERRQ(ierr);
+        ierr = DMPlexGetTrueSupportSize(dm,q,&qdof,numTrueSupp);CHKERRQ(ierr);
         ierr = PetscSectionAddDof(newSupportSection,p,qdof);CHKERRQ(ierr);
         ierr = PetscSectionAddDof(newSupportSection,q,dof);CHKERRQ(ierr);
         ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
@@ -851,7 +885,16 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
       ierr = PetscSectionGetDof(newSupportSection, p, &newDof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(newSupportSection, p, &newOff);CHKERRQ(ierr);
       for (i = 0; i < dof; i++) {
-        newSupports[newOff+offsets[p]++] = mesh->supports[off + i];
+        PetscInt numCones, j;
+        const PetscInt *cone;
+        PetscInt q = mesh->supports[off + i];
+
+        ierr = DMPlexGetConeSize(dm,q,&numCones);CHKERRQ(ierr);
+        ierr = DMPlexGetCone(dm,q,&cone);CHKERRQ(ierr);
+        for (j = 0; j < numCones; j++) {
+          if (cone[j] == p) break;
+        }
+        if (j < numCones) newSupports[newOff+offsets[p]++] = q;
       }
       mesh->maxSupportSize = PetscMax(mesh->maxSupportSize,newDof);
 
@@ -863,10 +906,28 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
         ierr = PetscSectionGetOffset(mesh->supportSection, q, &qoff);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(newSupportSection, q, &newqOff);CHKERRQ(ierr);
         for (i = 0; i < qdof; i++) {
-          newSupports[newOff+offsets[p]++] = mesh->supports[qoff + i];
+          PetscInt numCones, j;
+          const PetscInt *cone;
+          PetscInt r = mesh->supports[qoff + i];
+
+          ierr = DMPlexGetConeSize(dm,r,&numCones);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm,r,&cone);CHKERRQ(ierr);
+          for (j = 0; j < numCones; j++) {
+            if (cone[j] == q) break;
+          }
+          if (j < numCones) newSupports[newOff+offsets[p]++] = r;
         }
         for (i = 0; i < dof; i++) {
-          newSupports[newqOff+offsets[q]++] = mesh->supports[off + i];
+          PetscInt numCones, j;
+          const PetscInt *cone;
+          PetscInt r = mesh->supports[off + i];
+
+          ierr = DMPlexGetConeSize(dm,r,&numCones);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm,r,&cone);CHKERRQ(ierr);
+          for (j = 0; j < numCones; j++) {
+            if (cone[j] == p) break;
+          }
+          if (j < numCones) newSupports[newqOff+offsets[q]++] = r;
         }
         ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
       }
@@ -877,6 +938,7 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
   mesh->supports = newSupports;
   ierr = PetscFree(offsets);CHKERRQ(ierr);
+  ierr = PetscFree(numTrueSupp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
