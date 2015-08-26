@@ -474,7 +474,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm comm;
-  DM dmfv, dmgrad, dmCell;
+  DM dmRedist, dmfv, dmgrad, dmCell;
   PetscFV fv;
   PetscInt nvecs, v, fStart, fEnd, cStart, cEnd, cEndInterior;
   Vec cellgeom, facegeom, grad, locGrad;
@@ -484,13 +484,21 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)dm);
   /* duplicate DM, give dup. a FV discretization */
+  ierr = DMPlexSetAdjacencyUseCone(dm,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(dm,1,NULL,&dmRedist);CHKERRQ(ierr);
+  if (dmRedist == NULL) {
+    dmRedist = dm;
+    ierr = PetscObjectReference((PetscObject)dmRedist);CHKERRQ(ierr);
+  }
   ierr = PetscFVCreate(comm,&fv);CHKERRQ(ierr);
   ierr = PetscFVSetType(fv,PETSCFVLEASTSQUARES);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fv,user->numComponents);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fv,user->dim);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
   ierr = PetscFVSetUp(fv);CHKERRQ(ierr);
-  ierr = DMPlexConstructGhostCells(dm,NULL,NULL,&dmfv);CHKERRQ(ierr);
+  ierr = DMPlexConstructGhostCells(dmRedist,NULL,NULL,&dmfv);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmRedist);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
@@ -558,16 +566,14 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       FrobDiff = PetscSqrtReal(FrobDiff);
       maxDiff  = PetscMax(maxDiff,FrobDiff);
     }
-    ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)dmgrad));CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dmfv),"Vec %D, max cell gradient error %g\n",v,maxDiffGlob);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Vec %D, max cell gradient error %g\n",v,maxDiffGlob);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-  ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
-  ierr = VecDestroy(&facegeom);CHKERRQ(ierr);
   ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
