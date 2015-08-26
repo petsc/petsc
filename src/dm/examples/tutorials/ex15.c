@@ -9,9 +9,9 @@ static char help[] = "Tests VecView() functionality with DMDA objects when using
 #define DMDA_J 4
 #define DMDA_K 6
 
-const PetscScalar dmda_i_val[] = { 1.10, 2.3006, 2.32444, 3.44006, 66.9009 };
-const PetscScalar dmda_j_val[] = { 0.0, 0.25, 0.5, 0.75 };
-const PetscScalar dmda_k_val[] = { 0.0, 1.1, 2.2, 3.3, 4.4, 5.5 };
+const PetscReal dmda_i_val[] = { 1.10, 2.3006, 2.32444, 3.44006, 66.9009 };
+const PetscReal dmda_j_val[] = { 0.0, 0.25, 0.5, 0.75 };
+const PetscReal dmda_k_val[] = { 0.0, 1.1, 2.2, 3.3, 4.4, 5.5 };
 
 #undef __FUNCT__
 #define __FUNCT__ "MyVecDump"
@@ -21,7 +21,7 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   PetscViewer    viewer;
   PetscBool      ismpiio,isskip;
   PetscErrorCode ierr;
-    
+
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
 
@@ -35,9 +35,9 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
-  if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[write] using MPI-IO ***\n"); }
+  if (ismpiio) { ierr = PetscPrintf(comm,"*** PetscViewer[write] using MPI-IO ***\n");CHKERRQ(ierr); }
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
-  if (isskip) { PetscPrintf(comm,"*** PetscViewer[write] skipping header ***\n"); }
+  if (isskip) { ierr = PetscPrintf(comm,"*** PetscViewer[write] skipping header ***\n");CHKERRQ(ierr); }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -65,9 +65,9 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = VecLoad(x,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
-  if (isskip) { PetscPrintf(comm,"*** PetscViewer[load] skipping header ***\n"); }
+  if (isskip) { ierr = PetscPrintf(comm,"*** PetscViewer[load] skipping header ***\n");CHKERRQ(ierr); }
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
-  if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[load] using MPI-IO ***\n"); }
+  if (ismpiio) { ierr = PetscPrintf(comm,"*** PetscViewer[load] using MPI-IO ***\n");CHKERRQ(ierr); }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -135,12 +135,12 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
             v = PetscAbsScalar(test_value-buffer[index]);
 #if defined(PETSC_USE_COMPLEX)
             if ((PetscRealPart(v) > 1.0e-10) || (PetscImaginaryPart(v) > 1.0e-10)) {
-              PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %D,%D,%D(%D)])\n",(double)PetscRealPart(test_value),(double)PetscImaginaryPart(test_value),i,j,k,d);
+              ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %D,%D,%D(%D)])\n",(double)PetscRealPart(test_value),(double)PetscImaginaryPart(test_value),i,j,k,d);CHKERRQ(ierr);
               dataverified = PETSC_FALSE;
             }
 #else
             if (PetscRealPart(v) > 1.0e-10) {
-              PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D,%D,%D(%D)])\n",(double)PetscRealPart(test_value),i,j,k,d);
+              ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D,%D,%D(%D)])\n",(double)PetscRealPart(test_value),i,j,k,d);CHKERRQ(ierr);
               dataverified = PETSC_FALSE;
             }
 #endif
@@ -149,7 +149,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
       }
     }
     if (dataverified) {
-      PetscPrintf(PETSC_COMM_SELF,"Headerless read of data verified for: %s\n",name);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Headerless read of data verified for: %s\n",name);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -171,22 +171,22 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   ierr = VecMin(b,&locmin[1],&min[1]);CHKERRQ(ierr);
   ierr = VecMax(b,&locmax[1],&max[1]);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"VecCompare\n");
-  PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",(double)min[0],locmin[0]);
-  PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",(double)max[0],locmax[0]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCompare\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",(double)min[0],locmin[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",(double)max[0],locmax[0]);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",(double)min[1],locmin[1]);
-  PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",(double)max[1],locmax[1]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",(double)min[1],locmin[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",(double)max[1],locmax[1]);CHKERRQ(ierr);
 
   ierr = VecDuplicate(a,&ref);CHKERRQ(ierr);
   ierr = VecCopy(a,ref);CHKERRQ(ierr);
   ierr = VecAXPY(ref,-1.0,b);CHKERRQ(ierr);
   ierr = VecMin(ref,&locmin[0],&min[0]);CHKERRQ(ierr);
   if (PetscAbsReal(min[0]) > 1.0e-10) {
-    PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) > 1.0e-10\n");
-    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",(double)PetscAbsReal(min[0]));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) > 1.0e-10\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",(double)PetscAbsReal(min[0]));CHKERRQ(ierr);
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n");CHKERRQ(ierr);
   }
   ierr = VecDestroy(&ref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -202,8 +202,8 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (!usempiio) { PetscPrintf(PETSC_COMM_WORLD,"%s\n",__FUNCT__); }
-  else { PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",__FUNCT__); }
+  if (!usempiio) { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",__FUNCT__);CHKERRQ(ierr); }
+  else { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",__FUNCT__);CHKERRQ(ierr); }
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
                       DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
                         3,2,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
@@ -254,7 +254,7 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MPIIO)
     ierr = TestDMDAVec(PETSC_TRUE);CHKERRQ(ierr);
 #else
-    PetscPrintf(PETSC_COMM_WORLD,"Warning: Executing TestDMDAVec(PETSC_TRUE) requires a working MPI-2 implementation\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Executing TestDMDAVec(PETSC_TRUE) requires a working MPI-2 implementation\n");CHKERRQ(ierr);
 #endif
   }
   ierr = PetscFinalize();
