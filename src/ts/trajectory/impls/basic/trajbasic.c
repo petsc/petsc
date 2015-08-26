@@ -15,7 +15,6 @@ static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySet_Basic"
 PetscErrorCode TSTrajectorySet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,PetscReal time,Vec X)
@@ -26,12 +25,10 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,Pet
   char           filename[PETSC_MAX_PATH_LEN];
   PetscReal      tprev;
   PetscErrorCode ierr;
-  PetscInt       test=stepnum;
+
   PetscFunctionBeginUser;
   if (stepnum == 0) {
 #if defined(PETSC_HAVE_POPEN)
-    ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-    if (test!=stepnum) printf("test=%d,stepnum=%d\n",test,stepnum);
     if (stepnum == 0) {
       PetscMPIInt rank;
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
@@ -57,8 +54,6 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,Pet
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-  if (test!=stepnum) printf("test=%d,stepnum=%d\n",test,stepnum);
   ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
@@ -86,10 +81,8 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,Pet
   PetscReal      timepre;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
-  PetscInt       test=stepnum;
+
   PetscFunctionBeginUser;
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-  if (test!=stepnum) printf("test=%d,stepnum=%d\n",test,stepnum);
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
