@@ -11,3 +11,9 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 0
     self.downloadfilename  = 'ck'
 
+  def formGNUConfigureArgs(self):
+    # onfigure errors out on certain standard configure arguments
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    rejects = ['--disable-cxx','--disable-fortran', '--disable-fc','--disable-f77','--disable-f90']
+    self.logPrint('MPICH is rejecting configure arguments '+str(rejects))
+    return [arg for arg in args if not arg in rejects]
