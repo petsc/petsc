@@ -477,6 +477,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   DM dmRedist, dmfv, dmgrad, dmCell;
   PetscFV fv;
   PetscInt nvecs, v, fStart, fEnd, cStart, cEnd, cEndInterior;
+  PetscMPIInt size;
   Vec cellgeom, facegeom, grad, locGrad;
   const PetscScalar *cgeom;
   PetscErrorCode ierr;
@@ -486,7 +487,11 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   /* duplicate DM, give dup. a FV discretization */
   ierr = DMPlexSetAdjacencyUseCone(dm,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseClosure(dm,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm,1,NULL,&dmRedist);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  dmRedist = NULL;
+  if (size > 1) {
+    ierr = DMPlexDistributeOverlap(dm,1,NULL,&dmRedist);CHKERRQ(ierr);
+  }
   if (dmRedist == NULL) {
     dmRedist = dm;
     ierr = PetscObjectReference((PetscObject)dmRedist);CHKERRQ(ierr);
