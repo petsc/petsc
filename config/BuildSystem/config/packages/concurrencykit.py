@@ -25,8 +25,10 @@ class Configure(config.package.GNUPackage):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.pushLanguage('C')
     if not self.checkLink(include, body):
       raise RuntimeError('Concurrencykit cannot be used')
+    self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
 
