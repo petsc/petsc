@@ -622,14 +622,14 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   ierr=VecGetArray(DX,&dx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++){
-    if (PetscRealPart(dx[i])>0) && PetscRealPart(xu[i]) < PETSC_INFINITY){
+    if (PetscRealPart(dx[i])>0 && PetscRealPart(xu[i]) < PETSC_INFINITY) {
       t=PetscRealPart((xu[i]-x[i])/dx[i]);
       localmin=PetscMin(t,localmin);
       if (localmin>0){
         localwolfemin = PetscMin(t,localwolfemin);
       }
       localmax = PetscMax(t,localmax);
-    } else if (PetscRealPart(dx[i])<0) && PetscRealPart(xl[i]) > PETSC_NINFINITY){
+    } else if (PetscRealPart(dx[i])<0 && PetscRealPart(xl[i]) > PETSC_NINFINITY) {
       t=PetscRealPart((xl[i]-x[i])/dx[i]);
       localmin = PetscMin(t,localmin);
       if (localmin>0){
