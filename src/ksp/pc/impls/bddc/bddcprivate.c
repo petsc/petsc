@@ -2229,14 +2229,24 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   /* Coarse solution -> rhs and sol updated inside PCBDDCScattarCoarseDataBegin/End */
   /* TODO remove null space when doing multilevel */
   if (pcbddc->coarse_ksp) {
+    Mat coarse_mat;
     Vec rhs,sol;
+    MatNullSpace nullsp;
 
     ierr = KSPGetRhs(pcbddc->coarse_ksp,&rhs);CHKERRQ(ierr);
     ierr = KSPGetSolution(pcbddc->coarse_ksp,&sol);CHKERRQ(ierr);
+    ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL);CHKERRQ(ierr);
+    ierr = MatGetNullSpace(coarse_mat,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
+    }
     if (applytranspose) {
       ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
     } else {
       ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+    }
+    if (nullsp) {
+      ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
     }
   }
 

@@ -950,11 +950,12 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_IS          *pcis = (PC_IS*)(pc->data);
   Vec            used_vec;
   PetscBool      copy_rhs = PETSC_TRUE;
+  PetscBool      benign_correction_is_zero = PETSC_FALSE;
+  PetscBool      iscg;
 
   PetscFunctionBegin;
   /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool iscg;
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
     if (!iscg) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
@@ -1078,7 +1079,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (!pcbddc->benign_vec) {
       ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
     }
-    ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
     pcbddc->benign_p0 = 0.;
     if (pcbddc->benign_p0_lidx >= 0) {
       const PetscScalar *array;
@@ -1087,10 +1087,19 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->benign_p0 = array[pcbddc->benign_p0_lidx];
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
     }
-    ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
-    pcbddc->benign_p0 = 0.;
-    ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
+    if (pcbddc->benign_null && iscg) { /* this is a workaround, need to understand more */
+      PetscBool iszero_l;
+
+      iszero_l = PetscAbsScalar(pcbddc->benign_p0) < PETSC_SMALL ? PETSC_TRUE : PETSC_FALSE;
+      ierr = MPI_Allreduce(&iszero_l,&benign_correction_is_zero,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    }
+    if (!benign_correction_is_zero) {
+      ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
+      ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
+      pcbddc->benign_p0 = 0.;
+      ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
 
   /* change rhs and iteration matrix if using the change of basis */
@@ -1128,6 +1137,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (copy_rhs) {
       ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
       copy_rhs = PETSC_FALSE;
+    }
+    if (benign_correction_is_zero) { /* still need to understand why it works great */
+      ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
     }
     ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
     ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
