@@ -792,7 +792,14 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
 
 #if defined(PETSC_HAVE_THREADSAFETY)
 #  if defined(PETSC_HAVE_CONCURRENCYKIT)
+#if defined(__cplusplus)
+/*  CK does not have extern "C" protection in their include files */
+extern "C" {
+#endif
 #include <ck_spinlock.h>
+#if defined(__cplusplus)
+}
+#endif
 typedef ck_spinlock_t PetscSpinlock;
 PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
