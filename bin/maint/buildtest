@@ -105,10 +105,15 @@ endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND}  `date` " > examples.log
 git log -1 >>& examples.log
+if ( -f /usr/bin/cygpath ) then
+  set wnPETSC_DIR=`cygpath -m ${nPETSC_DIR}`
+else
+  set wnPETSC_DIR=${nPETSC_DIR}
+endif
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
 else
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
 endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
