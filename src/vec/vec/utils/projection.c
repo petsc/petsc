@@ -607,7 +607,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   PetscInt       n,i;
   PetscScalar    *x,*xl,*xu,*dx;
   PetscReal      t;
-  PetscReal      localmin=PETSC_INFINITY,localwolfemin=PETSC_INFINITY,localmax=0;
+  PetscReal      localmin=PETSC_INFINITY,localwolfemin=PETSC_INFINITY,localmax=-1;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -638,6 +638,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
       localmax = PetscMax(t,localmax);
     }
   }
+
   ierr=VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr=VecRestoreArray(XL,&xl);CHKERRQ(ierr);
   ierr=VecRestoreArray(XU,&xu);CHKERRQ(ierr);
@@ -654,6 +655,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   }
   if (boundmax) {
     ierr = MPI_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    if (*boundmax < 0) *boundmax=PETSC_INFINITY;
     ierr = PetscInfo1(X,"Step Bound Info: Max: %g \n",(double)*boundmax);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
