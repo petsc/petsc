@@ -371,6 +371,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, mesh->useAnchors, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateTwoSidedProcessSF"
 /*@
@@ -1157,7 +1158,7 @@ PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalTo
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeSetupTree"
-PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
+PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex        *mesh  = (DM_Plex*) dm->data;
   DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
@@ -1179,7 +1180,7 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
   ierr = DMPlexGetTree(dm,&origParentSection,&origParents,&origChildIDs,NULL,NULL);CHKERRQ(ierr);
   if (origParentSection) {
     PetscInt        pStart, pEnd;
-    PetscInt        *newParents, *newChildIDs;
+    PetscInt        *newParents, *newChildIDs, *globParents;
     PetscInt        *remoteOffsetsParents, newParentSize;
     PetscSF         parentSF;
 
@@ -1190,8 +1191,21 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
     ierr = PetscSFCreateSectionSF(migrationSF, origParentSection, remoteOffsetsParents, newParentSection, &parentSF);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(newParentSection,&newParentSize);CHKERRQ(ierr);
     ierr = PetscMalloc2(newParentSize,&newParents,newParentSize,&newChildIDs);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origParents, newParents);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origParents, newParents);CHKERRQ(ierr);
+    if (original) {
+      PetscInt numParents;
+
+      ierr = PetscSectionGetStorageSize(origParentSection,&numParents);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numParents,&globParents);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApplyBlock(original, numParents, origParents, globParents);CHKERRQ(ierr);
+    }
+    else {
+      globParents = origParents;
+    }
+    ierr = PetscSFBcastBegin(parentSF, MPIU_INT, globParents, newParents);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(parentSF, MPIU_INT, globParents, newParents);CHKERRQ(ierr);
+    if (original) {
+      ierr = PetscFree(globParents);CHKERRQ(ierr);
+    }
     ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApplyBlock(renumbering,IS_GTOLM_MASK, newParentSize, newParents, NULL, newParents);CHKERRQ(ierr);
@@ -1445,7 +1459,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = DMPlexDistributeCoordinates(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeLabels(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupHybrid(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetupTree(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetupTree(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogMigration);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Migrate, dm, 0, 0, 0);CHKERRQ(ierr);
