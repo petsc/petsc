@@ -42,13 +42,17 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs_user_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_k+2,&fgmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_k+2,&fgmres->prevecs_user_work);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(max_k+2)*(2*sizeof(void*)));CHKERRQ(ierr);
 
   ierr = KSPCreateVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
-  for (k=0; k < fgmres->vv_allocated; k++) {
+
+  /* fgmres->vv_allocated includes extra work vectors, which are not used in the additional
+     block of vectors used to store the preconditioned directions, hence  the - VEC_OFFSET
+     term */
+  for (k=0; k < fgmres->vv_allocated - VEC_OFFSET ; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   }
   PetscFunctionReturn(0);
@@ -512,7 +516,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   ierr = KSPCreateVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
-    fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
+    fgmres->prevecs[it+k] = fgmres->prevecs_user_work[nwork][k];
   }
 
   /* increment the number of work vector chunks */
