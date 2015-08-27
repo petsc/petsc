@@ -375,6 +375,7 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
   ierr = DMGetPointSF(dmNew, &sfPointNew);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  totShift = DMPlexShiftPoint_Internal(pEnd,depth,depthShift) - pEnd;
   if (numRoots >= 0) {
     ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
     for (l=0; l<numRoots; l++) newLocation[l] = DMPlexShiftPoint_Internal(l, depth, depthShift);
