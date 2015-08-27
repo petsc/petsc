@@ -306,6 +306,7 @@ class Configure(config.base.Configure):
         self.setCompilers.LIBS = oldLibs
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
         raise RuntimeError('C libraries cannot directly be used from Fortran')
       self.logWrite(self.setCompilers.restoreLog())
     return
@@ -702,6 +703,7 @@ class Configure(config.base.Configure):
         self.fortranPreprocess = 1
         self.setCompilers.popLanguage()
         self.logPrint('Fortran uses CPP preprocessor', 3, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
         return
       except RuntimeError:
         setattr(self.setCompilers, flagsArg, oldFlags)
