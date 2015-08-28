@@ -1282,7 +1282,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       ierr = DMPlexGetConeSize(sdm, newp, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(sdm, newp, &cone);CHKERRQ(ierr);
       for (c = 0; c < coneSize; ++c) {
-        const PetscInt coldp = DMPlexShiftPointInverse_Internal(cone[2],depth,depthShift);
+        const PetscInt coldp = DMPlexShiftPointInverse_Internal(cone[c],depth,depthShift);
         PetscInt       csplitp, cp, val;
 
         ierr = DMLabelGetValue(label, coldp, &val);CHKERRQ(ierr);
