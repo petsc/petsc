@@ -1579,6 +1579,56 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexReconstructGradientsFVM"
+/*@
+  DMPlexReconstructGradientsFVM - reconstruct the gradient of a vector using a finite volume method.
+
+  Input Parameters:
++ dm - the mesh
+- locX - the local representation of the vector
+
+  Output Parameter:
+. grad - the global representation of the gradient
+
+  Level: developer
+
+.seealso: DMPlexSNESGetGradientDM()
+@*/
+PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
+{
+  PetscDS          prob;
+  PetscInt         Nf, f, fStart, fEnd;
+  PetscBool        useFVM;
+  PetscFV          fvm = NULL;
+  Vec              faceGeometryFVM, cellGeometryFVM;
+  PetscFVCellGeom  *cgeomFVM   = NULL;
+  PetscFVFaceGeom  *fgeomFVM   = NULL;
+  DM               dmGrad = NULL;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
+  }
+  if (!useFVM) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This dm does not have a finite volume discretization");
+  ierr = DMPlexSNESGetGradientDM(dm, fvm, &dmGrad);CHKERRQ(ierr);
+  if (!dmGrad) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This dm's finite volume discretization does not reconstruct gradients");
+  ierr = DMPlexSNESGetGeometryFVM(dm, &faceGeometryFVM, &cellGeometryFVM, NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(faceGeometryFVM, (const PetscScalar **) &fgeomFVM);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(cellGeometryFVM, (const PetscScalar **) &cgeomFVM);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMPlexReconstructGradients_Internal(dm, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeResidual_Internal"
 PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {

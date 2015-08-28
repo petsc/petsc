@@ -476,9 +476,9 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   MPI_Comm comm;
   DM dmRedist, dmfv, dmgrad, dmCell;
   PetscFV fv;
-  PetscInt nvecs, v, fStart, fEnd, cStart, cEnd, cEndInterior;
+  PetscInt nvecs, v, cStart, cEnd, cEndInterior;
   PetscMPIInt size;
-  Vec cellgeom, facegeom, grad, locGrad;
+  Vec cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
   PetscErrorCode ierr;
 
@@ -508,9 +508,8 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dmfv,1,&fStart,&fEnd);CHKERRQ(ierr);
   nvecs = user->dim * (user->dim+1) / 2;
-  ierr = DMPlexSNESGetGeometryFVM(dmfv,&facegeom,&cellgeom,NULL);CHKERRQ(ierr);
+  ierr = DMPlexSNESGetGeometryFVM(dmfv,NULL,&cellgeom,NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
@@ -543,7 +542,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       ierr = DMPlexVecSetClosure(dmfv,NULL,locX,c,cx,INSERT_ALL_VALUES);CHKERRQ(ierr);
     }
     /* TODO: this isn't in any header */
-    ierr = DMPlexReconstructGradients_Internal(dmfv,fStart,fEnd,facegeom,cellgeom,locX,grad);CHKERRQ(ierr);
+    ierr = DMPlexReconstructGradientsFVM(dmfv,locX,grad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
