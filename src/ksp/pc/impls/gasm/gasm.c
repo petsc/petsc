@@ -438,22 +438,19 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
       ierr = VecScatterBegin(osm->gorestriction,y,osm->gy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(osm->gorestriction,y,osm->gy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-#if 0
-      ierr = VecView(osm->gy,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
       ierr = VecGetOwnershipRange(osm->gy,&gostart, NULL);CHKERRQ(ierr);
       ierr = VecGetArray(osm->gy,&array);CHKERRQ(ierr);
       on  = 0;
       in  = 0;
-      for(i=0; i<osm->n;i++){
+      for (i=0; i<osm->n; i++) {
     	ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
     	ierr = ISGetIndices(osm->ois[i],&indices);CHKERRQ(ierr);
-    	for(k=0; k<oni; k++){
-    	 /*skip overlapping indices */
-         if(array[on+k] != numbering[i]) continue;
-         /*record inner indices */
-         iidx[in]    = indices[k];
-         ioidx[in++] = gostart+on+k;
+    	for (k=0; k<oni; k++) {
+          /*skip overlapping indices */
+          if(PetscRealPart(array[on+k]) != numbering[i]) continue;
+          /*record inner indices */
+          iidx[in]    = indices[k];
+          ioidx[in++] = gostart+on+k;
     	}
     	ierr   = ISRestoreIndices(osm->ois[i], &indices);CHKERRQ(ierr);
     	on += oni;
