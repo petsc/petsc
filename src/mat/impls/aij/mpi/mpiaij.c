@@ -2980,7 +2980,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ"
-/* TODO: Not scalable because of ISAllGather(). */
+/* TODO: Not scalable because of ISAllGather() unless getting all columns. */
 PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
