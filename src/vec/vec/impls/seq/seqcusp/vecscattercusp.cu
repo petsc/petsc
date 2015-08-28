@@ -3,6 +3,7 @@
 */
 
 #define PETSC_SKIP_COMPLEX
+#define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
 #include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/

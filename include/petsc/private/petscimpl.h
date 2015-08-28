@@ -790,6 +790,7 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction*
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
 
+#if !defined(PETSC_SKIP_SPINLOCK)
 #if defined(PETSC_HAVE_THREADSAFETY)
 #  if defined(PETSC_HAVE_CONCURRENCYKIT)
 #if defined(__cplusplus)
@@ -859,6 +860,7 @@ typedef int PetscSpinlock;
 #if defined(PETSC_HAVE_THREADSAFETY)
 extern PetscSpinlock PetscViewerASCIISpinLock;
 extern PetscSpinlock PetscCommSpinLock;
+#endif
 #endif
 
 #endif /* _PETSCHEAD_H */
