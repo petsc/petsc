@@ -2993,10 +2993,29 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
-    PetscInt cbs;
-    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
-    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
+    /* check if we are grabbing all columns*/
+    PetscBool    isstride;
+    PetscMPIInt  lisstride = 0,gisstride;
+    ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&isstride);CHKERRQ(ierr);
+    if (isstride) {
+      PetscInt  start,len,mstart,mlen;
+      ierr = ISStrideGetInfo(iscol,&start,&len);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRangeColumn(mat,&mstart,&mlen);CHKERRQ(ierr);
+      if (mstart == start && mlen == len) lisstride = 1;
+    }
+    ierr = MPI_Allreduce(&lisstride,&gisstride,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    if (gisstride) {
+      PetscInt N;
+      ierr = MatGetSize(mat,NULL,&N);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),N,0,1,&iscol_local);CHKERRQ(ierr);
+      ierr = ISSetIdentity(iscol_local);CHKERRQ(ierr);
+      ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix; skipping ISAllGather()\n");CHKERRQ(ierr);
+    } else {
+      PetscInt cbs;
+      ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+      ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
+    }
   }
   ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
@@ -3037,6 +3056,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   ierr = ISGetLocalSize(iscol,&ncol);CHKERRQ(ierr);
   if (colflag && ncol == mat->cmap->N) {
     allcolumns = PETSC_TRUE;
+    ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix\n");CHKERRQ(ierr);
   } else {
     allcolumns = PETSC_FALSE;
   }
