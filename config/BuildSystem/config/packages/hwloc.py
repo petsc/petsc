@@ -21,7 +21,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     # Don't require x libraries since they may not always be available or hwloc may not be able to locate them on Apple
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       args.append('--without-x')
     # don't require unneeded external dependency
     args.append('--disable-libxml2')

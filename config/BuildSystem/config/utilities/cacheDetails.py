@@ -98,6 +98,7 @@ class Configure(config.base.Configure):
           if not a.valid(val):
             self.log.write('Cannot use value returned for '+str(a.enum())+': '+str(val)+'\n')
           f.close()
+          os.remove(filename)
         else:
           self.log.write('Could not determine '+str(a.enum())+', using default '+str(a.default)+'\n')
           val = a.default

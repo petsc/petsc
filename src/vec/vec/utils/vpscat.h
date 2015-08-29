@@ -104,7 +104,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
         ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       }
     } else {
-      if (xv == yv && addv == INSERT_VALUES) {
+      if (xv == yv && addv == INSERT_VALUES && to->local.nonmatching_computed) {
         /* only copy entries that do not share identical memory locations */
         ierr = PETSCMAP1(Scatter)(to->local.n_nonmatching,to->local.slots_nonmatching,xv,from->local.slots_nonmatching,yv,addv,bs);CHKERRQ(ierr);
       } else {

@@ -211,13 +211,15 @@ PetscErrorCode VecGetDM(Vec v, DM *dm)
 #undef __FUNCT__
 #define __FUNCT__ "VecSetDM"
 /*@
-  VecSetDM - Sets the DM defining the data layout of the vector
+  VecSetDM - Sets the DM defining the data layout of the vector.
 
   Not collective
 
   Input Parameters:
 + v - The Vec
 - dm - The DM
+
+  Note: This is NOT the same as DMCreateGlobalVector() since it does not change the view methods or perform other customization, but merely sets the DM member.
 
   Level: intermediate
 
@@ -526,6 +528,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
 
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
@@ -630,7 +633,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 #undef __FUNCT__
 #define __FUNCT__ "DMView"
 /*@C
-    DMView - Views a vector packer or DMDA.
+    DMView - Views a DM
 
     Collective on DM
 
@@ -638,7 +641,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 +   dm - the DM object to view
 -   v - the viewer
 
-    Level: developer
+    Level: beginner
 
 .seealso DMDestroy(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 
@@ -1278,7 +1281,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateSubDM"
-/*@C
+/*@
   DMCreateSubDM - Returns an IS and DM encapsulating a subproblem defined by the fields passed in.
                   The fields are defined by DMCreateFieldIS().
 
@@ -3030,7 +3033,7 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
   PetscValidPointer(section, 2);
   if (!dm->defaultSection && dm->ops->createdefaultsection) {
     ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, "dm_", "-petscsection_view");CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, NULL, "-dm_petscsection_view");CHKERRQ(ierr);
   }
   *section = dm->defaultSection;
   PetscFunctionReturn(0);
@@ -3053,17 +3056,19 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
 @*/
 PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
 {
-  PetscInt       numFields;
+  PetscInt       numFields = 0;
   PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
+  if (section) {
+    PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+    ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
+  }
   ierr = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
   dm->defaultSection = section;
-  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
+  if (section) {ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);}
   if (numFields) {
     ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
@@ -3263,9 +3268,10 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
     ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
     if (!s)  SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     if (!dm->sf) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSF in order to create a global PetscSection");
-    ierr = PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&dm->map);CHKERRQ(ierr);
     ierr = PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->defaultGlobalSection, &dm->map);CHKERRQ(ierr);
+    ierr = PetscSectionViewFromOptions(dm->defaultGlobalSection, NULL, "-global_section_view");CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;
   PetscFunctionReturn(0);
@@ -4279,7 +4285,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     ierr = DMSetDefaultSection(dm->dmBC, newSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&newSection);CHKERRQ(ierr);
     ierr = DMGetPointSF(dm->dmBC, &sf);CHKERRQ(ierr);
-    ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, &gsection);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, PETSC_FALSE, &gsection);CHKERRQ(ierr);
     ierr = DMSetDefaultGlobalSection(dm->dmBC, gsection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
   }
@@ -4379,5 +4385,55 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
     *val = PetscRealPart(value);
 #endif
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetUseNatural"
+/*@
+  DMGetUseNatural - Get the flag for creating a mapping to the natural order on distribution
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. useNatural - The flag to build the mapping to a natural order during distribution
+
+  Level: beginner
+
+.seealso: DMSetUseNatural(), DMCreate()
+@*/
+PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(useNatural, 2);
+  *useNatural = dm->useNatural;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetUseNatural"
+/*@
+  DMSetUseNatural - Set the flag for creating a mapping to the natural order on distribution
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The DM
+- useNatural - The flag to build the mapping to a natural order during distribution
+
+  Level: beginner
+
+.seealso: DMGetUseNatural(), DMCreate()
+@*/
+PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, useNatural, 2);
+  dm->useNatural = useNatural;
   PetscFunctionReturn(0);
 }

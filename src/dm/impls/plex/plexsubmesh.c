@@ -2717,7 +2717,7 @@ PETSC_STATIC_INLINE PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubmeshGeneric_Interpolated"
-static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool isCohesive, DM subdm)
+static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool isCohesive, PetscInt cellHeight, DM subdm)
 {
   MPI_Comm         comm;
   DMLabel          subpointMap;
@@ -2732,9 +2732,34 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   /* Create subpointMap which marks the submesh */
   ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
+  if (cellHeight) {
+    if (isCohesive) {ierr = DMPlexMarkCohesiveSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);}
+    else            {ierr = DMPlexMarkSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);}
+  } else {
+    DMLabel         depth;
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        numPoints;
+
+    ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumSize(label, value, &numPoints);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, value, &pointIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      PetscInt *closure = NULL;
+      PetscInt  closureSize, c, pdim;
+
+      ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {
+        ierr = DMLabelGetValue(depth, closure[c], &pdim);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(subpointMap, closure[c], pdim);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
   ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
-  if (isCohesive) {ierr = DMPlexMarkCohesiveSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);}
-  else            {ierr = DMPlexMarkSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);}
   /* Setup chart */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim+1,&numSubPoints,dim+1,&firstSubPoint,dim+1,&subpointIS,dim+1,&subpoints);CHKERRQ(ierr);
@@ -2743,7 +2768,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     totSubPoints += numSubPoints[d];
   }
   ierr = DMPlexSetChart(subdm, 0, totSubPoints);CHKERRQ(ierr);
-  ierr = DMPlexSetVTKCellHeight(subdm, 1);CHKERRQ(ierr);
+  ierr = DMPlexSetVTKCellHeight(subdm, cellHeight);CHKERRQ(ierr);
   /* Set cone sizes */
   firstSubPoint[dim] = 0;
   firstSubPoint[0]   = firstSubPoint[dim] + numSubPoints[dim];
@@ -2762,7 +2787,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
 
       ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexSetConeSize(subdm, subpoint, coneSize);CHKERRQ(ierr);
-      if (d == dim) {
+      if (cellHeight && (d == dim)) {
         ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
         for (c = 0, coneSizeNew = 0; c < coneSize; ++c) {
           ierr = DMLabelGetValue(subpointMap, cone[c], &val);CHKERRQ(ierr);
@@ -2944,7 +2969,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, PETSC_FALSE, subdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, PETSC_FALSE, 1, subdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3199,7 +3224,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 
   PetscFunctionBegin;
   if (labelname) {ierr = DMPlexGetLabel(dm, labelname, &label);CHKERRQ(ierr);}
-  ierr = DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_TRUE, subdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_TRUE, 1, subdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3245,6 +3270,42 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexFilter"
+/*@
+  DMPlexFilter - Extract a subset of mesh cells defined by a label as a separate mesh
+
+  Input Parameters:
++ dm        - The original mesh
+. cellLabel - The DMLabel marking cells contained in the new mesh
+- value     - The label value to use
+
+  Output Parameter:
+. subdm - The new mesh
+
+  Note: This function produces a DMLabel mapping original points in the submesh to their depth. This can be obtained using DMPlexGetSubpointMap().
+
+  Level: developer
+
+.seealso: DMPlexGetSubpointMap(), DMPlexGetLabel(), DMLabelSetValue()
+@*/
+PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
+{
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(subdm, 3);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject) dm), subdm);CHKERRQ(ierr);
+  ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetDimension(*subdm, dim);CHKERRQ(ierr);
+  /* Extract submesh in place, could be empty on some procs, could have inconsistency if procs do not both extract a shared cell */
+  ierr = DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, 0, *subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetSubpointMap"
 /*@
   DMPlexGetSubpointMap - Returns a DMLabel with point dimension as values
@@ -3261,12 +3322,10 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 @*/
 PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subpointMap, 2);
-  *subpointMap = mesh->subpointMap;
+  *subpointMap = ((DM_Plex*) dm->data)->subpointMap;
   PetscFunctionReturn(0);
 }
 

@@ -48,7 +48,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet"
-PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time)
+PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *time)
 {
   PetscErrorCode ierr;
 

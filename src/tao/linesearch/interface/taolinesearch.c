@@ -39,12 +39,10 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   PetscErrorCode          ierr;
   PetscBool               isascii, isstring;
   const TaoLineSearchType type;
-  PetscBool               destroyviewer = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   if (!viewer) {
-    destroyviewer = PETSC_TRUE;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)ls)->comm, &viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
@@ -85,9 +83,6 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   } else if (isstring) {
     ierr = TaoLineSearchGetType(ls,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
-  }
-  if (destroyviewer) {
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

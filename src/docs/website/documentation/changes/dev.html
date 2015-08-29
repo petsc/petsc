@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="36.html">3.6</a></li>
                 <li><a href="35.html">3.5</a></li>
                 <li><a href="34.html">3.4</a></li>
                 <li><a href="33.html">3.3</a></li>
@@ -96,78 +97,31 @@
       </div>
 
       <h4>General:</h4>
-      <ul>
-        <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
-        <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
-        <li>  Removed all threadcomm support including --with-pthreadclasses and --with-openmpclasses configure arguments </li>
-      </ul>
       <h4>Configure/Build:</h4>
-      <ul>
-        <li>Add toplevel makefile targets <em>clean</em> and <em>distclean</em>. Target <em>clean</em>
-          deletes petsc libraries built by makefile target <em>all</em>. Target <em>distclean</em> deletes
-          all build files created by <em>configure</em> and [<em>make all</em>]. Target <em>clean</em> in
-          example directories continues to work as before [deletes object files and executables]</li>
-      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
-      PetscDrawBoxedString() changed to PetscDrawStringBoxed()
-      added PetscDrawBar object for drawing bar graphs
-      added PetscDrawStringCentered()
       <h4>PF:</h4>
       <h4>Vec:</h4>
+      For complex numbers VecNorm(v,NORM_1,) will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1 norm of the absolutely values of the complex entries. Previously it returned the 1 norm of the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most people expect the former.
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
-      <ul>
-         <li>MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
-         <li>MatCreateMPIAIJConcatenateSeqAIJ and MatCreateMPIBAIJConcatenateSeqBAIJ replaced with MatCreateMPIMatConcatenateSeqMat</li>
-         <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
-         <li>Added support for MUMPS sequential solver in Schur complement mode</li>
-      </ul>
       <h4>PC:</h4>
-         Removed -pc_hypre_type euclid due to bit-rot
-         Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
-         Added PCBDDCSetChangeOfBasisMat for user defined change of basis
-         PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
-         PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()
-         PCFactorSetUseInplace() now takes a PetscBool argument. Added PCFactorGetUseInplace()
-         PCFactorSetAllowDiagonalFill() now takes a PetscBool argument. Added PCFactorGetAllowDiagonalFill()
-         PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean
-         Added Interface to AMS solver from HYPRE for Nedelec discretizations (-pc_hypre_type ams)
-         Added Interface to ADS solver from HYPRE for Raviart-Thomas discretizations (-pc_hypre_type ads)
+         Added 
+         -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
+         -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())
+          see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG
       <h4>KSP:</h4>
-      Removed KSPSetNullSpace() always use MatSetNullSpace()
-      Added MatSetTransposeNullSpace() to indicate the null space of the transpose operator
-         Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev
-         Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_
-         KSPGetVecs() replaced with KSPCreateVecs() because it actually does create the Vecs that need to be destroyed
       <h4>SNES:</h4>
-      Added KSPMonitorSNES() with command line option -ksp_monitor_snes and -ksp_monitor_snes_lg to monitor SNES residual norm at each linear iteration
-      SNESMonitorVI() becomes SNESVIMonitor()
-      Added SNESVIMonitorResidual() and -snes_vi_monitor_residual
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-      <ul>
-	<li>The postevent routine set with TSSetEventMonitor() now takes an additional PetscBool argument 'forwardsolve'. The forwardsolve flag is used to distinguish between a TS forward solve (forwardsolve = 1) and adjoint solve (forwardsolve = 0).</li>
-      </ul>
       <h4>DM/DA:</h4>
-      <ul>
-        <li>DMCreateInjection() now returns a Mat, rather than a VecScatter</li>
-        <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
-        <li>You can now use DMDASetAOType() to indicate the type of AO you want used with a DMDA (defaults to AOBASIC)</li>
-      </ul>
-      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
-      HDF5 viewer will save Vecs and DMDA Vecs with a dimension of 1 if the bs/dof of the vector is 1. To always include this dimension as a specific dimension
-      in the HDF5 file even if if it is of size 1 use PetscViewerHDF5SetBaseDimension2() or -viewer_hdf5_base_dimension2 true
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
-     <ul>
-        <li>Fortran include files are now in include/petsc/finclude instead of include/finclude. Thus replace uses of #include "finclude/xxx.h" with #include "petsc/finclude/xxx.h". Reason for change: to namespace the finclude directory with PETSc for --prefix installs of PETSc and for packaging systems</li>
-      </ul>
     </div>
 
     <!--end-->

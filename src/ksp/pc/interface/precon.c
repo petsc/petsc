@@ -466,7 +466,8 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
-  ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
+  /* use pmat to check vector sizes since for KSPLQR the pmat may be of a different size than mat */
+  ierr = MatGetLocalSize(pc->pmat,&m,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
   if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);CHKERRQ(ierr);
@@ -1222,6 +1223,8 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 
    Output Parameter:
 .  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+   Level: intermediate
 
 .seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
  @*/

@@ -523,11 +523,9 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
    Notes:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
++     PETSC_VIEWER_STDOUT_SELF - for sequential vectors
+.     PETSC_VIEWER_STDOUT_WORLD - for parallel vectors created on PETSC_COMM_WORLD
+-     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
    option PetscViewerSetFormat().
@@ -1751,7 +1749,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 
   Input Parameters:
 + obj   - the VecStash object
-. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+. bobj - optional other object that provides the prefix
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -1759,14 +1757,16 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   Developer Note: This cannot use PetscObjectViewFromOptions() because it takes a Vec as an argument but does not use VecView
 
 */
-PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char optionname[])
+PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
+  prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -1937,11 +1937,12 @@ PetscErrorCode VecSetInf(Vec xin)
 {
   PetscInt       i,n = xin->map->n;
   PetscScalar    *xx;
+  PetscScalar    zero=0.0,one=1.0,inf=one/zero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) xx[i] = 1.0/0.0;
+  for (i=0; i<n; i++) xx[i] = inf;
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

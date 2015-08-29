@@ -8,7 +8,12 @@
 #include "petsc/finclude/petscisdef.h"
 
 #define AO PetscFortranAddr
-#define AOType PetscEnum
+#define AOType character*(80)
 #define AOData2dGrid PetscFortranAddr
+
+#define AOBASIC           'basic'
+#define AOADVANCED        'advanced'
+#define AOMAPPING         'mapping'
+#define AOMEMORYSCALABLE  'memoryscalable'
 
 #endif

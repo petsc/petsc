@@ -68,6 +68,7 @@ class Configure(config.package.Package):
   def generateLibList(self, directory):
     if self.setCompilers.usedMPICompilers:
       self.liblist = []
+      self.libdir  = []
     return config.package.Package.generateLibList(self,directory)
 
   # search many obscure locations for MPI
@@ -182,6 +183,7 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
     if self.checkLink('#include <mpi.h>\n', 'int flag;if (MPI_Finalized(&flag));\n'):
       self.haveFinalized = 1
       self.addDefine('HAVE_MPI_FINALIZED', 1)
@@ -206,6 +208,7 @@ class Configure(config.package.Package):
       self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
     return
 
   def configureConversion(self):
@@ -299,6 +302,7 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    self.framework.saveLog()
     self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
     self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
     self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
@@ -307,6 +311,7 @@ class Configure(config.package.Package):
       self.usingMPIUniFortranBinding = 0
     else:
       self.usingMPIUniFortranBinding = 1
+    self.logWrite(self.framework.restoreLog())
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
     self.commc2f = 1
@@ -431,22 +436,29 @@ class Configure(config.package.Package):
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     if self.checkCompile(mpich_test):
       buf = self.outputPreprocess(mpich_test)
-      mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
-      self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
+      try:
+        mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
+        self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
+      except:
+        self.logPrint('Unable to parse MPICH version from header. Probably a buggy preprocessor')
     elif self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
-      ompi_major_version = re.compile('\nint ompi_major = *([0-9]*) *;').search(buf).group(1)
-      ompi_minor_version = re.compile('\nint ompi_minor = *([0-9]*) *;').search(buf).group(1)
-      ompi_release_version = re.compile('\nint ompi_release = *([0-9]*) *;').search(buf).group(1)
-      self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
-      self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
-      self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
+      ompi_major_version = ompi_minor_version = ompi_release_version = 'unknown'
+      try:
+        ompi_major_version = re.compile('\nint ompi_major = *([0-9]*) *;').search(buf).group(1)
+        ompi_minor_version = re.compile('\nint ompi_minor = *([0-9]*) *;').search(buf).group(1)
+        ompi_release_version = re.compile('\nint ompi_release = *([0-9]*) *;').search(buf).group(1)
+        self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
+        self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
+        self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
+      except:
+        self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show"'''
     import re
     output = ''
     try:
-      output   = self.executeShellCommand(self.compilers.CC + ' -show')[0]
+      output   = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0]
       compiler = output.split(' ')[0]
     except:
       pass

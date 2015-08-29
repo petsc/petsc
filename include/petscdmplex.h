@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerSetType(PetscPartitioner, PetscParti
 PETSC_EXTERN PetscErrorCode PetscPartitionerGetType(PetscPartitioner, PetscPartitionerType *);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetUp(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner, const char[], const char[]);
+PETSC_STATIC_INLINE PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
 PETSC_EXTERN PetscErrorCode PetscPartitionerView(PetscPartitioner, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegister(const char [], PetscErrorCode (*)(PetscPartitioner));
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterDestroy(void);
@@ -107,6 +107,7 @@ PETSC_EXTERN PetscErrorCode DMLabelGetName(DMLabel, const char **);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMLabelInsertIS(DMLabel, IS, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelGetNumValues(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumBounds(DMLabel, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetValueIS(DMLabel, IS *);
@@ -122,6 +123,7 @@ PETSC_EXTERN PetscErrorCode DMLabelFilter(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelPermute(DMLabel, IS, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);
 
+PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateLabel(DM, const char []);
 PETSC_EXTERN PetscErrorCode DMPlexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetLabelValue(DM, const char[], PetscInt, PetscInt);
@@ -253,7 +255,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGradientFVM(DM, PetscFV, Vec, Vec, DM *
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, Vec, PetscReal, Vec, Vec, Vec);
 
-PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], IS, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt, const PetscInt [], const PetscInt [], PetscInt, const PetscInt [], const IS [], const IS [], IS, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscFE, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
@@ -289,9 +291,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGetScale(DM, PetscUnit, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetScale(DM, PetscUnit, PetscReal);
 
 typedef struct _n_Boundary *DMBoundary;
-PETSC_EXTERN PetscErrorCode DMPlexAddBoundary(DM, PetscBool, const char[], const char[], PetscInt, void (*)(), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode DMPlexAddBoundary(DM, PetscBool, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexGetNumBoundary(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, void (**)(), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode DMPlexGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
 PETSC_EXTERN PetscErrorCode DMPlexIsBoundaryPoint(DM, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexCopyBoundary(DM, DM);
 
@@ -305,12 +307,12 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexSetMaxProjectionHeight(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexGetMaxProjectionHeight(DM, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectFieldLocal(DM, Vec, void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexComputeL2Diff(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, Vec, PetscReal *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeL2GradientDiff(DM, void (**)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **, Vec, const PetscReal [], PetscReal *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeL2FieldDiff(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, Vec, PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMPlexComputeL2Diff(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeL2GradientDiff(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, const PetscReal [], PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeL2FieldDiff(DM, PetscErrorCode (**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexComputeIntegralFEM(DM, Vec, PetscReal *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorFEM(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorFEM(DM, DM, VecScatter *, void *);
@@ -338,4 +340,11 @@ PETSC_EXTERN PetscErrorCode DMPlexGetTree(DM, PetscSection *, PetscInt *[], Pets
 PETSC_EXTERN PetscErrorCode DMPlexGetTreeParent(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetTreeChildren(DM, PetscInt, PetscInt *, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexTreeRefineCell(DM, PetscInt, DM *);
+
+/* natural order */
+PETSC_EXTERN PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM, PetscSection, PetscSF, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalBegin(DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalEnd(DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalBegin(DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalEnd(DM, Vec, Vec);
 #endif

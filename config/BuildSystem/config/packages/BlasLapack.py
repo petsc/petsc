@@ -73,7 +73,9 @@ class Configure(config.package.Package):
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
         call      = 'DDOT(0,0,0,0,0);'
+    self.libraries.saveLog()
     found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+    self.logWrite(self.libraries.restoreLog())
     self.compilers.LIBS = oldLibs
     return found
 
@@ -91,9 +93,11 @@ class Configure(config.package.Package):
                       'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,double*,double*,double*,int*,double*,int*,double*,int*,int*);']
         calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
                       'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
+    self.libraries.saveLog()
     for routine, prototype, call in zip(routines, prototypes, calls):
       found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
       if not found: break
+    self.logWrite(self.libraries.restoreLog())
     self.compilers.LIBS = oldLibs
     return found
 
@@ -289,7 +293,7 @@ class Configure(config.package.Package):
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
     yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a', 2)
     # Portland group compiler blas and lapack
-    if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC):
+    if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
       dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
       dir = os.path.join(os.environ['PGI'],'linux86','5.0','lib')
@@ -395,20 +399,27 @@ class Configure(config.package.Package):
 
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
+    self.libraries.saveLog()
     if self.libraries.check(self.lapackLibrary, 'iessl'):
       self.addDefine('HAVE_ESSL',1)
+    self.logWrite(self.libraries.restoreLog())
     return
 
   def checkMKL(self):
     '''Check for Intel MKL library'''
+    self.libraries.saveLog()
     if self.libraries.check(self.lapackLibrary, 'mkl_set_num_threads'):
       self.mkl = 1
+    self.logWrite(self.libraries.restoreLog())
     return
 
   def checkPESSL(self):
     '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
+    self.libraries.saveLog()
     if self.libraries.check(self.lapackLibrary, 'ipessl'):
+      self.logWrite(self.libraries.restoreLog())
       raise RuntimeError('Cannot use PESSL instead of ESSL!')
+    self.logWrite(self.libraries.restoreLog())
     return
 
   def mangleBlas(self, baseName):
@@ -433,6 +444,7 @@ class Configure(config.package.Package):
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
     routines = ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr','steqr']
+    self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
     for baseName in routines:
@@ -440,6 +452,7 @@ class Configure(config.package.Package):
         self.missingRoutines.append(baseName)
         self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
     self.compilers.LIBS = oldLibs
+    self.logWrite(self.libraries.restoreLog())
 
   def checklsame(self):
     ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''
@@ -449,19 +462,24 @@ class Configure(config.package.Package):
         routine = routine + '_'
     else:
       routine = self.compilers.mangleFortranFunction(routine)
+    self.libraries.saveLog()
     if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
       self.addDefine('MISSING_LAPACK_'+routine, 1)
+    self.logWrite(self.libraries.restoreLog())
 
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
+    self.libraries.saveLog()
     if self.f2c:
       if self.mangling == 'underscore':
-        return self.libraries.check(self.dlib,routine+'_')
+        ret = self.libraries.check(self.dlib,routine+'_')
       else:
-        return self.libraries.check(self.dlib,routine)
+        ret = self.libraries.check(self.dlib,routine)
     else:
-      return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
+      ret = self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
+    self.logWrite(self.libraries.restoreLog())
+    return ret
 
   def check64BitBLASIndices(self):
     '''Check for and use 64bit integer blas'''

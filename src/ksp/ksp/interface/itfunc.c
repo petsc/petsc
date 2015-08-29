@@ -330,12 +330,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
-      ierr = MatNullSpaceTest(nullsp,pmat,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullsp,mat,NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
@@ -505,7 +505,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   MPI_Comm          comm;
   PetscInt          pcreason;
   MatNullSpace      nullsp;
-  Vec               btmp,vec_rhs;
+  Vec               btmp,vec_rhs=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -645,9 +645,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = MatViewFromOptions(mat,((PetscObject)ksp)->prefix,"-ksp_view_mat");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(pmat,((PetscObject)ksp)->prefix,"-ksp_view_pmat");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ksp->vec_rhs,((PetscObject)ksp)->prefix,"-ksp_view_rhs");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,(PetscObject)ksp,"-ksp_view_rhs");CHKERRQ(ierr);
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
@@ -761,14 +761,14 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,(PetscObject)ksp,"-ksp_view_mat_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,(PetscObject)ksp,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view");CHKERRQ(ierr);
@@ -788,7 +788,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&t);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"KSP final norm of residual %g\n",(double)norm);CHKERRQ(ierr);
   }
-  ierr = VecViewFromOptions(ksp->vec_sol,((PetscObject)ksp)->prefix,"-ksp_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_sol,(PetscObject)ksp,"-ksp_view_solution");CHKERRQ(ierr);
 
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);

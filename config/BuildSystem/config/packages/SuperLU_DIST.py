@@ -3,12 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit  = '27583c7ca1d2b1b0760a8f20033d92bf3b0163c1' # v4.0-p2 feb-28-2015
+    self.gitcommit  = '1e387bb0c07bec2b746fd388e6c40892b608a8ef' # v4.1 jul-30-2015
     self.giturls    = ['https://bitbucket.org/petsc/pkg-superlu_dist.git']
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.0-p2.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.1.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_4.0.a']]
+    self.liblist    = [['libsuperlu_dist_4.1.a']]
     # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1
@@ -17,7 +17,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('SuperLU_DIST', '-download-superlu_dist-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install Superlu_DIST to use GPUs'))
+    help.addArgument('SUPERLU_DIST', '-download-superlu_dist-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install Superlu_DIST to use GPUs'))
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -43,7 +43,7 @@ class Configure(config.package.Package):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_4.0.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_4.1.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('INCS         = '+self.headers.toString(self.mpi.include)+' '+self.headers.toString(self.parmetis.include)+' '+self.headers.toString(self.metis.include)+'\n')

@@ -17,6 +17,7 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.mpi             = framework.require('config.packages.MPI',self)
@@ -33,10 +34,12 @@ class Configure(config.package.CMakePackage):
     args.append('-DBUILD_METIS=OFF')
     args.append('-DBUILD_PARMETIS=OFF')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
       args.append('-DBUILD_SHARED_LIBS=off')
-
+    if not self.sharedLibraries.useShared:
+      args.append('-DBUILD_SHARED_LIBS=off')
+      
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
     if self.argDB['with-64-bit-indices']:
@@ -44,7 +47,7 @@ class Configure(config.package.CMakePackage):
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
-    if config.setCompilers.Configure.isSolaris():
+    if config.setCompilers.Configure.isSolaris(self.log):
        raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()

@@ -114,7 +114,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(ksp,1,viewer,2);
 
@@ -473,6 +475,9 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 -  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Notes:
+
+    If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+    space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
 
     All future calls to KSPSetOperators() must use the same size matrices!
 

@@ -16,7 +16,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('Chombo', '-download-chombo-dimension=<1,2,3>',    nargs.ArgInt(None, 2, 'Install Chombo to work in this space dimension'))
+    help.addArgument('CHOMBO', '-download-chombo-dimension=<1,2,3>',    nargs.ArgInt(None, 2, 'Install Chombo to work in this space dimension'))
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

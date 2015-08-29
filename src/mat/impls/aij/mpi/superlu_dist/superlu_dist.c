@@ -581,13 +581,19 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   options.ParSymbFact = NO;
 
   ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set && flg) {
-#if defined(PETSC_HAVE_PARMETIS)
-    options.ParSymbFact = YES;
-    options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
-#else
-    printf("parsymbfact needs PARMETIS");
+  if (set && flg && size>1) {
+    if (lu->MatInputMode == GLOBAL) {
+#if defined(PETSC_USE_INFO)
+      ierr = PetscInfo(A,"Warning: '-mat_superlu_dist_parsymbfact' is ignored because MatInputMode=GLOBAL\n");CHKERRQ(ierr);
 #endif
+    } else {
+#if defined(PETSC_HAVE_PARMETIS)
+      options.ParSymbFact = YES;
+      options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
+#else
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"parsymbfact needs PARMETIS");
+#endif
+    }
   }
 
   lu->FactPattern = SamePattern_SameRowPerm;
@@ -710,6 +716,10 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 
 /*MC
   MATSOLVERSUPERLU_DIST - Parallel direct solver package for LU factorization
+
+  Use ./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with SuperLU_DIST
+
+  Use -pc_type lu -pc_factor_mat_solver_package superlu_dist to us this direct solver
 
    Works with AIJ matrices
 

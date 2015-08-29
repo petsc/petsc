@@ -1679,6 +1679,19 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetGhosts_MPIAIJ"
+PetscErrorCode  MatGetGhosts_MPIAIJ(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(aij->B,NULL,nghosts);CHKERRQ(ierr);
+  if (ghosts) *ghosts = aij->garray;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_MPIAIJ"
 PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
@@ -2729,7 +2742,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                 /*114*/MatGetSeqNonzeroStructure_MPIAIJ,
                                        0,
-                                       0,
+                                       MatGetGhosts_MPIAIJ,
                                        0,
                                        0,
                                 /*119*/0,
@@ -2741,7 +2754,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetColumnNorms_MPIAIJ,
                                        MatInvertBlockDiagonal_MPIAIJ,
                                        0,
-                                       MatGetSubMatricesParallel_MPIAIJ,
+                                       MatGetSubMatricesMPI_MPIAIJ,
                                 /*129*/0,
                                        MatTransposeMatMult_MPIAIJ_MPIAIJ,
                                        MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ,
@@ -3090,6 +3103,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ"
+/* TODO: Not scalable because of ISAllGather(). */
 PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -3340,22 +3354,22 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],co
 
        The format which is used for the sparse matrix input, is equivalent to a
     row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
+    as shown
 
-        1 0 0
-        2 0 3     P0
-       -------
-        4 5 6     P1
-
-     Process0 [P0]: rows_owned=[0,1]
-        i =  {0,1,3}  [size = nrow+1  = 2+1]
-        j =  {0,0,2}  [size = nz = 6]
-        v =  {1,2,3}  [size = nz = 6]
-
-     Process1 [P1]: rows_owned=[2]
-        i =  {0,3}    [size = nrow+1  = 1+1]
-        j =  {0,1,2}  [size = nz = 6]
-        v =  {4,5,6}  [size = nz = 6]
+$        1 0 0
+$        2 0 3     P0
+$       -------
+$        4 5 6     P1
+$
+$     Process0 [P0]: rows_owned=[0,1]
+$        i =  {0,1,3}  [size = nrow+1  = 2+1]
+$        j =  {0,0,2}  [size = 3]
+$        v =  {1,2,3}  [size = 3]
+$
+$     Process1 [P1]: rows_owned=[2]
+$        i =  {0,3}    [size = nrow+1  = 1+1]
+$        j =  {0,1,2}  [size = 3]
+$        v =  {4,5,6}  [size = 3]
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
@@ -3549,22 +3563,22 @@ PetscErrorCode  MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
 
        The format which is used for the sparse matrix input, is equivalent to a
     row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
+    as shown
 
-        1 0 0
-        2 0 3     P0
-       -------
-        4 5 6     P1
-
-     Process0 [P0]: rows_owned=[0,1]
-        i =  {0,1,3}  [size = nrow+1  = 2+1]
-        j =  {0,0,2}  [size = nz = 6]
-        v =  {1,2,3}  [size = nz = 6]
-
-     Process1 [P1]: rows_owned=[2]
-        i =  {0,3}    [size = nrow+1  = 1+1]
-        j =  {0,1,2}  [size = nz = 6]
-        v =  {4,5,6}  [size = nz = 6]
+$        1 0 0
+$        2 0 3     P0
+$       -------
+$        4 5 6     P1
+$
+$     Process0 [P0]: rows_owned=[0,1]
+$        i =  {0,1,3}  [size = nrow+1  = 2+1]
+$        j =  {0,0,2}  [size = 3]
+$        v =  {1,2,3}  [size = 3]
+$
+$     Process1 [P1]: rows_owned=[2]
+$        i =  {0,3}    [size = nrow+1  = 1+1]
+$        j =  {0,1,2}  [size = 3]
+$        v =  {4,5,6}  [size = 3]
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
@@ -3874,12 +3888,12 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm,Mat inmat,P
   PetscInt       m,N,i,rstart,nnz,Ii;
   PetscInt       *indx;
   PetscScalar    *values;
-  
+
   PetscFunctionBegin;
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
     PetscInt       *dnz,*onz,sum,bs,cbs;
-   
+
     if (n == PETSC_DECIDE) {
       ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
     }
@@ -3904,8 +3918,8 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm,Mat inmat,P
     ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  } 
- 
+  }
+
   /* numeric phase */
   ierr = MatGetOwnershipRange(*outmat,&rstart,NULL);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -4465,7 +4479,7 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1 && scall == MAT_REUSE_MATRIX) PetscFunctionReturn(0);
-    
+
   ierr = PetscLogEventBegin(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   a = (Mat_SeqAIJ*)(mpimat->A)->data;
   b = (Mat_SeqAIJ*)(mpimat->B)->data;

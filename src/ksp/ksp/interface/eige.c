@@ -5,7 +5,8 @@
 #undef __FUNCT__
 #define __FUNCT__ "KSPComputeExplicitOperator"
 /*@
-    KSPComputeExplicitOperator - Computes the explicit preconditioned operator.
+    KSPComputeExplicitOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
+    space removal if applicable.
 
     Collective on KSP
 
@@ -27,11 +28,11 @@
 
 .keywords: KSP, compute, explicit, operator
 
-.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator()
+.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator(), KSPSetDiagonalScale(), KSPSetNullSpace()
 @*/
 PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 {
-  Vec            in,out;
+  Vec            in,out,work;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       i,M,m,*rows,start,end;
@@ -47,6 +48,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
   ierr = VecDuplicate(ksp->vec_sol,&in);CHKERRQ(ierr);
   ierr = VecDuplicate(ksp->vec_sol,&out);CHKERRQ(ierr);
+  ierr = VecDuplicate(ksp->vec_sol,&work);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
@@ -73,17 +75,17 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
-    ierr = KSP_MatMult(ksp,A,in,out);CHKERRQ(ierr);
-    ierr = KSP_PCApply(ksp,out,in);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,in,out,work);CHKERRQ(ierr);
 
-    ierr = VecGetArray(in,&array);CHKERRQ(ierr);
+    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecRestoreArray(in,&array);CHKERRQ(ierr);
+    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecDestroy(&in);CHKERRQ(ierr);
   ierr = VecDestroy(&out);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

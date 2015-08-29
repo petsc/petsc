@@ -204,42 +204,6 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDSViewFromOptions"
-/*
-  PetscDSViewFromOptions - Processes command line options to determine if/how a PetscDS is to be viewed.
-
-  Collective on PetscDS
-
-  Input Parameters:
-+ prob   - the PetscDS
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscDS, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscDSViewFromOptions(PetscDS prob, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) prob), prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) prob), ((PetscObject) prob)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscDSView(prob, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDSSetFromOptions"
 /*@
   PetscDSSetFromOptions - sets parameters in a PetscDS from the options database
@@ -1107,8 +1071,8 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidFunction(f0, 3);
-  PetscValidFunction(f1, 4);
+  if (f0) PetscValidFunction(f0, 3);
+  if (f1) PetscValidFunction(f1, 4);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   prob->f[f*2+0] = f0;

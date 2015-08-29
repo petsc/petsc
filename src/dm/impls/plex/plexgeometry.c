@@ -981,6 +981,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (PetscUnlikely(dim > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No support for dim %D > 3",dim);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
 
@@ -1146,6 +1147,20 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeGeometryFVM"
+/*@
+  DMPlexComputeGeometryFVM - Computes the cell and face geometry for a finite volume method
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
++ cellgeom - A Vec of PetscFVCellGeom data
+. facegeom - A Vec of PetscFVFaceGeom data
+
+  Level: developer
+
+.seealso: PetscFVFaceGeom, PetscFVCellGeom, DMPlexComputeGeometryFEM()
+@*/
 PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 {
   DM             dmFace, dmCell;

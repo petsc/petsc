@@ -373,7 +373,8 @@ class Package(config.base.Configure):
       raise RuntimeError('--with-'+self.package+'-dir='+self.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include' in self.argDB and not 'with-'+self.package+'-lib' in self.argDB:
-      raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
+      if self.liblist[0]:
+        raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
     if 'with-'+self.package+'-lib' in self.argDB and not 'with-'+self.package+'-include' in self.argDB:
       if self.includes:
         raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
@@ -381,7 +382,12 @@ class Package(config.base.Configure):
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
     if 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
-      libs = self.argDB['with-'+self.package+'-lib']
+      if self.liblist[0]:
+        libs  = self.argDB['with-'+self.package+'-lib']
+        slibs = str(self.argDB['with-'+self.package+'-lib'])
+      else:
+        libs  = []
+        slibs = 'NoneNeeded'
       inc  = []
       if self.includes:
         inc = self.argDB['with-'+self.package+'-include']
@@ -393,7 +399,7 @@ class Package(config.base.Configure):
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
-      msg = '--with-'+self.package+'-lib='+str(self.argDB['with-'+self.package+'-lib'])
+      msg = '--with-'+self.package+'-lib='+slibs
       if self.includes:
         msg += ' and \n'+'--with-'+self.package+'-include='+str(self.argDB['with-'+self.package+'-include'])
       msg += ' did not work'
@@ -513,8 +519,8 @@ class Package(config.base.Configure):
         self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
-          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
-          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
+          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo], log = self.log)
+          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo, log = self.log)
           self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
           return
         except RuntimeError, e:
@@ -539,7 +545,9 @@ class Package(config.base.Configure):
       self.headers.pushLanguage('C++')
     else:
       self.headers.pushLanguage(self.defaultLanguage)
+    self.headers.saveLog()
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
+    self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return ret
 
@@ -606,8 +614,10 @@ class Package(config.base.Configure):
         if directory: self.logPrint('Contents: '+str(os.listdir(directory)))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
+      self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
+        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           if self.includes:
@@ -619,6 +629,8 @@ class Package(config.base.Configure):
           self.directory = directory
           self.framework.packages.append(self)
           return
+      else:
+        self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
@@ -1032,7 +1044,7 @@ class GNUPackage(Package):
       fc = self.getCompiler()
       if self.compilers.fortranIsF90:
         try:
-          output, error, status = self.executeShellCommand(fc+' -v')
+          output, error, status = self.executeShellCommand(fc+' -v', log = self.log)
           output += error
         except:
           output = ''

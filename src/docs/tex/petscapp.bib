@@ -1003,7 +1003,7 @@ year    = 2014
               T. Epperly and T. Rognlien and M. Fahey and J. Cobb and A. Morris and
               S. Shende and G. Hammett and K. Indireshkumar and D. Stotler and A. Pigarov",
    journal = "J. Phys.: Conf. Ser.",
-   volume  = c125,
+   volume  = 125,
    year    = 2008,
    pages   = "012040",
    url     = "http://www.iop.org/EJ/abstract/1742-6596/125/1/012040"
@@ -1160,6 +1160,32 @@ year    = 2014
 % LiteralHTML:
 % LiteralHTML:  <a name="geosciences"><H3><center>Geosciences</center></H3>
 % LiteralHTML:
+@article{May2015496,
+title = "A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous {S}tokes flow ",
+journal = "Computer Methods in Applied Mechanics and Engineering ",
+volume = "290",
+number = "0",
+pages = "496--523",
+year = "2015",
+issn = "0045-7825",
+doi = "http://dx.doi.org/10.1016/j.cma.2015.03.014",
+url = "http://www.sciencedirect.com/science/article/pii/S0045782515001243",
+author = "D.A. May and J. Brown and L. Le Pourhiet",
+}
+@article{KnepleyLangeGorman2015,
+  title     = {Unstructured Overlapping Mesh Distribution in Parallel},
+  author    = {Matthew G. Knepley and Michael Lange and Gerard J. Gorman},
+  journal   = {ACM Transactions on Mathematical Software},
+  note      = {submitted},
+  year      = {2015}
+}
+@inproceedings{LangeKnepleyGorman2015,
+  title     = {Flexible, Scalable Mesh and Data Management using {PETSc DMPlex}},
+  author    = {Michael Lange and Matthew G. Knepley and Gerard J. Gorman},
+  booktitle = {Proceedings of the Exascale Applications and Software Conference},
+  month     = {April},
+  year      = {2015}
+}
 @article{saibaba2012application,
   title   = {Application of hierarchical matrices to linear inverse problems in geostatistics},
   author  = {Saibaba, Arvind Krishna and Ambikasaran, Sivaram and Yue Li, J and Kitanidis, Peter K and Darve, Eric F},
@@ -2482,7 +2508,7 @@ year    = 2005
  pages = "422--445",
  year = 2012
 }
-@article{sakamoto2012urans,
+@article{sakamoto2012uransb,
  author = "N. Sakamoto and P. M. Carrica and F. Stern",
  title = "URANS Simulations of Static and Dynamic Maneuvering for Surface Combatant-Part 2: Analysis and Validation of Local Flow Characteristics",
  journal = "Journal of Marine Science and Technology",
@@ -2503,7 +2529,7 @@ year    = 2005
  pages = "160--180",
  year = 2012
 }
-@article{huang2012a,
+@article{huang2012b,
  author = "J. Huang and P. M. Carrica and F. Stern",
  title = "A geometry-based level set method for curvilinear overset grids with application to ship hydrodynamics",
  journal = "International Journal for Numerical Methods in Fluids",
@@ -3144,13 +3170,13 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
         YEAR      = {1999}
 }
 @INPROCEEDINGS{GKKS-PCFD99,
-        AUTHOR = "W. D. Gropp and D. K. Kaushik and
-                  D. E. Keyes and B. F. Smith",
-        TITLE = "Towards Realistic Performance Bounds for Implicit {CFD} codes",
-        BOOKTITLE = "Proceedings of Parallel CFD'99",
-        EDITORS   = {A. {Ecer et al.}},
-        PUBLISHER = "Elsevier",
-        YEAR = "1999"
+  AUTHOR    = {William D. Gropp and Dinesh K. Kaushik and David E. Keyes and Barry F. Smith},
+  TITLE     = {Towards Realistic Performance Bounds for Implicit {CFD} codes},
+  BOOKTITLE = {Proceedings of Parallel CFD'99},
+  EDITORS   = {A. {Ecer et al.}},
+  PUBLISHER = {Elsevier},
+  URL       = {http://www.cs.odu.edu/~keyes/papers/pcfd99_gkks.pdf},
+  YEAR      = {1999}
 }
 @INPROCEEDINGS{KKS97,
         AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
@@ -4561,6 +4587,21 @@ ISSN={0885-8950}
 % LiteralHTML:
 % LiteralHTML:  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
 % LiteralHTML:
+@Article{CollierDalcinCalo2013,
+  title   = {{PetIGA}: High-Performance Isogeometric Analysis},
+  author  = {N. Collier and L. Dalcin and V.M. Calo},
+  journal = {arxiv},
+  year    = {2013},
+  number  = {1305.4452},
+  note    = {\url{http://arxiv.org/abs/1305.4452}},
+}
+@Misc{petiga-web-page,
+  author       = {N. Collier and L. Dalcin and V.M. Calo},
+  title        = {{PetIGA} {W}eb page},
+  url          = {https://bitbucket.org/dalcinl/petiga/},
+  howpublished = {\url{https://bitbucket.org/dalcinl/petiga/}},
+  year         = {2014}
+}
 @article{Logg07,
   author={Logg, Anders},
   title={Automating the Finite Element Method},
@@ -4840,8 +4881,8 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title   = "{Toolkit for Advanced Optimization (TAO) Users Manual}",
   author  = "Todd Munson and Jason Sarich and Stefan Wild and Steve Benson and Lois Curfman McInnes",
   Institution = "Argonne National Laboratory",
-  Year   = 2014,
-  Number = "ANL/MCS-TM-322 - Revision 3.5",
+  Year   = 2015,
+  Number = "ANL/MCS-TM-322 - Revision 3.6",
   url    = "http://www.mcs.anl.gov/tao",
 }
 @Unpublished{MEFpp-web-page,
@@ -4879,11 +4920,12 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 }
 @Misc{petsc-web-page,
   author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune
-            and Kris Buschelman and Victor Eijkhout and William~D. Gropp
+            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp
             and Dinesh Kaushik and Matthew~G. Knepley
             and Lois Curfman McInnes and Karl Rupp and Barry~F. Smith
-            and Hong Zhang},
+            and Stefano Zampini and Hong Zhang},
   title =  {{PETS}c {W}eb page},
+  key   = {Balay},
   url =    {http://www.mcs.anl.gov/petsc},
   howpublished = {\url{http://www.mcs.anl.gov/petsc}},
   year = {2014}
@@ -4967,9 +5009,12 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   author  = {Jed Brown and Matthew G. Knepley and Barry Smith},
   title   = {Run-time extensibility and librarization of simulation software},
   journal = {IEEE Computing in Science and Engineering},
-  note    = {Preprint},
+  month   = {Jan},
+  volume  = {17},
+  number  = {1},
+  pages   = {38--45},
   doi     = {10.1109/MCSE.2014.95},
-  year    = {2014}
+  year    = {2015}
 }
 @TechReport{ass2012,
   author = {Shrirang Abhyankar and Barry Smith and  Kerry Stevens},
@@ -5067,6 +5112,10 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title     = {Implementation of a multigrid solver on {GPU} for {S}tokes equations with strongly variable viscosity based on {M}atlab and {CUDA}},
   author    = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
   journal   = {IJHPCA},
+  volume    = {28},
+  number    = {1},
+  pages     = {50--60},
+  doi       = {10.1177/1094342013478640},
   url       = {http://hpc.sagepub.com/content/early/2013/03/03/1094342013478640.abstract},
   note      = {\url{http://hpc.sagepub.com/content/early/2013/03/03/1094342013478640.abstract}},
   year      = {2013}
@@ -5256,22 +5305,22 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 }
 @TechReport{petsc-user-ref,
   author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune
-            and Kris Buschelman and Victor Eijkhout and William~D. Gropp
+            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp
             and Dinesh Kaushik and Matthew~G. Knepley
             and Lois Curfman McInnes and Karl Rupp and Barry~F. Smith
-            and Hong Zhang},
+            and Stefano Zampini and Hong Zhang},
   title  = {{PETS}c Users Manual},
   institution = {Argonne National Laboratory},
-  year   = 2014,
-  number = {ANL-95/11 - Revision 3.5},
+  year   = 2015,
+  number = {ANL-95/11 - Revision 3.6},
   url    = {http://www.mcs.anl.gov/petsc}
 }
 @TechReport{petsc-developers,
   author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune
-            and Kris Buschelman and Victor Eijkhout and William~D. Gropp
+            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp
             and Dinesh Kaushik and Matthew~G. Knepley
             and Lois Curfman McInnes and Karl Rupp and Barry~F. Smith
-            and Hong Zhang},
+            and Stefano Zampini and Hong Zhang},
   title  = {{PETS}c Developers Manual},
   institution = {Argonne National Laboratory},
   year   = 2011,

@@ -449,7 +449,7 @@ class Configure(script.Script):
     (out, err, ret) = self.preprocess(codeStr, timeout = timeout)
     #pgi dumps filename on stderr - but returns 0 errorcode'
     if err =='conftest.c:': err = ''
-    err = self.framework.filterPreprocessOutput(err)
+    err = self.framework.filterPreprocessOutput(err, self.log)
     return not ret and not len(err)
 
   # Should be static

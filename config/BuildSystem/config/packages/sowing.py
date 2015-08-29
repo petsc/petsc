@@ -5,8 +5,8 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.giturls           = ['https://bitbucket.org/petsc/pkg-sowing.git']
-    self.gitcommit         = '9c5b20c'
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.17-p1.tar.gz']
+    self.gitcommit         = '82c0163'
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.18-p1.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.downloadonWindows = 1
@@ -55,7 +55,7 @@ class Configure(config.package.GNUPackage):
       self.logPrint("Not checking sowing on user request\n")
       return
 
-    if self.petscclone.isClone and hasattr(self.compilers, 'FC'):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or self.framework.clArgDB.has_key('download-sowing'):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 

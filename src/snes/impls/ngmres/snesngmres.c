@@ -1,5 +1,6 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 #include <petscblaslapack.h>
+#include <petscdm.h>
 
 const char *const SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",0};
 const char *const SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",0};
@@ -46,6 +47,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   const char     *optionsprefix;
   PetscInt       msize,hsize;
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
@@ -53,6 +55,12 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   }
   if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   ierr = SNESSetWorkVecs(snes,5);CHKERRQ(ierr);
+
+  if (!snes->vec_sol) {
+    ierr             = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr             = DMCreateGlobalVector(dm,&snes->vec_sol);CHKERRQ(ierr);
+  }
+
   if (!ngmres->Xdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Xdot);CHKERRQ(ierr);}
   if (!ngmres->Fdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Fdot);CHKERRQ(ierr);}
   if (!ngmres->setup_called) {
@@ -507,4 +515,3 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

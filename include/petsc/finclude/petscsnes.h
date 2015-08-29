@@ -38,6 +38,22 @@
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
 !
+!     SNESLineSearchReason
+!
+      PetscEnum SNES_LINESEARCH_SUCCEEDED
+      PetscEnum SNES_LINESEARCH_FAILED_NANORINF
+      PetscEnum SNES_LINESEARCH_FAILED_DOMAIN
+      PetscEnum SNES_LINESEARCH_FAILED_REDUCT
+      PetscEnum SNES_LINESEARCH_FAILED_USER
+      PetscEnum SNES_LINESEARCH_FAILED_FUNCTION
+
+      parameter (SNES_LINESEARCH_SUCCEEDED       = 0)
+      parameter (SNES_LINESEARCH_FAILED_NANORINF = 1)
+      parameter (SNES_LINESEARCH_FAILED_DOMAIN   = 2)
+      parameter (SNES_LINESEARCH_FAILED_REDUCT   = 3)
+      parameter (SNES_LINESEARCH_FAILED_USER     = 4)
+      parameter (SNES_LINESEARCH_FAILED_FUNCTION = 5)
+!
   ! SNESNormSchedule
 !
       PetscEnum SNES_NORM_DEFAULT
@@ -93,6 +109,17 @@
       parameter (SNES_NGMRES_SELECT_DIFFERENCE = 1)
       parameter (SNES_NGMRES_SELECT_LINESEARCH = 2)
 
+!
+! SNESQNType
+!
+
+      PetscEnum SNES_QN_LBFGS
+      PetscEnum SNES_QN_BROYDEN
+      PetscEnum SNES_QN_BADBROYDEN
+
+      parameter(SNES_QN_LBFGS       = 0)
+      parameter(SNES_QN_BROYDEN     = 1)
+      parameter(SNES_QN_BADBROYDEN  = 2)
 
 !
 ! SNESQNScaleType

@@ -960,7 +960,8 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   Input Parameters:
   + s - The PetscSection for the local field layout
   . sf - The SF describing parallel layout of the section points (leaves are unowned local points)
-  - includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
+  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
+  - localOffsets - If PETSC_TRUE, use local rather than global offsets for the points
 
   Output Parameter:
   . gsection - The PetscSection for the global field layout
@@ -971,7 +972,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
 .seealso: PetscSectionCreate()
 @*/
-PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscSection *gsection)
+PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection)
 {
   const PetscInt *pind = NULL;
   PetscInt       *recv = NULL, *neg = NULL;
@@ -1020,8 +1021,10 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     (*gsection)->atlasOff[q] = off;
     off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q]-cdof : 0;
   }
-  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRQ(ierr);
-  globalOff -= off;
+  if (!localOffsets) {
+    ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRQ(ierr);
+    globalOff -= off;
+  }
   for (p = pStart, off = 0; p < pEnd; ++p) {
     (*gsection)->atlasOff[p-pStart] += globalOff;
     if (neg) neg[p] = -((*gsection)->atlasOff[p-pStart]+1);
@@ -1037,7 +1040,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     }
   }
   ierr = PetscFree2(neg,recv);CHKERRQ(ierr);
-  ierr = PetscSectionViewFromOptions(*gsection,NULL,"-section_global_view");CHKERRQ(ierr);
+  ierr = PetscSectionViewFromOptions(*gsection,NULL,"-global_section_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1161,6 +1164,20 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetValueLayout"
+/*@
+  PetscSectionGetValueLayout - Get the PetscLayout associated with a section, usually the default global section.
+
+  Input Parameters:
++ comm - The MPI_Comm
+- s    - The PetscSection
+
+  Output Parameter:
+. layout - The layout for the section
+
+  Level: developer
+
+.seealso: PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
   PetscInt       pStart, pEnd, p, localSize = 0;

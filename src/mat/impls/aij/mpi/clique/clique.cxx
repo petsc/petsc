@@ -258,6 +258,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
   Use ./configure --download-clique to have PETSc installed with Clique
 
+  Use -pc_type lu -pc_factor_mat_solver_package clique to us this direct solver
+
   Options Database Keys:
 + -mat_clique_    -
 - -mat_clique_ <integer> -

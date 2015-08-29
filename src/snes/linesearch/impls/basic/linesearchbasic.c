@@ -40,7 +40,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
     ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
-      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAINERROR);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }

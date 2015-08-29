@@ -87,7 +87,7 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode SNESReasonView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESReasonViewFromOptions(SNES);
 
@@ -573,10 +573,10 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order
 E*/
 typedef enum {SNES_LINESEARCH_SUCCEEDED,
               SNES_LINESEARCH_FAILED_NANORINF,
-              SNES_LINESEARCH_FAILED_DOMAINERROR,
-              SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION,
-              SNES_LINESEARCH_FAILED_USER_CHANGE,
-              SNES_LINESEARCH_FAILED_FUNCTION_COUNT} SNESLineSearchReason;
+              SNES_LINESEARCH_FAILED_DOMAIN,
+              SNES_LINESEARCH_FAILED_REDUCT,       /* INSUFFICENT REDUCTION */
+              SNES_LINESEARCH_FAILED_USER,
+              SNES_LINESEARCH_FAILED_FUNCTION} SNESLineSearchReason;
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetReason(SNESLineSearch, SNESLineSearchReason*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetReason(SNESLineSearch, SNESLineSearchReason);
@@ -833,5 +833,7 @@ PETSC_EXTERN PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
+
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

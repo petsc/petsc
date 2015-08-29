@@ -409,5 +409,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   ierr = PetscFree(buffer);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"\n  </AppendedData>\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"</VTKFile>\n");CHKERRQ(ierr);
+  ierr = PetscFClose(comm,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

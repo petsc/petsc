@@ -605,7 +605,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
    bcols is chosen s.t. dy-array takes 50% of memory space as mat */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (isBAIJ) {
+  if (isBAIJ || m == 0) {
     c->brows = m;
     c->bcols = 1;
   } else { /* mpiaij matrix */

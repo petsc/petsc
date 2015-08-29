@@ -378,7 +378,9 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr      = MatCreate(PETSC_COMM_SELF,&temp_local_mat);CHKERRQ(ierr);
   ierr      = MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize);CHKERRQ(ierr);
-  if (dd.DBC_zerorows) { /* in this case, we need to zero out the some rows, so use seqaij */
+  /* set local matrices type: here we use SEQSBAIJ primarily for testing purpose */
+  /* in order to avoid conversions inside the BDDC code, use SeqAIJ if possible */
+  if (dd.DBC_zerorows && !dd.ipx) { /* in this case, we need to zero out some of the rows, so use seqaij */
     ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
   } else {
     ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -735,7 +737,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   /* Compute global mapping of local dofs */
   ierr = ComputeMapping(dd,&matis_map);CHKERRQ(ierr);
   /* Create MATIS object needed by BDDC */
-  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,&temp_A);CHKERRQ(ierr);
+  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,NULL,&temp_A);CHKERRQ(ierr);
   /* Set local subdomain matrices into MATIS object */
   ierr = MatScale(local_mat,dd.scalingfactor);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
@@ -744,13 +746,25 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   ierr = MatAssemblyEnd(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (dd.DBC_zerorows) {
+    PetscInt dirsize;
+
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL);CHKERRQ(ierr);
     ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(dirichletIS,&dirsize);CHKERRQ(ierr);
+    /* giving hints to local and global matrices could be useful for the BDDC */
+    if (!dirsize) {
+      ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatSetOption(local_mat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatSetOption(local_mat,MAT_SPD,PETSC_FALSE);CHKERRQ(ierr);
+    }
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
+  } else { /* safe to set the options for the global matrices (they will be communicated to the matis local matrices) */
+    ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(temp_A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-
 #if DEBUG
   {
     Vec       lvec,rvec;
@@ -819,7 +833,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   ierr = KSPSetOperators(temp_ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(temp_ksp,1.0e-8,1.0e-8,1.0e15,10000);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPGetPC(temp_ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
 
@@ -1033,7 +1046,6 @@ int main(int argc,char **args)
   /* assemble BDDC rhs */
   ierr = MatMult(A,exact_solution,bddc_rhs);CHKERRQ(ierr);
   /* test ksp with BDDC */
-  ierr = VecSet(bddc_solution,0.0);CHKERRQ(ierr);
   ierr = KSPSolve(KSPwithBDDC,bddc_rhs,bddc_solution);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(KSPwithBDDC,&its);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(KSPwithBDDC,&maxeig,&mineig);CHKERRQ(ierr);

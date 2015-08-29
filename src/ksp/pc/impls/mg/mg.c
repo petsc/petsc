@@ -547,7 +547,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mglevels[0]->levels;
   PC             cpc;
-  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
+  PetscBool      dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
@@ -793,20 +793,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  /*
-      If coarse solver is not direct method then DO NOT USE preonly
-  */
-  ierr = PetscObjectTypeCompare((PetscObject)mglevels[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
-  if (preonly) {
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCSVD,&svd);CHKERRQ(ierr);
-    if (!lu && !redundant && !cholesky && !svd) {
-      ierr = KSPSetType(mglevels[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
-    }
-  }
-
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSetUp(mglevels[0]->smoothd);CHKERRQ(ierr);
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
@@ -965,7 +951,7 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscValidLogicalCollectiveInt(pc,n,2);
+  PetscValidLogicalCollectiveEnum(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=0; i<levels; i++) mglevels[i]->cycles = n;
@@ -1192,7 +1178,6 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
-.  -pc_mg_monitor - print information on the multigrid convergence
 .  -pc_mg_galerkin - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
 .  -pc_mg_multiplicative_cycles - number of cycles to use as the preconditioner (defaults to 1)
 .  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices

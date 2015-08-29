@@ -5,9 +5,7 @@
 #define PETSC_SKIP_COMPLEX
 
 #include <petscconf.h>
-PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
-PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #undef __FUNCT__

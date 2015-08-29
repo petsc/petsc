@@ -238,9 +238,7 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxConeTime;
-  PetscStageLog      stageLog;
-  PetscEventPerfLog  eventLog;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -278,9 +276,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxClosureTime;
-  PetscStageLog      stageLog;
-  PetscEventPerfLog  eventLog;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -324,9 +320,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   PetscScalar        tmpArray[64];
   PetscScalar       *userArray     = user->reuseArray ? tmpArray : NULL;
   PetscReal          maxTimePerRun = user->maxVecClosureTime;
-  PetscStageLog      stageLog;
-  PetscEventPerfLog  eventLog;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -340,7 +334,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
     ierr = PetscLogEventRegister("VecClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   }
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
   if (useIndex) {ierr = DMPlexCreateClosureIndex(dm, s);CHKERRQ(ierr);}
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);

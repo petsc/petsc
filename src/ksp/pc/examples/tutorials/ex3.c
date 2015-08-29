@@ -1,14 +1,14 @@
 
-static char help[] = "Test PC redistribute on matrix with imbalance load. \n\
+static char help[] = "Test PC redistribute on matrix with load imbalance. \n\
                       Modified from src/ksp/ksp/examples/tutorials/ex2.c.\n\
 Input parameters include:\n\
   -random_exact_sol : use a random exact solution vector\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 /*
-Example: 
-  mpiexec -n 8 ./ex3 -n 10000 -ksp_type cg -pc_type bjacobi -sub_pc_type icc -ksp_rtol 1.e-8 -log_summary 
-  mpiexec -n 8 ./ex3 -n 10000 -ksp_type preonly -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc -redistribute_ksp_rtol 1.e-8 -log_summary 
+Example:
+  mpiexec -n 8 ./ex3 -n 10000 -ksp_type cg -pc_type bjacobi -sub_pc_type icc -ksp_rtol 1.e-8 -log_summary
+  mpiexec -n 8 ./ex3 -n 10000 -ksp_type preonly -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc -redistribute_ksp_rtol 1.e-8 -log_summary
 */
 
 #include <petscksp.h>

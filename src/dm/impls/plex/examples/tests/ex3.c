@@ -32,27 +32,30 @@ typedef struct {
 } AppCtx;
 
 /* u = 1 */
-void constant(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode constant(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = user->constants[d];
+  return 0;
 }
-void constantDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
+PetscErrorCode constantDer(PetscInt dim, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = 0.0;
+  return 0;
 }
 
 /* u = x */
-void linear(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode linear(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = coords[d];
+  return 0;
 }
-void linearDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
+PetscErrorCode linearDer(PetscInt dim, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscInt d, e;
@@ -60,52 +63,59 @@ void linearDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, vo
     u[d] = 0.0;
     for (e = 0; e < user->dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
   }
+  return 0;
 }
 
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
-void quadratic(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode quadratic(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   if (user->dim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
   else if (user->dim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
   else if (user->dim > 0) {u[0] = coords[0]*coords[0];}
+  return 0;
 }
-void quadraticDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
+PetscErrorCode quadraticDer(PetscInt dim, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   if (user->dim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
   else if (user->dim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
   else if (user->dim > 0) {u[0] = 2.0*coords[0]*n[0];}
+  return 0;
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
-void cubic(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode cubic(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   if (user->dim > 2)      {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
   else if (user->dim > 1) {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
   else if (user->dim > 0) {u[0] = coords[0]*coords[0]*coords[0];}
+  return 0;
 }
-void cubicDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
+PetscErrorCode cubicDer(PetscInt dim, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   if (user->dim > 2)      {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
   else if (user->dim > 1) {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
   else if (user->dim > 0) {u[0] = 3.0*coords[0]*coords[0]*n[0];}
+  return 0;
 }
 
 /* u = sin(x) */
-void trig(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode trig(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = tanh(coords[d] - 0.5);
+  return 0;
 }
-void trigDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
+PetscErrorCode trigDer(PetscInt dim, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
+  return 0;
 }
 
 #undef __FUNCT__
@@ -469,6 +479,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     PetscBool    isNullSpace;
     PetscDS ds;
 
+    if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
@@ -599,7 +610,8 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeError_Plex"
-static PetscErrorCode ComputeError_Plex(DM dm, void (**exactFuncs)(const PetscReal[], PetscScalar *, void *), void (**exactFuncDers)(const PetscReal[], const PetscReal[], PetscScalar *, void *),
+static PetscErrorCode ComputeError_Plex(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *),
+                                        PetscErrorCode (**exactFuncDers)(PetscInt, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                         void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
 {
   Vec            u;
@@ -619,7 +631,8 @@ static PetscErrorCode ComputeError_Plex(DM dm, void (**exactFuncs)(const PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeError_DA"
-static PetscErrorCode ComputeError_DA(DM dm, void (**exactFuncs)(const PetscReal[], PetscScalar *, void *), void (**exactFuncDers)(const PetscReal[], const PetscReal[], PetscScalar *, void *),
+static PetscErrorCode ComputeError_DA(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *),
+                                      PetscErrorCode (**exactFuncDers)(PetscInt, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                       void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
 {
   Vec            u;
@@ -639,7 +652,8 @@ static PetscErrorCode ComputeError_DA(DM dm, void (**exactFuncs)(const PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeError"
-static PetscErrorCode ComputeError(DM dm, void (**exactFuncs)(const PetscReal[], PetscScalar *, void *), void (**exactFuncDers)(const PetscReal[], const PetscReal[], PetscScalar *, void *),
+static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *),
+                                   PetscErrorCode (**exactFuncDers)(PetscInt, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                    void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
 {
   PetscBool      isPlex, isDA;
@@ -660,14 +674,17 @@ static PetscErrorCode ComputeError(DM dm, void (**exactFuncs)(const PetscReal[],
 #define __FUNCT__ "CheckFunctions"
 static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
-  void          (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx);
-  void          (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx);
-  void           *exactCtxs[3] = {user, user, user};
-  MPI_Comm        comm;
-  PetscReal       error, errorDer, tol = 1.0e-10;
-  PetscErrorCode  ierr;
+  PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
+  void            *exactCtxs[3];
+  MPI_Comm         comm;
+  PetscReal        error, errorDer, tol = 1.0e-10;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  exactCtxs[0]       = user;
+  exactCtxs[1]       = user;
+  exactCtxs[2]       = user;
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
@@ -706,10 +723,10 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 #define __FUNCT__ "CheckInterpolation"
 static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscInt order, AppCtx *user)
 {
-  void          (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx);
-  void          (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[1]) (PetscInt, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncDers[1]) (PetscInt, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
   PetscReal       n[3]         = {1.0, 1.0, 1.0};
-  void           *exactCtxs[3] = {user, user, user};
+  void           *exactCtxs[3];
   DM              rdm, idm, fdm;
   Mat             Interp;
   Vec             iu, fu, scaling;
@@ -720,6 +737,9 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  exactCtxs[0]       = user;
+  exactCtxs[1]       = user;
+  exactCtxs[2]       = user;
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
@@ -792,17 +812,20 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
 #define __FUNCT__ "CheckConvergence"
 static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
 {
-  DM             odm = dm, rdm = NULL;
-  void         (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx) = {trig};
-  void         (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx) = {trigDer};
-  void          *exactCtxs[3] = {user, user, user};
-  PetscInt       r;
-  PetscReal      errorOld, errorDerOld, error, errorDer;
-  double         p;
-  PetscErrorCode ierr;
+  DM               odm = dm, rdm = NULL;
+  PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {trig};
+  PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx) = {trigDer};
+  void            *exactCtxs[3];
+  PetscInt         r;
+  PetscReal        errorOld, errorDerOld, error, errorDer;
+  double           p;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!user->convergence) PetscFunctionReturn(0);
+  exactCtxs[0] = user;
+  exactCtxs[1] = user;
+  exactCtxs[2] = user;
   ierr = PetscObjectReference((PetscObject) odm);CHKERRQ(ierr);
   ierr = ComputeError(odm, exactFuncs, exactFuncDers, exactCtxs, &errorOld, &errorDerOld, user);CHKERRQ(ierr);
   for (r = 0; r < Nr; ++r) {

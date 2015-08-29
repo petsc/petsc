@@ -990,10 +990,11 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #define __FUNCT__ "MatMult_MPISBAIJ_Hermitian"
 PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
 {
-  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       nt,mbs=a->mbs,bs=A->rmap->bs;
-  PetscScalar    *x,*from;
+  Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          nt,mbs=a->mbs,bs=A->rmap->bs;
+  PetscScalar       *from;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
@@ -1008,11 +1009,11 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
 
   /* copy x into the vec slvec0 */
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
 
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2451,9 +2452,9 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->Mvctx);CHKERRQ(ierr);
 
-  ierr =  VecDuplicate(oldmat->slvec0,&a->slvec0);CHKERRQ(ierr);
+  ierr = VecDuplicate(oldmat->slvec0,&a->slvec0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->slvec0);CHKERRQ(ierr);
-  ierr =  VecDuplicate(oldmat->slvec1,&a->slvec1);CHKERRQ(ierr);
+  ierr = VecDuplicate(oldmat->slvec1,&a->slvec1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->slvec1);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(a->slvec1,&nt);CHKERRQ(ierr);
@@ -2475,9 +2476,9 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   a->sMvctx = oldmat->sMvctx;
   ierr      = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->sMvctx);CHKERRQ(ierr);
 
-  ierr    =  MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
+  ierr    = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->A);CHKERRQ(ierr);
-  ierr    =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
+  ierr    = MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->B);CHKERRQ(ierr);
   ierr    = PetscFunctionListDuplicate(((PetscObject)matin)->qlist,&((PetscObject)mat)->qlist);CHKERRQ(ierr);
   *newmat = mat;

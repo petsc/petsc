@@ -976,6 +976,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     else {
       if (ksp->pc) {
         ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
         if (matset) {
           ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
           ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
@@ -1005,12 +1006,13 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     else {
       if (ksp->pc) {
         ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
         if (matset) {
           ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
         } else if (pmatset) {
           ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
-          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
         }
       }
       if (!vecl) {
@@ -1090,24 +1092,18 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
    Output Parameter:
 .  reason - negative value indicates diverged, positive value converged, see KSPConvergedReason
 
-   Possible values for reason:
-+  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
-.  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
-.  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence
-           test routine is set.
-.  KSP_CONVERGED_CG_NEG_CURVE
-.  KSP_CONVERGED_CG_CONSTRAINED
-.  KSP_CONVERGED_STEP_LENGTH
-.  KSP_DIVERGED_ITS  (required more than its to reach convergence)
-.  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
-.  KSP_DIVERGED_NANORINF (residual norm became Not-a-number or Inf likely due to 0/0)
-.  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
--  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial
-                                residual. Try a different preconditioner, or a different initial Level.)
-
-   See also manual page for each reason.
-
-   guess: beginner
+   Possible values for reason: See also manual page for each reason
+$  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
+$  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
+$  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence test routine is set.
+$  KSP_CONVERGED_CG_NEG_CURVE
+$  KSP_CONVERGED_CG_CONSTRAINED
+$  KSP_CONVERGED_STEP_LENGTH
+$  KSP_DIVERGED_ITS  (required more than its to reach convergence)
+$  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
+$  KSP_DIVERGED_NANORINF (residual norm became Not-a-number or Inf likely due to 0/0)
+$  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
+$  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial residual. Try a different preconditioner, or a different initial Level.)
 
    Notes: Can only be called after the call the KSPSolve() is complete.
 
