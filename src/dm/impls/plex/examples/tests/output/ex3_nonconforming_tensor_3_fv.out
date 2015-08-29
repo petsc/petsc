@@ -1,0 +1,8 @@
+Vec 0, max cell gradient error 0
+Vec 1, max cell gradient error 0
+Vec 2, max cell gradient error 0
+Vec 3, max cell gradient error 1.72916e-15
+Vec 4, max cell gradient error 1.26321e-15
+Vec 5, max cell gradient error 1.34381e-15
+Function tests pass for order 0 at tolerance 1e-10
+Function tests pass for order 0 derivatives at tolerance 1e-10
