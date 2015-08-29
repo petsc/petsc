@@ -384,7 +384,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     }
     ierr = PetscMalloc1(on, &oidx);CHKERRQ(ierr);
     on   = 0;
-    /*Merge local indices together */
+    /* Merge local indices together */
     for (i=0; i<osm->n; i++) {
       ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
       ierr = ISGetIndices(osm->ois[i],&oidxi);CHKERRQ(ierr);
