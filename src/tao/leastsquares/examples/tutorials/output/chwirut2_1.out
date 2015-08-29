@@ -1,4 +1,4 @@
-iter =   0, Function value 4575.71, Residual: 4.49423e+307 
+iter =   0, Function value 4575.71, Residual: Inf 
 iter =   1, Function value 4575.71, Residual: 1815.3 
 iter =   2, Function value 4575.71, Residual: 4838.21 
 iter =   3, Function value 4575.71, Residual: 1404.45 
@@ -35,7 +35,7 @@ iter =  33, Function value 2384.48, Residual: 0.287332
 iter =  34, Function value 2384.48, Residual: 0.221247 
 iter =  35, Function value 2384.48, Residual: 0.0183748 
 iter =  36, Function value 2384.48, Residual: 0.0155711 
-iter =  37, Function value 2384.48, Residual: 0.0473476 
+iter =  37, Function value 2384.48, Residual: 0.0473477 
 iter =  38, Function value 2384.48, Residual: 0.00108411 
 iter =  39, Function value 2384.48, Residual: 0.0048771 
 iter =  40, Function value 2384.48, Residual: 0.000172833 
