@@ -31,16 +31,16 @@ typedef struct {
 #define __FUNCT__ "PostStepFunction"
 PetscErrorCode PostStepFunction(TS ts)
 {
-  PetscErrorCode ierr;
-  Vec            U;
-  PetscReal      t;
-  const PetscScalar    *u;
+  PetscErrorCode    ierr;
+  Vec               U;
+  PetscReal         t;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"delta(%3.2f) = %8.7f\n",t,u[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"delta(%3.2f) = %8.7f\n",(double)t,(double)u[0]);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
@@ -374,7 +374,8 @@ int main(int argc,char **argv)
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%g\n",(double)(x_ptr[0]-ctx.Pm));CHKERRQ(ierr);
- 
+  ierr = VecRestoreArray(q,&x_ptr);CHKERRQ(ierr);
+
   ierr = ComputeSensiP(lambda[0],mu[0],&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
