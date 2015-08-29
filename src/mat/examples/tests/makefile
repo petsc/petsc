@@ -728,9 +728,9 @@ ex192: ex192.o chkopts
 	-${CLINKER} -o ex192 ex192.o ${PETSC_MAT_LIB}
 	${RM} ex192.o
 
-ex193: ex193.o chkopts
-	-${CLINKER} -o ex193 ex193.o ${PETSC_MAT_LIB}
-	${RM} ex193.o
+ex194: ex194.o chkopts
+	-${CLINKER} -o ex194 ex194.o ${PETSC_MAT_LIB}
+	${RM} ex194.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
