@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   /* report on setup */
   ierr = DMDAGetLocalInfo(da,&info); CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"setup done: grid  Mx,My = %D,%D  with spacing  dx,dy = %.4f,%.4f\n",
-                     info.mx,info.my,4.0/(PetscReal)(info.mx-1),4.0/(PetscReal)(info.my-1));CHKERRQ(ierr);
+                     info.mx,info.my,(double)(4.0/(PetscReal)(info.mx-1)),(double)(4.0/(PetscReal)(info.my-1)));CHKERRQ(ierr);
 
   /* solve nonlinear system */
   ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(u,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)info.mx * (PetscReal)info.my;
   ierr = VecNorm(u,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"errors:     av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"errors:     av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",(double)error1,(double)errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode FormPsiAndExactSoln(DM da) {
   ierr = DMDAVecGetArray(da, user->uexact, &uexact);CHKERRQ(ierr);
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
-      r = PetscSqrtReal(pow(coords[j][i].x,2) + pow(coords[j][i].y,2));
+      r = PetscSqrtReal(PetscPowScalarInt(coords[j][i].x,2) + PetscPowScalarInt(coords[j][i].y,2));
       if (r <= 1.0) psi[j][i] = PetscSqrtReal(1.0 - r * r);
       else psi[j][i] = -1.0;
       if (r <= afree) uexact[j][i] = psi[j][i];  /* on the obstacle */
