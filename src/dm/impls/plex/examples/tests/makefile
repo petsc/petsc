@@ -176,6 +176,7 @@ runex15_0:
 	   ${RM} -f ex15_0.tmp
 
 TESTEXAMPLES_C        = ex3.PETSc runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 ex3.rm
+TESTEXAMPLES_C_NOCOMPLEX = ex3.PETSc runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm
 TESTEXAMPLES_HDF5     = ex15.PETSc runex15_0 ex15.rm
 TESTEXAMPLES_TRIANGLE = ex3.PETSc runex3_constraints runex3_nonconforming_simplex_2 ex3.rm
 TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 runex3_nonconforming_simplex_3 ex3.rm
