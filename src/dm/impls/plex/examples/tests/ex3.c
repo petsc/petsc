@@ -25,6 +25,7 @@ typedef struct {
   PetscBool convergence;       /* Test for order of convergence */
   PetscBool constraints;       /* Test local constraints */
   PetscBool tree;              /* Test tree routines */
+  PetscBool testFEjacobian;    /* Test finite element Jacobian assembly */
   PetscBool testFVgrad;        /* Test finite difference gradient routine */
   PetscInt  treeCell;          /* Cell to refine in tree test */
   PetscReal constants[3];      /* Constant values for each dimension */
@@ -127,6 +128,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->constraints     = PETSC_FALSE;
   options->tree            = PETSC_FALSE;
   options->treeCell        = 0;
+  options->testFEjacobian  = PETSC_FALSE;
   options->testFVgrad      = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
@@ -143,7 +145,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fv_grad", "Test finite volume gradient", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -447,8 +450,19 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #endif
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TestFEJacobian"
+static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
+{
+  PetscBool      isPlex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (user->tree && isPlex) {
+  if (isPlex) {
     Vec          local;
     Mat          E;
     MatNullSpace sp;
@@ -822,6 +836,9 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
+  if (user.testFEjacobian) {
+    ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);
+  }
   if (user.testFVgrad) {
     ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);
   }
