@@ -115,10 +115,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   Mat_MPIAIJ     *p=(Mat_MPIAIJ*)P->data;
   Mat            AP;
   Mat_MPIAIJ     *c;
+  MPI_Comm       comm;
+  PetscMPIInt    size,rank;
+  PetscLogDouble      t0,t1,t2,t3,t4;
 
   PetscFunctionBegin;
-  MPI_Comm            comm;
-  PetscMPIInt         size,rank;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -153,6 +154,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   PetscReal           afill=1.0,afill_tmp;
   PetscInt            rmax;
 
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr        = PetscNew(&ptap);CHKERRQ(ierr);
   ierr        = PetscNew(&merge);CHKERRQ(ierr);
@@ -179,7 +181,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   /* (2) compute C_loc=Rd*AP_loc, Co=Ro*AP_loc */
   ierr = MatMatMult_SeqAIJ_SeqAIJ(ptap->Rd,ptap->AP_loc,MAT_INITIAL_MATRIX,2.0,&ptap->C_loc);CHKERRQ(ierr);
   ierr = MatMatMult_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,MAT_INITIAL_MATRIX,2.0,&ptap->C_oth);CHKERRQ(ierr);
-
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
 
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   pi_loc = p_loc->i; 
@@ -190,7 +192,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
 
   /* (2) determine symbolic Co=(p->B)^T*AP - send to others (coi,coj)*/
   /*-----------------------------------------------------------------*/
-  ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
+  Mat_SeqAIJ *po = (Mat_SeqAIJ *)ptap->Ro->data;
+  poti = po->i; potj = po->j;
 
   /* then, compute symbolic Co = (p->B)^T*AP */
   pon    = (p->B)->cmap->n; /* total num of rows to be sent to other processors
@@ -238,7 +241,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   ierr      = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
-  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* (3) send j-array (coj) of Co to other processors */
   /*--------------------------------------------------*/
@@ -340,9 +342,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   ierr = PetscFree(swaits);CHKERRQ(ierr);
   ierr = PetscFree(buf_s);CHKERRQ(ierr);
 
+  ierr = PetscTime(&t2);CHKERRQ(ierr);
+
   /* (5) compute the local portion of C (mpi mat) */
   /*----------------------------------------------*/
-  ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
+  Mat_SeqAIJ *pd = (Mat_SeqAIJ *)ptap->Rd->data;
+  pdti = pd->i; pdtj = pd->j;
 
   /* allocate pti array and free space for accumulating nonzero column info */
   ierr   = PetscMalloc1(pn+1,&pti);CHKERRQ(ierr);
@@ -401,7 +406,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
     pti[i+1] = pti[i] + nnz;
     if (nnz > rmax) rmax = nnz;
   }
-  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
   ierr      = PetscMalloc1(pti[pn]+1,&ptj);CHKERRQ(ierr);
@@ -409,6 +413,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   afill_tmp = (PetscReal)pti[pn]/(pi_loc[pm] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
+
+  ierr = PetscTime(&t3);CHKERRQ(ierr);
 
   /* (6) create symbolic parallel matrix Cmpi */
   /*------------------------------------------*/
@@ -454,6 +460,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   } else {
     //ierr = PetscCalloc1(ap_rmax+1,&ptap->apa);CHKERRQ(ierr);
   }
+
+  ierr = PetscTime(&t4);CHKERRQ(ierr);
+  if (rank == 1) printf("PtAPSym: %g + %g + %g = %g\n",t1-t0,t2-t1,t3-t2,t4-t3);
  
   PetscFunctionReturn(0);
 }
