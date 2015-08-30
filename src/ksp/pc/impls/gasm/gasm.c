@@ -398,7 +398,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecDuplicate(osm->gx,&osm->gy);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(osm->gx, &gostart, NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),on,gostart,1, &goid);CHKERRQ(ierr);
-    /*gois might indices not on local */
+    /* gois might indices not on local */
     ierr = VecScatterCreate(x,gois,osm->gx,goid, &(osm->gorestriction));CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n,&numbering);CHKERRQ(ierr);
     ierr = PetscObjectsListGetGlobalNumbering(PetscObjectComm((PetscObject)pc),osm->n,(PetscObject*)osm->ois,NULL,numbering);CHKERRQ(ierr);
@@ -416,17 +416,17 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscScalar    *array;
       const PetscInt *indices;
       PetscInt        k;
-      /**/
+      /*  */
       on = 0;
       for (i=0; i<osm->n; i++) {
         ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
         on  += oni;
       }
-      /*allocate memory */
+      /* allocate memory */
       ierr = PetscMalloc1(on, &iidx);CHKERRQ(ierr);
       ierr = PetscMalloc1(on, &ioidx);CHKERRQ(ierr);
       ierr = VecGetArray(y,&array);CHKERRQ(ierr);
-      /*set communicator id */
+      /* set communicator id */
       in   = 0;
       for (i=0; i<osm->n; i++) {
         ierr   = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
@@ -446,9 +446,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     	ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
     	ierr = ISGetIndices(osm->ois[i],&indices);CHKERRQ(ierr);
     	for (k=0; k<oni; k++) {
-          /*skip overlapping indices */
+          /*  skip overlapping indices */
           if(PetscRealPart(array[on+k]) != numbering[i]) continue;
-          /*record inner indices */
+          /*  record inner indices */
           iidx[in]    = indices[k];
           ioidx[in++] = gostart+on+k;
     	}
@@ -474,7 +474,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     for (i=0, on=0; i<osm->n; ++i, on += oni) {
       PetscInt oNi;
       ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
-      /*on a sub communicator */
+      /* on a sub communicator */
       ierr = ISGetSize(osm->ois[i],&oNi);CHKERRQ(ierr);
       ierr = VecCreateMPIWithArray(((PetscObject)(osm->ois[i]))->comm,1,oni,oNi,gxarray+on,&osm->x[i]);CHKERRQ(ierr);
       ierr = VecCreateMPIWithArray(((PetscObject)(osm->ois[i]))->comm,1,oni,oNi,gyarray+on,&osm->y[i]);CHKERRQ(ierr);
@@ -508,7 +508,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = PetscFree(subdomain_names);CHKERRQ(ierr);
     scall = MAT_INITIAL_MATRIX;
 
-  } else { /*if (pc->setupcalled)*/
+  } else { /* if (pc->setupcalled) */
     /*
        Destroy the submatrices from the previous iteration
     */
@@ -596,7 +596,7 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec x,Vec y)
   for (i=0; i<osm->n; ++i) {
     ierr = KSPSolve(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
   }
-  /*Do we need to zero y ?? */
+  /* Do we need to zero y ?? */
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   if (!(osm->type & PC_GASM_INTERPOLATE)) {
     ierr = VecScatterBegin(osm->girestriction,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
