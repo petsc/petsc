@@ -1197,30 +1197,39 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       KSP eksp;
       Vec bb, xx;
       PC  epc;
-      PetscInt    Istart,Iend,nloc,bs,Ii,kk,idx,ncols;
-      PetscScalar zero = 0.0;
 
       ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
-      ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
-      nloc = (Iend-Istart)/bs;
-      for (Ii = 0; Ii < nloc; Ii++) {
-        for (kk = 0; kk < bs; kk++) {
-          ierr = MatGetRow(Amat,(idx=Ii*bs+Istart+kk),&ncols,0,0);CHKERRQ(ierr);
-          if (ncols <= 1) {
-            ierr = VecSetValues(bb, 1, &idx, &zero, INSERT_VALUES);CHKERRQ(ierr);
+      if (0) {
+        PetscInt    Istart,Iend,nloc,bs,Ii,kk,idx,ncols;
+        PetscScalar zero = 0.0;
+        ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
+        ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
+        nloc = (Iend-Istart)/bs;
+        for (Ii = 0; Ii < nloc; Ii++) {
+          for (kk = 0; kk < bs; kk++) {
+            ierr = MatGetRow(Amat,(idx=Ii*bs+Istart+kk),&ncols,0,0);CHKERRQ(ierr);
+            if (ncols <= 1) {
+              ierr = VecSetValues(bb, 1, &idx, &zero, INSERT_VALUES);CHKERRQ(ierr);
+            }
+            else {
+              /* simple high frequency random  number */
+              PetscScalar v = ((PetscScalar)((PETSC_HASH_FACT*idx)%751) - 350)/351.0;
+              ierr = VecSetValues(bb, 1, &idx, &v, INSERT_VALUES);CHKERRQ(ierr);
+            }
+            ierr = MatRestoreRow(Amat,idx,&ncols,0,0);CHKERRQ(ierr);
           }
-          else {
-            /* simple high frequency random  number */
-            PetscScalar v = ((PetscScalar)((PETSC_HASH_FACT*idx)%100) - 49.5)/50.0;
-            ierr = VecSetValues(bb, 1, &idx, &v, INSERT_VALUES);CHKERRQ(ierr);
-          }
-          ierr = MatRestoreRow(Amat,idx,&ncols,0,0);CHKERRQ(ierr);
         }
+        ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
       }
-      ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+      else {
+        PetscRandom rctx;
+        ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
+        ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+        ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
+        ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+      }
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
       ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);

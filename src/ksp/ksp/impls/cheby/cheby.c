@@ -371,6 +371,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     if (amatid != cheb->amatid || pmatid != cheb->pmatid || amatstate != cheb->amatstate || pmatstate != cheb->pmatstate) {
       PetscReal max=0.0,min=0.0;
       Vec       X,B;
+      KSPConvergedReason reason;
       X = ksp->work[0];
       if (cheb->random) {
         B    = ksp->work[1];
@@ -378,11 +379,25 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       } else {
         B = ksp->vec_rhs;
       }
-      ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
-
       if (ksp->guess_zero) {
         ierr = VecZeroEntries(X);CHKERRQ(ierr);
       }
+
+      ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
+
+      ierr = KSPGetConvergedReason(cheb->kspest,&reason);CHKERRQ(ierr);
+      if (reason==KSP_DIVERGED_INDEFINITE_PC || reason==KSP_DIVERGED_DTOL || reason==KSP_DIVERGED_BREAKDOWN) {
+        SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Eigen estimator failed: %D",reason);
+      }
+      else if (reason==KSP_CONVERGED_RTOL ||reason==KSP_CONVERGED_ATOL) {
+        ierr = PetscInfo(ksp,"Eigen estimator converged. Should not happen unless very small or low rank problem\n");CHKERRQ(ierr);
+      } else if (reason<0) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n");CHKERRQ(ierr);
+        SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Eigen estimator failure, this should not happen: %D",reason);
+      } else if (reason!=KSP_CONVERGED_ITS) {
+        ierr = PetscInfo1(ksp,"Eigen estimator did not converge by iteration\n",reason);CHKERRQ(ierr);
+      }
+
       ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
 
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
