@@ -22,6 +22,7 @@ typedef struct {
   /* Testing space */
   PetscInt  porder;            /* Order of polynomials to test */
   PetscBool convergence;       /* Test for order of convergence */
+  PetscBool convRefine;        /* Test for convergence using refinement, otherwise use coarsening */
   PetscBool constraints;       /* Test local constraints */
   PetscBool tree;              /* Test tree routines */
   PetscInt  treeCell;          /* Cell to refine in tree test */
@@ -132,6 +133,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->numComponents   = 1;
   options->porder          = 0;
   options->convergence     = PETSC_FALSE;
+  options->convRefine      = PETSC_TRUE;
   options->constraints     = PETSC_FALSE;
   options->tree            = PETSC_FALSE;
   options->treeCell        = 0;
@@ -147,6 +149,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-conv_refine", "Use refinement for the convergence rate", "ex3.c", options->convRefine, &options->convRefine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
@@ -544,12 +547,15 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
-  void            *exactCtxs[3] = {user, user, user};
+  void            *exactCtxs[3];
   MPI_Comm         comm;
   PetscReal        error, errorDer, tol = 1.0e-10;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  exactCtxs[0]       = user;
+  exactCtxs[1]       = user;
+  exactCtxs[2]       = user;
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
@@ -591,7 +597,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscErrorCode (*exactFuncs[1]) (PetscInt, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   PetscErrorCode (*exactFuncDers[1]) (PetscInt, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
   PetscReal       n[3]         = {1.0, 1.0, 1.0};
-  void           *exactCtxs[3] = {user, user, user};
+  void           *exactCtxs[3];
   DM              rdm, idm, fdm;
   Mat             Interp;
   Vec             iu, fu, scaling;
@@ -602,6 +608,9 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  exactCtxs[0]       = user;
+  exactCtxs[1]       = user;
+  exactCtxs[2]       = user;
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
@@ -609,6 +618,8 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
+  ierr = DMPlexSetCoarseDM(rdm, dm);CHKERRQ(ierr);
+  ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
   if (user->tree && isPlex) {
     DM refTree;
     ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
@@ -674,32 +685,69 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
 #define __FUNCT__ "CheckConvergence"
 static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
 {
-  DM               odm = dm, rdm = NULL;
+  DM               odm = dm, rdm = NULL, cdm = NULL;
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {trig};
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx) = {trigDer};
-  void            *exactCtxs[3] = {user, user, user};
-  PetscInt         r;
-  PetscReal        errorOld, errorDerOld, error, errorDer;
+  void            *exactCtxs[3];
+  PetscInt         r, c, cStart, cEnd;
+  PetscReal        errorOld, errorDerOld, error, errorDer, rel, len, lenOld;
   double           p;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!user->convergence) PetscFunctionReturn(0);
+  exactCtxs[0] = user;
+  exactCtxs[1] = user;
+  exactCtxs[2] = user;
   ierr = PetscObjectReference((PetscObject) odm);CHKERRQ(ierr);
+  if (!user->convRefine) {
+    for (r = 0; r < Nr; ++r) {
+      ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
+      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      odm  = rdm;
+    }
+    ierr = SetupSection(odm, user);CHKERRQ(ierr);
+  }
   ierr = ComputeError(odm, exactFuncs, exactFuncDers, exactCtxs, &errorOld, &errorDerOld, user);CHKERRQ(ierr);
-  for (r = 0; r < Nr; ++r) {
-    ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-    if (!user->simplex) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
-    ierr = SetupSection(rdm, user);CHKERRQ(ierr);
-    ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
-    p    = PetscLog2Real(errorOld/error);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
-    p    = PetscLog2Real(errorDerOld/errorDer);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
-    ierr = DMDestroy(&odm);CHKERRQ(ierr);
-    odm         = rdm;
-    errorOld    = error;
-    errorDerOld = errorDer;
+  if (user->convRefine) {
+    for (r = 0; r < Nr; ++r) {
+      ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
+      if (!user->simplex) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+      ierr = SetupSection(rdm, user);CHKERRQ(ierr);
+      ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
+      p    = PetscLog2Real(errorOld/error);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
+      p    = PetscLog2Real(errorDerOld/errorDer);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2g\n", r, (double)p);CHKERRQ(ierr);
+      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      odm         = rdm;
+      errorOld    = error;
+      errorDerOld = errorDer;
+    }
+  } else {
+    /* ierr = ComputeLongestEdge(dm, &lenOld);CHKERRQ(ierr); */
+    ierr = DMPlexGetHeightStratum(odm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    lenOld = cEnd - cStart;
+    for (c = 0; c < Nr; ++c) {
+      ierr = DMCoarsen(odm, PetscObjectComm((PetscObject) dm), &cdm);CHKERRQ(ierr);
+      if (!user->simplex) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+      ierr = SetupSection(cdm, user);CHKERRQ(ierr);
+      ierr = ComputeError(cdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
+      /* ierr = ComputeLongestEdge(cdm, &len);CHKERRQ(ierr); */
+      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+      len  = cEnd - cStart;
+      rel  = error/errorOld;
+      p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
+      rel  = errorDer/errorDerOld;
+      p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2g\n", c, (double)p);CHKERRQ(ierr);
+      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      odm         = cdm;
+      errorOld    = error;
+      errorDerOld = errorDer;
+      lenOld      = len;
+    }
   }
   ierr = DMDestroy(&odm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

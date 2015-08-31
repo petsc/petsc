@@ -59,7 +59,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-error_in_matmult",&errorinmatmult,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-error_in_pcapply",&errorinpcapply,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-error_in_pcsetup",&errorinpcsetup,NULL);CHKERRQ(ierr);
+  user.errorindomain = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-error_in_domain",&user.errorindomain,NULL);CHKERRQ(ierr);
+  user.errorindomainmf = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-error_in_domainmf",&user.errorindomainmf,NULL);CHKERRQ(ierr);  
 
   comm = PETSC_COMM_WORLD;

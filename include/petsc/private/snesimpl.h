@@ -257,18 +257,17 @@ extern const char SNESCitation[];
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf
 */
-#define SNESCheckFunctionNorm(snes,beta)           \
-  if (PetscIsInfOrNanReal(beta)) { \
+#define SNESCheckFunctionNorm(snes,beta) \
+  if (PetscIsInfOrNanReal(beta)) {\
     if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
-  else {\
-    PetscBool domainerror;\
-    PetscErrorCode ierr = MPI_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr); \
-    if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
-    else              snes->reason = SNES_DIVERGED_FNORM_NAN;                  \
-    PetscFunctionReturn(0);\
-  }\
-}
-
+    else {\
+      PetscBool domainerror;\
+      PetscErrorCode ierr = MPI_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
+      if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
+      else              snes->reason = SNES_DIVERGED_FNORM_NAN;\
+      PetscFunctionReturn(0);\
+    }\
+  }
 
 #define SNESCheckKSPSolve(snes)\
   {\

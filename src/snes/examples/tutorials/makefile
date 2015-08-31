@@ -251,8 +251,9 @@ runex1_2:
           ${MPIEXEC} -n 1 ./ex1 -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append >> ex1_2.tmp 2>&1; \
           ${MPIEXEC} -n 1 ./ex1 -ksp_view_solution ascii:ex1_2_sol.tmp:default:append >> ex1_2.tmp 2>&1; \
           ${DIFF} output/ex1_2.out ex1_2.tmp || printf '${PWD}\nPossible problem with ex1_2 stdout, diffs above\n=========================================\n'; \
-          ${DIFF} output/ex1_2_sol.out ex1_2_sol.tmp || printf '${PWD}\nPossible problem with ex1_2_sol, diffs above\n=========================================\n'; \
-          ${RM} -f ex1_2.tmp ex1_2_sol.tmp
+          ${GREP} -v Vec_ ex1_2_sol.tmp > ex1_2_sol.tmp2; \
+          ${DIFF} output/ex1_2_sol.out ex1_2_sol.tmp2 || printf '${PWD}\nPossible problem with ex1_2_sol, diffs above\n=========================================\n'; \
+          ${RM} -f ex1_2.tmp ex1_2_sol.tmp ex1_2_sol.tmp2
 
 runex1_X:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short > ex1_X.tmp 2>&1;   \
@@ -347,7 +348,7 @@ runex5_5_newton_asm_dmda:
 
 runex5_5_newton_gasm_dmda:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
-        -snes_type newtonls -pc_type gasm -pc_gasm_dm_subdomains -malloc_dump > ex5_5_newton_gasm_dmda.tmp 2>&1; \
+        -snes_type newtonls -pc_type gasm -malloc_dump > ex5_5_newton_gasm_dmda.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_newton_gasm_dmda.out ex5_5_newton_gasm_dmda.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_newton_gasm_dmda, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_newton_gasm_dmda.tmp
@@ -1082,6 +1083,20 @@ runex46_ew_3:
 	   else printf "${PWD}\nPossible problem with ex46_ew_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
 
+FMRISE_NGMRES_NPC_BASE = -@${MPIEXEC} -n 1 ./ex46 -K 3 -m 1 -D 0.2 -snes_monitor_short  -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic
+
+runex46_fm_rise_2:
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 1 -snes_ngmres_restart_fm_rise > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_fm_rise_2.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_fm_rise_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_fm_rise_4:
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 2  -snes_ngmres_restart_fm_rise  > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_fm_rise_4.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_fm_rise_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
 runex47cu:
 	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -dm_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex47cu_1.out ex47cu_1.tmp) then true; \
@@ -1148,7 +1163,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
                                  ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
-                                 ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 ex46.rm \
+                                 ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
@@ -1173,4 +1188,3 @@ TESTEXAMPLES_SUITESPARSE       = ex19.PETSc runex19_umfpack runex19_klu runex19_
 
 
 include ${PETSC_DIR}/lib/petsc/conf/test
-

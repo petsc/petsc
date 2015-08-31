@@ -2602,7 +2602,7 @@ PetscErrorCode MatShift_SeqBAIJ(Mat Y,PetscScalar a)
   Mat_SeqBAIJ     *aij = (Mat_SeqBAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (!aij->nz) {
+  if (!Y->preallocated || !aij->nz) {
     ierr = MatSeqBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);

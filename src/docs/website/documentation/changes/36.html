@@ -145,7 +145,7 @@
       <ul>
          <li>Removed -pc_hypre_type euclid due to bit-rot</li>
          <li>Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs (developer repository only feature) --with-cuda --download-suitesparse-gpu --with-64-bit-indices; -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it</li>
-         <li>Upgraded to Superlu_DIST 4.0; Superlu_DIST supports using GPUs (developer repository only feature) --with-cuda --with-openmp --download-suitesparse-gpu (developer repository only feature) --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it</li>
+         <li>Upgraded to Superlu_DIST 4.0; Superlu_DIST supports using GPUs (developer repository only feature) --with-cuda --with-openmp --download-superlu_dist-gpu (developer repository only feature) --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it</li>
          <li>Added PCBDDCSetChangeOfBasisMat for user defined change of basis</li>
          <li>PCBDDC: added adaptive selection of constraints: it is available by command line options</li>
          <li>PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option</li>

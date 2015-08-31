@@ -4,7 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz']
+    self.download          = ['http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.0.1.tar.gz']
     self.downloadonWindows = 1
     self.lookforbydefault  = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users

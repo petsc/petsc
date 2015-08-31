@@ -1003,7 +1003,7 @@ year    = 2014
               T. Epperly and T. Rognlien and M. Fahey and J. Cobb and A. Morris and
               S. Shende and G. Hammett and K. Indireshkumar and D. Stotler and A. Pigarov",
    journal = "J. Phys.: Conf. Ser.",
-   volume  = c125,
+   volume  = 125,
    year    = 2008,
    pages   = "012040",
    url     = "http://www.iop.org/EJ/abstract/1742-6596/125/1/012040"
@@ -1160,6 +1160,32 @@ year    = 2014
 % LiteralHTML:
 % LiteralHTML:  <a name="geosciences"><H3><center>Geosciences</center></H3>
 % LiteralHTML:
+@article{May2015496,
+title = "A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous {S}tokes flow ",
+journal = "Computer Methods in Applied Mechanics and Engineering ",
+volume = "290",
+number = "0",
+pages = "496--523",
+year = "2015",
+issn = "0045-7825",
+doi = "http://dx.doi.org/10.1016/j.cma.2015.03.014",
+url = "http://www.sciencedirect.com/science/article/pii/S0045782515001243",
+author = "D.A. May and J. Brown and L. Le Pourhiet",
+}
+@article{KnepleyLangeGorman2015,
+  title     = {Unstructured Overlapping Mesh Distribution in Parallel},
+  author    = {Matthew G. Knepley and Michael Lange and Gerard J. Gorman},
+  journal   = {ACM Transactions on Mathematical Software},
+  note      = {submitted},
+  year      = {2015}
+}
+@inproceedings{LangeKnepleyGorman2015,
+  title     = {Flexible, Scalable Mesh and Data Management using {PETSc DMPlex}},
+  author    = {Michael Lange and Matthew G. Knepley and Gerard J. Gorman},
+  booktitle = {Proceedings of the Exascale Applications and Software Conference},
+  month     = {April},
+  year      = {2015}
+}
 @article{saibaba2012application,
   title   = {Application of hierarchical matrices to linear inverse problems in geostatistics},
   author  = {Saibaba, Arvind Krishna and Ambikasaran, Sivaram and Yue Li, J and Kitanidis, Peter K and Darve, Eric F},
@@ -2396,6 +2422,17 @@ year    = 2005
 % LiteralHTML:
 % LiteralHTML:  <a name="cfd"><H3><center>CFD</center></H3>
 % LiteralHTML:
+@article{HwangSuCai2015,
+  title   = {A parallel adaptive nonlinear elimination preconditioned inexact Newton method for transonic full potential equation},
+  author  = {Feng-Nan Hwang and Yi-Cheng Su and Xiao-Chuan Cai},
+  journal = {Computers \& Fluids},
+  volume  = {110},
+  number  = {30},
+  pages   = {96--107},
+  year    = {2015},
+  doi     = {http://dx.doi.org/10.1016/j.compfluid.2014.04.005},
+  url     = {http://www.sciencedirect.com/science/article/pii/S004579301400142X},
+}
 @article{KhanAidun2011,
   author  = {Irfan Khan and Cyrus K. Aidun},
   title   = {Direct numerical simulation of saturated deformable porous media using parallel hybrid Lattice-Boltzmann and finite element method},
@@ -2482,7 +2519,7 @@ year    = 2005
  pages = "422--445",
  year = 2012
 }
-@article{sakamoto2012urans,
+@article{sakamoto2012uransb,
  author = "N. Sakamoto and P. M. Carrica and F. Stern",
  title = "URANS Simulations of Static and Dynamic Maneuvering for Surface Combatant-Part 2: Analysis and Validation of Local Flow Characteristics",
  journal = "Journal of Marine Science and Technology",
@@ -2503,7 +2540,7 @@ year    = 2005
  pages = "160--180",
  year = 2012
 }
-@article{huang2012a,
+@article{huang2012b,
  author = "J. Huang and P. M. Carrica and F. Stern",
  title = "A geometry-based level set method for curvilinear overset grids with application to ship hydrodynamics",
  journal = "International Journal for Numerical Methods in Fluids",
@@ -3144,13 +3181,13 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
         YEAR      = {1999}
 }
 @INPROCEEDINGS{GKKS-PCFD99,
-        AUTHOR = "W. D. Gropp and D. K. Kaushik and
-                  D. E. Keyes and B. F. Smith",
-        TITLE = "Towards Realistic Performance Bounds for Implicit {CFD} codes",
-        BOOKTITLE = "Proceedings of Parallel CFD'99",
-        EDITORS   = {A. {Ecer et al.}},
-        PUBLISHER = "Elsevier",
-        YEAR = "1999"
+  AUTHOR    = {William D. Gropp and Dinesh K. Kaushik and David E. Keyes and Barry F. Smith},
+  TITLE     = {Towards Realistic Performance Bounds for Implicit {CFD} codes},
+  BOOKTITLE = {Proceedings of Parallel CFD'99},
+  EDITORS   = {A. {Ecer et al.}},
+  PUBLISHER = {Elsevier},
+  URL       = {http://www.cs.odu.edu/~keyes/papers/pcfd99_gkks.pdf},
+  YEAR      = {1999}
 }
 @INPROCEEDINGS{KKS97,
         AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
@@ -4983,9 +5020,12 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   author  = {Jed Brown and Matthew G. Knepley and Barry Smith},
   title   = {Run-time extensibility and librarization of simulation software},
   journal = {IEEE Computing in Science and Engineering},
-  note    = {Preprint},
+  month   = {Jan},
+  volume  = {17},
+  number  = {1},
+  pages   = {38--45},
   doi     = {10.1109/MCSE.2014.95},
-  year    = {2014}
+  year    = {2015}
 }
 @TechReport{ass2012,
   author = {Shrirang Abhyankar and Barry Smith and  Kerry Stevens},
@@ -5083,6 +5123,10 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title     = {Implementation of a multigrid solver on {GPU} for {S}tokes equations with strongly variable viscosity based on {M}atlab and {CUDA}},
   author    = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
   journal   = {IJHPCA},
+  volume    = {28},
+  number    = {1},
+  pages     = {50--60},
+  doi       = {10.1177/1094342013478640},
   url       = {http://hpc.sagepub.com/content/early/2013/03/03/1094342013478640.abstract},
   note      = {\url{http://hpc.sagepub.com/content/early/2013/03/03/1094342013478640.abstract}},
   year      = {2013}
@@ -6549,3 +6593,10 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   doi =          {10.1093/gji/ggu345}
 }
 
+@misc{Gropp10,
+  author  = {William D. Gropp},
+  title   = {Update on libraries for {B}lue {W}aters},
+  address = {Bordeaux, France},
+  year    = {2010},
+  url     = {http://jointlab.ncsa.illinois.edu/events/workshop3/pdf/presentations/Gropp-Update-on-Libraries.pdf},
+}

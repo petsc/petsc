@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
     self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
 
     if self.useShared:
-      #if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
+      #if config.setCompilers.Configure.isSolaris(self.log) and config.setCompilers.Configure.isGNU(self.framework.getCompiler(),self.log):
       #  self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
       #elif '-qmkshrobj' in self.setCompilers.sharedLibraryFlags:
       #  self.addMakeRule('shared_arch','shared_linux_ibm')
@@ -111,7 +111,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     # on windows use with-shared-libraries=0 as default
-    if self.setCompilers.isCygwin() and 'with-shared-libraries' not in self.framework.clArgDB: self.framework.argDB['with-shared-libraries'] = 0
+    if self.setCompilers.isCygwin(self.log) and 'with-shared-libraries' not in self.framework.clArgDB: self.framework.argDB['with-shared-libraries'] = 0
     self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)

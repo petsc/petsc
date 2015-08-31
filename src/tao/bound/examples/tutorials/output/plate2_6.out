@@ -28,6 +28,3 @@ Tao Object: 3 MPI processes
   total number of iterations=13,                          (max: 2000)
   total number of function/gradient evaluations=17,      (max: 4000)
   Solution converged:   estimated f(x)-f(X*) <= fatol
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_type value: none

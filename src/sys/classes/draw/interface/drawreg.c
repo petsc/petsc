@@ -53,7 +53,9 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(indraw,PETSC_DRAW_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)indraw));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(indraw,1,viewer,2);
 

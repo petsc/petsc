@@ -586,7 +586,7 @@ PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, Petsc
 .keywords: log, stage
 .seealso: PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[], int *stage)
+PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[], PetscLogStage *stage)
 {
   PetscBool      match;
   int            s;

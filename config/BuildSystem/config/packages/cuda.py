@@ -83,7 +83,7 @@ class Configure(config.package.Package):
     import config.setCompilers
 #    if self.scalartypes.scalartype == 'complex':
 #      raise RuntimeError('Must use real numbers with CUDA')
-    if not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+    if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
       raise RuntimeError('Must use GNU compilers with CUDA')
     if not self.scalartypes.precision in ['double', 'single']:
       raise RuntimeError('Must use either single or double precision with CUDA')
@@ -152,15 +152,8 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
-    raise RuntimeError('Please use petsc-dev for CUDA functionality')
     config.package.Package.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
-    if self.languages.clanguage == 'C':
-      self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
-      self.addDefine('CUDA_EXTERN_C_END','}')
-    else:
-      self.addDefine('CUDA_EXTERN_C_BEGIN',' ')
-      self.addDefine('CUDA_EXTERN_C_END',' ')
     self.configureTypes()
     return
