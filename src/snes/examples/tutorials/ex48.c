@@ -64,6 +64,12 @@ There are two compile-time options:
 #endif
 #include <ctype.h>              /* toupper() */
 
+#if defined(__cplusplus)
+/*  c++ cannot handle  [_restrict_] notation like C does */
+#undef PETSC_RESTRICT
+#define PETSC_RESTRICT
+#endif
+
 #if defined __SSE2__
 #  include <emmintrin.h>
 #endif
