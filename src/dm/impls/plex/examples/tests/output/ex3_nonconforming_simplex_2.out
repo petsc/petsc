@@ -343,8 +343,6 @@ PetscSF Object: 4 MPI processes
   [2]    22 <- 13
   [2]    23 <- 15
   [3] Roots referenced by my leaves, by rank
-Null vector 0 is likely null vector|| A * v[0] || = 1.20185e-16
-Null vector 1 is likely null vector|| A * v[1] || = 1.81476e-16
-Null vector 2 is likely null vector|| A * v[2] || = 1.07497e-16
+Symmetric gradient null space: PASS
 Function tests pass for order 0 at tolerance 1e-10
 Function tests pass for order 0 derivatives at tolerance 1e-10

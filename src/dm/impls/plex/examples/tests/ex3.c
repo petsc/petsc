@@ -490,6 +490,12 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateRigidBody(dm,&sp);CHKERRQ(ierr);
     ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
+    if (isNullSpace) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: PASS\n");CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: FAIL\n");CHKERRQ(ierr);
+    }
     ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
     ierr = MatDestroy(&E);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
@@ -508,6 +514,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscMPIInt size;
   Vec cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
+  PetscReal allVecMaxDiff = 0.;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -599,9 +606,15 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       maxDiff  = PetscMax(maxDiff,FrobDiff);
     }
     ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Vec %D, max cell gradient error %g\n",v,maxDiffGlob);CHKERRQ(ierr);
+    allVecMaxDiff = PetscMax(allVecMaxDiff,maxDiffGlob);
     ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
+  }
+  if (allVecMaxDiff < 1.e-7) {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n");CHKERRQ(ierr);
+  }
+  else {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL\n");CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
