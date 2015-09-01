@@ -66,7 +66,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
     Collective on TSTrajectory
 
     Input Parameters:
-+   ts - the TSTrajectory context obtained from TSTrajectoryCreate()
++   tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 -   viewer - visualization context
 
     Options Database Key:
@@ -89,24 +89,24 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode  TSTrajectoryView(TSTrajectory ts,PetscViewer viewer)
+PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(tj,TS_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ts),&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)tj),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(ts,1,viewer,2);
+  PetscCheckSameComm(tj,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
-    if (ts->ops->view) {
-      ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tj,viewer);CHKERRQ(ierr);
+    if (tj->ops->view) {
+      ierr = (*tj->ops->view)(tj,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -123,7 +123,7 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory ts,PetscViewer viewer)
 . comm - The communicator
 
   Output Parameter:
-. tstra   - The trajectory object
+. tj   - The trajectory object
 
   Level: advanced
 
@@ -133,18 +133,18 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory ts,PetscViewer viewer)
 .keywords: TS, create
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType(), TSGetTrajectory()
 @*/
-PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tstra)
+PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
 {
   TSTrajectory   t;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(tstra,1);
-  *tstra = NULL;
+  PetscValidPointer(tj,2);
+  *tj = NULL;
   ierr = TSInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(t, TSTRAJECTORY_CLASSID, "TSTrajectory", "Time stepping", "TS", comm, TSTrajectoryDestroy, TSTrajectoryView);CHKERRQ(ierr);
-  *tstra = t;
+  *tj = t;
   PetscFunctionReturn(0);
 }
 
@@ -266,7 +266,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *ts)
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TSTrajectory ts)
+static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TSTrajectory tj)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -274,15 +274,15 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
+  if (((PetscObject)tj)->type_name) defaultType = ((PetscObject)tj)->type_name;
   else defaultType = TSTRAJECTORYBASIC;
 
   if (!TSRegisterAllCalled) {ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsFList("-tstrajectory_type", "TSTrajectory method"," TSTrajectorySetType", TSTrajectoryList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = TSTrajectorySetType(ts, typeName);CHKERRQ(ierr);
+    ierr = TSTrajectorySetType(tj, typeName);CHKERRQ(ierr);
   } else {
-    ierr = TSTrajectorySetType(ts, defaultType);CHKERRQ(ierr);
+    ierr = TSTrajectorySetType(tj, defaultType);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -295,7 +295,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
    Collective on TSTrajectory
 
    Input Parameter:
-.  ts - the TSTrajectory context obtained from TSTrajectoryCreate()
+.  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
    Options Database Keys:
 .  -tstrajectory_type <type> - TSTRAJECTORYBASIC
@@ -309,14 +309,14 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
 
 .seealso: TSGetType(), TSSetSaveTrajectory(), TSGetTrajectory()
 @*/
-PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory ts)
+PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TSTRAJECTORY_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID,1);
+  ierr = PetscObjectOptionsBegin((PetscObject)tj);CHKERRQ(ierr);
+  ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
