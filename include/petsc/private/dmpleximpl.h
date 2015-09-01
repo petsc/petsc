@@ -97,7 +97,6 @@ typedef struct {
   int tags[4];       /* Tag array */
 } GmshElement;
 
-
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int   index;    /* Type of section */
@@ -124,6 +123,18 @@ struct _n_Boundary {
   DMBoundary  next;
 };
 
+struct _PetscGridHash {
+  PetscInt     dim;
+  PetscReal    lower[3];    /* The lower-left corner */
+  PetscReal    upper[3];    /* The upper-right corner */
+  PetscReal    extent[3];   /* The box size */
+  PetscReal    h[3];        /* The subbox size */
+  PetscInt     n[3];        /* The number of subboxes */
+  PetscSection cellSection; /* Offsets for cells in each subbox*/
+  IS           cells;       /* List of cells in each subbox */
+  DMLabel      cellsSparse; /* Sparse storage for cell map */
+};
+
 typedef struct {
   PetscInt             refct;
 
@@ -137,12 +148,14 @@ typedef struct {
   PetscInt            *supports;          /* Cone for each point */
   PetscBool            refinementUniform; /* Flag for uniform cell refinement */
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
+  PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
   PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
   /* Hierarchy */
   DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
+  PetscBool            regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
 
   /* Generation */
   char                *tetgenOpts;
@@ -190,7 +203,7 @@ typedef struct {
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
-
+  PetscGridHash        lbox;              /* Local box for searching */
 
   /* Debugging */
   PetscBool            printSetValues;
@@ -280,7 +293,7 @@ PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[
   invJ[1] = -invDet*J[1];
   invJ[2] = -invDet*J[2];
   invJ[3] =  invDet*J[0];
-  PetscLogFlops(5.0);
+  (void)PetscLogFlops(5.0);
 }
 
 #undef __FUNCT__
@@ -298,7 +311,7 @@ PETSC_STATIC_INLINE void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[
   invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
   invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
   invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-  PetscLogFlops(37.0);
+  (void)PetscLogFlops(37.0);
 }
 
 #undef __FUNCT__
@@ -306,7 +319,7 @@ PETSC_STATIC_INLINE void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[
 PETSC_STATIC_INLINE void DMPlex_Det2D_Internal(PetscReal *detJ, PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
-  PetscLogFlops(3.0);
+  (void)PetscLogFlops(3.0);
 }
 
 #undef __FUNCT__
@@ -316,7 +329,7 @@ PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
   *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
            J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
            J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-  PetscLogFlops(12.0);
+  (void)PetscLogFlops(12.0);
 }
 
 #undef __FUNCT__

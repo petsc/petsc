@@ -1348,7 +1348,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatInodeGetInodeSizes(aij->A,NULL,(PetscInt**)&inodes,NULL);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       if (!inodes) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D mem %D, not using I-node routines\n",
                                                   rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);
@@ -1361,7 +1361,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = MatGetInfo(aij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] off-diagonal part: nz %D \n",rank,(PetscInt)info.nz_used);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Information on VecScatter used in matrix-vector product: \n");CHKERRQ(ierr);
       ierr = VecScatterView(aij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -1443,12 +1443,13 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the PetscDraw object
     */
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPIAIJ*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
       ierr = MatView_SeqAIJ(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2280,120 +2281,6 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_PBGL)
-
-#include <boost/parallel/mpi/bsp_process_group.hpp>
-#include <boost/graph/distributed/ilu_default_graph.hpp>
-#include <boost/graph/distributed/ilu_0_block.hpp>
-#include <boost/graph/distributed/ilu_preconditioner.hpp>
-#include <boost/graph/distributed/petsc/interface.hpp>
-#include <boost/multi_array.hpp>
-#include <boost/parallel/distributed_property_map->hpp>
-
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic_MPIAIJ"
-/*
-  This uses the parallel ILU factorization of Peter Gottschling <pgottsch@osl.iu.edu>
-*/
-PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
-{
-  namespace petsc = boost::distributed::petsc;
-
-  namespace graph_dist = boost::graph::distributed;
-  using boost::graph::distributed::ilu_default::process_group_type;
-  using boost::graph::ilu_permuted;
-
-  PetscBool      row_identity, col_identity;
-  PetscContainer c;
-  PetscInt       m, n, M, N;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (info->levels != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only levels = 0 supported for parallel ilu");
-  ierr = ISIdentity(isrow, &row_identity);CHKERRQ(ierr);
-  ierr = ISIdentity(iscol, &col_identity);CHKERRQ(ierr);
-  if (!row_identity || !col_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for parallel ILU");
-
-  process_group_type pg;
-  typedef graph_dist::ilu_default::ilu_level_graph_type lgraph_type;
-  lgraph_type  *lgraph_p   = new lgraph_type(petsc::num_global_vertices(A), pg, petsc::matrix_distribution(A, pg));
-  lgraph_type& level_graph = *lgraph_p;
-  graph_dist::ilu_default::graph_type&            graph(level_graph.graph);
-
-  petsc::read_matrix(A, graph, get(boost::edge_weight, graph));
-  ilu_permuted(level_graph);
-
-  /* put together the new matrix */
-  ierr = MatCreate(PetscObjectComm((PetscObject)A), fact);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
-  ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
-  ierr = MatSetSizes(fact, m, n, M, N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizesFromMats(fact,A,A);CHKERRQ(ierr);
-  ierr = MatSetType(fact, ((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)A), &c);
-  ierr = PetscContainerSetPointer(c, lgraph_p);
-  ierr = PetscObjectCompose((PetscObject) (fact), "graph", (PetscObject) c);
-  ierr = PetscContainerDestroy(&c);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_MPIAIJ"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat B,Mat A, const MatFactorInfo *info)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_MPIAIJ"
-/*
-  This uses the parallel ILU factorization of Peter Gottschling <pgottsch@osl.iu.edu>
-*/
-PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
-{
-  namespace graph_dist = boost::graph::distributed;
-
-  typedef graph_dist::ilu_default::ilu_level_graph_type lgraph_type;
-  lgraph_type    *lgraph_p;
-  PetscContainer c;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) A, "graph", (PetscObject*) &c);CHKERRQ(ierr);
-  ierr = PetscContainerGetPointer(c, (void**) &lgraph_p);CHKERRQ(ierr);
-  ierr = VecCopy(b, x);CHKERRQ(ierr);
-
-  PetscScalar *array_x;
-  ierr = VecGetArray(x, &array_x);CHKERRQ(ierr);
-  PetscInt sx;
-  ierr = VecGetSize(x, &sx);CHKERRQ(ierr);
-
-  PetscScalar *array_b;
-  ierr = VecGetArray(b, &array_b);CHKERRQ(ierr);
-  PetscInt sb;
-  ierr = VecGetSize(b, &sb);CHKERRQ(ierr);
-
-  lgraph_type& level_graph = *lgraph_p;
-  graph_dist::ilu_default::graph_type&            graph(level_graph.graph);
-
-  typedef boost::multi_array_ref<PetscScalar, 1> array_ref_type;
-  array_ref_type                                 ref_b(array_b, boost::extents[num_vertices(graph)]);
-  array_ref_type                                 ref_x(array_x, boost::extents[num_vertices(graph)]);
-
-  typedef boost::iterator_property_map<array_ref_type::iterator,
-                                       boost::property_map<graph_dist::ilu_default::graph_type, boost::vertex_index_t>::type>  gvector_type;
-  gvector_type                                   vector_b(ref_b.begin(), get(boost::vertex_index, graph));
-  gvector_type                                   vector_x(ref_x.begin(), get(boost::vertex_index, graph));
-
-  ilu_set_solve(*lgraph_p, vector_b, vector_x);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowMaxAbs_MPIAIJ"
 PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
@@ -2603,11 +2490,13 @@ PetscErrorCode MatShift_MPIAIJ(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *maij = (Mat_MPIAIJ*)Y->data;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)maij->A->data,*bij = (Mat_SeqAIJ*)maij->B->data;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)maij->A->data;
 
   PetscFunctionBegin;
-  if (!aij->nz && !bij->nz) {
+  if (!Y->preallocated) {
     ierr = MatMPIAIJSetPreallocation(Y,1,NULL,0,NULL);CHKERRQ(ierr);
+  } else if (!aij->nz) {
+    ierr = MatSeqAIJSetPreallocation(maij->A,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2621,11 +2510,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /* 4*/ MatMultAdd_MPIAIJ,
                                        MatMultTranspose_MPIAIJ,
                                        MatMultTransposeAdd_MPIAIJ,
-#if defined(PETSC_HAVE_PBGL)
-                                       MatSolve_MPIAIJ,
-#else
                                        0,
-#endif
                                        0,
                                        0,
                                 /*10*/ 0,
@@ -2644,19 +2529,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatZeroEntries_MPIAIJ,
                                 /*24*/ MatZeroRows_MPIAIJ,
                                        0,
-#if defined(PETSC_HAVE_PBGL)
                                        0,
-#else
-                                       0,
-#endif
                                        0,
                                        0,
                                 /*29*/ MatSetUp_MPIAIJ,
-#if defined(PETSC_HAVE_PBGL)
                                        0,
-#else
-                                       0,
-#endif
                                        0,
                                        0,
                                        0,
@@ -3103,7 +2980,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ"
-/* TODO: Not scalable because of ISAllGather(). */
+/* TODO: Not scalable because of ISAllGather() unless getting all columns. */
 PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -3116,10 +2993,29 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
-    PetscInt cbs;
-    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
-    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
+    /* check if we are grabbing all columns*/
+    PetscBool    isstride;
+    PetscMPIInt  lisstride = 0,gisstride;
+    ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&isstride);CHKERRQ(ierr);
+    if (isstride) {
+      PetscInt  start,len,mstart,mlen;
+      ierr = ISStrideGetInfo(iscol,&start,&len);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRangeColumn(mat,&mstart,&mlen);CHKERRQ(ierr);
+      if (mstart == start && mlen == len) lisstride = 1;
+    }
+    ierr = MPI_Allreduce(&lisstride,&gisstride,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    if (gisstride) {
+      PetscInt N;
+      ierr = MatGetSize(mat,NULL,&N);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),N,0,1,&iscol_local);CHKERRQ(ierr);
+      ierr = ISSetIdentity(iscol_local);CHKERRQ(ierr);
+      ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix; skipping ISAllGather()\n");CHKERRQ(ierr);
+    } else {
+      PetscInt cbs;
+      ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+      ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
+    }
   }
   ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
@@ -3160,6 +3056,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   ierr = ISGetLocalSize(iscol,&ncol);CHKERRQ(ierr);
   if (colflag && ncol == mat->cmap->N) {
     allcolumns = PETSC_TRUE;
+    ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix\n");CHKERRQ(ierr);
   } else {
     allcolumns = PETSC_FALSE;
   }

@@ -80,22 +80,18 @@ int main(int argc,char **argv)
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
 
   ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Vectors are equal\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Vectors are not equal\n");CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n");CHKERRQ(ierr);
   }
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
   ierr = PetscObjectSetName((PetscObject) global2, "bsDim");CHKERRQ(ierr);
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  
+
   ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Vectors are equal\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Vectors are not equal\n");CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n");CHKERRQ(ierr);
   }
 
   /* clean up and exit */

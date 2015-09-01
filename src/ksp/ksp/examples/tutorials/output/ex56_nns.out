@@ -1,4 +1,4 @@
 Linear solve converged due to CONVERGED_RTOL iterations 7
 Linear solve converged due to CONVERGED_RTOL iterations 7
 Linear solve converged due to CONVERGED_RTOL iterations 7
-[0]main |b-Ax|/|b|=7.767409e-06, |b|=5.391826e+00, emax=9.976091e-01
+[0]main |b-Ax|/|b|=5.180985e-06, |b|=5.391826e+00, emax=9.980540e-01

@@ -15,7 +15,6 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscReal      err_norm,res_norm,err_tol=1.e-7,res_tol=1.e-6;
   Vec            x,b,u,u_tmp;
-  PetscRandom    r;
   PC             pc;
   KSP            ksp;
 
@@ -57,10 +56,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u_tmp);CHKERRQ(ierr);
   /* Set exact solution u; then compute right-hand-side vector b. */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = VecSetRandom(u,r);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
   for (k=0; k<3; k++) {

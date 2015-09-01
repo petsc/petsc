@@ -138,13 +138,6 @@ int main(int argc,char **argv)
   ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J);CHKERRQ(ierr);
 
   ierr = VecSet(user.fine.b,one);CHKERRQ(ierr);
-  {
-    PetscRandom rdm;
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-    ierr = VecSetRandom(user.fine.b,rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  }
 
   /* Set options, then solve nonlinear system */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

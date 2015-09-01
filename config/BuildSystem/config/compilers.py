@@ -136,12 +136,16 @@ class Configure(config.base.Configure):
 
   def checkRestrict(self,language):
     '''Check for the C/CXX restrict keyword'''
-    self.pushLanguage(language)
     # Try the official restrict keyword, then gcc's __restrict__, then
     # SGI's __restrict.  __restrict has slightly different semantics than
     # restrict (it's a bit stronger, in that __restrict pointers can't
     # overlap even with non __restrict pointers), but I think it should be
     # okay under the circumstances where restrict is normally used.
+    if config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
+      self.addDefine(language.upper()+'_RESTRICT', ' ')
+      self.logPrint('PGI restrict word is broken cannot handle [restrict] '+str(language)+' restrict keyword', 4, 'compilers')
+      return
+    self.pushLanguage(language)
     for kw in ['restrict', ' __restrict__', '__restrict']:
       if self.checkCompile('', 'float * '+kw+' x;'):
         if language.lower() == 'c':

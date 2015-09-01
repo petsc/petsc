@@ -5191,6 +5191,8 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
         performance for very large process counts.
 
    Notes:
+   Except for MAT_UNUSED_NONZERO_LOCATION_ERR and  MAT_ROW_ORIENTED all processes that share the matrix must pass the same value in flg!
+
    Some options are relevant only for particular matrix types and
    are thus ignored by others.  Other options are not supported by
    certain matrix types and will generate an error message if set.
@@ -5204,16 +5206,17 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    ignored.  Thus, if memory has not alredy been allocated for this particular
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored.
-   Set after the first MatAssemblyEnd()
+   Set after the first MatAssemblyEnd(). If this option is set then the MatAssemblyBegin/End() processes has one less global reduction
 
    MAT_NEW_NONZERO_LOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry in the nonzero structure instead produces
-   an error. (Currently supported for AIJ and BAIJ formats only.)
+   an error. (Currently supported for AIJ and BAIJ formats only.) If this option is set then the MatAssemblyBegin/End() processes has one less global reduction
 
    MAT_NEW_NONZERO_ALLOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry that has not been preallocated will
    instead produce an error. (Currently supported for AIJ and BAIJ formats
    only.) This is a useful flag when debugging matrix memory preallocation.
+   If this option is set then the MatAssemblyBegin/End() processes has one less global reduction
 
    MAT_IGNORE_OFF_PROC_ENTRIES set to PETSC_TRUE indicates entries destined for
    other processors should be dropped, rather than stashed.
@@ -5235,8 +5238,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_IGNORE_ZERO_ENTRIES - for AIJ/IS matrices this will stop zero values from creating
    a zero location in the matrix
 
-   MAT_USE_INODES - indicates using inode version of the code - works with AIJ and
-   ROWBS matrix types
+   MAT_USE_INODES - indicates using inode version of the code - works with AIJ matrix types
 
    MAT_NO_OFF_PROC_ZERO_ROWS - you know each process will only zero its own rows. This avoids all reductions in the
         zero row routines and thus improves performance for very large process counts.
@@ -9043,6 +9045,8 @@ PetscErrorCode  MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
    should either
 $   1) use MAT_REUSE_MATRIX in all calls but the first or
 $   2) call MatMatMultSymbolic() once and then MatMatMultNumeric() for each product needed
+   In the special case where matrix B (and hence C) are dense you can create the correctly sized matrix C yourself and then call this routine
+   with MAT_REUSE_MATRIX, rather than first having MatMatMult() create it for you. You can NEVER do this if the matrix C is sparse.
 
    Level: intermediate
 

@@ -361,11 +361,19 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       lu->row[i] = nz;
       countA     = ai[i+1] - ai[i];
       countB     = bi[i+1] - bi[i];
-      ajj        = aj + ai[i]; /* ptr to the beginning of this row */
-      bjj        = bj + bi[i];
+      if (aj) {
+        ajj = aj + ai[i]; /* ptr to the beginning of this row */
+      } else {
+        ajj = NULL;
+      }
+      bjj = bj + bi[i];
 
       /* B part, smaller col index */
-      colA_start = rstart + ajj[0]; /* the smallest global col index of A */
+      if (aj) {
+        colA_start = rstart + ajj[0]; /* the smallest global col index of A */
+      } else { /* superlu_dist does not require matrix has diagonal entries, thus aj=NULL would work */
+        colA_start = rstart;
+      }
       jB         = 0;
       for (j=0; j<countB; j++) {
         jcol = garray[bjj[j]];
@@ -383,7 +391,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
         lu->col[nz]   = rstart + ajj[j];
         lu->val[nz++] = *av++;
       }
-
+       
       /* B part, larger col index */
       for (j=jB; j<countB; j++) {
         lu->col[nz]   = garray[bjj[j]];

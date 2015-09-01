@@ -11,6 +11,11 @@
       PetscInt       localvert(4),nlocal
       PetscMPIInt    rank
       IS             is
+      PetscInt       one,zero
+
+!  Needed to work with 64 bit integers from Fortran
+      one  = 1
+      zero = 0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -35,10 +40,10 @@
       call AODestroy(ao,ierr)
 
       call AOCreate(PETSC_COMM_WORLD,ao,ierr)
-      call ISCreateStride(PETSC_COMM_WORLD,1,0,1,is,ierr)
+      call ISCreateStride(PETSC_COMM_WORLD,one,zero,one,is,ierr)
       call AOSetIS(ao,is,is,ierr)
-      call ISDestroy(is,ierr)
       call AOSetType(ao,AOMEMORYSCALABLE,ierr)
+      call ISDestroy(is,ierr)
       call AODestroy(ao,ierr)
 
       call PetscFinalize(ierr)

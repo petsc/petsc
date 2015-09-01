@@ -39,6 +39,10 @@ ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
 	${RM} -f ex9.o
 
+ex14: ex14.o chkopts
+	-${CLINKER} -o ex14 ex14.o ${PETSC_DM_LIB}
+	${RM} -f ex14.o
+
 ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o ${PETSC_DM_LIB}
 	${RM} -f ex15.o

@@ -3067,7 +3067,7 @@ PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (!aij->nz) {
+  if (!Y->preallocated || !aij->nz) {
     ierr = MatSeqAIJSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);

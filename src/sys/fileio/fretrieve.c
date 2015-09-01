@@ -385,6 +385,20 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     PetscFunctionReturn(0);
   }
 
+  if (par && len == 3){
+    size_t llen;
+    ierr = PetscStrlen(libname,&llen);CHKERRQ(ierr);
+    ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
+    llibname[llen-len] = 0;
+    ierr = PetscTestFile(llibname,'r',found);CHKERRQ(ierr);
+    if (*found) {
+      ierr = PetscInfo1(NULL,"Found uncompressed version of file %s\n",llibname);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    } else {
+      ierr = PetscInfo1(NULL,"Did not find uncompressed version of file %s\n",libname);CHKERRQ(ierr);
+    }
+  }
+
   /* Determine if all processors share a common /tmp */
   ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
   ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpdir,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-setup done: grid  Mx,My = 321,321  with spacing  dx,dy = 0.013,0.013
+setup done: grid  Mx,My = 321,321  with spacing  dx,dy = 0.0125,0.0125
   0 SNES Function norm 16.9195 
     0 KSP Residual norm 21.0731 
     1 KSP Residual norm 0.277136 
@@ -155,5 +155,4 @@ setup done: grid  Mx,My = 321,321  with spacing  dx,dy = 0.013,0.013
     2 KSP Residual norm 9.05608e-07 
     3 KSP Residual norm 1.41559e-08 
  31 SNES Function norm 4.28243e-08 
-number of Newton iterations = 31 ... CONVERGED_FNORM_RELATIVE
-errors:    av |u-uexact|  = 5.358e-06    |u-uexact|_inf = 5.286e-05
+errors:     av |u-uexact|  = 5.358e-06    |u-uexact|_inf = 5.286e-05

@@ -6638,9 +6638,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     if (0) {
-      ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
       ierr = DMLabelView(labelNew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -6839,6 +6837,63 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   PetscValidPointer(refinementLimit,  2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
   *refinementLimit = mesh->refinementLimit;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetRefinementFunction"
+/*@
+  DMPlexSetRefinementFunction - Set the function giving the maximum cell volume for refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementFunc - Function giving the maximum cell volume in the refined mesh
+
+  Note: The calling sequence is refinementFunc(coords, limit)
+$ coords - Coordinates of the current point, usually a cell centroid
+$ limit  - The maximum cell volume for a cell containing this point
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
+PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *))
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->refinementFunc = refinementFunc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetRefinementFunction"
+/*@
+  DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementFunc - Function giving the maximum cell volume in the refined mesh
+
+  Note: The calling sequence is refinementFunc(coords, limit)
+$ coords - Coordinates of the current point, usually a cell centroid
+$ limit  - The maximum cell volume for a cell containing this point
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
+PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFunc)(const PetscReal [], PetscReal *))
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(refinementFunc,  2);
+  *refinementFunc = mesh->refinementFunc;
   PetscFunctionReturn(0);
 }
 

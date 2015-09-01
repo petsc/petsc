@@ -30,6 +30,7 @@ configure_options = [
   '--download-petsc4py=1',
   '--download-mpi4py=1',
   '--download-saws',
+  '--download-concurrencykit=1',
   ]
 
 if __name__ == '__main__':

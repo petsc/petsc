@@ -428,8 +428,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           jac->head->is       = coupling;
           jac->head->next->is = rest;
         } else {
-          ierr = PCFieldSplitSetIS(pc,"0",coupling);CHKERRQ(ierr);
-          ierr = PCFieldSplitSetIS(pc,"1",rest);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetIS(pc,"0",rest);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetIS(pc,"1",coupling);CHKERRQ(ierr);
         }
         ierr = ISDestroy(&coupling);CHKERRQ(ierr);
         ierr = ISDestroy(&rest);CHKERRQ(ierr);

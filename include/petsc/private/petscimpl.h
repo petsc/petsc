@@ -790,4 +790,77 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction*
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
 
+#if !defined(PETSC_SKIP_SPINLOCK)
+#if defined(PETSC_HAVE_THREADSAFETY)
+#  if defined(PETSC_HAVE_CONCURRENCYKIT)
+#if defined(__cplusplus)
+/*  CK does not have extern "C" protection in their include files */
+extern "C" {
+#endif
+#include <ck_spinlock.h>
+#if defined(__cplusplus)
+}
+#endif
+typedef ck_spinlock_t PetscSpinlock;
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_init(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_lock(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_unlock(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
+{
+  return 0;
+}
+#  elif defined(PETSC_HAVE_OPENMP)
+
+#include <omp.h>
+typedef omp_lock_t PetscSpinlock;
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
+{
+  omp_init_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
+{
+  omp_set_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
+{
+  omp_unset_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
+{
+  omp_destroy_lock(omp_lock);
+  return 0;
+}
+#else
+Thread safety requires either --with-openmp or --download-concurrencykit
+#endif
+
+#else
+typedef int PetscSpinlock;
+#define PetscSpinlockCreate(a)  0
+#define PetscSpinlockLock(a)    0
+#define PetscSpinlockUnlock(a)  0
+#define PetscSpinlockDestroy(a) 0
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+extern PetscSpinlock PetscViewerASCIISpinLock;
+extern PetscSpinlock PetscCommSpinLock;
+#endif
+#endif
+
 #endif /* _PETSCHEAD_H */
