@@ -42,7 +42,7 @@ int main(int argc,char **argv)
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
-  avg = avg/n;
+  avg = avg/((PetscReal)n);
   if (view_rank == (PetscInt)rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %6.4e\n",rank,(double)PetscRealPart(avg));CHKERRQ(ierr);
   }
