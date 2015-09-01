@@ -1,6 +1,5 @@
 #include <../src/sys/classes/random/randomimpl.h>
 
-/* This shit is even more random than drand48(). It is random enough to run on Windows. Fuck you Microsoft, and your utter failure to implement POSIX. */
 #define RANDER48_SEED_0 (0x330e)
 #define RANDER48_SEED_1 (0xabcd)
 #define RANDER48_SEED_2 (0x1234)
@@ -117,7 +116,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 };
 
 /*MC
-   PETSCRANDER48 - simple reimplementation of basic Unix drand48() random number generator, because Microsoft
+   PETSCRANDER48 - simple portable reimplementation of basic Unix drand48() random number generator that should generate the
+        exact same random numbers on any system.
 
    Options Database Keys:
 . -random_type <rand,rand48,rander48,sprng>

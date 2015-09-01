@@ -29,9 +29,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-view_randomvalues",&view_rank,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
-  /* force imaginary part of random number to always be zero; thus obtain reproducable results with real and complex numbers */
+  /* force imaginary part of random number to always be zero; thus obtain reproducible results with real and complex numbers */
   ierr = PetscRandomSetInterval(rnd,0.0,1.0);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rnd,PETSCRANDER48);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);

@@ -138,11 +138,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscO
   if (((PetscObject)rnd)->type_name) {
     defaultType = ((PetscObject)rnd)->type_name;
   } else {
-#if defined(PETSC_HAVE_DRAND48)
-    defaultType = PETSCRAND48;
-#elif defined(PETSC_HAVE_RAND)
-    defaultType = PETSCRAND;
-#endif
+    defaultType = PETSCRANDER48;
   }
 
   ierr = PetscRandomRegisterAll();CHKERRQ(ierr);
