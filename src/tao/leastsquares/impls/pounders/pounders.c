@@ -326,7 +326,9 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 
     /* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
     blasint = mfqP->nmodelpoints - mfqP->n;
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&blasint2,&blasint,&mfqP->L_tmp[(mfqP->n+1)*blasint2],&blasint2,mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnmax,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info != 0) SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine gesvd returned with value %d\n",info);
 
     if (mfqP->beta[PetscMin(blasint,blasint2)-1] > mfqP->theta2) {
