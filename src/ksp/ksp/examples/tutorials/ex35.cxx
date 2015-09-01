@@ -274,7 +274,7 @@ PetscScalar ExactSolution(PetscReal coords[3], UserContext* user)
 {
   switch(user->problem) {
     case 2:
-      return sin(PI*coords[0]/user->bounds[1])*sin(PI*coords[1]/user->bounds[3]);
+      return sin(PETSC_PI*coords[0]/user->bounds[1])*sin(PETSC_PI*coords[1]/user->bounds[3]);
     case 1:
     default:
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Exact solution for -problem = [%D] is not available.\n", user->problem);
@@ -287,7 +287,7 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
 {
   switch(user->problem) {
     case 2:
-      return PI*PI*ComputeRho(coords, user)*(1.0/user->bounds[1]/user->bounds[1]+1.0/user->bounds[3]/user->bounds[3])*sin(PI*coords[0]/user->bounds[1])*sin(PI*coords[1]/user->bounds[3]);
+      return PETSC_PI*PETSC_PI*ComputeRho(coords, user)*(1.0/user->bounds[1]/user->bounds[1]+1.0/user->bounds[3]/user->bounds[3])*sin(PETSC_PI*coords[0]/user->bounds[1])*sin(PETSC_PI*coords[1]/user->bounds[3]);
     case 1:
     default:
       const PetscScalar xx=(coords[0]-user->xref)*(coords[0]-user->xref);

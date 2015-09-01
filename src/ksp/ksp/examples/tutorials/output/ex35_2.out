@@ -1,1 +1,6 @@
-Linear solve converged due to CONVERGED_RTOL iterations 17
+Number of levels: 2
+Level 0
+Level 1
+Level 2
+ComputeMatrix: Level = 2, N(elements) = 6400, N(vertices) = 6561 
+Linear solve converged due to CONVERGED_RTOL iterations 58

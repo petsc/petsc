@@ -35,7 +35,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   moab::Interface *iface=NULL;
-  moab::ParallelComm *pcomm=NULL;
   moab::Tag tag=NULL;
   moab::Tag ltog_tag=NULL;
   moab::Range range;
@@ -45,7 +44,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMMoabCreateMoab(comm, iface, pcomm, &ltog_tag, &range, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, iface, &ltog_tag, &range, dm);CHKERRQ(ierr);
   std::cout << "Created DMMoab using DMMoabCreateMoab." << std::endl;
   ierr = DMMoabGetInterface(*dm, &iface);CHKERRQ(ierr);
 

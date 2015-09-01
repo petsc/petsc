@@ -5,7 +5,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/moab/examples/tests/
-EXAMPLESC       = ex1.cxx ex2.cxx ex3.cxx ex4.cxx
+EXAMPLESC       = ex1.cxx ex2.cxx ex3.cxx
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -23,10 +23,6 @@ ex2: ex2.o  chkopts
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_DM_LIB}
 	${RM} -f ex3.o
-
-ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o ${PETSC_DM_LIB}
-	${RM} -f ex4.o
 
 
 #--------------------------------------------------------------------------
@@ -54,12 +50,13 @@ runex3_1_2:
 	   else echo ${PWD} ; echo "Possible problem with runex3, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex3_1_2.tmp
 
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4 -debug -file input/ex4_in.h5m -dim 2 -levels 2 > ex4_1_1.tmp 2>&1;\
-	   if (${DIFF} output/ex4_1_1.out ex4_1_1.tmp) then true ;  \
-	   else echo ${PWD} ; echo "Possible problem with runex4, diffs above \n========================================="; fi ;\
-	   ${RM} -f ex4_1_1.tmp
+runex3_2_1:
+	-@${MPIEXEC} -n 2 ./ex3 -debug -n 2 -dim 3 -ghost 1 -levels 2 > ex3_2_1.tmp 2>&1;\
+	   if (${DIFF} output/ex3_2_1.out ex3_2_1.tmp) then true ;  \
+	   else echo ${PWD} ; echo "Possible problem with runex3, diffs above \n========================================="; fi ;\
+	   ${RM} -f ex3_2_1.tmp
 
-TESTEXAMPLES_MOAB = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_1_1 runex3_1_2 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm
+
+TESTEXAMPLES_MOAB = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_1_1 runex3_1_2 runex3_2_1 ex3.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

@@ -90,13 +90,17 @@ int main(int argc, char **argv)
   Mat            R;
   DM            *dmhierarchy;
   PetscInt      *degrees;
+  PetscBool      createR;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+
+  /* Initialize input */
   comm = PETSC_COMM_WORLD;
+  createR = PETSC_FALSE;
+
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user);CHKERRQ(ierr);
-
   ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
 
   /* SetUp the data structures for DMMOAB */
@@ -128,15 +132,21 @@ int main(int argc, char **argv)
       for (i=1; i<=user.nlevels; i++) {
         if (user.debug) PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", i);
         ierr = DMRefine(dmhierarchy[i-1],MPI_COMM_NULL,&dmhierarchy[i]);CHKERRQ(ierr);
-        //ierr = DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL);CHKERRQ(ierr);
+        if (createR) {
+          ierr = DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL);CHKERRQ(ierr);
+        }
         if (user.debug) {
           ierr = DMView(dmhierarchy[i], 0);CHKERRQ(ierr);
-          //ierr = MatView(R,0);CHKERRQ(ierr);
+          if (createR) {
+            ierr = MatView(R,0);CHKERRQ(ierr);
+          }
         }
         /* Solvers could now set operator "R" to the multigrid PC object for level i 
             PCMGSetInterpolation(pc,i,R)
         */
-        ierr = MatDestroy(&R);CHKERRQ(ierr);
+        if (createR) {
+          ierr = MatDestroy(&R);CHKERRQ(ierr);
+        }
       }
     }
   }

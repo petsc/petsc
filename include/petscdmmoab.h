@@ -7,7 +7,9 @@
 
 #include <string>
 #include <moab/Core.hpp> /*I      "moab/Core.hpp"    I*/
+#ifdef MOAB_HAVE_MPI
 #include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
+#endif
 
 /* The MBERR macro is used to save typing. It checks a MOAB error code
  * (rval) and calls SETERRQ if not MB_SUCCESS. A message (msg) can
@@ -25,13 +27,15 @@ typedef enum {WRITE_PART,FORMAT} MoabWriteMode;
 static const char *const MoabWriteModes[] = {"WRITE_PART","FORMAT","MoabWriteMode","",0};
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
-PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
+PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabOutput(DM,const char*,const char*);
 
-PETSC_EXTERN PetscErrorCode DMMoabSetParallelComm(DM,moab::ParallelComm*);
-PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM,moab::ParallelComm**);
 PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM,moab::Interface *);
 PETSC_EXTERN PetscErrorCode DMMoabGetInterface(DM,moab::Interface **);
+#ifdef MOAB_HAVE_MPI
+PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM,moab::ParallelComm**);
+#endif
+
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalVertices(DM,moab::Range *);
 PETSC_EXTERN PetscErrorCode DMMoabGetAllVertices(DM,moab::Range *local);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalVertices(DM,const moab::Range**,const moab::Range**);

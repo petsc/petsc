@@ -45,16 +45,22 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   dmmoab->nhlevels=nlevels;
 
   /* Instantiate the nested refinement class */
+#ifdef MOAB_HAVE_MPI
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), dmmoab->pcomm, dmmoab->fileset);
+#else
+  dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), NULL, dmmoab->fileset);
+#endif
 
   ierr = PetscMalloc1(nlevels+1,&dmmoab->hsets);CHKERRQ(ierr);
 
   /* generate the mesh hierarchy */
   merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets);MBERRNM(merr);
 
+#ifdef MOAB_HAVE_MPI
   if (dmmoab->pcomm->size() > 1) {
     merr = dmmoab->hierarchy->exchange_ghosts(hsets, dmmoab->nghostrings);MBERRNM(merr);
   }
+#endif
 
   /* copy the mesh sets for nested refinement hierarchy */
   for (i=0; i<=nlevels; i++)
@@ -185,7 +191,9 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
   ierr = PetscCalloc2(nlsizc,&nnz,nlsizc,&onz);CHKERRQ(ierr);
 
   eowned = *dmbp->elocal;
+#ifdef MOAB_HAVE_MPI
   merr = dmbp->pcomm->filter_pstatus(eowned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+#endif
   /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
   for(moab::Range::iterator iter = eowned.begin(); iter!= eowned.end(); iter++) {
 
@@ -201,7 +209,9 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
     //merr = dmb1->mbiface->get_connectivity(ehandle,connect,vpere,false);MBERRNM(merr);
     merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp);MBERRNM(merr);
     merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned);MBERRNM(merr);
+#ifdef MOAB_HAVE_MPI
     merr = dmbc->pcomm->filter_pstatus(connc_owned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+#endif
     for (unsigned tc=0; tc<connc_owned.size(); tc++) {
       connc.push_back(connc_owned[tc]);
     }
@@ -282,7 +292,9 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
     /* Get connectivity and coordinates of the parent vertices */
     merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp);MBERRNM(merr);
     merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned);MBERRNM(merr);
+#ifdef MOAB_HAVE_MPI
     merr = dmbc->pcomm->filter_pstatus(connc_owned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+#endif
     for (unsigned tc=0; tc<connc_owned.size(); tc++) {
       connc.push_back(connc_owned[tc]);
     }
@@ -402,7 +414,9 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   dd2 = (DM_Moab*)dm2->data;
 
   dd2->mbiface = dmb->mbiface;
+#ifdef MOAB_HAVE_MPI
   dd2->pcomm = dmb->pcomm;
+#endif
   dd2->icreatedinstance = PETSC_FALSE;
   dd2->nghostrings=dmb->nghostrings;
 

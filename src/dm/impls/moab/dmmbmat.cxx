@@ -35,14 +35,14 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   ierr = DMMoab_Compute_NNZ_From_Connectivity(dm,&innz,nnz,&ionz,onz,(tmp?PETSC_TRUE:PETSC_FALSE));CHKERRQ(ierr);
 
   /* create the Matrix and set its type as specified by user */
-  ierr = MatCreate(dmmoab->pcomm->comm(), &A);CHKERRQ(ierr);
+  ierr = MatCreate((((PetscObject)dm)->comm), &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, dmmoab->nloc*dmmoab->numFields, dmmoab->nloc*dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A, mtype);CHKERRQ(ierr);
   ierr = MatSetBlockSize(A, dmmoab->bs);CHKERRQ(ierr);
   ierr = MatSetDM(A, dm);CHKERRQ(ierr);  /* set DM reference */
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-  if (!dmmoab->ltog_map) SETERRQ(dmmoab->pcomm->comm(), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
+  if (!dmmoab->ltog_map) SETERRQ((((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
   ierr = MatSetLocalToGlobalMapping(A,dmmoab->ltog_map,dmmoab->ltog_map);CHKERRQ(ierr);
 
   /* set preallocation based on different supported Mat types */
@@ -112,6 +112,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
         found.insert(connect[i]);
       }
     }
+    storage.clear();
 
     if (isbaij) {
       nnz[ivtx]=n_nnz;    /* leave out self to avoid repeats -> node shared by multiple elements */
@@ -174,9 +175,17 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   if (innz || ionz) {
     if (innz) *innz=0;
     if (ionz) *ionz=0;
-    for (i=0;i<nlsiz;i++) {
-      if (innz && (nnz[i]>*innz)) *innz=nnz[i];
-      if ((ionz && onz) && (onz[i]>*ionz)) *ionz=onz[i];
+    if(isbaij) {
+      for (i=0;i<nlsiz;i++) {
+        if (innz && (nnz[i]>*innz)) *innz=nnz[i];
+        if ((ionz && onz) && (onz[i]>*ionz)) *ionz=onz[i];
+      }
+    }
+    else {
+      for (i=0;i<nlsiz*nfields;i++) {
+        if (innz && (nnz[i]>*innz)) *innz=nnz[i];
+        if ((ionz && onz) && (onz[i]>*ionz)) *ionz=onz[i];
+      }
     }
   }
   PetscFunctionReturn(0);

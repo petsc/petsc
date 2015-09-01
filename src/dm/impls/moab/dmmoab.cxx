@@ -2,6 +2,7 @@
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
+#include <moab/NestedRefine.hpp>
 #include <moab/Skinner.hpp>
 
 /*MC
@@ -95,12 +96,10 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *dmb)
+PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::Tag *ltog_tag, moab::Range *range, DM *dmb)
 {
   PetscErrorCode ierr;
   moab::ErrorCode merr;
-  moab::EntityHandle partnset;
-  PetscInt rank, nprocs;
   DM             dmmb;
   DM_Moab        *dmmoab;
 
@@ -124,20 +123,19 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   dmmoab->hlevel=0;
   dmmoab->nghostrings=0;
 
-  if (!pcomm) {
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm, &nprocs);CHKERRQ(ierr);
+#ifdef MOAB_HAVE_MPI
+  moab::EntityHandle partnset;
+  PetscInt rank, nprocs;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &nprocs);CHKERRQ(ierr);
 
-    /* Create root sets for each mesh.  Then pass these
-       to the load_file functions to be populated. */
-    merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, partnset);MBERR("Creating partition set failed", merr);
+  /* Create root sets for each mesh.  Then pass these
+      to the load_file functions to be populated. */
+  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, partnset);MBERR("Creating partition set failed", merr);
 
-    /* Create the parallel communicator object with the partition handle associated with MOAB */
-    dmmoab->pcomm = moab::ParallelComm::get_pcomm(dmmoab->mbiface, partnset, &comm);
-  }
-  else {
-    ierr = DMMoabSetParallelComm(dmmb, pcomm);CHKERRQ(ierr);
-  }
+  /* Create the parallel communicator object with the partition handle associated with MOAB */
+  dmmoab->pcomm = moab::ParallelComm::get_pcomm(dmmoab->mbiface, partnset, &comm);
+#endif
 
   /* do the remaining initializations for DMMoab */
   dmmoab->bs = 1;
@@ -171,34 +169,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetParallelComm"
-/*@
-  DMMoabSetParallelComm - Set the ParallelComm used with this DMMoab
-
-  Collective on MPI_Comm
-
-  Input Parameter:
-. dm    - The DMMoab object being set
-. pcomm - The ParallelComm being set on the DMMoab
-
-  Level: beginner
-
-.keywords: DMMoab, create
-@*/
-PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm)
-{
-  DM_Moab        *dmmoab = (DM_Moab*)(dm)->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(pcomm,2);
-  dmmoab->pcomm = pcomm;
-  dmmoab->mbiface = pcomm->get_moab();
-  dmmoab->icreatedinstance = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
+#ifdef MOAB_HAVE_MPI
 
 /*@
   DMMoabGetParallelComm - Get the ParallelComm used with this DMMoab
@@ -223,6 +194,8 @@ PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm)
   PetscFunctionReturn(0);
 }
 
+#endif /* MOAB_HAVE_MPI */
+
 
 /*@
   DMMoabSetInterface - Set the MOAB instance used with this DMMoab
@@ -244,7 +217,9 @@ PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *mbiface)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mbiface,2);
+#ifdef MOAB_HAVE_MPI
   dmmoab->pcomm = NULL;
+#endif
   dmmoab->mbiface = mbiface;
   dmmoab->icreatedinstance = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -294,8 +269,6 @@ PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 @*/
 PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
 {
-  moab::ErrorCode merr;
-  PetscErrorCode  ierr;
   moab::Range     tmpvtxs;
   DM_Moab        *dmmoab = (DM_Moab*)(dm)->data;
 
@@ -306,6 +279,8 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
 
   dmmoab->vlocal->insert(range->begin(), range->end());
 
+#ifdef MOAB_HAVE_MPI
+  moab::ErrorCode merr;
   /* filter based on parallel status */
   merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,dmmoab->vowned);MBERRNM(merr);
 
@@ -314,11 +289,19 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
   merr = dmmoab->pcomm->filter_pstatus(tmpvtxs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
   tmpvtxs = moab::subtract(tmpvtxs, *dmmoab->vghost);
   *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, tmpvtxs);
+#else
+  *dmmoab->vowned = *dmmoab->vlocal;
+#endif
 
   /* compute and cache the sizes of local and ghosted entities */
   dmmoab->nloc = dmmoab->vowned->size();
   dmmoab->nghost = dmmoab->vghost->size();
+#ifdef MOAB_HAVE_MPI
+  PetscErrorCode  ierr;
   ierr = MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+#else
+  dmmoab->n=dmmoab->nloc;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -412,8 +395,6 @@ PetscErrorCode DMMoabGetLocalElements(DM dm,const moab::Range **range)
 @*/
 PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range)
 {
-  moab::ErrorCode merr;
-  PetscErrorCode  ierr;
   DM_Moab        *dmmoab = (DM_Moab*)(dm)->data;
 
   PetscFunctionBegin;
@@ -421,12 +402,20 @@ PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range)
   dmmoab->elocal->clear();
   dmmoab->eghost->clear();
   dmmoab->elocal->insert(range->begin(), range->end());
+#ifdef MOAB_HAVE_MPI
+  moab::ErrorCode merr;
   merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
   *dmmoab->eghost = moab::subtract(*range, *dmmoab->elocal);
+#endif
   dmmoab->neleloc=dmmoab->elocal->size();
   dmmoab->neleghost=dmmoab->eghost->size();
-  ierr = MPIU_Allreduce(&dmmoab->nele, &dmmoab->neleloc, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+#ifdef MOAB_HAVE_MPI
+  PetscErrorCode  ierr;
+  ierr = MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscInfo2(dm, "Created %D local and %D global elements.\n", dmmoab->neleloc, dmmoab->nele);
+#else
+  dmmoab->nele=dmmoab->neleloc;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -992,8 +981,9 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
       delete dmmoab->mbiface;
     }
     dmmoab->mbiface = NULL;
+#ifdef MOAB_HAVE_MPI
     dmmoab->pcomm = NULL;
-
+#endif
     ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
     ierr = PetscFree(dm->data);CHKERRQ(ierr);
@@ -1035,7 +1025,10 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* Get the local and shared vertices and cache it */
-  if (dmmoab->mbiface == NULL || dmmoab->pcomm == NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
+  if (dmmoab->mbiface == NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface before calling SetUp.");
+#ifdef MOAB_HAVE_MPI
+  if (dmmoab->pcomm == NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB ParallelComm object before calling SetUp.");
+#endif
 
   /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
   if (dmmoab->vlocal->empty())
@@ -1043,6 +1036,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     //merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,*dmmoab->vlocal,true);MBERRNM(merr);
     merr = dmmoab->mbiface->get_entities_by_dimension(dmmoab->fileset, 0, *dmmoab->vlocal, false);MBERRNM(merr);
 
+#ifdef MOAB_HAVE_MPI
     /* filter based on parallel status */
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,dmmoab->vowned);MBERRNM(merr);
 
@@ -1051,13 +1045,20 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_GHOST|PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
     adjs = moab::subtract(adjs, *dmmoab->vghost);
     *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, adjs);
+#else
+    *dmmoab->vowned=*dmmoab->vlocal;
+#endif
 
     /* compute and cache the sizes of local and ghosted entities */
     dmmoab->nloc = dmmoab->vowned->size();
     dmmoab->nghost = dmmoab->vghost->size();
 
+#ifdef MOAB_HAVE_MPI
     ierr = MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
     PetscInfo4(NULL, "Filset ID: %u, Vertices: local - %D, owned - %D, ghosted - %D.\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost);
+#else
+    dmmoab->n=dmmoab->nloc;
+#endif
   }
 
   {
@@ -1078,16 +1079,22 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     ierr = DMSetDimension(dm, dmmoab->dim);CHKERRQ(ierr);
 
+#ifdef MOAB_HAVE_MPI
     /* filter the ghosted and owned element list */
     *dmmoab->eghost = *dmmoab->elocal;
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
     *dmmoab->eghost = moab::subtract(*dmmoab->eghost, *dmmoab->elocal);
+#endif
 
     dmmoab->neleloc = dmmoab->elocal->size();
     dmmoab->neleghost = dmmoab->eghost->size();
 
+#ifdef MOAB_HAVE_MPI
     ierr = MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
     PetscInfo3(NULL, "%d-dim elements: owned - %D, ghosted - %D.\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost);
+#else
+    dmmoab->nele=dmmoab->neleloc;
+#endif
   }
 
   bs = dmmoab->bs;
@@ -1206,9 +1213,11 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     /* get the entities on the skin - only the faces */
     merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
 
+#ifdef MOAB_HAVE_MPI
     /* filter all the non-owned and shared entities out of the list */
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
+#endif
 
     /* get all the nodes via connectivity and the parent elements via adjacency information */
     merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
@@ -1339,7 +1348,7 @@ PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm)
   dmmoab = (DM_Moab*) dm->data;
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(((PetscObject)dm)->comm, dmmoab->mbiface, dmmoab->pcomm, &dmmoab->ltog_tag, PETSC_NULL, newdm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(((PetscObject)dm)->comm, dmmoab->mbiface, &dmmoab->ltog_tag, PETSC_NULL, newdm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   ndmmoab = (DM_Moab*) (*newdm)->data;

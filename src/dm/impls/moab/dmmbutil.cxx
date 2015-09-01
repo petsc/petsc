@@ -374,10 +374,10 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
     genCtx.fraction=nelems/nprocs;    /* partition only by the largest dimension */
     genCtx.remainder=nelems%nprocs;   /* remainder after partition which gets evenly distributed by round-robin */
     genCtx.cumfraction = (rank > 0 ? (genCtx.fraction) * (rank) + (rank-1 < genCtx.remainder ? rank : genCtx.remainder ) : 0);
-    PetscInfo3(NULL,"Fraction = %D, Remainder = %D, Cumulative fraction = %D\n",genCtx.fraction,genCtx.remainder,genCtx.cumfraction);
     if(rank < genCtx.remainder)     /* This process gets "fraction+1" elements */
       genCtx.fraction++;
 
+    PetscInfo3(NULL,"Fraction = %D, Remainder = %D, Cumulative fraction = %D\n",genCtx.fraction,genCtx.remainder,genCtx.cumfraction);
     switch(genCtx.dim) {
       case 1:
         genCtx.blockSizeElementXYZ[0]=genCtx.fraction;
@@ -464,7 +464,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
    case 2:
      genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
      genCtx.blockSizeVertexXYZ[1] = genCtx.q*genCtx.blockSizeElementXYZ[1] + 1;
-     genCtx.blockSizeElementXYZ[2]=0;
+     genCtx.blockSizeVertexXYZ[2]=0;
 
      genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
      // genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
@@ -478,7 +478,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
      genCtx.ystride = genCtx.blockSizeVertexXYZ[0];
      break;
    case 1:
-     genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=0;
+     genCtx.blockSizeVertexXYZ[1]=genCtx.blockSizeVertexXYZ[2]=0;
      genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
 
      genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
@@ -534,10 +534,12 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 {
   PetscErrorCode         ierr;
   moab::ErrorCode        merr;
-  PetscInt               a,b,c,n,global_size,global_rank=-1;
+  PetscInt               a,b,c,n,global_size,global_rank;
   DM_Moab               *dmmoab;
   moab::Interface       *mbImpl;
+#ifdef MOAB_HAVE_MPI
   moab::ParallelComm    *pcomm;
+#endif
   moab::ReadUtilIface   *readMeshIface;
   moab::Range            verts,cells,edges,faces,adj,dim3,dim2;
   DMMoabMeshGeneratorCtx genCtx;
@@ -566,14 +568,19 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   if(nghost < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of ghost layers cannot be negative.\n");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, NULL, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, dm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
   mbImpl = dmmoab->mbiface;
+#ifdef MOAB_HAVE_MPI
   pcomm = dmmoab->pcomm;
-  global_id_tag = dmmoab->ltog_tag;
   global_rank = pcomm->rank();
+#else
+  global_rank = 0;
+  global_size = 1;
+#endif
+  global_id_tag = dmmoab->ltog_tag;
   dmmoab->dim = dim;
   dmmoab->nghostrings=nghost;
   dmmoab->refct = 1;
@@ -623,7 +630,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
      kl=(genCtx.cumfraction)/genCtx.q / genCtx.blockSizeElementXYZ[2] / genCtx.C;//genCtx.K
      break;
   }
-  //PetscInfo3(NULL, "Local proc index := %d, %d, %d\n",ml,nl,kl);
 
   /*
    * so there are a total of M * A * blockSizeElement elements in x direction (so M * A * blockSizeElement + 1 verts in x direction)
@@ -728,6 +734,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
       }
     }
 
+#ifdef MOAB_HAVE_MPI
     /* check the handles */
     merr = pcomm->check_all_shared_handles();MBERRV(mbImpl,merr);
 
@@ -742,6 +749,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
     /* Reassign global IDs on all entities. */
     merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true,false);MBERRNM(merr);
+#endif
   
     ierr = PetscLogEventEnd(genCtx.parResolve,0,0,0,0);CHKERRQ(ierr);
   }
@@ -757,7 +765,9 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
       merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 2, toDelete);MBERR("Can't get faces", merr);
     }
 
+#ifdef MOAB_HAVE_MPI
     merr = dmmoab->pcomm->delete_entities(toDelete) ;MBERR("Can't delete entities", merr);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -829,7 +839,9 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,PetscInt nghost,con
   PetscInt            nprocs;
   DM_Moab            *dmmoab;
   moab::Interface    *mbiface;
+#ifdef MOAB_HAVE_MPI
   moab::ParallelComm *pcomm;
+#endif
   moab::Range         verts,elems;
   const char         *readopts;
   PetscErrorCode      ierr;
@@ -838,13 +850,17 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,PetscInt nghost,con
   PetscValidPointer(dm,6);
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, NULL, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, dm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
   mbiface = dmmoab->mbiface;
+#ifdef MOAB_HAVE_MPI
   pcomm = dmmoab->pcomm;
   nprocs = pcomm->size();
+#else
+  nprocs = 1;
+#endif
   /* TODO: Decipher dimension based on the loaded mesh instead of getting from user */
   dmmoab->dim = dim;
   dmmoab->nghostrings=nghost;
@@ -867,19 +883,23 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,PetscInt nghost,con
     merr = mbiface->load_file(filename, 0, readopts);MBERRVM(mbiface,"Reading MOAB file failed.", merr);
   }
 
+#ifdef MOAB_HAVE_MPI
   /* Reassign global IDs on all entities. */
   merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,true,true,true);MBERRNM(merr);
+#endif
 
   /* load the local vertices */
   merr = mbiface->get_entities_by_type(dmmoab->fileset, moab::MBVERTEX, verts, true);MBERRNM(merr);
   /* load the local elements */
   merr = mbiface->get_entities_by_dimension(dmmoab->fileset, dim, elems, true);MBERRNM(merr);
 
+#ifdef MOAB_HAVE_MPI
   /* Everything is set up, now just do a tag exchange to update tags
      on all of the ghost vertexes */
   merr = pcomm->exchange_tags(dmmoab->ltog_tag,verts);MBERRV(mbiface,merr);
   merr = pcomm->exchange_tags(dmmoab->ltog_tag,elems);MBERRV(mbiface,merr);
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
+#endif
 
   PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
   ierr = PetscFree(readopts);CHKERRQ(ierr);
@@ -906,17 +926,16 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,PetscInt nghost,con
 @*/
 PetscErrorCode DMMoabRenumberMeshEntities(DM dm)
 {
-  moab::ErrorCode     merr;
-  DM_Moab            *dmmoab;
   moab::Range         verts;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 
-  dmmoab = (DM_Moab*) dm->data;
-
+#ifdef MOAB_HAVE_MPI
   /* Insert new points */
-  merr = dmmoab->pcomm->assign_global_ids(dmmoab->fileset,3,0,false,true,false);MBERRNM(merr);
+  moab::ErrorCode     merr;
+  merr = ((DM_Moab*) dm->data)->pcomm->assign_global_ids(((DM_Moab*) dm->data)->fileset,3,0,false,true,false);MBERRNM(merr);
+#endif
   PetscFunctionReturn(0);
 }
 

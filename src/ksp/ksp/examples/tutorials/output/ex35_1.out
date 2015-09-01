@@ -1,1 +1,2 @@
-Linear solve converged due to CONVERGED_RTOL iterations 8
+ComputeMatrix: Level = 0, N(elements) = 100, N(vertices) = 121 
+Linear solve converged due to CONVERGED_RTOL iterations 7

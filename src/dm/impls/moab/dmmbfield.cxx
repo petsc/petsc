@@ -56,7 +56,9 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
     /* make sure the parallel exchange for ghosts are done appropriately */
     ierr = PetscFree(farray);CHKERRQ(ierr);
   }
+#ifdef MOAB_HAVE_MPI
   merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vowned);MBERRNM(merr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -134,8 +136,11 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
       }
 
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray);MBERRNM(merr);
+
+#ifdef MOAB_HAVE_MPI
       /* make sure the parallel exchange for ghosts are done appropriately */
       merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal);MBERRNM(merr);
+#endif
     }
     ierr = PetscFree(varray);CHKERRQ(ierr);
   }

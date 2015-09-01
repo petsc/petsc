@@ -54,8 +54,6 @@ typedef struct {
   int NQPTS,VPERE;
 } UserContext;
 
-// #define PI 3.1415926535897932384626433
-
 static PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user);
 
 #undef __FUNCT__
@@ -254,7 +252,7 @@ double ExactSolution(PetscReal coords[3], UserContext* user)
   const PetscScalar zz=(coords[2]-user->xyzref[2])*(coords[2]-user->xyzref[2]);
   return PetscExpScalar(-(xx+yy+zz)/user->nu);
 #else
-  return sin(PI*coords[0])*sin(PI*coords[1])*sin(PI*coords[2]);
+  return sin(PETSC_PI*coords[0])*sin(PETSC_PI*coords[1])*sin(PETSC_PI*coords[2]);
 #endif
 }
 
@@ -289,7 +287,7 @@ double ForcingFunction(PetscReal coords[3], UserContext* user)
   return - (uxx + uyy + uzz);
   */
   //return 1.0;
-  return 3.0*PI*PI*exact;
+  return 3.0*PETSC_PI*PETSC_PI*exact;
 #endif
 }
 
@@ -732,12 +730,11 @@ PetscErrorCode Compute_Basis ( PetscInt nverts, PetscReal *coords/*nverts*3*/, P
       /* invert the jacobian */
       ierr = invert_mat_3x3(jacobian, ijacobian, &volume);CHKERRQ(ierr);
 
-      jxw[j] = factor*volume/(nverts)/8;
+      jxw[j] = factor*volume/npts;
 
       /*  Divide by element jacobian. */
       for ( i = 0; i < nverts; ++i ) {
         const PetscScalar* vertex = coords+i*3;
-        phi[i+offset] *= factor;
         for (int k = 0; k < 3; ++k) {
           phypts[3*j+k] += phi[i+offset] * vertex[k];
           if (dphidx) dphidx[i+offset] += dNi_dxi[i]   * ijacobian[0*3+k];
@@ -756,14 +753,13 @@ PetscErrorCode Compute_Basis ( PetscInt nverts, PetscReal *coords/*nverts*3*/, P
 
     ierr = PetscMemzero(jacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemzero(ijacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
-    
-    jacobian[0] = coords[0*3+0]-coords[3*3+0];  jacobian[1] = coords[1*3+0]-coords[3*3+0]; jacobian[2] = coords[2*3+0]-coords[3*3+0];
-    jacobian[3] = coords[0*3+1]-coords[3*3+1];  jacobian[4] = coords[1*3+1]-coords[3*3+1]; jacobian[5] = coords[2*3+1]-coords[3*3+1];
-    jacobian[6] = coords[0*3+2]-coords[3*3+2];  jacobian[7] = coords[1*3+2]-coords[3*3+2]; jacobian[8] = coords[2*3+2]-coords[3*3+2];
+
+    jacobian[0] = coords[1*3+0]-coords[0*3+0];  jacobian[1] = coords[2*3+0]-coords[0*3+0]; jacobian[2] = coords[3*3+0]-coords[0*3+0];
+    jacobian[3] = coords[1*3+1]-coords[0*3+1];  jacobian[4] = coords[2*3+1]-coords[0*3+1]; jacobian[5] = coords[3*3+1]-coords[0*3+1];
+    jacobian[6] = coords[1*3+2]-coords[0*3+2];  jacobian[7] = coords[2*3+2]-coords[0*3+2]; jacobian[8] = coords[3*3+2]-coords[0*3+2];
 
     /* invert the jacobian */
     ierr = invert_mat_3x3(jacobian, ijacobian, &volume);CHKERRQ(ierr);
-    volume *= -1.0;
 
     if ( volume < 1e-8 ) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity\n", volume);
 
@@ -775,12 +771,12 @@ PetscErrorCode Compute_Basis ( PetscInt nverts, PetscReal *coords/*nverts*3*/, P
       const double& s = quad[j*3+1];
       const double& t = quad[j*3+2];
 
-      jxw[j] = factor*volume/(npts);
+      jxw[j] = factor*volume/npts;
 
-      phi[offset+0] = r;
-      phi[offset+1] = s;
-      phi[offset+2] = t;
-      phi[offset+3] = 1.0 - r - s - t;
+      phi[offset+0] = 1.0 - r - s - t;
+      phi[offset+1] = r;
+      phi[offset+2] = s;
+      phi[offset+3] = t;
 
       if (dphidx) {
         dphidx[0+offset] = ( coords[1+2*3] * ( coords[2+1*3] - coords[2+3*3] ) 

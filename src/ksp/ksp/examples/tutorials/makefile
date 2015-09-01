@@ -1106,13 +1106,13 @@ runex34_2 :
 	   ${RM} -f ex34_2.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -bc_type dirichlet -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex35 -bc_type dirichlet -levels 0 -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_1.tmp 2>&1;\
 	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex35, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 2 ./ex35 -bc_type dirichlet -nu .01 -n 20 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex35 -bc_type dirichlet -levels 2 -nu .01 -n 20 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_2.tmp 2>&1;\
 	   if (${DIFF} output/ex35_2.out ex35_2.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex35_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex35_2.tmp

@@ -12,7 +12,9 @@
 */
 typedef struct {
   moab::Interface    *mbiface;
+#ifdef MOAB_HAVE_MPI
   moab::ParallelComm *pcomm;
+#endif
   moab::Range        *tag_range; /* entities to which this tag applies */
   moab::Tag           tag;
   PetscInt            tag_size;
@@ -57,7 +59,9 @@ typedef struct {
 
   /* common data */
   moab::Interface         *mbiface;                       /* MOAB Interface/Core reference */
+#ifdef MOAB_HAVE_MPI
   moab::ParallelComm      *pcomm;                         /* MOAB ParallelComm reference */
+#endif
   moab::Tag               ltog_tag;                       /* MOAB supports "global id" tags */
   moab::Tag               material_tag;                   /* MOAB supports "material_set" tags */
   PetscBool               icreatedinstance;               /* true if DM created moab instance internally, will destroy instance in DMDestroy */
