@@ -37,13 +37,13 @@ int main(int argc,char **argv)
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     avg += value;
     if (view_rank == (PetscInt)rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%D] = %18.16e\n",rank,i,PetscRealPart(value));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%D] = %18.16e\n",rank,i,(double)PetscRealPart(value));CHKERRQ(ierr);
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   avg = avg/n;
   if (view_rank == (PetscInt)rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %18.16e\n",rank,PetscRealPart(avg));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %18.16e\n",rank,(double)PetscRealPart(avg));CHKERRQ(ierr);
   }
 
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
