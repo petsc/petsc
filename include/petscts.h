@@ -240,10 +240,10 @@ PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
-PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,const TSTrajectoryType);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,TS,const TSTrajectoryType);
 PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
