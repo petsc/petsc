@@ -49,8 +49,8 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
       ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
       ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
       ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-      ierr = PetscFree(merge->coi);CHKERRQ(ierr);
-      ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+      if (merge->coi) {ierr = PetscFree(merge->coi);CHKERRQ(ierr);}
+      if (merge->coj) {ierr = PetscFree(merge->coj);CHKERRQ(ierr);}
       ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
       ierr = merge->destroy(A);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
 
   /* (2) determine symbolic Co=(p->B)^T*AP - send to others (coi,coj)*/
   /*-----------------------------------------------------------------*/
-  //coi = c_oth->i; coj =  c_oth->j;
+  coi = c_oth->i; coj =  c_oth->j;
 
   Mat_SeqAIJ *po = (Mat_SeqAIJ *)ptap->Ro->data;
   poti = po->i; potj = po->j;
@@ -200,53 +200,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   /* then, compute symbolic Co = (p->B)^T*AP */
   pon    = (p->B)->cmap->n; /* total num of rows to be sent to other processors
                          >= (num of nonzero rows of C_seq) - pn */
-#if 1
-  ierr   = PetscMalloc1(pon+1,&coi);CHKERRQ(ierr);
-  coi[0] = 0;
-
-  /* set initial free space to be fill*(nnz(p->B) + nnz(AP)) */
-  nnz           = fill*(poti[pon] + api[am]);
-  ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
-  current_space = free_space;
 
   /* create and initialize a linked list */
   ierr = PetscLLCondensedCreate(pN,pN,&lnk,&lnkbt);CHKERRQ(ierr);
-
-  for (i=0; i<pon; i++) {
-    pnz = poti[i+1] - poti[i];
-    ptJ = potj + poti[i];
-    for (j=0; j<pnz; j++) {
-      row  = ptJ[j]; /* row of AP == col of Pot */
-      apnz = api[row+1] - api[row];
-      Jptr = apj + api[row];
-      /* add non-zero cols of AP into the sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(apnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
-    }
-    nnz = lnk[0];
-
-    /* If free space is not available, double the total space in the list */
-    if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
-      nspacedouble++;
-    }
-
-    /* Copy data into free space, and zero out denserows */
-    ierr = PetscLLCondensedClean(pN,nnz,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
-
-    current_space->array           += nnz;
-    current_space->local_used      += nnz;
-    current_space->local_remaining -= nnz;
-
-    coi[i+1] = coi[i] + nnz;
-    if (coi[i+1] != c_oth->i[i+1]) SETERRQ3(NULL,PETSC_ERR_ARG_SIZ,"%d coi %d !=  c_oth->i %d",i,coi[i+1],c_oth->i[i+1]);
-  }
-  
-  ierr      = PetscMalloc1(coi[pon],&coj);CHKERRQ(ierr);
-  ierr      = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
-  for (i=0; i<coi[pon]; i++) {
-    if (coj[i] != c_oth->j[i]) SETERRQ3(NULL,PETSC_ERR_ARG_SIZ,"%d coj %d !=  c_oth->j %d",i,coj[i],c_oth->j[i]);
-  }
-#endif
 
   afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
@@ -353,8 +309,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
 
   ierr = PetscTime(&t2);CHKERRQ(ierr);
 
+  //ierr = MPI_Barrier(comm);
+
   /* (5) compute the local portion of C (mpi mat) */
   /*----------------------------------------------*/
+
   Mat_SeqAIJ *pd = (Mat_SeqAIJ *)ptap->Rd->data;
   pdti = pd->i; pdtj = pd->j;
 
@@ -436,8 +395,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
 
   merge->bi        = pti;      /* Cseq->i */
   merge->bj        = ptj;      /* Cseq->j */
-  merge->coi       = coi;      /* Co->i   */
-  merge->coj       = coj;      /* Co->j   */
+  merge->coi = NULL; //merge->coi       = coi;      /* Co->i   */
+  merge->coj = NULL; //merge->coj       = coj;      /* Co->j   */
   merge->buf_ri    = buf_ri;
   merge->buf_rj    = buf_rj;
   merge->owners_co = owners_co;
