@@ -74,9 +74,15 @@ PetscErrorCode  PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val)
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset) {
-    *val = PetscRealPart(r->width)*(PetscReal) drander48() + PetscRealPart(r->low) + (PetscImaginaryPart(r->width)*(PetscReal) drander48() + PetscImaginaryPart(r->low)) * PETSC_i;
+    *val = PetscRealPart(r->low) + PetscImaginaryPart(r->low) * PETSC_i;
+    if (PetscRealPart(r->width)) {
+      *val += PetscRealPart(r->width)* drander48();
+    }
+    if (PetscImaginaryPart(r->width)) {
+      *val += PetscImaginaryPart(r->width)* drander48() * PETSC_i;
+    }
   } else {
-    *val = (PetscReal) drander48() + ((PetscReal) drander48())*PETSC_i;
+    *val = drander48() +  drander48()*PETSC_i;
   }
 #else
   if (r->iset) *val = r->width * drander48() + r->low;

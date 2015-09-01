@@ -29,6 +29,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-view_randomvalues",&view_rank,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
+  /* force imaginary part of random number to always be zero; thus obtain reproducable results with real and complex numbers */
+  ierr = PetscRandomSetInterval(rnd,0.0,1.0);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rnd,PETSCRANDER48);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
@@ -37,13 +39,13 @@ int main(int argc,char **argv)
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     avg += value;
     if (view_rank == (PetscInt)rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%D] = %18.16e\n",rank,i,(double)PetscRealPart(value));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%D] = %6.4e\n",rank,i,(double)PetscRealPart(value));CHKERRQ(ierr);
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   avg = avg/n;
   if (view_rank == (PetscInt)rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %18.16e\n",rank,(double)PetscRealPart(avg));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %6.4e\n",rank,(double)PetscRealPart(avg));CHKERRQ(ierr);
   }
 
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
