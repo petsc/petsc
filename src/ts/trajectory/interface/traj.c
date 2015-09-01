@@ -25,7 +25,7 @@ PetscClassId      TSTRAJECTORY_CLASSID;
 
 .seealso: TSTrajectoryRegisterAll(), TSTrajectoryRegisterDestroy()
 @*/
-PetscErrorCode  TSTrajectoryRegister(const char sname[], PetscErrorCode (*function)(TSTrajectory))
+PetscErrorCode  TSTrajectoryRegister(const char sname[], PetscErrorCode (*function)(TSTrajectory,TS))
 {
   PetscErrorCode ierr;
 
@@ -169,33 +169,33 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
 .seealso: TS, TSSolve(), TSCreate(), TSSetFromOptions(), TSDestroy(), TSType
 
 @*/
-PetscErrorCode  TSTrajectorySetType(TSTrajectory ts,const TSTrajectoryType type)
+PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,const TSTrajectoryType type)
 {
-  PetscErrorCode (*r)(TSTrajectory);
+  PetscErrorCode (*r)(TSTrajectory,TS);
   PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TSTRAJECTORY_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)tj, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(TSTrajectoryList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSTrajectory type: %s", type);
-  if (ts->ops->destroy) {
-    ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
+  if (tj->ops->destroy) {
+    ierr = (*(tj)->ops->destroy)(tj);CHKERRQ(ierr);
 
-    ts->ops->destroy = NULL;
+    tj->ops->destroy = NULL;
   }
-  ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
+  ierr = PetscMemzero(tj->ops,sizeof(*tj->ops));CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
-  ierr = (*r)(ts);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)tj, type);CHKERRQ(ierr);
+  ierr = (*r)(tj,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory);
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory);
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory,TS);
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory,TS);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryRegisterAll"
@@ -237,17 +237,17 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 
 .seealso: TSCreate(), TSSetUp(), TSSolve()
 @*/
-PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *ts)
+PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!*ts) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*ts),TSTRAJECTORY_CLASSID,1);
-  if (--((PetscObject)(*ts))->refct > 0) {*ts = 0; PetscFunctionReturn(0);}
+  if (!*tj) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
+  if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
-  if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
-  ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
+  if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
+  ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -259,14 +259,14 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *ts)
   Collective on TSTrajectory
 
   Input Parameter:
-. ts - The ts
+. tj - TSTrajectory
 
   Level: intermediate
 
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TSTrajectory tj)
+static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TSTrajectory tj,TS ts)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -280,9 +280,9 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
   if (!TSRegisterAllCalled) {ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsFList("-tstrajectory_type", "TSTrajectory method"," TSTrajectorySetType", TSTrajectoryList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = TSTrajectorySetType(tj, typeName);CHKERRQ(ierr);
+    ierr = TSTrajectorySetType(tj, ts, typeName);CHKERRQ(ierr);
   } else {
-    ierr = TSTrajectorySetType(tj, defaultType);CHKERRQ(ierr);
+    ierr = TSTrajectorySetType(tj, ts, defaultType);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -309,14 +309,15 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
 
 .seealso: TSGetType(), TSSetSaveTrajectory(), TSGetTrajectory()
 @*/
-PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj)
+PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID,1);
+  PetscValidHeaderSpecific(ts, TS_CLASSID,2);
   ierr = PetscObjectOptionsBegin((PetscObject)tj);CHKERRQ(ierr);
-  ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj);CHKERRQ(ierr);
+  ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj,ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

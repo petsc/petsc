@@ -351,7 +351,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
 
   if (ts->trajectory) {
-    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
+    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -387,8 +387,8 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
-    ierr = TSTrajectorySetType(ts->trajectory,TSTRAJECTORYBASIC);CHKERRQ(ierr);
-    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
+    ierr = TSTrajectorySetType(ts->trajectory,ts,TSTRAJECTORYBASIC);CHKERRQ(ierr);
+    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
