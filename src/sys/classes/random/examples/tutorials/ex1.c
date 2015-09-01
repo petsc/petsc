@@ -15,7 +15,7 @@ int main(int argc,char **argv)
 {
   PetscInt       i,n = 1000,*values;
   PetscRandom    rnd;
-  PetscScalar    value;
+  PetscScalar    value,avg = 0.0;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       view_rank=-1;
@@ -29,21 +29,23 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-view_randomvalues",&view_rank,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomSetType(rnd,PETSCRAND48);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomSetType(rnd,PETSCRAND);CHKERRQ(ierr);
-#endif
+  ierr = PetscRandomSetType(rnd,PETSCRANDER48);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+    avg += value;
     if (view_rank == (PetscInt)rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] value[%d] = %g\n",rank,i,PetscRealPart(value));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%D] = %18.16e\n",rank,i,PetscRealPart(value));CHKERRQ(ierr);
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
+  avg = avg/n;
+  if (view_rank == (PetscInt)rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %18.16e\n",rank,PetscRealPart(avg));CHKERRQ(ierr);
+  }
+
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("Sort",0,&event);CHKERRQ(ierr);
