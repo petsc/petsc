@@ -15,11 +15,11 @@ PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt stepnum
 
   PetscFunctionBegin;
   if (stepnum == 0) {
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &sf->viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(sf->viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD,&sf->viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(sf->viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(sf->viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject)tj,&filename);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(sf->viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(sf->viewer,filename);CHKERRQ(ierr);
   }
   ierr = VecView(X,sf->viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
