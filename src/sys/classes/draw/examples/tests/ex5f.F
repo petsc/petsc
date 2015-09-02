@@ -27,10 +27,10 @@
 !  GetInt requires a PetscInt so have to do this ugly setting
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',w,          &
      &     flg,ierr)
-      width = int(w,integer)
+      width = int(w)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',h,         &
      &     flg,ierr)
-      height = int(h,integer)
+      height = int(h)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
       call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
