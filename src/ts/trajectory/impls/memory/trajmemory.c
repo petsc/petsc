@@ -20,8 +20,8 @@ typedef struct _Stack {
 
 static PetscErrorCode StackCreate(MPI_Comm,Stack *,PetscInt,PetscInt);
 static PetscErrorCode StackDestroy(Stack*);
-static PetscErrorCode StackPush(Stack*, StackElement);
-static PetscErrorCode StackPop(Stack*, StackElement*);
+static PetscErrorCode StackPush(Stack*,StackElement);
+static PetscErrorCode StackPop(Stack*,StackElement*);
 
 #undef __FUNCT__
 #define __FUNCT__ "StackCreate"
@@ -65,7 +65,7 @@ static PetscErrorCode StackDestroy(Stack *s)
 static PetscErrorCode StackPush(Stack *s,StackElement e)
 {
   PetscFunctionBeginUser;
-  if (s->top >= s->maxelements) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->maxelements);
+  if (s->top+1 >= s->maxelements) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->maxelements);
   s->stack[++s->top] = e;
   PetscFunctionReturn(0);
 }
