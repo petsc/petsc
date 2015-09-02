@@ -1974,7 +1974,7 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
     ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
     ierr = PetscMalloc1(cEnd-cStart,&cgeom);CHKERRQ(ierr);
     for (c = 0; c < cEnd - cStart; c++) {
-      const PetscScalar *thisgeom;
+      PetscScalar *thisgeom;
 
       ierr = DMPlexPointLocalRef(dmCell, c + cStart, cgeomScal, &thisgeom);CHKERRQ(ierr);
       cgeom[c] = *((PetscFECellGeom *) thisgeom);
@@ -2138,7 +2138,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
     ierr = PetscMalloc1(cEnd-cStart,&cgeom);CHKERRQ(ierr);
     for (c = 0; c < cEnd - cStart; c++) {
-      const PetscScalar *thisgeom;
+      PetscScalar *thisgeom;
 
       ierr = DMPlexPointLocalRef(dmCell, c + cStart, cgeomScal, &thisgeom);CHKERRQ(ierr);
       cgeom[c] = *((PetscFECellGeom *) thisgeom);
