@@ -71,7 +71,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
   pcbddc->benign_p0 = 1;
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-  if (pcbddc->benign_p0_gidx >=0 && pcbddc->benign_p0 != -PetscGlobalRank) {
+  if (pcbddc->benign_p0_gidx >=0 && (PetscInt)PetscRealPart(pcbddc->benign_p0) != -PetscGlobalRank) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e instead of %1.4e\n",pcbddc->benign_p0,-PetscGlobalRank);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -5151,8 +5151,8 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     ierr = VecGetArray(pcis->vec2_N,&array2);CHKERRQ(ierr);
     for (i=0;i<pcis->n;i++) {
       if (array[i] != 0.0 && array[i] != array2[i]) {
-        PetscInt owned = (PetscInt)(array[i]);
-        PetscInt neigh = (PetscInt)(array2[i]);
+        PetscInt owned = (PetscInt)PetscRealPart(array[i]);
+        PetscInt neigh = (PetscInt)PetscRealPart(array2[i]);
         set_error = PETSC_TRUE;
         ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d: local index %d owned by a %d processes instead of %d!\n",PetscGlobalRank,i,owned,neigh);CHKERRQ(ierr);
       }
@@ -5410,7 +5410,8 @@ PetscErrorCode PCBDDCCheckOperator(PC pc)
     IS             zerodiag = NULL;
     Mat            S_j,B0=NULL,B0_B=NULL;
     Vec            dummy_vec=NULL,vec_check_B,vec_scale_P;
-    PetscScalar    norm,p0_check,*array,*array2;
+    PetscScalar    p0_check,*array,*array2;
+    PetscReal      norm;
     PetscInt       i;
 
     /* B0 and B0_B */
