@@ -41,6 +41,9 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
   if (!*r) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);
   if (--((PetscObject)(*r))->refct > 0) {*r = 0; PetscFunctionReturn(0);}
+  if ((*r)->ops->destroy) {
+    ierr = (*(*r)->ops->destroy)(*r);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
