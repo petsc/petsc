@@ -1214,7 +1214,7 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
             }
             else {
               /* simple high frequency random  number */
-              PetscScalar v = ((PetscScalar)((PETSC_HASH_FACT*idx)%751.) - 350.)/351.;
+              PetscScalar v = (((PETSC_HASH_FACT*idx)%751) - 350)/351.0;
               ierr = VecSetValues(bb, 1, &idx, &v, INSERT_VALUES);CHKERRQ(ierr);
             }
             ierr = MatRestoreRow(Amat,idx,&ncols,0,0);CHKERRQ(ierr);
