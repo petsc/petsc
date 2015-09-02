@@ -1,5 +1,11 @@
 #include <../src/sys/classes/random/randomimpl.h>
 
+typedef struct {
+  unsigned short seed[3];
+  unsigned short mult[3];
+  unsigned short add;
+} PetscRandom_Rander48;
+
 #define RANDER48_SEED_0 (0x330e)
 #define RANDER48_SEED_1 (0xabcd)
 #define RANDER48_SEED_2 (0x1234)
@@ -61,7 +67,16 @@ void srander48(long seed) {
 #define __FUNCT__ "PetscRandomSeed_Rander48"
 PetscErrorCode  PetscRandomSeed_Rander48(PetscRandom r)
 {
+  PetscRandom_Rander48 *r48 = (PetscRandom_Rander48*)r->data;
+
   PetscFunctionBegin;
+  r48->seed[0] = RANDER48_SEED_0;
+  r48->seed[1] = (unsigned short) r->seed;
+  r48->seed[2] = (unsigned short) (r->seed >> 16);
+  r48->mult[0] = RANDER48_MULT_0;
+  r48->mult[1] = RANDER48_MULT_1;
+  r48->mult[2] = RANDER48_MULT_2;
+  r48->add     = RANDER48_ADD;
   srander48(r->seed);
   PetscFunctionReturn(0);
 }
@@ -70,22 +85,24 @@ PetscErrorCode  PetscRandomSeed_Rander48(PetscRandom r)
 #define __FUNCT__ "PetscRandomGetValue_Rander48"
 PetscErrorCode  PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val)
 {
+  PetscRandom_Rander48 *r48 = (PetscRandom_Rander48*)r->data;
+
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset) {
     *val = PetscRealPart(r->low) + PetscImaginaryPart(r->low) * PETSC_i;
     if (PetscRealPart(r->width)) {
-      *val += PetscRealPart(r->width)* drander48();
+      *val += PetscRealPart(r->width)* erander48(r48->seed);
     }
     if (PetscImaginaryPart(r->width)) {
-      *val += PetscImaginaryPart(r->width)* drander48() * PETSC_i;
+      *val += PetscImaginaryPart(r->width)* erander48(r48->seed) * PETSC_i;
     }
   } else {
-    *val = drander48() +  drander48()*PETSC_i;
+    *val = erander48(r48->seed) +  erander48(r48->seed)*PETSC_i;
   }
 #else
-  if (r->iset) *val = r->width * drander48() + r->low;
-  else         *val = drander48();
+  if (r->iset) *val = r->width * erander48(r48->seed) + r->low;
+  else         *val = erander48(r48->seed);
 #endif
   PetscFunctionReturn(0);
 }
@@ -94,14 +111,27 @@ PetscErrorCode  PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val)
 #define __FUNCT__ "PetscRandomGetValueReal_Rander48"
 PetscErrorCode  PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal *val)
 {
+  PetscRandom_Rander48 *r48 = (PetscRandom_Rander48*)r->data;
+
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  if (r->iset) *val = PetscRealPart(r->width)*drander48() + PetscRealPart(r->low);
-  else         *val = drander48();
+  if (r->iset) *val = PetscRealPart(r->width)*erander48(r48->seed) + PetscRealPart(r->low);
+  else         *val = erander48(r48->seed);
 #else
-  if (r->iset) *val = r->width * drander48() + r->low;
-  else         *val = drander48();
+  if (r->iset) *val = r->width * erander48(r48->seed) + r->low;
+  else         *val = erander48(r48->seed);
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscRandomDestroy_Rander48"
+PetscErrorCode  PetscRandomDestroy_Rander48(PetscRandom r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(r->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +140,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   PetscRandomSeed_Rander48,
   PetscRandomGetValue_Rander48,
   PetscRandomGetValueReal_Rander48,
-  0,
+  PetscRandomDestroy_Rander48,
   /* 5 */
   0
 };
@@ -122,6 +152,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    Options Database Keys:
 . -random_type <rand,rand48,rander48,sprng>
 
+  Notes: This is the default random number generate provided by PetscRandomCreate() if you do not set a particular implementation.
+
   Level: beginner
 
 .seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48, PETSCRANDER48, PETSCSPRNG
@@ -131,9 +163,12 @@ M*/
 #define __FUNCT__ "PetscRandomCreate_Rander48"
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode       ierr;
+  PetscRandom_Rander48 *r48;
 
   PetscFunctionBegin;
+  ierr = PetscNewLog(r,&r48);CHKERRQ(ierr);
+  r->data = r48;
   ierr = PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) r, PETSCRANDER48);CHKERRQ(ierr);
   PetscFunctionReturn(0);
