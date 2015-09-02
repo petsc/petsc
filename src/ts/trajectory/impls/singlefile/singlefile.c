@@ -13,7 +13,7 @@ PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt stepnum
   PetscErrorCode          ierr;
   const char              *filename;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (stepnum == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &sf->viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(sf->viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);

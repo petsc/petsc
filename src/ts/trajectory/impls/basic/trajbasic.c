@@ -7,7 +7,7 @@ static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
@@ -27,7 +27,7 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,Pets
   PetscReal      tprev;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (stepnum == 0) {
 #if defined(PETSC_HAVE_POPEN)
     ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt step,PetscRe
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = TSGetTotalSteps(ts,&step);CHKERRQ(ierr);
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",step);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
