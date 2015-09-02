@@ -22,6 +22,7 @@ static PetscErrorCode StackCreate(MPI_Comm,Stack *,PetscInt,PetscInt);
 static PetscErrorCode StackDestroy(Stack*);
 static PetscErrorCode StackPush(Stack*,StackElement);
 static PetscErrorCode StackPop(Stack*,StackElement*);
+static PetscErrorCode StackTop(Stack*,StackElement*);
 
 #undef __FUNCT__
 #define __FUNCT__ "StackCreate"
@@ -29,7 +30,7 @@ static PetscErrorCode StackCreate(MPI_Comm comm,Stack *s,PetscInt size,PetscInt 
 {
   PetscErrorCode ierr;
   
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   s->top         = -1;
   s->maxelements = size;
   s->comm        = comm;
@@ -47,7 +48,7 @@ static PetscErrorCode StackDestroy(Stack *s)
   PetscInt       i;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (s->top>-1) {
     for (i=0;i<=s->top;i++) {
       ierr = VecDestroy(&s->stack[i]->X);CHKERRQ(ierr);
@@ -64,7 +65,7 @@ static PetscErrorCode StackDestroy(Stack *s)
 #define __FUNCT__ "StackPush"
 static PetscErrorCode StackPush(Stack *s,StackElement e)
 {
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (s->top+1 >= s->maxelements) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->maxelements);
   s->stack[++s->top] = e;
   PetscFunctionReturn(0);
@@ -74,9 +75,18 @@ static PetscErrorCode StackPush(Stack *s,StackElement e)
 #define __FUNCT__ "StackPop"
 static PetscErrorCode StackPop(Stack *s,StackElement *e)
 {
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (s->top == -1) SETERRQ(s->comm,PETSC_ERR_MEMC,"Emptry stack");
   *e = s->stack[s->top--];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "StackTop"
+static PetscErrorCode StackTop(Stack *s,StackElement *e)
+{
+  PetscFunctionBegin;
+  *e = s->stack[s->top];
   PetscFunctionReturn(0);
 }
 
@@ -91,20 +101,35 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   Stack          *s = (Stack*)tj->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
-  ierr = PetscCalloc1(1,&e);
-  e->stepnum = stepnum;
-  ierr = VecDuplicate(X,&e->X);CHKERRQ(ierr);
-  ierr = VecCopy(X,e->X);CHKERRQ(ierr);
-  e->time = time;
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(Y[0],ns,&e->Y);CHKERRQ(ierr);
-  for (i=0;i<ns;i++) {
-    ierr = VecCopy(Y[i],e->Y[i]);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  if (stepnum<s->top) SETERRQ(s->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+
+  if (stepnum==s->top) { /* overwrite the top checkpoint */
+    ierr = StackTop(s,&e); 
+    ierr = VecCopy(X,e->X);CHKERRQ(ierr);
+    ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
+    for (i=0;i<ns;i++) {
+      ierr = VecCopy(Y[i],e->Y[i]);CHKERRQ(ierr);
+    }
+    e->stepnum  = stepnum;
+    e->time     = time;
+    ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
+    e->timeprev = timeprev;
+  } else {
+    ierr = PetscCalloc1(1,&e);
+    ierr = VecDuplicate(X,&e->X);CHKERRQ(ierr);
+    ierr = VecCopy(X,e->X);CHKERRQ(ierr);
+    ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(Y[0],ns,&e->Y);CHKERRQ(ierr);
+    for (i=0;i<ns;i++) {
+      ierr = VecCopy(Y[i],e->Y[i]);CHKERRQ(ierr);
+    }
+    e->stepnum  = stepnum;
+    e->time     = time;
+    ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
+    e->timeprev = timeprev;
+    ierr        = StackPush(s,e);CHKERRQ(ierr);
   }
-  ierr = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
-  e->timeprev = timeprev;
-  ierr = StackPush(s,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -118,17 +143,15 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step,PetscR
   Stack          *s = (Stack*)tj->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = StackPop(s,&e);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
   ierr = VecCopy(e->X,Sol);CHKERRQ(ierr);
-
   ierr = TSGetStages(ts,&nr,&Y);CHKERRQ(ierr);
   for (i=0;i<nr ;i++) {
     ierr = VecCopy(e->Y[i],Y[i]);CHKERRQ(ierr);
   }
-  *t = e->time;
-
+  *t   = e->time;
   ierr = TSSetTimeStep(ts,-(*t)+e->timeprev);CHKERRQ(ierr);
 
   ierr = VecDestroy(&e->X);CHKERRQ(ierr);
@@ -144,7 +167,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
   Stack          *s = (Stack*)tj->data;
   PetscErrorCode ierr; 
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = StackDestroy(s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -172,7 +195,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
  
   ierr = PetscCalloc1(1,&s);
   ierr = TSGetStages(ts,&nr,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps,nr);CHKERRQ(ierr);
+  ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps+1,nr);CHKERRQ(ierr);
 
   tj->data = s;
   PetscFunctionReturn(0);
