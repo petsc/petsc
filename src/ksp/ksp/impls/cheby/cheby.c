@@ -104,6 +104,17 @@ static PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevEstEigSetUseRandom_Chebyshev"
+static PetscErrorCode KSPChebyshevEstEigSetUseRandom_Chebyshev(KSP ksp,PetscBool use)
+{
+  KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
+
+  PetscFunctionBegin;
+  cheb->userandom = use;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEigenvalues"
 /*@
    KSPChebyshevSetEigenvalues - Sets estimates for the extreme eigenvalues
@@ -118,8 +129,8 @@ static PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom 
   Options Database:
 .  -ksp_chebyshev_eigenvalues emin,emax
 
-   Note: If you run with the Krylov method of KSPCG with the option -ksp_monitor_singular_value it will
-    for that given matrix and preconditioner an estimate of the extreme eigenvalues.
+   Note: Call KSPChebyshevEstEigSet() or use the option -ksp_chebyshev_esteig a,b,c,d to have the KSP
+         estimate the eigenvalues and use these estimated values automatically
 
    Level: intermediate
 
@@ -184,6 +195,38 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
   PetscValidLogicalCollectiveReal(ksp,c,4);
   PetscValidLogicalCollectiveReal(ksp,d,5);
   ierr = PetscTryMethod(ksp,"KSPChebyshevEstEigSet_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevEstEigSetUseRandom"
+/*@
+   KSPChebyshevEstEigSetUseRandom - use a random right hand side in order to do the estimate instead of the given right hand side
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - linear solver context
+-  use - PETSC_TRUE to use random
+
+   Options Database:
++  -ksp_chebyshev_esteig_random <true,false>
+
+  Notes: This alledgely works better for multigrid smoothers
+
+  Use KSPChebyshevEstEigSetRandom() to provide the random number generator to be used. Otherwise it creates a default
+
+  Level: intermediate
+
+.seealso: KSPChebyshevEstEigSet(), PetscRandomCreate(), KSPChebyshevEstEigSetRandom()
+@*/
+PetscErrorCode KSPChebyshevEstEigSetUseRandom(KSP ksp,PetscBool use)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = PetscTryMethod(ksp,"KSPChebyshevEstEigSetUseRandom_C",(KSP,PetscBool),(ksp,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -293,6 +336,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObje
   }
 
   if (cheb->kspest) {
+    ierr = PetscOptionsBool("-ksp_chebyshev_esteig_random","Use random right hand side for estimate","KSPChebyshevEstEigSetUseRandom",cheb->userandom,&cheb->userandom,NULL);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -357,12 +401,16 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       Vec                B;
       KSPConvergedReason reason;
 
-      B  = ksp->work[1];
-      if (!cheb->random) {
-        ierr = PetscRandomCreate(PetscObjectComm((PetscObject)B),&cheb->random);CHKERRQ(ierr);
+      if (cheb->userandom) {
+        B  = ksp->work[1];
+        if (!cheb->random) {
+          ierr = PetscRandomCreate(PetscObjectComm((PetscObject)B),&cheb->random);CHKERRQ(ierr);
+        }
+        ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
+      } else {
+        B = ksp->vec_rhs;
       }
-      ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
-      ierr = KSPSolve(cheb->kspest,ksp->work[1],B);CHKERRQ(ierr);
+      ierr = KSPSolve(cheb->kspest,B,ksp->work[0]);CHKERRQ(ierr);
 
       ierr = KSPGetConvergedReason(cheb->kspest,&reason);CHKERRQ(ierr);
       if (reason < 0) {
@@ -509,10 +557,12 @@ static  PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimating eigenvalues using random right hand side\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscRandomView(cheb->random,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      if (cheb->userandom) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimating eigenvalues using random right hand side\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscRandomView(cheb->random,viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -544,8 +594,8 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
                   of the preconditioned operator. If these are accurate you will get much faster convergence.
 .   -ksp_chebyshev_esteig <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
                          transform for Chebyshev eigenvalue bounds (KSPChebyshevEstEigSet())
--   -ksp_chebyshev_esteig_steps - number of estimation steps 
-
+.   -ksp_chebyshev_esteig_steps - number of estimation steps
+-   -ksp_chebyshev_esteig_random - use random number generator to create right hand side for eigenvalue estimator
 
    Level: beginner
 
@@ -557,7 +607,8 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
           The user should call KSPChebyshevSetEigenvalues() if they have eigenvalue estimates.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPChebyshevSetEigenvalues(), KSPChebyshevEstEigSet(), KSPChebyshevEstEigSetRandom(), KSPRICHARDSON, KSPCG, PCMG
+           KSPChebyshevSetEigenvalues(), KSPChebyshevEstEigSet(), KSPChebyshevEstEigSetUseRandom(), KSPChebyshevEstEigSetRandom(),
+           KSPRICHARDSON, KSPCG, PCMG
 
 M*/
 
@@ -583,7 +634,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   chebyshevP->tform[2] = 0;
   chebyshevP->tform[3] = 1.1;
   chebyshevP->eststeps = 10;
-  
+  chebyshevP->userandom = PETSC_FALSE;
+
   ksp->ops->setup          = KSPSetUp_Chebyshev;
   ksp->ops->solve          = KSPSolve_Chebyshev;
   ksp->ops->destroy        = KSPDestroy_Chebyshev;
@@ -596,6 +648,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",KSPChebyshevSetEigenvalues_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSet_C",KSPChebyshevEstEigSet_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetUseRandom_C",KSPChebyshevEstEigSetUseRandom_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigGetKSP_C",KSPChebyshevEstEigGetKSP_Chebyshev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
