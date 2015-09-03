@@ -44,6 +44,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
       ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
       ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
       ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+      if (merge->bj) {ierr = PetscFree(merge->bj);CHKERRQ(ierr);}
       ierr = PetscFree(merge->bj);CHKERRQ(ierr);
       ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
       ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
@@ -117,7 +118,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   Mat_MPIAIJ     *c;
   MPI_Comm       comm;
   PetscMPIInt    size,rank;
-  PetscLogDouble      t0,t1,t2,t3,t4;
+  PetscLogDouble      t0,t1,t11,t2,t3,t4;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -177,6 +178,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,2.0,&AP);CHKERRQ(ierr); 
   ierr = MatMPIAIJGetLocalMat(AP,MAT_INITIAL_MATRIX,&ptap->AP_loc);CHKERRQ(ierr);
   ierr = MatDestroy(&AP);CHKERRQ(ierr); 
+  ierr = PetscTime(&t11);CHKERRQ(ierr);
 
   /* (2) compute C_loc=Rd*AP_loc, Co=Ro*AP_loc */
   ierr = MatMatMult_SeqAIJ_SeqAIJ(ptap->Rd,ptap->AP_loc,MAT_INITIAL_MATRIX,2.0,&ptap->C_loc);CHKERRQ(ierr);
@@ -188,6 +190,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   
   Mat_SeqAIJ *ap = (Mat_SeqAIJ*)ptap->AP_loc->data; 
   Mat_SeqAIJ *c_oth  = (Mat_SeqAIJ*)ptap->C_oth->data;
+  Mat_SeqAIJ *c_loc  = (Mat_SeqAIJ*)ptap->C_loc->data;
   api = ap->i; apj = ap->j;
 
   /* (2) determine symbolic Co=(p->B)^T*AP - send to others (coi,coj)*/
@@ -336,16 +339,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);CHKERRQ(ierr);
   rmax = 0;
   for (i=0; i<pn; i++) {
-    /* add pdt[i,:]*AP into lnk */
-    pnz = pdti[i+1] - pdti[i];
-    ptJ = pdtj + pdti[i];
-    for (j=0; j<pnz; j++) {
-      row  = ptJ[j];  /* row of AP == col of Pt */
-      apnz = api[row+1] - api[row];
-      Jptr = apj + api[row];
-      /* add non-zero cols of AP into the sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(apnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
-    }
+    /* add C_loc into lnk */
+    nzi  = c_loc->i[i+1] - c_loc->i[i];
+    Jptr = c_loc->j + c_loc->i[i];
+    ierr = PetscLLCondensedAddSorted(nzi,Jptr,lnk,lnkbt);CHKERRQ(ierr);
 
     /* add received col data into lnk */
     for (k=0; k<merge->nrecv; k++) { /* k-th received message */
@@ -367,9 +364,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
     ierr = PetscLLCondensedClean(pN,nnz,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
     ierr = MatPreallocateSet(i+owners[rank],nnz,current_space->array,dnz,onz);CHKERRQ(ierr);
 
+#if 0
     current_space->array           += nnz;
     current_space->local_used      += nnz;
     current_space->local_remaining -= nnz;
+#endif
+    for (j=0; j<nnz; j++) current_space->array[j] = 0.0;
 
     pti[i+1] = pti[i] + nnz;
     if (nnz > rmax) rmax = nnz;
@@ -378,6 +378,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
 
   ierr      = PetscMalloc1(pti[pn]+1,&ptj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,ptj);CHKERRQ(ierr);
+  ierr      = PetscFree(ptj);CHKERRQ(ierr);
+
   afill_tmp = (PetscReal)pti[pn]/(pi_loc[pm] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
@@ -394,7 +396,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   merge->bi        = pti;      /* Cseq->i */
-  merge->bj        = ptj;      /* Cseq->j */
+  merge->bj        = NULL; //ptj;      /* Cseq->j */
   merge->coi = NULL; //merge->coi       = coi;      /* Co->i   */
   merge->coj = NULL; //merge->coj       = coj;      /* Co->j   */
   merge->buf_ri    = buf_ri;
@@ -431,7 +433,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   }
 
   ierr = PetscTime(&t4);CHKERRQ(ierr);
-  if (rank == 1) printf("PtAPSym: %g + %g + %g = %g\n",t1-t0,t2-t1,t3-t2,t4-t3);
+  if (rank == 1) {
+    printf("PtAPSym: %g + %g +%g + %g + %g = %g\n",t11-t0,t1-t11,t2-t1,t3-t2,t4-t3,t4-t0);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -489,7 +493,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_new(Mat A,Mat P,Mat C)
     api = ap->i; 
     apj = ap->j; 
     for (i=0; i<am; i++) {
-      /* AP[i,:] = A[i,:]*P = Ad*P_loc Ao*P_oth */
+      /* AP[i,:] = A[i,:]*P = Ad*P_loc + Ao*P_oth */
       AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa);
       apnz = api[i+1] - api[i];
       for (j=0; j<apnz; j++) {
