@@ -5,8 +5,8 @@
 typedef struct _StackElement {
   PetscInt  stepnum;
   Vec       X;
-  PetscReal time;
   Vec       *Y;
+  PetscReal time;
   PetscReal timeprev;
 } *StackElement; 
 
@@ -103,7 +103,9 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
   PetscFunctionBegin;
   if (stepnum<s->top) SETERRQ(s->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
-
+  
+  if (stepnum > (rand()%ts->max_steps)) PetscFunctionReturn(0);/* choose check points randomly */
+  
   if (stepnum==s->top) { /* overwrite the top checkpoint */
     ierr = StackTop(s,&e); 
     ierr = VecCopy(X,e->X);CHKERRQ(ierr);
@@ -126,8 +128,12 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     e->stepnum  = stepnum;
     e->time     = time;
-    ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
-    e->timeprev = timeprev;
+    if (stepnum == 0) {
+      e->timeprev = e->time - ts->time_step; /* for consistency */
+    } else {
+      ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
+      e->timeprev = timeprev;
+    }
     ierr        = StackPush(s,e);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -135,28 +141,61 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet_Memory"
-PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step,PetscReal *t)
+PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
 {
-  Vec            Sol,*Y;
+  Vec            *Y;
   PetscInt       nr,i;
   StackElement   e;
   Stack          *s = (Stack*)tj->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = StackPop(s,&e);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
-  ierr = VecCopy(e->X,Sol);CHKERRQ(ierr);
+  
+  ierr = StackTop(s,&e);CHKERRQ(ierr);
+  ierr = VecCopy(e->X,ts->vec_sol);CHKERRQ(ierr);
   ierr = TSGetStages(ts,&nr,&Y);CHKERRQ(ierr);
   for (i=0;i<nr ;i++) {
     ierr = VecCopy(e->Y[i],Y[i]);CHKERRQ(ierr);
   }
-  *t   = e->time;
-  ierr = TSSetTimeStep(ts,-(*t)+e->timeprev);CHKERRQ(ierr);
+  *t = e->time;
 
-  ierr = VecDestroy(&e->X);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(s->numY,&e->Y);CHKERRQ(ierr);
-  ierr = PetscFree(e);CHKERRQ(ierr);
+  if (e->stepnum < stepnum) { /* go forward */
+    ierr = TSSetTimeStep(ts,(*t)-e->timeprev);CHKERRQ(ierr);
+    /* reset ts context */
+    PetscInt steps = ts->steps;
+    ts->steps      = e->stepnum; 
+    ts->ptime      = e->time;
+    ts->ptime_prev = e->timeprev; 
+
+    /* recompute to the specified step */
+    for (i=e->stepnum;i<stepnum;i++) { /* assume fixed step size */
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSStep(ts);CHKERRQ(ierr);
+      if (ts->event) {
+        ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+      }
+      if (!ts->steprollback) {
+        if (i+1<stepnum) { /* skip checkpointing at the last step */
+          ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        }
+        ierr = TSPostStep(ts);CHKERRQ(ierr);
+      }
+    }
+    ts->steps = steps;
+    ts->total_steps = stepnum;
+    PetscReal stepsize;
+    ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr); /* go backward */
+  } else if (e->stepnum == stepnum) {
+    ierr = TSSetTimeStep(ts,-(*t)+e->timeprev);CHKERRQ(ierr); /* go backward */
+    ierr = StackPop(s,&e);CHKERRQ(ierr);
+    ierr = VecDestroy(&e->X);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(s->numY,&e->Y);CHKERRQ(ierr);
+    ierr = PetscFree(e);CHKERRQ(ierr);
+  } else {
+    SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);    
+  }
+
   PetscFunctionReturn(0);
 }
 
