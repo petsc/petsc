@@ -73,7 +73,7 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscR
       /* Estimate with a fixed number of iterations */
       ierr = KSPSetConvergenceTest(cheb->kspest,KSPConvergedSkip,0,0);CHKERRQ(ierr);
       ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->eststeps);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(cheb->kspest,1.e-12,PETSC_DEFAULT,PETSC_DEFAULT,cheb->eststeps);CHKERRQ(ierr);
     }
     if (a >= 0) cheb->tform[0] = a;
     if (b >= 0) cheb->tform[1] = b;
@@ -99,7 +99,6 @@ static PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom 
   PetscFunctionBegin;
   if (random) {ierr = PetscObjectReference((PetscObject)random);CHKERRQ(ierr);}
   ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
-
   cheb->random = random;
   PetscFunctionReturn(0);
 }
@@ -156,7 +155,7 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 .  -ksp_chebyshev_esteig a,b,c,d
 
    Notes:
-   The Chebyshev bounds are estimated using
+   The Chebyshev bounds are set using
 .vb
    minbound = a*minest + b*maxest
    maxbound = c*minest + d*maxest
@@ -167,6 +166,8 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
    If 0.0 is passed for all transform arguments (a,b,c,d), eigenvalue estimation is disabled.
 
    The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
+
+   The eigenvalues are estimated using the Lanczo (KSPCG) or Arnoldi (KSPGMRES) process using a random right hand side vector.
 
    Level: intermediate
 
@@ -195,10 +196,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 
    Input Arguments:
 +  ksp - linear solver context
--  random - random number context or NULL to disable randomized RHS
-
-   Options Database:
-.  -ksp_chebyshev_esteig_random
+-  random - random number context or NULL to use default
 
   Level: intermediate
 
@@ -295,20 +293,6 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObje
   }
 
   if (cheb->kspest) {
-    PetscBool estrand = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_chebyshev_esteig_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,NULL);CHKERRQ(ierr);
-    if (estrand) {
-      PetscRandom random;
-      ierr = PetscRandomCreate(PetscObjectComm((PetscObject)ksp),&random);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)random,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-      ierr = PetscObjectAppendOptionsPrefix((PetscObject)random,"ksp_chebyshev_esteig_");CHKERRQ(ierr);
-      ierr = PetscRandomSetFromOptions(random);CHKERRQ(ierr);
-      ierr = KSPChebyshevEstEigSetRandom(ksp,random);CHKERRQ(ierr);
-      ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
-    }
-  }
-
-  if (cheb->kspest) {
     ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -369,33 +353,26 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = PetscObjectStateGet((PetscObject)Amat,&amatstate);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)Pmat,&pmatstate);CHKERRQ(ierr);
     if (amatid != cheb->amatid || pmatid != cheb->pmatid || amatstate != cheb->amatstate || pmatstate != cheb->pmatstate) {
-      PetscReal max=0.0,min=0.0;
-      Vec       X,B;
+      PetscReal          max=0.0,min=0.0;
+      Vec                B;
       KSPConvergedReason reason;
-      X = ksp->work[0];
-      if (cheb->random) {
-        B    = ksp->work[1];
-        ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
-      } else {
-        B = ksp->vec_rhs;
-      }
-      if (ksp->guess_zero) {
-        ierr = VecZeroEntries(X);CHKERRQ(ierr);
-      }
 
-      ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
+      B  = ksp->work[1];
+      if (!cheb->random) {
+        ierr = PetscRandomCreate(PetscObjectComm((PetscObject)B),&cheb->random);CHKERRQ(ierr);
+      }
+      ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
+      ierr = KSPSolve(cheb->kspest,ksp->work[1],B);CHKERRQ(ierr);
 
       ierr = KSPGetConvergedReason(cheb->kspest,&reason);CHKERRQ(ierr);
-      if (reason==KSP_DIVERGED_INDEFINITE_PC || reason==KSP_DIVERGED_DTOL || reason==KSP_DIVERGED_BREAKDOWN) {
-        SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Eigen estimator failed: %D",reason);
-      }
-      else if (reason==KSP_CONVERGED_RTOL ||reason==KSP_CONVERGED_ATOL) {
-        ierr = PetscInfo(ksp,"Eigen estimator converged. Should not happen unless very small or low rank problem\n");CHKERRQ(ierr);
-      } else if (reason<0) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n");CHKERRQ(ierr);
-        SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Eigen estimator failure, this should not happen: %D",reason);
-      } else if (reason!=KSP_CONVERGED_ITS) {
-        ierr = PetscInfo1(ksp,"Eigen estimator did not converge by iteration\n",reason);CHKERRQ(ierr);
+      if (reason < 0) {
+        PetscInt its;
+        ierr = KSPGetIterationNumber(cheb->kspest,&its);CHKERRQ(ierr);
+        SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Eigen estimator failed: %s at iteration %D",KSPConvergedReasons[reason],its);
+      } else if (reason==KSP_CONVERGED_RTOL ||reason==KSP_CONVERGED_ATOL) {
+        ierr = PetscInfo(ksp,"Eigen estimator converged prematurely. Should not happen except for small or low rank problem\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscInfo1(ksp,"Eigen estimator did not converge by iteration: %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
       }
 
       ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
@@ -532,12 +509,10 @@ static  PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      if (cheb->random) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimating eigenvalues using random right hand side\n");CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = PetscRandomView(cheb->random,viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      }
+      ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimating eigenvalues using random right hand side\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscRandomView(cheb->random,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -569,8 +544,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
                   of the preconditioned operator. If these are accurate you will get much faster convergence.
 .   -ksp_chebyshev_esteig <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
                          transform for Chebyshev eigenvalue bounds (KSPChebyshevEstEigSet())
-.   -ksp_chebyshev_esteig_steps - number of estimation steps 
-+   -ksp_chebyshev_esteig_random - use random right hand side for eigenvalue estimation (KSPChebyshevEstEigSetRandom())
+-   -ksp_chebyshev_esteig_steps - number of estimation steps 
 
 
    Level: beginner
