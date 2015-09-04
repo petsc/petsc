@@ -292,7 +292,7 @@ SNES Object: 1 MPI processes
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
             left preconditioning
             using NONE norm type for convergence test
         maximum iterations=2
@@ -321,7 +321,7 @@ SNES Object: 1 MPI processes
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
             left preconditioning
             using NONE norm type for convergence test
         maximum iterations=2

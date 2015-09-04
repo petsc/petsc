@@ -39,34 +39,34 @@ SNES Object: 2 MPI processes
       PC Object:      (mg_coarse_)       2 MPI processes
         type: redundant
           Redundant preconditioner: First (color=0) of 2 PCs follows
-        KSP Object:        (mg_coarse_redundant_)         1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object:        (mg_coarse_redundant_)         1 MPI processes
-          type: lu
-            LU: out-of-place factorization
-            tolerance for zero pivot 2.22045e-14
-            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
-            matrix ordering: nd
-            factor fill ratio given 5, needed 1.875
-              Factored matrix follows:
-                Mat Object:                 1 MPI processes
-                  type: seqaij
-                  rows=16, cols=16
-                  package used to perform factorization: petsc
-                  total: nonzeros=120, allocated nonzeros=120
-                  total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 12 nodes, limit used is 5
-          linear system matrix = precond matrix:
-          Mat Object:           1 MPI processes
-            type: seqaij
-            rows=16, cols=16
-            total: nonzeros=64, allocated nonzeros=64
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+          KSP Object:          (mg_coarse_redundant_)           1 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:          (mg_coarse_redundant_)           1 MPI processes
+            type: lu
+              LU: out-of-place factorization
+              tolerance for zero pivot 2.22045e-14
+              using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+              matrix ordering: nd
+              factor fill ratio given 5, needed 1.875
+                Factored matrix follows:
+                  Mat Object:                   1 MPI processes
+                    type: seqaij
+                    rows=16, cols=16
+                    package used to perform factorization: petsc
+                    total: nonzeros=120, allocated nonzeros=120
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 12 nodes, limit used is 5
+            linear system matrix = precond matrix:
+            Mat Object:             1 MPI processes
+              type: seqaij
+              rows=16, cols=16
+              total: nonzeros=64, allocated nonzeros=64
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
         linear system matrix = precond matrix:
         Mat Object:         2 MPI processes
           type: mpiaij
@@ -83,7 +83,7 @@ SNES Object: 2 MPI processes
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
             left preconditioning
             using NONE norm type for convergence test
         maximum iterations=2
@@ -104,14 +104,14 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.127796, max = 1.40576
+          Chebyshev: eigenvalue estimates:  min = 0.127799, max = 1.40579
           Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
           KSP Object:          (mg_levels_2_esteig_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
             left preconditioning
             using NONE norm type for convergence test
         maximum iterations=2
