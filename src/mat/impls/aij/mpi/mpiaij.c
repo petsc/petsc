@@ -3002,7 +3002,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
       ierr = ISStrideGetInfo(iscol,&start,NULL);CHKERRQ(ierr);
       ierr = ISGetLocalSize(iscol,&len);CHKERRQ(ierr);
       ierr = MatGetOwnershipRangeColumn(mat,&mstart,&mlen);CHKERRQ(ierr);
-      if (mstart == start && mlen == len) lisstride = 1;
+      if (mstart == start && mlen-mstart == len) lisstride = 1;
     }
     ierr = MPI_Allreduce(&lisstride,&gisstride,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
     if (gisstride) {
