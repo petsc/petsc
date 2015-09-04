@@ -64,6 +64,12 @@ There are two compile-time options:
 #endif
 #include <ctype.h>              /* toupper() */
 
+#if defined(__cplusplus)
+/*  c++ cannot handle  [_restrict_] notation like C does */
+#undef PETSC_RESTRICT
+#define PETSC_RESTRICT
+#endif
+
 #if defined __SSE2__
 #  include <emmintrin.h>
 #endif
@@ -167,8 +173,6 @@ static const PetscReal QuadQDeriv[4][4][2] = {
     (n)[2] = (x)[i+1][j+1];                     \
     (n)[3] = (x)[i][j+1];                       \
   } while (0)
-
-static PetscScalar Sqr(PetscScalar a) {return a*a;}
 
 static void HexGrad(const PetscReal dphi[][3],const PetscReal zn[],PetscReal dz[])
 {
@@ -737,7 +741,7 @@ static void PointwiseNonlinearity(THI thi,const Node n[PETSC_RESTRICT],const Pet
       dv[ll] += dphi[l][ll] * n[l].v;
     }
   }
-  gam = Sqr(du[0]) + Sqr(dv[1]) + du[0]*dv[1] + 0.25*Sqr(du[1]+dv[0]) + 0.25*Sqr(du[2]) + 0.25*Sqr(dv[2]);
+  gam = PetscSqr(du[0]) + PetscSqr(dv[1]) + du[0]*dv[1] + 0.25*PetscSqr(du[1]+dv[0]) + 0.25*PetscSqr(du[2]) + 0.25*PetscSqr(dv[2]);
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 
@@ -758,7 +762,7 @@ static void PointwiseNonlinearity2D(THI thi,Node n[],PetscReal phi[],PetscReal d
       dv[ll] += dphi[l][ll] * n[l].v;
     }
   }
-  gam = Sqr(du[0]) + Sqr(dv[1]) + du[0]*dv[1] + 0.25*Sqr(du[1]+dv[0]);
+  gam = PetscSqr(du[0]) + PetscSqr(dv[1]) + du[0]*dv[1] + 0.25*PetscSqr(du[1]+dv[0]);
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 

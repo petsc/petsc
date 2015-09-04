@@ -1,15 +1,15 @@
   Residual norms for elas_ solve.
-  0 KSP natural resid norm 4.584301301606e+00 true resid norm 5.247024862911e+00 ||r(i)||/||b|| 1.000000000000e+00
-  1 KSP natural resid norm 2.222395697628e-01 true resid norm 1.907883518733e-01 ||r(i)||/||b|| 3.636124410652e-02
-  2 KSP natural resid norm 3.177863793146e-02 true resid norm 1.968653192588e-02 ||r(i)||/||b|| 3.751941803256e-03
-  3 KSP natural resid norm 1.719860505051e-02 true resid norm 9.702908954721e-03 ||r(i)||/||b|| 1.849221074462e-03
-  4 KSP natural resid norm 2.113128015375e-02 true resid norm 1.313302348493e-02 ||r(i)||/||b|| 2.502946684657e-03
-  5 KSP natural resid norm 2.422810440132e-02 true resid norm 1.694312097796e-02 ||r(i)||/||b|| 3.229091041234e-03
-  6 KSP natural resid norm 8.722133589282e-03 true resid norm 6.018396169743e-03 ||r(i)||/||b|| 1.147011178141e-03
-  7 KSP natural resid norm 2.768193340258e-03 true resid norm 2.091724119560e-03 ||r(i)||/||b|| 3.986495536443e-04
-  8 KSP natural resid norm 5.609323664601e-04 true resid norm 4.387298285263e-04 ||r(i)||/||b|| 8.361497038589e-05
-  9 KSP natural resid norm 1.074673589000e-04 true resid norm 8.482891252712e-05 ||r(i)||/||b|| 1.616704985081e-05
- 10 KSP natural resid norm 1.862877016528e-05 true resid norm 1.419473679260e-05 ||r(i)||/||b|| 2.705292458767e-06
+  0 KSP Residual norm 4.5843 
+  1 KSP Residual norm 0.22224 
+  2 KSP Residual norm 0.0317786 
+  3 KSP Residual norm 0.0171986 
+  4 KSP Residual norm 0.0211313 
+  5 KSP Residual norm 0.0242281 
+  6 KSP Residual norm 0.00872213 
+  7 KSP Residual norm 0.00276819 
+  8 KSP Residual norm 0.000560932 
+  9 KSP Residual norm 0.000107467 
+ 10 KSP Residual norm 1.86288e-05 
 Linear elas_ solve converged due to CONVERGED_RTOL iterations 10
 KSP Object:(elas_) 1 MPI processes
   type: cg
@@ -39,6 +39,7 @@ PC Object:(elas_) 1 MPI processes
     HYPRE BoomerAMG: Relax weight  (all)      1
     HYPRE BoomerAMG: Outer relax weight (all) 1
     HYPRE BoomerAMG: Using CF-relaxation
+    HYPRE BoomerAMG: Not using more complex smoothers.
     HYPRE BoomerAMG: Measure type        local
     HYPRE BoomerAMG: Coarsen type        Falgout
     HYPRE BoomerAMG: Interpolation type  classical

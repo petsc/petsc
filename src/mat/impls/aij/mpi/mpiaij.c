@@ -2999,7 +2999,8 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
     ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&isstride);CHKERRQ(ierr);
     if (isstride) {
       PetscInt  start,len,mstart,mlen;
-      ierr = ISStrideGetInfo(iscol,&start,&len);CHKERRQ(ierr);
+      ierr = ISStrideGetInfo(iscol,&start,NULL);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(iscol,&len);CHKERRQ(ierr);
       ierr = MatGetOwnershipRangeColumn(mat,&mstart,&mlen);CHKERRQ(ierr);
       if (mstart == start && mlen == len) lisstride = 1;
     }

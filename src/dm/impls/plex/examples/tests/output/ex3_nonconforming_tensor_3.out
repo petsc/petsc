@@ -1,9 +1,9 @@
 DM Object:Hexahedral Mesh 4 MPI processes
   type: plex
 Mesh 'Hexahedral Mesh':
-Max sizes cone: 6 support: 6
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 6
 [0]: 4 ----> 47
 [0]: 4 ----> 61
 [0]: 4 ----> 74
@@ -192,7 +192,7 @@ cap --> base:
 [0]: 83 ----> 36
 [0]: 84 ----> 29
 [0]: 84 ----> 36
-Max sizes cone: 6 support: 6
+[1] Max sizes cone: 6 support: 6
 [1]: 4 ----> 57
 [1]: 4 ----> 70
 [1]: 4 ----> 83
@@ -430,7 +430,7 @@ Max sizes cone: 6 support: 6
 [1]: 104 ----> 56
 [1]: 105 ----> 55
 [1]: 105 ----> 56
-Max sizes cone: 6 support: 6
+[2] Max sizes cone: 6 support: 6
 [2]: 4 ----> 57
 [2]: 4 ----> 61
 [2]: 4 ----> 65
@@ -727,7 +727,7 @@ Max sizes cone: 6 support: 6
 [2]: 106 ----> 52
 [2]: 106 ----> 53
 [2]: 106 ----> 56
-Max sizes cone: 6 support: 6
+[3] Max sizes cone: 6 support: 6
 [3]: 3 ----> 45
 [3]: 3 ----> 49
 [3]: 3 ----> 53
@@ -2188,8 +2188,8 @@ PetscSF Object: 4 MPI processes
 Null vector 0 is likely null vector|| A * v[0] || = 2.62153e-17
 Null vector 1 is likely null vector|| A * v[1] || = 2.59992e-17
 Null vector 2 is likely null vector|| A * v[2] || = 3.17921e-17
-Null vector 3 is likely null vector|| A * v[3] || = 2.68204e-17
-Null vector 4 is likely null vector|| A * v[4] || = 3.03622e-17
-Null vector 5 is likely null vector|| A * v[5] || = 2.0826e-17
+Null vector 3 is likely null vector|| A * v[3] || = 2.64807e-17
+Null vector 4 is likely null vector|| A * v[4] || = 3.02858e-17
+Null vector 5 is likely null vector|| A * v[5] || = 2.91459e-17
 Function tests pass for order 0 at tolerance 1e-10
 Function tests pass for order 0 derivatives at tolerance 1e-10

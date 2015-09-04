@@ -48,7 +48,6 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   PetscReal         amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal         dx_min = 1.e-16,dx_par = 1.e-1,unorm;
   MPI_Comm          comm;
-  PetscErrorCode    (*eval_fct)(SNES,Vec,Vec)=0;
   PetscBool         assembled,use_wp = PETSC_TRUE,flg;
   const char        *list[2] = {"ds","wp"};
   PetscMPIInt       size;
@@ -56,7 +55,6 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
 
   PetscFunctionBegin;
   ierr     = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
-  eval_fct = SNESComputeFunction;
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -74,7 +72,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
 
   ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
-  ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,x1,j1a);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg);CHKERRQ(ierr);
@@ -104,7 +102,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
     }
     ierr = VecAssemblyBegin(x2);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(x2);CHKERRQ(ierr);
-    ierr = (*eval_fct)(snes,x2,j2a);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,x2,j2a);CHKERRQ(ierr);
     ierr = VecAXPY(j2a,-1.0,j1a);CHKERRQ(ierr);
     /* Communicate scale=1/dx_i to all processors */
     ierr = VecGetOwnershipRanges(x1,&ranges);CHKERRQ(ierr);

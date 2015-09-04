@@ -3,4 +3,4 @@
 set MACH=steamroller
 set USR=petsc
 set LOC=/sandbox/petsc/${RNAME}-2
-set CONF=arch-linux-complex-gcov
+set CONF=arch-linux-cmplx-gcov

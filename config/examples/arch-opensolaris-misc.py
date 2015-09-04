@@ -3,6 +3,7 @@
 configure_options = [
   '--with-debugger=/bin/true',
   '--with-debugging=0',
+  'FFLAGS=-ftrap=%none',
 
   '--with-64-bit-indices=1',
   '--with-log=0',
@@ -13,7 +14,7 @@ configure_options = [
   '--with-fortran-datatypes=1',
 
   '--with-c2html=0',
-  '--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
+  '--with-mpi-dir=/export/home/petsc/soft/mpich-3.1.3',
   ]
 
 if __name__ == '__main__':

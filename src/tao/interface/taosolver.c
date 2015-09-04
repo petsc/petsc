@@ -1903,7 +1903,11 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
-  gnorm2=gnorm*gnorm;
+  if (gnorm >= PETSC_INFINITY) {
+    gnorm2 = gnorm;
+  } else {
+    gnorm2=gnorm*gnorm;
+  }
 
   if (PetscIsInfOrNanReal(f)) {
     ierr = PetscInfo(tao,"Failed to converged, function value is Inf or NaN\n");CHKERRQ(ierr);
