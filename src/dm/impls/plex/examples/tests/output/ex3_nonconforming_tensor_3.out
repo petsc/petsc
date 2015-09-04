@@ -1,9 +1,9 @@
 DM Object:Hexahedral Mesh 4 MPI processes
   type: plex
 Mesh 'Hexahedral Mesh':
-Max sizes cone: 6 support: 9
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 9
 [0]: 4 ----> 71
 [0]: 4 ----> 85
 [0]: 4 ----> 98
@@ -384,7 +384,7 @@ cap --> base:
 [0]: 137 ----> 70
 [0]: 138 ----> 67
 [0]: 138 ----> 70
-Max sizes cone: 6 support: 7
+[1] Max sizes cone: 6 support: 7
 [1]: 4 ----> 59
 [1]: 4 ----> 72
 [1]: 4 ----> 85
@@ -638,7 +638,7 @@ Max sizes cone: 6 support: 7
 [1]: 110 ----> 58
 [1]: 111 ----> 57
 [1]: 111 ----> 58
-Max sizes cone: 6 support: 6
+[2] Max sizes cone: 6 support: 6
 [2]: 4 ----> 57
 [2]: 4 ----> 61
 [2]: 4 ----> 65
@@ -935,7 +935,7 @@ Max sizes cone: 6 support: 6
 [2]: 106 ----> 52
 [2]: 106 ----> 53
 [2]: 106 ----> 56
-Max sizes cone: 6 support: 6
+[3] Max sizes cone: 6 support: 6
 [3]: 3 ----> 45
 [3]: 3 ----> 49
 [3]: 3 ----> 53

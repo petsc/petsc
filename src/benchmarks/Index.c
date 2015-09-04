@@ -80,7 +80,7 @@ int test1(void)
 
   ierr = BlastCache();CHKERRQ(ierr);
 
-  ierr = PetscTime(&t1);CHKERRQ(ierr)
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) x[i] = y[z[i]];
   ierr = PetscTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
