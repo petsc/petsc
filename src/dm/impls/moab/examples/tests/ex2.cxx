@@ -121,7 +121,6 @@ int main(int argc, char **argv)
   if (user.debug) PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n");
   ierr = DMCreateGlobalVector(user.dm,&solution);CHKERRQ(ierr);
   ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rctx,PETSCRAND48);CHKERRQ(ierr);
   ierr = VecSetRandom(solution,rctx);CHKERRQ(ierr);
 
   /* test if matrix allocation for the prescribed matrix type is done correctly */
