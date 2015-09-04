@@ -316,7 +316,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     /* check */
     ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    if (compute_Stilda && (!Ain->hermitian_set || !Ain->spd_set)) {
+    if (compute_Stilda && (!Ain->hermitian_set || !Ain->spd_set)) { /* these are lazy checks, maybe I should throw an error if they are not set */
       PetscInt lsize;
 
       ierr = MatGetSize(Ain,&lsize,NULL);CHKERRQ(ierr);
@@ -336,12 +336,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #endif
         ierr = VecAXPY(vec3,-1.0,vec2);CHKERRQ(ierr);
         ierr = VecNorm(vec3,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        if (norm > PetscSqrtReal(PETSC_SMALL)) {
-          sub_schurs->is_hermitian = PETSC_FALSE;
-        } else {
-          sub_schurs->is_hermitian = PETSC_TRUE;
+        if (!Ain->hermitian_set) {
+          if (norm > PetscSqrtReal(PETSC_SMALL)) {
+            sub_schurs->is_hermitian = PETSC_FALSE;
+          } else {
+            sub_schurs->is_hermitian = PETSC_TRUE;
+          }
         }
-        if (!Ain->spd_set) {
+        if (!Ain->spd_set && !benign_trick) {
           ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
           if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
         }
