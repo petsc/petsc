@@ -1224,42 +1224,47 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)change_ctx->original_mat);CHKERRQ(ierr);
     pc->mat = change_ctx->original_mat;
+  }
 
-    /* need to restore the local matrices */
-    if (pcbddc->benign_saddle_point && pcbddc->benign_change) {
+  /* need to restore the local matrices */
+  if (pcbddc->benign_change) {
+    Mat_IS *matis = (Mat_IS*)pc->mat->data;
+
+    ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pcbddc->benign_original_mat);CHKERRQ(ierr);
+    matis->A = pcbddc->benign_original_mat;
+    ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+  }
+
+  /* get solution in original basis */
+  if (x) {
+    PC_IS *pcis = (PC_IS*)(pc->data);
+
+    /* restore solution on pressures */
+    if (pcbddc->benign_saddle_point) {
       Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
-      ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)pcbddc->benign_original_mat);CHKERRQ(ierr);
-      matis->A = pcbddc->benign_original_mat;
-      ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+      /* add non-benign solution */
+      ierr = VecAXPY(x,-1.0,pcbddc->benign_vec);CHKERRQ(ierr);
+
+      /* change basis on pressures for x */
+      ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      if (pcbddc->benign_change) {
+        ierr = MatMult(pcbddc->benign_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+        ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      } else {
+        ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      }
     }
 
-    /* get solution in original basis */
-    if (x) {
-      PC_IS *pcis = (PC_IS*)(pc->data);
+    /* change basis on x */
+    if (pcbddc->ChangeOfBasisMatrix) {
+      PCBDDCChange_ctx change_ctx;
 
-      /* restore solution on pressures */
-      if (pcbddc->benign_saddle_point) {
-        Mat_IS *matis = (Mat_IS*)pc->mat->data;
-
-        /* add non-benign solution */
-        ierr = VecAXPY(x,-1.0,pcbddc->benign_vec);CHKERRQ(ierr);
-
-        /* change basis on pressures for x */
-        ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        if (pcbddc->benign_change) {
-
-          ierr = MatMult(pcbddc->benign_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-          ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-          ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-        } else {
-          ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-          ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-        }
-      }
-      /* change basis on x */
+      ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
       ierr = MatMult(change_ctx->global_change,x,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecCopy(pcis->vec1_global,x);CHKERRQ(ierr);
     }
@@ -1526,7 +1531,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
       /* set flag in pcis to not reuse submatrices during PCISCreate */
       pcis->reusesubmatrices = PETSC_FALSE;
-    } else if (!pcbddc->user_ChangeOfBasisMatrix) {
+    } else if (!pcbddc->user_ChangeOfBasisMatrix && !pcbddc->benign_change) {
       ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
