@@ -46,12 +46,11 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   ierr = PetscMalloc1(max_k+2,&fgmres->prevecs_user_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(max_k+2)*(2*sizeof(void*)));CHKERRQ(ierr);
 
-  ierr = KSPCreateVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
-
   /* fgmres->vv_allocated includes extra work vectors, which are not used in the additional
-     block of vectors used to store the preconditioned directions, hence  the - VEC_OFFSET
-     term */
+     block of vectors used to store the preconditioned directions, hence  the -VEC_OFFSET
+     term for this first allocation of vectors holding preconditioned directions */
+  ierr = KSPCreateVecs(ksp,fgmres->vv_allocated-VEC_OFFSET,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
+  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated-VEC_OFFSET,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated - VEC_OFFSET ; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   }
@@ -609,8 +608,13 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
-  for (i=0; i<fgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(fgmres->mwork_alloc[i],&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
+  if(fgmres->nwork_alloc>0){
+    i=0;
+    /* In the first allocation we allocated VEC_OFFSET fewer vectors in prevecs */
+    ierr = VecDestroyVecs(fgmres->mwork_alloc[i]-VEC_OFFSET,&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
+    for (i=1; i<fgmres->nwork_alloc; i++) {
+      ierr = VecDestroyVecs(fgmres->mwork_alloc[i],&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
   if (fgmres->modifydestroy) {
