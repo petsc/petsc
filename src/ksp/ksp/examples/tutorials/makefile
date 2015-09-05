@@ -1360,34 +1360,38 @@ TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex1
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
-TESTEXAMPLES_FORTRAN_COMPLEX   = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_F90	       = ex13f90.PETSc runex13f90 ex13f90.rm
-TESTEXAMPLES_13		       = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
-TESTEXAMPLES_MATLAB_ENGINE     = ex10.PETSc runex10_12  ex10.rm
-TESTEXAMPLES_17		       = ex10.PETSc runex10_11 ex10.rm
-TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm
-TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17  runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut runex10_boomeramg_euclid runex10_boomeramg_euclid_bj ex10.rm ex49.PETSc runex49_hypre_nullspace ex49.rm
-TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
-TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
-                                 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
-                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
-TESTEXAMPLES_PASTIX            = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
-				 runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
-                                 ex10.rm
-TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
-TESTEXAMPLES_FFTW              =
-TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm \
-                                 ex52.PETSc runex52_superlu_dist ex52.rm \
-	 			 ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
-TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
-TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
-                                 ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
-                                 runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
-                                 ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
-TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
-TESTEXAMPLES_TRILINOS          = ex63.PETSc runex63 runex63_2 ex63.rm
+TESTEXAMPLES_FORTRAN_COMPLEX            = ex11f.PETSc runex11f ex11f.rm
+TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_13		                = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
+TESTEXAMPLES_MATLAB_ENGINE              = ex10.PETSc runex10_12  ex10.rm
+TESTEXAMPLES_17		                = ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_18		                = ex2.PETSc runex2_6 ex2.rm
+TESTEXAMPLES_SPAI	                = ex10.PETSc runex10_14 ex10.rm
+TESTEXAMPLES_HYPRE	                = ex49.PETSc runex49_hypre_nullspace ex49.rm
+TESTEXAMPLES_HYPRE_DATAFILESPATH        = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut runex10_boomeramg_euclid runex10_boomeramg_euclid_bj ex10.rm
+TESTEXAMPLES_LUSOL	                = ex10.PETSc runex10_13 ex10.rm
+TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
+                                          ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
+TESTEXAMPLES_MUMPS_DATAFILESPATH        = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
+                                          runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
+                                          runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm
+TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
+			  	          runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
+                                          ex10.rm
+TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
+TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
+TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm \
+	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
+TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
+TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
+TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
+TESTEXAMPLES_CUDA                       = ex10.PETSc runex10_aijcusparse ex10.rm \
+                                          ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
+                                          runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+                                          ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
+TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
+TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_TRILINOS                   = ex63.PETSc runex63 runex63_2 ex63.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

@@ -69,6 +69,10 @@ class Configure(config.base.Configure):
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
+          for j in self.framework.packages:
+            for k in ['HYPRE','MUMPS','SUPERLU','SUPERLU_DIST','PASTIX','SUITESPARSE']:
+              if j.name.upper() == k:
+                ejobs.append(k+'_DATAFILESPATH')
         if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
