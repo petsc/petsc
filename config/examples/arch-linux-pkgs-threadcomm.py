@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-threadcomm=1',
   '--with-serialize-functions=1',
   '--download-mpich=1',
   '--download-fblaslapack=1',

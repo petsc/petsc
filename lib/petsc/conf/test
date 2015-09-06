@@ -71,7 +71,6 @@ testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
 testexamples_CUDA: ${TESTEXAMPLES_CUDA}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
-testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
 testexamples_MOAB: ${TESTEXAMPLES_MOAB}
 testexamples_MOAB_HDF5: ${TESTEXAMPLES_MOAB_HDF5}
 testexamples_TRILINOS: ${TESTEXAMPLES_TRILINOS}
@@ -195,8 +194,6 @@ buildexamples_CUDA:
 	-@${OMAKE} testexamples_CUDA TESTEXAMPLES_CUDA=`echo ${TESTEXAMPLES_CUDA} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_YAML:
 	-@${OMAKE} testexamples_YAML TESTEXAMPLES_YAML=`echo ${TESTEXAMPLES_YAML} | sed s/runex[0-9]*[a-z0-9_]*//g`
-buildexamples_THREADCOMM:
-	-@${OMAKE} testexamples_THREADCOMM TESTEXAMPLES_THREADCOMM=`echo ${TESTEXAMPLES_THREADCOMM} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_MOAB:
 	-@${OMAKE} testexamples_MOAB TESTEXAMPLES_MOAB=`echo ${TESTEXAMPLES_MOAB} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_X:
