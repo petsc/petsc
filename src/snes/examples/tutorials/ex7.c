@@ -225,13 +225,13 @@ PetscErrorCode CreateNullSpace(DM da, Vec *N)
 */
 PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
-  AppCtx         *user;
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscErrorCode ierr;
-  PetscReal      lambda,hx,hy;
+  AppCtx                 *user;
+  PetscInt               i,j,Mx,My,xs,ys,xm,ym;
+  PetscErrorCode         ierr;
+  PetscReal              lambda,hx,hy;
   PETSC_UNUSED PetscReal temp1;
-  Field          **x;
-  DM             da;
+  Field                  **x;
+  DM                     da;
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);

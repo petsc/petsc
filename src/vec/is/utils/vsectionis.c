@@ -1529,7 +1529,7 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
@@ -1545,6 +1545,7 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

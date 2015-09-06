@@ -425,8 +425,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = ISCreateStride(PetscObjectComm((PetscObject)pc->mat),nmax-nmin,nmin,1,&rest);CHKERRQ(ierr);
         ierr = ISSetIdentity(rest);CHKERRQ(ierr);
         if (jac->reset) {
-          jac->head->is       = coupling;
-          jac->head->next->is = rest;
+          jac->head->is       = rest;
+          jac->head->next->is = coupling;
         } else {
           ierr = PCFieldSplitSetIS(pc,"0",rest);CHKERRQ(ierr);
           ierr = PCFieldSplitSetIS(pc,"1",coupling);CHKERRQ(ierr);

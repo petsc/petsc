@@ -709,7 +709,8 @@ PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt
     }
   }
   ierr = PetscBTMemzero(pEnd-pStart, isLeaf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nleaves,&localPoints,nleaves,&remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&localPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remotePoints);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {

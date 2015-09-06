@@ -402,10 +402,16 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscI
       } else if (id == PETSCFV_CLASSID) {
         PetscFV fv = (PetscFV) obj;
 
-        if (h) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP, "Projection height > 0 not supported for finite volume");
-        ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
+        if (!h) {
+          ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
+          ierr = PetscFVGetDualSpace(fv, &cellsp[f]);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject) cellsp[f]);CHKERRQ(ierr);
+          sp[f] = cellsp[f];
+        }
+        else {
+          sp[f] = NULL;
+          continue; /* FV doesn't have fields that can be evaluated at faces, corners, etc. */
+        }
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim*numComp[f];

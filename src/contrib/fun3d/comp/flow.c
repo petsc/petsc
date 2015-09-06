@@ -267,7 +267,7 @@ int main(int argc,char **args)
   ierr = VecRestoreArray(user.grid->qnode, &qnode);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-mem_use",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
+    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&user.grid->qnode);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ int main(int argc,char **args)
   ierr = VecScatterDestroy(&user.grid->gradScatter);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-mem_use",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
+    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
   }
   PetscPreLoadEnd();
   ierr = AODestroy(&user.grid->ao);CHKERRQ(ierr);
@@ -1525,7 +1525,7 @@ int GetLocalOrdering(GRID *grid)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(0,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
+    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
   }
   /* Put different mappings and other info into grid */
   /* ICALLOC(nvertices, &grid->loc2pet);
@@ -1892,7 +1892,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(0,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
+    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
   }
 /* Set local to global mapping for setting the matrix elements in
 * local ordering : first set row by row mapping

@@ -3,9 +3,9 @@
 configure_options = [
   '--with-debugger=/bin/true',
   '--with-debugging=0',
+  'FFLAGS=-ftrap=%none',
 
   '--download-mpich=1',
-  #'--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
   '--with-c2html=0',
 
   #'-download-fblaslapack=1',

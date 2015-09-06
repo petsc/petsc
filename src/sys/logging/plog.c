@@ -1248,7 +1248,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"%s\"] = {}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name);CHKERRQ(ierr);
     }
   }
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalTimes[%d] = %g\n",rank,locTotalTime);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlops[%d] = %g\n",rank,petsc_TotalFlops);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessageLens[%d] = %g\n",rank,(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len));CHKERRQ(ierr);
@@ -1272,7 +1272,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

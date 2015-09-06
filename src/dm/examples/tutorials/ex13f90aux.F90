@@ -72,7 +72,7 @@ contains
 #include <petsc/finclude/petscdmda.h90>
     DM                                                            :: da
     Vec,intent(in)                                                :: vec
-    PetscReal, pointer, intent(inout)                           :: array(:,:,:,:)
+    PetscReal, pointer                                            :: array(:,:,:,:)
     PetscInt,intent(in)                                           :: dof,stw
     PetscReal, intent(inout), dimension(:,1-stw:,1-stw:,1-stw:) :: f
     PetscErrorCode                                                :: ierr
@@ -95,7 +95,7 @@ contains
 #include <petsc/finclude/petscdmda.h90>
     DM                                                    :: da
     Vec,intent(inout)                                     :: vec
-    PetscReal, pointer, intent(inout)                   :: array(:,:,:,:)
+    PetscReal, pointer                                    :: array(:,:,:,:)
     PetscInt,intent(in)                                    :: dof,stw
     PetscReal,intent(inout),dimension(:,1-stw:,1-stw:,1-stw:)  :: f
     PetscErrorCode                                        :: ierr

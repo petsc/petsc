@@ -43,7 +43,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %D\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
 
     } else {
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %D; Number to self = %D\n",rank,to->n,to->local.n);CHKERRQ(ierr);
       if (to->n) {
         for (i=0; i<to->n; i++) {
@@ -74,7 +74,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       }
 
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -163,7 +163,15 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 
 #if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallw) {
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Type_free(to->types+to->procs[i]);CHKERRQ(ierr);
+    }
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
+    if (!from->contiq) {
+      for (i=0; i<from->n; i++) {
+        ierr = MPI_Type_free(from->types+from->procs[i]);CHKERRQ(ierr);
+      }
+    }
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
   }
 #endif
@@ -3016,7 +3024,8 @@ PetscErrorCode PetscSFCreateFromZero(MPI_Comm comm, Vec gv, PetscSF *sf)
   ierr = VecGetLocalSize(gv, &n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(gv, &start, NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n, &localnodes, n, &remotenodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &localnodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &remotenodes);CHKERRQ(ierr);
   if (!rank) numroots = N;
   else       numroots = 0;
   for (l = 0; l < n; ++l) {

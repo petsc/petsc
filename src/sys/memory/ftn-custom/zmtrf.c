@@ -3,16 +3,16 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscmallocdump_           PETSCMALLOCDUMP
-#define petscmallocdumplog_        PETSCMALLOCDUMPLOG
-#define petscmallocvalidate_       PETSCMALLOCVALIDATE
-#define petscmemoryshowusage_      PETSCMEMORYSHOWUSAGE
+#define petscmallocdump_               PETSCMALLOCDUMP
+#define petscmallocdumplog_            PETSCMALLOCDUMPLOG
+#define petscmallocvalidate_           PETSCMALLOCVALIDATE
+#define petscmemoryview_               PETSCMEMORYVIEW
 #define petscmemorysetgetmaximumusage_ PETSCMEMORYSETGETMAXIMUMUSAGE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscmallocdump_           petscmallocdump
-#define petscmallocdumplog_        petscmallocdumplog
-#define petscmallocvalidate_       petscmallocvalidate
-#define petscmemoryshowusage_      petscmemoryshowusage
+#define petscmallocdump_               petscmallocdump
+#define petscmallocdumplog_            petscmallocdumplog
+#define petscmallocvalidate_           petscmallocvalidate
+#define petscmemoryview_               petscmemoryview
 #define petscmemorysetgetmaximumusage_ petscmemorysetgetmaximumusage
 #endif
 
@@ -52,7 +52,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *i
   *ierr = PetscMemorySetGetMaximumUsage();
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscmemoryview_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   PetscViewer v;
   char        *msg, *tmp;
@@ -61,7 +61,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR mes
   *ierr = PetscFixSlashN(msg,&tmp);if (*ierr) return;
   FREECHAR(message,msg);
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = PetscMemoryShowUsage(v,tmp);if (*ierr) return;
+  *ierr = PetscMemoryView(v,tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);
 }
 

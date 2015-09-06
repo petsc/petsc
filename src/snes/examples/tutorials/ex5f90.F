@@ -447,7 +447,7 @@
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%xs:user%xe,                                      &
+      PetscScalar  x(user%xs:user%xe,                                         &
      &              user%ys:user%ye)
       PetscErrorCode ierr
 

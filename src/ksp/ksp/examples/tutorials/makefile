@@ -666,28 +666,28 @@ runex10_17:
 	   else printf "${PWD}\nPossible problem with ex10_17, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_17.tmp
 runex10_boomeramg_schwarz:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Schwarz-smoothers -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_schwarz.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Schwarz-smoothers -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_schwarz.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_schwarz.out ex10_boomeramg_schwarz.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_schwarz, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_schwarz.tmp
 runex10_boomeramg_pilut:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_pilut.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_pilut.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_pilut.out ex10_boomeramg_pilut.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_pilut, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_pilut.tmp
 runex10_boomeramg_parasails:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_parasails.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_parasails.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_parasails.out ex10_boomeramg_parasails.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_parasails, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_parasails.tmp
 # Euclid has a bug in its handling of MPI communicators resulting in some memory not being freed at conclusion of the run
 runex10_boomeramg_euclid:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01  -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01  -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_euclid.out ex10_boomeramg_euclid.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_euclid.tmp
 runex10_boomeramg_euclid_bj:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid_bj.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid_bj.tmp 2>&1;\
 	   if (${DIFF} output/ex10_boomeramg_euclid_bj.out ex10_boomeramg_euclid_bj.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid_bj, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_euclid_bj.tmp
@@ -1094,7 +1094,7 @@ runex49_5:
 	   ${RM} -f ex49_5.tmp
 
 runex49_hypre_nullspace:
-	-@${MPIEXEC} ./ex49 -elas_ksp_monitor_true_residual -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre  -elas_pc_hypre_boomeramg_nodal_coarsen  6 -elas_pc_hypre_boomeramg_vec_interp_variant 4 -elas_ksp_view > ex49_hypre_nullspace.tmp 2>&1; \
+	-@${MPIEXEC} ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre  -elas_pc_hypre_boomeramg_nodal_coarsen  6 -elas_pc_hypre_boomeramg_vec_interp_variant 4 -elas_ksp_view > ex49_hypre_nullspace.tmp 2>&1; \
 	   ${DIFF} output/ex49_hypre_nullspace.out ex49_hypre_nullspace.tmp || printf "${PWD}\nPossible problem with ex49_hypre_nullspace, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_hypre_nullspace.tmp
 
@@ -1360,34 +1360,38 @@ TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex1
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
-TESTEXAMPLES_FORTRAN_COMPLEX   = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_F90	       = ex13f90.PETSc runex13f90 ex13f90.rm
-TESTEXAMPLES_13		       = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
-TESTEXAMPLES_MATLAB_ENGINE     = ex10.PETSc runex10_12  ex10.rm
-TESTEXAMPLES_17		       = ex10.PETSc runex10_11 ex10.rm
-TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm
-TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17  runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut runex10_boomeramg_euclid runex10_boomeramg_euclid_bj ex10.rm ex49.PETSc runex49_hypre_nullspace ex49.rm
-TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
-TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
-                                 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
-                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
-TESTEXAMPLES_PASTIX            = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
-				 runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
-                                 ex10.rm
-TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
-TESTEXAMPLES_FFTW              =
-TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm \
-                                 ex52.PETSc runex52_superlu_dist ex52.rm \
-	 			 ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
-TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
-TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
-                                 ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
-                                 runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
-                                 ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
-TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
-TESTEXAMPLES_TRILINOS          = ex63.PETSc runex63 runex63_2 ex63.rm
+TESTEXAMPLES_FORTRAN_COMPLEX            = ex11f.PETSc runex11f ex11f.rm
+TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_13		                = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
+TESTEXAMPLES_MATLAB_ENGINE              = ex10.PETSc runex10_12  ex10.rm
+TESTEXAMPLES_17		                = ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_18		                = ex2.PETSc runex2_6 ex2.rm
+TESTEXAMPLES_SPAI	                = ex10.PETSc runex10_14 ex10.rm
+TESTEXAMPLES_HYPRE	                = ex49.PETSc runex49_hypre_nullspace ex49.rm
+TESTEXAMPLES_HYPRE_DATAFILESPATH        = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut runex10_boomeramg_euclid runex10_boomeramg_euclid_bj ex10.rm
+TESTEXAMPLES_LUSOL	                = ex10.PETSc runex10_13 ex10.rm
+TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
+                                          ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
+TESTEXAMPLES_MUMPS_DATAFILESPATH        = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
+                                          runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
+                                          runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm
+TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
+			  	          runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
+                                          ex10.rm
+TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
+TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
+TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm \
+	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
+TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
+TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
+TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
+TESTEXAMPLES_CUDA                       = ex10.PETSc runex10_aijcusparse ex10.rm \
+                                          ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
+                                          runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+                                          ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
+TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
+TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_TRILINOS                   = ex63.PETSc runex63 runex63_2 ex63.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

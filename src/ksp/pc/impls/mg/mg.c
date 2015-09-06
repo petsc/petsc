@@ -174,6 +174,8 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PC_MG          *mg        = (PC_MG*)pc->data;
   MPI_Comm       comm;
   PC_MG_Levels   **mglevels = mg->levels;
+  PCMGType       mgtype     = mg->am;
+  PetscInt       mgctype    = (PetscInt) PC_MG_CYCLE_V;
   PetscInt       i;
   PetscMPIInt    size;
   const char     *prefix;
@@ -186,6 +188,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (mg->nlevels == levels) PetscFunctionReturn(0);
   if (mglevels) {
+    mgctype = mglevels[0]->cycles;
     /* changing the number of levels so free up the previous stuff */
     ierr = PCReset_MG(pc);CHKERRQ(ierr);
     n    = mglevels[0]->levels;
@@ -212,7 +215,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
     mglevels[i]->level               = i;
     mglevels[i]->levels              = levels;
-    mglevels[i]->cycles              = PC_MG_CYCLE_V;
+    mglevels[i]->cycles              = mgctype;
     mg->default_smoothu              = 2;
     mg->default_smoothd              = 2;
     mglevels[i]->eventsmoothsetup    = 0;
@@ -266,9 +269,8 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     mg->ttol             = 0.0;
     mg->cyclesperpcapply = 1;
   }
-  mg->am                   = PC_MG_MULTIPLICATIVE;
-  mg->levels               = mglevels;
-  pc->ops->applyrichardson = PCApplyRichardson_MG;
+  mg->levels = mglevels;
+  ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -399,7 +401,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC pc)
     ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);
   }
   if (mg->am == PC_MG_MULTIPLICATIVE) {
-    ierr = PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGSetLevels",mg->cyclesperpcapply,&cycles,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGMultiplicativeSetCycles",mg->cyclesperpcapply,&cycles,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGMultiplicativeSetCycles(pc,cycles);CHKERRQ(ierr);
     }
@@ -893,6 +895,8 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCMGGetType"
 /*@
    PCMGGetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
@@ -1212,6 +1216,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   ierr        = PetscNewLog(pc,&mg);CHKERRQ(ierr);
   pc->data    = (void*)mg;
   mg->nlevels = -1;
+  mg->am      = PC_MG_MULTIPLICATIVE;
 
   pc->useAmat = PETSC_TRUE;
 

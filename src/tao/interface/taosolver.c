@@ -1537,14 +1537,10 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
   PetscErrorCode ierr;
   PetscInt       its;
   PetscReal      fct,gnorm;
-  PetscViewer    viewer;
+  PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
@@ -1596,7 +1592,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
   gnorm=tao->residual;
   ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value %g,",(double)fct);CHKERRQ(ierr);
-  if (gnorm >= PETSC_INFINITY/2) {
+  if (gnorm >= PETSC_INFINITY) {
     ierr=PetscViewerASCIIPrintf(viewer," Residual: Inf \n");CHKERRQ(ierr);
   } else if (gnorm > 1.e-6) {
     ierr=PetscViewerASCIIPrintf(viewer," Residual: %g \n",(double)gnorm);CHKERRQ(ierr);
@@ -1633,14 +1629,10 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
   PetscErrorCode ierr;
   PetscInt       its;
   PetscReal      fct,gnorm;
-  PetscViewer    viewer;
+  PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
@@ -1674,14 +1666,10 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer;
+  PetscViewer    viewer  = (PetscViewer)ctx;;
 
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = VecView(tao->solution, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1709,14 +1697,10 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer;
+  PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = VecView(tao->gradient, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1744,13 +1728,10 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer;
+  PetscViewer    viewer = (PetscViewer)ctx;
+
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = VecView(tao->stepdirection, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1781,6 +1762,7 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
   PetscViewer    viewer = (PetscViewer) ctx;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = VecView(tao->solution, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1811,6 +1793,7 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
   PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = VecView(tao->gradient, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1868,14 +1851,10 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 PetscErrorCode TaoSeparableObjectiveMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer;
+  PetscViewer    viewer  = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (ctx) {
-    viewer = (PetscViewer)ctx;
-  } else {
-    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = VecView(tao->sep_objective,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1924,7 +1903,11 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
-  gnorm2=gnorm*gnorm;
+  if (gnorm >= PETSC_INFINITY) {
+    gnorm2 = gnorm;
+  } else {
+    gnorm2=gnorm*gnorm;
+  }
 
   if (PetscIsInfOrNanReal(f)) {
     ierr = PetscInfo(tao,"Failed to converged, function value is Inf or NaN\n");CHKERRQ(ierr);
