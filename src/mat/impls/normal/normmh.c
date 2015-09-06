@@ -195,7 +195,7 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
     for (j=0; j<nnz; j++) {
-      work[cols[j]] += mvalues[j]*(PetscRealPart(mvalues[j])-PETSC_i*PetscImaginaryPart(mvalues[j]));
+      work[cols[j]] += mvalues[j]*PetscConj(mvalues[j]);
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
