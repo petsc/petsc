@@ -116,7 +116,7 @@ PC Object:(stokes_) 4 MPI processes
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
           left preconditioning
-          using NONE norm type for convergence test
+          using PRECONDITIONED norm type for convergence test
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
@@ -180,7 +180,7 @@ PC Object:(stokes_) 4 MPI processes
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
           left preconditioning
-          using NONE norm type for convergence test
+          using PRECONDITIONED norm type for convergence test
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
@@ -244,7 +244,7 @@ PC Object:(stokes_) 4 MPI processes
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
           left preconditioning
-          using NONE norm type for convergence test
+          using PRECONDITIONED norm type for convergence test
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
