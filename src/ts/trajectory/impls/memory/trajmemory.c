@@ -1,4 +1,3 @@
-
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscsys.h>
 
@@ -10,7 +9,7 @@ typedef struct _StackElement {
   Vec       *Y;
   PetscReal time;
   PetscReal timeprev;
-} *StackElement; 
+} *StackElement;
 
 typedef struct _Stack {
    PetscBool    usecontroller;
@@ -38,7 +37,7 @@ static PetscErrorCode StackTop(Stack*,StackElement*);
 static PetscErrorCode StackCreate(MPI_Comm comm,Stack *s,PetscInt size,PetscInt ny)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   s->top         = -1;
   s->maxelements = size;
@@ -113,7 +112,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
   PetscFunctionBegin;
   if (stepnum<s->top) SETERRQ(s->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
-  
+
   if (s->usecontroller) {
     printf("left %d\n",s->stepsleft);
     if (s->reverseonestep) PetscFunctionReturn(0);
@@ -145,7 +144,7 @@ switch(whattodo) {
       if (whattodo==-1) SETERRQ(s->comm,PETSC_ERR_MEMC,"Error in the controller");
       if (whattodo==1) {
         s->stepsleft = s->capo-oldcapo-1;
-        PetscFunctionReturn(0); /* do not need to checkpoint */ 
+        PetscFunctionReturn(0); /* do not need to checkpoint */
       }
       if (whattodo==3 || whattodo==4) {
         s->reverseonestep = PETSC_TRUE;
@@ -212,10 +211,10 @@ switch(whattodo) {
       PetscFunctionReturn(0);
     }
   }
- 
+
   /* checkpoint to memmory */
   if (stepnum==s->top) { /* overwrite the top checkpoint */
-    ierr = StackTop(s,&e); 
+    ierr = StackTop(s,&e);
     ierr = VecCopy(X,e->X);CHKERRQ(ierr);
     ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
     for (i=0;i<ns;i++) {
@@ -293,9 +292,9 @@ switch(whattodo) {
     ierr = TSSetTimeStep(ts,(*t)-e->timeprev);CHKERRQ(ierr);
     /* reset ts context */
     PetscInt steps = ts->steps;
-    ts->steps      = e->stepnum; 
+    ts->steps      = e->stepnum;
     ts->ptime      = e->time;
-    ts->ptime_prev = e->timeprev; 
+    ts->ptime_prev = e->timeprev;
     printf("need to recompute %d steps\n",stepnum-e->stepnum);
     for (i=e->stepnum;i<stepnum;i++) { /* assume fixed step size */
       ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -328,7 +327,7 @@ switch(whattodo) {
     ierr = VecDestroyVecs(s->numY,&e->Y);CHKERRQ(ierr);
     ierr = PetscFree(e);CHKERRQ(ierr);
   } else {
-    SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);    
+    SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);
   }
 
   PetscFunctionReturn(0);
@@ -339,7 +338,7 @@ switch(whattodo) {
 PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 {
   Stack          *s = (Stack*)tj->data;
-  PetscErrorCode ierr; 
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = StackDestroy(s);CHKERRQ(ierr);
@@ -361,23 +360,23 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   PetscInt       nr,maxsteps;
   Stack          *s;
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin;
   tj->ops->set     = TSTrajectorySet_Memory;
   tj->ops->get     = TSTrajectoryGet_Memory;
   tj->ops->destroy = TSTrajectoryDestroy_Memory;
- 
+
   ierr = PetscCalloc1(1,&s);
   s->maxelements = 3; /* will be provided by users */
   ierr = TSGetStages(ts,&nr,PETSC_IGNORE);CHKERRQ(ierr);
-   
+
   maxsteps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
   if (s->maxelements-1<maxsteps) { /* Need to use a controller */
     s->usecontroller  = PETSC_TRUE;
     s->reverseonestep = PETSC_FALSE;
     s->check          = -1;
     s->capo           = 0;
-    s->fine           = maxsteps; 
+    s->fine           = maxsteps;
     s->info           = 2;
     ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->maxelements,nr);CHKERRQ(ierr);
   } else { /* Enough space for checkpointing all time steps */

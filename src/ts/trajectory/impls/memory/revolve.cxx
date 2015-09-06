@@ -18,7 +18,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
@@ -34,16 +33,12 @@ int rank=0;
 All routines of class Schedule
 **********************************************************************************************************************************/
 
-
 Schedule::Schedule(int sn,Checkpoint *c)
 {
 	snaps=sn;
 	checkpoint=c;
 	checkpoint->ch[0]=0;
 }
-
-
-
 
 int Schedule::numforw(int steps, int snaps)
 {
@@ -86,13 +81,11 @@ int Schedule::numforw(int steps, int snaps)
 	num = reps * steps - range*reps/(snaps+1);
 	return num;
 
-
 }
 
 /*************************************************************************************************************************************
 All routines of class Online
 ***************************************************************************************************************************************/
-
 
 Online::Online(int sn,Checkpoint *c,bool o=false) : Schedule(sn,c)
 {
@@ -168,11 +161,11 @@ ACTION::action Online_r2::revolve()
 			old_f = 1;
 		}
 		/*   	  cout <<" 2 *check %d ch[*check] %d *capo %d endl",*check,ch[*check],*capo); */
-		
+
 		// Increase the number of takeshots and the corresponding checkpoint
 		takeshots++;
 		//checkpoint->number_of_writes[check]++;
-		
+
 		return ACTION::takeshot;
 	}
 	else if (capo < snaps-1)
@@ -288,7 +281,7 @@ ACTION::action Online_r2::revolve()
 						{
 							oldind = checkpoint->ord_ch[snaps-1];
 							ind = checkpoint->ch[checkpoint->ord_ch[snaps-1]];
-							if (output && (rank == 0)) 
+							if (output && (rank == 0))
 								cout << " oldind " << oldind << " ind " << ind << endl;
 							for(int k=snaps-1;k>1;k--)
 							{
@@ -416,7 +409,6 @@ Online_r3::Online_r3(Online_r3 &o) : Online(o)
 		ch3[i]=ch3[i-1]+tdiff_end[snaps-i-1];
 	}
 }
-
 
 Online_r3::~Online_r3()
 {
@@ -548,9 +540,6 @@ void Online_r3::akt_cp()
 	checkpoint->ord_ch[snaps-1]=value;
 }
 
-
-
-
 /*******************************************************************************************************************************************
 All routines of class Arevolve
 ********************************************************************************************************************************************/
@@ -573,7 +562,6 @@ Arevolve::Arevolve(Arevolve &o) : Online(o)
 	newcapo=capo;
 	check=snaps-1;
 }
-
 
 int Arevolve::tmin(int steps, int snaps)
 {
@@ -632,7 +620,6 @@ int Arevolve::mintmin( )
 {
 	int G=MAXINT, k=0, z=0, sum=0, g=0,i;
 
-
 	sum=sumtmin();
 	for (int j=1; j<snaps; j++)
 	{
@@ -674,7 +661,6 @@ void Arevolve::akt_cp(int cp)
 	checkpoint->ord_ch[snaps-1]=value;
 }
 
-
 ACTION::action Arevolve::revolve()
 {
 
@@ -705,13 +691,9 @@ ACTION::action Arevolve::revolve()
 
 }
 
-
-
 /***************************************************************************************************************************************
 All routines of class Offline
 ****************************************************************************************************************************************/
-
-
 
 Offline::Offline(int st,int sn,Checkpoint *c) : Schedule(sn,c)
 {
@@ -962,7 +944,6 @@ ACTION::action Offline::revolve()
 	}
 }
 
-
 // All routines of class Revolve
 
 Revolve::Revolve(int st,int sn,int inf,int rank_)
@@ -1011,9 +992,6 @@ ACTION::action Revolve::revolve(int* check,int* capo,int* fine,int snaps,int* in
 	return whatodo;
 
 }
-
-
-
 
 void Revolve::turn(int fine)
 {
@@ -1154,4 +1132,3 @@ int Revolve::get_r()
 	}
 	return reps;
 }
-

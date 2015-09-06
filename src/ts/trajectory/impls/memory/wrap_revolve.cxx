@@ -8,30 +8,27 @@
 #include <fstream>
 //#include <python2.7/Python.h>
 
-
 using namespace std;
 
 #include "revolve.h"
 
-
 Revolve *r = NULL;
 
-extern "C" int wrap_revolve(int* check,int* capo,int* fine,int *snaps_in,int* info, int *rank) 
+extern "C" int wrap_revolve(int* check,int* capo,int* fine,int *snaps_in,int* info, int *rank)
   {
     enum ACTION::action whatodo;
     int snaps = *snaps_in;
     int ret=-1;
 
-    if (! r ) 
+    if (! r )
     {
       r = new Revolve(*fine,snaps,*info, *rank);
 
     }
 
-
     whatodo = r->revolve(check, capo, fine, snaps, info);
     switch(whatodo) {
-      case ACTION::advance: 
+      case ACTION::advance:
         ret=1;
         break;
       case ACTION::takeshot:
@@ -56,11 +53,10 @@ extern "C" int wrap_revolve(int* check,int* capo,int* fine,int *snaps_in,int* in
   return ret;
   }
 
-
 extern "C"
-  int wrap_revolve_(int* check,int* capo,int* fine,int *snaps_in,int* info, int *rank) 
+  int wrap_revolve_(int* check,int* capo,int* fine,int *snaps_in,int* info, int *rank)
   {
-  return wrap_revolve(check,capo,fine,snaps_in,info, rank); 
+  return wrap_revolve(check,capo,fine,snaps_in,info, rank);
   }
 
 extern "C" void wrap_revolve_reset() {
