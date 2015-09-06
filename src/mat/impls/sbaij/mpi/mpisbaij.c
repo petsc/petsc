@@ -1736,11 +1736,13 @@ PetscErrorCode MatShift_MPISBAIJ(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   Mat_MPISBAIJ    *maij = (Mat_MPISBAIJ*)Y->data;
-  Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ*)maij->A->data,*bij = (Mat_SeqSBAIJ*)maij->B->data;
+  Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ*)maij->A->data;
 
   PetscFunctionBegin;
-  if (!aij->nz && !bij->nz) {
+  if (!Y->preallocated) {
     ierr = MatMPISBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL,0,NULL);CHKERRQ(ierr);
+  } else if (!aij->nz) {
+    ierr = MatSeqSBAIJSetPreallocation(maij->A,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);

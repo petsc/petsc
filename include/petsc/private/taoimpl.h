@@ -79,6 +79,8 @@ struct _p_Tao {
     Vec DE;
     Mat hessian;
     Mat hessian_pre;
+    Mat gradient_norm;
+    Vec gradient_norm_tmp;
     Vec sep_objective;
     Vec constraints;
     Vec constraints_equality;
@@ -196,5 +198,6 @@ PETSC_STATIC_INLINE PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal o
 
 PETSC_INTERN PetscErrorCode TaoVecGetSubVec(Vec, IS, TaoSubsetType, PetscReal, Vec*);
 PETSC_INTERN PetscErrorCode TaoMatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
+PETSC_INTERN PetscErrorCode TaoGradientNorm(Tao, Vec, NormType, PetscReal*);
 
 #endif

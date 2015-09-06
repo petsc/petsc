@@ -69,11 +69,17 @@ class Configure(config.base.Configure):
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
+          for j in self.framework.packages:
+            for k in ['HYPRE','MUMPS','SUPERLU','SUPERLU_DIST','PASTIX','SUITESPARSE']:
+              if j.name.upper() == k:
+                ejobs.append(k+'_DATAFILESPATH')
+        if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+          rjobs.append('DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
-          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','MAKE','MPICH','MATLABENGINE','HWLOC']:
+          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','F2CBLASLAPACK','MAKE','MPICH','OPENMPI','MATLABENGINE','HWLOC','VIENNACL','OPENCL']:
             ejobs.append(i.name.upper())
           # horrible python here
           if i.name.upper() == 'MOAB':

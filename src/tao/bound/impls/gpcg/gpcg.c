@@ -153,8 +153,6 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-  gpcg->Hsub=NULL;
-  gpcg->Hsub_pre=NULL;
 
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
@@ -376,7 +374,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   gpcg->n_upper=0;
   gpcg->n_lower=0;
   gpcg->subset_type = TAO_SUBSET_MASK;
-  /* gpcg->ksp_type = GPCG_KSP_STCG; */
+  gpcg->Hsub=NULL;
+  gpcg->Hsub_pre=NULL;
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);

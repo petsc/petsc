@@ -96,11 +96,6 @@ runminsurf2_3:
 	${DIFF} output/minsurf2_3.out minsurf2_3.tmp || printf '${PWD}\nPossible problem with minsurf2_3 stdout, diffs above \n=========================================\n';\
 	${RM} -f minsurf2_3.tmp
 
-runminsurf2_4:
-	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_type ntr -mx 6 -my 8 -random 2 > minsurf2_4.tmp 2>&1;\
-	${DIFF} output/minsurf2_4.out minsurf2_4.tmp || printf '${PWD}\nPossible problem with minsurf2_4 stdout, diffs above \n=========================================\n';\
-	${RM} -f minsurf2_4.tmp
-
 runminsurf2_5:
 	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_type bmrm -mx 10 -my 8 > minsurf2_5.tmp 2>&1;\
 	${DIFF} output/minsurf2_5.out minsurf2_5.tmp || printf '${PWD}\nPossible problem with minsurf2_5 stdout, diffs above \n=========================================\n';\
@@ -147,7 +142,7 @@ runeptorsion2f_2:
 
 TESTEXAMPLES_C    = rosenbrock1.PETSc runrosenbrock1 runrosenbrock1_2 runrosenbrock1_3 rosenbrock1.rm \
                     minsurf1.PETSc runminsurf1 runminsurf1_2 runminsurf1_3 minsurf1.rm \
-                    minsurf2.PETSc runminsurf2 runminsurf2_2 runminsurf2_3 runminsurf2_4 runminsurf2_5 minsurf2.rm \
+                    minsurf2.PETSc runminsurf2 runminsurf2_2 runminsurf2_3 runminsurf2_5 minsurf2.rm \
                     eptorsion1.PETSc runeptorsion1 runeptorsion1_2 runeptorsion1_3 eptorsion1.rm \
                     eptorsion2.PETSc runeptorsion2 runeptorsion2_2 eptorsion2.rm
 

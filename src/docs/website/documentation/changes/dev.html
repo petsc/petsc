@@ -97,6 +97,7 @@
       </div>
 
       <h4>General:</h4>
+         PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
@@ -113,9 +114,12 @@
           see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG
          Added PCSemiRedundant which supports running solvers on sub-communicators. This PC allows re-partitioning of coarse levels solves within PCMG when using Galerkin coarse level operators.
       <h4>KSP:</h4>
+         KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>SNES:</h4>
+         SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+         TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>DM/DA:</h4>
       Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()
       <h4>DMPlex:</h4>

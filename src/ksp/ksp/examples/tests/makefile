@@ -460,12 +460,12 @@ runex24_4:
            ${RM} -f ex24_4.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_1.tmp
 runex25_2:
-	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
+	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro \
 		-pc_type jacobi -pc_jacobi_type rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \

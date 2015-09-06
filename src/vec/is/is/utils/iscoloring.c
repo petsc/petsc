@@ -535,7 +535,10 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     ierr       = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
     ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
     offsets[0] = 0;
-    for (i=1; i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+    for (i=1; i<size; i++) {
+      PetscInt s = offsets[i-1] + sizes[i-1];
+      ierr = PetscMPIIntCast(s,&offsets[i]);CHKERRQ(ierr);
+    }
     N = offsets[size-1] + sizes[size-1];
 
     ierr = PetscMalloc1(N,&indices);CHKERRQ(ierr);

@@ -88,6 +88,8 @@ PetscErrorCode  PCInitializePackage(void)
       ierr = PetscLogEventDeactivateClass(PC_CLASSID);CHKERRQ(ierr);
     }
   }
+  /* Register data */
+  ierr = PetscObjectComposedDataRegister(&PetscMGLevelId);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PCFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

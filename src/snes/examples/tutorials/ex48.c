@@ -64,13 +64,12 @@ There are two compile-time options:
 #endif
 #include <ctype.h>              /* toupper() */
 
-#if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
-#  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
-#    define restrict
-#  else
-#    define restrict PETSC_RESTRICT
-#  endif
+#if defined(__cplusplus)
+/*  c++ cannot handle  [_restrict_] notation like C does */
+#undef PETSC_RESTRICT
+#define PETSC_RESTRICT
 #endif
+
 #if defined __SSE2__
 #  include <emmintrin.h>
 #endif
@@ -175,8 +174,6 @@ static const PetscReal QuadQDeriv[4][4][2] = {
     (n)[3] = (x)[i][j+1];                       \
   } while (0)
 
-static PetscScalar Sqr(PetscScalar a) {return a*a;}
-
 static void HexGrad(const PetscReal dphi[][3],const PetscReal zn[],PetscReal dz[])
 {
   PetscInt i;
@@ -188,7 +185,7 @@ static void HexGrad(const PetscReal dphi[][3],const PetscReal zn[],PetscReal dz[
   }
 }
 
-static void HexComputeGeometry(PetscInt q,PetscReal hx,PetscReal hy,const PetscReal dz[restrict],PetscReal phi[restrict],PetscReal dphi[restrict][3],PetscReal *restrict jw)
+static void HexComputeGeometry(PetscInt q,PetscReal hx,PetscReal hy,const PetscReal dz[PETSC_RESTRICT],PetscReal phi[PETSC_RESTRICT],PetscReal dphi[PETSC_RESTRICT][3],PetscReal *PETSC_RESTRICT jw)
 {
   const PetscReal jac[3][3]  = {{hx/2,0,0}, {0,hy/2,0}, {dz[0],dz[1],dz[2]}};
   const PetscReal ijac[3][3] = {{1/jac[0][0],0,0}, {0,1/jac[1][1],0}, {-jac[2][0]/(jac[0][0]*jac[2][2]),-jac[2][1]/(jac[1][1]*jac[2][2]),1/jac[2][2]}};
@@ -727,7 +724,7 @@ static PetscErrorCode THIInitial(SNES snes,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-static void PointwiseNonlinearity(THI thi,const Node n[restrict],const PetscReal phi[restrict],PetscReal dphi[restrict][3],PetscScalar *restrict u,PetscScalar *restrict v,PetscScalar du[restrict],PetscScalar dv[restrict],PetscReal *eta,PetscReal *deta)
+static void PointwiseNonlinearity(THI thi,const Node n[PETSC_RESTRICT],const PetscReal phi[PETSC_RESTRICT],PetscReal dphi[PETSC_RESTRICT][3],PetscScalar *PETSC_RESTRICT u,PetscScalar *PETSC_RESTRICT v,PetscScalar du[PETSC_RESTRICT],PetscScalar dv[PETSC_RESTRICT],PetscReal *eta,PetscReal *deta)
 {
   PetscInt    l,ll;
   PetscScalar gam;
@@ -744,7 +741,7 @@ static void PointwiseNonlinearity(THI thi,const Node n[restrict],const PetscReal
       dv[ll] += dphi[l][ll] * n[l].v;
     }
   }
-  gam = Sqr(du[0]) + Sqr(dv[1]) + du[0]*dv[1] + 0.25*Sqr(du[1]+dv[0]) + 0.25*Sqr(du[2]) + 0.25*Sqr(dv[2]);
+  gam = PetscSqr(du[0]) + PetscSqr(dv[1]) + du[0]*dv[1] + 0.25*PetscSqr(du[1]+dv[0]) + 0.25*PetscSqr(du[2]) + 0.25*PetscSqr(dv[2]);
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 
@@ -765,7 +762,7 @@ static void PointwiseNonlinearity2D(THI thi,Node n[],PetscReal phi[],PetscReal d
       dv[ll] += dphi[l][ll] * n[l].v;
     }
   }
-  gam = Sqr(du[0]) + Sqr(dv[1]) + du[0]*dv[1] + 0.25*Sqr(du[1]+dv[0]);
+  gam = PetscSqr(du[0]) + PetscSqr(dv[1]) + du[0]*dv[1] + 0.25*PetscSqr(du[1]+dv[0]);
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 
@@ -976,6 +973,7 @@ static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,co
       min[j] *= thi->units->year / thi->units->meter;
       max[j] *= thi->units->year / thi->units->meter;
     }
+    if (min[0] == 0.0) min[0] = 0.0;
     ierr = PetscPrintf(comm,"|X|_2 %g   %g <= u <=  %g   %g <= v <=  %g   %g <= c <=  %g \n",(double)nrm2,(double)min[0],(double)max[0],(double)min[1],(double)max[1],(double)min[2],(double)max[2]);CHKERRQ(ierr);
     {
       PetscReal umin,umax,umean;
@@ -1115,7 +1113,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
           jw /= thi->rhog;      /* residuals are scaled by this factor */
           if (q == 0) etabase = eta;
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal *restrict dp = dphi[l];
+            const PetscReal *PETSC_RESTRICT dp = dphi[l];
 #if USE_SSE2_KERNELS
             /* gcc (up to my 4.5 snapshot) is really bad at hoisting intrinsics so we do it manually */
             __m128d
@@ -1139,7 +1137,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
 #else
             for (ll=l; ll<8; ll++) {
 #endif
-              const PetscReal *restrict dpl = dphi[ll];
+              const PetscReal *PETSC_RESTRICT dpl = dphi[ll];
               if (amode == THIASSEMBLY_TRIDIAGONAL && (l-ll)%4) continue; /* these entries would not be inserted */
 #if !USE_SSE2_KERNELS
               /* The analytic Jacobian in nice, easy-to-read form */

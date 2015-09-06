@@ -163,7 +163,15 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 
 #if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallw) {
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Type_free(to->types+to->procs[i]);CHKERRQ(ierr);
+    }
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
+    if (!from->contiq) {
+      for (i=0; i<from->n; i++) {
+        ierr = MPI_Type_free(from->types+from->procs[i]);CHKERRQ(ierr);
+      }
+    }
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
   }
 #endif
@@ -3016,7 +3024,8 @@ PetscErrorCode PetscSFCreateFromZero(MPI_Comm comm, Vec gv, PetscSF *sf)
   ierr = VecGetLocalSize(gv, &n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(gv, &start, NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n, &localnodes, n, &remotenodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &localnodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &remotenodes);CHKERRQ(ierr);
   if (!rank) numroots = N;
   else       numroots = 0;
   for (l = 0; l < n; ++l) {
