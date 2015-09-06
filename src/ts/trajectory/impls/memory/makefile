@@ -2,7 +2,8 @@
 ALL: lib
 
 SOURCEC  = trajmemory.c
-SOURCEH  =
+SOURCECXX= revolve.cxx wrap_revolve.cxx
+SOURCEH  = revolve.h
 DIRS     =
 LOCDIR   = src/ts/trajectory/impls/memory
 MANSEC   = TS
