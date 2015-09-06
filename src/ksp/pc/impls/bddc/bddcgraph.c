@@ -525,6 +525,8 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscBTDestroy(&subset_cc_adapt);CHKERRQ(ierr);
     /* We are ready to find for connected components which are consistent among neighbouring subdomains */
     if (global_subset_counter) {
+      PetscInt o_nsubs;
+
       ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
       global_subset_counter = 0;
       for (i=0;i<graph->nvtxs;i++) {
@@ -540,8 +542,13 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
           ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
         }
       }
+      /* disable subdomains info since it is local (info contained in CSR) */
+      o_nsubs = graph->n_local_subs;
+      graph->n_local_subs = 0;
       /* refine connected components locally */
       ierr = PCBDDCGraphComputeConnectedComponentsLocal(graph);CHKERRQ(ierr);
+      /* restore subdomains info */
+      graph->n_local_subs = o_nsubs;
     }
     /* restore original CSR graph of dofs */
     ierr = PetscFree(new_xadj);CHKERRQ(ierr);
