@@ -57,13 +57,12 @@ typedef struct {
   Mat           benign_change;
   Mat           benign_original_mat;
   Vec           benign_vec;
-  PetscInt      B0_ncol;
-  PetscInt      *B0_cols;
-  PetscScalar   *B0_vals;
+  Mat           benign_B0;
   PetscSF       benign_sf;
-  PetscScalar   benign_p0;
-  PetscInt      benign_p0_lidx;
-  PetscInt      benign_p0_gidx;
+  PetscScalar   *benign_p0;
+  PetscInt      benign_n;
+  PetscInt      *benign_p0_lidx;
+  PetscInt      *benign_p0_gidx;
   PetscBool     benign_null;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
@@ -98,6 +97,12 @@ typedef struct {
   IS                  coarse_subassembling_init;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
+
+  /* local disconnected subdomains */
+  PetscBool detect_disconnected;
+  PetscInt  n_local_subs;
+  IS        *local_subs;
+
   /* scaling */
   Vec                 work_scaling;
   PetscBool           use_deluxe_scaling;

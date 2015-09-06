@@ -45,6 +45,10 @@ struct _PCBDDCGraph {
   PetscInt               nvtxs_csr;
   PetscInt               *xadj;
   PetscInt               *adjncy;
+  /* data for local subdomains (if any have been detected)
+     these are not intended to be exposed */
+  PetscInt               n_local_subs;
+  PetscInt               *local_subs;
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 

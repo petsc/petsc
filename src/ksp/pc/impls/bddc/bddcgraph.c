@@ -578,7 +578,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 
   PetscFunctionBegin;
   /* quiet return if no csr info is available */
-  if (!graph->xadj || !graph->adjncy) {
+  if ((!graph->xadj || !graph->adjncy) && !graph->n_local_subs) {
     PetscFunctionReturn(0);
   }
 
@@ -631,7 +631,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
       if (first == last) {
         graph->cptr[++ncc] = first+cum_queue;
         ncc_pid++;
-        for (i=0; i<graph->nvtxs; i++) { /* TODO-> use a while! */
+        for (i=0; i<graph->nvtxs; i++) {
           if (graph->subset[i] == pid && !PetscBTLookup(graph->touched,i)) {
             break;
           }
@@ -642,12 +642,30 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
       }
       i = graph->queue[cum_queue+first];
       first++;
-      for (j=graph->xadj[i];j<graph->xadj[i+1];j++) {
-        k = graph->adjncy[j];
-        if (graph->subset[k] == pid && !PetscBTLookup(graph->touched,k)) {
-          graph->queue[cum_queue+last] = k;
-          last++;
-          ierr = PetscBTSet(graph->touched,k);CHKERRQ(ierr);
+      if (!graph->xadj || !graph->adjncy) { /* sub info only, loop over all remaining vertices */
+        for (k=i+1;k<graph->nvtxs;k++) {
+          if (!PetscBTLookup(graph->touched,k) && graph->subset[k] == pid && graph->local_subs[i] == graph->local_subs[k]) {
+            graph->queue[cum_queue+last] = k;
+            last++;
+            ierr = PetscBTSet(graph->touched,k);CHKERRQ(ierr);
+          }
+        }
+      } else {
+        for (j=graph->xadj[i];j<graph->xadj[i+1];j++) {
+          PetscBool same_sub;
+
+          k = graph->adjncy[j];
+          /* get local subdomain id if needed */
+          if (graph->n_local_subs) {
+            same_sub = (PetscBool)(graph->local_subs[i] == graph->local_subs[j]);
+          } else {
+            same_sub = PETSC_TRUE;
+          }
+          if (!PetscBTLookup(graph->touched,k) && graph->subset[k] == pid && same_sub) {
+            graph->queue[cum_queue+last] = k;
+            last++;
+            ierr = PetscBTSet(graph->touched,k);CHKERRQ(ierr);
+          }
         }
       }
     }
@@ -1152,11 +1170,16 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   ierr = PetscFree2(graph->subsets_size,graph->subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&graph->dirdofs);CHKERRQ(ierr);
   ierr = ISDestroy(&graph->dirdofsB);CHKERRQ(ierr);
+  if (graph->n_local_subs) {
+    ierr = PetscFree(graph->local_subs);CHKERRQ(ierr);
+  }
+  ierr = PCBDDCGraphResetCSR(graph);CHKERRQ(ierr);
   graph->has_dirichlet = PETSC_FALSE;
   graph->nvtxs = 0;
   graph->nvtxs_global = 0;
   graph->n_subsets = 0;
   graph->custom_minimal_size = 1;
+  graph->n_local_subs = 0;
   PetscFunctionReturn(0);
 }
 

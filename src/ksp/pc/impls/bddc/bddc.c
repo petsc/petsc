@@ -71,6 +71,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_symmetric","Symmetric computation of primal basis functions","none",pcbddc->symmetric_primal,&pcbddc->symmetric_primal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_coarse_adj","Number of processors where to map the coarse adjacency list","none",pcbddc->coarse_adj_red,&pcbddc->coarse_adj_red,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_trick","Apply the benign subspace trick to a class of saddle point problems","none",pcbddc->benign_saddle_point,&pcbddc->benign_saddle_point,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_detect_disconnected","Detects disconnected subdomains","none",pcbddc->detect_disconnected,&pcbddc->detect_disconnected,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1044,7 +1045,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
      - compute initial vector in benign space
   */
   if (rhs && pcbddc->benign_saddle_point) {
-    Mat_IS *matis = (Mat_IS*)(pc->mat->data);
+    Mat_IS   *matis = (Mat_IS*)(pc->mat->data);
+    PetscInt i;
 
     /* store the original rhs */
     if (copy_rhs) {
@@ -1079,25 +1081,26 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (!pcbddc->benign_vec) {
       ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
     }
-    pcbddc->benign_p0 = 0.;
-    if (pcbddc->benign_p0_lidx >= 0) {
+    ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
+    if (pcbddc->benign_n) {
       const PetscScalar *array;
 
       ierr = VecGetArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
-      pcbddc->benign_p0 = array[pcbddc->benign_p0_lidx];
+      for (i=0;i<pcbddc->benign_n;i++) pcbddc->benign_p0[i] = array[pcbddc->benign_p0_lidx[i]];
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array);CHKERRQ(ierr);
     }
     if (pcbddc->benign_null && iscg) { /* this is a workaround, need to understand more */
-      PetscBool iszero_l;
-
-      iszero_l = PetscAbsScalar(pcbddc->benign_p0) < PETSC_SMALL ? PETSC_TRUE : PETSC_FALSE;
+      PetscBool iszero_l = PETSC_TRUE;
+      for (i=0;i<pcbddc->benign_n;i++) {
+        iszero_l = (iszero_l && (PetscAbsScalar(pcbddc->benign_p0[i]) < PETSC_SMALL ? PETSC_TRUE : PETSC_FALSE));
+      }
       ierr = MPI_Allreduce(&iszero_l,&benign_correction_is_zero,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     }
     if (!benign_correction_is_zero) {
       ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
       ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
-      pcbddc->benign_p0 = 0.;
+      ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
@@ -1163,15 +1166,18 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     MatNullSpace null_space;
     Vec          nullv;
     PetscBool    isnull;
+    PetscInt     i;
 
-    pcbddc->benign_p0 = 1.;
+    for (i=0;i<pcbddc->benign_n;i++) pcbddc->benign_p0[i] = 1.;
     ierr = VecDuplicate(pcis->vec1_global,&nullv);CHKERRQ(ierr);
     ierr = VecSet(nullv,0.);CHKERRQ(ierr);
     ierr = PCBDDCBenignGetOrSetP0(pc,nullv,PETSC_FALSE);CHKERRQ(ierr);
     ierr = VecNormalize(nullv,NULL);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,1,&nullv,&null_space);CHKERRQ(ierr);
     ierr = MatNullSpaceTest(null_space,pc->mat,&isnull);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(pc->mat,null_space);CHKERRQ(ierr);
+    if (isnull) {
+      ierr = MatSetNullSpace(pc->mat,null_space);CHKERRQ(ierr);
+    }
     ierr = MatNullSpaceDestroy(&null_space);CHKERRQ(ierr);
     ierr = VecDestroy(&nullv);CHKERRQ(ierr);
   }
@@ -1384,7 +1390,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     pcbddc->local_mat = matis->A;
   }
 
-  /* change basis on local pressures (aka zerodiag dofs) */
+  /* detect local disconnected subdomains if requested and not done before */
+  if (pcbddc->detect_disconnected && !pcbddc->n_local_subs) {
+    ierr = MatDetectDisconnectedComponents(pcbddc->local_mat,PETSC_FALSE,&pcbddc->n_local_subs,&pcbddc->local_subs);CHKERRQ(ierr);
+  }
+
+  /*
+     change basis on local pressures (aka zerodiag dofs)
+     This should come earlier then PCISSetUp for extracting the correct subdomain matrices
+  */
   if (pcbddc->benign_saddle_point) {
     /* detect local saddle point and change the basis in pcbddc->local_mat */
     ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
@@ -1393,8 +1407,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* propagate relevant information */
-  /* workaround for reals */
-#if !defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX) /* workaround for reals */
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
   }
@@ -1431,6 +1444,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCBenignCheck(pc,zerodiag);CHKERRQ(ierr);
   }
 #endif
+  ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
   if (computesolvers) {
@@ -1505,7 +1519,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       PC_IS *pcis = (PC_IS*)(pc->data);
       Mat   temp_mat = NULL;
 
-      if (zerodiag) {
+      if (pcbddc->benign_change) {
         /* insert B0 in pcbddc->local_mat */
         ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
         /* swap local matrices */
@@ -1515,7 +1529,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
         ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
       }
       ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
-      if (zerodiag) {
+      if (pcbddc->benign_change) {
         /* restore original matrix */
         ierr = MatISSetLocalMat(pc->pmat,temp_mat);CHKERRQ(ierr);
         ierr = PetscObjectDereference((PetscObject)temp_mat);CHKERRQ(ierr);
@@ -1541,7 +1555,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* SetUp Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
@@ -2233,17 +2246,20 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->redistribute_coarse        = 0;
   pcbddc->coarse_subassembling       = 0;
   pcbddc->coarse_subassembling_init  = 0;
+  pcbddc->detect_disconnected        = PETSC_FALSE;
+  pcbddc->n_local_subs               = 0;
+  pcbddc->local_subs                 = NULL;
 
   /* benign subspace trick */
-  pcbddc->B0_ncol                    = 0;
-  pcbddc->B0_cols                    = NULL;
-  pcbddc->B0_vals                    = NULL;
   pcbddc->benign_change              = 0;
   pcbddc->benign_vec                 = 0;
   pcbddc->benign_original_mat        = 0;
   pcbddc->benign_sf                  = 0;
-  pcbddc->benign_p0_lidx             = -1;
-  pcbddc->benign_p0_gidx             = -1;
+  pcbddc->benign_B0                  = 0;
+  pcbddc->benign_n                   = 0;
+  pcbddc->benign_p0                  = NULL;
+  pcbddc->benign_p0_lidx             = NULL;
+  pcbddc->benign_p0_gidx             = NULL;
   pcbddc->benign_null                = PETSC_FALSE;
 
   /* create local graph structure */
