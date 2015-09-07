@@ -200,6 +200,7 @@ PetscErrorCode PCSemiRedundantMatCreate_default(PC pc,PC_SemiRedundant *sred,Mat
   
   ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
+  ierr = PetscFree(_Blocal);CHKERRQ(ierr);
   
   Bred = NULL;
   if (isActiveRank(sred->psubcomm)) {
