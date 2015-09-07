@@ -1,11 +1,11 @@
 
 /*
- 
+
  Defines a semi-redundant preconditioner
- 
+
  Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
  creates a child sub-communicator (c') containing less MPI processes than the original parent preconditioner (PC).
- 
+
  During PCSetup, the B operator is scattered onto c'.
  Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
  Then KSPSolve() is executed on the c' communicator.
@@ -13,11 +13,11 @@
  The preconditioner is deemed "semi" redundant as it only calls KSPSolve() on a single
  sub-communicator in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
  This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
- 
+
  Comments:
  - The communicator used within the semi-redundant preconditioner is defined by a PetscSubcomm using the INTERLACED
  creation routine. We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
- 
+
  - The semi-redundant preconditioner is aware of nullspaces which are attached to the only B operator.
  In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
  a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
@@ -26,44 +26,44 @@
  1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
  is attached the sub KSPSolve(). The design of semi-redundant is such that it should be possible to extend support 
  for re-partitioning other DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
- 
+
  - By default, B' is defined by simply fusing rows from different MPI processes
 
  - When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permuting of B
  into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatGetSubMatrices(), (iii) fusing the
  locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
- 
+
  Limitations/improvements
  - VecPlaceArray could be used within PCApply() to improve efficiency and reduce memory usage.
- 
+
  - The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
  and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). I opted to use P^T.A.P as it appears
  VecPermute() does not supported for the use case required here. By computing P, I can permute both the operator and RHS in a 
  consistent manner.
- 
+
  - Mapping of vectors is performed this way
  Suppose the parent comm size was 4, and we set a reduction factor of 2, thus would give a comm size on c' of 2.
  Using the interlaced creation routine, the ranks in c with color = 0, will be rank 0 and 2.
  We perform the scatter to the sub-comm in the following way, 
  [1] Given a vector x defined on comm c
- 
+
    rank(c) : _________ 0 ______  ________ 1 _______  ________ 2 _____________ ___________ 3 __________
          x : [0, 1, 2, 3, 4, 5] [6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17] [18, 19, 20, 21, 22, 23]
 
  scatter to xtmp defined also on comm c so that we have the following values
- 
+
    rank(c) : ___________________ 0 ________________  _1_  ______________________ 2 _______________________  __3_
       xtmp : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [ 6 ] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] [ 18 ]
 
  The entries on rank 1 and 3 (ranks which do not have a color = 0 in c') are filled with the first bs values living on that rank,
  where bs is the block size of the vector.
- 
+
  [2] Copy the value from rank 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
  Ranks 0 and 2 are the only ranks in the subcomm which have a color = 0.
- 
+
   rank(c') : ___________________ 0 _______________  ______________________ 1 _____________________
       xred : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
- 
+
 */
 
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
@@ -73,22 +73,22 @@
 #include "semiredundant.h"
 
 /*
- PCSemiRedundantSetUp_default()
- PCSemiRedundantMatCreate_default()
- 
+ PCTelescopeSetUp_default()
+ PCTelescopeMatCreate_default()
+
  default
- 
+
  // scatter in
  x(comm) -> xtmp(comm)
- 
+
  xred(subcomm) <- xtmp
  yred(subcomm)
- 
+
  yred(subcomm) --> xtmp
- 
+
  // scatter out
  xtmp(comm) -> y(comm)
- */
+*/
 
 PetscBool isActiveRank(PetscSubcomm scomm)
 {
@@ -97,28 +97,28 @@ PetscBool isActiveRank(PetscSubcomm scomm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "private_PCSemiRedundantGetSubDM"
-DM private_PCSemiRedundantGetSubDM(PC_SemiRedundant *sred)
+#define __FUNCT__ "private_PCTelescopeGetSubDM"
+DM private_PCTelescopeGetSubDM(PC_Telescope sred)
 {
   DM subdm;
-  
+
   if (!isActiveRank(sred->psubcomm)) { subdm = NULL; }
   else {
     switch (sred->sr_type) {
-      case SR_DEFAULT: subdm = NULL;
-        break;
-      case SR_DMDA:    subdm = ((PC_SemiRedundant_DMDACtx*)sred->dm_ctx)->dmrepart;
-        break;
-      case SR_DMPLEX:  subdm = NULL;
-        break;
+    case SR_DEFAULT: subdm = NULL;
+      break;
+    case SR_DMDA:    subdm = ((PC_Telescope_DMDACtx*)sred->dm_ctx)->dmrepart;
+      break;
+    case SR_DMPLEX:  subdm = NULL;
+      break;
     }
   }
   return(subdm);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSemiRedundantSetUp_default"
-PetscErrorCode PCSemiRedundantSetUp_default(PC pc,PC_SemiRedundant *sred)
+#define __FUNCT__ "PCTelescopeSetUp_default"
+PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
 {
   PetscErrorCode ierr;
   PetscInt       m,M,bs,st,ed;
@@ -127,16 +127,17 @@ PetscErrorCode PCSemiRedundantSetUp_default(PC pc,PC_SemiRedundant *sred)
   MPI_Comm       comm,subcomm;
   VecScatter     scatter;
   IS             isin;
-  
-  PetscInfo(pc,"PCSemiRedundant: setup (default)\n");
+
+  PetscFunctionBegin;
+  ierr = PetscInfo(pc,"PCTelescope: setup (default)\n");CHKERRQ(ierr);
   comm = PetscSubcommParent(sred->psubcomm);
   subcomm = PetscSubcommChild(sred->psubcomm);
-  
+
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
   ierr = MatGetSize(B,&M,NULL);CHKERRQ(ierr);
   ierr = MatGetBlockSize(B,&bs);CHKERRQ(ierr);
   ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
-  
+
   xred = NULL;
   m = bs;
   if (isActiveRank(sred->psubcomm)) {
@@ -146,17 +147,17 @@ PetscErrorCode PCSemiRedundantSetUp_default(PC pc,PC_SemiRedundant *sred)
     ierr = VecSetFromOptions(xred);CHKERRQ(ierr);
     ierr = VecGetLocalSize(xred,&m);
   }
-  
+
   yred = NULL;
   if (isActiveRank(sred->psubcomm)) {
     ierr = VecDuplicate(xred,&yred);CHKERRQ(ierr);
   }
-  
+
   ierr = VecCreate(comm,&xtmp);CHKERRQ(ierr);
   ierr = VecSetSizes(xtmp,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
   ierr = VecSetType(xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
-  
+
   if (isActiveRank(sred->psubcomm)) {
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,(ed-st),st,1,&isin);CHKERRQ(ierr);
@@ -165,21 +166,21 @@ PetscErrorCode PCSemiRedundantSetUp_default(PC pc,PC_SemiRedundant *sred)
     ierr = ISCreateStride(comm,bs,st,1,&isin);CHKERRQ(ierr);
   }
   ierr = ISSetBlockSize(isin,bs);CHKERRQ(ierr);
-  
+
   ierr = VecScatterCreate(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
-  
+
   sred->isin    = isin;
   sred->scatter = scatter;
   sred->xred    = xred;
   sred->yred    = yred;
   sred->xtmp    = xtmp;
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSemiRedundantMatCreate_default"
-PetscErrorCode PCSemiRedundantMatCreate_default(PC pc,PC_SemiRedundant *sred,MatReuse reuse,Mat *A)
+#define __FUNCT__ "PCTelescopeMatCreate_default"
+PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm,subcomm;
@@ -187,25 +188,22 @@ PetscErrorCode PCSemiRedundantMatCreate_default(PC pc,PC_SemiRedundant *sred,Mat
   PetscInt       nr,nc;
   IS             isrow,iscol;
   Mat            Blocal,*_Blocal;
-  
-  PetscInfo(pc,"PCSemiRedundant: updating the redundant preconditioned operator (default)\n");
+
+  PetscFunctionBegin;
+  ierr = PetscInfo(pc,"PCTelescope: updating the redundant preconditioned operator (default)\n");CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   subcomm = PetscSubcommChild(sred->psubcomm);
-  
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
   ierr = MatGetSize(B,&nr,&nc);CHKERRQ(ierr);
-  
   isrow = sred->isin;
   ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
-  
   ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   ierr = PetscFree(_Blocal);CHKERRQ(ierr);
-  
   Bred = NULL;
   if (isActiveRank(sred->psubcomm)) {
     PetscInt mm;
-    
+
     if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
 
     ierr = MatGetSize(Blocal,&mm,NULL);CHKERRQ(ierr);
@@ -213,15 +211,14 @@ PetscErrorCode PCSemiRedundantMatCreate_default(PC pc,PC_SemiRedundant *sred,Mat
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,mm,reuse,&Bred);CHKERRQ(ierr);
   }
   *A = Bred;
-  
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   ierr = MatDestroy(&Blocal);CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSemiRedundantMatNullSpaceCreate_default"
-PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant *sred,Mat sub_mat)
+#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_default"
+PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat sub_mat)
 {
   PetscErrorCode   ierr;
   MatNullSpace     nullspace,sub_nullspace;
@@ -231,18 +228,18 @@ PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant 
   const Vec        *vecs;
   Vec              *sub_vecs;
   MPI_Comm         subcomm;
-  
+
+  PetscFunctionBegin;
   ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
   ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
   if (!nullspace) return(0);
-  
-  PetscInfo(pc,"PCSemiRedundant: generating nullspace (default)\n");
+
+  ierr = PetscInfo(pc,"PCTelescope: generating nullspace (default)\n");CHKERRQ(ierr);
   subcomm = PetscSubcommChild(sred->psubcomm);
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
-  
+
   if (isActiveRank(sred->psubcomm)) {
     sub_vecs = NULL;
-    
     /* create new vectors */
     if (n != 0) {
       PetscMalloc(sizeof(Vec)*n,&sub_vecs);
@@ -251,23 +248,21 @@ PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant 
       }
     }
   }
-  
+
   /* copy entries */
   for (k=0; k<n; k++) {
     const PetscScalar *x_array;
     PetscScalar       *LA_sub_vec;
     PetscInt          st,ed,bs;
-    
+
     /* pull in vector x->xtmp */
     ierr = VecScatterBegin(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    
     /* copy vector entires into xred */
     ierr = VecGetBlockSize(sred->xtmp,&bs);CHKERRQ(ierr);
     ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
     if (sub_vecs[k]) {
       ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
-      
       ierr = VecGetArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
       for (i=0; i<ed-st; i++) {
         LA_sub_vec[i] = x_array[i];
@@ -276,11 +271,10 @@ PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant 
     }
     ierr = VecRestoreArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
   }
-  
+
   if (isActiveRank(sred->psubcomm)) {
     /* create new nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
-    
     /* attach redundant nullspace to Bred */
     ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
 
@@ -289,77 +283,79 @@ PetscErrorCode PCSemiRedundantMatNullSpaceCreate_default(PC pc,PC_SemiRedundant 
     }
     if (sub_vecs) PetscFree(sub_vecs);
   }
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCView_SemiRedundant"
-static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
+#define __FUNCT__ "PCView_Telescope"
+static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
 {
-  PC_SemiRedundant *sred = (PC_SemiRedundant*)pc->data;
+  PC_Telescope     sred = (PC_Telescope)pc->data;
   PetscErrorCode   ierr;
   PetscBool        iascii,isstring;
   PetscViewer      subviewer;
-  
+
+  PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     if (!sred->psubcomm) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: preconditioner not yet setup\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: preconditioner not yet setup\n");CHKERRQ(ierr);
     } else {
       MPI_Comm    comm,subcomm;
       PetscMPIInt comm_size,subcomm_size;
       DM          dm,subdm;
-      
+
       ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
-      subdm = private_PCSemiRedundantGetSubDM(sred);
+      subdm = private_PCTelescopeGetSubDM(sred);
       comm = PetscSubcommParent(sred->psubcomm);
       subcomm = PetscSubcommChild(sred->psubcomm);
       ierr = MPI_Comm_size(comm,&comm_size);CHKERRQ(ierr);
       ierr = MPI_Comm_size(subcomm,&subcomm_size);CHKERRQ(ierr);
-      
-      ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: parent comm size reduction factor = %D\n",sred->redfactor);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: comm_size = %d , subcomm_size = %d\n",(int)comm_size,(int)subcomm_size);CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: parent comm size reduction factor = %D\n",sred->redfactor);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: comm_size = %d , subcomm_size = %d\n",(int)comm_size,(int)subcomm_size);CHKERRQ(ierr);
       ierr = PetscViewerGetSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
       if (isActiveRank(sred->psubcomm)) {
         ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
-        
+
         if (dm && sred->ignore_dm) {
-          ierr = PetscViewerASCIIPrintf(subviewer,"  SemiRedundant: ignoring DM\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: ignoring DM\n");CHKERRQ(ierr);
         }
         switch (sred->sr_type) {
-          case SR_DEFAULT:
-            ierr = PetscViewerASCIIPrintf(subviewer,"  SemiRedundant: using default setup\n");CHKERRQ(ierr);
-            break;
-          case SR_DMDA:
-            ierr = PetscViewerASCIIPrintf(subviewer,"  SemiRedundant: DMDA detected\n");CHKERRQ(ierr);
-            ierr = DMView_DMDAShort(subdm,subviewer);CHKERRQ(ierr);
-            break;
-          case SR_DMPLEX:
-            ierr = PetscViewerASCIIPrintf(subviewer,"  SemiRedundant: DMPLEX detected\n");CHKERRQ(ierr);
-            break;
+        case SR_DEFAULT:
+          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: using default setup\n");CHKERRQ(ierr);
+          break;
+        case SR_DMDA:
+          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: DMDA detected\n");CHKERRQ(ierr);
+          ierr = DMView_DMDAShort(subdm,subviewer);CHKERRQ(ierr);
+          break;
+        case SR_DMPLEX:
+          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: DMPLEX detected\n");CHKERRQ(ierr);
+          break;
         }
-        
+
         ierr = KSPView(sred->ksp,subviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
       }
       ierr = PetscViewerRestoreSubViewer(viewer,subcomm,&subviewer);CHKERRQ(ierr);
     }
   }
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SemiRedundant"
-static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
+#define __FUNCT__ "PCSetUp_Telescope"
+static PetscErrorCode PCSetUp_Telescope(PC pc)
 {
-  PC_SemiRedundant  *sred = (PC_SemiRedundant*)pc->data;
+  PC_Telescope      sred = (PC_Telescope)pc->data;
   PetscErrorCode    ierr;
   MPI_Comm          comm,subcomm;
-  SemiRedundantType sr_type;
-  
+  PCTelescopeType   sr_type;
+
+  PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  
+
   /* subcomm definition */
   if (!pc->setupcalled) {
     if (!sred->psubcomm) {
@@ -369,108 +365,100 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
       /* disable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
       /* ierr = PetscSubcommSetFromOptions(sred->psubcomm);CHKERRQ(ierr); */
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
-      
       /* create a new PC that processors in each subcomm have copy of */
       subcomm = PetscSubcommChild(sred->psubcomm);
     }
   } else {
     subcomm = PetscSubcommChild(sred->psubcomm);
   }
-  
+
   /* internal KSP */
   if (!pc->setupcalled) {
     const char *prefix;
-    
+
     if (isActiveRank(sred->psubcomm)) {
       ierr = KSPCreate(subcomm,&sred->ksp);CHKERRQ(ierr);
       ierr = KSPSetErrorIfNotConverged(sred->ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)sred->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)sred->ksp);CHKERRQ(ierr);
       ierr = KSPSetType(sred->ksp,KSPPREONLY);CHKERRQ(ierr);
-      
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(sred->ksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(sred->ksp,"semiredundant_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(sred->ksp,"telescope_");CHKERRQ(ierr);
     }
   }
-  
   /* Determine type of setup/update */
   if (!pc->setupcalled) {
     PetscBool has_dm,same;
     DM        dm;
-    
+
     sr_type = SR_DEFAULT;
-    
     has_dm = PETSC_FALSE;
     ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
     if (dm) { has_dm = PETSC_TRUE; }
-    
     if (has_dm) {
       /* check for dmda */
       ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&same);CHKERRQ(ierr);
       if (same) {
-        PetscInfo(pc,"PCSemiRedundant: found DMDA\n");
+        ierr = PetscInfo(pc,"PCTelescope: found DMDA\n");CHKERRQ(ierr);
         sr_type = SR_DMDA;
       }
-      
       /* check for dmplex */
       ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&same);CHKERRQ(ierr);
       if (same) {
-        PetscInfo(pc,"PCSemiRedundant: found DMPLEX\n");
+        PetscInfo(pc,"PCTelescope: found DMPLEX\n");
         sr_type = SR_DMPLEX;
       }
     }
-    
+
     if (sred->ignore_dm) {
-      PetscInfo(pc,"PCSemiRedundant: ignore DM\n");
+      PetscInfo(pc,"PCTelescope: ignore DM\n");
       sr_type = SR_DEFAULT;
     }
     sred->sr_type = sr_type;
-    
   } else {
     sr_type = sred->sr_type;
   }
 
   /* set function pointers for repartition setup, matrix creation/update, matrix nullspace and reset functionality */
   switch (sr_type) {
-    case SR_DEFAULT:
-      sred->pcsemired_setup_type              = PCSemiRedundantSetUp_default;
-      sred->pcsemired_matcreate_type          = PCSemiRedundantMatCreate_default;
-      sred->pcsemired_matnullspacecreate_type = PCSemiRedundantMatNullSpaceCreate_default;
-      sred->pcsemired_reset_type              = NULL;
-      break;
-    case SR_DMDA:
-      pc->ops->apply                          = PCApply_SemiRedundant_dmda;
-      sred->pcsemired_setup_type              = PCSemiRedundantSetUp_dmda;
-      sred->pcsemired_matcreate_type          = PCSemiRedundantMatCreate_dmda;
-      sred->pcsemired_matnullspacecreate_type = PCSemiRedundantMatNullSpaceCreate_dmda;
-      sred->pcsemired_reset_type              = PCReset_SemiRedundant_dmda;
-      break;
-    case SR_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Supprt for DMPLEX is currently not available");
-      break;
-    default: SETERRQ(comm,PETSC_ERR_SUP,"Only supprt for repartitioning DMDA is provided");
-      break;
+  case SR_DEFAULT:
+    sred->pctelescope_setup_type              = PCTelescopeSetUp_default;
+    sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_default;
+    sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_default;
+    sred->pctelescope_reset_type              = NULL;
+    break;
+  case SR_DMDA:
+    pc->ops->apply                          = PCApply_Telescope_dmda;
+    sred->pctelescope_setup_type              = PCTelescopeSetUp_dmda;
+    sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_dmda;
+    sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_dmda;
+    sred->pctelescope_reset_type              = PCReset_Telescope_dmda;
+    break;
+  case SR_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Supprt for DMPLEX is currently not available");
+    break;
+  default: SETERRQ(comm,PETSC_ERR_SUP,"Only supprt for repartitioning DMDA is provided");
+    break;
   }
-  
+
   /* setup */
-  if (sred->pcsemired_setup_type) {
-    ierr = sred->pcsemired_setup_type(pc,sred);CHKERRQ(ierr);
+  if (sred->pctelescope_setup_type) {
+    ierr = sred->pctelescope_setup_type(pc,sred);CHKERRQ(ierr);
   }
-  
   /* update */
   if (!pc->setupcalled) {
-    if (sred->pcsemired_matcreate_type) {
-      ierr = sred->pcsemired_matcreate_type(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred);CHKERRQ(ierr);
+    if (sred->pctelescope_matcreate_type) {
+      ierr = sred->pctelescope_matcreate_type(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred);CHKERRQ(ierr);
     }
-    if (sred->pcsemired_matnullspacecreate_type) {
-      ierr = sred->pcsemired_matnullspacecreate_type(pc,sred,sred->Bred);CHKERRQ(ierr);
+    if (sred->pctelescope_matnullspacecreate_type) {
+      ierr = sred->pctelescope_matnullspacecreate_type(pc,sred,sred->Bred);CHKERRQ(ierr);
     }
   } else {
-    if (sred->pcsemired_matcreate_type) {
-      ierr = sred->pcsemired_matcreate_type(pc,sred,MAT_REUSE_MATRIX,&sred->Bred);CHKERRQ(ierr);
+    if (sred->pctelescope_matcreate_type) {
+      ierr = sred->pctelescope_matcreate_type(pc,sred,MAT_REUSE_MATRIX,&sred->Bred);CHKERRQ(ierr);
     }
   }
-  
+
   /* common - no construction */
   if (isActiveRank(sred->psubcomm)) {
     ierr = KSPSetOperators(sred->ksp,sred->Bred,sred->Bred);CHKERRQ(ierr);
@@ -478,38 +466,37 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
       ierr = KSPSetFromOptions(sred->ksp);CHKERRQ(ierr);
     }
   }
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCApply_SemiRedundant"
-static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_Telescope"
+static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
 {
-  PC_SemiRedundant  *sred = (PC_SemiRedundant*)pc->data;
+  PC_Telescope      sred = (PC_Telescope)pc->data;
   PetscErrorCode    ierr;
   Vec               xtmp,xred,yred;
   PetscInt          i,st,ed,bs;
   VecScatter        scatter;
   PetscScalar       *array;
   const PetscScalar *x_array;
-  
+
+  PetscFunctionBegin;
   xtmp    = sred->xtmp;
   scatter = sred->scatter;
   xred    = sred->xred;
   yred    = sred->yred;
-  
+
   /* pull in vector x->xtmp */
   ierr = VecScatterBegin(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  
+
   /* copy vector entires into xred */
   ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   if (xred) {
     PetscScalar *LA_xred;
-    
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
-    
     ierr = VecGetArray(xred,&LA_xred);CHKERRQ(ierr);
     for (i=0; i<ed-st; i++) {
       LA_xred[i] = x_array[i];
@@ -517,20 +504,16 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
     ierr = VecRestoreArray(xred,&LA_xred);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
-  
   /* solve */
   if (isActiveRank(sred->psubcomm)) {
     ierr = KSPSolve(sred->ksp,xred,yred);CHKERRQ(ierr);
   }
-  
   /* return vector */
   ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
   ierr = VecGetArray(xtmp,&array);CHKERRQ(ierr);
   if (yred) {
     const PetscScalar *LA_yred;
-    
     ierr = VecGetOwnershipRange(yred,&st,&ed);CHKERRQ(ierr);
-    
     ierr = VecGetArrayRead(yred,&LA_yred);CHKERRQ(ierr);
     for (i=0; i<ed-st; i++) {
       array[i] = LA_yred[i];
@@ -542,19 +525,18 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
     }
   }
   ierr = VecRestoreArray(xtmp,&array);CHKERRQ(ierr);
-  
   ierr = VecScatterBegin(scatter,xtmp,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xtmp,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCReset_SemiRedundant"
-static PetscErrorCode PCReset_SemiRedundant(PC pc)
+#define __FUNCT__ "PCReset_Telescope"
+static PetscErrorCode PCReset_Telescope(PC pc)
 {
-  PC_SemiRedundant *sred = (PC_SemiRedundant*)pc->data;
-  PetscErrorCode   ierr;
-  
+  PC_Telescope   sred = (PC_Telescope)pc->data;
+  PetscErrorCode ierr;
+
   ierr = ISDestroy(&sred->isin);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&sred->scatter);CHKERRQ(ierr);
   if (sred->xred) { ierr = VecDestroy(&sred->xred);CHKERRQ(ierr); }
@@ -562,67 +544,70 @@ static PetscErrorCode PCReset_SemiRedundant(PC pc)
   if (sred->xtmp) { ierr = VecDestroy(&sred->xtmp);CHKERRQ(ierr); }
   if (sred->Bred) { ierr = MatDestroy(&sred->Bred);CHKERRQ(ierr); }
   if (sred->ksp) { ierr = KSPReset(sred->ksp);CHKERRQ(ierr); }
-  if (sred->pcsemired_reset_type) {
-    ierr = sred->pcsemired_reset_type(pc);CHKERRQ(ierr);
+  if (sred->pctelescope_reset_type) {
+    ierr = sred->pctelescope_reset_type(pc);CHKERRQ(ierr);
   }
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SemiRedundant"
-static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
+#define __FUNCT__ "PCDestroy_Telescope"
+static PetscErrorCode PCDestroy_Telescope(PC pc)
 {
-  PC_SemiRedundant *sred = (PC_SemiRedundant*)pc->data;
+  PC_Telescope     sred = (PC_Telescope)pc->data;
   PetscErrorCode   ierr;
-  
-  ierr = PCReset_SemiRedundant(pc);CHKERRQ(ierr);
+
+  PetscFunctionBegin;
+  ierr = PCReset_Telescope(pc);CHKERRQ(ierr);
   if (sred->ksp) { ierr = KSPDestroy(&sred->ksp);CHKERRQ(ierr); }
   ierr = PetscSubcommDestroy(&sred->psubcomm);CHKERRQ(ierr);
   if (sred->dm_ctx) PetscFree(sred->dm_ctx);
   PetscFree(pc->data);
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SemiRedundant"
-static PetscErrorCode PCSetFromOptions_SemiRedundant(PetscOptions *PetscOptionsObject,PC pc)
+#define __FUNCT__ "PCSetFromOptions_Telescope"
+static PetscErrorCode PCSetFromOptions_Telescope(PetscOptions *PetscOptionsObject,PC pc)
 {
-  PC_SemiRedundant *sred = (PC_SemiRedundant*)pc->data;
+  PC_Telescope     sred = (PC_Telescope)pc->data;
   PetscErrorCode   ierr;
   MPI_Comm         comm;
   PetscMPIInt      size;
-  
+
+  PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"SemiRedundant options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_semiredundant_reduction_factor","Factor to reduce comm size by","PCSemiRedundantSetReductionFactor",sred->redfactor,&sred->redfactor,0);CHKERRQ(ierr);
-  if (sred->redfactor > size) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"-pc_semiredundant_reduction_factor <= comm size");
-  ierr = PetscOptionsBool("-pc_semiredundant_ignore_dm","Ignore any DM attached to the PC","PCSemiRedundantSetIgnoreDM",sred->ignore_dm,&sred->ignore_dm,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Telescope options");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_telescope_reduction_factor","Factor to reduce comm size by","PCTelescopeSetReductionFactor",sred->redfactor,&sred->redfactor,0);CHKERRQ(ierr);
+  if (sred->redfactor > size) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"-pc_telescope_reduction_factor <= comm size");
+  ierr = PetscOptionsBool("-pc_telescope_ignore_dm","Ignore any DM attached to the PC","PCTelescopeSetIgnoreDM",sred->ignore_dm,&sred->ignore_dm,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 /* PC simplementation specific API's */
 
-static PetscErrorCode PCSemiRedundantGetKSP_SemiRedundant(PC pc,KSP *ksp)
+static PetscErrorCode PCTelescopeGetKSP_Telescope(PC pc,KSP *ksp)
 {
-  PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
+  PC_Telescope red = (PC_Telescope)pc->data;
   if (ksp) *ksp = red->ksp;
   return(0);
 }
 
-static PetscErrorCode PCSemiRedundantGetReductionFactor_SemiRedundant(PC pc,PetscInt *fact)
+static PetscErrorCode PCTelescopeGetReductionFactor_Telescope(PC pc,PetscInt *fact)
 {
-  PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
+  PC_Telescope red = (PC_Telescope)pc->data;
   if (fact) *fact = red->redfactor;
   return(0);
 }
-static PetscErrorCode PCSemiRedundantSetReductionFactor_SemiRedundant(PC pc,PetscInt fact)
+
+static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fact)
 {
-  PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
+  PC_Telescope     red = (PC_Telescope)pc->data;
   PetscMPIInt      size;
   PetscErrorCode   ierr;
-  
+
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (fact <= 0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of semi-redundant PC %D must be positive",fact);
   if (fact > size) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of semi-redundant PC %D must be <= comm.size",fact);
@@ -630,160 +615,160 @@ static PetscErrorCode PCSemiRedundantSetReductionFactor_SemiRedundant(PC pc,Pets
   return(0);
 }
 
-static PetscErrorCode PCSemiRedundantGetIgnoreDM_SemiRedundant(PC pc,PetscBool *v)
+static PetscErrorCode PCTelescopeGetIgnoreDM_Telescope(PC pc,PetscBool *v)
 {
-  PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
+  PC_Telescope red = (PC_Telescope)pc->data;
   if (v) *v = red->ignore_dm;
   return(0);
 }
-static PetscErrorCode PCSemiRedundantSetIgnoreDM_SemiRedundant(PC pc,PetscBool v)
+static PetscErrorCode PCTelescopeSetIgnoreDM_Telescope(PC pc,PetscBool v)
 {
-  PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
+  PC_Telescope red = (PC_Telescope)pc->data;
   red->ignore_dm = v;
   return(0);
 }
 
-static PetscErrorCode PCSemiRedundantGetDM_SemiRedundant(PC pc,DM *dm)
+static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
 {
-  PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
-  *dm = private_PCSemiRedundantGetSubDM(red);
+  PC_Telescope red = (PC_Telescope)pc->data;
+  *dm = private_PCTelescopeGetSubDM(red);
   return(0);
 }
 
 /*@
- PCSemiRedundantGetKSP - Gets the KSP created by the semi-redundant PC.
- 
+ PCTelescopeGetKSP - Gets the KSP created by the semi-redundant PC.
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  subksp - the KSP defined the smaller set of processes
- 
+
  Level: advanced
- 
+
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantGetKSP(PC pc,KSP *subksp)
+PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 {
-  PetscTryMethod(pc,"PCSemiRedundantGetKSP_C",(PC,KSP*),(pc,subksp));
+  PetscTryMethod(pc,"PCTelescopeGetKSP_C",(PC,KSP*),(pc,subksp));
   return(0);
 }
 
 /*@
- PCSemiRedundantGetReductionFactor - Gets the factor by which the original number of processes has been reduced by.
- 
+ PCTelescopeGetReductionFactor - Gets the factor by which the original number of processes has been reduced by.
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  fact - the reduction factor
- 
+
  Level: advanced
- 
+
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantGetReductionFactor(PC pc,PetscInt *fact)
+PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 {
-  PetscTryMethod(pc,"PCSemiRedundantGetReductionFactor_C",(PC,PetscInt*),(pc,fact));
+  PetscTryMethod(pc,"PCTelescopeGetReductionFactor_C",(PC,PetscInt*),(pc,fact));
   return(0);
 }
 
 /*@
- PCSemiRedundantSetReductionFactor - Sets the factor by which the original number of processes has been reduced by.
- 
+ PCTelescopeSetReductionFactor - Sets the factor by which the original number of processes has been reduced by.
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  fact - the reduction factor
- 
+
  Level: advanced
- 
+
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantSetReductionFactor(PC pc,PetscInt fact)
+PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 {
-  PetscTryMethod(pc,"PCSemiRedundantSetReductionFactor_C",(PC,PetscInt),(pc,fact));
+  PetscTryMethod(pc,"PCTelescopeSetReductionFactor_C",(PC,PetscInt),(pc,fact));
   return(0);
 }
 
 /*@
- PCSemiRedundantGetIgnoreDM - Get the flag indicating if any DM attached to the PC will be used.
- 
+ PCTelescopeGetIgnoreDM - Get the flag indicating if any DM attached to the PC will be used.
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  v - the flag
- 
+
  Level: advanced
- 
+
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantGetIgnoreDM(PC pc,PetscBool *v)
+PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 {
-  PetscTryMethod(pc,"PCSemiRedundantGetIgnoreDM_C",(PC,PetscBool*),(pc,v));
+  PetscTryMethod(pc,"PCTelescopeGetIgnoreDM_C",(PC,PetscBool*),(pc,v));
   return(0);
 }
 
 /*@
- PCSemiRedundantSetIgnoreDM - Set a flag to ignore any DM attached to the PC.
- 
+ PCTelescopeSetIgnoreDM - Set a flag to ignore any DM attached to the PC.
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  v - Use PETSC_TRUE to ignore any DM
- 
+
  Level: advanced
- 
+
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantSetIgnoreDM(PC pc,PetscInt v)
+PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscInt v)
 {
-  PetscTryMethod(pc,"PCSemiRedundantSetIgnoreDM_C",(PC,PetscBool),(pc,v));
+  PetscTryMethod(pc,"PCTelescopeSetIgnoreDM_C",(PC,PetscBool),(pc,v));
   return(0);
 }
 
 /*@
- PCSemiRedundantGetDM - Get the re-partitioned DM attached to the sub KSP.
- 
+ PCTelescopeGetDM - Get the re-partitioned DM attached to the sub KSP.
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  subdm - The re-partitioned DM
- 
+
  Level: advanced
- 
+
  .keywords: PC, semi-redundant solve
  @*/
-PetscErrorCode PCSemiRedundantGetDM(PC pc,DM *subdm)
+PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 {
-  PetscTryMethod(pc,"PCSemiRedundantGetDM_C",(PC,DM*),(pc,subdm));
+  PetscTryMethod(pc,"PCTelescopeGetDM_C",(PC,DM*),(pc,subdm));
   return(0);
 }
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-   PCSEMIREDUNDANT - Runs a KSP solver on a sub-group of processors. MPI processes not in the sub-communicator are idle during the solve.
+   PCTELESCOPE - Runs a KSP solver on a sub-group of processors. MPI processes not in the sub-communicator are idle during the solve.
 
    Options Database:
-+  -pc_semiredundant_reduction_factor <n> - factor to use communicator size by, for example if you are using 64 MPI processes and
++  -pc_telescope_reduction_factor <n> - factor to use communicator size by, for example if you are using 64 MPI processes and
    use an n of 4, the new sub-communicator will be 4 defined with 64/4 processes
--  -pc_semiredundant_ignore_dm <false> - flag to indicate whether an attached DM should be ignored
+-  -pc_telescope_ignore_dm <false> - flag to indicate whether an attached DM should be ignored
 
    Level: advanced
 
@@ -797,45 +782,45 @@ PetscErrorCode PCSemiRedundantGetDM(PC pc,DM *subdm)
 
    Optimizations:
    (i) VecPlaceArray() could be used for scatters between the vectors defined on different sized communicators, thereby slightly reducing memory footprint;
-   (ii) Memory re-use and faster set-up would follow if the result of P^T.A.P was not re-allocated each time PCSetUp_SemiRedundant() was called (DMDA).
+   (ii) Memory re-use and faster set-up would follow if the result of P^T.A.P was not re-allocated each time PCSetUp_Telescope() was called (DMDA).
 
  Contributed by Dave May
 
-.seealso:  PCSemiRedundantGetKSP(), PCSemiRedundantGetDM(),
- PCSemiRedundantGetReductionFactor(), PCSemiRedundantSetReductionFactor(),
- PCSemiRedundantGetIgnoreDM(), PCSemiRedundantSetIgnoreDM(), PCREDUNDANT
+.seealso:  PCTelescopeGetKSP(), PCTelescopeGetDM(),
+ PCTelescopeGetReductionFactor(), PCTelescopeSetReductionFactor(),
+ PCTelescopeGetIgnoreDM(), PCTelescopeSetIgnoreDM(), PCREDUNDANT
 M*/
 #undef __FUNCT__
-#define __FUNCT__ "PCCreate_SemiRedundant"
-PETSC_EXTERN PetscErrorCode PCCreate_SemiRedundant(PC pc)
+#define __FUNCT__ "PCCreate_Telescope"
+PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
 {
-  PetscErrorCode   ierr;
-  PC_SemiRedundant *sred;
-  
+  PetscErrorCode       ierr;
+  struct _PC_Telescope *sred;
+
+  PetscFunctionBegin;
   ierr = PetscNewLog(pc,&sred);CHKERRQ(ierr);
-  
   sred->redfactor      = 1;
   sred->ignore_dm      = PETSC_FALSE;
   pc->data             = (void*)sred;
-  
-  pc->ops->apply          = PCApply_SemiRedundant;
+
+  pc->ops->apply          = PCApply_Telescope;
   pc->ops->applytranspose = NULL;
-  pc->ops->setup          = PCSetUp_SemiRedundant;
-  pc->ops->destroy        = PCDestroy_SemiRedundant;
-  pc->ops->reset          = PCReset_SemiRedundant;
-  pc->ops->setfromoptions = PCSetFromOptions_SemiRedundant;
-  pc->ops->view           = PCView_SemiRedundant;
-  
-  sred->pcsemired_setup_type              = PCSemiRedundantSetUp_default;
-  sred->pcsemired_matcreate_type          = PCSemiRedundantMatCreate_default;
-  sred->pcsemired_matnullspacecreate_type = PCSemiRedundantMatNullSpaceCreate_default;
-  sred->pcsemired_reset_type              = NULL;
-  
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetKSP_C",PCSemiRedundantGetKSP_SemiRedundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetReductionFactor_C",PCSemiRedundantGetReductionFactor_SemiRedundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantSetReductionFactor_C",PCSemiRedundantSetReductionFactor_SemiRedundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetIgnoreDM_C",PCSemiRedundantGetIgnoreDM_SemiRedundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantSetIgnoreDM_C",PCSemiRedundantSetIgnoreDM_SemiRedundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSemiRedundantGetDM_C",PCSemiRedundantGetDM_SemiRedundant);CHKERRQ(ierr);
-  return(0);
+  pc->ops->setup          = PCSetUp_Telescope;
+  pc->ops->destroy        = PCDestroy_Telescope;
+  pc->ops->reset          = PCReset_Telescope;
+  pc->ops->setfromoptions = PCSetFromOptions_Telescope;
+  pc->ops->view           = PCView_Telescope;
+
+  sred->pctelescope_setup_type              = PCTelescopeSetUp_default;
+  sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_default;
+  sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_default;
+  sred->pctelescope_reset_type              = NULL;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetKSP_C",PCTelescopeGetKSP_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetReductionFactor_C",PCTelescopeGetReductionFactor_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetReductionFactor_C",PCTelescopeSetReductionFactor_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetIgnoreDM_C",PCTelescopeGetIgnoreDM_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetIgnoreDM_C",PCTelescopeSetIgnoreDM_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetDM_C",PCTelescopeGetDM_Telescope);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

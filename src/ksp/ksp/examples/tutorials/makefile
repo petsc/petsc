@@ -408,7 +408,7 @@ runex2_fbcgs_2:
            else printf "${PWD}\nPossible problem with ex2_fbcgs_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2.tmp
 runex2_semiredundant:
-	-@${MPIEXEC} -n 4 ./ex2 -m 100 -n 100 -ksp_converged_reason -pc_type semiredundant -pc_semiredundant_reduction_factor 4 -semiredundant_pc_type bjacobi > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex2 -m 100 -n 100 -ksp_converged_reason -pc_type telescope -pc_telescope_reduction_factor 4 -telescope_pc_type bjacobi > ex2.tmp 2>&1; \
            if (${DIFF} output/ex2_semiredundant.out ex2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_semiredundant, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2.tmp
@@ -994,7 +994,7 @@ runex29_2:
 	   ${RM} -f ex29_2.tmp
 
 runex29_semiredundant:
-	-@${MPIEXEC} -n 4 ./ex29 -ksp_monitor_short -da_grid_x 257 -da_grid_y 257 -pc_type mg -pc_mg_galerkin -pc_mg_levels 4 -ksp_type richardson -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -mg_coarse_pc_type semiredundant -mg_coarse_semiredundant_pc_type mg -mg_coarse_semiredundant_pc_mg_galerkin -mg_coarse_semiredundant_pc_mg_levels 3 -mg_coarse_semiredundant_mg_levels_ksp_type chebyshev -mg_coarse_semiredundant_mg_levels_pc_type jacobi -mg_coarse_pc_semiredundant_reduction_factor 4 > ex29_semiredundant.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex29 -ksp_monitor_short -da_grid_x 257 -da_grid_y 257 -pc_type mg -pc_mg_galerkin -pc_mg_levels 4 -ksp_type richardson -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -mg_coarse_pc_type telescope -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_galerkin -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_levels_ksp_type chebyshev -mg_coarse_telescope_mg_levels_pc_type jacobi -mg_coarse_pc_telescope_reduction_factor 4 > ex29_semiredundant.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_semiredundant.out ex29_semiredundant.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29_semiredundant, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29_semiredundant.tmp
@@ -1066,7 +1066,7 @@ runex45_2:
 	   ${DIFF} output/ex45_2.out ex45_2.tmp || printf "${PWD}\nPossible problem with ex45_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex45_2.tmp
 runex45_semiredundant:
-	-@${MPIEXEC} -n 4 ./ex45 -ksp_type fgmres -ksp_monitor_short -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi  -pc_mg_levels 2 -da_grid_x 65 -da_grid_y 65 -da_grid_z 65 -mg_coarse_pc_type semiredundant -mg_coarse_pc_semiredundant_reduction_factor 4 -mg_coarse_semiredundant_pc_type mg -mg_coarse_semiredundant_pc_mg_galerkin -mg_coarse_semiredundant_pc_mg_levels 3 -mg_coarse_semiredundant_mg_levels_ksp_type richardson -mg_coarse_semiredundant_mg_levels_pc_type jacobi   -mg_levels_ksp_type richardson -mg_coarse_semiredundant_mg_levels_ksp_type richardson -ksp_rtol 1.0e-6  > ex45_semiredundant.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex45 -ksp_type fgmres -ksp_monitor_short -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi  -pc_mg_levels 2 -da_grid_x 65 -da_grid_y 65 -da_grid_z 65 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_reduction_factor 4 -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_galerkin -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_levels_ksp_type richardson -mg_coarse_telescope_mg_levels_pc_type jacobi   -mg_levels_ksp_type richardson -mg_coarse_telescope_mg_levels_ksp_type richardson -ksp_rtol 1.0e-6  > ex45_semiredundant.tmp 2>&1; \
 	   ${DIFF} output/ex45_semiredundant.out ex45_semiredundant.tmp || printf "${PWD}\nPossible problem with ex45_semiredundant, diffs above\n=========================================\n"; \
 	   ${RM} -f ex45_semiredundant.tmp
 runex45f:

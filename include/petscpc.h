@@ -321,10 +321,10 @@ PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode PCSemiRedundantGetReductionFactor(PC,PetscInt*);
-PETSC_EXTERN PetscErrorCode PCSemiRedundantSetReductionFactor(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCSemiRedundantGetIgnoreDM(PC,PetscBool*);
-PETSC_EXTERN PetscErrorCode PCSemiRedundantSetIgnoreDM(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCSemiRedundantGetDM(PC,DM*);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetReductionFactor(PC,PetscInt*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetReductionFactor(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreDM(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreDM(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
 #endif /* __PETSCPC_H */
