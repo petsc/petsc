@@ -4,7 +4,7 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#include "semiredundant.h"
+#include "telescope.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "_DMDADetermineRankFromGlobalIJK"
@@ -17,7 +17,7 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
   PetscInt pi,pj,pk,n;
 
   PetscFunctionBegin;
-  pi = pj = pk = -1;  
+  pi = pj = pk = -1;
   if (_pi) {
     for (n=0; n<Mp; n++) {
       if ( (i >= start_i[n]) && (i < start_i[n]+span_i[n]) ) {

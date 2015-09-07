@@ -3,7 +3,7 @@
 #define __PETSCPC_TELESCOPE_H
 
 /* Telescope */
-typedef enum { SR_DEFAULT = 0, SR_DMDA, SR_DMPLEX } PCTelescopeType;
+typedef enum { TELESCOPE_DEFAULT = 0, TELESCOPE_DMDA, TELESCOPE_DMPLEX } PCTelescopeType;
 
 typedef struct _PC_Telescope *PC_Telescope;
 struct _PC_Telescope {

@@ -1,7 +1,7 @@
 
 /*
 
- Defines a semi-redundant preconditioner
+ Defines a telescoping preconditioner
 
  Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
  creates a child sub-communicator (c') containing less MPI processes than the original parent preconditioner (PC).
@@ -10,21 +10,21 @@
  Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
  Then KSPSolve() is executed on the c' communicator.
 
- The preconditioner is deemed "semi" redundant as it only calls KSPSolve() on a single
+ The preconditioner is deemed telescopint as it only calls KSPSolve() on a single
  sub-communicator in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
  This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
 
  Comments:
- - The communicator used within the semi-redundant preconditioner is defined by a PetscSubcomm using the INTERLACED
+ - The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED
  creation routine. We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
 
- - The semi-redundant preconditioner is aware of nullspaces which are attached to the only B operator.
+ - The telescoping preconditioner is aware of nullspaces which are attached to the only B operator.
  In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
  a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
 
- - The semi-redundant preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
+ - The telescoping preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
  1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
- is attached the sub KSPSolve(). The design of semi-redundant is such that it should be possible to extend support 
+ is attached the sub KSPSolve(). The design of telescope is such that it should be possible to extend support 
  for re-partitioning other DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
 
  - By default, B' is defined by simply fusing rows from different MPI processes
@@ -70,7 +70,7 @@
 #include <petscksp.h> /*I "petscksp.h" I*/
 #include <petscdm.h> /*I "petscdm.h" I*/
 
-#include "semiredundant.h"
+#include "telescope.h"
 
 /*
  PCTelescopeSetUp_default()
@@ -105,11 +105,11 @@ DM private_PCTelescopeGetSubDM(PC_Telescope sred)
   if (!isActiveRank(sred->psubcomm)) { subdm = NULL; }
   else {
     switch (sred->sr_type) {
-    case SR_DEFAULT: subdm = NULL;
+    case TELESCOPE_DEFAULT: subdm = NULL;
       break;
-    case SR_DMDA:    subdm = ((PC_Telescope_DMDACtx*)sred->dm_ctx)->dmrepart;
+    case TELESCOPE_DMDA:    subdm = ((PC_Telescope_DMDACtx*)sred->dm_ctx)->dmrepart;
       break;
-    case SR_DMPLEX:  subdm = NULL;
+    case TELESCOPE_DMPLEX:  subdm = NULL;
       break;
     }
   }
@@ -323,14 +323,14 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: ignoring DM\n");CHKERRQ(ierr);
         }
         switch (sred->sr_type) {
-        case SR_DEFAULT:
+        case TELESCOPE_DEFAULT:
           ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: using default setup\n");CHKERRQ(ierr);
           break;
-        case SR_DMDA:
+        case TELESCOPE_DMDA:
           ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: DMDA detected\n");CHKERRQ(ierr);
           ierr = DMView_DMDAShort(subdm,subviewer);CHKERRQ(ierr);
           break;
-        case SR_DMPLEX:
+        case TELESCOPE_DMPLEX:
           ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: DMPLEX detected\n");CHKERRQ(ierr);
           break;
         }
@@ -392,7 +392,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     PetscBool has_dm,same;
     DM        dm;
 
-    sr_type = SR_DEFAULT;
+    sr_type = TELESCOPE_DEFAULT;
     has_dm = PETSC_FALSE;
     ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
     if (dm) { has_dm = PETSC_TRUE; }
@@ -401,19 +401,19 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&same);CHKERRQ(ierr);
       if (same) {
         ierr = PetscInfo(pc,"PCTelescope: found DMDA\n");CHKERRQ(ierr);
-        sr_type = SR_DMDA;
+        sr_type = TELESCOPE_DMDA;
       }
       /* check for dmplex */
       ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&same);CHKERRQ(ierr);
       if (same) {
         PetscInfo(pc,"PCTelescope: found DMPLEX\n");
-        sr_type = SR_DMPLEX;
+        sr_type = TELESCOPE_DMPLEX;
       }
     }
 
     if (sred->ignore_dm) {
       PetscInfo(pc,"PCTelescope: ignore DM\n");
-      sr_type = SR_DEFAULT;
+      sr_type = TELESCOPE_DEFAULT;
     }
     sred->sr_type = sr_type;
   } else {
@@ -422,20 +422,20 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
 
   /* set function pointers for repartition setup, matrix creation/update, matrix nullspace and reset functionality */
   switch (sr_type) {
-  case SR_DEFAULT:
+  case TELESCOPE_DEFAULT:
     sred->pctelescope_setup_type              = PCTelescopeSetUp_default;
     sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_default;
     sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_default;
     sred->pctelescope_reset_type              = NULL;
     break;
-  case SR_DMDA:
+  case TELESCOPE_DMDA:
     pc->ops->apply                          = PCApply_Telescope_dmda;
     sred->pctelescope_setup_type              = PCTelescopeSetUp_dmda;
     sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_dmda;
     sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_dmda;
     sred->pctelescope_reset_type              = PCReset_Telescope_dmda;
     break;
-  case SR_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Supprt for DMPLEX is currently not available");
+  case TELESCOPE_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Supprt for DMPLEX is currently not available");
     break;
   default: SETERRQ(comm,PETSC_ERR_SUP,"Only supprt for repartitioning DMDA is provided");
     break;
@@ -609,8 +609,8 @@ static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fac
   PetscErrorCode   ierr;
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
-  if (fact <= 0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of semi-redundant PC %D must be positive",fact);
-  if (fact > size) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of semi-redundant PC %D must be <= comm.size",fact);
+  if (fact <= 0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be positive",fact);
+  if (fact > size) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be <= comm.size",fact);
   red->redfactor = fact;
   return(0);
 }
@@ -636,7 +636,7 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
 }
 
 /*@
- PCTelescopeGetKSP - Gets the KSP created by the semi-redundant PC.
+ PCTelescopeGetKSP - Gets the KSP created by the telescoping PC.
 
  Not Collective
 
@@ -648,7 +648,7 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
 
  Level: advanced
 
- .keywords: PC, semi-redundant solve
+ .keywords: PC, telescopting solve
  @*/
 PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 {
@@ -669,7 +669,7 @@ PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 
  Level: advanced
 
- .keywords: PC, semi-redundant solve
+ .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 {
@@ -690,7 +690,7 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 
  Level: advanced
 
- .keywords: PC, semi-redundant solve
+ .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 {
@@ -711,7 +711,7 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 
  Level: advanced
 
- .keywords: PC, semi-redundant solve
+ .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 {
@@ -732,7 +732,7 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 
  Level: advanced
 
- .keywords: PC, semi-redundant solve
+ .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscInt v)
 {
@@ -753,7 +753,7 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscInt v)
 
  Level: advanced
 
- .keywords: PC, semi-redundant solve
+ .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 {

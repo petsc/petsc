@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = semiredundant.c sred_dmda.c
+SOURCEC  = telescope.c telescope_dmda.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/semiredundant/
+LOCDIR   = src/ksp/pc/impls/telescope/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
