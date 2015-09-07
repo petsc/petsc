@@ -294,75 +294,11 @@ M*/
 
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStart"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer,PetscInt *mcnt,PetscInt *cnt)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscViewerBinaryGetFlowControl(viewer,mcnt);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetFlowControl(viewer,cnt);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStepMaster"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  if (i >= *mcnt) {
-    *mcnt += cnt;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlEndMaster"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer,PetscInt *mcnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  *mcnt = 0;
-  ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStepWorker"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt rank,PetscInt *mcnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  while (PETSC_TRUE) { 
-    if (rank < *mcnt) break;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlEndWorker"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer,PetscInt *mcnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  while (PETSC_TRUE) {
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-    if (!*mcnt) break;
-  }
-  PetscFunctionReturn(0);
-}
+PetscErrorCode PetscViewerFlowControlStart(PetscViewer,PetscInt*,PetscInt*);
+PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer,PetscInt,PetscInt*,PetscInt);
+PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer,PetscInt*);
+PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer,PetscMPIInt,PetscInt*);
+PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer,PetscInt*);
 
 /*
    PetscViewer writes to MATLAB .mat file
