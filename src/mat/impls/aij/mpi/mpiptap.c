@@ -83,6 +83,22 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP_new"
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP_new(Mat A, MatDuplicateOption op, Mat *M)
+{
+  PetscErrorCode      ierr;
+  Mat_MPIAIJ          *a     = (Mat_MPIAIJ*)A->data;
+  Mat_PtAPMPI         *ptap  = a->ptap;
+
+  PetscFunctionBegin;
+  ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
+  (*M)->ops->destroy   = ptap->destroy;
+  (*M)->ops->duplicate = ptap->duplicate;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
@@ -422,23 +438,26 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   ierr = PetscFree(buf_rj);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&rowmap);CHKERRQ(ierr);
 
-  /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
-  Cmpi->assembled        = PETSC_FALSE;
-  Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = 0; //MatDuplicate_MPIAIJ_MatPtAP; //not done yet
-  Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_new;
-
   /* attach the supporting struct to Cmpi for reuse */
-  c           = (Mat_MPIAIJ*)Cmpi->data;
-  c->ptap     = ptap;
-  ptap->api   = api;
-  ptap->apj   = apj;
-  ptap->apv   = apv;
-  ptap->rmax  = ap_rmax;
-  *C          = Cmpi;
+  c = (Mat_MPIAIJ*)Cmpi->data;
+  c->ptap         = ptap;
+  ptap->api       = api;
+  ptap->apj       = apj;
+  ptap->apv       = apv;
+  ptap->rmax      = ap_rmax;
+  ptap->duplicate = Cmpi->ops->duplicate;
+  ptap->destroy   = Cmpi->ops->destroy;
 
   /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ_new() */
   ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
+
+
+  /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
+  Cmpi->assembled        = PETSC_FALSE;
+  Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP_new; 
+  Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_new;
+  *C                     = Cmpi;
 
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t4);CHKERRQ(ierr);
