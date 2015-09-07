@@ -79,7 +79,7 @@ class Configure(config.base.Configure):
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
-          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','F2CBLASLAPACK','MAKE','MPICH','OPENMPI','MATLABENGINE','HWLOC','VIENNACL','OPENCL']:
+          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','F2CBLASLAPACK','MAKE','MPICH','OPENMPI','MATLABENGINE','HWLOC','VIENNACL','OPENCL',CONCURRENCYKIT']:
             ejobs.append(i.name.upper())
           # horrible python here
           if i.name.upper() == 'MOAB':
