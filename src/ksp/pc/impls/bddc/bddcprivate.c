@@ -197,8 +197,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     /* Dofs splitting for BDDC cannot have PETSC_COMM_SELF, so create a sequential IS */
     ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[p],&npl);CHKERRQ(ierr);
     ierr = ISGetIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,npl,idxs,PETSC_COPY_VALUES,&pressures);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
     ierr = ISSorted(pressures,&sorted);CHKERRQ(ierr);
     if (!sorted) {
       ierr = ISSort(pressures);CHKERRQ(ierr);
@@ -219,7 +219,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     has_null_pressures = PETSC_FALSE;
     ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
   }
-
   recompute_zerodiag = PETSC_FALSE;
   /* in case disconnected subdomains info is present, split the pressures accordingly (otherwise the benign trick could fail) */
   zerodiag_subs = NULL;
