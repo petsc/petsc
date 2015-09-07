@@ -46,7 +46,6 @@ static PetscErrorCode TSThetaGetX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaRestoreX0AndXdot"
 static PetscErrorCode TSThetaRestoreX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
@@ -262,7 +261,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   PetscReal           shift;
 
   PetscFunctionBegin;
- 
+
   th->status = TS_STEP_INCOMPLETE;
   ierr = SNESGetKSP(ts->snes,&ksp);CHKERRQ(ierr);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
@@ -286,9 +285,9 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr = VecScale(VecsSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr);
     if (ts->vec_costintegral) {
       ierr = VecAXPY(VecsSensiTemp[nadj],1.,ts->vecs_drdy[nadj]);CHKERRQ(ierr);
-    } 
+    }
   }
- 
+
   /* Build LHS */
   shift = -1./(th->Theta*ts->time_step);
   if (th->endpoint) {
@@ -319,10 +318,10 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
         }
       }
       for (nadj=0; nadj<ts->numcost; nadj++) {
-        ierr = MatMultTranspose(J,VecsDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);     
+        ierr = MatMultTranspose(J,VecsDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
         if (ts->vec_costintegral) {
-          ierr = VecAXPY(ts->vecs_sensi[nadj],-1.,ts->vecs_drdy[nadj]);CHKERRQ(ierr); 
-        }     
+          ierr = VecAXPY(ts->vecs_sensi[nadj],-1.,ts->vecs_drdy[nadj]);CHKERRQ(ierr);
+        }
         ierr = VecScale(ts->vecs_sensi[nadj],1./shift);CHKERRQ(ierr);
       }
     }else { /* backward Euler */
@@ -338,7 +337,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
             ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
             ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
           }
-        } 
+        }
       }
     }
 
@@ -367,7 +366,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
           }
         }
       }
-    } 
+    }
   }else { /* one-stage case */
     shift = 0.0;
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
@@ -380,11 +379,11 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       }
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
-      ierr = MatMultTranspose(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);     
+      ierr = MatMultTranspose(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vecs_sensi[nadj],ts->time_step,VecsSensiTemp[nadj]);CHKERRQ(ierr);
       if (ts->vec_costintegral) {
-        ierr = VecAXPY(ts->vecs_sensi[nadj],-ts->time_step,ts->vecs_drdy[nadj]);CHKERRQ(ierr); 
-      }     
+        ierr = VecAXPY(ts->vecs_sensi[nadj],-ts->time_step,ts->vecs_drdy[nadj]);CHKERRQ(ierr);
+      }
     }
     if (ts->vecs_sensip) {
       ierr = TSAdjointComputeRHSJacobian(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
@@ -400,7 +399,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       }
     }
   }
-    
+
   ts->ptime += ts->time_step;
   ts->steps++;
   th->status = TS_STEP_COMPLETE;
@@ -701,7 +700,7 @@ static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
   *ns = 1;
   if(Y) {
     *Y  = (th->endpoint)?&(th->X0):&(th->X);
-  }  
+  }
   PetscFunctionReturn(0);
 }
 
@@ -720,8 +719,6 @@ static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
 $  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
 $  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
 $  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (TSCN)
-
-
 
    This method can be applied to DAE.
 
@@ -987,7 +984,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
   ierr = TSCreate_Theta(ts);CHKERRQ(ierr);
   ierr = TSThetaSetTheta(ts,0.5);CHKERRQ(ierr);
   ierr = TSThetaSetEndpoint(ts,PETSC_TRUE);CHKERRQ(ierr);
-  ts->ops->setup = TSSetUp_CN; 
+  ts->ops->setup = TSSetUp_CN;
   ts->ops->view = TSView_CN;
   PetscFunctionReturn(0);
 }
