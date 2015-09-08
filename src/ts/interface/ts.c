@@ -4031,15 +4031,13 @@ PetscErrorCode  TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Ve
   PetscErrorCode   ierr;
   TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
   PetscDraw        draw;
+  PetscReal        xl,yl,xr,yr,h;
+  char             time[32];
 
   PetscFunctionBegin;
   if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
 
   ierr = VecView(lambda[0],ictx->viewer);CHKERRQ(ierr);
-  
-  PetscReal xl,yl,xr,yr,h;
-  char      time[32];
-
   ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
