@@ -70,13 +70,12 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
 PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim,PetscMPIInt rank_re,PetscInt Mp_re,PetscInt Np_re,PetscInt Pp_re,
                                       PetscInt range_i_re[],PetscInt range_j_re[],PetscInt range_k_re[],PetscInt *s0)
 {
-  PetscInt i,j,k,start_IJK;
+  PetscInt i,j,k,start_IJK = 0;
   PetscInt rank_ijk;
 
   PetscFunctionBegin;
   switch (dim) {
     case 1:
-      start_IJK = 0;
       for (i=0; i<Mp_re; i++) {
         rank_ijk = i;
         if (rank_ijk < rank_re) {
@@ -85,7 +84,6 @@ PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim,PetscMPIInt rank_re,PetscInt 
       }
       break;
     case 2:
-      start_IJK = 0;
       for (j=0; j<Np_re; j++) {
         for (i=0; i<Mp_re; i++) {
           rank_ijk = i + j*Mp_re;
@@ -96,7 +94,6 @@ PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim,PetscMPIInt rank_re,PetscInt 
       }
       break;
     case 3:
-      start_IJK = 0;
       for (k=0; k<Pp_re; k++) {
         for (j=0; j<Np_re; j++) {
           for (i=0; i<Mp_re; i++) {
@@ -532,7 +529,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
       for (i=startI[0]; i<endI[0]; i++) {
         PetscMPIInt rank_ijk_re,rank_reI[3];
         PetscInt    s0_re;
-        PetscInt    ii,jj,kk,local_ijk_re,mapped_ijk,natural_ijk;
+        PetscInt    ii,jj,kk,local_ijk_re,mapped_ijk;
         PetscInt    lenI_re[3];
 
         location = (i - startI[0]) + (j - startI[1])*lenI[0] + (k - startI[2])*lenI[0]*lenI[1];
@@ -552,7 +549,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
         lenI_re[2] = ctx->range_k_re[ rank_reI[2] ];
         local_ijk_re = ii + jj * lenI_re[0] + kk * lenI_re[0] * lenI_re[1];
         mapped_ijk = s0_re + local_ijk_re;
-        natural_ijk = i + j*nx + k*nx*ny;
         ierr = MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -606,7 +602,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
     for (i=startI[0]; i<endI[0]; i++) {
       PetscMPIInt rank_ijk_re,rank_reI[3];
       PetscInt    s0_re;
-      PetscInt    ii,jj,local_ijk_re,mapped_ijk,natural_ijk;
+      PetscInt    ii,jj,local_ijk_re,mapped_ijk;
       PetscInt    lenI_re[3];
 
       location = (i - startI[0]) + (j - startI[1])*lenI[0];
@@ -626,7 +622,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
       lenI_re[1] = ctx->range_j_re[ rank_reI[1] ];
       local_ijk_re = ii + jj * lenI_re[0];
       mapped_ijk = s0_re + local_ijk_re;
-      natural_ijk = i + j*nx;
       ierr = MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES);CHKERRQ(ierr);
     }
   }

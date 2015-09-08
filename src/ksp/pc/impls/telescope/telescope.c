@@ -100,7 +100,7 @@ PetscBool isActiveRank(PetscSubcomm scomm)
 #define __FUNCT__ "private_PCTelescopeGetSubDM"
 DM private_PCTelescopeGetSubDM(PC_Telescope sred)
 {
-  DM subdm;
+  DM subdm = NULL;
 
   if (!isActiveRank(sred->psubcomm)) { subdm = NULL; }
   else {
@@ -207,7 +207,6 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
     if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
 
     ierr = MatGetSize(Blocal,&mm,NULL);CHKERRQ(ierr);
-    //ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred);CHKERRQ(ierr);
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,mm,reuse,&Bred);CHKERRQ(ierr);
   }
   *A = Bred;
