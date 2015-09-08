@@ -207,7 +207,7 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
     if (reuse != MAT_INITIAL_MATRIX) { Bred = *A; }
 
     ierr = MatGetSize(Blocal,&mm,NULL);CHKERRQ(ierr);
-    //ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred);CHKERRQ(ierr);
+    /* ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred);CHKERRQ(ierr); */
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,mm,reuse,&Bred);CHKERRQ(ierr);
   }
   *A = Bred;
@@ -734,7 +734,7 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 
  .keywords: PC, telescoping solve
  @*/
-PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscInt v)
+PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 {
   PetscTryMethod(pc,"PCTelescopeSetIgnoreDM_C",(PC,PetscBool),(pc,v));
   return(0);
