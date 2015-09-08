@@ -733,7 +733,7 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 
  .keywords: PC, telescoping solve
  @*/
-PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscInt v)
+PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 {
   PetscTryMethod(pc,"PCTelescopeSetIgnoreDM_C",(PC,PetscBool),(pc,v));
   return(0);
