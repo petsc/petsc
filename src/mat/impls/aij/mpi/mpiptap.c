@@ -10,7 +10,7 @@
 #include <petscbt.h>
 #include <petsctime.h>
 
-#define PTAP_PROFILE 
+//#define PTAP_PROFILE 
 
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__
@@ -67,8 +67,8 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP"
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
+#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP_old"
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP_old(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode      ierr;
   Mat_MPIAIJ          *a     = (Mat_MPIAIJ*)A->data;
@@ -85,8 +85,8 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP_new"
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP_new(Mat A, MatDuplicateOption op, Mat *M)
+#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP"
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode      ierr;
   Mat_MPIAIJ          *a     = (Mat_MPIAIJ*)A->data;
@@ -104,7 +104,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP_new(Mat A, MatDuplicateOption op, Mat
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool      newalg=PETSC_FALSE;
+  PetscBool      newalg=PETSC_TRUE;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -121,17 +121,17 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     if (newalg) {
-      ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(A,P,fill,C);CHKERRQ(ierr);
-    } else {
       ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);
+    } else {
+      ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_old(A,P,fill,C);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   if (newalg) {
-    ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ_new(A,P,*C);CHKERRQ(ierr);
-  } else {
     ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ(A,P,*C);CHKERRQ(ierr);
+  } else {
+    ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ_old(A,P,*C);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -139,8 +139,8 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 
 /* requires array of size pN, thus nonscalable version */
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ_new"
-PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ"
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   Mat_PtAPMPI    *ptap;
@@ -172,7 +172,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   PetscInt            rmax,*aj,*ai,*pi;
   Mat_SeqAIJ          *p_loc,*p_oth,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c_loc,*c_oth;
   PetscScalar         *apv;
+#if defined(PETSC_USE_INFO)
   PetscReal           apfill; 
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -257,9 +259,24 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   /* destroy list of free space and other temporary array(s) */
   ierr   = PetscMalloc2(api[am],&apj,api[am],&apv);CHKERRQ(ierr);
   ierr   = PetscFreeSpaceContiguous(&free_space,apj);CHKERRQ(ierr);
-  apfill = (PetscReal)api[am]/(ad->i[am]+ao->i[am]+p_loc->i[pm]+1);
 
+  /* Create AP_loc for reuse */
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,pN,api,apj,apv,&ptap->AP_loc);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_INFO)
+  apfill = (PetscReal)api[am]/(ad->i[am]+ao->i[am]+p_loc->i[pm]+1);
+  ptap->AP_loc->info.mallocs           = nspacedouble;
+  ptap->AP_loc->info.fill_ratio_given  = fill;
+  ptap->AP_loc->info.fill_ratio_needed = apfill;
+
+  if (api[am]) {
+    ierr = PetscInfo3(ptap->AP_loc,"AP_loc reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)apfill);CHKERRQ(ierr);
+    ierr = PetscInfo1(ptap->AP_loc,"Use MatPtAP(A,B,MatReuse,%g,&C) for best AP_loc performance.;\n",(double)apfill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(ptap->AP_loc,"AP_loc is empty \n");CHKERRQ(ierr);
+  }
+#endif
+
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t12);CHKERRQ(ierr);
 #endif
@@ -455,8 +472,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP_new; 
-  Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_new;
+  Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP; 
+  Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
   *C                     = Cmpi;
 
 #if defined(PTAP_PROFILE)
@@ -469,8 +486,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_new(Mat A,Mat P,PetscReal fill,Mat 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIAIJ_new"
-PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_new(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIAIJ"
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
@@ -534,6 +551,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_new(Mat A,Mat P,Mat C)
       ap->a[j+ap->i[i]] = apa[col];
       apa[col] = 0.0;
     }
+    ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
   }
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t2);CHKERRQ(ierr);
@@ -593,8 +611,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_new(Mat A,Mat P,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ"
-PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ_old"
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_old(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
   Mat                 Cmpi;
@@ -623,15 +641,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-
-  /* check if matrix local sizes are compatible */
-  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) {
-    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%D, %D) != Prow (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
-  }
-  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) {
-    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%D, %D) != Prow (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
-  }
-
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -951,7 +960,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled      = PETSC_FALSE;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatPtAP;
+  Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatPtAP_old;
+  Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_old;
 
   /* attach the supporting struct to Cmpi for reuse */
   c           = (Mat_MPIAIJ*)Cmpi->data;
@@ -986,8 +996,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIAIJ"
-PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIAIJ_old"
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_old(Mat A,Mat P,Mat C)
 {
   PetscErrorCode      ierr;
   Mat_MPIAIJ          *a =(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
