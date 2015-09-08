@@ -13,6 +13,8 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 0
     self.double            = 1
     self.complex           = 0
+    self.hastests          = 1
+    self.hastestsdatafiles = 1
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

@@ -11,6 +11,7 @@ class Configure(config.package.CMakePackage):
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0
+    self.hastests         = 1
     return
 
   def setupDependencies(self, framework):

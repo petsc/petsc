@@ -11,9 +11,10 @@ class Configure(config.package.Package):
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
     self.complex          = 0   # Currently CUDA with complex numbers is not supported
-    self.cudaArch      = ''
-    self.CUDAVersion   = '4200' # Minimal cuda version is 4.2
-    self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
+    self.cudaArch         = ''
+    self.CUDAVersion      = '4200' # Minimal cuda version is 4.2
+    self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
+    self.hastests         = 1
     return
 
   def __str__(self):
