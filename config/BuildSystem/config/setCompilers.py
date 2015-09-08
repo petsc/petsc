@@ -1267,34 +1267,33 @@ class Configure(config.base.Configure):
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
-        flagsArg = self.getLinkerFlagsArg()
-        goodFlags = filter(self.checkLinkerFlag, flags)
-        testMethod = 'foo'
-        self.sharedLinker = self.LD_SHARED
-        self.sharedLibraryFlags = goodFlags
-        self.sharedLibraryExt = ext
-        compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
-        oldCompilerFlags = getattr(self, compilerFlagsArg)
         for picFlag in self.generatePICGuesses():
           self.logPrint('Trying '+self.language[-1]+' compiler flag '+picFlag)
+          compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
+          oldCompilerFlags = getattr(self, compilerFlagsArg)
           accepted = 1
           try:
             self.addCompilerFlag(picFlag,compilerOnly=1)
-            # using printf appears to correctly identify non-pic code on X86_64
-            accepted = self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1)
           except RuntimeError:
             accepted = 0
           if accepted:
-            oldLib  = self.linkerObj
-            oldLibs = self.LIBS
-            self.LIBS += ' -L'+self.tmpDir+' -lconftest'
-            accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);')
-            os.remove(oldLib)
-            self.LIBS = oldLibs
-            if accepted:
-              self.sharedLibraries = 1
-              self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
-              break
+            goodFlags = filter(self.checkLinkerFlag, flags)
+            testMethod = 'foo'
+            self.sharedLinker = self.LD_SHARED
+            self.sharedLibraryFlags = goodFlags
+            self.sharedLibraryExt = ext
+            # using printf appears to correctly identify non-pic code on X86_64
+            if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+              oldLib  = self.linkerObj
+              oldLibs = self.LIBS
+              self.LIBS += ' -L'+self.tmpDir+' -lconftest'
+              accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);')
+              os.remove(oldLib)
+              self.LIBS = oldLibs
+              if accepted:
+                self.sharedLibraries = 1
+                self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
+                break
           self.logPrint('Rejected '+self.language[-1]+' compiler flag '+picFlag+' because it was not compatible with shared linker '+linker+' using flags '+str(flags))
           setattr(self, compilerFlagsArg, oldCompilerFlags)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
