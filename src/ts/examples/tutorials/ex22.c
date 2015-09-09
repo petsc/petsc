@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
-  ftime    = 1.0;
+  ftime    = .1;
   maxsteps = 10000;
   ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
