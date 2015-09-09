@@ -79,51 +79,6 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
   PetscFunctionReturn(0);
 }
 
-#if 0
-/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */
-#define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
-{\
-  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
-  PetscScalar *_aa,_valtmp,*_pa;                             \
-  /* diagonal portion of A */\
-  _ai  = ad->i;\
-  _anz = _ai[i+1] - _ai[i];\
-  _aj  = ad->j + _ai[i];\
-  _aa  = ad->a + _ai[i];\
-  for (_j=0; _j<_anz; _j++) {\
-    _row = _aj[_j]; \
-    _pi  = p_loc->i;                                 \
-    _pnz = _pi[_row+1] - _pi[_row];         \
-    _pj  = p_loc->j + _pi[_row];                 \
-    _pa  = p_loc->a + _pi[_row];                 \
-    /* perform dense axpy */                    \
-    valtmp = _aa[_j];                           \
-    for (_k=0; _k<_pnz; _k++) {                    \
-      apa[_pj[_k]] += valtmp*_pa[_k];               \
-    }                                           \
-    PetscLogFlops(2.0*_pnz);                    \
-  }                                             \
-  /* off-diagonal portion of A */               \
-  _ai  = ao->i;\
-  _anz = _ai[i+1] - _ai[i];                     \
-  _aj  = ao->j + _ai[i];                         \
-  _aa  = ao->a + _ai[i];                         \
-  for (_j=0; _j<_anz; _j++) {                      \
-    _row = _aj[_j];    \
-    _pi  = p_oth->i;                         \
-    _pnz = _pi[_row+1] - _pi[_row];          \
-    _pj  = p_oth->j + _pi[_row];                  \
-    _pa  = p_oth->a + _pi[_row];                  \
-    /* perform dense axpy */                     \
-    _valtmp = _aa[_j];                             \
-    for (_k=0; _k<_pnz; _k++) {                     \
-      apa[_pj[_k]] += _valtmp*_pa[_k];                \
-    }                                            \
-    PetscLogFlops(2.0*_pnz);                     \
-  }                                              \
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable"
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
@@ -268,7 +223,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   } else {
     prmax = p_loc->rmax;
   }
-  nlnk_max = armax*prmax;
+  nlnk_max = armax*prmax; /* not good -- needs fix!!! */
   if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
   ierr = PetscLLCondensedCreate(nlnk_max,pN,&lnk,&lnkbt);CHKERRQ(ierr);
 
