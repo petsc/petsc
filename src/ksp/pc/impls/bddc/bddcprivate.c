@@ -1,9 +1,59 @@
+#include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
 static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y);
 static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
+
+/* TODO: add reuse flag */
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJCompress"
+PetscErrorCode MatSeqAIJCompress(Mat A, Mat *B)
+{
+  Mat            Bt;
+  PetscScalar    *a,*bdata;
+  const PetscInt *ii,*ij;
+  PetscInt       m,n,i,nnz,*bii,*bij;
+  PetscBool      flg_row;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&n,&m);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ii,&ij,&flg_row);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(A,&a);CHKERRQ(ierr);
+  nnz = n;
+  for (i=0;i<ii[n];i++) {
+    if (PetscLikely(PetscAbsScalar(a[i]) > PETSC_SMALL)) nnz++;
+  }
+  ierr = PetscMalloc1(n+1,&bii);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnz,&bij);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnz,&bdata);CHKERRQ(ierr);
+  nnz = 0;
+  bii[0] = 0;
+  for (i=0;i<n;i++) {
+    PetscInt j;
+    for (j=ii[i];j<ii[i+1];j++) {
+      PetscScalar entry = a[j];
+      if (PetscLikely(PetscAbsScalar(entry) > PETSC_SMALL) || ij[j] == i) {
+        bij[nnz] = ij[j];
+        bdata[nnz] = entry;
+        nnz++;
+      }
+    }
+    bii[i+1] = nnz;
+  }
+  ierr = MatSeqAIJRestoreArray(A,&a);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),n,m,bii,bij,bdata,&Bt);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ii,&ij,&flg_row);CHKERRQ(ierr);
+  {
+    Mat_SeqAIJ *b = (Mat_SeqAIJ*)(Bt->data);
+    b->free_a = PETSC_TRUE;
+    b->free_ij = PETSC_TRUE;
+  }
+  *B = Bt;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDetectDisconnectedComponents"
@@ -22,7 +72,29 @@ PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   if (!isseqaij && filter) {
-    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    PetscBool isseqdense;
+
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
+    if (!isseqdense) {
+      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    } else { /* TODO: rectangular case and LDA */
+      PetscScalar *array;
+      PetscReal   chop=1.e-6;
+
+      ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(B,&array);CHKERRQ(ierr);
+      ierr = MatGetSize(B,&n,NULL);CHKERRQ(ierr);
+      for (i=0;i<n;i++) {
+        PetscInt j;
+        for (j=i+1;j<n;j++) {
+          PetscReal thresh = chop*(PetscAbsScalar(array[i*(n+1)])+PetscAbsScalar(array[j*(n+1)]));
+          if (PetscAbsScalar(array[i*n+j]) < thresh) array[i*n+j] = 0.;
+          if (PetscAbsScalar(array[j*n+i]) < thresh) array[j*n+i] = 0.;
+        }
+      }
+      ierr = MatDenseRestoreArray(B,&array);CHKERRQ(ierr);
+      ierr = MatConvert(B,MATSEQAIJ,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+    }
   } else {
     B = A;
   }
@@ -75,18 +147,19 @@ PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt
   /* partial clean up */
   ierr = PetscFree2(xadj_filtered,adjncy_filtered);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(B,0,PETSC_TRUE,PETSC_FALSE,&n,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-  if (!isseqaij && filter) {
+  if (A != B) {
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
 
   /* get back data */
-  *ncc = graph->ncc;
-  ierr = PetscMalloc1(graph->ncc,&cc_n);CHKERRQ(ierr);
-  for (i=0;i<graph->ncc;i++) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],graph->queue+graph->cptr[i],PETSC_COPY_VALUES,&cc_n[i]);CHKERRQ(ierr);
+  if (ncc) *ncc = graph->ncc;
+  if (cc) {
+    ierr = PetscMalloc1(graph->ncc,&cc_n);CHKERRQ(ierr);
+    for (i=0;i<graph->ncc;i++) {
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],graph->queue+graph->cptr[i],PETSC_COPY_VALUES,&cc_n[i]);CHKERRQ(ierr);
+    }
+    *cc = cc_n;
   }
-  *cc = cc_n;
-
   /* clean up graph */
   graph->xadj = 0;
   graph->adjncy = 0;
@@ -321,6 +394,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     IS             zerodiagc;
     const PetscInt *idxs,*idxsc;
     PetscInt       i,s,*nnz;
+    Mat            M;
 
     ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
     ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
@@ -381,7 +455,9 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     /* TODO: need optimization? */
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-    ierr = MatPtAP(pcbddc->benign_original_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatPtAP(pcbddc->benign_original_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
+    ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&M);CHKERRQ(ierr);
     /* store global idxs for p0 */
     ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,pcbddc->benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
   }
@@ -659,6 +735,26 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     } else {
       /* Threshold: this is an heuristic for edges */
       thresh = pcbddc->mat_graph->count[idxs[0]]*pcbddc->adaptive_threshold;
+      if (nmin) {
+        Mat SM,StM;
+        PetscInt j,k,nccs,nccst;
+
+        for (j=0;j<subset_size;j++) {
+          for (k=j;k<subset_size;k++) {
+            S [k*subset_size+j] = S [j*subset_size+k];
+            St[k*subset_size+j] = St[j*subset_size+k];
+          }
+        }
+        ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,S,&SM);CHKERRQ(ierr);
+        ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,St,&StM);CHKERRQ(ierr);
+        ierr = MatDetectDisconnectedComponents(SM,PETSC_TRUE,&nccs,NULL);CHKERRQ(ierr);
+        ierr = MatDetectDisconnectedComponents(StM,PETSC_TRUE,&nccst,NULL);CHKERRQ(ierr);
+        if (nccs != 1 || nccst != 1) {
+          PetscPrintf(PETSC_COMM_SELF,"[%d] Found disc %d %d (size %d)\n",PetscGlobalRank,nccs,nccst,subset_size);
+        }
+        ierr = MatDestroy(&SM);CHKERRQ(ierr);
+        ierr = MatDestroy(&StM);CHKERRQ(ierr);
+      }
 
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         PetscBLASInt B_itype = 1;
@@ -1870,11 +1966,18 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   /* TODO: HOW TO WORK WITH BAIJ and SBAIJ and SEQDENSE? */
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   if (isseqaij) {
-    ierr = MatPtAP(matis->A,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    Mat M;
+
+    ierr = MatPtAP(matis->A,new_mat,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
+    ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&M);CHKERRQ(ierr);
   } else {
-    Mat work_mat;
+    Mat work_mat,M;
+
     ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
-    ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
+    ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&M);CHKERRQ(ierr);
     ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   }
   if (matis->A->symmetric_set) {

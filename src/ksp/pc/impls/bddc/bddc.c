@@ -1058,11 +1058,16 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecScatterBegin(matis->rctx,rhs,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->rctx,rhs,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (pcbddc->benign_change) {
+      Mat M;
+
       ierr = MatMultTranspose(pcbddc->benign_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      /* change local iteration matrix */
-      ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_REUSE_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+      /* change local iteration matrix TODO (case when mat == pmat) */
+      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
+      ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatDestroy(&M);CHKERRQ(ierr);
       ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->benign_original_mat = matis->A;
