@@ -365,11 +365,9 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       /* ierr = PetscSubcommSetFromOptions(sred->psubcomm);CHKERRQ(ierr); */
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
       /* create a new PC that processors in each subcomm have copy of */
-      subcomm = PetscSubcommChild(sred->psubcomm);
     }
-  } else {
-    subcomm = PetscSubcommChild(sred->psubcomm);
   }
+  subcomm = PetscSubcommChild(sred->psubcomm);
 
   /* internal KSP */
   if (!pc->setupcalled) {
