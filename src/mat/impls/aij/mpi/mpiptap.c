@@ -10,7 +10,7 @@
 #include <petscbt.h>
 #include <petsctime.h>
 
-//#define PTAP_PROFILE 
+/* #define PTAP_PROFILE */
 
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__
@@ -157,7 +157,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt            *lnk,i,k,pnz,row,nnz;
   PetscInt            pN=P->cmap->N,pn=P->cmap->n; 
   PetscBT             lnkbt;
-  PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0;
+  PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0,nrecv;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt            len,proc,*dnz,*onz,*owners;
   PetscInt            nzi,nspacedouble;
@@ -166,7 +166,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MPI_Status          *sstatus,rstatus;
   PetscLayout         rowmap;
   PetscInt            *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
-  PetscInt            nsend,nrecv;
+  PetscInt            nsend;
   PetscMPIInt         *len_r,*id_r;    /* array of length of comm->size, store send/recv matrix values */
   PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,ap_rmax=0;
   PetscInt            rmax,*aj,*ai,*pi;
@@ -1141,7 +1141,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_old(Mat A,Mat P,Mat C)
     } //for (i=0; i<cm; i++) {
 #endif
 
-    //==========================================
+    /* ========================================== */
 #if defined(PTAP_PROFILE)   
     ierr = PetscTime(&t1);CHKERRQ(ierr);
 #endif
@@ -1237,16 +1237,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_old(Mat A,Mat P,Mat C)
       ePtAP += t2_2 - t2_1;
 #endif
     }
-
-    if (rank == 100) {
-    for (row=0; row<cm; row++) {
-      printf("[%d] row %d: ",rank,row);
-      cnz = bi[row+1] - bi[row];
-      for (j=0; j<cnz; j++) printf(" %g,",ba[bi[row]+j]);
-      printf("\n");
-    }
-    }
-
   } else { /* Do sparse axpy on apa (length of ap_rmax, stores A[i,:]*P) - scalable, but slower */
     ierr = PetscInfo(C,"Using scalable sparse axpy\n");CHKERRQ(ierr);
     /*-----------------------------------------------------------------------------------------*/

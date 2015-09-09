@@ -1920,7 +1920,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     bi[i+1] = bi[i] + nnz;
     if (nnz > rmax) rmax = nnz;
   }
-  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); //mpiexec -n 2 ./ex94 -f0 $D/tiny -f1 $D/tiny
+  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
   ierr      = PetscMalloc1(bi[pn]+1,&bj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
