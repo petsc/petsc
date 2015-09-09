@@ -1159,7 +1159,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   Mat_Merge_SeqsToMPI *merge;
   PetscInt            *ai,*aj,*Jptr,anz,*prmap=p->garray,pon,nspacedouble=0,j;
   PetscReal           afill  =1.0,afill_tmp;
-  PetscInt            rstart = P->cmap->rstart,rmax,aN=A->cmap->N,Crmax;
+  PetscInt            rstart = P->cmap->rstart,rmax,aN=A->cmap->N;
   PetscScalar         *vals;
   Mat_SeqAIJ          *a_loc, *pdt,*pot;
 
@@ -1206,10 +1206,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   current_space = free_space;
 
   /* create and initialize a linked list */
-  i     = PetscMax(pdt->rmax,pot->rmax);
-  Crmax = i*a_loc->rmax*size;
-  if (!Crmax || Crmax > aN) Crmax = aN;
-  ierr = PetscLLCondensedCreate(Crmax,aN,&lnk,&lnkbt);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate(aN,aN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   for (i=0; i<pon; i++) {
     pnz = poti[i+1] - poti[i];
@@ -1920,7 +1917,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     bi[i+1] = bi[i] + nnz;
     if (nnz > rmax) rmax = nnz;
   }
-  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
+  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); 
 
   ierr      = PetscMalloc1(bi[pn]+1,&bj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
