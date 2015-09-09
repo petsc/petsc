@@ -5186,9 +5186,12 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
 .    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
 .    MAT_USE_HASH_TABLE - uses a hash table to speed up matrix assembly
-+    MAT_NO_OFF_PROC_ENTRIES - you know each process will only set values for its own rows, will generate an error if
+.    MAT_NO_OFF_PROC_ENTRIES - you know each process will only set values for its own rows, will generate an error if
         any process sets values for another process. This avoids all reductions in the MatAssembly routines and thus improves
         performance for very large process counts.
+-    MAT_SUBSET_OFF_PROC_ENTRIES - you know that the first assembly after setting this flag will set a superset
+        of the off-process entries required for all subsequent assemblies. This avoids a rendezvous step in the MatAssembly
+        functions, instead sending only neighbor messages.
 
    Notes:
    Except for MAT_UNUSED_NONZERO_LOCATION_ERR and  MAT_ROW_ORIENTED all processes that share the matrix must pass the same value in flg!
@@ -5275,6 +5278,9 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool flg)
     mat->nooffprocentries = flg;
     PetscFunctionReturn(0);
     break;
+  case MAT_SUBSET_OFF_PROC_ENTRIES:
+    mat->subsetoffprocentries = flg;
+    PetscFunctionReturn(0);
   case MAT_NO_OFF_PROC_ZERO_ROWS:
     mat->nooffproczerorows = flg;
     PetscFunctionReturn(0);
