@@ -680,7 +680,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     IS          is_A_all;
     PetscScalar *work,*S_data;
     PetscInt    *idxs_schur,n_I,n_I_all,*dummy_idx,size_schur,size_active_schur,cum,cum2;
-    PetscBool   mumps_S,S_upper_triangular = PETSC_FALSE;
+    PetscBool   mumps_S,S_lower_triangular = PETSC_FALSE;
 
     /* get working mat */
     n_I = 0;
@@ -732,9 +732,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS) /* be sure that icntl 19 is not set by command line */
         ierr = MatMumpsSetIcntl(F,19,2);CHKERRQ(ierr);
+        if (sub_schurs->is_posdef) {
+          ierr = MatMumpsSchurComplementSetSym(F,1);CHKERRQ(ierr);
+        } else {
+          ierr = MatMumpsSchurComplementSetSym(F,2);CHKERRQ(ierr);
+        }
 #endif
         ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
-        S_upper_triangular = PETSC_TRUE;
+        S_lower_triangular = PETSC_TRUE;
       } else {
         ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS) /* be sure that icntl 19 is not set by command line */
@@ -747,7 +752,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #if defined(PETSC_HAVE_MUMPS)
       ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
 #endif
-
       /* we can reuse the solvers if we are not using the economic version */
       ierr = ISGetLocalSize(sub_schurs->is_I,&n_I_all);CHKERRQ(ierr);
       reuse_solvers = (PetscBool)(reuse_solvers && (n_I == n_I_all));
@@ -830,7 +834,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* get S_E */
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      if (mumps_S && S_upper_triangular) { /* I need to expand the upper triangular data (column oriented) */
+      if (mumps_S && S_lower_triangular) { /* I need to expand the upper triangular data (column oriented) */
         PetscInt k;
         for (k=0;k<subset_size;k++) {
           for (j=k;j<subset_size;j++) {
@@ -878,7 +882,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatMumpsRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
     }
 #endif
-
     if (compute_Stilda && size_active_schur) {
       if (sub_schurs->n_subs == 1 && size_schur == size_active_schur) { /* we already computed the inverse */
         PetscInt j;
@@ -918,7 +921,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           /* get (St^-1)_E */
           /* Here I don't need to expand to upper triangular since St^-1
              will be properly accessed later during adaptive selection */
-          if (S_upper_triangular) {
+          if (S_lower_triangular) {
             PetscInt k;
             for (k=0;k<subset_size;k++) {
               for (j=k;j<subset_size;j++) {

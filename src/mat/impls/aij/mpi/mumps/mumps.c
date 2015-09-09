@@ -97,6 +97,7 @@ typedef struct {
   PetscBool    schur_restored;
   PetscBool    schur_factored;
   PetscBool    schur_inverted;
+  PetscInt     schur_sym;
 
   PetscErrorCode (*Destroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
@@ -152,7 +153,7 @@ static PetscErrorCode MatMumpsFactorSchur_Private(Mat_MUMPS* mumps)
     } else { /* ICNTL(19) == 1 lower triangular stored by rows */
       sprintf(ord,"U");
     }
-    if (mumps->id.sym == 2) {
+    if (mumps->schur_sym == 2) {
       if (!mumps->schur_pivots) {
         PetscScalar  lwork;
 
@@ -214,7 +215,7 @@ static PetscErrorCode MatMumpsInvertSchur_Private(Mat_MUMPS* mumps)
     } else { /* ICNTL(19) == 1 lower triangular stored by rows */
       sprintf(ord,"U");
     }
-    if (mumps->id.sym == 2) {
+    if (mumps->schur_sym == 2) {
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_(ord,&B_N,(PetscScalar*)mumps->id.schur,&B_N,mumps->schur_pivots,mumps->schur_work,&B_ierr));
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -319,7 +320,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat_MUMPS* mumps, PetscBool sol
       } else { /* ICNTL(19) == 1 lower triangular stored by rows */
         sprintf(ord,"U");
       }
-      if (mumps->id.sym == 2) {
+      if (mumps->schur_sym == 2) {
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_(ord,&B_N,&B_Nrhs,(PetscScalar*)mumps->id.schur,&B_slda,mumps->schur_pivots,(PetscScalar*)mumps->id.redrhs,&B_rlda,&B_ierr));
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -875,6 +876,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsRestoreSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSolveSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSolveSchurComplementTranspose_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSchurComplementSetSym_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1341,6 +1343,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->schur_restored     = PETSC_TRUE;
   mumps->schur_factored     = PETSC_FALSE;
   mumps->schur_inverted     = PETSC_FALSE;
+  mumps->schur_sym          = mumps->id.sym;
   PetscFunctionReturn(0);
 }
 
@@ -2188,6 +2191,54 @@ PetscErrorCode MatMumpsSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec s
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMumpsSchurComplementSetSym"
+/*@
+  MatMumpsSchurComplementSetSym - Set symmetric info for Schur complement
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  sym - either 0 (non-symmetric), 1 (symmetric positive definite) or 2 (symmetric indefinite) following MUMPS convention
+
+   Notes:
+   The parameter is used to compute the correct factorization of the Schur complement matrices
+   This could be useful in case the nature of the Schur complement is different from that of the matrix to be factored
+   MUMPS Schur complement mode is currently implemented for sequential matrices.
+
+   Level: advanced
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor(), MatMumpsSetSchurIndices()
+@*/
+PetscErrorCode MatMumpsSchurComplementSetSym(Mat F, PetscInt sym)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(F,sym,2);
+  ierr = PetscUseMethod(F,"MatMumpsSchurComplementSetSym_C",(Mat,PetscInt),(F,sym));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsSchurComplementSetSym_MUMPS"
+PetscErrorCode MatMumpsSchurComplementSetSym_MUMPS(Mat F, PetscInt sym)
+{
+  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  if (mumps->schur_factored && mumps->sym != mumps->schur_sym) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Schur complement data has been already factored");
+  }
+  mumps->schur_sym = sym;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMumpsSolveSchurComplementTranspose"
 /*@
   MatMumpsSolveSchurComplementTranspose - Solve the transpose of the Schur complement system computed by MUMPS during the factorization step
@@ -2660,6 +2711,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsRestoreSchurComplement_C",MatMumpsRestoreSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplement_C",MatMumpsSolveSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplementTranspose_C",MatMumpsSolveSchurComplementTranspose_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSchurComplementSetSym_C",MatMumpsSchurComplementSetSym_MUMPS);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
@@ -2742,6 +2794,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsRestoreSchurComplement_C",MatMumpsRestoreSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplement_C",MatMumpsSolveSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplementTranspose_C",MatMumpsSolveSchurComplementTranspose_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSchurComplementSetSym_C",MatMumpsSchurComplementSetSym_MUMPS);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 #if defined(PETSC_USE_COMPLEX)
@@ -2813,6 +2866,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsRestoreSchurComplement_C",MatMumpsRestoreSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplement_C",MatMumpsSolveSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSolveSchurComplementTranspose_C",MatMumpsSolveSchurComplementTranspose_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSchurComplementSetSym_C",MatMumpsSchurComplementSetSym_MUMPS);CHKERRQ(ierr);
 
   mumps->isAIJ    = PETSC_TRUE;
   mumps->Destroy  = B->ops->destroy;
