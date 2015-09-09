@@ -161,7 +161,8 @@ PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
    Collective on KSP
 
    Input Parameters:
-+  host - the X display to open, or null for the local machine
++  comm - communicator context
+.  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of
           the window
@@ -182,7 +183,7 @@ PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 
 .seealso: KSPMonitorSNESLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorSNESLGTrueResidualCreate()
 @*/
-PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
+PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -191,13 +192,13 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char 
   const char     *names[] = {"Linear residual","Nonlinear residual"};
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(draw,2,&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
   ierr = PetscDrawLGSetFromOptions(drawlg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(drawlg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence of Residual Norm","Iteration","Residual Norm");CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(3,objs);CHKERRQ(ierr);

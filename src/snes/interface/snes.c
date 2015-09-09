@@ -811,7 +811,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     PetscObject *objs;
 
-    ierr = SNESMonitorLGCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&objs);CHKERRQ(ierr);
+    ierr = SNESMonitorLGCreate(PetscObjectComm((PetscObject)snes),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&objs);CHKERRQ(ierr);
     ierr = SNESMonitorSet(snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorLGResidualNorm,objs,(PetscErrorCode (*)(void**))SNESMonitorLGDestroy);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
@@ -3219,12 +3219,12 @@ PetscErrorCode  SNESMonitorLGResidualNorm(SNES snes,PetscInt it,PetscReal norm,P
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorLGCreate"
-PetscErrorCode  SNESMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **draw)
+PetscErrorCode  SNESMonitorLGCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPMonitorLGResidualNormCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
+  ierr = KSPMonitorLGResidualNormCreate(comm,host,label,x,y,m,n,draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4744,7 +4744,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
     ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-ksp_monitor_snes_lg",&monitor,NULL);CHKERRQ(ierr);
     if (monitor) {
       PetscObject *objs;
-      ierr = KSPMonitorSNESLGResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,600,600,&objs);CHKERRQ(ierr);
+      ierr = KSPMonitorSNESLGResidualNormCreate(PetscObjectComm((PetscObject)snes),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,600,600,&objs);CHKERRQ(ierr);
       objs[0] = (PetscObject) snes;
       ierr = KSPMonitorSet(snes->ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorSNESLGResidualNorm,objs,(PetscErrorCode (*)(void**))KSPMonitorSNESLGResidualNormDestroy);CHKERRQ(ierr);
     }

@@ -11,7 +11,8 @@
    Collective on KSP
 
    Input Parameters:
-+  host - the X display to open, or null for the local machine
++  comm - communicator context
+.  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of
           the window
@@ -32,7 +33,7 @@
 
 .seealso: KSPMonitorLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorLGTrueResidualCreate()
 @*/
-PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
+PetscErrorCode  KSPMonitorLGResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -40,7 +41,7 @@ PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char labe
   PetscDrawLG    draw;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
@@ -57,9 +58,9 @@ PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char labe
 #define __FUNCT__ "KSPMonitorLGResidualNorm"
 PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
 {
-  PetscErrorCode ierr;
-  PetscReal      x,y;
   PetscDrawLG    lg = (PetscDrawLG) objs[0];
+  PetscReal      x,y;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
@@ -67,7 +68,7 @@ PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,Pets
   if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n <= 20 || !(n % 5)) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -180,7 +181,8 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
    Collective on KSP
 
    Input Parameters:
-+  host - the X display to open, or null for the local machine
++  comm - communicator context
+.  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of
           the window
@@ -202,17 +204,19 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
 
 .seealso: KSPMonitorLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorDefault()
 @*/
-PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
+PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
   PetscDrawAxis  axis;
   PetscDrawLG    draw;
+  const char     *names[] = {"Preconditioned","True"};
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,2,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(draw,names);CHKERRQ(ierr);
   ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norms");CHKERRQ(ierr);
@@ -229,31 +233,23 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 {
   PetscDrawLG    lg = (PetscDrawLG) objs[0];
   PetscReal      x[2],y[2],scnorm;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
   Vec            resid,work;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ksp),&rank);CHKERRQ(ierr);
-  if (!rank) {
-    if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
-    x[0] = x[1] = (PetscReal) n;
-    if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
-    else y[0] = -15.0;
-  }
-
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  x[0] = x[1] = (PetscReal) n;
+  if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
+  else y[0] = -15.0;
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,NULL,work,&resid);CHKERRQ(ierr);
   ierr = VecNorm(resid,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(&work);CHKERRQ(ierr);
-
-  if (!rank) {
-    if (scnorm > 0.0) y[1] = PetscLog10Real(scnorm);
-    else y[1] = -15.0;
-    ierr = PetscDrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
-    if (n <= 20 || (n % 3)) {
-      ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-    }
+  if (scnorm > 0.0) y[1] = PetscLog10Real(scnorm);
+  else y[1] = -15.0;
+  ierr = PetscDrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
+  if (n <= 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
