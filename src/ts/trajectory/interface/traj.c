@@ -144,6 +144,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   ierr = TSInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(t,TSTRAJECTORY_CLASSID,"TSTrajectory","Time stepping","TS",comm,TSTrajectoryDestroy,TSTrajectoryView);CHKERRQ(ierr);
+  t->setupcalled = PETSC_FALSE;
   *tj = t;
   PetscFunctionReturn(0);
 }
@@ -284,9 +285,9 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
   ierr = PetscOptionsFList("-tstrajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);
-    if (flg) { /* ts_max_steps determines memory allocated */
-      ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
-    }
+    //if (flg) { /* ts_max_steps determines memory allocated */
+    //  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
+    //}
     ierr = TSTrajectorySetType(tj,ts,typeName);CHKERRQ(ierr);
   } else {
     ierr = TSTrajectorySetType(tj,ts,defaultType);CHKERRQ(ierr);
@@ -306,7 +307,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
 
    Options Database Keys:
 .  -tstrajectory_type <type> - TSTRAJECTORYBASIC
-.  -tstrajectory_max_cps <int> - 3
+.  -tstrajectory_max_cps <int>  
 
    Level: advanced
 
@@ -330,5 +331,44 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
     ierr = (*tj->ops->setfromoptions)(PetscOptionsObject,tj);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySetUp"
+/*@
+   TSTrajectorySetUp - Sets up the internal data structures, e.g. stacks, for the later use
+   of a TS trajectory.
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+.  tj - the TS trajectory context
+
+   Level: advanced
+
+.keywords: TS, setup, checkpoint
+
+.seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
+@*/
+PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!tj) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,2);
+  if (tj->setupcalled) PetscFunctionReturn(0);
+
+  if (!((PetscObject)tj)->type_name) {
+    ierr = TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC);CHKERRQ(ierr);
+  }
+  if (tj->ops->setup) {
+    ierr = (*tj->ops->setup)(tj,ts);CHKERRQ(ierr);
+  }
+
+  tj->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

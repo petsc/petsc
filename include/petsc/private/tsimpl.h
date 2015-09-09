@@ -56,10 +56,12 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
   PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
   PetscErrorCode (*setfromoptions)(PetscOptions*,TSTrajectory);
+  PetscErrorCode (*setup)(TSTrajectory,TS);
 };
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
+  PetscInt setupcalled;             /* true if setup has been called */
   void *data;
 };
 
