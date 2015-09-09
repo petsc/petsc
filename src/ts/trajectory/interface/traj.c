@@ -306,13 +306,13 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *Petsc
 
    Options Database Keys:
 .  -tstrajectory_type <type> - TSTRAJECTORYBASIC
+.  -tstrajectory_max_cps <int> - 3
 
    Level: advanced
 
-   Notes: This is not normally called directly by users, instead it is called by TSSetFromOptions() after a call to 
-   TSSetSaveTrajectory()
+   Notes: This is not normally called directly by users
 
-.keywords: TS, timestep, set, options, database
+.keywords: TS, timestep, set, options, database, trajectory
 
 .seealso: TSGetType(), TSSetSaveTrajectory(), TSGetTrajectory()
 @*/
@@ -325,6 +325,10 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   ierr = PetscObjectOptionsBegin((PetscObject)tj);CHKERRQ(ierr);
   ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj,ts);CHKERRQ(ierr);
+    /* Handle specific TS options */
+  if (tj->ops->setfromoptions) {
+    ierr = (*tj->ops->setfromoptions)(PetscOptionsObject,tj);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

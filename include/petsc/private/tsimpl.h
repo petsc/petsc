@@ -55,6 +55,7 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
   PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,TSTrajectory);
 };
 
 struct _p_TSTrajectory {
