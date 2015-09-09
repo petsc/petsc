@@ -27,7 +27,7 @@ typedef struct _Stack {
   PetscBool    userevolve;
   RevolveCTX   *rctx;
   PetscInt     top;         /* The top of the stack */
-  PetscInt     maxelements; /* The maximum stack size */
+  PetscInt     max_cps; /* The maximum stack size */
   PetscInt     numY;
   MPI_Comm     comm;
   StackElement *stack;      /* The storage */
@@ -73,12 +73,12 @@ static PetscErrorCode StackCreate(MPI_Comm comm,Stack *s,PetscInt size,PetscInt 
 
   PetscFunctionBegin;
   s->top         = -1;
-  s->maxelements = size;
+  s->max_cps = size;
   s->comm        = comm;
   s->numY        = ny;
 
-  ierr = PetscMalloc1(s->maxelements*sizeof(StackElement),&s->stack);CHKERRQ(ierr);
-  ierr = PetscMemzero(s->stack,s->maxelements*sizeof(StackElement));CHKERRQ(ierr);
+  ierr = PetscMalloc1(s->max_cps*sizeof(StackElement),&s->stack);CHKERRQ(ierr);
+  ierr = PetscMemzero(s->stack,s->max_cps*sizeof(StackElement));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ static PetscErrorCode StackDestroy(Stack *s)
 static PetscErrorCode StackPush(Stack *s,StackElement e)
 {
   PetscFunctionBegin;
-  if (s->top+1 >= s->maxelements) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->maxelements);
+  if (s->top+1 >= s->max_cps) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->max_cps);
   s->stack[++s->top] = e;
   PetscFunctionReturn(0);
 }
@@ -131,6 +131,32 @@ static PetscErrorCode StackTop(Stack *s,StackElement *e)
 {
   PetscFunctionBegin;
   *e = s->stack[s->top];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySetMaxCheckpoints_Memory"
+PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,PetscInt max_cps)
+{
+  Stack      *s = (Stack*)tj->data;
+  PetscFunctionBegin;
+  s->max_cps = max_cps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySetFromOptions_Memory"
+PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObject,TSTrajectory tj)
+{
+  Stack     *s = (Stack*)tj->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"Memory based TS trajectory options");CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsInt("-tstrajectory_max_cps","Maximum number of checkpoints","TSTrajectorySetMaxCheckpoints_Memory",s->max_cps,&s->max_cps,NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -335,27 +361,28 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  tj->ops->set     = TSTrajectorySet_Memory;
-  tj->ops->get     = TSTrajectoryGet_Memory;
-  tj->ops->destroy = TSTrajectoryDestroy_Memory;
+  tj->ops->set            = TSTrajectorySet_Memory;
+  tj->ops->get            = TSTrajectoryGet_Memory;
+  tj->ops->destroy        = TSTrajectoryDestroy_Memory;
+  tj->ops->setfromoptions = TSTrajectorySetFromOptions_Memory;
 
   ierr = PetscCalloc1(1,&s);CHKERRQ(ierr);
-  s->maxelements = 3; /* will be provided by users */
+  s->max_cps = 3; /* will be provided by users */
   ierr = TSGetStages(ts,&nr,PETSC_IGNORE);CHKERRQ(ierr);
 
   maxsteps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
-  if (s->maxelements-1<maxsteps) { /* Need to use revolve */
+  if (s->max_cps-1<maxsteps) { /* Need to use revolve */
     s->userevolve  = PETSC_TRUE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     s->rctx = rctx;
-    rctx->snaps_in       = s->maxelements; /* for theta methods snaps_in=2*maxelements */
+    rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
     rctx->reverseonestep = PETSC_FALSE;
     rctx->check          = -1;
     rctx->oldcapo        = 0;
     rctx->capo           = 0;
     rctx->fine           = maxsteps;
     rctx->info           = 2;
-    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->maxelements,nr);CHKERRQ(ierr);
+    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->max_cps,nr);CHKERRQ(ierr);
   } else { /* Enough space for checkpointing all time steps */
     s->userevolve = PETSC_FALSE;
     ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps+1,nr);CHKERRQ(ierr);
