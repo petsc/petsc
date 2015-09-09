@@ -1405,10 +1405,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
      This should come earlier then PCISSetUp for extracting the correct subdomain matrices
   */
   if (pcbddc->benign_saddle_point) {
+    PC_IS* pcis = (PC_IS*)pc->data;
+
     /* detect local saddle point and change the basis in pcbddc->local_mat */
     ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
     /* pop B0 mat from pcbddc->local_mat */
     ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
+
+    /* set flag in pcis to not reuse submatrices during PCISCreate */
+    pcis->reusesubmatrices = PETSC_FALSE;
   }
 
   /* propagate relevant information */

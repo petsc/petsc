@@ -253,6 +253,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
   pcbddc->benign_original_mat = pcbddc->local_mat;
@@ -423,6 +425,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     }
     ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
     ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
+    ierr = PetscFree3(pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx,pcbddc->benign_p0);CHKERRQ(ierr);
     ierr = PetscMalloc3(pcbddc->benign_n,&pcbddc->benign_p0_lidx,pcbddc->benign_n,&pcbddc->benign_p0_gidx,pcbddc->benign_n,&pcbddc->benign_p0);CHKERRQ(ierr);
     /* set change on pressures */
     for (s=0;s<pcbddc->benign_n;s++) {
@@ -3710,10 +3713,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* check if a new primal space has been introduced (also take into account benign trick) */
   pcbddc->new_primal_space_local = PETSC_TRUE;
   if (olocal_primal_size == pcbddc->local_primal_size) {
-    ierr = PetscMemcmp(pcbddc->local_primal_ref_node,olocal_primal_ref_node,olocal_primal_size_cc*sizeof(PetscScalar),&pcbddc->new_primal_space_local);CHKERRQ(ierr);
+    ierr = PetscMemcmp(pcbddc->local_primal_ref_node,olocal_primal_ref_node,olocal_primal_size_cc*sizeof(PetscInt),&pcbddc->new_primal_space_local);CHKERRQ(ierr);
     pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     if (!pcbddc->new_primal_space_local) {
-      ierr = PetscMemcmp(pcbddc->local_primal_ref_mult,olocal_primal_ref_mult,olocal_primal_size_cc*sizeof(PetscScalar),&pcbddc->new_primal_space_local);CHKERRQ(ierr);
+      ierr = PetscMemcmp(pcbddc->local_primal_ref_mult,olocal_primal_ref_mult,olocal_primal_size_cc*sizeof(PetscInt),&pcbddc->new_primal_space_local);CHKERRQ(ierr);
       pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     }
   }
