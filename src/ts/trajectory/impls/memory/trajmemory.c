@@ -73,7 +73,7 @@ static PetscErrorCode StackCreate(MPI_Comm comm,Stack *s,PetscInt size,PetscInt 
 
   PetscFunctionBegin;
   s->top         = -1;
-  s->max_cps = size;
+  s->max_cps     = size;
   s->comm        = comm;
   s->numY        = ny;
 
@@ -136,9 +136,10 @@ static PetscErrorCode StackTop(Stack *s,StackElement *e)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetMaxCheckpoints_Memory"
-PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,PetscInt max_cps)
+PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,TS ts,PetscInt max_cps)
 {
-  Stack      *s = (Stack*)tj->data;
+  Stack    *s = (Stack*)tj->data;
+
   PetscFunctionBegin;
   s->max_cps = max_cps;
   PetscFunctionReturn(0);
@@ -158,6 +159,38 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObjec
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySetUp_Memory"
+PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
+{
+  Stack          *s = (Stack*)tj->data;
+  RevolveCTX     *rctx;
+  PetscInt       nr,maxsteps;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSGetStages(ts,&nr,PETSC_IGNORE);CHKERRQ(ierr);
+
+  maxsteps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
+  if (s->max_cps>1 && s->max_cps-1<maxsteps) {
+    s->userevolve  = PETSC_TRUE;
+    ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
+    s->rctx = rctx;
+    rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
+    rctx->reverseonestep = PETSC_FALSE;
+    rctx->check          = -1;
+    rctx->oldcapo        = 0;
+    rctx->capo           = 0;
+    rctx->fine           = maxsteps;
+    rctx->info           = 2;
+    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->max_cps,nr);CHKERRQ(ierr);
+  } else {
+    s->userevolve = PETSC_FALSE;
+    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps+1,nr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__
@@ -355,38 +388,18 @@ M*/
 #define __FUNCT__ "TSTrajectoryCreate_Memory"
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
 {
-  PetscInt       nr,maxsteps;
   Stack          *s;
-  RevolveCTX     *rctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   tj->ops->set            = TSTrajectorySet_Memory;
   tj->ops->get            = TSTrajectoryGet_Memory;
+  tj->ops->setup          = TSTrajectorySetUp_Memory;
   tj->ops->destroy        = TSTrajectoryDestroy_Memory;
   tj->ops->setfromoptions = TSTrajectorySetFromOptions_Memory;
 
   ierr = PetscCalloc1(1,&s);CHKERRQ(ierr);
-  s->max_cps = 3; /* will be provided by users */
-  ierr = TSGetStages(ts,&nr,PETSC_IGNORE);CHKERRQ(ierr);
-
-  maxsteps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
-  if (s->max_cps-1<maxsteps) { /* Need to use revolve */
-    s->userevolve  = PETSC_TRUE;
-    ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
-    s->rctx = rctx;
-    rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
-    rctx->reverseonestep = PETSC_FALSE;
-    rctx->check          = -1;
-    rctx->oldcapo        = 0;
-    rctx->capo           = 0;
-    rctx->fine           = maxsteps;
-    rctx->info           = 2;
-    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->max_cps,nr);CHKERRQ(ierr);
-  } else { /* Enough space for checkpointing all time steps */
-    s->userevolve = PETSC_FALSE;
-    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps+1,nr);CHKERRQ(ierr);
-  }
+  s->max_cps = -1; /* -1 indicates that it is not set */
   tj->data = s;
   PetscFunctionReturn(0);
 }
