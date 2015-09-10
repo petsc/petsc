@@ -238,13 +238,8 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
 
   if (isActiveRank(sred->psubcomm)) {
-    sub_vecs = NULL;
-    /* create new vectors */
-    if (n != 0) {
-      PetscMalloc(sizeof(Vec)*n,&sub_vecs);
-      for (k=0; k<n; k++) {
-        ierr = VecDuplicate(sred->xred,&sub_vecs[k]);CHKERRQ(ierr);
-      }
+    if (n) {
+      ierr = VecDuplicateVecs(sred->xred,n,&sub_vecs);CHKERRQ(ierr);
     }
   }
 
@@ -276,11 +271,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
     /* attach redundant nullspace to Bred */
     ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
-
-    for (k=0; k<n; k++) {
-      ierr = VecDestroy(&sub_vecs[k]);CHKERRQ(ierr);
-    }
-    if (sub_vecs) PetscFree(sub_vecs);
+    ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -536,11 +527,11 @@ static PetscErrorCode PCReset_Telescope(PC pc)
 
   ierr = ISDestroy(&sred->isin);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&sred->scatter);CHKERRQ(ierr);
-  if (sred->xred) { ierr = VecDestroy(&sred->xred);CHKERRQ(ierr); }
-  if (sred->yred) { ierr = VecDestroy(&sred->yred);CHKERRQ(ierr); }
-  if (sred->xtmp) { ierr = VecDestroy(&sred->xtmp);CHKERRQ(ierr); }
-  if (sred->Bred) { ierr = MatDestroy(&sred->Bred);CHKERRQ(ierr); }
-  if (sred->ksp) { ierr = KSPReset(sred->ksp);CHKERRQ(ierr); }
+  ierr = VecDestroy(&sred->xred);CHKERRQ(ierr);
+  ierr = VecDestroy(&sred->yred);CHKERRQ(ierr);
+  ierr = VecDestroy(&sred->xtmp);CHKERRQ(ierr);
+  ierr = MatDestroy(&sred->Bred);CHKERRQ(ierr);
+  ierr = KSPReset(sred->ksp);CHKERRQ(ierr);
   if (sred->pctelescope_reset_type) {
     ierr = sred->pctelescope_reset_type(pc);CHKERRQ(ierr);
   }
@@ -556,10 +547,10 @@ static PetscErrorCode PCDestroy_Telescope(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_Telescope(pc);CHKERRQ(ierr);
-  if (sred->ksp) { ierr = KSPDestroy(&sred->ksp);CHKERRQ(ierr); }
+  ierr = KSPDestroy(&sred->ksp);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&sred->psubcomm);CHKERRQ(ierr);
-  if (sred->dm_ctx) PetscFree(sred->dm_ctx);
-  PetscFree(pc->data);
+  ierr = PetscFree(sred->dm_ctx);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

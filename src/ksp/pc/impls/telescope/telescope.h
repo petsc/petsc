@@ -21,7 +21,7 @@ struct _PC_Telescope {
   PetscErrorCode    (*pctelescope_matcreate_type)(PC,PC_Telescope,MatReuse,Mat*);
   PetscErrorCode    (*pctelescope_matnullspacecreate_type)(PC,PC_Telescope,Mat);
   PetscErrorCode    (*pctelescope_reset_type)(PC);
-} P;
+};
 
 PetscBool isActiveRank(PetscSubcomm);
 DM private_PCTelescopeGetSubDM(PC_Telescope);

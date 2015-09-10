@@ -146,7 +146,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
     Ml = Nl = 1;
   }
 
-  ierr = PetscMalloc(sizeof(PetscInt)*Ml*Nl*2,&fine_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Ml*Nl*2,&fine_indices);CHKERRQ(ierr);
   c = 0;
   if (isActiveRank(psubcomm)) {
     for (j=sj; j<sj+nj; j++) {
@@ -251,7 +251,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
     Ml = Nl = Pl = 1;
   }
 
-  ierr = PetscMalloc(sizeof(PetscInt)*Ml*Nl*Pl*3,&fine_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Ml*Nl*Pl*3,&fine_indices);CHKERRQ(ierr);
 
   c = 0;
   if (isActiveRank(psubcomm)) {
@@ -442,21 +442,21 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   ierr = MPI_Bcast(&ctx->Np_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&ctx->Pp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->Mp_re,&ctx->range_i_re);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->Np_re,&ctx->range_j_re);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->Mp_re,&ctx->range_i_re);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->Np_re,&ctx->range_j_re);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
 
-  if (_range_i_re != NULL) {ierr = PetscMemcpy(ctx->range_i_re,_range_i_re,sizeof(PetscInt)*ctx->Mp_re);CHKERRQ(ierr);}
-  if (_range_j_re != NULL) {ierr = PetscMemcpy(ctx->range_j_re,_range_j_re,sizeof(PetscInt)*ctx->Np_re);CHKERRQ(ierr);}
-  if (_range_k_re != NULL) {ierr = PetscMemcpy(ctx->range_k_re,_range_k_re,sizeof(PetscInt)*ctx->Pp_re);CHKERRQ(ierr);}
+  if (_range_i_re) {ierr = PetscMemcpy(ctx->range_i_re,_range_i_re,sizeof(PetscInt)*ctx->Mp_re);CHKERRQ(ierr);}
+  if (_range_j_re) {ierr = PetscMemcpy(ctx->range_j_re,_range_j_re,sizeof(PetscInt)*ctx->Np_re);CHKERRQ(ierr);}
+  if (_range_k_re) {ierr = PetscMemcpy(ctx->range_k_re,_range_k_re,sizeof(PetscInt)*ctx->Pp_re);CHKERRQ(ierr);}
 
   ierr = MPI_Bcast(ctx->range_i_re,ctx->Mp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(ctx->range_j_re,ctx->Np_re,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(ctx->range_k_re,ctx->Pp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->Mp_re,&ctx->start_i_re);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->Np_re,&ctx->start_j_re);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->Pp_re,&ctx->start_k_re);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->Mp_re,&ctx->start_i_re);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->Np_re,&ctx->start_j_re);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->Pp_re,&ctx->start_k_re);CHKERRQ(ierr);
 
   sum = 0;
   for (k=0; k<ctx->Mp_re; k++) {
@@ -694,7 +694,7 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (DMDA)\n");CHKERRQ(ierr);
-  PetscMalloc(sizeof(PC_Telescope_DMDACtx),&ctx);
+  PetscMalloc1(1,&ctx);
   PetscMemzero(ctx,sizeof(PC_Telescope_DMDACtx));
   sred->dm_ctx = (void*)ctx;
 
@@ -788,13 +788,9 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
 
   if (isActiveRank(sred->psubcomm)) {
-    sub_vecs = NULL;
     /* create new vectors */
-    if (n != 0) {
-      PetscMalloc(sizeof(Vec)*n,&sub_vecs);
-      for (k=0; k<n; k++) {
-        ierr = VecDuplicate(sred->xred,&sub_vecs[k]);CHKERRQ(ierr);
-      }
+    if (n) {
+      ierr = VecDuplicateVecs(sred->xred,n,&sub_vecs);CHKERRQ(ierr);
     }
   }
 
@@ -831,11 +827,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
 
     /* attach redundant nullspace to Bred */
     ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
-
-    for (k=0; k<n; k++) {
-      ierr = VecDestroy(&sub_vecs[k]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(sub_vecs);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
