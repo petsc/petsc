@@ -543,7 +543,7 @@ runex9_5:
            ${DIFF} output/ex9_5.out ex9_5.tmp || printf  "${PWD}\nPossible problem with ex9_5, diffs above\n=========================================\n"; \
            ${RM} -f ex9_5.tmp
 runex9_6:
-	-@${MPIEXEC} -n 1 ./ex9 -da_refine 5 -pc_type mg -snes_monitor_short -ksp_monitor_short > ex9_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9 -da_refine 3 -pc_type mg -snes_monitor_short -ksp_monitor_short > ex9_6.tmp 2>&1; \
            ${DIFF} output/ex9_6.out ex9_6.tmp || printf  "${PWD}\nPossible problem with ex9_6, diffs above\n=========================================\n"; \
            ${RM} -f ex9_6.tmp
 runex9_7:
