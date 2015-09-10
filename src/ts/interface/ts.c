@@ -393,7 +393,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
    Input Parameters:
 .  ts - the TS context obtained from TSCreate()
 
-Note: This routine should be called after all TS options have been set 
+Note: This routine should be called after all TS options have been set
 
    Level: intermediate
 
