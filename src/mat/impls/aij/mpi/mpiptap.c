@@ -975,7 +975,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_old(Mat A,Mat P,PetscReal fill,Mat 
        0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa;
        1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
   /* set default scalable */
-  ptap->scalable = PETSC_FALSE; //PETSC_TRUE;
+  ptap->scalable = PETSC_FALSE; /* PETSC_TRUE; */
 
   ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
   if (!ptap->scalable) {  /* Do dense axpy */
@@ -1120,7 +1120,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_old(Mat A,Mat P,Mat C)
           }
         }
 
-      } //for (j=0; j<rnz; j++) 
+      } /* for (j=0; j<rnz; j++) */
 
       /* copy cdense[] into ca; zero cdense[] */
       cnz = bi[i+1] - bi[i];
@@ -1136,9 +1136,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_old(Mat A,Mat P,Mat C)
         for (j=0; j<pN; j++) printf(" %g,",cdense[j]);
         printf("\n");
       }
-      for (j=0; j<pN; j++) cdense[j]=0.0; // zero cdnese[]
+      for (j=0; j<pN; j++) cdense[j]=0.0; /* zero cdnese[] */
 #endif
-    } //for (i=0; i<cm; i++) {
+    } /* for (i=0; i<cm; i++) { */
 #endif
 
     /* ========================================== */
