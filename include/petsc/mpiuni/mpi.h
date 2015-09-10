@@ -132,8 +132,12 @@ extern "C" {
 #endif
 
 /* require an int variable large enough to hold a pointer */
-#if !defined(MPIUNI_INTPTR)
-#define MPIUNI_INTPTR long
+#if (PETSC_SIZEOF_LONG == PETSC_SIZEOF_VOID_P)
+typedef long MPIUNI_INTPTR;
+#elif (PETSC_SIZEOF_SIZE_T == PETSC_SIZEOF_VOID_P)
+typedef size_t MPIUNI_INTPTR;
+#else
+typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
 /*
