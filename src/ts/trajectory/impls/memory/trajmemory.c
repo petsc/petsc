@@ -40,7 +40,7 @@ static PetscErrorCode StackDestroy(Stack*);
 static PetscErrorCode StackPush(Stack*,StackElement);
 static PetscErrorCode StackPop(Stack*,StackElement*);
 static PetscErrorCode StackTop(Stack*,StackElement*);
-static PetscErrorCode StackDumpAll(Stack*,PetscInt);
+static PetscErrorCode StackDumpAll(TS,Stack*,PetscInt);
 static PetscErrorCode StackLoadAll(TS,Stack*,PetscInt);
 
 #ifdef TJ_VERBOSE
@@ -113,7 +113,8 @@ static PetscErrorCode StackDestroy(Stack *s)
 static PetscErrorCode StackPush(Stack *s,StackElement e)
 {
   PetscFunctionBegin;
-  if (s->top+1 >= s->max_cps) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->max_cps);
+  if (s->userevolve && s->top+1 >= s->max_cps) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->max_cps);
+  if (!s->userevolve && s->top+1 >= s->stride-1) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->max_cps);
   s->stack[++s->top] = e;
   PetscFunctionReturn(0);
 }
@@ -153,12 +154,13 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "StackDumpAll"
-static PetscErrorCode StackDumpAll(Stack *s,PetscInt id)
+static PetscErrorCode StackDumpAll(TS ts,Stack *s,PetscInt id)
 {
   PetscInt       i,j;
   StackElement   e;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
+  Vec            *Y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -183,7 +185,7 @@ static PetscErrorCode StackDumpAll(Stack *s,PetscInt id)
   }
   ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
-  for (i=0;i<s->stride;i++) {
+  for (i=0;i<s->stride-1;i++) {
     e = s->stack[i];
     ierr = PetscViewerBinaryWrite(viewer,&e->stepnum,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = VecView(e->X,viewer);CHKERRQ(ierr);
@@ -193,7 +195,16 @@ static PetscErrorCode StackDumpAll(Stack *s,PetscInt id)
     ierr = PetscViewerBinaryWrite(viewer,&e->time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&e->timeprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
   }
-  for (i=0;i<s->stride;i++) {
+  /* dump the state inside TS from the current step */
+  ierr = PetscViewerBinaryWrite(viewer,&ts->total_steps,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecView(ts->vec_sol,viewer);CHKERRQ(ierr);
+  ierr = TSGetStages(ts,&s->numY,&Y);CHKERRQ(ierr);
+  for (j=0;j<s->numY;j++) {
+    ierr = VecView(Y[j],viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerBinaryWrite(viewer,&ts->ptime,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&ts->ptime_prev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  for (i=0;i<s->stride-1;i++) {
     ierr = StackPop(s,&e);CHKERRQ(ierr);
     ierr = VecDestroy(&e->X);CHKERRQ(ierr);
     ierr = VecDestroyVecs(s->numY,&e->Y);CHKERRQ(ierr);
@@ -217,14 +228,14 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *s,PetscInt id)
   PetscFunctionBegin;
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  for (i=0;i<s->stride;i++) {
+  for (i=0;i<s->stride-1;i++) {
     ierr = PetscCalloc1(1,&e);
     ierr = TSGetStages(ts,&s->numY,&Y);CHKERRQ(ierr);
     ierr = VecDuplicate(Y[0],&e->X);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(Y[0],s->numY,&e->Y);CHKERRQ(ierr);
     ierr = StackPush(s,e);CHKERRQ(ierr);
   }
-  for (i=0;i<s->stride;i++) {
+  for (i=0;i<s->stride-1;i++) {
     e = s->stack[i];
     ierr = PetscViewerBinaryRead(viewer,&e->stepnum,1,NULL,PETSC_INT);CHKERRQ(ierr);
     ierr = VecLoad(e->X,viewer);CHKERRQ(ierr);
@@ -234,6 +245,16 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *s,PetscInt id)
     ierr = PetscViewerBinaryRead(viewer,&e->time,1,NULL,PETSC_REAL);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,&e->timeprev,1,NULL,PETSC_REAL);CHKERRQ(ierr);
   }
+  /* load the additioinal state into TS */
+  ierr = PetscViewerBinaryRead(viewer,&ts->total_steps,1,NULL,PETSC_INT);CHKERRQ(ierr);
+  ierr = VecLoad(ts->vec_sol,viewer);CHKERRQ(ierr);
+  ierr = TSGetStages(ts,&s->numY,&Y);CHKERRQ(ierr);
+  for (j=0;j<s->numY;j++) {
+    ierr = VecLoad(Y[j],viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerBinaryRead(viewer,&ts->ptime,1,NULL,PETSC_REAL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&ts->ptime_prev,1,NULL,PETSC_REAL);CHKERRQ(ierr);  
+  ierr = TSSetTimeStep(ts,ts->ptime-ts->ptime_prev);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -290,7 +311,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   ierr = TSGetStages(ts,&numY,NULL);CHKERRQ(ierr);
   s->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
 
-  if ((s->stride>1 && s->max_cps>1 && s->max_cps-1<s->stride)||(s->stride<=1 && s->max_cps>1 && s->max_cps-1<s->total_steps)) {
+  if ((s->stride>1 && s->max_cps>1 && s->max_cps<s->stride-1)||(s->stride<=1 && s->max_cps>1 && s->max_cps<s->total_steps-1)) {
     s->userevolve  = PETSC_TRUE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
@@ -306,9 +327,9 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   } else {
     s->userevolve = PETSC_FALSE;
     if (s->stride>1) {
-      ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->stride+1,numY);CHKERRQ(ierr);
+      ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->stride-1,numY);CHKERRQ(ierr);
     } else {
-      ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps+1,numY);CHKERRQ(ierr);
+      ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps-1,numY);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -332,10 +353,12 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
-    if (s->userevolve && stepnum!=0 && localstepnum==0 && stepnum!=s->total_steps) { /* first turn point  */
+    if (stepnum!=0 && stepnum!=s->total_steps && localstepnum==0) {
       id = stepnum/s->stride;
-      ierr = StackDumpAll(s,id);CHKERRQ(ierr);
+      ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
       s->top = -1; /* reset top */
+    }
+    if (s->userevolve) {
       rctx = s->rctx;
       rctx->check = -1;
       rctx->capo  = 0;
@@ -391,8 +414,8 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
       rctx->stepsleft = rctx->capo-rctx->oldcapo-1;
     }
   }
-  /* skip the first and the last steps */
-  if (!s->userevolve && (stepnum==0||stepnum==s->total_steps)) PetscFunctionReturn(0);
+  /* skip the first and the last steps of each stride */
+  if (!s->userevolve && localstepnum==0) PetscFunctionReturn(0);
 
   /* checkpoint to memmory */
   if (localstepnum==s->top) { /* overwrite the top checkpoint, this might happen when the time interval is split into several smaller ones, each corresponding to a call of TSSolve() */
@@ -426,12 +449,6 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     ierr = StackPush(s,e);CHKERRQ(ierr);
   }
-  /* if not using Revolve in the multilevel mode, the last step is always checkpointed */
-  if (!s->userevolve && stepnum!=0 && localstepnum==0 && stepnum!=s->total_steps) {
-    id  = stepnum/s->stride;
-    ierr = StackDumpAll(s,id);CHKERRQ(ierr);
-    s->top = -1; /* reset top */
-  }
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +477,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
         s->rctx->reverseonestep = PETSC_TRUE;
         s->rctx->check          = s->top;
       } else {
-        s->top = s->stride-1;
+        s->top = s->stride-2;
       }
     }
   } else {
@@ -472,7 +489,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     s->rctx->reverseonestep = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
-  if (stepnum==s->total_steps) {
+  if (stepnum==s->total_steps || localstepnum==0) {
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     PetscFunctionReturn(0);
