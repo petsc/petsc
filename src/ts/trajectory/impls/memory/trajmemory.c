@@ -1,4 +1,4 @@
-#define PRINTWHATTODO
+#define TJ_VERBOSE
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscsys.h>
 
@@ -26,13 +26,13 @@ typedef struct _RevolveCTX {
 typedef struct _Stack {
   PetscBool    userevolve;
   RevolveCTX   *rctx;
-  PetscInt     top;         /* The top of the stack */
-  PetscInt     max_cps;     /* The maximum stack size */
+  PetscInt     top;         /* top of the stack */
+  PetscInt     max_cps;     /* maximum stack size */
   PetscInt     numY;
   PetscInt     stride;
-  PetscInt     max_steps;   /* Max number of steps */
+  PetscInt     total_steps; /* total number of steps */
   MPI_Comm     comm;
-  StackElement *stack;      /* The storage */
+  StackElement *stack;      /* container */
 } Stack;
 
 static PetscErrorCode StackCreate(MPI_Comm,Stack *,PetscInt,PetscInt);
@@ -43,7 +43,7 @@ static PetscErrorCode StackTop(Stack*,StackElement*);
 static PetscErrorCode StackDumpAll(Stack*,PetscInt);
 static PetscErrorCode StackLoadAll(TS,Stack*,PetscInt);
 
-#ifdef PRINTWHATTODO
+#ifdef TJ_VERBOSE
 static void printwhattodo(PetscInt whattodo,RevolveCTX *rctx)
 {
   switch(whattodo) {
@@ -290,9 +290,9 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   PetscFunctionBegin;
 
   ierr = TSGetStages(ts,&numY,NULL);CHKERRQ(ierr);
-  s->max_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
+  s->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
 
-  if ((s->stride>1 && s->max_cps>1 && s->max_cps-1<s->stride)||(s->stride<=1 && s->max_cps>1 && s->max_cps-1<s->max_steps)) {
+  if ((s->stride>1 && s->max_cps>1 && s->max_cps-1<s->stride)||(s->stride<=1 && s->max_cps>1 && s->max_cps-1<s->total_steps)) {
     s->userevolve  = PETSC_TRUE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     s->rctx = rctx;
@@ -303,7 +303,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     rctx->capo           = 0;
     rctx->info           = 2;
     if (s->stride>1) rctx->fine = s->stride;
-    else rctx->fine = s->max_steps;
+    else rctx->fine = s->total_steps;
     ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->max_cps,numY);CHKERRQ(ierr);
   } else {
     s->userevolve = PETSC_FALSE;
@@ -334,7 +334,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
   if (s->stride>1) {
     localstepnum = stepnum%s->stride;
-    if (s->userevolve && stepnum!=0 && localstepnum==0 && stepnum!=s->max_steps) { /* first turn point  */
+    if (s->userevolve && stepnum!=0 && localstepnum==0 && stepnum!=s->total_steps) { /* first turn point  */
       id     = stepnum/s->stride;
       ierr   = StackDumpAll(s,id);CHKERRQ(ierr);
       s->top = -1; /* reset top */
@@ -357,7 +357,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
       rctx->capo = localstepnum;
       rctx->oldcapo = rctx->capo;
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank);
-#ifdef PRINTWHATTODO
+#ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx);
 #endif
       if (whattodo==-1) SETERRQ(s->comm,PETSC_ERR_MEMC,"Error in the controller");
@@ -372,7 +372,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
       if (whattodo==5) {
         rctx->oldcapo = rctx->capo;
         whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
-#ifdef PRINTWHATTODO
+#ifdef TJ_VERBOSE
         printwhattodo(whattodo,rctx);
 #endif
         rctx->stepsleft = rctx->capo-rctx->oldcapo;
@@ -381,7 +381,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
       if (whattodo==2) {
         rctx->oldcapo = rctx->capo;
         whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
-#ifdef PRINTWHATTODO
+#ifdef TJ_VERBOSE
         printwhattodo(whattodo,rctx);
 #endif
         rctx->stepsleft = rctx->capo-rctx->oldcapo-1;
@@ -425,7 +425,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     ierr        = StackPush(s,e);CHKERRQ(ierr);
   }
-  if (!s->userevolve && stepnum!=0 && localstepnum==0 && stepnum!=s->max_steps) {
+  if (!s->userevolve && stepnum!=0 && localstepnum==0 && stepnum!=s->total_steps) {
     id     = stepnum/s->stride;
     ierr   = StackDumpAll(s,id);CHKERRQ(ierr);
     s->top = -1; /* reset top */
@@ -449,7 +449,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   PetscFunctionBegin;
   if (s->stride>1) {
     localstepnum = stepnum%s->stride;
-    if (localstepnum==0 && stepnum!=0 && stepnum!=s->max_steps) {
+    if (localstepnum==0 && stepnum!=0 && stepnum!=s->total_steps) {
       id     = stepnum/s->stride;
       ierr   = StackLoadAll(ts,s,id);CHKERRQ(ierr);
       ierr   = StackPop(s,&e);CHKERRQ(ierr); /* pop out stepnum 0 */
@@ -481,7 +481,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if (e->stepnum < stepnum) { /* need recomputation */
     rctx->capo = stepnum;
     whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank);
-#ifdef PRINTWHATTODO
+#ifdef TJ_VERBOSE
     printwhattodo(whattodo,rctx);
 #endif
     ierr = TSSetTimeStep(ts,(*t)-e->timeprev);CHKERRQ(ierr);
