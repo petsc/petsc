@@ -2445,6 +2445,7 @@ typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"
 #define PETSCSPRNG      "sprng"
+#define PETSCRANDER48   "rander48"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;

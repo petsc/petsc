@@ -41,6 +41,9 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
   if (!*r) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);
   if (--((PetscObject)(*r))->refct > 0) {*r = 0; PetscFunctionReturn(0);}
+  if ((*r)->ops->destroy) {
+    ierr = (*(*r)->ops->destroy)(*r);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -138,11 +141,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscO
   if (((PetscObject)rnd)->type_name) {
     defaultType = ((PetscObject)rnd)->type_name;
   } else {
-#if defined(PETSC_HAVE_DRAND48)
-    defaultType = PETSCRAND48;
-#elif defined(PETSC_HAVE_RAND)
-    defaultType = PETSCRAND;
-#endif
+    defaultType = PETSCRANDER48;
   }
 
   ierr = PetscRandomRegisterAll();CHKERRQ(ierr);
@@ -345,6 +344,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0x12345678 + 76543*rank;
+  ierr = PetscRandomSetType(rr,PETSCRANDER48);CHKERRQ(ierr);
   *r = rr;
   PetscFunctionReturn(0);
 }

@@ -46,11 +46,6 @@ int main(int argc, char *argv[])
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomSetType(ran,PETSCSPRNG);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomSetType(ran,PETSCRAND);CHKERRQ(ierr);
-#endif
   ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);       /* number of nodes */
