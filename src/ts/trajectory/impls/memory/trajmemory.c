@@ -3,6 +3,7 @@
 #include <petscsys.h>
 
 extern int wrap_revolve(int* check,int* capo,int* fine,int *snaps_in,int* info,int* rank);
+extern int wrap_revolve_reset();
 
 typedef struct _StackElement {
   PetscInt  stepnum;
@@ -25,13 +26,15 @@ typedef struct _RevolveCTX {
 
 typedef struct _Stack {
   PetscBool    userevolve;
+  PetscBool    recompute;
+  MPI_Comm     comm;
   RevolveCTX   *rctx;
-  PetscInt     top;         /* top of the stack */
   PetscInt     max_cps;     /* maximum stack size */
-  PetscInt     numY;
   PetscInt     stride;
   PetscInt     total_steps; /* total number of steps */
-  MPI_Comm     comm;
+  PetscInt     numY;
+  PetscInt     stacksize;
+  PetscInt     top;         /* top of the stack */
   StackElement *stack;      /* container */
 } Stack;
 
@@ -76,12 +79,11 @@ static PetscErrorCode StackCreate(MPI_Comm comm,Stack *s,PetscInt size,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  s->top     = -1;
-  s->max_cps = size;
-  s->comm    = comm;
-  s->numY    = ny;
+  s->top  = -1;
+  s->comm = comm;
+  s->numY = ny;
 
-  ierr = PetscMalloc1(s->max_cps*sizeof(StackElement),&s->stack);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size*sizeof(StackElement),&s->stack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -185,7 +187,7 @@ static PetscErrorCode StackDumpAll(TS ts,Stack *s,PetscInt id)
   }
   ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
-  for (i=0;i<s->stride-1;i++) {
+  for (i=0;i<s->stacksize;i++) {
     e = s->stack[i];
     ierr = PetscViewerBinaryWrite(viewer,&e->stepnum,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = VecView(e->X,viewer);CHKERRQ(ierr);
@@ -204,7 +206,7 @@ static PetscErrorCode StackDumpAll(TS ts,Stack *s,PetscInt id)
   }
   ierr = PetscViewerBinaryWrite(viewer,&ts->ptime,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(viewer,&ts->ptime_prev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  for (i=0;i<s->stride-1;i++) {
+  for (i=0;i<s->stacksize;i++) {
     ierr = StackPop(s,&e);CHKERRQ(ierr);
     ierr = VecDestroy(&e->X);CHKERRQ(ierr);
     ierr = VecDestroyVecs(s->numY,&e->Y);CHKERRQ(ierr);
@@ -228,14 +230,14 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *s,PetscInt id)
   PetscFunctionBegin;
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  for (i=0;i<s->stride-1;i++) {
+  for (i=0;i<s->stacksize;i++) {
     ierr = PetscCalloc1(1,&e);
     ierr = TSGetStages(ts,&s->numY,&Y);CHKERRQ(ierr);
     ierr = VecDuplicate(Y[0],&e->X);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(Y[0],s->numY,&e->Y);CHKERRQ(ierr);
     ierr = StackPush(s,e);CHKERRQ(ierr);
   }
-  for (i=0;i<s->stride-1;i++) {
+  for (i=0;i<s->stacksize;i++) {
     e = s->stack[i];
     ierr = PetscViewerBinaryRead(viewer,&e->stepnum,1,NULL,PETSC_INT);CHKERRQ(ierr);
     ierr = VecLoad(e->X,viewer);CHKERRQ(ierr);
@@ -312,7 +314,8 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   s->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
 
   if ((s->stride>1 && s->max_cps>1 && s->max_cps<s->stride-1)||(s->stride<=1 && s->max_cps>1 && s->max_cps<s->total_steps-1)) {
-    s->userevolve  = PETSC_TRUE;
+    s->userevolve = PETSC_TRUE;
+    s->recompute  = PETSC_FALSE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
     rctx->reverseonestep = PETSC_FALSE;
@@ -323,15 +326,13 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     s->rctx = rctx;
     if (s->stride>1) rctx->fine = s->stride;
     else rctx->fine = s->total_steps;
-    ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->max_cps,numY);CHKERRQ(ierr);
+    s->stacksize = s->max_cps;
   } else {
     s->userevolve = PETSC_FALSE;
-    if (s->stride>1) {
-      ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->stride-1,numY);CHKERRQ(ierr);
-    } else {
-      ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,ts->max_steps-1,numY);CHKERRQ(ierr);
-    }
+    if (s->stride>1) s->stacksize = s->stride-1;
+    else s->stacksize = s->total_steps-1;
   }
+  ierr = StackCreate(PetscObjectComm((PetscObject)ts),s,s->stacksize,numY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -353,16 +354,17 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
-    if (stepnum!=0 && stepnum!=s->total_steps && localstepnum==0) {
+    if (stepnum!=0 && stepnum!=s->total_steps && localstepnum==0 && !s->recompute) { /* never need to recompute localstepnum=0 */
       id = stepnum/s->stride;
       ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
       s->top = -1; /* reset top */
-    }
-    if (s->userevolve) {
-      rctx = s->rctx;
-      rctx->check = -1;
-      rctx->capo  = 0;
-      rctx->fine  = s->stride;
+      if (s->userevolve) {
+        rctx = s->rctx;
+        rctx->check = -1;
+        rctx->capo  = 0;
+        rctx->fine  = s->stride;
+      }
+      wrap_revolve_reset();
     }
   } else { /* in-memory mode */
     localstepnum = stepnum;
@@ -370,7 +372,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
   if (s->userevolve) {
     rctx = s->rctx;
-    if (rctx->reverseonestep) { /* intermediate information is ready inside TS */
+    if (rctx->reverseonestep && stepnum==s->total_steps) { /* intermediate information is ready inside TS, this happens at last time step */
       rctx->reverseonestep = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
@@ -383,6 +385,9 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     shift         = stepnum-localstepnum;
     rctx->capo    = localstepnum;
     rctx->oldcapo = rctx->capo;
+#ifdef TJ_VERBOSE
+    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",rctx->check,rctx->capo,rctx->fine,rctx->snaps_in);
+#endif
     whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank);
 #ifdef TJ_VERBOSE
     printwhattodo(whattodo,rctx,shift);
@@ -398,6 +403,9 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     if (whattodo==5) { /* restore a checkpoint and ask Revolve what to do next */
       rctx->oldcapo = rctx->capo;
+#ifdef TJ_VERBOSE
+    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",rctx->check,rctx->capo,rctx->fine,rctx->snaps_in);
+#endif
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
 #ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx,shift);
@@ -407,6 +415,9 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     if (whattodo==2) { /* store a checkpoint and ask Revolve how many time steps to advance next */
       rctx->oldcapo = rctx->capo;
+#ifdef TJ_VERBOSE
+    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",rctx->check,rctx->capo,rctx->fine,rctx->snaps_in);
+#endif
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
 #ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx,shift);
@@ -470,15 +481,17 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     if (localstepnum==0 && stepnum!=0 && stepnum!=s->total_steps) {
       id = stepnum/s->stride;
       ierr = StackLoadAll(ts,s,id);CHKERRQ(ierr);
-      //ierr = StackPop(s,&e);CHKERRQ(ierr); /* pop out stepnum 0 */
+      s->top = s->stacksize-1;
       if (s->userevolve) {
-        s->top                  = s->max_cps-1;
-        s->rctx                 = s->rctx;
-        s->rctx->reverseonestep = PETSC_TRUE;
-        s->rctx->check          = s->top;
-      } else {
-        s->top = s->stride-2;
-      }
+        wrap_revolve_reset();
+        s->rctx->check = -1;
+        s->rctx->capo  = 0;
+        s->rctx->fine  = s->stride-1;
+        whattodo = 0;
+        while(whattodo!=3) { /* stupid revolve */
+          whattodo = wrap_revolve(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,&s->rctx->snaps_in,&s->rctx->info,&rank);
+        }
+      } 
     }
   } else {
     localstepnum = stepnum;
@@ -504,8 +517,12 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   *t = e->time;
 
   if (e->stepnum < stepnum) { /* need recomputation */
+    s->recompute = PETSC_TRUE;
     shift = stepnum-localstepnum;
     s->rctx->capo = localstepnum;
+#ifdef TJ_VERBOSE
+    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",s->rctx->check,s->rctx->capo,s->rctx->fine,s->rctx->snaps_in);
+#endif
     whattodo = wrap_revolve(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,&s->rctx->snaps_in,&s->rctx->info,&rank);
 #ifdef TJ_VERBOSE
     printwhattodo(whattodo,s->rctx,shift);
