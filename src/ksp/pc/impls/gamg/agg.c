@@ -936,7 +936,6 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   MatCoarsen     crs;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscRandom    rand;
   PetscReal      rr;
   PetscInt       iSwapIndex;
 
@@ -955,7 +954,6 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs - randomize */
-  ierr = PetscRandomCreate(comm,&rand);CHKERRQ(ierr);
   ierr = PetscMalloc1(nloc, &permute);CHKERRQ(ierr);
   ierr = PetscCalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
@@ -963,7 +961,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   }
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    ierr = PetscRandomGetValueReal(rand,&rr);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(pc_gamg->random,&rr);CHKERRQ(ierr);
     iSwapIndex = (PetscInt) (rr*nloc);
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
@@ -972,7 +970,6 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
       bIndexSet[iSwapIndex] = PETSC_TRUE;
     }
   }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);CHKERRQ(ierr);
@@ -1201,15 +1198,11 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       KSP         eksp;
       Vec         bb, xx;
       PC          epc;
-      PetscRandom rctx;
 
       ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
 
-      ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
-      ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-      ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
-      ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+      ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
       ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);

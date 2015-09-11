@@ -331,6 +331,15 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObje
 
   if (cheb->kspest) {
     ierr = PetscOptionsBool("-ksp_chebyshev_esteig_random","Use random right hand side for estimate","KSPChebyshevEstEigSetUseRandom",cheb->userandom,&cheb->userandom,NULL);CHKERRQ(ierr);
+    if (cheb->userandom) {
+      const char  *ksppre;
+      if (!cheb->random) {
+        ierr = PetscRandomCreate(PetscObjectComm((PetscObject)ksp),&cheb->random);CHKERRQ(ierr);
+      }
+      ierr = KSPGetOptionsPrefix(cheb->kspest, &ksppre);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)cheb->random,ksppre);CHKERRQ(ierr);
+      ierr = PetscRandomSetFromOptions(cheb->random);CHKERRQ(ierr);
+    }
     ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
