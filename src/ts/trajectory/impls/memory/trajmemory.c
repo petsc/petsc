@@ -350,7 +350,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (stepnum<s->top) SETERRQ(s->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
 
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
@@ -369,6 +369,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   } else { /* in-memory mode */
     localstepnum = stepnum;
   }
+
 
   if (s->userevolve) {
     rctx = s->rctx;
@@ -389,7 +390,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 #ifdef TJ_VERBOSE
     printwhattodo(whattodo,rctx,shift);
 #endif
-    if (whattodo==-1) SETERRQ(s->comm,PETSC_ERR_MEMC,"Error in the controller");
+    if (whattodo==-1) SETERRQ(s->comm,PETSC_ERR_LIB,"Error in the Revolve library");
     if (whattodo==1) { /* advance some time steps */
       rctx->stepsleft = rctx->capo-rctx->oldcapo-1;
       PetscFunctionReturn(0);
@@ -432,6 +433,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
     e->timeprev = timeprev;
   } else {
+    if (localstepnum<s->top) SETERRQ(s->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = PetscCalloc1(1,&e);CHKERRQ(ierr);
     ierr = VecDuplicate(X,&e->X);CHKERRQ(ierr);
     ierr = VecCopy(X,e->X);CHKERRQ(ierr);
@@ -467,6 +469,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
     if (localstepnum==0 && stepnum!=0 && stepnum!=s->total_steps) {
