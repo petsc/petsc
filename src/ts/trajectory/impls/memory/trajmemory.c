@@ -385,9 +385,6 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     shift         = stepnum-localstepnum;
     rctx->capo    = localstepnum;
     rctx->oldcapo = rctx->capo;
-#ifdef TJ_VERBOSE
-    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",rctx->check,rctx->capo,rctx->fine,rctx->snaps_in);
-#endif
     whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank);
 #ifdef TJ_VERBOSE
     printwhattodo(whattodo,rctx,shift);
@@ -403,9 +400,6 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     if (whattodo==5) { /* restore a checkpoint and ask Revolve what to do next */
       rctx->oldcapo = rctx->capo;
-#ifdef TJ_VERBOSE
-    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",rctx->check,rctx->capo,rctx->fine,rctx->snaps_in);
-#endif
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
 #ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx,shift);
@@ -415,9 +409,6 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     }
     if (whattodo==2) { /* store a checkpoint and ask Revolve how many time steps to advance next */
       rctx->oldcapo = rctx->capo;
-#ifdef TJ_VERBOSE
-    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",rctx->check,rctx->capo,rctx->fine,rctx->snaps_in);
-#endif
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
 #ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx,shift);
@@ -520,9 +511,6 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     s->recompute = PETSC_TRUE;
     shift = stepnum-localstepnum;
     s->rctx->capo = localstepnum;
-#ifdef TJ_VERBOSE
-    printf("check=%d,capo=%d,fine=%d,snaps_in=%d\t",s->rctx->check,s->rctx->capo,s->rctx->fine,s->rctx->snaps_in);
-#endif
     whattodo = wrap_revolve(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,&s->rctx->snaps_in,&s->rctx->info,&rank);
 #ifdef TJ_VERBOSE
     printwhattodo(whattodo,s->rctx,shift);
