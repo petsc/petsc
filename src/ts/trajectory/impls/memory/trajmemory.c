@@ -51,22 +51,22 @@ static void printwhattodo(PetscInt whattodo,RevolveCTX *rctx,PetscInt shift)
 {
   switch(whattodo) {
     case 1:
-      PetscPrintf(PETSC_COMM_WORLD,"Advance from %D to %D.\n",rctx->oldcapo+shift,rctx->capo+shift);
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mAdvance from %D to %D\033[0m\n",rctx->oldcapo+shift,rctx->capo+shift);
       break;
     case 2:
-      PetscPrintf(PETSC_COMM_WORLD,"Store in checkpoint number %D\n",rctx->check);
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mStore in checkpoint number %D\n\033[0m",rctx->check);
       break;
     case 3:
-      PetscPrintf(PETSC_COMM_WORLD,"First turn: Initialize adjoints and reverse first step.\n");
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mFirst turn: Initialize adjoints and reverse first step\033[0m\n");
       break;
     case 4:
-      PetscPrintf(PETSC_COMM_WORLD,"Forward and reverse one step.\n");
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mForward and reverse one step\033[0m\n");
       break;
     case 5:
-      PetscPrintf(PETSC_COMM_WORLD,"Restore in checkpoint number %D\n",rctx->check);
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mRestore in checkpoint number %D\033[0m\n",rctx->check);
       break;
     case -1:
-      PetscPrintf(PETSC_COMM_WORLD,"Error!");
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mError!");
       break;
   }
 }
@@ -356,6 +356,9 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
     if (stepnum!=0 && stepnum!=s->total_steps && localstepnum==0 && !s->recompute) { /* never need to recompute localstepnum=0 */
+#ifdef TJ_VERBOSE
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
+#endif
       id = stepnum/s->stride;
       ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
       s->top = -1; /* reset top */
@@ -474,6 +477,9 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
     if (localstepnum==0 && stepnum!=0 && stepnum!=s->total_steps) {
+#ifdef TJ_VERBOSE
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mLoad stack from file\033[0m\n");
+#endif
       id = stepnum/s->stride;
       ierr = StackLoadAll(ts,s,id);CHKERRQ(ierr);
       s->top = s->stacksize-1;
