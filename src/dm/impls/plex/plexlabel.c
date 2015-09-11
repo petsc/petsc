@@ -615,6 +615,7 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] != value) continue;
     ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
+    if (label->stratumSizes[v]  <= 0)     break;
     if (start) *start = label->points[v][0];
     if (end)   *end   = label->points[v][label->stratumSizes[v]-1]+1;
     break;
