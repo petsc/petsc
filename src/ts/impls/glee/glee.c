@@ -1093,7 +1093,7 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts,PetscInt *n,Vec *Y)
   if (!Y) *n = tab->r - 1;
   else {
     if ((*n >= 0) && (*n < tab->r-1)) {
-      ierr = VecCopy(glee->Y[*n],*Y); CHKERRQ(ierr);
+      ierr = VecCopy(glee->Y[*n+1],*Y); CHKERRQ(ierr);
     } else {
       /* XXX: Error message for invalid value of n */
     }
