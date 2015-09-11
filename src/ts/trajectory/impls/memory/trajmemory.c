@@ -350,8 +350,9 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-
+  if (!s->recompute) { /* use global stepnum in the forward sweep */
+    ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  }
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
     if (stepnum!=0 && stepnum!=s->total_steps && localstepnum==0 && !s->recompute) { /* never need to recompute localstepnum=0 */
