@@ -42,6 +42,7 @@ List of cases and their names in the code:-
 
 /* Function declarations */
 PetscErrorCode (*RHSFunction) (TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode (*RHSJacobian) (TS,PetscReal,Vec,Mat,Mat,void*);
 PetscErrorCode (*IFunction)   (TS,PetscReal,Vec,Vec,Vec,void*);
 PetscErrorCode (*IJacobian)   (TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
@@ -88,6 +89,24 @@ PetscErrorCode RHSFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   f[0] = -y[0];
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian_Hull1972A1"
+PetscErrorCode RHSJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Mat A, Mat B, void *s)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *y;
+  PetscInt          row = 0,col = 0;
+  PetscScalar       value = -1.0;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,6 +163,25 @@ PetscErrorCode RHSFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   f[0] = -0.5*y[0]*y[0]*y[0];
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian_Hull1972A2"
+PetscErrorCode RHSJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Mat A, Mat B, void *s)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *y;
+  PetscInt          row = 0,col = 0;
+  PetscScalar       value;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  value = -0.5*3.0*y[0]*y[0];
+  ierr = MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -205,6 +243,24 @@ PetscErrorCode RHSFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "RHSJacobian_Hull1972A3"
+PetscErrorCode RHSJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Mat A, Mat B, void *s)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *y;
+  PetscInt          row = 0,col = 0;
+  PetscScalar       value = PetscCosReal(t);
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IFunction_Hull1972A3"
 PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
@@ -257,6 +313,25 @@ PetscErrorCode RHSFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   f[0] = (0.25*y[0])*(1.0-0.05*y[0]);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian_Hull1972A4"
+PetscErrorCode RHSJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Mat A, Mat B, void *s)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *y;
+  PetscInt          row = 0,col = 0;
+  PetscScalar       value;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  value = 0.25*(1.0-0.05*y[0]) - (0.25*y[0])*0.05;
+  ierr = MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -314,6 +389,25 @@ PetscErrorCode RHSFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   f[0] = (y[0]-t)/(y[0]+t);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian_Hull1972A5"
+PetscErrorCode RHSJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Mat A, Mat B, void *s)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *y;
+  PetscInt          row = 0,col = 0;
+  PetscScalar       value;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  value = 2*t/((t+y[0])*(t+y[0]));
+  ierr = MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -940,26 +1034,31 @@ PetscErrorCode Initialize(Vec Y, void* s)
   if (!strcmp(p,"hull1972a1")) {
     y[0] = 1.0;
     RHSFunction = RHSFunction_Hull1972A1;
+    RHSJacobian = RHSJacobian_Hull1972A1;
     IFunction   = IFunction_Hull1972A1;
     IJacobian   = IJacobian_Hull1972A1;
   } else if (!strcmp(p,"hull1972a2")) {
     y[0] = 1.0;
     RHSFunction = RHSFunction_Hull1972A2;
+    RHSJacobian = RHSJacobian_Hull1972A2;
     IFunction   = IFunction_Hull1972A2;
     IJacobian   = IJacobian_Hull1972A2;
   } else if (!strcmp(p,"hull1972a3")) {
     y[0] = 1.0;
     RHSFunction = RHSFunction_Hull1972A3;
+    RHSJacobian = RHSJacobian_Hull1972A3;
     IFunction   = IFunction_Hull1972A3;
     IJacobian   = IJacobian_Hull1972A3;
   } else if (!strcmp(p,"hull1972a4")) {
     y[0] = 1.0;
     RHSFunction = RHSFunction_Hull1972A4;
+    RHSJacobian = RHSJacobian_Hull1972A4;
     IFunction   = IFunction_Hull1972A4;
     IJacobian   = IJacobian_Hull1972A4;
   } else if (!strcmp(p,"hull1972a5")) {
     y[0] = 4.0;
     RHSFunction = RHSFunction_Hull1972A5;
+    RHSJacobian = RHSJacobian_Hull1972A5;
     IFunction   = IFunction_Hull1972A5;
     IJacobian   = IJacobian_Hull1972A5;
   } else if (!strcmp(p,"hull1972b1")) {
@@ -1098,6 +1197,11 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP) || (!strcmp(time_scheme,TSGLEE)))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&Jac);CHKERRQ(ierr);
+    ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
+    ierr = MatSetUp(Jac);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,Jac,Jac,RHSJacobian,&ptype[0]);CHKERRQ(ierr);
   } else if ((!strcmp(time_scheme,TSTHETA)) || (!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSCN)) || (!strcmp(time_scheme,TSALPHA)) || (!strcmp(time_scheme,TSARKIMEX))) {
     /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
@@ -1112,21 +1216,19 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
   
-  if (!strcmp(time_scheme,TSGLEE)) {
-    /* call it first with the last argument as NULL to get the number of auxiliary solutions
-       in the parameter iAuxSize – here TSGLEE will return the value r-1 */
-    ierr = TSGetAuxSolution(ts,&iAuxSize,NULL);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_SELF,"Number of auxiliary solutions = %d\n",iAuxSize);
-    /* then, iterating from 0 to iAuxSize-1, get each auxiliary solution in the vector Yaux (which
-       must be preallocated and have the same structure/size as the solution – TSGLEE 
-       Will return each of the y~ or eps from 0 to r-1 */
-    for (i=0; i<iAuxSize; i++) {
-      ierr = VecDuplicate(Y,&YAux);CHKERRQ(ierr);
-      ierr = TSGetAuxSolution(ts,&i,&YAux);CHKERRQ(ierr);
-      ierr = VecView(YAux,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = VecDestroy(&YAux);CHKERRQ(ierr);
-    }
-  } 
+  /* call it first with the last argument as NULL to get the number of auxiliary solutions
+     in the parameter iAuxSize – here TSGLEE will return the value r-1 */
+  ierr = TSGetAuxSolution(ts,&iAuxSize,NULL);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_SELF,"Number of auxiliary solutions = %d\n",iAuxSize);
+  /* then, iterating from 0 to iAuxSize-1, get each auxiliary solution in the vector Yaux (which
+     must be preallocated and have the same structure/size as the solution – TSGLEE 
+     Will return each of the y~ or eps from 0 to r-1 */
+  for (i=0; i<iAuxSize; i++) {
+    ierr = VecDuplicate(Y,&YAux);CHKERRQ(ierr);
+    ierr = TSGetAuxSolution(ts,&i,&YAux);CHKERRQ(ierr);
+    ierr = VecView(YAux,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = VecDestroy(&YAux);CHKERRQ(ierr);
+  }
   
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
