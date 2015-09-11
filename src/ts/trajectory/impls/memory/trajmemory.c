@@ -486,7 +486,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
         wrap_revolve_reset();
         s->rctx->check = -1;
         s->rctx->capo  = 0;
-        s->rctx->fine  = s->stride-1;
+        s->rctx->fine  = s->stride;
         whattodo = 0;
         while(whattodo!=3) { /* stupid revolve */
           whattodo = wrap_revolve(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,&s->rctx->snaps_in,&s->rctx->info,&rank);
