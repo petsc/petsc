@@ -115,8 +115,7 @@ static PetscErrorCode StackDestroy(Stack *s)
 static PetscErrorCode StackPush(Stack *s,StackElement e)
 {
   PetscFunctionBegin;
-  if (s->userevolve && s->top+1 >= s->max_cps) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->max_cps);
-  if (!s->userevolve && s->top+1 >= s->stride-1) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->max_cps);
+  if (s->top+1 >= s->stacksize) SETERRQ1(s->comm,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",s->stacksize);
   s->stack[++s->top] = e;
   PetscFunctionReturn(0);
 }
@@ -374,7 +373,6 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     localstepnum = stepnum;
   }
 
-
   if (s->userevolve) {
     rctx = s->rctx;
     if (rctx->reverseonestep && stepnum==s->total_steps) { /* intermediate information is ready inside TS, this happens at last time step */
@@ -420,9 +418,10 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 #endif
       rctx->stepsleft = rctx->capo-rctx->oldcapo-1;
     }
+  } else { /* Revolve is not used */
+    /* skip the first and the last steps of each stride or the whole interval */
+    if (localstepnum==0 || stepnum==s->total_steps) PetscFunctionReturn(0);
   }
-  /* skip the first and the last steps of each stride */
-  if (!s->userevolve && localstepnum==0) PetscFunctionReturn(0);
 
   /* checkpoint to memmory */
   if (localstepnum==s->top) { /* overwrite the top checkpoint, this might happen when the time interval is split into several smaller ones, each corresponding to a call of TSSolve() */
