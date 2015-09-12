@@ -932,7 +932,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   merge->buf_rj    = buf_rj;
   merge->owners_co = owners_co;
   merge->destroy   = Cmpi->ops->destroy;
-  //merge->duplicate = Cmpi->ops->duplicate;
 
   /* attach the supporting struct to Cmpi for reuse */
   c           = (Mat_MPIAIJ*)Cmpi->data;
