@@ -215,7 +215,7 @@
 
 !  Declarations for use with local arrays
 
-      PetscScalar  lx_v(1),lf_v(1)
+      PetscScalar  lx_v(2),lf_v(2)
       PetscOffset  lx_i,lf_i
 
 !  Get pointers to vector data.
