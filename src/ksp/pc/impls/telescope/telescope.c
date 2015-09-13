@@ -139,7 +139,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
 
   xred = NULL;
-  m = bs;
+  m    = 0;
   if (isActiveRank(sred->psubcomm)) {
     ierr = VecCreate(subcomm,&xred);CHKERRQ(ierr);
     ierr = VecSetSizes(xred,PETSC_DECIDE,M);CHKERRQ(ierr);
@@ -163,7 +163,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
     ierr = ISCreateStride(comm,(ed-st),st,1,&isin);CHKERRQ(ierr);
   } else {
     ierr = VecGetOwnershipRange(x,&st,&ed);CHKERRQ(ierr);
-    ierr = ISCreateStride(comm,bs,st,1,&isin);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,0,st,1,&isin);CHKERRQ(ierr);
   }
   ierr = ISSetBlockSize(isin,bs);CHKERRQ(ierr);
 
@@ -507,10 +507,6 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
       array[i] = LA_yred[i];
     }
     ierr = VecRestoreArrayRead(yred,&LA_yred);CHKERRQ(ierr);
-  } else {
-    for (i=0; i<bs; i++) {
-      array[i] = 0.0;
-    }
   }
   ierr = VecRestoreArray(xtmp,&array);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,xtmp,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);

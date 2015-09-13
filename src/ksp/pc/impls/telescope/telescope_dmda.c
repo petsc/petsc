@@ -139,11 +139,10 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
   ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (isActiveRank(psubcomm)) {
     ierr = DMDAGetCorners(subdm,&si,&sj,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
-
     Ml = ni - si;
     Nl = nj - sj;
   } else {
-    Ml = Nl = 1;
+    Ml = Nl = 0;
   }
 
   ierr = PetscMalloc1(Ml*Nl*2,&fine_indices);CHKERRQ(ierr);
@@ -158,13 +157,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
       }
     }
     if (c != Ml*Nl*2) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
-  } else {
-    i = si;
-    j = sj;
-    nidx = (i) + (j)*M;
-    fine_indices[0] = 2 * nidx     ;
-    fine_indices[1] = 2 * nidx + 1 ;
-    if (2 != Ml*Nl*2) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
   }
 
   /* generate scatter */
@@ -246,11 +238,11 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
   if (isActiveRank(psubcomm)) {
     ierr = DMDAGetCorners(subdm,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
 
-    Ml = ni;
-    Nl = nj;
-    Pl = nk;
+    Ml = ni - si;
+    Nl = nj - sj;
+    Pl = nk - sk;
   } else {
-    Ml = Nl = Pl = 1;
+    Ml = Nl = Pl = 0;
   }
 
   ierr = PetscMalloc1(Ml*Nl*Pl*3,&fine_indices);CHKERRQ(ierr);
@@ -268,14 +260,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
         }
       }
     }
-  } else {
-    i = si;
-    j = sj;
-    k = sk;
-    nidx = (i) + (j)*M + (k)*M*N;
-    fine_indices[0] = 3 * nidx     ;
-    fine_indices[1] = 3 * nidx + 1 ;
-    fine_indices[2] = 3 * nidx + 2 ;
   }
 
   /* generate scatter */
@@ -653,7 +637,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
   ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
   ierr = MatGetBlockSize(B,&bs);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xp);CHKERRQ(ierr);
-  m = bs;
+  m = 0;
   xred = NULL;
   yred = NULL;
   if (isActiveRank(sred->psubcomm)) {
@@ -663,9 +647,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
     ierr = ISCreateStride(comm,ed-st,st,1,&isin);CHKERRQ(ierr);
     ierr = VecGetLocalSize(xred,&m);
   } else {
-    /* fetch some local owned data - just to deal with avoiding zero length ownership on range */
     ierr = VecGetOwnershipRange(x,&st,&ed);CHKERRQ(ierr);
-    ierr = ISCreateStride(comm,bs,st,1,&isin);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,0,st,1,&isin);CHKERRQ(ierr);
   }
   ierr = ISSetBlockSize(isin,bs);CHKERRQ(ierr);
   ierr = VecCreate(comm,&xtmp);CHKERRQ(ierr);
@@ -895,10 +878,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
       array[i] = LA_yred[i];
     }
     ierr = VecRestoreArrayRead(yred,&LA_yred);CHKERRQ(ierr);
-  } else {
-    for (i=0; i<bs; i++) {
-      array[i] = 0.0;
-    }
   }
   ierr = VecRestoreArray(xtmp,&array);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
