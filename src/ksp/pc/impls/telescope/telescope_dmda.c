@@ -140,8 +140,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
   if (isActiveRank(psubcomm)) {
     ierr = DMDAGetCorners(subdm,&si,&sj,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
 
-    Ml = ni;
-    Nl = nj;
+    Ml = ni - si;
+    Nl = nj - sj;
   } else {
     Ml = Nl = 1;
   }
@@ -157,12 +157,14 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
         c = c + 2;
       }
     }
+    if (c != Ml*Nl*2) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
   } else {
     i = si;
     j = sj;
     nidx = (i) + (j)*M;
     fine_indices[0] = 2 * nidx     ;
     fine_indices[1] = 2 * nidx + 1 ;
+    if (2 != Ml*Nl*2) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
   }
 
   /* generate scatter */
@@ -442,9 +444,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   ierr = MPI_Bcast(&ctx->Np_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&ctx->Pp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(ctx->Mp_re,&ctx->range_i_re);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ctx->Np_re,&ctx->range_j_re);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ctx->Mp_re,&ctx->range_i_re);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ctx->Np_re,&ctx->range_j_re);CHKERRQ(ierr);
+  ierr = PetscCalloc1(ctx->Pp_re,&ctx->range_k_re);CHKERRQ(ierr);
 
   if (_range_i_re) {ierr = PetscMemcpy(ctx->range_i_re,_range_i_re,sizeof(PetscInt)*ctx->Mp_re);CHKERRQ(ierr);}
   if (_range_j_re) {ierr = PetscMemcpy(ctx->range_j_re,_range_j_re,sizeof(PetscInt)*ctx->Np_re);CHKERRQ(ierr);}
