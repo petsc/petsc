@@ -20,6 +20,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_PYTHON",
   "ASCII_FACTOR_INFO",
   "ASCII_LATEX",
+  "ASCII_XML",
   "DRAW_BASIC",
   "DRAW_LG",
   "DRAW_CONTOUR",
