@@ -1093,6 +1093,7 @@ runex49_5:
 	   ${DIFF} output/ex49_5.out ex49_5.tmp || printf "${PWD}\nPossible problem with ex49_5, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_5.tmp
 
+# hyper has some valgrind serious bus in it for vec_interp_variant hence this crashes on some systems, waiting for hypre team to fix
 runex49_hypre_nullspace:
 	-@${MPIEXEC} ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre  -elas_pc_hypre_boomeramg_nodal_coarsen  6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_ksp_view > ex49_hypre_nullspace.tmp 2>&1; \
 	   ${DIFF} output/ex49_hypre_nullspace.out ex49_hypre_nullspace.tmp || printf "${PWD}\nPossible problem with ex49_hypre_nullspace, diffs above\n=========================================\n"; \
