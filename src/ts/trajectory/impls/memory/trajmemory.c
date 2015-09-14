@@ -1,9 +1,9 @@
-#define TJ_VERBOSE
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscsys.h>
 
-extern int wrap_revolve(int* check,int* capo,int* fine,int *snaps_in,int* info,int* rank);
-extern int wrap_revolve_reset();
+#ifdef PETSC_HAVE_REVOLVE
+#include <wrap_revolve.h>
+#endif
 
 typedef struct _StackElement {
   PetscInt  stepnum;
@@ -46,7 +46,7 @@ static PetscErrorCode StackTop(Stack*,StackElement*);
 static PetscErrorCode StackDumpAll(TS,Stack*,PetscInt);
 static PetscErrorCode StackLoadAll(TS,Stack*,PetscInt);
 
-#ifdef TJ_VERBOSE
+#ifdef PETSC_HAVE_REVOLVE
 static void printwhattodo(PetscInt whattodo,RevolveCTX *rctx,PetscInt shift)
 {
   switch(whattodo) {
@@ -313,7 +313,11 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   s->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
 
   if ((s->stride>1 && s->max_cps>1 && s->max_cps<s->stride-1)||(s->stride<=1 && s->max_cps>1 && s->max_cps<s->total_steps-1)) {
+#ifdef PETSC_HAVE_REVOLVE
     s->userevolve = PETSC_TRUE;
+#else
+    SETERRQ(s->comm,PETSC_ERR_SUP,"revolve is required to select checkpoints, please reconfigure with the additional option --download-revolve if there are not enough memory to checkpoint all time steps.");
+#endif
     s->recompute  = PETSC_FALSE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
@@ -355,12 +359,13 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
     if (stepnum!=0 && stepnum!=s->total_steps && localstepnum==0 && !s->recompute) { /* never need to recompute localstepnum=0 */
-#ifdef TJ_VERBOSE
+#ifdef PETSC_HAVE_REVOLVE
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
 #endif
       id = stepnum/s->stride;
       ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
       s->top = -1; /* reset top */
+#ifdef PETSC_HAVE_REVOLVE
       if (s->userevolve) {
         rctx = s->rctx;
         rctx->check = -1;
@@ -368,12 +373,14 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
         rctx->fine  = s->stride;
       }
       wrap_revolve_reset();
+#endif
     }
   } else { /* in-memory mode */
     localstepnum = stepnum;
   }
 
   if (s->userevolve) {
+#ifdef PETSC_HAVE_REVOLVE
     rctx = s->rctx;
     if (rctx->reverseonestep && stepnum==s->total_steps) { /* intermediate information is ready inside TS, this happens at last time step */
       rctx->reverseonestep = PETSC_FALSE;
@@ -389,9 +396,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     rctx->capo    = localstepnum;
     rctx->oldcapo = rctx->capo;
     whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank);
-#ifdef TJ_VERBOSE
     printwhattodo(whattodo,rctx,shift);
-#endif
     if (whattodo==-1) SETERRQ(s->comm,PETSC_ERR_LIB,"Error in the Revolve library");
     if (whattodo==1) { /* advance some time steps */
       rctx->stepsleft = rctx->capo-rctx->oldcapo-1;
@@ -404,20 +409,17 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     if (whattodo==5) { /* restore a checkpoint and ask Revolve what to do next */
       rctx->oldcapo = rctx->capo;
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
-#ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx,shift);
-#endif
       rctx->stepsleft = rctx->capo-rctx->oldcapo;
       PetscFunctionReturn(0);
     }
     if (whattodo==2) { /* store a checkpoint and ask Revolve how many time steps to advance next */
       rctx->oldcapo = rctx->capo;
       whattodo = wrap_revolve(&rctx->check,&rctx->capo,&rctx->fine,&rctx->snaps_in,&rctx->info,&rank); /* must return 1*/
-#ifdef TJ_VERBOSE
       printwhattodo(whattodo,rctx,shift);
-#endif
       rctx->stepsleft = rctx->capo-rctx->oldcapo-1;
     }
+#endif
   } else { /* Revolve is not used */
     /* skip the first and the last steps of each stride or the whole interval */
     if (localstepnum==0 || stepnum==s->total_steps) PetscFunctionReturn(0);
@@ -476,13 +478,14 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if (s->stride>1) { /* multilevel mode */
     localstepnum = stepnum%s->stride;
     if (localstepnum==0 && stepnum!=0 && stepnum!=s->total_steps) {
-#ifdef TJ_VERBOSE
+#ifdef PETSC_HAVE_REVOLVE
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mLoad stack from file\033[0m\n");
 #endif
       id = stepnum/s->stride;
       ierr = StackLoadAll(ts,s,id);CHKERRQ(ierr);
       s->top = s->stacksize-1;
       if (s->userevolve) {
+#ifdef PETSC_HAVE_REVOLVE
         wrap_revolve_reset();
         s->rctx->check = -1;
         s->rctx->capo  = 0;
@@ -491,6 +494,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
         while(whattodo!=3) { /* stupid revolve */
           whattodo = wrap_revolve(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,&s->rctx->snaps_in,&s->rctx->info,&rank);
         }
+#endif
       } 
     }
   } else {
@@ -520,8 +524,8 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     s->recompute = PETSC_TRUE;
     shift = stepnum-localstepnum;
     s->rctx->capo = localstepnum;
+#ifdef PETSC_HAVE_REVOLVE
     whattodo = wrap_revolve(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,&s->rctx->snaps_in,&s->rctx->info,&rank);
-#ifdef TJ_VERBOSE
     printwhattodo(whattodo,s->rctx,shift);
 #endif
     ierr = TSSetTimeStep(ts,(*t)-e->timeprev);CHKERRQ(ierr);
