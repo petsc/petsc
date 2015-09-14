@@ -195,6 +195,11 @@ PETSC_EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TSMonitorCancel(TS);
 
+PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
+
+
 PETSC_EXTERN PetscErrorCode TSSetOptionsPrefix(TS,const char[]);
 PETSC_EXTERN PetscErrorCode TSAppendOptionsPrefix(TS,const char[]);
 PETSC_EXTERN PetscErrorCode TSGetOptionsPrefix(TS,const char *[]);
@@ -269,6 +274,8 @@ PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawSolution(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawSolutionPhase(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawError(TS,PetscInt,PetscReal,Vec,void*);
+
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
