@@ -14,6 +14,7 @@ class Configure(config.package.GNUPackage):
     self.includes          = ['moab/Core.hpp']
     self.liblist           = [['libiMesh.a', 'libMOAB.a'],['libMOAB.a']]
     self.cxx               = 1
+    self.hastests          = 1
     return
 
   def setupDependencies(self, framework):

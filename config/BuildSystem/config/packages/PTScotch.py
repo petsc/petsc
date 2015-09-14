@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
     self.needsMath    = 1
+    self.hastests     = 1
     return
 
   def setupDependencies(self, framework):
