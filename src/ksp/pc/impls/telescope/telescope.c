@@ -1,72 +1,7 @@
 
-/*
 
- Defines a telescoping preconditioner
 
- Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
- creates a child sub-communicator (c') containing less MPI processes than the original parent preconditioner (PC).
-
- During PCSetup, the B operator is scattered onto c'.
- Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
- Then KSPSolve() is executed on the c' communicator.
-
- The preconditioner is deemed telescopint as it only calls KSPSolve() on a single
- sub-communicator in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
- This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
-
- Comments:
- - The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED
- creation routine. We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
-
- - The telescoping preconditioner is aware of nullspaces which are attached to the only B operator.
- In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
- a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
-
- - The telescoping preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
- 1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
- is attached the sub KSPSolve(). The design of telescope is such that it should be possible to extend support 
- for re-partitioning other DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
-
- - By default, B' is defined by simply fusing rows from different MPI processes
-
- - When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permuting of B
- into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatGetSubMatrices(), (iii) fusing the
- locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
-
- Limitations/improvements
- - VecPlaceArray could be used within PCApply() to improve efficiency and reduce memory usage.
-
- - The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
- and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). I opted to use P^T.A.P as it appears
- VecPermute() does not supported for the use case required here. By computing P, I can permute both the operator and RHS in a 
- consistent manner.
-
- - Mapping of vectors is performed this way
- Suppose the parent comm size was 4, and we set a reduction factor of 2, thus would give a comm size on c' of 2.
- Using the interlaced creation routine, the ranks in c with color = 0, will be rank 0 and 2.
- We perform the scatter to the sub-comm in the following way, 
- [1] Given a vector x defined on comm c
-
-   rank(c) : _________ 0 ______  ________ 1 _______  ________ 2 _____________ ___________ 3 __________
-         x : [0, 1, 2, 3, 4, 5] [6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17] [18, 19, 20, 21, 22, 23]
-
- scatter to xtmp defined also on comm c so that we have the following values
-
-   rank(c) : ___________________ 0 ________________  _1_  ______________________ 2 _______________________  __3_
-      xtmp : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [ 6 ] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] [ 18 ]
-
- The entries on rank 1 and 3 (ranks which do not have a color = 0 in c') are filled with the first bs values living on that rank,
- where bs is the block size of the vector.
-
- [2] Copy the value from rank 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
- Ranks 0 and 2 are the only ranks in the subcomm which have a color = 0.
-
-  rank(c') : ___________________ 0 _______________  ______________________ 1 _____________________
-      xred : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-
-*/
-
-#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h> 
 #include <petscksp.h> /*I "petscksp.h" I*/
 #include <petscdm.h> /*I "petscdm.h" I*/
 
@@ -775,6 +710,10 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
    Level: advanced
 
    Notes:
+   The preconditioner is deemed telescopic as it only calls KSPSolve() on a single
+   sub-communicator in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
+   This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
+
    The default KSP is PREONLY. If a DM is attached to the PC, it is re-partitioned on the sub-communicator.
    Both the B mat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned DM.
    Currently only support for re-partitioning a DMDA is provided.
@@ -782,15 +721,67 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
    KSPSetComputeOperators() is not propagated to the sub KSP.
    Currently there is no support for the flag -pc_use_amat
 
-   Optimizations:
-   (i) VecPlaceArray() could be used for scatters between the vectors defined on different sized communicators, thereby slightly reducing memory footprint;
-   (ii) Memory re-use and faster set-up would follow if the result of P^T.A.P was not re-allocated each time PCSetUp_Telescope() was called (DMDA).
+   Assuming that the parent preconditioner (PC) is defined on a communicator c, this implementation
+   creates a child sub-communicator (c') containing less MPI processes than the original parent preconditioner (PC).
 
- Contributed by Dave May
+  Developer Notes:
+   During PCSetup, the B operator is scattered onto c'.
+   Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
+   Then KSPSolve() is executed on the c' communicator.
 
-.seealso:  PCTelescopeGetKSP(), PCTelescopeGetDM(),
- PCTelescopeGetReductionFactor(), PCTelescopeSetReductionFactor(),
- PCTelescopeGetIgnoreDM(), PCTelescopeSetIgnoreDM(), PCREDUNDANT
+   The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED 
+   creation routine. We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
+
+   The telescoping preconditioner is aware of nullspaces which are attached to the only B operator.
+   In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
+   a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
+
+   The telescoping preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
+   1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
+   is attached the sub KSPSolve(). The design of telescope is such that it should be possible to extend support 
+   for re-partitioning other DM's (e.g. DMPLEX). The user can supply a flag to ignore attached DMs.
+
+   By default, B' is defined by simply fusing rows from different MPI processes
+
+   When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permuting of B
+   into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatGetSubMatrices(), (iii) fusing the
+   locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
+
+   Limitations/improvements
+   VecPlaceArray could be used within PCApply() to improve efficiency and reduce memory usage.
+
+   The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
+   and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). I opted to use P^T.A.P as it appears
+   VecPermute() does not supported for the use case required here. By computing P, I can permute both the operator and RHS in a 
+   consistent manner.
+
+   Mapping of vectors is performed this way
+   Suppose the parent comm size was 4, and we set a reduction factor of 2, thus would give a comm size on c' of 2.
+   Using the interlaced creation routine, the ranks in c with color = 0, will be rank 0 and 2.
+   We perform the scatter to the sub-comm in the following way, 
+   [1] Given a vector x defined on comm c
+
+   rank(c) : _________ 0 ______  ________ 1 _______  ________ 2 _____________ ___________ 3 __________
+         x : [0, 1, 2, 3, 4, 5] [6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17] [18, 19, 20, 21, 22, 23]
+
+   scatter to xtmp defined also on comm c so that we have the following values
+
+   rank(c) : ___________________ 0 ________________  _1_  ______________________ 2 _______________________  __3_
+      xtmp : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [  ] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] [  ]
+
+   The entries on rank 1 and 3 (ranks which do not have a color = 0 in c') have no values
+
+
+   [2] Copy the value from rank 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
+   Ranks 0 and 2 are the only ranks in the subcomm which have a color = 0.
+
+    rank(c') : ___________________ 0 _______________  ______________________ 1 _____________________
+      xred : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+
+
+  Contributed by Dave May
+
+.seealso:  PCTelescopeGetKSP(), PCTelescopeGetDM(), PCTelescopeGetReductionFactor(), PCTelescopeSetReductionFactor(), PCTelescopeGetIgnoreDM(), PCTelescopeSetIgnoreDM(), PCREDUNDANT
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Telescope"
