@@ -2436,9 +2436,9 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm  ex99.PE
                                  ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
                                  ex42.PETSc runex42 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  \
-                                 ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
+                                 ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm ex93.PETSc runex93_rap runex93_ptap ex93.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
-                                 runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult runex93_rap runex93_ptap ex94.rm \
+                                 runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
                                  ex111.PETSc runex111 runex111_2 runex111_3 ex111.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm \
