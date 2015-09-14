@@ -316,7 +316,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 #ifdef PETSC_HAVE_REVOLVE
     s->userevolve = PETSC_TRUE;
 #else
-    SETERRQ(s->comm,PETSC_ERR_SUP,"revolve is required to select checkpoints, please reconfigure with the additional option --download-revolve if there are not enough memory to checkpoint all time steps.");
+    SETERRQ(s->comm,PETSC_ERR_SUP,"revolve is needed when there is not enought memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
 #endif
     s->recompute  = PETSC_FALSE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
