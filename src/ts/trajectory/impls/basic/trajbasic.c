@@ -71,7 +71,7 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet_Basic"
-PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt step,PetscReal *t)
+PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
 {
   Vec            Sol,*Y;
   PetscInt       Nr,i;
@@ -81,8 +81,8 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt step,PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetTotalSteps(ts,&step);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",step);CHKERRQ(ierr);
+  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
