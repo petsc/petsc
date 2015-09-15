@@ -21,7 +21,7 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,2,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,2,algTypes[1],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
