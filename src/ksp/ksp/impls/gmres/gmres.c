@@ -125,6 +125,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 
   PetscFunctionBegin;
   ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
   res     = res_norm;
   *GRS(0) = res_norm;
 

@@ -137,6 +137,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* initial residual is in VEC_VV(0)  - compute its norm*/
   ierr = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
   res  = res_norm;
 
   /* first entry in right-hand-side of hessenberg system is just
@@ -147,7 +148,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
-
     ierr = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

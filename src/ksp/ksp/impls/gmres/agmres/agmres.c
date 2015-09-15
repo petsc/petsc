@@ -594,6 +594,7 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
       agmres->matvecs += 1;
     }
     ierr    = VecNormalize(VEC_V(0),&(ksp->rnorm));CHKERRQ(ierr);
+    KSPCheckNorm(ksp,ksp->rnorm);
     res_old = ksp->rnorm; /* Record the residual norm to test if deflation is needed */
 
     ksp->ops->buildsolution = KSPBuildSolution_AGMRES;
