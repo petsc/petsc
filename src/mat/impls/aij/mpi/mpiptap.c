@@ -189,21 +189,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* create and initialize a linked list */
   Crmax = p_loc->rmax+p_oth->rmax;
   ierr = PetscTableCreate(2*Crmax,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
- 
-  for (row=0; row<ptap->P_loc->rmap->N; row++) {
-    nzi = p_loc->i[row+1] - p_loc->i[row];
-    for (j=0; j<nzi; j++) {
-      Jptr = j + p_loc->j + p_loc->i[row];
-      ierr = PetscTableAdd(ta,*Jptr+1,1,INSERT_VALUES);CHKERRQ(ierr); /* key must be >0 */
-    }
-  }
-  for (row=0; row<ptap->P_oth->rmap->N; row++) {
-    nzi = p_oth->i[row+1] - p_oth->i[row];
-    for (j=0; j<nzi; j++) {
-      Jptr = j + p_oth->j + p_oth->i[row];
-      ierr = PetscTableAdd(ta,*Jptr+1,1,INSERT_VALUES);CHKERRQ(ierr); /* key must be >0 */
-    }
-  }
+  MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
+  MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr); /* Crmax = nnz(sum of Prows) */
 
   ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
