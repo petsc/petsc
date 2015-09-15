@@ -116,7 +116,6 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   PetscFunctionReturn(0);
 }
 
-/* Does not requires array of size pN, thus scalable */
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
@@ -485,6 +484,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
     Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
   } else {
+    Cmpi->ops->ptapnumeric = 0; /* not done yet */
     SETERRQ(comm,PETSC_ERR_ARG_SIZ,"Not done yet");
   }
 

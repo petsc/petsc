@@ -17,9 +17,15 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   PetscErrorCode ierr;
   const char     *algTypes[2] = {"scalable","nonscalable"};
   PetscInt       alg=1; /* set default algorithm */
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+    if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) {
+      SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
+    }
+
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,2,algTypes[1],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -177,20 +183,16 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   PetscInt           *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt           *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart;
   PetscInt           *lnk,i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi;
-  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;
+  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n,Crmax;
   PetscBT            lnkbt;
   PetscScalar        *apa;
   PetscReal          afill;
-  PetscInt           nlnk_max,armax,prmax;
+  PetscTable         ta;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) {
-    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
-  }
-  
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
@@ -217,19 +219,29 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  armax    = ad->rmax+ao->rmax;
-  if (size >1) {
-    prmax    = PetscMax(p_loc->rmax,p_oth->rmax);
-  } else {
-    prmax = p_loc->rmax;
+  Crmax = p_loc->rmax+p_oth->rmax;
+  ierr = PetscTableCreate(2*Crmax,pN,&ta);CHKERRQ(ierr); 
+  for (row=0; row<ptap->P_loc->rmap->N; row++) {
+    nzi = p_loc->i[row+1] - p_loc->i[row];
+    for (j=0; j<nzi; j++) {
+      Jptr = j + p_loc->j + p_loc->i[row];
+      ierr = PetscTableAdd(ta,*Jptr+1,1,INSERT_VALUES);CHKERRQ(ierr); /* key must be >0 */
+    }
   }
-  nlnk_max = armax*prmax; /* not good -- needs fix!!! */
-  if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
-  ierr = PetscLLCondensedCreate(nlnk_max,pN,&lnk,&lnkbt);CHKERRQ(ierr);
+  for (row=0; row<ptap->P_oth->rmap->N; row++) {
+    nzi = p_oth->i[row+1] - p_oth->i[row];
+    for (j=0; j<nzi; j++) {
+      Jptr = j + p_oth->j + p_oth->i[row];
+      ierr = PetscTableAdd(ta,*Jptr+1,1,INSERT_VALUES);CHKERRQ(ierr); /* key must be >0 */
+    }
+  }
+  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
+
+  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);
-
   current_space = free_space;
 
   ierr = MatPreallocateInitialize(comm,am,pn,dnz,onz);CHKERRQ(ierr);
