@@ -608,14 +608,17 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
     }
     ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0);CHKERRQ(ierr);
   }
-  /* randomize */
-  srand(1); /* make deterministic */
   if (PETSC_TRUE) {
-    PetscBool *bIndexSet;
-    ierr = PetscMalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
-    for (Ii = 0; Ii < nloc; Ii++) bIndexSet[Ii] = PETSC_FALSE;
+    PetscRandom  rand;
+    PetscBool    *bIndexSet;
+    PetscReal    rr;
+    PetscInt     iSwapIndex;
+
+    ierr = PetscRandomCreate(comm,&rand);CHKERRQ(ierr);
+    ierr = PetscCalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
     for (Ii = 0; Ii < nloc; Ii++) {
-      PetscInt iSwapIndex = rand()%nloc;
+      ierr = PetscRandomGetValueReal(rand,&rr);CHKERRQ(ierr);
+      iSwapIndex = (PetscInt) (rr*nloc);
       if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
         GAMGNode iTemp = gnodes[iSwapIndex];
         gnodes[iSwapIndex]    = gnodes[Ii];
@@ -624,6 +627,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
         bIndexSet[iSwapIndex] = PETSC_TRUE;
       }
     }
+    ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
     ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
   }
   /* only sort locals */

@@ -1804,6 +1804,7 @@ runex109_2:
 runex110:
 	-@${MPIEXEC} -n 3 ./ex110
 
+#  runex111_1 and runex111_2 are not run in testing since they take some nontrivial time
 runex111:
 	-@${MPIEXEC} -n 1 ./ex111 -fA ${DATAFILESPATH}/matrices/matmatmult/K2.gz -fP ${DATAFILESPATH}/matrices/matmatmult/V2.gz > ex111.tmp 2>&1; \
 	   if (${DIFF} output/ex111.out ex111.tmp) then true; \
@@ -2432,7 +2433,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 e
                                  ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
                                  runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
-                                 ex111.PETSc runex111 runex111_2 runex111_3 ex111.rm \
+                                 ex111.PETSc runex111_3 ex111.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm \
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \

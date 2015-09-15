@@ -936,6 +936,8 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   MatCoarsen     crs;
   MPI_Comm       comm;
   PetscMPIInt    rank;
+  PetscReal      rr;
+  PetscInt       iSwapIndex;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
@@ -947,21 +949,20 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   nloc = n/bs;
 
   if (pc_gamg->current_level < pc_gamg_agg->square_graph) {
-    ierr = PetscInfo2(a_pc,"Square Graph on level %d of %d to square\n",pc_gamg->current_level+1,pc_gamg_agg->square_graph);
-    CHKERRQ(ierr);
+    ierr = PetscInfo2(a_pc,"Square Graph on level %d of %d to square\n",pc_gamg->current_level+1,pc_gamg_agg->square_graph);CHKERRQ(ierr);
     ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs - randomize */
   ierr = PetscMalloc1(nloc, &permute);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    bIndexSet[Ii] = PETSC_FALSE;
     permute[Ii]   = Ii;
   }
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    PetscInt iSwapIndex = (PetscInt)((PETSC_HASH_FACT*(Istart+Ii))%(unsigned long)nloc);
+    ierr = PetscRandomGetValueReal(pc_gamg->random,&rr);CHKERRQ(ierr);
+    iSwapIndex = (PetscInt) (rr*nloc);
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
       permute[iSwapIndex]   = permute[Ii];
@@ -1194,33 +1195,14 @@ PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
 #endif
     if (!jj) {
-      KSP eksp;
-      Vec bb, xx;
-      PC  epc;
-      PetscInt    Istart,Iend,nloc,bs,Ii,kk,idx,ncols;
-      PetscScalar zero = 0.0;
+      KSP         eksp;
+      Vec         bb, xx;
+      PC          epc;
 
       ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
-      ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
-      nloc = (Iend-Istart)/bs;
-      for (Ii = 0; Ii < nloc; Ii++) {
-        for (kk = 0; kk < bs; kk++) {
-          ierr = MatGetRow(Amat,(idx=Ii*bs+Istart+kk),&ncols,0,0);CHKERRQ(ierr);
-          if (ncols <= 1) {
-            ierr = VecSetValues(bb, 1, &idx, &zero, INSERT_VALUES);CHKERRQ(ierr);
-          }
-          else {
-            /* simple high frequency random  number */
-            PetscScalar v = ((PetscScalar)((PETSC_HASH_FACT*idx)%100) - 49.5)/50.0;
-            ierr = VecSetValues(bb, 1, &idx, &v, INSERT_VALUES);CHKERRQ(ierr);
-          }
-          ierr = MatRestoreRow(Amat,idx,&ncols,0,0);CHKERRQ(ierr);
-        }
-      }
-      ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+
+      ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
       ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);

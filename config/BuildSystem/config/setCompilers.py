@@ -1000,11 +1000,22 @@ class Configure(config.base.Configure):
       return
     raise RuntimeError('Bad compiler flag: '+flag)
 
+  def generatePICGuesses(self):
+    yield ''
+    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+      yield '-fPIC'
+    else:
+      yield '-PIC'
+      yield '-fPIC'
+      yield '-KPIC'
+      yield '-qpic'
+    return
+
   def checkPIC(self):
-    '''Determine the PIC option for each compiler
-       - There needs to be a test that checks that the functionality is actually working'''
+    '''Determine the PIC option for each compiler'''
     self.usePIC = 0
     useSharedLibraries = 'with-shared-libraries' in self.argDB and self.argDB['with-shared-libraries']
+    myLanguage = self.language[-1]
     if not self.argDB['with-pic'] and not useSharedLibraries:
       self.logPrint("Skip checking PIC options on user request")
       return
@@ -1015,21 +1026,27 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      #different compilers are sensitive to the order of testing these flags. So separete out GCC test.
-      if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log): testFlags = ['-fPIC']
-      else: testFlags = ['-PIC', '-fPIC', '-KPIC','-qpic']
-      for testFlag in testFlags:
+      if language == 'C' or language == 'Cxx':
+        includeLine = 'void foo(void);\nvoid bar(void){foo();}\n'
+      else:
+        includeLine = '      function foo(a)\n      real:: a, bar\n      foo = bar(a)\n      end\n'
+      compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
+      oldCompilerFlags = getattr(self, compilerFlagsArg)
+      for testFlag in self.generatePICGuesses():
+        self.logPrint('Trying '+language+' compiler flag '+testFlag)
+        acceptedPIC = 1
         try:
-          self.logPrint('Trying '+language+' compiler flag '+testFlag)
-          if not self.checkLinkerFlag(testFlag):
-            self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
-            continue
-          self.logPrint('Adding '+language+' compiler flag '+testFlag)
           self.addCompilerFlag(testFlag, compilerOnly = 1)
-          self.isPIC = 1
-          break
+          acceptedPIC = self.checkLink(includes = includeLine, codeBegin = '', codeEnd = '', cleanup = 1, shared = 1, linkLanguage = myLanguage)
         except RuntimeError:
-          self.logPrint('Rejected '+language+' compiler flag '+testFlag)
+          acceptedPIC = 0
+        if not acceptedPIC:
+          self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because shared linker cannot handle it')
+          setattr(self, compilerFlagsArg, oldCompilerFlags)
+          continue
+        self.logPrint('Accepted '+language+' compiler flag '+testFlag)
+        self.isPIC = 1
+        break
       self.popLanguage()
     return
 
@@ -1250,26 +1267,37 @@ class Configure(config.base.Configure):
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
-        flagsArg = self.getLinkerFlagsArg()
-        goodFlags = filter(self.checkLinkerFlag, flags)
-        testMethod = 'foo'
-        self.sharedLinker = self.LD_SHARED
-        self.sharedLibraryFlags = goodFlags
-        self.sharedLibraryExt = ext
-        # using printf appears to correctly identify non-pic code on X86_64
-        if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
-          oldLib  = self.linkerObj
-          oldLibs = self.LIBS
-          self.LIBS += ' -L'+self.tmpDir+' -lconftest'
-          if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
-            os.remove(oldLib)
-            self.LIBS = oldLibs
-            self.sharedLibraries = 1
-            self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
-            break
-          os.remove(oldLib)
-          self.LIBS = oldLibs
+        for picFlag in self.generatePICGuesses():
+          self.logPrint('Trying '+self.language[-1]+' compiler flag '+picFlag)
+          compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
+          oldCompilerFlags = getattr(self, compilerFlagsArg)
+          accepted = 1
+          try:
+            self.addCompilerFlag(picFlag,compilerOnly=1)
+          except RuntimeError:
+            accepted = 0
+          if accepted:
+            goodFlags = filter(self.checkLinkerFlag, flags)
+            testMethod = 'foo'
+            self.sharedLinker = self.LD_SHARED
+            self.sharedLibraryFlags = goodFlags
+            self.sharedLibraryExt = ext
+            # using printf appears to correctly identify non-pic code on X86_64
+            if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+              oldLib  = self.linkerObj
+              oldLibs = self.LIBS
+              self.LIBS += ' -L'+self.tmpDir+' -lconftest'
+              accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);')
+              os.remove(oldLib)
+              self.LIBS = oldLibs
+              if accepted:
+                self.sharedLibraries = 1
+                self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
+                break
+          self.logPrint('Rejected '+self.language[-1]+' compiler flag '+picFlag+' because it was not compatible with shared linker '+linker+' using flags '+str(flags))
+          setattr(self, compilerFlagsArg, oldCompilerFlags)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+        if self.sharedLibraries: break
         self.delMakeMacro('LD_SHARED')
         del self.LD_SHARED
         del self.sharedLinker
@@ -1615,12 +1643,12 @@ if (dlclose(handle)) {
     self.executeTest(self.checkFortranCompiler)
     if hasattr(self, 'FC'):
       self.executeTest(self.checkFortranComments)
-    self.executeTest(self.checkPIC)
     self.executeTest(self.checkLargeFileIO)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
     if Configure.isDarwin(self.log):
       self.executeTest(self.checkLinkerMac)
+    self.executeTest(self.checkPIC)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)

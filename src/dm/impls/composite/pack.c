@@ -902,12 +902,15 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
        DMCompositeGetISLocalToGlobalMappings() for to map local sub-DM (including ghost) indices to packed global
        indices.
 
+    Fortran Notes:
+
+       The output argument 'is' must be an allocated array of sufficient length, which can be learned using DMCompositeGetNumberDM().
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
 
 @*/
-
 PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 {
   PetscErrorCode         ierr;

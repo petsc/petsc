@@ -132,8 +132,12 @@ extern "C" {
 #endif
 
 /* require an int variable large enough to hold a pointer */
-#if !defined(MPIUNI_INTPTR)
-#define MPIUNI_INTPTR long
+#if (PETSC_SIZEOF_LONG == PETSC_SIZEOF_VOID_P)
+typedef long MPIUNI_INTPTR;
+#elif (PETSC_SIZEOF_SIZE_T == PETSC_SIZEOF_VOID_P)
+typedef size_t MPIUNI_INTPTR;
+#else
+typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
 /*
@@ -812,6 +816,13 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_starts), \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (order), \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (oldtype), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_Type_create_resized(oldtype,lb,extent,newtype) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (oldtype),   \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (lb),   \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (extent), \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype), \
    MPI_Abort(MPI_COMM_WORLD,0))
 

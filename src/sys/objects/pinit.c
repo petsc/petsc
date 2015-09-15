@@ -203,26 +203,37 @@ PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datat
     Returns the max of the first entry owned by this processor and the
 sum of the second entry.
 
-    The reason nprocs[2*i] contains lengths nprocs[2*i+1] contains flag of 1 if length is nonzero
-is so that the PetscMaxSum_Op() can set TWO values, if we passed in only nprocs[i] with lengths
+    The reason sizes[2*i] contains lengths sizes[2*i+1] contains flag of 1 if length is nonzero
+is so that the PetscMaxSum_Op() can set TWO values, if we passed in only sizes[i] with lengths
 there would be no place to store the both needed results.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
 PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,PetscInt *sum)
 {
-  PetscMPIInt    size,rank;
-  struct {PetscInt max,sum;} *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce((void*)sizes,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  *max = work[rank].max;
-  *sum = work[rank].sum;
-  ierr = PetscFree(work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
+  {
+    struct {PetscInt max,sum;} work;
+    ierr = MPI_Reduce_scatter_block((void*)sizes,&work,1,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    *max = work.max;
+    *sum = work.sum;
+  }
+#else
+  {
+    PetscMPIInt    size,rank;
+    struct {PetscInt max,sum;} *work;
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
+    ierr = MPI_Allreduce((void*)sizes,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    *max = work[rank].max;
+    *sum = work[rank].sum;
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -41,6 +41,9 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
   if (!*r) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);
   if (--((PetscObject)(*r))->refct > 0) {*r = 0; PetscFunctionReturn(0);}
+  if ((*r)->ops->destroy) {
+    ierr = (*(*r)->ops->destroy)(*r);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -138,11 +141,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscO
   if (((PetscObject)rnd)->type_name) {
     defaultType = ((PetscObject)rnd)->type_name;
   } else {
-#if defined(PETSC_HAVE_DRAND48)
-    defaultType = PETSCRAND48;
-#elif defined(PETSC_HAVE_RAND)
-    defaultType = PETSCRAND;
-#endif
+    defaultType = PETSCRANDER48;
   }
 
   ierr = PetscRandomRegisterAll();CHKERRQ(ierr);
@@ -166,7 +165,9 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscO
 . rnd - The random number generator context
 
   Options Database:
-.  -random_seed <integer> - provide a seed to the random number generater
++ -random_seed <integer> - provide a seed to the random number generater
+- -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
+                              same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 
   Notes:  To see all options, run your program with the -help option.
           Must be called after PetscRandomCreate() but before the rnd is used.
@@ -179,7 +180,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscO
 PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 {
   PetscErrorCode ierr;
-  PetscBool      set;
+  PetscBool      set,noimaginary = PETSC_FALSE;
   PetscInt       seed;
 
   PetscFunctionBegin;
@@ -199,6 +200,18 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
     ierr = PetscRandomSetSeed(rnd,(unsigned long int)seed);CHKERRQ(ierr);
     ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-random_no_imaginary_part","The imaginary part of the random number will be zero","PetscRandomSetInterval",noimaginary,&noimaginary,&set);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_COMPLEX)
+  if (set) {
+    if (noimaginary) {
+      PetscScalar low,high;
+      ierr = PetscRandomGetInterval(rnd,&low,&high);CHKERRQ(ierr);
+      low  = low - PetscImaginaryPart(low);
+      high = high - PetscImaginaryPart(high);
+      ierr = PetscRandomSetInterval(rnd,low,high);CHKERRQ(ierr);
+    }
+  }
+#endif
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscRandomViewFromOptions(rnd,NULL, "-random_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -345,6 +358,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0x12345678 + 76543*rank;
+  ierr = PetscRandomSetType(rr,PETSCRANDER48);CHKERRQ(ierr);
   *r = rr;
   PetscFunctionReturn(0);
 }

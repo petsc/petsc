@@ -1085,6 +1085,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
   hy = thi->Ly / info->my;
 
   ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_SUBSET_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = THIDAGetPrm(info->da,&prm);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {

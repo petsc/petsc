@@ -219,10 +219,28 @@ alltests:
 	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
 
 alltest:
+	-@date
 	-@for i in ${TEST_RUNS} ; do \
           echo "******* Testing: ${TESTMODE}_$$i *******"; \
 	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" NO_PRINT_DIR=yes tree ; \
 	done
+	-@date
+
+#
+#  parallel make of examples by directory
+#  The MAKEFLAGS= MFLAGS=  are so that the sub make processes don't know about the parallel make server of the main make process
+#  split the larger test directories up for more parallelism
+SUBDIRS =    src/ts/examples/tutorials src/snes/examples/tutorials src/ksp/ksp/examples/tutorials src/dm src/sys src/mat src/vec src/ksp/ksp/examples/tests src/ksp/ksp/examples/tests src/ts/examples/tests src/ksp/pc
+
+$(SUBDIRS)::
+	MAKEFLAGS= MFLAGS= $(OMAKE) -j 1 -C $@ alltest  > $@/alltests.log  2>&1 
+
+palltests:
+	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	-@${OMAKE} -j ${MAKE_NP} $(SUBDIRS)
+	-@cat src/*/alltests.log src/*/examples/*/alltests.log  src/ksp/pc/alltests.log  > ${PETSC_ARCH}/lib/petsc/conf/alltests.log
+
 
 tests_DATAFILESPATH:
 	make ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}

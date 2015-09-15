@@ -288,7 +288,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
     ierr = MatViewFromOptions(B,(PetscObject)snes,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   if (!gnorm) gnorm = 1; /* just in case */
-  ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||//J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||/||J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
 
   ierr = SNESGetObjective(snes,&objective,&ctx);CHKERRQ(ierr);
   if (objective) {
