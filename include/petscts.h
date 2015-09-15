@@ -275,6 +275,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorDrawSolution(TS,PetscInt,PetscReal,Vec,void
 PETSC_EXTERN PetscErrorCode TSMonitorDrawSolutionPhase(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawError(TS,PetscInt,PetscReal,Vec,void*);
 
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
