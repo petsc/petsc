@@ -14,14 +14,14 @@ typedef struct _StackElement {
 } *StackElement;
 
 typedef struct _RevolveCTX {
-  PetscBool    reverseonestep;
-  PetscInt     snaps_in;
-  PetscInt     stepsleft;
-  PetscInt     check;
-  PetscInt     oldcapo;
-  PetscInt     capo;
-  PetscInt     fine;
-  PetscInt     info;
+  PetscBool reverseonestep;
+  PetscInt  snaps_in;
+  PetscInt  stepsleft;
+  PetscInt  check;
+  PetscInt  oldcapo;
+  PetscInt  capo;
+  PetscInt  fine;
+  PetscInt  info;
 } RevolveCTX;
 
 typedef struct _Stack {
@@ -264,7 +264,7 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *s,PetscInt id)
 #define __FUNCT__ "TSTrajectorySetStride_Memory"
 PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt stride)
 {
-  Stack    *s = (Stack*)tj->data;
+  Stack *s = (Stack*)tj->data;
 
   PetscFunctionBegin;
   s->stride = stride;
@@ -275,7 +275,7 @@ PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt strid
 #define __FUNCT__ "TSTrajectorySetMaxCheckpoints_Memory"
 PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,TS ts,PetscInt max_cps)
 {
-  Stack    *s = (Stack*)tj->data;
+  Stack *s = (Stack*)tj->data;
 
   PetscFunctionBegin;
   s->max_cps = max_cps;
@@ -286,7 +286,7 @@ PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,TS ts,PetscI
 #define __FUNCT__ "TSTrajectorySetFromOptions_Memory"
 PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObject,TSTrajectory tj)
 {
-  Stack     *s = (Stack*)tj->data;
+  Stack          *s = (Stack*)tj->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
