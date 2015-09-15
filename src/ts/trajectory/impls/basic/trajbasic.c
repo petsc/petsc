@@ -17,7 +17,7 @@ static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySet_Basic"
-PetscErrorCode TSTrajectorySet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,PetscReal time,Vec X)
+PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   PetscViewer    viewer;
   PetscInt       ns,i;
@@ -72,7 +72,7 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet_Basic"
-PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,PetscReal *t)
+PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
 {
   Vec            Sol,*Y;
   PetscInt       Nr,i;
@@ -114,10 +114,10 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt stepnum,Pet
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryCreate_Basic"
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory ts)
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj)
 {
   PetscFunctionBegin;
-  ts->ops->set  = TSTrajectorySet_Basic;
-  ts->ops->get  = TSTrajectoryGet_Basic;
+  tj->ops->set  = TSTrajectorySet_Basic;
+  tj->ops->get  = TSTrajectoryGet_Basic;
   PetscFunctionReturn(0);
 }
