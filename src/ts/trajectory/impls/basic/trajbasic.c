@@ -46,7 +46,6 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,Pets
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
       ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
     }
-  }
 #endif
     PetscFunctionReturn(0);
   }

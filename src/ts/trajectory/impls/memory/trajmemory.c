@@ -29,7 +29,7 @@ typedef struct _Stack {
   PetscBool    recompute;
   MPI_Comm     comm;
   RevolveCTX   *rctx;
-  PetscInt     max_cps;     /* maximum stack size */
+  PetscInt     max_cps_ram;  /* maximum checkpooints in RAM */
   PetscInt     stride;
   PetscInt     total_steps; /* total number of steps */
   PetscInt     numY;
@@ -273,12 +273,12 @@ PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt strid
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetMaxCheckpoints_Memory"
-PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,TS ts,PetscInt max_cps)
+PetscErrorCode TSTrajectorySetMaxCheckpoints_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_ram)
 {
   Stack *s = (Stack*)tj->data;
 
   PetscFunctionBegin;
-  s->max_cps = max_cps;
+  s->max_cps_ram = max_cps_ram;
   PetscFunctionReturn(0);
 }
 
@@ -292,7 +292,7 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObjec
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Memory based TS trajectory options");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsInt("-tstrajectory_max_cps","Maximum number of checkpoints","TSTrajectorySetMaxCheckpoints_Memory",s->max_cps,&s->max_cps,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-tstrajectory_max_cps_ram","Maximum number of checkpoints","TSTrajectorySetMaxCheckpoints_Memory",s->max_cps_ram,&s->max_cps_ram,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-tstrajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride_Memory",s->stride,&s->stride,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -312,7 +312,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   ierr = TSGetStages(ts,&numY,NULL);CHKERRQ(ierr);
   s->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
 
-  if ((s->stride>1 && s->max_cps>1 && s->max_cps<s->stride-1)||(s->stride<=1 && s->max_cps>1 && s->max_cps<s->total_steps-1)) {
+  if ((s->stride>1 && s->max_cps_ram>1 && s->max_cps_ram<s->stride-1)||(s->stride<=1 && s->max_cps_ram>1 && s->max_cps_ram<s->total_steps-1)) {
 #ifdef PETSC_HAVE_REVOLVE
     s->userevolve = PETSC_TRUE;
 #else
@@ -320,7 +320,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 #endif
     s->recompute  = PETSC_FALSE;
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
-    rctx->snaps_in       = s->max_cps; /* for theta methods snaps_in=2*max_cps */
+    rctx->snaps_in       = s->max_cps_ram; /* for theta methods snaps_in=2*max_cps_ram */
     rctx->reverseonestep = PETSC_FALSE;
     rctx->check          = -1;
     rctx->oldcapo        = 0;
@@ -329,7 +329,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     s->rctx = rctx;
     if (s->stride>1) rctx->fine = s->stride;
     else rctx->fine = s->total_steps;
-    s->stacksize = s->max_cps;
+    s->stacksize = s->max_cps_ram;
   } else {
     s->userevolve = PETSC_FALSE;
     if (s->stride>1) s->stacksize = s->stride-1;
@@ -615,8 +615,8 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   tj->ops->setfromoptions = TSTrajectorySetFromOptions_Memory;
 
   ierr = PetscCalloc1(1,&s);CHKERRQ(ierr);
-  s->max_cps = -1; /* -1 indicates that it is not set */
-  s->stride  = 0; /* if not zero, two-level checkpointing will be used */
-  tj->data   = s;
+  s->max_cps_ram = -1; /* -1 indicates that it is not set */
+  s->stride      = 0; /* if not zero, two-level checkpointing will be used */
+  tj->data       = s;
   PetscFunctionReturn(0);
 }
