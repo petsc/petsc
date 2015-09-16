@@ -79,7 +79,7 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,P
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  Crmax = 2*b->rmax;
+  Crmax = 2*(b->rmax + (PetscInt)(1.e-2*bn)); /* expected Crmax */;
   if (Crmax > bn) Crmax = bn;
   ierr = PetscTableCreate(Crmax,bn,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(b,bn,ta);
@@ -298,7 +298,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  Crmax = 2*b->rmax;
+  Crmax = 2*(b->rmax + (PetscInt)(1.e-2*bn)); /* expected Crmax */
   if (Crmax > bn) Crmax = bn;
   ierr = PetscTableCreate(Crmax,bn,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(b,bn,ta);
@@ -408,7 +408,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  Crmax = 2*b->rmax;
+  Crmax = 2*(b->rmax  + (PetscInt)(1.e-2*bn)); /* expected Crmax */
   if (Crmax > bn) Crmax = bn;
   ierr = PetscTableCreate(Crmax,bn,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(b,bn,ta);

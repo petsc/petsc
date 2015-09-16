@@ -219,7 +219,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  Crmax = p_loc->rmax+p_oth->rmax;
+  Crmax = 5*(p_loc->rmax + p_oth->rmax + (PetscInt)(1.e-2*pN));  /* expected Crmax */
   if (Crmax > pN) Crmax = pN;
   ierr = PetscTableCreate(Crmax,pN,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
@@ -742,7 +742,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  Crmax = p_loc->rmax+p_oth->rmax;
+  Crmax = 5*(p_loc->rmax + p_oth->rmax + (PetscInt)(1.e-2*pN)); /* expected Crmax */
   if (Crmax > pN) Crmax = pN;
   ierr = PetscTableCreate(Crmax,pN,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
