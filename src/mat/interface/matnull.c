@@ -268,7 +268,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       for (i=0; i<n; i++) {
         PetscScalar sum;
         ierr = VecSum(vecs[i],&sum);CHKERRQ(ierr);
-        if (PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to constant vector, inner product is %g",i,(double)sum);
+        if (PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
       }
     }
     ierr = PetscMalloc1(n-1,&dots);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       PetscInt j;
       ierr = VecMDot(vecs[i],n-i-1,vecs+i+1,dots);CHKERRQ(ierr);
       for (j=0;j<n-i-1;j++) {
-        if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)dots[j]);
+        if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
     PetscFree(dots);CHKERRQ(ierr);
