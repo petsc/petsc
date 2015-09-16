@@ -220,7 +220,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   /* create and initialize a linked list */
   Crmax = p_loc->rmax+p_oth->rmax;
-  ierr = PetscTableCreate(2*Crmax,pN,&ta);CHKERRQ(ierr); 
+  if (Crmax > pN) Crmax = pN;
+  ierr = PetscTableCreate(Crmax,pN,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
@@ -706,10 +707,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   PetscInt           *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt           *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart;
   PetscInt           i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max=0;
-  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;
+  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n,Crmax;
   PetscInt           nlnk_max,armax,prmax;
   PetscReal          afill;
   PetscScalar        *apa;
+  PetscTable         ta;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -741,15 +743,15 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  armax = ad->rmax+ao->rmax;
-  if (size >1) {
-    prmax = PetscMax(p_loc->rmax,p_oth->rmax);
-  } else {
-    prmax = p_loc->rmax;
-  }
-  nlnk_max = armax*prmax;
-  if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
-  ierr = PetscLLCondensedCreate_Scalable(nlnk_max,&lnk);CHKERRQ(ierr);
+  Crmax = p_loc->rmax+p_oth->rmax;
+  if (Crmax > pN) Crmax = pN;
+  ierr = PetscTableCreate(Crmax,pN,&ta);CHKERRQ(ierr); 
+  MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
+  MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
+  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
+
+  ierr = PetscLLCondensedCreate_Scalable(Crmax,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);

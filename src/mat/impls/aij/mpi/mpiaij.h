@@ -3,7 +3,6 @@
 #define __MPIAIJ_H
 
 #include <../src/mat/impls/aij/seq/aij.h>
-#include <petscctable.h>
 
 typedef struct { /* used by MatCreateMPIAIJSumSeqAIJ for reusing the merged matrix */
   PetscLayout rowmap;

@@ -3,6 +3,7 @@
 #define __AIJ_H
 
 #include <petsc/private/matimpl.h>
+#include <petscctable.h>
 
 /*
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
