@@ -181,6 +181,10 @@ class BuildChecker(script.Script):
     if re.search(r'instantiated from here',line):      return
     # avoid MPI argument checks that cannot handle const
     if re.search(r"\(aka 'const double \*'\) doesn't match specified 'MPI' type tag that requires 'double \*'",line): return
+    if re.search(r"\(aka 'const int \*'\) doesn't match specified 'MPI' type tag that requires 'int \*'",line): return
+    # avoid MPI argument checks that cannot handle long long * vs long *
+    if re.search(r"\(aka 'long \*'\) doesn't match specified 'MPI' type tag that requires 'long long \*",line): return
+    if re.search(r"\(aka 'const long \*'\) doesn't match specified 'MPI' type tag that requires 'long long \*",line): return
     if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):  return
     if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):  return
     message = line.rstrip()
@@ -374,6 +378,11 @@ Thanks,
       import smtplib
       from email.mime.text import MIMEText
 
+      if author == 'Mark Adams <mark.adams@columbia.edu>':
+        author =  'Mark Adams <mfadams@lbl.gov>'
+      if author == 'Karl Rupp <rupp@mcs.anl.gov>':
+        author =  'Karl Rupp <me@karlrupp.net>'
+
       checkbuilds = 'PETSc checkBuilds <petsc-checkbuilds@mcs.anl.gov>'
       dev = 'petsc-dev <petsc-dev@mcs.anl.gov>'
       today = self.argDB['blameMailDate']
@@ -387,7 +396,9 @@ Thanks,
       msg['Reply-To'] = ','.join(REPLY_TO)
       msg['Subject'] = "PETSc blame digest (%s) %s\n\n" % (self.argDB['buildBranch'], today)
 
-      if self.argDB['blameMailPost']:
+      if author in ['Peter Brune <brune@mcs.anl.gov>']:
+        print 'Skipping sending e-mail to:',author
+      elif self.argDB['blameMailPost']:
         server = smtplib.SMTP('localhost')
         server.sendmail(FROM, TO, msg.as_string())
         server.quit()

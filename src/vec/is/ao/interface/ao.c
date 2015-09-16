@@ -45,7 +45,9 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ao));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ao),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ao,viewer);CHKERRQ(ierr);
@@ -497,14 +499,14 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
     PetscInt napp,npetsc;
     ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
     ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"napp %D != npetsc %d. Local IS lengths must match",napp,npetsc);
+    if (napp != npetsc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"napp %D != npetsc %D. Local IS lengths must match",napp,npetsc);
   }
+  if (isapp) {ierr = PetscObjectReference((PetscObject)isapp);CHKERRQ(ierr);}
+  if (ispetsc) {ierr = PetscObjectReference((PetscObject)ispetsc);CHKERRQ(ierr);}
   ierr = ISDestroy(&ao->isapp);CHKERRQ(ierr);
   ierr = ISDestroy(&ao->ispetsc);CHKERRQ(ierr);
   ao->isapp   = isapp;
   ao->ispetsc = ispetsc;
-  if (ao->isapp) {ierr = PetscObjectReference((PetscObject)ao->isapp);CHKERRQ(ierr);}
-  if (ao->ispetsc) {ierr = PetscObjectReference((PetscObject)ao->ispetsc);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

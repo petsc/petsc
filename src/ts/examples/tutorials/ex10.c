@@ -707,9 +707,9 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     rc[0] = i; rc[1] = i+1;
     ierr  = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
     for (q=0; q<nq; q++) {
-      PetscScalar D_R;
-      PetscScalar PETSC_UNUSED rad;
-      RDNode      n,nx,nt,ntx,drad,dD_R,dxD_R,dEm;
+      PetscScalar              D_R;
+      PETSC_UNUSED PetscScalar rad;
+      RDNode                   n,nx,nt,ntx,drad,dD_R,dxD_R,dEm;
       RDEvaluate(interp,deriv,q,x,i,&n,&nx);
       RDEvaluate(interp,deriv,q,xdot,i,&nt,&ntx);
       rad = RDRadiation(rd,&n,&drad);

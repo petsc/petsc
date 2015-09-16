@@ -133,7 +133,7 @@ extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
 extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode  PetscLogBegin_Private(void);
+extern PetscErrorCode  PetscLogInitialize(void);
 #endif
 extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
@@ -210,6 +210,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 extern PetscFPT PetscFPTData;
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+PetscSpinlock PetscViewerASCIISpinLock;
+PetscSpinlock PetscCommSpinLock;
 #endif
 
 /* -----------------------------------------------------------------------------------------------*/
@@ -304,6 +309,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (f_petsc_comm_world) PETSC_COMM_WORLD = MPI_Comm_f2c(*(MPI_Fint*)&f_petsc_comm_world); /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
   else PETSC_COMM_WORLD = MPI_COMM_WORLD;
   PetscInitializeCalled = PETSC_TRUE;
+
+  *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLock);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
+  *ierr = PetscSpinlockCreate(&PetscCommSpinLock);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
 
   *ierr = PetscErrorPrintfInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()\n");return;}
@@ -409,7 +419,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing SAWs\n");return;}
 #endif
 #if defined(PETSC_USE_LOG)
-  *ierr = PetscLogBegin_Private();
+  *ierr = PetscLogInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
 #endif
   *ierr = PetscInitialize_DynamicLibraries();
@@ -429,7 +439,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif

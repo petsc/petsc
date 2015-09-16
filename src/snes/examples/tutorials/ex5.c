@@ -66,6 +66,10 @@ typedef struct {
 */
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern PetscErrorCode FormExactSolution1(DM,AppCtx*,Vec);
+extern PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern PetscErrorCode FormExactSolution2(DM,AppCtx*,Vec);
+extern PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,AppCtx*);
 extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -84,6 +88,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81;
   PetscReal      bratu_lambda_min = 0.;
+  PetscInt       MMS              = 0;
   PetscBool      flg              = PETSC_FALSE;
   DM             da;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -105,6 +110,7 @@ int main(int argc,char **argv)
   user.param = 6.0;
   ierr       = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
+  ierr       = PetscOptionsGetInt(NULL,"-mms",&MMS,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -129,7 +135,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user);CHKERRQ(ierr);
+  switch (MMS) {
+  case 2:  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocalMMS2,&user);CHKERRQ(ierr);break;
+  case 1:  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocalMMS1,&user);CHKERRQ(ierr);break;
+  default: ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsGetBool(NULL,"-fd",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,&user);CHKERRQ(ierr);
@@ -169,6 +179,28 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     If using MMS, check the l_2 error
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  if (MMS) {
+    Vec       e;
+    PetscReal errorl2, errorinf;
+    PetscInt  N;
+
+    ierr = VecDuplicate(x, &e);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) x, NULL, "-sol_view");CHKERRQ(ierr);
+    if (MMS == 1) {ierr = FormExactSolution1(da, &user, e);CHKERRQ(ierr);}
+    else          {ierr = FormExactSolution2(da, &user, e);CHKERRQ(ierr);}
+    ierr = PetscObjectViewFromOptions((PetscObject) e, NULL, "-exact_view");CHKERRQ(ierr);
+    ierr = VecAXPY(e, -1.0, x);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) e, NULL, "-error_view");CHKERRQ(ierr);
+    ierr = VecNorm(e, NORM_2, &errorl2);CHKERRQ(ierr);
+    ierr = VecNorm(e, NORM_INFINITY, &errorinf);CHKERRQ(ierr);
+    ierr = VecGetSize(e, &N);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D error l2 %g inf %g\n", N, (double) errorl2/N, (double) errorinf);CHKERRQ(ierr);
+    ierr = VecDestroy(&e);CHKERRQ(ierr);
+  }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -188,8 +220,8 @@ int main(int argc,char **argv)
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
+   da - The DM
    user - user-defined application context
-   X - vector
 
    Output Parameter:
    X - vector
@@ -247,6 +279,86 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "FormExactSolution1"
+/*
+  FormExactSolution1 - Forms initial approximation.
+
+  Input Parameters:
+  da - The DM
+  user - user-defined application context
+
+  Output Parameter:
+  X - vector
+ */
+PetscErrorCode FormExactSolution1(DM da, AppCtx *user, Vec U)
+{
+  DM             coordDA;
+  Vec            coordinates;
+  DMDACoor2d   **coords;
+  PetscScalar  **u;
+  PetscReal      x, y;
+  PetscInt       xs, ys, xm, ym, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, U, &u);CHKERRQ(ierr);
+  for (j = ys; j < ys+ym; ++j) {
+    for (i = xs; i < xs+xm; ++i) {
+      x = PetscRealPart(coords[j][i].x);
+      y = PetscRealPart(coords[j][i].y);
+      u[j][i] = x*(1 - x)*y*(1 - y);
+    }
+  }
+  ierr = DMDAVecRestoreArray(da, U, &u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormExactSolution2"
+/*
+  FormExactSolution2 - Forms initial approximation.
+
+  Input Parameters:
+  da - The DM
+  user - user-defined application context
+
+  Output Parameter:
+  X - vector
+ */
+PetscErrorCode FormExactSolution2(DM da, AppCtx *user, Vec U)
+{
+  DM             coordDA;
+  Vec            coordinates;
+  DMDACoor2d   **coords;
+  PetscScalar  **u;
+  PetscReal      x, y;
+  PetscInt       xs, ys, xm, ym, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, U, &u);CHKERRQ(ierr);
+  for (j = ys; j < ys+ym; ++j) {
+    for (i = xs; i < xs+xm; ++i) {
+      x = PetscRealPart(coords[j][i].x);
+      y = PetscRealPart(coords[j][i].y);
+      u[j][i] = PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y);
+    }
+  }
+  ierr = DMDAVecRestoreArray(da, U, &u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
@@ -298,14 +410,117 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocalMMS1"
+/* FormFunctionLocalMMS1 - Evaluates nonlinear function, F(x) on local process patch */
+PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscScalar **f,AppCtx *user)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx;
+  PetscScalar    u,ue,uw,un,us,uxx,uyy;
+  PetscReal      x,y;
+  DM             coordDA;
+  Vec            coordinates;
+  DMDACoor2d   **coords;
+
+  PetscFunctionBeginUser;
+  lambda = user->param;
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
+  hxdhy  = hx/hy;
+  hydhx  = hy/hx;
+  /* Extract coordinates */
+  ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  /* Compute function over the locally owned part of the grid */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+        f[j][i] = 2.0*(hydhx+hxdhy)*vx[j][i];
+      } else {
+        x  = PetscRealPart(coords[j][i].x);
+        y  = PetscRealPart(coords[j][i].y);
+        u  = vx[j][i];
+        uw = vx[j][i-1];
+        ue = vx[j][i+1];
+        un = vx[j-1][i];
+        us = vx[j+1][i];
+
+        if (i-1 == 0) uw = 0.;
+        if (i+1 == info->mx-1) ue = 0.;
+        if (j-1 == 0) un = 0.;
+        if (j+1 == info->my-1) us = 0.;
+
+        uxx     = (2.0*u - uw - ue)*hydhx;
+        uyy     = (2.0*u - un - us)*hxdhy;
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*exp(x*(1 - x)*y*(1 - y)));
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocalMMS2"
+/* FormFunctionLocalMMS2 - Evaluates nonlinear function, F(x) on local process patch */
+PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscScalar **f,AppCtx *user)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx;
+  PetscScalar    u,ue,uw,un,us,uxx,uyy;
+  PetscReal      x,y;
+  DM             coordDA;
+  Vec            coordinates;
+  DMDACoor2d   **coords;
+
+  PetscFunctionBeginUser;
+  lambda = user->param;
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
+  hxdhy  = hx/hy;
+  hydhx  = hy/hx;
+  /* Extract coordinates */
+  ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  /* Compute function over the locally owned part of the grid */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+        f[j][i] = 2.0*(hydhx+hxdhy)*vx[j][i];
+      } else {
+        x  = PetscRealPart(coords[j][i].x);
+        y  = PetscRealPart(coords[j][i].y);
+        u  = vx[j][i];
+        uw = vx[j][i-1];
+        ue = vx[j][i+1];
+        un = vx[j-1][i];
+        us = vx[j+1][i];
+
+        if (i-1 == 0) uw = 0.;
+        if (i+1 == info->mx-1) ue = 0.;
+        if (j-1 == 0) un = 0.;
+        if (j+1 == info->my-1) us = 0.;
+
+        uxx     = (2.0*u - uw - ue)*hydhx;
+        uyy     = (2.0*u - un - us)*hxdhy;
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*exp(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormObjectiveLocal"
-/*
-   FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
-
-
- */
+/* FormObjectiveLocal - Evaluates nonlinear function, F(x) on local process patch */
 PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal *obj,AppCtx *user)
 {
   PetscErrorCode ierr;

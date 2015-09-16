@@ -43,6 +43,15 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+/* ========================================================================== */
+/*
+   Since PETSc manages its own extern "C" handling users should never include PETSc include
+   files within extern "C"
+*/
+#if defined(__cplusplus)
+void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_put_petsc_headers_inside_an_extern_c(double);
+#endif
+
 #if defined(__cplusplus)
 #  define PETSC_RESTRICT PETSC_CXX_RESTRICT
 #else
@@ -143,7 +152,7 @@
 #endif
 
 /* Support for Clang (>=3.2) matching type tag arguments with void* buffer types */
-#if defined(__has_attribute)
+#if defined(__has_attribute) && defined(works_with_const_which_is_not_true)
 #  if __has_attribute(argument_with_type_tag) && __has_attribute(pointer_with_type_tag) && __has_attribute(type_tag_for_datatype)
 #    define PetscAttrMPIPointerWithType(bufno,typeno) __attribute__((pointer_with_type_tag(MPI,bufno,typeno)))
 #    define PetscAttrMPITypeTag(type)                 __attribute__((type_tag_for_datatype(MPI,type)))
@@ -1639,7 +1648,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt
 #include <petscviewertypes.h>
 #include <petscoptions.h>
 
-PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscMemoryView(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 #define PetscObjectQueryFunction(obj,name,fptr) PetscObjectQueryFunction_Private((obj),(name),(PetscVoidFunction*)(fptr))
@@ -1916,8 +1925,8 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
 #if defined(PETSC_USE_DEBUG)
-  unsigned long al = (unsigned long) a,bl = (unsigned long) b;
-  unsigned long nl = (unsigned long) n;
+  size_t al = (size_t) a,bl = (size_t) b;
+  size_t nl = (size_t) n;
   PetscFunctionBegin;
   if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
   if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
@@ -1931,7 +1940,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
               Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
 #endif
 #if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
-   if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+   if (!(a % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       size_t len = n/sizeof(PetscScalar);
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
       PetscBLASInt   one = 1,blen;
@@ -2436,6 +2445,7 @@ typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"
 #define PETSCSPRNG      "sprng"
+#define PETSCRANDER48   "rander48"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
@@ -2665,6 +2675,7 @@ struct _n_PetscSubcomm {
   PetscSubcommType type;
 };
 
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);

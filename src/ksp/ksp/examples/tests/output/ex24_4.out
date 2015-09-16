@@ -1,10 +1,10 @@
 
  CG: 
-Number of iterations =   9
+Number of iterations =   7
+  Error norm 1.7801e-07.
 
  MINRES: 
-Number of iterations =   9
-Residual norm 1.2076e-05;  Error norm 2.50428e-06.
+Number of iterations =   8
 
  SYMMLQ: 
-Number of iterations =   9
+Number of iterations =   8

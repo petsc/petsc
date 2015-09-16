@@ -737,7 +737,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   /* Compute global mapping of local dofs */
   ierr = ComputeMapping(dd,&matis_map);CHKERRQ(ierr);
   /* Create MATIS object needed by BDDC */
-  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,&temp_A);CHKERRQ(ierr);
+  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,NULL,&temp_A);CHKERRQ(ierr);
   /* Set local subdomain matrices into MATIS object */
   ierr = MatScale(local_mat,dd.scalingfactor);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
@@ -870,7 +870,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   PetscRandom rctx;
   ierr = MatCreateVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
   ierr = PetscRandomCreate(dd.gcomm,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rctx,PETSCRAND);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[1],rctx);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,2,vecs,&near_null_space);CHKERRQ(ierr);

@@ -252,9 +252,11 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscViewer v;
 
     ierr = PetscViewerASCIIGetStdout(comm, &v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for serial flipped cells:\n", rank);CHKERRQ(ierr);
     ierr = PetscBTView(cEnd-cStart, flippedCells, v);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(v);CHKERRQ(ierr);
   }
   /* Now all subdomains are oriented, but we need a consistent parallel orientation */
   if (numLeaves >= 0) {
@@ -470,9 +472,11 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscViewer v;
 
     ierr = PetscViewerASCIIGetStdout(comm, &v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for parallel flipped cells:\n", rank);CHKERRQ(ierr);
     ierr = PetscBTView(cEnd-cStart, flippedCells, v);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(v);CHKERRQ(ierr);
   }
   /* Reverse flipped cells in the mesh */
   for (c = cStart; c < cEnd; ++c) {

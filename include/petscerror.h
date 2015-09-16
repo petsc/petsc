@@ -67,6 +67,8 @@
 #define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
 #define PETSC_ERR_MAX_VALUE        93  /* this is always the one more than the largest error code */
 
+#define PETSC_ERR_OPT_OVERWRITE    94  /* overwrote options which should not be changed */
+
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 
@@ -82,7 +84,8 @@
    Not Collective
 
    Input Parameters:
-+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message
 
   Level: beginner
@@ -112,7 +115,8 @@ M*/
    Not Collective
 
    Input Parameters:
-+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 -  arg - argument (for example an integer, string or double)
 
@@ -134,12 +138,13 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
+   PetscErrorCode SETERRQ2(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
    Not Collective
 
    Input Parameters:
-+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 -  arg2 - argument (for example an integer, string or double)
@@ -162,12 +167,13 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ3(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
    Not Collective
 
    Input Parameters:
-+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -188,11 +194,204 @@ M*/
 M*/
 #define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
 
+/*MC
+   SETERRQ4 - Macro that is called when an error has been detected,
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRQ4(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+
+   Not Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+.  arg3 - argument (for example an integer, string or double)
+-  arg4 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    There are also versions for 4, 5, 6 and 7 arguments.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+M*/
 #define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
+
+/*MC
+   SETERRQ5 - Macro that is called when an error has been detected,
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRQ5(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+
+   Not Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+.  arg3 - argument (for example an integer, string or double)
+.  arg4 - argument (for example an integer, string or double)
+-  arg5 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    There are also versions for 4, 5, 6 and 7 arguments.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+M*/
 #define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
+
+/*MC
+   SETERRQ6 - Macro that is called when an error has been detected,
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRQ6(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+
+   Not Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+.  arg3 - argument (for example an integer, string or double)
+.  arg4 - argument (for example an integer, string or double)
+.  arg5 - argument (for example an integer, string or double)
+-  arg6 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    There are also versions for 4, 5, 6 and 7 arguments.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+M*/
 #define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
+
+/*MC
+   SETERRQ7 - Macro that is called when an error has been detected,
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRQ7(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+
+   Not Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+.  arg3 - argument (for example an integer, string or double)
+.  arg4 - argument (for example an integer, string or double)
+.  arg5 - argument (for example an integer, string or double)
+.  arg6 - argument (for example an integer, string or double)
+-  arg7 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    There are also versions for 4, 5, 6 and 7 arguments.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+M*/
 #define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
+
+/*MC
+   SETERRQ8 - Macro that is called when an error has been detected,
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRQ8(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+
+   Not Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+.  arg3 - argument (for example an integer, string or double)
+.  arg4 - argument (for example an integer, string or double)
+.  arg5 - argument (for example an integer, string or double)
+.  arg6 - argument (for example an integer, string or double)
+.  arg7 - argument (for example an integer, string or double)
+-  arg8 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    There are also versions for 4, 5, 6 and 7 arguments.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+M*/
 #define SETERRQ8(comm,n,s,a1,a2,a3,a4,a5,a6,a7,a8) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7,a8)
+
+/*MC
+   SETERRABORT - Macro that can be called when an error has been detected,
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRABORT(MPI_Comm comm,PetscErrorCode errorcode,char *message)
+
+   Not Collective
+
+   Input Parameters:
++  comm - A communicator, so that the error can be collective
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+-  message - error message in the printf format
+
+  Level: beginner
+
+   Notes:
+    This function just calls MPI_Abort().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+M*/
 #define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
 
 /*MC

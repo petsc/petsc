@@ -14,6 +14,16 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+/*F
+This examples solves either
+\begin{equation}
+  F\genfrac{(}{)}{0pt}{}{x_0}{x_1} = \genfrac{(}{)}{0pt}{}{x^2_0 + x_0 x_1 - 3}{x_0 x_1 + x^2_1 - 6}
+\end{equation}
+or if the {\tt -hard} options is given
+\begin{equation}
+  F\genfrac{(}{)}{0pt}{}{x_0}{x_1} = \genfrac{(}{)}{0pt}{}{\sin(3 x_0) + x_0}{x_1}
+\end{equation}
+F*/
 #include <petscsnes.h>
 
 /*

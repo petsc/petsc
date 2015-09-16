@@ -17,8 +17,10 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscRandom    rand;
   PetscBool      flg,TestOverlap,TestSubMat,TestAllcols;
-  PetscLogStage  stages[2];
   PetscInt       vid = -1;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage  stages[2];
+#endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

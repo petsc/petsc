@@ -350,7 +350,6 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
   while (next) {
     n++;
     ierr = SNESSetDM(next->snes,dm);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(next->snes);CHKERRQ(ierr);
     ierr = SNESSetApplicationContext(next->snes, snes->user);CHKERRQ(ierr);
     if (snes->xl && snes->xu) {
       if (snes->ops->computevariablebounds) {
@@ -944,4 +943,3 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetDamping_C",SNESCompositeSetDamping_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

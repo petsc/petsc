@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.cxx
+                ex43.c ex44.c ex45.c ex46.cxx ex47.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -173,6 +173,9 @@ ex45: ex45.o chkopts
 ex46: ex46.o chkopts
 	-${CLINKER} -o ex46 ex46.o ${PETSC_KSP_LIB}
 	${RM} ex46.o
+ex47: ex47.o chkopts
+	-${CLINKER} -o ex47 ex47.o ${PETSC_KSP_LIB}
+	${RM} ex47.o
 ex47f: ex47f.o chkopts
 	-${FLINKER} -o ex47f ex47f.o ${PETSC_KSP_LIB}
 	${RM} ex47f.o
@@ -457,12 +460,12 @@ runex24_4:
            ${RM} -f ex24_4.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_1.tmp
 runex25_2:
-	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
+	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro \
 		-pc_type jacobi -pc_jacobi_type rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
@@ -952,10 +955,16 @@ runex45:
 	   ${RM} -f ex45.tmp
 
 runex46:
-	-@${MPIEXEC} -np 1 ./ex46 > ex46.tmp 2>&1;
+	-@${MPIEXEC} -np 1 ./ex46 > ex46.tmp 2>&1;\
 	if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex46, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
+
+runex47:
+	-@${MPIEXEC} -np 1 ./ex47 -pc_type fieldsplit > ex47.tmp 2>&1;\
+	if (${DIFF} output/ex47_1.out ex47.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex47, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex47.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
@@ -970,7 +979,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
-                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm
+                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm

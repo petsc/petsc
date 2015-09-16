@@ -89,7 +89,6 @@ def main():
         if argv[3] == 'clean' :
           cleanfiles = 1
 
-    baseurl = 'http://www.mcs.anl.gov/petsc/documentation'
     baseurl = PETSC_DIR + '/src/docs/website/documentation/'
     htmlfiles = [
         'bugreporting.html',
@@ -144,11 +143,9 @@ def main():
         filename = LOC + '/docs/' + basename
         dirpath = os.path.dirname(filename)
         chkdir(dirpath)
-        #wgetcmd = 'wget -nv ' + urlname + ' -O ' + filename
-        #os.system(wgetcmd)
-        shutil.copyfile(urlname,filename)
-
-        modifyfile(filename)
+        if os.path.isfile(urlname): # dev.html should not exist in a release
+            shutil.copyfile(urlname,filename)
+            modifyfile(filename)
 
 # The classes in this file can also
 # be used in other python-programs by using 'import'

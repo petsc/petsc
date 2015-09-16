@@ -92,6 +92,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   PetscScalar       *v[6],dots[5];
   Vec               vec[6];
   PetscInt          n,N,dim,nmodes,i,j;
+  PetscReal         sN;
 
   PetscFunctionBegin;
   ierr = VecGetBlockSize(coords,&dim);CHKERRQ(ierr);
@@ -99,6 +100,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   ierr = VecGetSize(coords,&N);CHKERRQ(ierr);
   n   /= dim;
   N   /= dim;
+  sN = 1./PetscSqrtReal((PetscReal)N);
   switch (dim) {
   case 1:
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_TRUE,0,NULL,sp);CHKERRQ(ierr);
@@ -115,23 +117,23 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
     ierr = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (dim == 2) {
-        v[0][i*2+0] = 1./N;
+        v[0][i*2+0] = sN;
         v[0][i*2+1] = 0.;
         v[1][i*2+0] = 0.;
-        v[1][i*2+1] = 1./N;
+        v[1][i*2+1] = sN;
         /* Rotations */
         v[2][i*2+0] = -x[i*2+1];
         v[2][i*2+1] = x[i*2+0];
       } else {
-        v[0][i*3+0] = 1./N;
+        v[0][i*3+0] = sN;
         v[0][i*3+1] = 0.;
         v[0][i*3+2] = 0.;
         v[1][i*3+0] = 0.;
-        v[1][i*3+1] = 1./N;
+        v[1][i*3+1] = sN;
         v[1][i*3+2] = 0.;
         v[2][i*3+0] = 0.;
         v[2][i*3+1] = 0.;
-        v[2][i*3+2] = 1./N;
+        v[2][i*3+2] = sN;
 
         v[3][i*3+0] = x[i*3+1];
         v[3][i*3+1] = -x[i*3+0];
@@ -184,7 +186,9 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)sp));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sp,1,viewer,2);
 

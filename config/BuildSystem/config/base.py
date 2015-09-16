@@ -449,7 +449,7 @@ class Configure(script.Script):
     (out, err, ret) = self.preprocess(codeStr, timeout = timeout)
     #pgi dumps filename on stderr - but returns 0 errorcode'
     if err =='conftest.c:': err = ''
-    err = self.framework.filterPreprocessOutput(err)
+    err = self.framework.filterPreprocessOutput(err, self.log)
     return not ret and not len(err)
 
   # Should be static
@@ -536,15 +536,17 @@ class Configure(script.Script):
 
     cleanup = cleanup and self.framework.doCleanup
 
+    langPushed = 0
     if linkLanguage is not None and linkLanguage != self.language[-1]:
       self.pushLanguage(linkLanguage)
+      langPushed = 1
     if shared == 'dynamic':
       cmd = self.getDynamicLinkerCmd()
     elif shared:
       cmd = self.getSharedLinkerCmd()
     else:
       cmd = self.getLinkerCmd()
-    if linkLanguage is not None and linkLanguage != self.language[-1]:
+    if langPushed:
       self.popLanguage()
 
     linkerObj = self.linkerObj

@@ -998,10 +998,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 
       ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = ISGetLocalSize(dirIS,&dirsize);CHKERRQ(ierr);
       ierr = VecGetArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
       ierr = VecGetArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
@@ -1010,8 +1010,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = ISRestoreIndices(dirIS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
       ierr = VecRestoreArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       pcbddc->rhs_change = PETSC_TRUE;
       ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
     }
@@ -1172,6 +1172,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*        matis;
   MatNullSpace   nearnullspace;
+  PetscInt       nrows,ncols;
   PetscBool      computetopography,computesolvers,computesubschurs;
   PetscBool      computeconstraintsmatrix;
   PetscBool      new_nearnullspace_provided,ismatis;
@@ -1180,6 +1181,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
+  }
+  ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
+  if (nrows != ncols) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   }
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
@@ -1216,7 +1221,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
       pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
-      ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }

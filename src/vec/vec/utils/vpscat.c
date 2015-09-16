@@ -5,6 +5,7 @@
 
 #include <../src/vec/vec/impls/dvecimpl.h>         /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterView_MPI"
@@ -42,7 +43,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %D\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
 
     } else {
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %D; Number to self = %D\n",rank,to->n,to->local.n);CHKERRQ(ierr);
       if (to->n) {
         for (i=0; i<to->n; i++) {
@@ -73,7 +74,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       }
 
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -162,7 +163,15 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 
 #if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallw) {
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Type_free(to->types+to->procs[i]);CHKERRQ(ierr);
+    }
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
+    if (!from->contiq) {
+      for (i=0; i<from->n; i++) {
+        ierr = MPI_Type_free(from->types+from->procs[i]);CHKERRQ(ierr);
+      }
+    }
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
   }
 #endif
@@ -2983,5 +2992,47 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateFromZero"
+/*@
+  PetscSFCreateFromZero - Create a PetscSF that maps a Vec from sequential to distributed
+
+  Input Parameters:
+. gv - A distributed Vec
+
+  Output Parameters:
+. sf - The SF created mapping a sequential Vec to gv
+
+  Level: developer
+
+.seealso: DMPlexDistributedToSequential()
+@*/
+PetscErrorCode PetscSFCreateFromZero(MPI_Comm comm, Vec gv, PetscSF *sf)
+{
+  PetscSFNode   *remotenodes;
+  PetscInt      *localnodes;
+  PetscInt       N, n, start, numroots, l;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFCreate(comm, sf);CHKERRQ(ierr);
+  ierr = VecGetSize(gv, &N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gv, &n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(gv, &start, NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &localnodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &remotenodes);CHKERRQ(ierr);
+  if (!rank) numroots = N;
+  else       numroots = 0;
+  for (l = 0; l < n; ++l) {
+    localnodes[l]        = l;
+    remotenodes[l].rank  = 0;
+    remotenodes[l].index = l+start;
+  }
+  ierr = PetscSFSetGraph(*sf, numroots, n, localnodes, PETSC_OWN_POINTER, remotenodes, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

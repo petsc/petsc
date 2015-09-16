@@ -20,14 +20,14 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
     archflags = ""
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       if self.types.sizes['known-sizeof-void-p'] == 32:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:

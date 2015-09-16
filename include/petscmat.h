@@ -71,6 +71,7 @@ typedef const char* MatType;
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
+#define MATNORMALHERMITIAN "normalh"
 #define MATLRC             "lrc"
 #define MATSCATTER         "scatter"
 #define MATBLOCKMAT        "blockmat"
@@ -222,8 +223,9 @@ PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt[
 
 PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateNormalHermitian(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLRC(Mat,Mat,Mat,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,ISLocalToGlobalMapping,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 
@@ -321,10 +323,8 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_OPTION_MIN = -5,
-              MAT_NEW_NONZERO_LOCATION_ERR = -4,
-              MAT_UNUSED_NONZERO_LOCATION_ERR = -3,
-              MAT_NEW_NONZERO_ALLOCATION_ERR = -2,
+typedef enum {MAT_OPTION_MIN = -3,
+              MAT_UNUSED_NONZERO_LOCATION_ERR = -2,
               MAT_ROW_ORIENTED = -1,
               MAT_SYMMETRIC = 1,
               MAT_STRUCTURALLY_SYMMETRIC = 2,
@@ -336,7 +336,7 @@ typedef enum {MAT_OPTION_MIN = -5,
               MAT_USE_INODES = 8,
               MAT_HERMITIAN = 9,
               MAT_SYMMETRY_ETERNAL = 10,
-              MAT_DUMMY = 11,
+              MAT_NEW_NONZERO_LOCATION_ERR = 11,
               MAT_IGNORE_LOWER_TRIANGULAR = 12,
               MAT_ERROR_LOWER_TRIANGULAR = 13,
               MAT_GETROW_UPPERTRIANGULAR = 14,
@@ -344,8 +344,9 @@ typedef enum {MAT_OPTION_MIN = -5,
               MAT_NO_OFF_PROC_ZERO_ROWS = 16,
               MAT_NO_OFF_PROC_ENTRIES = 17,
               MAT_NEW_NONZERO_LOCATIONS = 18,
-              MAT_SUBSET_OFF_PROC_ENTRIES = 19,
-              MAT_OPTION_MAX = 20} MatOption;
+              MAT_NEW_NONZERO_ALLOCATION_ERR = 19,
+              MAT_SUBSET_OFF_PROC_ENTRIES = 20,
+              MAT_OPTION_MAX = 21} MatOption;
 
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
@@ -1564,7 +1565,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunction(Mat,PetscErrorCode(*)(void*,Vec,Vec),void*);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioni(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioniBase(Mat,PetscErrorCode (*)(void*,Vec));
-PETSC_EXTERN PetscErrorCode MatMFFDAddNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatMFFDSetHHistory(Mat,PetscScalar[],PetscInt);
 PETSC_EXTERN PetscErrorCode MatMFFDResetHHistory(Mat);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctionError(Mat,PetscReal);

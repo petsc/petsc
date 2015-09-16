@@ -22,7 +22,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
-                ex181.c ex182.c ex183.c ex190.c ex191.c ex192.c ex193.c
+                ex181.c ex182.c ex183.c ex190.c ex191.c ex192.c ex193.c 194.c
 
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
@@ -343,15 +343,10 @@ ex81: ex81.o chkopts
 ex82: ex82.o chkopts
 	-${CLINKER} -o ex82 ex82.o ${PETSC_MAT_LIB}
 	${RM} ex82.o
-	
+
 ex83: ex83.o chkopts
 	-${CLINKER} -o ex83 ex83.o ${PETSC_MAT_LIB}
 	${RM} ex83.o
-	
-ex84: ex84.o chkopts
-	-${CLINKER} -o ex84 ex84.o ${PETSC_MAT_LIB}
-	${RM} ex84.o		
-		
 
 ex79f: ex79f.o chkopts
 	-${FLINKER} -o ex79f ex79f.o ${PETSC_MAT_LIB}
@@ -740,11 +735,15 @@ ex191: ex191.o chkopts
 ex192: ex192.o chkopts
 	-${CLINKER} -o ex192 ex192.o ${PETSC_MAT_LIB}
 	${RM} ex192.o
-	
+
 ex193: ex193.o chkopts
 	-${CLINKER} -o ex193 ex193.o ${PETSC_MAT_LIB}
 	${RM} ex193.o
-		
+
+ex194: ex194.o chkopts
+	-${CLINKER} -o ex194 ex194.o ${PETSC_MAT_LIB}
+	${RM} ex194.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1829,6 +1828,7 @@ runex109_2:
 runex110:
 	-@${MPIEXEC} -n 3 ./ex110
 
+#  runex111_1 and runex111_2 are not run in testing since they take some nontrivial time
 runex111:
 	-@${MPIEXEC} -n 1 ./ex111 -fA ${DATAFILESPATH}/matrices/matmatmult/K2.gz -fP ${DATAFILESPATH}/matrices/matmatmult/V2.gz > ex111.tmp 2>&1; \
 	   if (${DIFF} output/ex111.out ex111.tmp) then true; \
@@ -2389,12 +2389,17 @@ runex192:
 	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve -mat_mumps_icntl_19 1 >> ex192.tmp 2>&1; \
 	   ${DIFF} output/ex192.out ex192.tmp || printf "${PWD}\nPossible problem with ex192, diffs above\n=========================================\n"; \
 	   ${RM} -f ex192.tmp
-	   
+
 
 runex193:
 	  -@${MPIEXEC} -n 4 ./ex193   -mat_partitioning_hierarchical_Nfineparts 2  > ex193.tmp 2>&1; \
 	   ${DIFF} output/ex193.out ex193.tmp || printf "${PWD}\nPossible problem with ex193, diffs above\n=========================================\n"; \
-	   ${RM} -f ex193.tmp	   
+	   ${RM} -f ex193.tmp
+
+runex194:
+	  -@${MPIEXEC} -n 2 ./ex194   > ex194.tmp 2>&1; \
+	   ${DIFF} output/ex194_1.out ex194.tmp || printf "${PWD}\nPossible problem with ex194, diffs above\n=========================================\n"; \
+	   ${RM} -f ex194.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
@@ -2429,7 +2434,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 runex181_2 ex181.rm\
                                  ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm \
                                  ex183.PETSc runex183_2_1 runex183_3_2 runex183_4_2 runex183_6_2 ex183.rm\
-                                 ex191.PETSc runex191 ex191.rm
+                                 ex191.PETSc runex191 ex191.rm ex194.PETSc runex194 ex194.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
@@ -2458,7 +2463,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 e
                                  ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
                                  runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
-                                 ex111.PETSc runex111 runex111_2 runex111_3 ex111.rm \
+                                 ex111.PETSc runex111_3 ex111.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm \
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \
@@ -2466,7 +2471,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 e
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm \
                                  ex173.PETSc runex173 ex173.rm ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm \
                                  ex180.PETSc runex180 ex180.rm  ex190.PETSc runex190 ex190.rm
-TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm
+TESTEXAMPLES_DOUBLEINT32       = ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm ex152.PETSc runex152 runex152_2 ex152.rm
@@ -2483,6 +2489,6 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
 TESTEXAMPLES_MUMPS             = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm \
-                                 ex192.PETSc runex192_mumps runex192_mumps_2 ex192.rm
+                                 ex192.PETSc runex192 ex192.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

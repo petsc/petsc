@@ -371,6 +371,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, mesh->useAnchors, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateTwoSidedProcessSF"
 /*@
@@ -617,7 +618,6 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   }
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-overlap_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(ovAdjByRank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Make process SF and invert sender to receiver label */
@@ -944,14 +944,14 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeCones"
-PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
+PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex               *mesh  = (DM_Plex*) dm->data;
   DM_Plex               *pmesh = (DM_Plex*) (dmParallel)->data;
   MPI_Comm               comm;
   PetscSF                coneSF;
   PetscSection           originalConeSection, newConeSection;
-  PetscInt              *remoteOffsets, *cones, *newCones, newConesSize;
+  PetscInt              *remoteOffsets, *cones, *globCones, *newCones, newConesSize;
   PetscBool              flg;
   PetscErrorCode         ierr;
 
@@ -979,9 +979,21 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
   /* Communicate and renumber cones */
   ierr = PetscSFCreateSectionSF(migrationSF, originalConeSection, remoteOffsets, newConeSection, &coneSF);CHKERRQ(ierr);
   ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+  if (original) {
+    PetscInt numCones;
+
+    ierr = PetscSectionGetStorageSize(originalConeSection,&numCones);CHKERRQ(ierr); ierr = PetscMalloc1(numCones,&globCones);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyBlock(original, numCones, cones, globCones);CHKERRQ(ierr);
+  }
+  else {
+    globCones = cones;
+  }
   ierr = DMPlexGetCones(dmParallel, &newCones);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, globCones, newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, globCones, newCones);CHKERRQ(ierr);
+  if (original) {
+    ierr = PetscFree(globCones);CHKERRQ(ierr);
+  }
   ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
 #if PETSC_USE_DEBUG
@@ -1145,7 +1157,7 @@ PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalTo
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeSetupTree"
-PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
+PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex        *mesh  = (DM_Plex*) dm->data;
   DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
@@ -1167,7 +1179,7 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
   ierr = DMPlexGetTree(dm,&origParentSection,&origParents,&origChildIDs,NULL,NULL);CHKERRQ(ierr);
   if (origParentSection) {
     PetscInt        pStart, pEnd;
-    PetscInt        *newParents, *newChildIDs;
+    PetscInt        *newParents, *newChildIDs, *globParents;
     PetscInt        *remoteOffsetsParents, newParentSize;
     PetscSF         parentSF;
 
@@ -1178,8 +1190,21 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
     ierr = PetscSFCreateSectionSF(migrationSF, origParentSection, remoteOffsetsParents, newParentSection, &parentSF);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(newParentSection,&newParentSize);CHKERRQ(ierr);
     ierr = PetscMalloc2(newParentSize,&newParents,newParentSize,&newChildIDs);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origParents, newParents);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origParents, newParents);CHKERRQ(ierr);
+    if (original) {
+      PetscInt numParents;
+
+      ierr = PetscSectionGetStorageSize(origParentSection,&numParents);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numParents,&globParents);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApplyBlock(original, numParents, origParents, globParents);CHKERRQ(ierr);
+    }
+    else {
+      globParents = origParents;
+    }
+    ierr = PetscSFBcastBegin(parentSF, MPIU_INT, globParents, newParents);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(parentSF, MPIU_INT, globParents, newParents);CHKERRQ(ierr);
+    if (original) {
+      ierr = PetscFree(globParents);CHKERRQ(ierr);
+    }
     ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApplyBlock(renumbering,IS_GTOLM_MASK, newParentSize, newParents, NULL, newParents);CHKERRQ(ierr);
@@ -1386,6 +1411,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   PetscInt               dim, nroots;
   PetscSF                sfPoint;
   ISLocalToGlobalMapping ltogMigration;
+  ISLocalToGlobalMapping ltogOriginal = NULL;
   PetscBool              flg;
   PetscErrorCode         ierr;
 
@@ -1401,10 +1427,8 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
     IS                     isOriginal;
-    ISLocalToGlobalMapping ltogOriginal;
-    PetscInt               n, size, nleaves, conesSize;
-    PetscInt              *numbering_orig, *numbering_new, *cones;
-    PetscSection           coneSection;
+    PetscInt               n, size, nleaves;
+    PetscInt              *numbering_orig, *numbering_new;
     /* Get the original point numbering */
     ierr = DMPlexCreatePointNumbering(dm, &isOriginal);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(isOriginal, &ltogOriginal);CHKERRQ(ierr);
@@ -1419,13 +1443,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
     ierr = PetscSFBcastEnd(sf, MPIU_INT, (PetscInt *) numbering_orig, numbering_new);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreate(comm, 1, nleaves, (const PetscInt*) numbering_new, PETSC_OWN_POINTER, &ltogMigration);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogOriginal, (const PetscInt**)&numbering_orig);CHKERRQ(ierr);
-    /* Convert cones to global numbering before migrating them */
-    ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
-    ierr = PetscSectionGetStorageSize(coneSection, &conesSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyBlock(ltogOriginal, conesSize, cones, cones);CHKERRQ(ierr);
     ierr = ISDestroy(&isOriginal);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);CHKERRQ(ierr);
   } else {
     /* One-to-all distribution pattern: We can derive LToG from SF */
     ierr = ISLocalToGlobalMappingCreateSF(sf, 0, &ltogMigration);CHKERRQ(ierr);
@@ -1436,11 +1454,12 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
     ierr = ISLocalToGlobalMappingView(ltogMigration, NULL);CHKERRQ(ierr);
   }
   /* Migrate DM data to target DM */
-  ierr = DMPlexDistributeCones(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
+  ierr = DMPlexDistributeCones(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeCoordinates(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeLabels(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupHybrid(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetupTree(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetupTree(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogMigration);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Migrate, dm, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1542,7 +1561,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-partition_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(lblPartition, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscSFView(sfMigration, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -1594,6 +1612,13 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
   /* Copy BC */
   ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
+  /* Create sfNatural */
+  if (dm->useNatural) {
+    PetscSection section;
+
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural);CHKERRQ(ierr);
+  }
   /* Cleanup */
   if (sf) {*sf = sfMigration;}
   else    {ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);}

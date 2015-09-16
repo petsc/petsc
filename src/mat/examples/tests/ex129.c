@@ -233,7 +233,6 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
 
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rand,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);

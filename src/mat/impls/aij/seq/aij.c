@@ -758,13 +758,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     for (i=0; i<m; i++) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(a->a[j]) > 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%D %D, %g %g\n", i+fshift,a->j[j]+fshift,(double)PetscRealPart(a->a[j]),(double)PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
-        } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%D %D, %g -%g\n", i+fshift,a->j[j]+fshift,(double)PetscRealPart(a->a[j]),(double)-PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
-        } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"%D %D, %g\n", i+fshift,a->j[j]+fshift,(double)PetscRealPart(a->a[j]));CHKERRQ(ierr);
-        }
+        ierr = PetscViewerASCIIPrintf(viewer,"%D %D %g %g\n", i+fshift,a->j[j]+fshift,(double)PetscRealPart(a->a[j]),(double)PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
 #else
         ierr = PetscViewerASCIIPrintf(viewer,"%D %D %g\n", i+fshift, a->j[j]+fshift, (double)a->a[j]);CHKERRQ(ierr);
 #endif
@@ -3073,7 +3067,7 @@ PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (!aij->nz) {
+  if (!Y->preallocated || !aij->nz) {
     ierr = MatSeqAIJSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
@@ -4252,15 +4246,15 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
 
        The format which is used for the sparse matrix input, is equivalent to a
     row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
+    as shown
 
-        1 0 0
-        2 0 3
-        4 5 6
-
-        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
-        j =  {0,0,2,0,1,2}  [size = nz = 6]; values must be sorted for each row
-        v =  {1,2,3,4,5,6}  [size = nz = 6]
+$        1 0 0
+$        2 0 3
+$        4 5 6
+$
+$        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
+$        j =  {0,0,2,0,1,2}  [size = 6]; values must be sorted for each row
+$        v =  {1,2,3,4,5,6}  [size = 6]
 
 
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()

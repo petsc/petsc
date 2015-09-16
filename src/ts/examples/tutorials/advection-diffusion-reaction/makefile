@@ -33,6 +33,10 @@ ex5: ex5.o  chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_TS_LIB}
 	${RM} ex5.o
 
+ex5adj: ex5adj.o  chkopts
+	-${CLINKER} -o ex5adj ex5adj.o  ${PETSC_TS_LIB}
+	${RM} ex5adj.o
+
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_TS_LIB}
 	${RM} ex7.o
@@ -91,6 +95,15 @@ runex5:
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
+
+runex5adj:
+	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -da_grid_x 3 -da_grid_y 3 > ex5adj_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_1.out ex5adj_1.tmp) then true; \
+	   else printf "${PWD}\n Possible problem with ex5adj_1, diffs above\n=======================================\n"; fi; \
+	   ${RM} -f ex5adj_1.tmp
+
+runex5adj_2:
+	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi -draw_pause -2
 
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5 -ts_monitor  > ex7_1.tmp 2>&1;	  \

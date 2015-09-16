@@ -9,6 +9,7 @@ class Configure(config.package.GNUPackage):
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.4.tar.gz']
     self.functions         = []
     self.includes          = []
+    self.hastests          = 1
     return
 
   def setupDependencies(self, framework):

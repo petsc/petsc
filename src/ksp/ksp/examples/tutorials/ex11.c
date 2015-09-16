@@ -47,15 +47,11 @@ int main(int argc,char **args)
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
   PetscBool      flg = PETSC_FALSE;
-  PetscScalar    a   = 1.0+PETSC_i;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif
-
-  a=1.0+PETSC_i;
-  printf("%g+%gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a));
 
   ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -209,7 +205,11 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  if (norm < 1.e-12) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its);CHKERRQ(ierr);
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

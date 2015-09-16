@@ -150,9 +150,9 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     PetscInt    i,j;
 
     /* get info on mapping */
-    ierr = PetscObjectReference((PetscObject)matis->mapping);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pc->pmat->rmap->mapping);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&pcis->mapping);CHKERRQ(ierr);
-    pcis->mapping = matis->mapping;
+    pcis->mapping = pc->pmat->rmap->mapping;
     ierr = ISLocalToGlobalMappingGetSize(pcis->mapping,&pcis->n);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
 
@@ -585,14 +585,14 @@ PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 
       ierr    = VecSum(vec1_N,&average);CHKERRQ(ierr);
       average = average / ((PetscReal)pcis->n);
-      ierr    = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr    = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       if (pcis->pure_neumann) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is floating. Average = % 1.14e\n",PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is fixed.    Average = % 1.14e\n",PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   }
   /* Solving the system for vec2_N */

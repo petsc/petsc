@@ -18,7 +18,6 @@ int main(int argc,char **args)
   PetscReal      soft_alpha = 1.e-3;
   MPI_Comm       comm;
   PetscMPIInt    npe,mype;
-  PC             pc;
   PetscScalar    DD[4][4],DD2[4][4];
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
@@ -69,7 +68,7 @@ int main(int argc,char **args)
     DD1[3][1] = -0.33333333333333343;
     DD1[3][2] = -0.16666666666666663;
     DD1[3][3] =  0.66666666666666663;
-   
+
     /* BC version of element */
     for (i=0;i<4;i++) {
       for (j=0;j<4;j++) {
@@ -82,6 +81,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
+    PC             pc;
     ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
     /* forms the element stiffness for the Laplacian and coordinates */
     for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
@@ -128,15 +128,12 @@ int main(int argc,char **args)
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp, KSPCG);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCGAMG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-
-    /* ierr = PCGAMGSetType(pc,"agg");CHKERRQ(ierr); */
 
     /* finish KSP/PC setup */
     ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
+
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetCoordinates(pc, 2, m, coords);CHKERRQ(ierr);
     ierr = PetscFree(coords);CHKERRQ(ierr);
   }
