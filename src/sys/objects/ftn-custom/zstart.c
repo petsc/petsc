@@ -25,6 +25,8 @@
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
 #define petscgetcommoncomm_           PETSCGETCOMMONCOMM
+#define petsccommandargumentcount_    PETSCCOMMANDARGUMENTCOUNT
+#define petscgetcommandargument_      PETSCGETCOMMANDARGUMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
@@ -33,6 +35,8 @@
 #define iargc_                        iargc
 #define getarg_                       getarg
 #define petscgetcommoncomm_           petscgetcommoncomm
+#define petsccommandargumentcount_    petsccommandargumentcount
+#define petscgetcommandargument_      petscgetcommandargument
 #endif
 
 #if defined(PETSC_HAVE_NAGF90)
@@ -58,7 +62,13 @@
 #define iargc_   iargc_
 #define getarg_  getarg_
 #endif
-#if defined(PETSC_HAVE_GFORTRAN_IARGC) /* gfortran from gcc4 */
+
+#if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003 */
+#undef iargc_
+#undef getarg_
+#define iargc_ petsccommandargumentcount_
+#define getarg_ petscgetcommandargument_
+#elif defined(PETSC_HAVE_GFORTRAN_IARGC) /* gfortran from gcc4 */
 #undef iargc_
 #undef getarg_
 #define iargc_  _gfortran_iargc
@@ -86,7 +96,10 @@ PETSC_EXTERN void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
 /*
      Different Fortran compilers handle command lines in different ways
 */
-#if defined(PETSC_USE_NARGS)
+#if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003  - same as 'else' case */
+PETSC_EXTERN int iargc_();
+PETSC_EXTERN void getarg_(int*,char*,int);
+#elif defined(PETSC_USE_NARGS)
 PETSC_EXTERN short __stdcall NARGS();
 PETSC_EXTERN void __stdcall GETARG(short*,char*,int,short *);
 
@@ -176,7 +189,9 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
     ierr = PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));CHKERRQ(ierr);
     for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
-#if defined(PETSC_HAVE_PXFGETARG_NEW)
+#if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */
+      getarg_(&i,(*argv)[i],warg);
+#elif defined(PETSC_HAVE_PXFGETARG_NEW)
       {char *tmp = (*argv)[i];
       int ilen;
       getarg_(&i,tmp,&ilen,&ierr,warg);CHKERRQ(ierr);
@@ -264,7 +279,9 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscOptionsCreate();
   if (*ierr) return;
   i = 0;
-#if defined (PETSC_HAVE_PXFGETARG_NEW)
+#if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */
+  getarg_(&i,name,256);
+#elif defined (PETSC_HAVE_PXFGETARG_NEW)
   { int ilen,sierr;
     getarg_(&i,name,&ilen,&sierr,256);
     if (sierr) PetscStrncpy(name,"Unknown Name",256);
