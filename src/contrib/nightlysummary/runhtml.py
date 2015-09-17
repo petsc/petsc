@@ -311,8 +311,12 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       #
       outfile.write("<td></td>")
       example_problem_num = 0
+      write_to_summary = True
+      if match.group(1) == "c-exodus-dbg-builder_bb-proxy" or match.group(1) == "cuda_bb-proxy":
+        write_to_summary = False
       for line in open(logfile_examples_full):
-        examples_summary_file.write(line)
+        if write_to_summary:
+          examples_summary_file.write(line)
         if re.search(r'[Pp]ossible [Pp]roblem', line):
           example_problem_num += 1
 
