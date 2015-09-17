@@ -1901,6 +1901,7 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscInt       numRoots = 0, numLeaves = 0;
@@ -1970,6 +1971,7 @@ PetscErrorCode DMPlexStratify(DM dm)
     }
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
+  ierr = DMLabelGetState(label, &mesh->depthState);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
