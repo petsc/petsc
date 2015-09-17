@@ -30,6 +30,10 @@ typedef struct {
   PetscBool  sort_indices;        /* flag to sort subdomain indices */
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
+  /* For multiplicative solve */
+  Mat       *lmat;                /* submatrix for overlapping multiplicative (process) subdomain */
+  Vec        lx, ly;              /* work vectors */
+  IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
 
 #undef __FUNCT__
@@ -353,6 +357,15 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscFree(domain_dm);CHKERRQ(ierr);
       }
     }
+    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+      PetscInt m;
+
+      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
+      ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
+      ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
+    }
     scall = MAT_INITIAL_MATRIX;
   } else {
     /*
@@ -374,6 +387,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     }
+  }
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+    ierr = MatGetSubMatrices(pc->pmat, 1, &osm->lis, &osm->lis, scall, &osm->lmat);CHKERRQ(ierr);
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -579,6 +595,12 @@ static PetscErrorCode PCReset_ASM(PC pc)
     ierr = PetscFree(osm->y_local);CHKERRQ(ierr);
   }
   ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+    ierr = ISDestroy(&osm->lis);CHKERRQ(ierr);
+    ierr = MatDestroyMatrices(1, &osm->lmat);CHKERRQ(ierr);
+    ierr = VecDestroy(&osm->lx);CHKERRQ(ierr);
+    ierr = VecDestroy(&osm->ly);CHKERRQ(ierr);
+  }
 
   osm->is       = 0;
   osm->is_local = 0;
