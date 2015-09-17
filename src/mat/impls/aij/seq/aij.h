@@ -3,6 +3,7 @@
 #define __AIJ_H
 
 #include <petsc/private/matimpl.h>
+#include <petscctable.h>
 
 /*
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
@@ -430,5 +431,19 @@ PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
 #define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \
     PetscInt __i; \
     for (__i=0; __i<nnz; __i++) max = PetscMax(PetscRealPart(max), PetscRealPart(xv[__i] * r[xi[__i]]));}
+
+/*
+ Add column indices into table for counting the max nonzeros of merged rows
+ */
+#define MatRowMergeMax_SeqAIJ(mat,nrows,ta) {       \
+    PetscInt _j,_row,_nz,*_col;                     \
+    for (_row=0; _row<nrows; _row++) {\
+      _nz = mat->i[_row+1] - mat->i[_row]; \
+      for (_j=0; _j<_nz; _j++) {                \
+        _col = _j + mat->j + mat->i[_row];       \
+        PetscTableAdd(ta,*_col+1,1,INSERT_VALUES); \
+      }                                                                 \
+    }                                                                   \
+}
 
 #endif
