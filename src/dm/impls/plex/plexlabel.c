@@ -12,6 +12,7 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   ierr = PetscStrallocpy(name, &(*label)->name);CHKERRQ(ierr);
 
   (*label)->refct          = 1;
+  (*label)->state          = -1;
   (*label)->numStrata      = 0;
   (*label)->stratumValues  = NULL;
   (*label)->arrayValid     = NULL;
@@ -53,6 +54,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
     }
   }
   label->arrayValid[v] = PETSC_TRUE;
+  ++label->state;
   PetscFunctionReturn(0);
 }
 
@@ -83,6 +85,16 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
   for (p = 0; p < label->stratumSizes[v]; ++p) PetscHashIPut(label->ht[v], label->points[v][p], ret, iter);
   ierr = PetscFree(label->points[v]);CHKERRQ(ierr);
   label->arrayValid[v] = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelGetState"
+PetscErrorCode DMLabelGetState(DMLabel label, PetscObjectState *state)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(state, 2);
+  *state = label->state;
   PetscFunctionReturn(0);
 }
 
