@@ -228,7 +228,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,Pet
   char *o;
 
   FIXCHAR(option, loption, o);
-  FORTRANNULLOBJECTDEREFERENCE(bobj);
+  CHKFORTRANNULLOBJECTDEREFERENCE(bobj);
   *ierr = PetscObjectViewFromOptions(*obj, *bobj, o);
   FREECHAR(option, o);
 }
