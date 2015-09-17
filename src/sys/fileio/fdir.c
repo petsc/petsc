@@ -1,6 +1,11 @@
 #include <petscsys.h>
+#include <sys/stat.h>
+#if defined(PETSC_HAVE_DIRECT_H)
 #include <direct.h>
+#endif
+#if defined(PETSC_HAVE_IO_H)
 #include <io.h>
+#endif
 #if defined (PETSC_HAVE_STDINT_H)
 #include <stdint.h>
 #endif
@@ -25,13 +30,20 @@ PetscErrorCode PetscPathJoin(const char dname[],const char fname[],size_t n,char
 #define __FUNCT__ "PetscMkdir"
 PetscErrorCode PetscMkdir(const char dir[])
 {
+  int err;
   PetscFunctionBegin;
-  if(_mkdir(dir)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create dir: %s",dir);
+#if defined(PETSC_HAVE__MKDIR)
+  err = _mkdir(dir);
+#else
+  err = mkdir(dir,S_IRWXU|S_IRGRP|S_IXGRP);
+#endif
+  if(err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create dir: %s",dir);
      PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRMTree"
+#if defined(PETSC_HAVE_DIRECT_H)
 PetscErrorCode PetscRMTree(const char dir[])
 {
   PetscErrorCode ierr;
@@ -70,5 +82,40 @@ PetscErrorCode PetscRMTree(const char dir[])
   if (_rmdir(dir)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not delete dir: %s",dir);
   PetscFunctionReturn(0);
 }
+#else
+#include <dirent.h>
+#include <unistd.h>
+PetscErrorCode PetscRMTree(const char dir[])
+{
+  PetscErrorCode ierr;
+  struct dirent *data;
+  char loc[PETSC_MAX_PATH_LEN];
+  PetscBool flg1, flg2;
+  DIR *dirp;
 
-
+  PetscFunctionBegin;
+  dirp = opendir(dir);
+  if(!dirp) {
+    PetscBool flg;
+    ierr = PetscTestDirectory(dir,'r',&flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Cannot access directory to delete: %s",dir);
+    ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Specified path is a file - not a dir: %s",dir);
+    PetscFunctionReturn(0); /* perhaps the dir was not yet created */
+  }
+  while((data = readdir(dirp))) {
+    ierr = PetscStrcmp(data->d_name, ".",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(data->d_name, "..",&flg2);CHKERRQ(ierr);
+    if (flg1 || flg2) continue;
+    ierr = PetscPathJoin(dir,data->d_name,PETSC_MAX_PATH_LEN,loc);CHKERRQ(ierr);
+    if(data->d_type == DT_DIR) {
+      ierr = PetscRMTree(loc);CHKERRQ(ierr);
+    } else{
+      if (unlink(loc)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not delete file: %s",loc);
+    }
+  }
+  closedir(dirp);
+  if (rmdir(dir)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not delete dir: %s",dir);
+  PetscFunctionReturn(0);
+}
+#endif
