@@ -1,5 +1,5 @@
 /*
- * ex194.c
+ * ex195.c
  *
  *  Created on: Aug 24, 2015
  *      Author: Fande Kong <fdkong.jd@gmail.com>
