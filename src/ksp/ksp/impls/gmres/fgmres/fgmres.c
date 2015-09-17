@@ -124,6 +124,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* initial residual is in VEC_VV(0)  - compute its norm*/
   ierr = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
 
   /* first entry in right-hand-side of hessenberg system is just
      the initial residual norm */

@@ -294,11 +294,11 @@ M*/
 
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE)
 
-PetscErrorCode PetscViewerFlowControlStart(PetscViewer,PetscInt*,PetscInt*);
-PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer,PetscInt,PetscInt*,PetscInt);
-PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer,PetscInt*);
-PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer,PetscMPIInt,PetscInt*);
-PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStart(PetscViewer,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer,PetscInt,PetscInt*,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer,PetscMPIInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer,PetscInt*);
 
 /*
    PetscViewer writes to MATLAB .mat file
