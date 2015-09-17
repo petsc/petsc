@@ -1498,6 +1498,8 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
       next->next = NULL;
       *label     = next->label;
       ierr = PetscFree(next);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
+      if (hasLabel) mesh->depthLabel = NULL;
       break;
     }
     last = next;
