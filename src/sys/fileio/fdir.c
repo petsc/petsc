@@ -47,8 +47,14 @@ PetscErrorCode PetscRMTree(const char dir[])
   PetscFunctionBegin;
   ierr = PetscPathJoin(dir,"*",PETSC_MAX_PATH_LEN,loc);CHKERRQ(ierr);
   handle = _findfirst(loc, &data);
-  if(handle == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not read contents of path %s",dir);
-
+  if(handle == -1) {
+    PetscBool flg;
+    ierr = PetscTestDirectory(loc,'r',&flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Cannot access directory to delete: %s",dir);
+    ierr = PetscTestFile(loc,'r',&flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Specified path is a file - not a dir: %s",dir);
+    PetscFunctionReturn(0); /* perhaps the dir was not yet created */
+  }
   while(_findnext(handle, &data) != -1) {
     ierr = PetscStrcmp(data.name, ".",&flg1);CHKERRQ(ierr);
     ierr = PetscStrcmp(data.name, "..",&flg2);CHKERRQ(ierr);
