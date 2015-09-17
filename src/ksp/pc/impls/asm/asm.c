@@ -477,11 +477,9 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     /* do the local solves */
     for (i = 0; i < n_local_true; ++i) {
       if (i > 0) {
-        /* Update initial guess */
-        ierr = VecScatterBegin(osm->restriction[i], y, osm->y[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = VecScatterEnd(osm->restriction[i], y, osm->y[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = MatMult(osm->pmat[i], osm->y[i], osm->x[i]);CHKERRQ(ierr);
-        ierr = VecScale(osm->x[i], -1.0);CHKERRQ(ierr);
+        /* Update rhs */
+        ierr = VecScatterBegin(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
       } else {
         ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
       }
@@ -494,6 +492,13 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       }
       ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
       ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
+      if (i < n_local_true-1) {
+        ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
+        ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScale(osm->ly, -1.0);CHKERRQ(ierr);
+        ierr = MatMult(osm->lmat[0], osm->ly, osm->lx);CHKERRQ(ierr);
+      }
     }
     /* handle the rest of the scatters that do not have local solves */
     for (i = n_local_true; i < n_local; ++i) {
