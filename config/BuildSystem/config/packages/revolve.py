@@ -3,11 +3,11 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = '9a039d8adcbac6a249bc9159634e526b5a1c83e7'
+    self.gitcommit = '445467044a61be1473d816fcb74b2bbea1a84144'
     self.giturls   = ['https://bitbucket.org/caidao22/pkg-revolve.git']
     self.download  = ['none']
-    self.functions = ['wrap_revolve']
-    self.includes  = ['wrap_revolve.h']
+    self.functions = ['revolve_action']
+    self.includes  = ['revolve_c.h']
     self.liblist   = [['librevolve.a']]
     self.cxx       = 1
     # revolve include files are in the lib directory
