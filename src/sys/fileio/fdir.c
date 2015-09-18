@@ -32,7 +32,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 {
   int err;
   PetscFunctionBegin;
-#if defined(PETSC_HAVE__MKDIR)
+#if defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
   err = _mkdir(dir);
 #else
   err = mkdir(dir,S_IRWXU|S_IRGRP|S_IXGRP);
@@ -92,6 +92,7 @@ PetscErrorCode PetscRMTree(const char dir[])
   char loc[PETSC_MAX_PATH_LEN];
   PetscBool flg1, flg2;
   DIR *dirp;
+  struct stat statbuf;
 
   PetscFunctionBegin;
   dirp = opendir(dir);
@@ -108,9 +109,10 @@ PetscErrorCode PetscRMTree(const char dir[])
     ierr = PetscStrcmp(data->d_name, "..",&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) continue;
     ierr = PetscPathJoin(dir,data->d_name,PETSC_MAX_PATH_LEN,loc);CHKERRQ(ierr);
-    if(data->d_type == DT_DIR) {
+    if (lstat(loc,&statbuf) <0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"cannot run lstat() on: %s",loc);
+    if (S_ISDIR(statbuf.st_mode)) {
       ierr = PetscRMTree(loc);CHKERRQ(ierr);
-    } else{
+    } else {
       if (unlink(loc)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not delete file: %s",loc);
     }
   }
