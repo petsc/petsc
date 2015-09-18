@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-debugger=/bin/true',
+  #'--with-debugger=/bin/true',
   '--with-scalar-type=complex',
   'FFLAGS=-ftrap=%none',
   #'--with-clanguage=cxx', # solaris C++ compiler behave differently with PETSC_EXTERN stuff - and breaks

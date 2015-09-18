@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-debugger=/bin/true',
+  #'--with-debugger=/bin/true',
   '--with-debugging=0',
   'FFLAGS=-ftrap=%none',
 
