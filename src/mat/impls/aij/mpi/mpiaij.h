@@ -155,7 +155,7 @@ extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
 
-/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */ 
+/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */
 #define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
 {\
   PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
