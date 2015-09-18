@@ -2478,6 +2478,56 @@ static PetscErrorCode  MatSetRandom_MPIAIJ(Mat x,PetscRandom rctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ"
+PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ(Mat A,PetscBool sc)
+{
+  PetscFunctionBegin;
+  if (sc) A->ops->increaseoverlap = MatIncreaseOverlap_MPIAIJ_Scalable;
+  else A->ops->increaseoverlap    = MatIncreaseOverlap_MPIAIJ;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIAIJSetUseScalableIncreaseOverlap"
+/*@
+   MatMPIAIJSetUseScalableIncreaseOverlap - Determine if the matrix uses a scalable algorithm to compute the overlap
+
+   Collective on Mat
+
+   Input Parameters:
++    A - the matrix
+-    sc - PETSC_TRUE indicates use the scalable algorithm (default is not to use the scalable algorithm)
+
+@*/
+PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A,PetscBool sc)
+{
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(A,"MatMPIAIJSetUseScalableIncreaseOverlap_C",(Mat,PetscBool),(A,sc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetFromOptions_MPIAIJ"
+PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions *PetscOptionsObject,Mat A)
+{
+  PetscErrorCode       ierr;
+  PetscBool            sc = PETSC_FALSE,flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJ options");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)A);
+    if (A->ops->increaseoverlap == MatIncreaseOverlap_MPIAIJ_Scalable) sc = PETSC_TRUE;
+    ierr = PetscOptionsBool("-mat_increase_overlap_scalable","Use a scalable algorithm to compute the overlap","MatIncreaseOverlap",sc,&sc,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatMPIAIJSetUseScalableIncreaseOverlap(A,sc);CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatShift_MPIAIJ"
 PetscErrorCode MatShift_MPIAIJ(Mat Y,PetscScalar a)
 {
@@ -2572,7 +2622,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        MatSetValuesAdifor_MPIAIJ,
                                 /*75*/ MatFDColoringApply_AIJ,
-                                       0,
+                                       MatSetFromOptions_MPIAIJ,
                                        0,
                                        0,
                                        MatFindZeroDiagonals_MPIAIJ,
@@ -4988,6 +5038,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   /* flexible pointer used in CUSP/CUSPARSE classes */
   b->spptr = NULL;
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetUseScalableIncreaseOverlap_C",MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);

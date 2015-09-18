@@ -65,7 +65,7 @@ def format_time(time_in_seconds):
   #print "time_in_seconds: " + str(time_in_seconds)
   if time_in_seconds > 1800:
     return "<td class=\"yellow\">" + str(time_in_seconds / 3600).zfill(2) + ":" + str((time_in_seconds % 3600) / 60).zfill(2) + ":" + str(time_in_seconds % 60).zfill(2) + "</td>"
-  
+
   return "<td class=\"green\">" + str(time_in_seconds / 3600).zfill(2) + ":" + str((time_in_seconds % 3600) / 60).zfill(2) + ":" + str(time_in_seconds % 60).zfill(2) + "</td>"
 
 
@@ -212,7 +212,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       #
       ### Configure section
       #
-  
+
       # Checking for successful completion
       configure_success = False
       for line in open(logfile_configure_full):
@@ -340,4 +340,3 @@ examples_summary_file.close()
 
 #print "Testing execution time: "
 #print format_time(execution_time(sys.argv[2]))
-

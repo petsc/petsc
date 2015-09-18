@@ -1,4 +1,3 @@
-
 CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
@@ -9,7 +8,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
-                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx
+                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
                    ex52f.F ex54f.F ex61f.F90
 MANSEC           = KSP
@@ -307,8 +306,11 @@ ex62: ex62.o  chkopts
 ex63: ex63.o  chkopts
 	-${CLINKER} -o ex63 ex63.o  ${PETSC_KSP_LIB}
 	${RM} ex63.o
-
-
+	
+ex64: ex64.o  chkopts
+	-${CLINKER} -o ex64 ex64.o  ${PETSC_KSP_LIB}
+	${RM} ex64.o	
+	
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -1346,6 +1348,14 @@ runex63_2:
 	   if (${DIFF} output/ex63_2.out ex63_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex63_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex63_2.tmp
+	   
+runex64:
+	-@${MPIEXEC} -n 4 ./ex64  -ksp_monitor -ksp_view -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist    -pc_gasm_total_subdomains 2 > ex64.tmp 2>&1;	  \
+	   if (${DIFF} output/ex64.out ex64.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex64, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex64.tmp	   
+
+
 
 
 

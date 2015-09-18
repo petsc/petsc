@@ -144,6 +144,8 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat
   Mat_MPIAIJCUSP       *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   PetscFunctionBegin;
+  ierr = MatSetFromOptions_MPIAIJ(PetscOptionsObject,A);CHKERRQ(ierr);
+
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {

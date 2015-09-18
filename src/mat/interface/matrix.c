@@ -6795,6 +6795,9 @@ PetscErrorCode  MatDestroySeqNonzeroStructure(Mat *mat)
 .  is  - the array of index sets (these index sets will changed during the call)
 -  ov  - the additional overlap requested
 
+   Options Database:
+.  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
+
    Level: developer
 
    Concepts: overlap
@@ -6825,6 +6828,62 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
   ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatIncreaseOverlapSplit"
+/*@
+   MatIncreaseOverlapSplit - Given a set of submatrices indicated by index sets across
+   a sub communicator, replaces the index sets by larger ones that represent submatrices with
+   additional overlap.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  n   - the number of index sets
+.  is  - the array of index sets (these index sets will changed during the call)
+-  ov  - the additional overlap requested
+
+   Options Database:
+.  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
+
+   Level: developer
+
+   Concepts: overlap
+   Concepts: ASM^computing overlap
+
+.seealso: MatGetSubMatrices()
+@*/
+PetscErrorCode  MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have one or more domains, you have %D",n);
+  if (n) {
+    PetscValidPointer(is,3);
+    PetscValidHeaderSpecific(*is,IS_CLASSID,3);
+  }
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  MatCheckPreallocated(mat,1);
+  if (!ov) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
+  for(i=0; i<n; i++){
+	ierr =  MatIncreaseOverlapSplit_Single(mat,&is[i],ov);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBlockSize"
@@ -10111,7 +10170,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
 PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[])
 {
   MPI_Comm        comm,subcomm;
-  PetscMPIInt     size,rank,color,subsize,subrank;
+  PetscMPIInt     size,rank,color;
   PetscInt        rstart,rend,k;
   PetscErrorCode  ierr;
 
@@ -10124,10 +10183,8 @@ PetscErrorCode  MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss
   k = ((PetscInt)size)/N + ((PetscInt)size%N>0); /* There are up to k ranks to a color */
   color = rank/k;
   ierr = MPI_Comm_split(comm,color,rank,&subcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subrank);CHKERRQ(ierr);
   ierr = PetscMalloc1(1,iss);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,*iss);CHKERRQ(ierr);
+  ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,iss[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

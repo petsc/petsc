@@ -663,7 +663,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
    Output Parameters:
 +  n   - number of values in the merged array
--  I   - merged sorted array, this is allocated if an array is not provided 
+-  I   - merged sorted array, this is allocated if an array is not provided
 
    Level: intermediate
 

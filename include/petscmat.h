@@ -510,6 +510,8 @@ PETSC_EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetGhosts(Mat, PetscInt *,const PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode MatIncreaseOverlap(Mat,PetscInt,IS[],PetscInt);
+PETSC_EXTERN PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov);
+PETSC_EXTERN PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat,PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
@@ -1195,11 +1197,13 @@ dm
 J*/
 typedef const char* MatPartitioningType;
 #define MATPARTITIONINGCURRENT  "current"
+#define MATPARTITIONINGAVERAGE   "average"
 #define MATPARTITIONINGSQUARE   "square"
 #define MATPARTITIONINGPARMETIS "parmetis"
 #define MATPARTITIONINGCHACO    "chaco"
 #define MATPARTITIONINGPARTY    "party"
 #define MATPARTITIONINGPTSCOTCH "ptscotch"
+#define MATPARTITIONINGHIERARCH  "hierarch"
 
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate(MPI_Comm,MatPartitioning*);
@@ -1219,6 +1223,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
+PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part);
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
@@ -1265,6 +1270,14 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning,MPPTScotchStrategyType);
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning,MPPTScotchStrategyType*);
+
+/*
+ * hierarchical partitioning
+ */
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning,PetscInt);
+PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning, PetscInt);
 
 /*
     These routines are for coarsening matrices:

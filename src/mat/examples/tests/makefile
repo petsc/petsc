@@ -12,8 +12,8 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex56.c \
                 ex57.c ex58.c ex59.c ex60.c ex61.c ex62.c ex64.c ex65.c \
                 ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c ex75.c \
-                ex76.c ex77.c ex78.c ex80.c ex81.c ex86.c ex87.c ex88.c \
-                ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c \
+                ex76.c ex77.c ex78.c ex80.c ex81.c ex82.c ex83.c ex86.c ex87.c \
+                ex88.c ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c \
                 ex99.c ex100.c ex101.c ex102.c  ex104.c ex106.c \
                 ex108.c ex109.c ex110.c ex111.c ex112.c ex113.c \
                 ex114.c ex116.c ex117.c ex118.c ex119.c ex120.c \
@@ -22,7 +22,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
-                ex181.c ex182.c ex183.c ex190.c ex191.c ex192.c ex194.c
+                ex181.c ex182.c ex183.c ex190.c ex191.c ex192.c ex193.c ex194.c
 
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
@@ -339,6 +339,14 @@ ex80: ex80.o chkopts
 ex81: ex81.o chkopts
 	-${CLINKER} -o ex81 ex81.o ${PETSC_MAT_LIB}
 	${RM} ex81.o
+
+ex82: ex82.o chkopts
+	-${CLINKER} -o ex82 ex82.o ${PETSC_MAT_LIB}
+	${RM} ex82.o
+
+ex83: ex83.o chkopts
+	-${CLINKER} -o ex83 ex83.o ${PETSC_MAT_LIB}
+	${RM} ex83.o
 
 ex79f: ex79f.o chkopts
 	-${FLINKER} -o ex79f ex79f.o ${PETSC_MAT_LIB}
@@ -728,9 +736,14 @@ ex192: ex192.o chkopts
 	-${CLINKER} -o ex192 ex192.o ${PETSC_MAT_LIB}
 	${RM} ex192.o
 
+ex193: ex193.o chkopts
+	-${CLINKER} -o ex193 ex193.o ${PETSC_MAT_LIB}
+	${RM} ex193.o
+
 ex194: ex194.o chkopts
 	-${CLINKER} -o ex194 ex194.o ${PETSC_MAT_LIB}
 	${RM} ex194.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1215,6 +1228,12 @@ runex40:
 	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
+runex40_2:
+	-@${MPIEXEC} -n 3 ./ex40 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \
+	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
+	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex41:
 	-@${MPIEXEC} -n 3 ./ex41 -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
@@ -1510,6 +1529,11 @@ runex79f:
 	   if (${DIFF} output/ex79f_1.out ex79f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex79f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex79f_1.tmp
+runex82:
+	  -@${MPIEXEC} -n 4 ./ex82   > ex82.tmp 2>&1; \
+          if (${DIFF} output/ex82.out ex82.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex82, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex82.tmp
 runex85f:
 	-@${MPIEXEC} -n 1 ./ex85f  > ex85f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex85f_1.out ex85f_1.tmp) then true; \
@@ -2381,6 +2405,11 @@ runex192:
 	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve -mat_mumps_icntl_19 1 >> ex192.tmp 2>&1; \
 	   ${DIFF} output/ex192.out ex192.tmp || printf "${PWD}\nPossible problem with ex192, diffs above\n=========================================\n"; \
 	   ${RM} -f ex192.tmp
+
+runex193:
+	  -@${MPIEXEC} -n 4 ./ex193   -mat_partitioning_hierarchical_Nfineparts 2  > ex193.tmp 2>&1; \
+	   ${DIFF} output/ex193.out ex193.tmp || printf "${PWD}\nPossible problem with ex193, diffs above\n=========================================\n"; \
+	   ${RM} -f ex193.tmp
 
 runex194:
 	  -@${MPIEXEC} -n 2 ./ex194   > ex194.tmp 2>&1; \

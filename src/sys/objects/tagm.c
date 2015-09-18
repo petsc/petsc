@@ -297,7 +297,7 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
     /* Obtain the sum of all roots -- the global number of distinct subcomms. */
     ierr = MPI_Allreduce(&roots,count,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   }
-  if (numbering) {
+  if (numbering){
     /* Introduce a global numbering for subcomms, initially known only by subcomm roots. */
     /*
       At each subcomm root number all of the subcomms it owns locally
