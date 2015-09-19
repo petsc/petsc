@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
     if hasattr(self.compilers, 'FC'):
       self.libraries.saveLog()
       self.libraries.pushLanguage('FC')
-      if self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       call get_command_argument(i,arg)'):
+      if self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       i = command_argument_count()\n       call get_command_argument(i,arg)'):
         self.addDefine('HAVE_FORTRAN_GET_COMMAND_ARGUMENT',1)
       elif self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       call getarg(i,arg)'):
         self.addDefine('HAVE_FORTRAN_GETARG',1)
