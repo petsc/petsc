@@ -252,7 +252,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   short       flg,i;
 #else
   int         i;
-#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW)
+#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW) && !defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
   int         j;
 #endif
 #endif
