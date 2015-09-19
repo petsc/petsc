@@ -57,7 +57,9 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 .  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
 .  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
--  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
+.  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
+.  -ts_adjoint_monitor - print information at each adjoint time step
+-  -ts_adjoint_monitor_draw_sensi - monitor the sensitivity of the first cost function wrt initial conditions (lambda[0]) graphically
 
    Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
@@ -342,6 +344,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     tdm->ijacobianctx = NULL;
     ierr = TSSetIJacobian(ts, NULL, NULL, TSComputeIJacobianDefaultColor, 0);CHKERRQ(ierr);
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsString("-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = TSAdjointMonitorSet(ts,TSAdjointMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
   /*
@@ -3079,6 +3087,30 @@ PetscErrorCode  TSAdjointMonitorCancel(TS ts)
     }
   }
   ts->numberadjointmonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitorDefault"
+/*@
+   TSAdjointMonitorDefault - Sets the Default monitor
+
+   Level: intermediate
+
+.keywords: TS, set, monitor
+
+.seealso: TSAdjointMonitorSet()
+@*/
+PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer =  (PetscViewer) dummy;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
