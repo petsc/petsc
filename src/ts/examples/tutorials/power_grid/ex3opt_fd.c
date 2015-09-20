@@ -302,22 +302,24 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 {
-  AppCtx         *ctx = (AppCtx*)ctx0;
-  TS             ts;
+  AppCtx            *ctx = (AppCtx*)ctx0;
+  TS                ts;
 
-  Vec            U;             /* solution will be stored here */
-  Mat            A;             /* Jacobian matrix */
-  Mat            Jacp;          /* Jacobian matrix */
-  PetscErrorCode ierr;
-  PetscInt       n = 2;
-  PetscReal      ftime;
-  PetscInt       steps;
-  PetscScalar    *u;
-  PetscScalar    *x_ptr,*y_ptr;
-  Vec            lambda[1],q,mu[1];
+  Vec               U;             /* solution will be stored here */
+  Mat               A;             /* Jacobian matrix */
+  Mat               Jacp;          /* Jacobian matrix */
+  PetscErrorCode    ierr;
+  PetscInt          n = 2;
+  PetscReal         ftime;
+  PetscInt          steps;
+  PetscScalar       *u;
+  PetscScalar       *mx_ptr,*y_ptr;
+  const PetscScalar *x_ptr,*qx_ptr;
+  Vec               lambda[1],q,mu[1];
 
-  ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(P,&x_ptr);CHKERRQ(ierr);
   ctx->Pm = x_ptr[0];
+  ierr = VecRestoreArrayRead(P,&x_ptr);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -383,9 +385,9 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = -1.0;
-  ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(mu[0],&mx_ptr);CHKERRQ(ierr);
+  mx_ptr[0] = -1.0;
+  ierr = VecRestoreArray(mu[0],&mx_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
@@ -398,8 +400,9 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = ComputeSensiP(lambda[0],mu[0],ctx);CHKERRQ(ierr);
 
-  ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
-  *f   = -ctx->Pm + x_ptr[0];
+  ierr = VecGetArrayRead(q,&qx_ptr);CHKERRQ(ierr);
+  *f   = -ctx->Pm + qx_ptr[0];
+  ierr = VecRestoreArrayRead(q,&qx_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
