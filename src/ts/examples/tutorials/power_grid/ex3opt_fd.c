@@ -253,7 +253,7 @@ int main(int argc,char **argv)
   x_ptr[0] = 0.;
   ierr = VecRestoreArray(lowerb,&x_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 1.1;;
+  x_ptr[0] = 1.1;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
