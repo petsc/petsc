@@ -858,7 +858,7 @@ static PetscErrorCode  PetscLogPrintNestedLine(PetscViewer viewer,PetscEventPerf
   msgSpeedMn      = -commarr_out[6];
   countsPerCallMn = -commarr_out[7];
 
-  *isPrinted = ((timeMx/totalTime) > (threshTime/100.0));
+  *isPrinted = ((timeMx/totalTime) > (threshTime/100.0)) ? PETSC_TRUE : PETSC_FALSE;
   if (isPrinted) {
     ierr = PetscViewerXMLStartSection(viewer, "event", NULL);CHKERRQ(ierr);
     ierr = PetscViewerXMLPutString(viewer, "name", NULL, name);CHKERRQ(ierr);
