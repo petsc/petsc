@@ -214,7 +214,7 @@ runex3opt:
 	   ${RM} -f ex3opt_1.tmp
 
 runex3opt_fd:
-	-@${MPIEXEC} -n 1 ./ex3opt_fd -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3opt_fd -tao_max_it 6 -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_fd_1.out ex3opt_fd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fd_1.tmp
 
