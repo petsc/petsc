@@ -98,7 +98,7 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogNestedBegin"
-PetscErrorCode PetscLogNestedBegin()
+PetscErrorCode PetscLogNestedBegin(void)
 {
   PetscErrorCode    ierr;
   PetscFunctionBegin;
@@ -550,7 +550,7 @@ static int compareTreeItems(const void *item1_, const void *item2_)
   int                  i;
   PetscNestedEventTree *item1 = (PetscNestedEventTree *) item1_;
   PetscNestedEventTree *item2 = (PetscNestedEventTree *) item2_;
-  for (i=0; i<MIN(item1->depth,item2->depth); i++) {
+  for (i=0; i<PetscMin(item1->depth,item2->depth); i++) {
      if (item1->nstPath[i]<item2->nstPath[i]) return -1;
      if (item1->nstPath[i]>item2->nstPath[i]) return +1;
   }
@@ -1229,7 +1229,7 @@ static PetscErrorCode  PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_
     PetscLogEvent *dftEvents        = nestedEvents[i].dftEvents;
      int j;
      for (j=0; j<nParents; j++) {
-       maxDefaultTimer = MAX(dftEvents[j],maxDefaultTimer);
+       maxDefaultTimer = PetscMax(dftEvents[j],maxDefaultTimer);
      }
   }
   ierr = PetscMalloc1(maxDefaultTimer+1,&nstEvents);CHKERRQ(ierr);
