@@ -416,6 +416,10 @@ cdef class Vec(Object):
         CHKERR( VecCopy(self.vec, result.vec) )
         return result
 
+    def chop(self, tol):
+        cdef PetscReal rval = asReal(tol)
+        CHKERR( VecChop(self.vec, rval) )
+
     def load(self, Viewer viewer not None):
         cdef MPI_Comm comm = MPI_COMM_NULL
         cdef PetscObject obj = <PetscObject>(viewer.vwr)
