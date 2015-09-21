@@ -215,7 +215,6 @@ TESTMODE = testexamples
 alltests:
 	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@if [ "${PETSC_WITH_BATCH}" == "" ]; then make PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} stream NPMAX=4 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log ;fi
 	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
 
 alltest:
