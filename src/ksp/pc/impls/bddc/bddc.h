@@ -76,6 +76,7 @@ typedef struct {
   PetscObjectState    *onearnullvecs_state;
   MatNullSpace        NullSpace;
   IS                  user_primal_vertices;
+  IS                  user_primal_vertices_local;
   PetscBool           use_nnsp_true;
   PetscBool           use_qr_single;
   PetscBool           user_provided_isfordofs;

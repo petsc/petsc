@@ -975,6 +975,7 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   PetscFunctionBegin;
   ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&pcbddc->NullSpace);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
@@ -3906,7 +3907,10 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
     ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   }
-  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices);CHKERRQ(ierr);
+  if (!pcbddc->user_primal_vertices_local && pcbddc->user_primal_vertices) { /* need to convert from global to local */
+    ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->user_primal_vertices,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
+  }
+  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
 
   /* attach info on disconnected subdomains if present */
   if (pcbddc->n_local_subs) {
@@ -4766,7 +4770,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ISLocalToGlobalMapping coarse_islg;
   IS                     coarse_is,*isarray;
   PetscInt               i,im_active=-1,active_procs=-1;
-  PetscInt               nis,nisdofs,nisneu;
+  PetscInt               nis,nisdofs,nisneu,nisvert;
   PC                     pc_temp;
   PCType                 coarse_pc_type;
   KSPType                coarse_ksp_type;
@@ -4908,7 +4912,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = MatDestroy(&coarse_submat_dense);CHKERRQ(ierr);
 
   /* compute dofs splitting and neumann boundaries for coarse dofs */
-  if (multilevel_allowed && (pcbddc->n_ISForDofsLocal || pcbddc->NeumannBoundariesLocal) ) { /* protects from unneded computations */
+  if (multilevel_allowed && (pcbddc->n_ISForDofsLocal || pcbddc->NeumannBoundariesLocal || (pcbddc->benign_saddle_point && pcbddc->user_primal_vertices_local))) { /* protects from unneded computations */
     PetscInt               *tidxs,*tidxs2,nout,tsize,i;
     const PetscInt         *idxs;
     ISLocalToGlobalMapping tmap;
@@ -4921,7 +4925,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     /* allocate for IS array */
     nisdofs = pcbddc->n_ISForDofsLocal;
     nisneu = !!pcbddc->NeumannBoundariesLocal;
-    nis = nisdofs + nisneu;
+    nisvert = 0;
+    if (pcbddc->benign_saddle_point && pcbddc->user_primal_vertices_local) {
+      nisvert = 1;
+    }
+    nis = nisdofs + nisneu + nisvert;
     ierr = PetscMalloc1(nis,&isarray);CHKERRQ(ierr);
     /* dofs splitting */
     for (i=0;i<nisdofs;i++) {
@@ -4931,7 +4939,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = ISGlobalToLocalMappingApply(tmap,IS_GTOLM_DROP,tsize,idxs,&nout,tidxs);CHKERRQ(ierr);
       ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[i],&idxs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApply(coarse_islg,nout,tidxs,tidxs2);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pcbddc->ISForDofsLocal[i]),nout,tidxs2,PETSC_COPY_VALUES,&isarray[i]);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),nout,tidxs2,PETSC_COPY_VALUES,&isarray[i]);CHKERRQ(ierr);
       /* ierr = ISView(isarray[i],0);CHKERRQ(ierr); */
     }
     /* neumann boundaries */
@@ -4942,8 +4950,17 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = ISGlobalToLocalMappingApply(tmap,IS_GTOLM_DROP,tsize,idxs,&nout,tidxs);CHKERRQ(ierr);
       ierr = ISRestoreIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApply(coarse_islg,nout,tidxs,tidxs2);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pcbddc->NeumannBoundariesLocal),nout,tidxs2,PETSC_COPY_VALUES,&isarray[nisdofs]);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),nout,tidxs2,PETSC_COPY_VALUES,&isarray[nisdofs]);CHKERRQ(ierr);
       /* ierr = ISView(isarray[nisdofs],0);CHKERRQ(ierr); */
+    }
+    /* primal vertices (benign) */
+    if (pcbddc->benign_saddle_point && pcbddc->user_primal_vertices_local) {
+      ierr = ISGetLocalSize(pcbddc->user_primal_vertices_local,&tsize);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcbddc->user_primal_vertices_local,&idxs);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApply(tmap,IS_GTOLM_DROP,tsize,idxs,&nout,tidxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(pcbddc->user_primal_vertices_local,&idxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApply(coarse_islg,nout,tidxs,tidxs2);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),nout,tidxs2,PETSC_COPY_VALUES,&isarray[nis-1]);CHKERRQ(ierr);
     }
     /* free memory */
     ierr = PetscFree(tidxs);CHKERRQ(ierr);
@@ -4953,6 +4970,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     nis = 0;
     nisdofs = 0;
     nisneu = 0;
+    nisvert = 0;
     isarray = NULL;
   }
   /* destroy no longer needed map */
@@ -5151,6 +5169,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PCBDDCSetNeumannBoundaries(pc_temp,isarray[nisdofs]);CHKERRQ(ierr);
       ierr = ISDestroy(&isarray[nisdofs]);CHKERRQ(ierr);
     }
+    if (nisvert) {
+      ierr = PCBDDCSetPrimalVerticesIS(pc_temp,isarray[nis-1]);CHKERRQ(ierr);
+      ierr = ISDestroy(&isarray[nis-1]);CHKERRQ(ierr);
+    }
 
     /* get some info after set from options */
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
@@ -5286,7 +5308,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       PetscBool isnull;
       ierr = MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull);CHKERRQ(ierr);
       if (isnull) {
-        if (isbddc) {
+        if (isbddc && !pcbddc->benign_saddle_point) {
           ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
         } else {
           ierr = MatSetNullSpace(coarse_mat,CoarseNullSpace);CHKERRQ(ierr);

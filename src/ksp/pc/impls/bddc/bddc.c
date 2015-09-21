@@ -138,6 +138,51 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change)
 }
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetPrimalVerticesIS_BDDC"
+static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)PrimalVertices);CHKERRQ(ierr);
+  pcbddc->user_primal_vertices = PrimalVertices;
+  pcbddc->recompute_topography = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetPrimalVerticesIS"
+/*@
+ PCBDDCSetPrimalVerticesIS - Set additional user defined primal vertices in PCBDDC
+
+   Collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  PrimalVertices - index set of primal vertices in global numbering (can be empty)
+
+   Level: intermediate
+
+   Notes:
+     Any process can list any global node
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetPrimalVerticesIS(PC pc, IS PrimalVertices)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(PrimalVertices,IS_CLASSID,2);
+  PetscCheckSameComm(pc,1,PrimalVertices,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetPrimalVerticesIS_C",(PC,IS),(pc,PrimalVertices));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetPrimalVerticesLocalIS_BDDC"
 static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertices)
 {
@@ -146,8 +191,10 @@ static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertic
 
   PetscFunctionBegin;
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)PrimalVertices);CHKERRQ(ierr);
-  pcbddc->user_primal_vertices = PrimalVertices;
+  pcbddc->user_primal_vertices_local = PrimalVertices;
+  pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -1812,6 +1859,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",NULL);CHKERRQ(ierr);
@@ -2110,7 +2158,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
    Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace()
 
    Boundary nodes are split in vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph()
-   Additional information on dofs can be provided by using PCBDDCSetDofsSplitting(), PCBDDCSetDirichletBoundaries(), PCBDDCSetNeumannBoundaries(), and PCBDDCSetPrimalVerticesLocalIS()
+   Additional information on dofs can be provided by using PCBDDCSetDofsSplitting(), PCBDDCSetDirichletBoundaries(), PCBDDCSetNeumannBoundaries(), and PCBDDCSetPrimalVerticesIS() and their local counterparts.
 
    Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace(). Non-singular modes are retained via SVD.
 
@@ -2214,6 +2262,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->onearnullspace             = 0;
   pcbddc->onearnullvecs_state        = 0;
   pcbddc->user_primal_vertices       = 0;
+  pcbddc->user_primal_vertices_local = 0;
   pcbddc->NullSpace                  = 0;
   pcbddc->temp_solution              = 0;
   pcbddc->original_rhs               = 0;
@@ -2309,6 +2358,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   /* composing function */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",PCBDDCSetChangeOfBasisMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesIS_C",PCBDDCSetPrimalVerticesIS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",PCBDDCSetLevel_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",PCBDDCSetUseExactDirichlet_BDDC);CHKERRQ(ierr);
