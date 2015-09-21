@@ -627,7 +627,7 @@ static PetscErrorCode  PetscCreateLogTreeNested(PetscViewer viewer, PetscNestedE
   maxDefaultTimer = j;
 
   /* Find default timer's place in the tree */
-  ierr = PetscMalloc1(maxDefaultTimer+1,&treeIndices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(maxDefaultTimer+1,&treeIndices);CHKERRQ(ierr);
   treeIndices[0] = 0;
   for (i=1; i<nTimers; i++) {
     PetscLogEvent dftEvent = tree[i].dftEvent;
@@ -637,7 +637,7 @@ static PetscErrorCode  PetscCreateLogTreeNested(PetscViewer viewer, PetscNestedE
   /* Find each dftParent's nested identification */
   for (i=0; i<nTimers; i++) {
     PetscLogEvent dftParent = tree[i].dftParent;
-    if (dftParent!=0) {
+    if (dftParent) {
       int j = treeIndices[dftParent];
       tree[i].nstParent  = tree[j].nstEvent;
     }
@@ -715,13 +715,13 @@ static PetscErrorCode  PetscCreateLogTreeNested(PetscViewer viewer, PetscNestedE
       depth++;
       if (i<nTimers) {
         for (j=0;             j<tree[i].depth; j++) nstMyPath[j] = tree[i].nstPath[j];
-        for (j=tree[i].depth; j<depth;         j++) nstMyPath[j] = illegalEvent;
+        for (j=tree[i].depth; j<=depth;         j++) nstMyPath[j] = illegalEvent;
       } else {
-        for (j=0;             j<depth;         j++) nstMyPath[j] = illegalEvent;
+        for (j=0;             j<=depth;         j++) nstMyPath[j] = illegalEvent;
       }
       
       /* Communicate with other processes to obtain the next path and its depth */
-      ierr = MPI_Allreduce(nstMyPath, nstPath, depth, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(nstMyPath, nstPath, depth+1, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
       for (j=depth-1; (int) j>=0; j--) { 
         if (nstPath[j]==illegalEvent) depth=j;
       }
