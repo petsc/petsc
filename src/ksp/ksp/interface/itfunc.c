@@ -330,12 +330,12 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
-      ierr = MatNullSpaceTest(nullsp,pmat,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullsp,mat,NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
@@ -391,14 +391,10 @@ PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_THREADSAFETY)
-#define KSPReasonViewFromOptions KSPReasonViewFromOptionsUnsafe
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPReasonViewFromOptions"
 /*@C
-  KSPReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed. 
+  KSPReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed.
 
   Collective on KSP
 
@@ -413,12 +409,9 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -426,20 +419,8 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_THREADSAFETY)
-#undef KSPReasonViewFromOptions
-PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
-{
-  PetscErrorCode ierr;
-#pragma omp critical
-  ierr = KSPReasonViewFromOptionsUnsafe(ksp);
-  return ierr;
-}
-#endif
 
 #include <petscdraw.h>
 #undef __FUNCT__

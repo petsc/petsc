@@ -76,7 +76,7 @@ int              petsc_tracelevel            = 0;
 const char       *petsc_traceblanks          = "                                                                                                    ";
 char             petsc_tracespace[128]       = " ";
 PetscLogDouble   petsc_tracetime             = 0.0;
-static PetscBool PetscLogBegin_PrivateCalled = PETSC_FALSE;
+static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__
@@ -148,7 +148,7 @@ PetscErrorCode  PetscLogDestroy(void)
   PETSC_LARGEST_CLASSID       = PETSC_SMALLEST_CLASSID;
   PETSC_OBJECT_CLASSID        = 0;
   petsc_stageLog              = 0;
-  PetscLogBegin_PrivateCalled = PETSC_FALSE;
+  PetscLogInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -183,16 +183,20 @@ int PAPIEventSet = PAPI_NULL;
 
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "PetscLogBegin_Private"
-PetscErrorCode  PetscLogBegin_Private(void)
+#define __FUNCT__ "PetscLogInitialize"
+/*
+    The data structures for logging are always created even if no logging is turned on. This is so events etc can
+  be registered in the code before the actually logging is turned on.
+ */
+PetscErrorCode  PetscLogInitialize(void)
 {
   int            stage;
   PetscBool      opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscLogBegin_PrivateCalled) PetscFunctionReturn(0);
-  PetscLogBegin_PrivateCalled = PETSC_TRUE;
+  if (PetscLogInitializeCalled) PetscFunctionReturn(0);
+  PetscLogInitializeCalled = PETSC_TRUE;
 
   ierr = PetscOptionsHasName(NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) petsc_logActions = PETSC_FALSE;
@@ -263,7 +267,6 @@ PetscErrorCode  PetscLogBegin(void)
 
   PetscFunctionBegin;
   ierr = PetscLogSet(PetscLogEventBeginDefault, PetscLogEventEndDefault);CHKERRQ(ierr);
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +306,6 @@ PetscErrorCode  PetscLogAllBegin(void)
 
   PetscFunctionBegin;
   ierr = PetscLogSet(PetscLogEventBeginComplete, PetscLogEventEndComplete);CHKERRQ(ierr);
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +343,6 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   petsc_tracefile = file;
 
   ierr = PetscLogSet(PetscLogEventBeginTrace, PetscLogEventEndTrace);CHKERRQ(ierr);
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -642,7 +643,7 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
 . name  - The stage name
 
   Output Parameter:
-. stage - The stage
+. stage - The stage, , or -1 if no stage with that name exists
 
   Level: intermediate
 
@@ -1247,7 +1248,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"%s\"] = {}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name);CHKERRQ(ierr);
     }
   }
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalTimes[%d] = %g\n",rank,locTotalTime);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlops[%d] = %g\n",rank,petsc_TotalFlops);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessageLens[%d] = %g\n",rank,(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len));CHKERRQ(ierr);
@@ -1271,7 +1272,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1769,7 +1770,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscStageLog     stageLog;
 
   PetscFunctionBegin;
-  if (!PetscLogBegin_PrivateCalled) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogView()");
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;
   ierr      = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);

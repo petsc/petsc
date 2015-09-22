@@ -23,7 +23,7 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot request fblaslapack without Fortran compiler, use --download-f2cblaslapack intead')
 
     self.setCompilers.pushLanguage('FC')
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
+    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
       raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler')
     self.setCompilers.popLanguage()
 

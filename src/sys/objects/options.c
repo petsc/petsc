@@ -441,6 +441,10 @@ static char *Petscgetline(FILE * f)
 
   Notes: Use  # for lines that are comments and which should be ignored.
 
+   Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
+   such as -log_summary or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
+   calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
+
   Level: developer
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
@@ -2484,7 +2488,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
    Input Parameters:
 +  name  - option name string
 .  value - option value string
--  dummy - unused monitor context
+-  dummy - an ASCII viewer
 
    Level: intermediate
 
@@ -2498,9 +2502,6 @@ PetscErrorCode  PetscOptionsMonitorDefault(const char name[], const char value[]
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-  }
   ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

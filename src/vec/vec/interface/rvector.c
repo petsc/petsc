@@ -201,17 +201,17 @@ $     NORM_1 denotes sum_i |x_i|
 $     NORM_2 denotes sqrt(sum_i (x_i)^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
+      For complex numbers NORM_1 will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
+      norm of the absolutely values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
+      the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
+      people expect the former.
+
    Level: intermediate
 
    Performance Issues:
 $    per-processor memory bandwidth
 $    interprocessor latency
 $    work load inbalance that causes certain processes to arrive much earlier than others
-
-   Compile Option:
-   PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
- than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
- (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow.
 
    Concepts: norm
    Concepts: vector^norm
@@ -961,7 +961,7 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
 
    Notes:
    VecSetValuesBlocked() sets x[bs*ix[i]+j] = y[bs*i+j],
-   for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
+   for j=0,...,bs-1, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
    Calls to VecSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES
    options cannot be mixed without intervening calls to the assembly
@@ -2999,7 +2999,7 @@ PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockGet"
-/*@C
+/*@
    VecLockGet  - Gets the current lock status of a vector
 
    Logically Collective on Vec
@@ -3026,7 +3026,7 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockPush"
-/*@C
+/*@
    VecLockPush  - Lock a vector from writing
 
    Logically Collective on Vec
@@ -3054,7 +3054,7 @@ PetscErrorCode VecLockPush(Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockPop"
-/*@C
+/*@
    VecLockPop  - Unlock a vector from writing
 
    Logically Collective on Vec

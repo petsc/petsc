@@ -512,10 +512,7 @@ int main(int argc, char **argv)
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   A = J;
   ierr = CreatePressureNullSpace(dm, &user, NULL, &nullSpace);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-  if (A != J) {
-    ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-  }
+  ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
 
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexSNESComputeResidualFEM,&user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexSNESComputeJacobianFEM,&user);CHKERRQ(ierr);

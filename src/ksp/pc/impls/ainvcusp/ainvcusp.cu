@@ -5,7 +5,7 @@
    Include files needed for the CUSP AINV preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
 */
-
+#define PETSC_SKIP_SPINLOCK
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>

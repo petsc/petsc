@@ -201,7 +201,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
   if (ksp->pc_side == PC_LEFT) {
     Mat          A;
     MatNullSpace nullsp;
-    ierr = PCGetOperators(ksp->pc,NULL,&A);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
     ierr = MatGetNullSpace(A,&nullsp);CHKERRQ(ierr);
     if (nullsp) {
       ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);

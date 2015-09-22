@@ -46,7 +46,7 @@ class Configure(config.base.Configure):
     elif not self.scalartype == 'real':
       raise RuntimeError('--with-scalar-type must be real or complex')
     self.addDefine('USE_SCALAR_'+self.scalartype.upper(), '1')
-    self.framework.logPrint('Scalar type is '+str(self.scalartype))
+    self.logPrint('Scalar type is '+str(self.scalartype))
     # On apple isinf() and isnan() do not work when <complex> is included
     self.pushLanguage(self.languages.clanguage)
     if self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
@@ -56,9 +56,9 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_ISNAN',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);\n'):
         self.addDefine('HAVE_ISINF',1)
-      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
+      if self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
         self.addDefine('HAVE__ISNAN',1)
-      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
+      if self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
         self.addDefine('HAVE__FINITE',1)
     else:
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnormal(b);\n'):
@@ -67,9 +67,9 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_ISNAN',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);\n'):
         self.addDefine('HAVE_ISINF',1)
-      if self.checkLink('#include <math.h>\n','double b = 2.0;int a = _isnan(b);\n'):
+      if self.checkLink('#include <float.h>\n','double b = 2.0;int a = _isnan(b);\n'):
         self.addDefine('HAVE__ISNAN',1)
-      if self.checkLink('#include <math.h>\n','double b = 2.0;int a = _finite(b);\n'):
+      if self.checkLink('#include <float.h>\n','double b = 2.0;int a = _finite(b);\n'):
         self.addDefine('HAVE__FINITE',1)
     self.popLanguage()
     return
@@ -91,7 +91,7 @@ class Configure(config.base.Configure):
         raise RuntimeError('quadmath support not found. --with-precision=__float128 works with gcc-4.6 and newer compilers.')
     else:
       raise RuntimeError('--with-precision must be single, double,__float128')
-    self.framework.logPrint('Precision is '+str(self.precision))
+    self.logPrint('Precision is '+str(self.precision))
     return
 
   def configure(self):

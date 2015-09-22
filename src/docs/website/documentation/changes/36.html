@@ -139,6 +139,7 @@
          <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
          <li>Added support for MUMPS sequential solver in Schur complement mode</li>
          <li>MatGetSubMatricesMPI() will extract parallel submatrices on subcommunicators of the supplied IS objects. Unsorted, but not repeated indices are okay.</li>
+         <li>Removed MatMFFDAddNullSpace() just use MatSetNullSpace()</li>
       </ul>
       <h4>PC:</h4>
       <ul>
@@ -160,7 +161,7 @@
       </ul>
       <h4>KSP:</h4>
       <ul>
-        <li>Removed KSPSetNullSpace() always use MatSetNullSpace()</li>
+        <li>Removed KSPSetNullSpace() always use MatSetNullSpace() provided to the FIRST matrix argument to KSPSetOperators(), or SNESSetJacobian(), or TSSetIJacobian()</li>
         <li>Added MatSetTransposeNullSpace() to indicate the null space of the transpose operator</li>
         <li>Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev</li>
         <li>Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_</li>
@@ -177,7 +178,7 @@
       <ul>
 	<li>The postevent routine set with TSSetEventMonitor() now takes an additional PetscBool argument 'forwardsolve'. The forwardsolve flag is used to distinguish between a TS forward solve (forwardsolve = 1) and adjoint solve (forwardsolve = 0).</li>
         <li>Added TSAdjointSolve() for adjoint sensitivity analysis</li>
-
+        <li>EquationType is introduced to distinguish between ODEs and DAEs. It needs to be set accordingly before solving the problem through TSSetEquationType(). It currently only affects arkimex methods. </li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>

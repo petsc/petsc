@@ -4,9 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz']
+    self.download          = ['http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.0.1.tar.gz']
     self.downloadonWindows = 1
     self.lookforbydefault  = 1
+    self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     return
 
   def setupHelp(self, help):
@@ -44,6 +46,7 @@ class Configure(config.package.GNUPackage):
     if self.argDB['download-cmake']:
       self.log.write('Building CMake\n')
       config.package.GNUPackage.configure(self)
+      self.log.write('Looking for Cmake in '+os.path.join(self.installDir,'bin')+'\n')
       self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
     elif (not self.argDB['with-cmake']  == 0 and not self.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.argDB:
       self.executeTest(self.locateCMake)

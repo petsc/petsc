@@ -1621,7 +1621,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
 
       /* infomation local to each processor */
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",mumps->myid,mumps->id.RINFO(1));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
@@ -1653,7 +1653,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       }
 
 
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
 
       if (!mumps->myid) { /* information from the host */
         ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",mumps->id.RINFOG(1));CHKERRQ(ierr);
@@ -2062,7 +2062,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   MumpsScalar    *orhs;
   PetscScalar    *osol,*nrhs,*nsol;
-  PetscInt       orhs_size,osol_size;
+  PetscInt       orhs_size,osol_size,olrhs_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2077,6 +2077,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   }
   /* swap pointers */
   orhs = mumps->id.redrhs;
+  olrhs_size = mumps->id.lredrhs;
   orhs_size = mumps->sizeredrhs;
   osol = mumps->schur_sol;
   osol_size = mumps->schur_sizesol;
@@ -2084,6 +2085,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = (MumpsScalar*)nrhs;
   ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
+  mumps->id.lredrhs = mumps->sizeredrhs;
   mumps->schur_sol = nsol;
   ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
 
@@ -2094,6 +2096,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = orhs;
+  mumps->id.lredrhs = olrhs_size;
   mumps->sizeredrhs = orhs_size;
   mumps->schur_sol = osol;
   mumps->schur_sizesol = osol_size;
