@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,its,idx[4],count,*rows;
   PetscScalar    val,Ke[16],r[4];
-  PetscReal      x,y,h,norm,tol=1.e-14;
+  PetscReal      x,y,h,norm,tol=1000.*PETSC_MACHINE_EPSILON;
   Vec            u,ustar,b;
   KSP            ksp;
 

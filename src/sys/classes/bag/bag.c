@@ -716,7 +716,11 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar*)(((char*)bag) + nitem->offset);
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %g + %gi; %s\n",nitem->name,(double)PetscRealPart(value),(double)PetscImaginaryPart(value),nitem->help);CHKERRQ(ierr);
+        if ((double)PetscImaginaryPart(value)) {
+          ierr = PetscViewerASCIIPrintf(view,"  %s = %g + %gi; %s\n",nitem->name,(double)PetscRealPart(value),(double)PetscImaginaryPart(value),nitem->help);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,(double)PetscRealPart(value),nitem->help);CHKERRQ(ierr);
+        }
 #else
         ierr = PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,(double)value,nitem->help);CHKERRQ(ierr);
 #endif

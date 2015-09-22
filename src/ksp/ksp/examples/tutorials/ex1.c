@@ -26,7 +26,7 @@ int main(int argc,char **args)
   Mat            A;            /* linear system matrix */
   KSP            ksp;         /* linear solver context */
   PC             pc;           /* preconditioner context */
-  PetscReal      norm,tol=1.e-14;  /* norm of solution error */
+  PetscReal      norm,tol=1000*PETSC_MACHINE_EPSILON;  /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    size;

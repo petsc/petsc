@@ -51,6 +51,10 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
       newformat[j++] = format[i++];
       newformat[j++] = format[i++];
     } else if (format[i] == '%') {
+      if (format[i+1] == 'g') {
+        newformat[j++] = '[';
+        newformat[j++] = '|';
+      }
       /* Find the letter */
       for (; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
       switch (format[i]) {
@@ -62,6 +66,13 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
         newformat[j++] = 'l';
         newformat[j++] = 'd';
 #endif
+        break;
+      case 'g':
+        newformat[j++] = format[i];
+        if (format[i-1] == '%') {
+          newformat[j++] = '|';
+          newformat[j++] = ']';
+        }
         break;
       case 'G':
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%G format is no longer supported, use %%g and cast the argument to double");
@@ -130,6 +141,37 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
 #endif
   if (oldLength >= 8*1024) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
+  }
+  {
+    PetscBool foundedot;
+    size_t cnt = 0,ncnt = 0,leng;
+    ierr = PetscStrlen(str,&leng);CHKERRQ(ierr);
+    if (leng > 5) {
+      for (cnt=0; cnt<leng-4; cnt++) {
+        if (str[cnt] == '[' && str[cnt+1] == '|'){
+           cnt++; cnt++;
+           foundedot = PETSC_FALSE;
+           for (; cnt<leng-1; cnt++) {
+             if (str[cnt] == '|' && str[cnt+1] == ']'){
+               cnt++;
+               if (!foundedot) str[ncnt++] = '.';
+               ncnt--;
+               break;
+             } else {
+               if (str[cnt] == 'e' || str[cnt] == '.') foundedot = PETSC_TRUE;
+               str[ncnt++] = str[cnt];
+             }
+           }
+        } else {
+          str[ncnt] = str[cnt];
+        }
+        ncnt++;
+      }
+      while (cnt < leng) {
+        str[ncnt] = str[cnt]; ncnt++; cnt++;
+      }
+      str[ncnt] = 0;
+    }
   }
 #if defined(PETSC_HAVE_WINDOWS_H) && !defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
   /* older Windows OS always produces e-+0np for floating point output; remove the extra 0 */

@@ -27,7 +27,7 @@ Tao Object: 2 MPI processes
     type: stcg
   total KSP iterations: 56
   convergence tolerances: fatol=1e-10,   frtol=1e-10
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.64453e-08
   Objective value=1.41847
   total number of iterations=3,                          (max: 50)

@@ -13,7 +13,7 @@ Tao Object: 1 MPI processes
     type: more-thuente
   Active Set subset type: subvec
   convergence tolerances: fatol=1e-15,   frtol=1e-15
-  convergence tolerances: gatol=1e-15,   steptol=0,   gttol=1e-15
+  convergence tolerances: gatol=1e-15,   steptol=0.,   gttol=1e-15
   Residual in Function/Gradient:=1.05798e-06
   Objective value=-1.00738
   total number of iterations=7,                          (max: 6)

@@ -2,7 +2,7 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 8   
 
-iter =   0, Function value 1.45591, Residual: 1 
+iter =   0, Function value 1.45591, Residual: 1. 
 iter =   1, Function value 1.53418, Residual: 0.0182909 
 iter =   2, Function value 1.5314, Residual: 0.0103471 
 iter =   3, Function value 1.52832, Residual: 0.00487195 
