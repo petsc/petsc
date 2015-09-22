@@ -415,7 +415,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscScalar    *array;
       const PetscInt *indices;
       PetscInt        k;
-      /*  */
       on = 0;
       for (i=0; i<osm->n; i++) {
         ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);

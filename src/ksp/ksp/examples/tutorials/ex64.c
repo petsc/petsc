@@ -122,18 +122,18 @@ int main(int argc,char **args)
    ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
    /* coarse parts */
    ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
-   /*ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+   /* ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
    /* fine parts */
    ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
-   /*ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+   /* ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
    /* partitioning */
-   /*ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+   /* ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
    /* get new global number of each old global number */
    ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
-   /*ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+   /* ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
    ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
    ierr = MatGetSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA);CHKERRQ(ierr);
-   /*ierr = MatView(perA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+   /* ierr = MatView(perA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   /*
      Create and set vectors
   */
