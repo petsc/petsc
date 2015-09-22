@@ -267,10 +267,12 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   char              version[256];
 #if !defined(PETSC_HAVE_THREADSAFETY)
   PetscReal         logthreshold;
+#endif
+#if defined(PETSC_USE_LOG)
+  PetscViewerFormat format;
   PetscBool         flg4 = PETSC_FALSE;
 #endif
-  PetscViewerFormat format;
-
+  
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 

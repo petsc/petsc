@@ -11,7 +11,8 @@
 #include <petscviewer.h>
 #include "xmllogevent.h"
 #include "xmlviewer.h"
-#include <petsc/private/fortranimpl.h>
+
+#if defined(PETSC_USE_LOG)
 
 /*
  * Support for nested PetscTimers
@@ -1414,3 +1415,4 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#endif

@@ -10,6 +10,8 @@
 #include <petsc/private/fortranimpl.h>
 #include "xmlviewer.h"
 
+#if defined(PETSC_USE_LOG)
+
 static int XMLSectionDepth            = 0;
 
 #undef __FUNCT__
@@ -119,3 +121,4 @@ PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, con
   PetscFunctionReturn(0);
 }
 
+#endif
