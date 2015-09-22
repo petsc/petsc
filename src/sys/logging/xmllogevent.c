@@ -999,11 +999,7 @@ static PetscErrorCode  PetscLogNestedPrint(PetscViewer viewer, PetscNestedEventT
   if (!tree[iStart].own) {
   /* Set values for a timer that was not activated in this process 
    * (but was, in other processes of this run) */
-    myPerfInfo.time          = 0; 
-    myPerfInfo.flops         = 0;
-    myPerfInfo.numMessages   = 0;
-    myPerfInfo.messageLength = 0;
-    myPerfInfo.numReductions = 0;
+    ierr = PetscMemzero(&myPerfInfo,sizeof(myPerfInfo));CHKERRQ(ierr);
 
     selfPerfInfo  = myPerfInfo;
     otherPerfInfo = myPerfInfo;
