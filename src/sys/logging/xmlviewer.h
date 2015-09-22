@@ -6,7 +6,6 @@ PetscErrorCode PetscViewerFinalASCII_XML(PetscViewer);
 PetscErrorCode PetscViewerCheckASCII_XMLFormat(PetscViewer, PetscBool *);
 PetscErrorCode PetscViewerXMLStartSection(PetscViewer, const char *, const char *);
 PetscErrorCode PetscViewerXMLEndSection(PetscViewer, const char *);
-PetscErrorCode PetscXMLEndSection(PetscViewer, const char *);
 PetscErrorCode PetscViewerXMLPutString(PetscViewer, const char *, const char *, const char *);
 PetscErrorCode PetscViewerXMLPutInt(PetscViewer, const char *, const char *, int);
 PetscErrorCode PetscViewerXMLPutDouble(PetscViewer, const char *, const char *, PetscLogDouble, const char *);
