@@ -22,7 +22,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
   "The systems provide a choice of reconstructions with -physics_xxx_reconstruct\n"
   "  characteristic - Limit the characteristic variables, this is usually preferred (default)\n"
   "  conservative   - Limit the conservative variables directly, can cause undesired interaction of waves\n\n"
-  "A variety of limiters for high-resolution 8s are available with -limit\n"
+  "A variety of limiters for high-resolution TVD limiters are available with -limit\n"
   "  upwind,minmod,superbee,mc,vanleer,vanalbada,koren,cada-torillhon (last two are nominally third order)\n"
   "  and non-TVD schemes lax-wendroff,beam-warming,fromm\n\n"
   "To preserve the TVD property, one should time step with a strong stability preserving method.\n"
