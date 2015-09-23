@@ -575,7 +575,7 @@ static int compareTreeItems(const void *item1_, const void *item2_)
 #define __FUNCT__ "PetscCreateLogTreeNested"
 static PetscErrorCode  PetscCreateLogTreeNested(PetscViewer viewer, PetscNestedEventTree **p_tree, int *p_nTimers)
 {
-  PetscNestedEventTree *tree, *newTree;
+  PetscNestedEventTree *tree = NULL, *newTree;
   int                  *treeIndices;
   int                  nTimers, totalNTimers, i, j, iTimer0, maxDefaultTimer;
   int                  yesno;
@@ -935,12 +935,12 @@ static PetscErrorCode  PetscLogNestedPrint(PetscViewer viewer, PetscNestedEventT
 {
   int                depth   = tree[iStart].depth;
   const char         *name;
-  int                nChildren;
+  int                parentCount, nChildren;
   PetscSortItem      *children;
   PetscErrorCode     ierr;
   PetscEventPerfInfo *eventPerfInfo;
   PetscEventPerfInfo myPerfInfo,  otherPerfInfo, selfPerfInfo;
-  PetscLogDouble     parentCount, countsPerCall;
+  PetscLogDouble     countsPerCall;
   PetscBool          wasPrinted;
   PetscBool          childWasPrinted;
   MPI_Comm           comm;
@@ -1376,8 +1376,8 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer viewer)
   PetscErrorCode       ierr;
   PetscLogDouble       locTotalTime, globTotalTime;
   PetscNestedEventTree *tree;
-  PetscSelfTimer       *selftimers;
-  int                  nTimers, nstMax;
+  PetscSelfTimer       *selftimers = NULL;
+  int                  nTimers = 0, nstMax = 0;
   PetscViewerType      vType;
 
   PetscFunctionBegin;
