@@ -275,7 +275,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
 
       /* Register a new default timer */
       sprintf(name, "%d -> %d", (int) dftParentActive, (int) nstEvent);
-      ierr = PetscLogEventRegister(name, 0, &dftEvent);
+      ierr = PetscLogEventRegister(name, 0, &dftEvent);CHKERRQ(ierr);
       ierr = PetscLogEventFindDefaultTimer( dftEvent, dftEventsSorted, nParents, &tentry);CHKERRQ(ierr); 
 
       /* Reallocate parents and dftEvents to make space for new parent */
