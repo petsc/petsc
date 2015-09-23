@@ -282,7 +282,6 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
 	 ierr = PetscViewerASCIIPrintf(viewer," Coarse partitioner %s \n",hpart->coarseparttype);CHKERRQ(ierr);
 	 ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts %D \n",hpart->Ncoarseparts);CHKERRQ(ierr);
 	 ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts %D \n",hpart->Nfineparts);CHKERRQ(ierr);
-	 ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
