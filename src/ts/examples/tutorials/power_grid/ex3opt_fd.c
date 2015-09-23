@@ -23,29 +23,45 @@ F*/
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar H,D,omega_b,omega_s,Pmax,Pm,E,V,X,u_s,c;
+  PetscScalar H,D,omega_b,omega_s,Pmax,Pmax_ini,Pm,E,V,X,u_s,c;
   PetscInt    beta;
   PetscReal   tf,tcl;
 } AppCtx;
 
 PetscErrorCode FormFunction(Tao,Vec,PetscReal*,void*);
 
-/*                                                                                                                     \
-                                                                                                                        
-    In order to insure that the event gets triggered at the same time independent of the                               \
-                                                                                                                        
-  precision of the calculation we decrease the event time by a small fraction of the time step.                        \
-                                                                                                                        
-  Otherwise in __float128 precision the event was delayed by one timestep producing completely                         \
-                                                                                                                        
-  different results                                                                                                    \
-                                                                                                                        
- */
-PETSC_STATIC_INLINE PetscBool EventTolerance(TS ts,PetscReal t,PetscReal tf,PetscReal tc)
+/* Event check */
+#undef __FUNCT__
+#define __FUNCT__ "EventFunction"
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
 {
-  PetscReal dt;
-  TSGetTimeStep(ts,&dt);
-  return (t > tf - .01*PetscAbs(dt) && t < tc -.01*PetscAbs(dt)) ? PETSC_TRUE : PETSC_FALSE;
+  AppCtx        *user=(AppCtx*)ctx;
+
+  PetscFunctionBegin;
+  /* Event for fault-on time */
+  fvalue[0] = t - user->tf;
+  /* Event for fault-off time */
+  fvalue[1] = t - user->tcl;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PostEventFunction"
+PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
+{
+  AppCtx *user=(AppCtx*)ctx;
+  
+  PetscFunctionBegin;
+
+  if (event_list[0] == 0) {
+    if (forwardsolve) user->Pmax = 0.0; /* Apply disturbance - this is done by setting Pmax = 0 */
+    else user->Pmax = user->Pmax_ini; /* Going backward, reversal of event */
+  } else if(event_list[0] == 1) {
+    if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
+    else user->Pmax = 0.0; /* Going backward, reversal of event */
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -64,8 +80,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if (EventTolerance(ts,t,ctx->tf,ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
-  else Pmax = ctx->Pmax;
+  Pmax = ctx->Pmax;
 
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
   f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
@@ -91,8 +106,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  if (EventTolerance(ts,t,ctx->tf,ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
-  else Pmax = ctx->Pmax;
+  Pmax = ctx->Pmax;
 
   J[0][0] = a;                       J[0][1] = -ctx->omega_b;
   J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
@@ -233,7 +247,8 @@ int main(int argc,char **argv)
     ctx.E       = 1.1378;
     ctx.V       = 1.0;
     ctx.X       = 0.545;
-    ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
+    ctx.Pmax    = ctx.E*ctx.V/ctx.X;
+    ctx.Pmax_ini = ctx.Pmax;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
     ctx.Pm      = 1.061605;
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
@@ -378,6 +393,15 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
+  PetscInt *direction;
+  PetscBool *terminate;
+  ierr = PetscMalloc(2*sizeof(PetscInt),&direction);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*sizeof(PetscBool),&terminate);CHKERRQ(ierr);
+  direction[0] = direction[1] = 1;
+  terminate[0] = terminate[1] = PETSC_FALSE;
+
+  ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)ctx);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -424,6 +448,8 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscFree(direction);CHKERRQ(ierr);
+  ierr = PetscFree(terminate);CHKERRQ(ierr);
 
   return 0;
 }
