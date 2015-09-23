@@ -1375,7 +1375,7 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer viewer)
   MPI_Comm             comm;
   PetscErrorCode       ierr;
   PetscLogDouble       locTotalTime, globTotalTime;
-  PetscNestedEventTree *tree;
+  PetscNestedEventTree *tree = NULL;
   PetscSelfTimer       *selftimers = NULL;
   int                  nTimers = 0, nstMax = 0;
   PetscViewerType      vType;
