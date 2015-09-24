@@ -727,7 +727,7 @@ typedef const char* TSGLEEType;
 J*/
 PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType*);
 PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts,TSGLEEType);
-PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType,PetscInt,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType,PetscInt,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSGLEEFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
