@@ -246,7 +246,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
     /* Create event in nestedEvents */
     nestedEvents[entry].nstEvent = nstEvent;
     nestedEvents[entry].nParents=1;
-    ierr = PetscMalloc4(1,&nestedEvents[entry].dftParentsSorted,1,&nestedEvents[entry].dftEvents,1,&nestedEvents[entry].dftParents,1,&nestedEvents[entry].dftEventsSorted);CHKERRQ(ierr);
+    ierr = PetscMalloc4(1,&nestedEvents[entry].dftParentsSorted,1,&nestedEvents[entry].dftEventsSorted,1,&nestedEvents[entry].dftParents,1,&nestedEvents[entry].dftEvents);CHKERRQ(ierr);
 
     /* Fill in new event */
     pentry = 0;
@@ -284,7 +284,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
       ierr = PetscMemcpy(nestedEvents[entry].dftEventsSorted,  dftEventsSorted,  nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
       ierr = PetscMemcpy(nestedEvents[entry].dftParents,       dftParents,       nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
       ierr = PetscMemcpy(nestedEvents[entry].dftEvents,        dftEvents,        nParents*sizeof(PetscLogEvent));CHKERRQ(ierr);
-      ierr = PetscFree4(dftParents,dftEvents,dftParentsSorted,dftEventsSorted);CHKERRQ(ierr);
+      ierr = PetscFree4(dftParentsSorted,dftEventsSorted,dftParents,dftEvents);CHKERRQ(ierr);
 
       dftParents       = nestedEvents[entry].dftParents;
       dftEvents        = nestedEvents[entry].dftEvents;
