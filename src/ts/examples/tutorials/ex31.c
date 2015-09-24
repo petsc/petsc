@@ -1167,8 +1167,8 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   PetscInt        N;                /* Size of the system of equations        */
   TSType          time_scheme;      /* Type of time-integration scheme        */
   Mat             Jac = NULL;       /* Jacobian matrix                        */
-  PetscInt        iAuxSize,i;       /* Work vectors                           */
-  Vec             YAux;             /* Auxiliary solution vector              */
+  Vec             Yerr;             /* Auxiliary solution vector              */
+  PetscReal       err_norm;         /* Estimated error norm                   */
  
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
@@ -1215,20 +1215,14 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
-  
-  /* call it first with the last argument as NULL to get the number of auxiliary solutions
-     in the parameter iAuxSize – here TSGLEE will return the value r-1 */
-  ierr = TSGetAuxSolution(ts,&iAuxSize,NULL);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Number of auxiliary solutions = %d\n",iAuxSize);
-  /* then, iterating from 0 to iAuxSize-1, get each auxiliary solution in the vector Yaux (which
-     must be preallocated and have the same structure/size as the solution – TSGLEE 
-     Will return each of the y~ or eps from 0 to r-1 */
-  for (i=0; i<iAuxSize; i++) {
-    ierr = VecDuplicate(Y,&YAux);CHKERRQ(ierr);
-    ierr = TSGetAuxSolution(ts,&i,&YAux);CHKERRQ(ierr);
-    ierr = VecView(YAux,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = VecDestroy(&YAux);CHKERRQ(ierr);
-  }
+
+  /* Get the estimated error, if available */
+  ierr = VecDuplicate(Y,&Yerr);CHKERRQ(ierr);
+  ierr = VecZeroEntries(Yerr);CHKERRQ(ierr);
+  ierr = TSGetTimeError(ts,&Yerr);CHKERRQ(ierr);
+  ierr = VecNorm(Yerr,NORM_2,&err_norm);
+  ierr = VecDestroy(&Yerr);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Estimated Error = %E\n",err_norm);CHKERRQ(ierr);
   
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);

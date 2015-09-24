@@ -2307,7 +2307,11 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = (*ts->ops->getauxsolution)(ts,v);CHKERRQ(ierr); 
+  if (ts->ops->getauxsolution) {
+    ierr = (*ts->ops->getauxsolution)(ts,v);CHKERRQ(ierr);
+  } else {
+    ierr = VecZeroEntries(*v); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2335,7 +2339,11 @@ PetscErrorCode  TSGetTimeError(TS ts,Vec *v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = (*ts->ops->gettimeerror)(ts,v);CHKERRQ(ierr); 
+  if (ts->ops->gettimeerror) {
+    ierr = (*ts->ops->gettimeerror)(ts,v);CHKERRQ(ierr); 
+  } else {
+    ierr = VecZeroEntries(*v);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
