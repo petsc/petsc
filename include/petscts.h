@@ -244,7 +244,7 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
 PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
-PETSC_EXTERN PetscErrorCode TSGetAuxSolution(TS,PetscInt*,Vec*);
+PETSC_EXTERN PetscErrorCode TSSolutionComponents(TS,PetscInt*,Vec*);
 
 
 /*S

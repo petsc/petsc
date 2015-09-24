@@ -2232,7 +2232,7 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetAuxSolution()
+.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetSolutionComponents()
 
 .keywords: TS, timestep, get, solution
 @*/
@@ -2246,23 +2246,23 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetAuxSolution"
+#define __FUNCT__ "TSGetSolutionComponents"
 /*@
-   TSGetAuxSolution - Returns any auxiliary solutions at the present 
+   TSGetSolutionComponents - Returns any solution components at the present 
    timestep, if available for the time integration method being used. 
-   Auxiliary solutions are quantities that share the same size and 
+   Solution components are quantities that share the same size and 
    structure as the solution vector.
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
-.  n - If v is PETSC_NULL, then the number of auxiliary solutions is
-       returned through n, else the n-th auxiliary solution is 
+.  n - If v is PETSC_NULL, then the number of solution components is
+       returned through n, else the n-th solution component is 
        returned in v.
-.  v - the vector containing the n-th auxiliary solution 
+.  v - the vector containing the n-th solution component 
        (may be PETSC_NULL to use this function to find out
-        the number of auxiliary solutions).
+        the number of solutions components).
 
    Level: intermediate
 
@@ -2270,15 +2270,15 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, solution
 @*/
-PetscErrorCode  TSGetAuxSolution(TS ts,PetscInt *n,Vec *v)
+PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->ops->getauxsolution) *n = 0;
+  if (!ts->ops->getsolutioncomponents) *n = 0;
   else { 
-    ierr = (*ts->ops->getauxsolution)(ts,n,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }

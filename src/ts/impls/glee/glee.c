@@ -1097,8 +1097,8 @@ static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetAuxSolution_GLEE"
-PetscErrorCode TSGetAuxSolution_GLEE(TS ts,PetscInt *n,Vec *Y)
+#define __FUNCT__ "TSGetSolutionComponents_GLEE"
+PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
   GLEETableau     tab   = glee->tableau;
@@ -1145,20 +1145,20 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ierr = TSGLEEInitializePackage();CHKERRQ(ierr);
 #endif
 
-  ts->ops->reset          = TSReset_GLEE;
-  ts->ops->destroy        = TSDestroy_GLEE;
-  ts->ops->view           = TSView_GLEE;
-  ts->ops->load           = TSLoad_GLEE;
-  ts->ops->setup          = TSSetUp_GLEE;
-  ts->ops->step           = TSStep_GLEE;
-  ts->ops->interpolate    = TSInterpolate_GLEE;
-  ts->ops->evaluatestep   = TSEvaluateStep_GLEE;
-  ts->ops->setfromoptions = TSSetFromOptions_GLEE;
-  ts->ops->getstages      = TSGetStages_GLEE;
-  ts->ops->snesfunction   = SNESTSFormFunction_GLEE;
-  ts->ops->snesjacobian   = SNESTSFormJacobian_GLEE;
-  ts->ops->getauxsolution = TSGetAuxSolution_GLEE;
-  ts->ops->startingmethod = TSStartingMethod_GLEE;
+  ts->ops->reset                  = TSReset_GLEE;
+  ts->ops->destroy                = TSDestroy_GLEE;
+  ts->ops->view                   = TSView_GLEE;
+  ts->ops->load                   = TSLoad_GLEE;
+  ts->ops->setup                  = TSSetUp_GLEE;
+  ts->ops->step                   = TSStep_GLEE;
+  ts->ops->interpolate            = TSInterpolate_GLEE;
+  ts->ops->evaluatestep           = TSEvaluateStep_GLEE;
+  ts->ops->setfromoptions         = TSSetFromOptions_GLEE;
+  ts->ops->getstages              = TSGetStages_GLEE;
+  ts->ops->snesfunction           = SNESTSFormFunction_GLEE;
+  ts->ops->snesjacobian           = SNESTSFormJacobian_GLEE;
+  ts->ops->getsolutioncomponents  = TSGetSolutionComponents_GLEE;
+  ts->ops->startingmethod         = TSStartingMethod_GLEE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
