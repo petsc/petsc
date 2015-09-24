@@ -51,6 +51,8 @@ struct _TSOps {
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardintegral)(TS);
   PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
+  PetscErrorCode (*getauxsolution)(TS,Vec*);
+  PetscErrorCode (*gettimeerror)(TS,Vec*);
   PetscErrorCode (*startingmethod) (TS);
 };
 

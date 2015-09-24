@@ -2264,7 +2264,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
        (may be PETSC_NULL to use this function to find out
         the number of solutions components).
 
-   Level: intermediate
+   Level: advanced
 
 .seealso: TSGetSolution()
 
@@ -2280,6 +2280,62 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
   else { 
     ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr); 
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetAuxSolution"
+/*@
+   TSGetAuxSolution - Returns an auxiliary solution at the present 
+   timestep, if available for the time integration method being used.
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Parameters :
+.  ts - the TS context obtained from TSCreate() (input parameter).
+.  v - the vector containing the auxiliary solution 
+
+   Level: intermediate
+
+.seealso: TSGetSolution()
+
+.keywords: TS, timestep, get, solution
+@*/
+PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = (*ts->ops->getauxsolution)(ts,v);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetTimeError"
+/*@
+   TSGetTimeError - Returns the estimated error vector, if the chosen
+   TSType has an error estimation functionality.
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Parameters :
+.  ts - the TS context obtained from TSCreate() (input parameter).
+.  v - the vector containing the error (same size as the solution).
+
+   Level: intermediate
+
+.seealso: TSGetSolution()
+
+.keywords: TS, timestep, get, error
+@*/
+PetscErrorCode  TSGetTimeError(TS ts,Vec *v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = (*ts->ops->gettimeerror)(ts,v);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

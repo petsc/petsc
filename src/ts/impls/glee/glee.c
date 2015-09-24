@@ -1105,14 +1105,48 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!Y) *n = tab->r - 1;
+  if (!Y) *n = tab->r;
   else {
-    if ((*n >= 0) && (*n < tab->r-1)) {
-      ierr = VecCopy(glee->Y[*n+1],*Y); CHKERRQ(ierr);
+    if ((*n >= 0) && (*n < tab->r)) { 
+      ierr = VecCopy(glee->Y[*n],*Y); CHKERRQ(ierr);
     } else {
-      /* XXX: Error message for invalid value of n */
+      ierr = VecZeroEntries(*Y); CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetAuxSolution_GLEE"
+PetscErrorCode TSGetAuxSolution_GLEE(TS ts,Vec *X)
+{
+  TS_GLEE         *glee = (TS_GLEE*)ts->data;
+  GLEETableau     tab   = glee->tableau;
+  PetscReal       *F    = tab->Fembed;
+  PetscInt        r     = tab->r;
+  Vec             *Y    = glee->Y;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = VecZeroEntries(*X);CHKERRQ(ierr);
+  ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetTimeError_GLEE"
+PetscErrorCode TSGetTimeError_GLEE(TS ts,Vec *X)
+{
+  TS_GLEE         *glee = (TS_GLEE*)ts->data;
+  GLEETableau     tab   = glee->tableau;
+  PetscReal       *F    = tab->Ferror;
+  PetscInt        r     = tab->r;
+  Vec             *Y    = glee->Y;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = VecZeroEntries(*X);CHKERRQ(ierr);
+  ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1158,6 +1192,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ts->ops->snesfunction           = SNESTSFormFunction_GLEE;
   ts->ops->snesjacobian           = SNESTSFormJacobian_GLEE;
   ts->ops->getsolutioncomponents  = TSGetSolutionComponents_GLEE;
+  ts->ops->getauxsolution         = TSGetAuxSolution_GLEE;
+  ts->ops->gettimeerror           = TSGetTimeError_GLEE;
   ts->ops->startingmethod         = TSStartingMethod_GLEE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
