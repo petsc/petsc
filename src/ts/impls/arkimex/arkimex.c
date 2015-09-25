@@ -708,7 +708,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
+  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && ts->event->status != TSEVENT_PROCESSING) {
     PetscReal valid_time;
     PetscBool isvalid;
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
