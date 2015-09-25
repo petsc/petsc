@@ -247,6 +247,8 @@ int main(int argc,char **argv)
   PetscInt       steps;
   PetscScalar    *x_ptr,*y_ptr;
   Vec            lambda[1],q,mu[1];
+  PetscInt       direction[2];
+  PetscBool      terminate[2];
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -361,10 +363,6 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  PetscInt *direction;
-  PetscBool *terminate;
-  ierr = PetscMalloc(2*sizeof(PetscInt),&direction);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*sizeof(PetscBool),&terminate);CHKERRQ(ierr);
   direction[0] = direction[1] = 1;
   terminate[0] = terminate[1] = PETSC_FALSE;
 
@@ -428,8 +426,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFree(direction);CHKERRQ(ierr);
-  ierr = PetscFree(terminate);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return(0);
