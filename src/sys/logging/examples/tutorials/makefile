@@ -16,7 +16,7 @@ ex1f: ex1f.o  chkopts
 	${RM} -f ex1f.o
 
 runex1f:
-	-@${MPIEXEC} -n 2 ./ex1f -log_view :filename.xml:ascii_xml
+	-@${MPIEXEC} -n 2 ./ex1f -log_view ascii:filename.xml:ascii_xml
 
 TESTEXAMPLES_FORTRAN	=  ex1f.PETSc runex1f ex1f.rm
 
