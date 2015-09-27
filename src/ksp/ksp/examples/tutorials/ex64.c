@@ -111,41 +111,29 @@ int main(int argc,char **args)
 
   /*
     Partition the graph of the matrix
-   */
-   ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
-   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
-   ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
-   ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
-   ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
-   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
-   /* get new processor owner number of each vertex */
-   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
-   /* coarse parts */
-   ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
-   /* ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-   /* fine parts */
-   ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
-   /* ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-   /* partitioning */
-   /* ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-   /* get new global number of each old global number */
-   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
-   /* ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-   ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
-   ierr = MatGetSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA);CHKERRQ(ierr);
-   /* ierr = MatView(perA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  /*
-     Create and set vectors
   */
+  ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
+  ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
+  ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
+  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+  /* get new processor owner number of each vertex */
+  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  /* get coarse parts according to which we rearrange the matrix */
+  ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
+  /* fine parts are used with coarse parts */
+  ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
+  /* get new global number of each old global number */
+  ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA);CHKERRQ(ierr);
   ierr = MatCreateVecs(perA,&b,NULL);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(perA,u,b);CHKERRQ(ierr);
-  /*
-     Create linear solver context
-  */
   ierr = KSPCreate(comm,&ksp);CHKERRQ(ierr);
   /*
      Set operators. Here the matrix that defines the linear system

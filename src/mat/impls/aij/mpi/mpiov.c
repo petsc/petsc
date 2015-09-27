@@ -67,15 +67,15 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   PetscSFNode     *remote;
 
   PetscFunctionBegin;
-  /* communicator */
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  /* row map */
+  /* get row map to determine where rows should be going */
   ierr = MatGetLayouts(mat,&rmap,PETSC_NULL);CHKERRQ(ierr);
-  /* retrieve IS data */
+  /* retrieve IS data and put all together so that we
+   * can optimize communication
+   *  */
   ierr = PetscCalloc2(nidx,(PetscInt ***)&indices,nidx,&length);CHKERRQ(ierr);
-  /* get length and indices */
   for (i=0,tlength=0; i<nidx; i++){
     ierr = ISGetLocalSize(is[i],&length[i]);CHKERRQ(ierr);
     tlength += length[i];
@@ -117,7 +117,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
     PetscFunctionReturn(0);
   }
   nto = 0;
-  /* send sizes and ranks */
+  /* send sizes and ranks for building a two-sided communcation */
   for (i=0; i<size; i++){
    if (tosizes_temp[i]){
      tosizes[nto*2]  = tosizes_temp[i]*2; /* size */
@@ -132,7 +132,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   }
   /* send information to other processors */
   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
-  /* build a star forest */
   nrecvrows = 0;
   for (i=0; i<nfrom; i++) nrecvrows += fromsizes[2*i];
   ierr = PetscMalloc(nrecvrows*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
@@ -148,7 +147,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /* use two-sided communication by default since OPENMPI has some bugs for one-sided one */
   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  /* ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   /* message pair <no of is, row>  */
   ierr = PetscCalloc2(2*nrrows,&todata,nrecvrows,&fromdata);CHKERRQ(ierr);
   for (i=0; i<nrrows; i++){
@@ -163,7 +161,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscSFBcastBegin(sf,MPIU_INT,todata,fromdata);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,todata,fromdata);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  /* deal with remote data */
+  /* send rows belonging to the remote so that then we could get the overlapping data back */
   ierr = MatIncreaseOverlap_MPIAIJ_Send_Scalable(mat,nidx,nfrom,fromranks,fromsizes,fromdata,&sbsizes,&sbdata);CHKERRQ(ierr);
   ierr = PetscFree2(todata,fromdata);CHKERRQ(ierr);
   ierr = PetscFree(fromsizes);CHKERRQ(ierr);
@@ -189,7 +187,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscSFBcastBegin(sf,MPIU_INT,sbdata,todata);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,sbdata,todata);CHKERRQ(ierr);
-  /* ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFree2(sbdata,sbsizes);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIAIJ_Receive_Scalable(mat,nidx,is,nrecvrows,todata);CHKERRQ(ierr);
@@ -223,7 +220,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscIn
     ierr = ISRestoreIndices(is[i],&indices_i_temp);CHKERRQ(ierr);
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
   }
-  /* retrieve information */
+  /* retrieve information to get row id and its overlap */
   for (i=0; i<nrecvs; ){
     is_id      = recvdata[i++];
     data_size  = recvdata[i++];
@@ -271,12 +268,12 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
   ierr = MatGetRowIJ(bmat,0,PETSC_FALSE,PETSC_FALSE,&bn,&bi,&bj,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ \n");
-  /* total number of nonzero values */
+  /* total number of nonzero values is used to estimate the memory usage in the next step */
   tnz  = ai[an]+bi[bn];
   ierr = MatGetLayouts(mat,&rmap,&cmap);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(rmap,&rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(cmap,&cstart,PETSC_NULL);CHKERRQ(ierr);
-  /* longest message */
+  /* to find the longest message */
   max_fszs = 0;
   for (i=0; i<nfrom; i++) max_fszs = fromsizes[2*i]>max_fszs ? fromsizes[2*i]:max_fszs;
   /* better way to estimate number of nonzero in the mat??? */
@@ -286,7 +283,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   totalrows = 0;
   for (i=0; i<nfrom; i++){
     ierr = PetscMemzero(rows_pos_i,sizeof(PetscInt)*nidx);CHKERRQ(ierr);
-    /* group data */
+    /* group data together */
     for (j=0; j<fromsizes[2*i]; j+=2){
       is_id                       = fromrows[rows_pos++];/* no of is */
       rows_i                      = rows_data[is_id];
@@ -357,7 +354,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
       totalrows += indvc_ij;
     }
   }
-  /* offsets */
   ierr = PetscCalloc1(nfrom+1,&offsets);CHKERRQ(ierr);
   for (i=0; i<nfrom; i++){
     offsets[i+1]   = offsets[i] + sbsizes[2*i];
