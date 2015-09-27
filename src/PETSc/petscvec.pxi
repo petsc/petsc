@@ -64,6 +64,7 @@ cdef extern from * nogil:
 
     int VecDuplicate(PetscVec,PetscVec*)
     int VecCopy(PetscVec,PetscVec)
+    int VecChop(PetscVec,PetscReal)
 
     int VecDuplicateVecs(PetscVec,PetscInt,PetscVec*[])
     int VecDestroyVecs(PetscInt,PetscVec*[])
