@@ -306,11 +306,11 @@ ex62: ex62.o  chkopts
 ex63: ex63.o  chkopts
 	-${CLINKER} -o ex63 ex63.o  ${PETSC_KSP_LIB}
 	${RM} ex63.o
-	
+
 ex64: ex64.o  chkopts
 	-${CLINKER} -o ex64 ex64.o  ${PETSC_KSP_LIB}
-	${RM} ex64.o	
-	
+	${RM} ex64.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -491,6 +491,7 @@ runex7_2:
 	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_2.tmp
+# the next four do not work because there is no support for CUSP factored matrix; how did these tests ever get written
 runex7_mpiaijcusp:
 	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -vec_type mpicusp > ex7_mpiaijcusp.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp.out ex7_mpiaijcusp.tmp) then true; \
@@ -512,12 +513,12 @@ runex7_mpiaijcusp_simple_2:
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_simple_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp_simple_2.tmp
 runex7_mpiaijcusparse:
-	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -vec_type mpicusp > ex7_mpiaijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -pc_factor_mat_solver_package cusparse  -vec_type mpicusp > ex7_mpiaijcusparse.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusparse.out ex7_mpiaijcusparse.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusparse.tmp
 runex7_mpiaijcusparse_2:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -vec_type mpicusp > ex7_mpiaijcusparse_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -pc_factor_mat_solver_package cusparse  -vec_type mpicusp > ex7_mpiaijcusparse_2.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusparse_2.out ex7_mpiaijcusparse_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusparse_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusparse_2.tmp
@@ -1421,8 +1422,7 @@ TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
 TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
 TESTEXAMPLES_CUDA                       = ex10.PETSc runex10_aijcusparse ex10.rm \
-                                          ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
-                                          runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+                                          ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
                                           ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
 TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm

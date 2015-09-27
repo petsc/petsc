@@ -557,8 +557,6 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
 
-PETSC_EXTERN PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage*);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
