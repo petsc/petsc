@@ -51,7 +51,7 @@ KSP Object:(stokes_) 4 MPI processes
     GCR: restart = 60 
     GCR: restarts performed = 1 
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object:(stokes_) 4 MPI processes
@@ -63,7 +63,7 @@ PC Object:(stokes_) 4 MPI processes
     KSP Object:    (stokes_mg_coarse_)     4 MPI processes
       type: preonly
       maximum iterations=1, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object:    (stokes_mg_coarse_)     4 MPI processes
@@ -72,7 +72,7 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_coarse_redundant_)         1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_coarse_redundant_)         1 MPI processes
@@ -81,7 +81,7 @@ PC Object:(stokes_) 4 MPI processes
             tolerance for zero pivot 2.22045e-14
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
-            factor fill ratio given 5, needed 3.27988
+            factor fill ratio given 5., needed 3.27988
               Factored matrix follows:
                 Mat Object:                 1 MPI processes
                   type: seqaij
@@ -108,17 +108,17 @@ PC Object:(stokes_) 4 MPI processes
     KSP Object:    (stokes_mg_levels_1_)     4 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.306009, max = 1.68305
-        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.2; 0 1.1]
+        Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object:        (stokes_mg_levels_1_esteig_)         4 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
       maximum iterations=1
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using nonzero initial guess
       using NONE norm type for convergence test
@@ -130,12 +130,12 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_levels_1_fieldsplit_0_)         4 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_levels_1_fieldsplit_0_)         4 MPI processes
           type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_1_fieldsplit_0_)           4 MPI processes
             type: mpiaij
@@ -147,12 +147,12 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_levels_1_fieldsplit_1_)         4 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_levels_1_fieldsplit_1_)         4 MPI processes
           type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_1_fieldsplit_1_)           4 MPI processes
             type: mpiaij
@@ -172,17 +172,17 @@ PC Object:(stokes_) 4 MPI processes
     KSP Object:    (stokes_mg_levels_2_)     4 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.291297, max = 1.60213
-        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.2; 0 1.1]
+        Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object:        (stokes_mg_levels_2_esteig_)         4 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
       maximum iterations=1
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using nonzero initial guess
       using NONE norm type for convergence test
@@ -194,12 +194,12 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_levels_2_fieldsplit_0_)         4 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_levels_2_fieldsplit_0_)         4 MPI processes
           type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_2_fieldsplit_0_)           4 MPI processes
             type: mpiaij
@@ -211,12 +211,12 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_levels_2_fieldsplit_1_)         4 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_levels_2_fieldsplit_1_)         4 MPI processes
           type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_2_fieldsplit_1_)           4 MPI processes
             type: mpiaij
@@ -236,17 +236,17 @@ PC Object:(stokes_) 4 MPI processes
     KSP Object:    (stokes_mg_levels_3_)     4 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.356152, max = 1.95884
-        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.2; 0 1.1]
+        Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object:        (stokes_mg_levels_3_esteig_)         4 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
       maximum iterations=1
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using nonzero initial guess
       using NONE norm type for convergence test
@@ -258,12 +258,12 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_levels_3_fieldsplit_0_)         4 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_levels_3_fieldsplit_0_)         4 MPI processes
           type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_3_fieldsplit_0_)           4 MPI processes
             type: mpiaij
@@ -275,12 +275,12 @@ PC Object:(stokes_) 4 MPI processes
         KSP Object:        (stokes_mg_levels_3_fieldsplit_1_)         4 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (stokes_mg_levels_3_fieldsplit_1_)         4 MPI processes
           type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_3_fieldsplit_1_)           4 MPI processes
             type: mpiaij
@@ -292,22 +292,22 @@ PC Object:(stokes_) 4 MPI processes
       Mat Object:       4 MPI processes
         type: mpiaij
         rows=49923, cols=49923, bs=3
-        total: nonzeros=1.33402e+06, allocated nonzeros=1.33402e+06
+        total: nonzeros=1334025, allocated nonzeros=1334025
         total number of mallocs used during MatSetValues calls =0
       Mat Object:       4 MPI processes
         type: mpiaij
         rows=49923, cols=49923, bs=3
-        total: nonzeros=1.33402e+06, allocated nonzeros=1.33402e+06
+        total: nonzeros=1334025, allocated nonzeros=1334025
         total number of mallocs used during MatSetValues calls =0
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix followed by preconditioner matrix:
   Mat Object:   4 MPI processes
     type: mpiaij
     rows=49923, cols=49923, bs=3
-    total: nonzeros=1.33402e+06, allocated nonzeros=1.33402e+06
+    total: nonzeros=1334025, allocated nonzeros=1334025
     total number of mallocs used during MatSetValues calls =0
   Mat Object:   4 MPI processes
     type: mpiaij
     rows=49923, cols=49923, bs=3
-    total: nonzeros=1.33402e+06, allocated nonzeros=1.33402e+06
+    total: nonzeros=1334025, allocated nonzeros=1334025
     total number of mallocs used during MatSetValues calls =0

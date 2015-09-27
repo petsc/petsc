@@ -36,7 +36,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscInt       i,m = 5,N,start,end,M,its;
   PetscScalar    val,Ke[16],r[4];
-  PetscReal      x,y,h,norm,tol=1.e-14;
+  PetscReal      x,y,h,norm,tol=1000.*PETSC_MACHINE_EPSILON;
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows;
   Vec            u,ustar,b;

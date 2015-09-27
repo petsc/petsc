@@ -4,7 +4,7 @@ iter =   2, Function value 4575.71, Residual: 4838.21
 iter =   3, Function value 4575.71, Residual: 1404.45 
 iter =   4, Function value 3627.39, Residual: 11279.7 
 iter =   5, Function value 2584.92, Residual: 16120.5 
-iter =   6, Function value 2584.92, Residual: 1144 
+iter =   6, Function value 2584.92, Residual: 1144. 
 iter =   7, Function value 2524.69, Residual: 257.614 
 iter =   8, Function value 2500.24, Residual: 1072.25 
 iter =   9, Function value 2418.14, Residual: 16.9207 
@@ -89,8 +89,8 @@ Tao Object: 1 MPI processes
       model points: 7
       subproblem solver: tron
       total subproblem iterations: 91
-  convergence tolerances: fatol=0,   frtol=0
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  convergence tolerances: fatol=0.,   frtol=0.
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=5.48164e-06
   Objective value=2384.48
   total number of iterations=41,                          (max: 100)

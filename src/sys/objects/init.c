@@ -527,13 +527,12 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     int                   devCount;
     int                   device;
     cudaError_t           err = cudaSuccess;
+
     err = cudaGetDeviceCount(&devCount);
-    if (err != cudaSuccess)
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
+    if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
     for (device = 0; device < devCount; ++device) {
       err = cudaGetDeviceProperties(&prop, device);
-      if (err != cudaSuccess)
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
+      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
       ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
     }
   }
@@ -541,51 +540,47 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     int size;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size>1) {
-      int devCount, device, rank;
+      int         devCount, device, rank;
       cudaError_t err = cudaSuccess;
 
       /* check to see if we force multiple ranks to hit the same GPU */
       ierr = PetscOptionsGetInt(NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
       if (flg1) {
-        ierr = cudaSetDevice(device);CHKERRQ(ierr);
-        if (err != cudaSuccess)
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
+        err = cudaSetDevice(device);
+        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
       } else {
-        /* we're not using the same GPU on multiple MPI threads. So try to allocated different
-         GPUs to different threads */
+        /* we're not using the same GPU on multiple MPI threads. So try to allocated different   GPUs to different processes */
 
         /* First get the device count */
-        err   = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
-        if (err != cudaSuccess)
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
+        err   = cudaGetDeviceCount(&devCount);
+        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
 
         /* next determine the rank and then set the device via a mod */
         ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
         device = rank % devCount;
-        err   = cudaSetDevice(device);
-        if (err != cudaSuccess)
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
+        err    = cudaSetDevice(device);
+        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
       }
 
       /* set the device flags so that it can map host memory ... do NOT throw exception on err!=cudaSuccess
        multiple devices may try to set the flags on the same device. So long as one of them succeeds, things
        are ok. */
       err = cudaSetDeviceFlags(cudaDeviceMapHost);
-
+      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
     } else {
-      int device;
+      int         device;
       cudaError_t err = cudaSuccess;
 
       /* the code below works for serial GPU simulations */
       ierr = PetscOptionsGetInt(NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
       if (flg1) {
-        ierr = cudaSetDevice(device);CHKERRQ(ierr);
+        err = cudaSetDevice(device);
+        if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
       }
 
       /* set the device flags so that it can map host memory ... here, we error check. */
       err = cudaSetDeviceFlags(cudaDeviceMapHost);
-      if (err != cudaSuccess)
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
+      if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
     }
   }
 #endif

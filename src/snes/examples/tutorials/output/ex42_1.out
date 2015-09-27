@@ -233,6 +233,6 @@
 232 SNES Function norm < 1.e-11
 Vec Object: 1 MPI processes
   type: seq
-1
-1
+1.
+1.
 CONVERGED number of SNES iterations = 232

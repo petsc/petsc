@@ -925,7 +925,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       for (j=0; j<A->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
-      ierr = PetscFree2(tmp,tmp);CHKERRQ(ierr);
+      ierr = PetscFree2(tmp,tmp2);CHKERRQ(ierr);
       ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp;

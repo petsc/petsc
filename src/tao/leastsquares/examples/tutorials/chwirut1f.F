@@ -208,9 +208,9 @@
       PetscErrorCode  ierr
 
       call VecGetArray(x,x_v,x_i,ierr)
-      x_v(x_i) = 0.15d0
-      x_v(x_i+1) = 0.008d0
-      x_v(x_i+2) = 0.01d0
+      x_v(x_i) = 0.15
+      x_v(x_i+1) = 0.008
+      x_v(x_i+2) = 0.01
       call VecRestoreArray(x,x_v,x_i,ierr)
       return
       end

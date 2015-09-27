@@ -13,7 +13,7 @@
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 20085 
+    0 KSP Residual norm 20085. 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 29
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     1 KSP Residual norm 3107.58 
@@ -105,7 +105,7 @@ KSP Object:(fc_) 1 MPI processes
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
-  tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
   right preconditioning
   diagonally scaled system
   using UNPRECONDITIONED norm type for convergence test
@@ -120,7 +120,7 @@ PC Object:(fc_) 1 MPI processes
       KSP Object:      (fc_fieldsplit_velocity_)       1 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fc_fieldsplit_velocity_)       1 MPI processes
@@ -128,7 +128,7 @@ PC Object:(fc_) 1 MPI processes
           Cholesky: out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5, needed 4.40672
+          factor fill ratio given 5., needed 4.40672
             Factored matrix follows:
               Mat Object:               1 MPI processes
                 type: seqsbaij
@@ -150,7 +150,7 @@ PC Object:(fc_) 1 MPI processes
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
         maximum iterations=100, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fc_fieldsplit_pressure_)       1 MPI processes
@@ -158,7 +158,7 @@ PC Object:(fc_) 1 MPI processes
           KSP Object:          (fc_fieldsplit_pressure_lsc_)           1 MPI processes
             type: cg
             maximum iterations=100, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           PC Object:          (fc_fieldsplit_pressure_lsc_)           1 MPI processes
@@ -167,7 +167,7 @@ PC Object:(fc_) 1 MPI processes
               tolerance for zero pivot 2.22045e-14
               using Manteuffel shift [POSITIVE_DEFINITE]
               matrix ordering: natural
-              factor fill ratio given 1, needed 1
+              factor fill ratio given 1., needed 1.
                 Factored matrix follows:
                   Mat Object:                   1 MPI processes
                     type: seqsbaij
@@ -208,7 +208,7 @@ PC Object:(fc_) 1 MPI processes
               KSP Object:              (fc_fieldsplit_velocity_)               1 MPI processes
                 type: cg
                 maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
                 using PRECONDITIONED norm type for convergence test
               PC Object:              (fc_fieldsplit_velocity_)               1 MPI processes
@@ -216,7 +216,7 @@ PC Object:(fc_) 1 MPI processes
                   Cholesky: out-of-place factorization
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: nd
-                  factor fill ratio given 5, needed 4.40672
+                  factor fill ratio given 5., needed 4.40672
                     Factored matrix follows:
                       Mat Object:                       1 MPI processes
                         type: seqsbaij

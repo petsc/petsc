@@ -1,5 +1,5 @@
-20x20 grid, lid velocity = 100, prandtl # = 1, grashof # = 1000
-0 TS dt 0.025 time 0
+20x20 grid, lid velocity = 100., prandtl # = 1., grashof # = 1000.
+0 TS dt 0.025 time 0.
 1 TS dt 0.00910575 time 0.00983851
 2 TS dt 0.0155567 time 0.0189443
 3 TS dt 0.0328351 time 0.0345009
