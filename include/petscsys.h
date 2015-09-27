@@ -1925,8 +1925,8 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
 #if defined(PETSC_USE_DEBUG)
-  unsigned long al = (unsigned long) a,bl = (unsigned long) b;
-  unsigned long nl = (unsigned long) n;
+  size_t al = (size_t) a,bl = (size_t) b;
+  size_t nl = (size_t) n;
   PetscFunctionBegin;
   if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
   if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
@@ -1940,7 +1940,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
               Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
 #endif
 #if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
-   if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+   if (!(a % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       size_t len = n/sizeof(PetscScalar);
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
       PetscBLASInt   one = 1,blen;
@@ -2445,6 +2445,7 @@ typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"
 #define PETSCSPRNG      "sprng"
+#define PETSCRANDER48   "rander48"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
@@ -2489,6 +2490,8 @@ PETSC_EXTERN PetscErrorCode PetscGetRealPath(const char[],char[]);
 PETSC_EXTERN PetscErrorCode PetscGetHomeDirectory(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscTestFile(const char[],char,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
+PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
@@ -2674,6 +2677,7 @@ struct _n_PetscSubcomm {
   PetscSubcommType type;
 };
 
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);

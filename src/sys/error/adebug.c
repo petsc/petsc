@@ -353,6 +353,9 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = "-pid";
         args[j++] = pid;
         args[j++] = program;
+#else
+        args[j++] = program;
+        args[j++] = pid;
 #endif
         args[j++] = 0;
       }

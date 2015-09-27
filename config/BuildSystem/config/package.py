@@ -69,6 +69,8 @@ class Package(config.base.Configure):
     self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
 
     self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
+    self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
+    self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
     return
 
   def __str__(self):

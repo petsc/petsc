@@ -564,7 +564,6 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   PetscFunctionReturn(0);
 }
 
-
 #define SWAP2IntData(a,b,c,d,t,td,siz)          \
   do {                                          \
   PetscErrorCode _ierr;                         \
@@ -664,7 +663,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
    Output Parameters:
 +  n   - number of values in the merged array
--  I   - merged sorted array, this is allocated if an array is not provided 
+-  I   - merged sorted array, this is allocated if an array is not provided
 
    Level: intermediate
 

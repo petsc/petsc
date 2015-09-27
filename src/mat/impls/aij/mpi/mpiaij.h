@@ -3,7 +3,6 @@
 #define __MPIAIJ_H
 
 #include <../src/mat/impls/aij/seq/aij.h>
-#include <petscctable.h>
 
 typedef struct { /* used by MatCreateMPIAIJSumSeqAIJ for reusing the merged matrix */
   PetscLayout rowmap;
@@ -21,12 +20,14 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   PetscScalar *bufa;                    /* used by MatGetBrowsOfAoCols_MPIAIJ */
   Mat         P_loc,P_oth;     /* partial B_seq -- intend to replace B_seq */
   PetscInt    *api,*apj;       /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscScalar *apv;
   PetscInt    rmax;            /* max num of nnz in a local row of the matrix product */
   MatReuse    reuse;           /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   PetscScalar *apa;            /* tmp array for store a row of A*P used in MatMatMult() */
   Mat         A_loc;           /* used by MatTransposeMatMult(), contains api and apj */
   Mat         Pt;              /* used by MatTransposeMatMult(), Pt = P^T */
   PetscBool   scalable;        /* flag determines scalable or non-scalable implementation */
+  Mat         Rd,Ro,AP_loc,C_loc,C_oth;
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
@@ -114,8 +115,10 @@ PETSC_INTERN PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat,Mat,Ma
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap(Mat,Mat,Mat);
+
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
@@ -152,6 +155,46 @@ extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
 
-
-
+/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */
+#define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
+{\
+  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
+  PetscScalar *_aa,_valtmp,*_pa;                             \
+  /* diagonal portion of A */\
+  _ai  = ad->i;\
+  _anz = _ai[i+1] - _ai[i];\
+  _aj  = ad->j + _ai[i];\
+  _aa  = ad->a + _ai[i];\
+  for (_j=0; _j<_anz; _j++) {\
+    _row = _aj[_j]; \
+    _pi  = p_loc->i;                                 \
+    _pnz = _pi[_row+1] - _pi[_row];         \
+    _pj  = p_loc->j + _pi[_row];                 \
+    _pa  = p_loc->a + _pi[_row];                 \
+    /* perform dense axpy */                    \
+    _valtmp = _aa[_j];                           \
+    for (_k=0; _k<_pnz; _k++) {                    \
+      apa[_pj[_k]] += _valtmp*_pa[_k];               \
+    }                                           \
+    PetscLogFlops(2.0*_pnz);                    \
+  }                                             \
+  /* off-diagonal portion of A */               \
+  _ai  = ao->i;\
+  _anz = _ai[i+1] - _ai[i];                     \
+  _aj  = ao->j + _ai[i];                         \
+  _aa  = ao->a + _ai[i];                         \
+  for (_j=0; _j<_anz; _j++) {                      \
+    _row = _aj[_j];    \
+    _pi  = p_oth->i;                         \
+    _pnz = _pi[_row+1] - _pi[_row];          \
+    _pj  = p_oth->j + _pi[_row];                  \
+    _pa  = p_oth->a + _pi[_row];                  \
+    /* perform dense axpy */                     \
+    _valtmp = _aa[_j];                             \
+    for (_k=0; _k<_pnz; _k++) {                     \
+      apa[_pj[_k]] += _valtmp*_pa[_k];                \
+    }                                            \
+    PetscLogFlops(2.0*_pnz);                     \
+  } \
+}
 #endif

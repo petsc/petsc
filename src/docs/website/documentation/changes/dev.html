@@ -112,6 +112,7 @@
          -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
          -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())
           see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG
+         Added PCTelescope which supports running solvers on sub-communicators. This PC allows re-partitioning of coarse levels solves within PCMG when using Galerkin coarse level operators.
       <h4>KSP:</h4>
          KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>SNES:</h4>
@@ -120,6 +121,7 @@
       <h4>TS:</h4>
          TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
       <h4>DM/DA:</h4>
+      Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
         Replaced PetscViewerASCIISynchronizedAllow() with PetscViewerASCIIPushSynchronized() PetscViewerASCIIPopSynchronized()

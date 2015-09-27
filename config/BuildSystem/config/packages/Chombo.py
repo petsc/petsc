@@ -3,14 +3,14 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = 'master'
-    self.giturls   = ['https://bitbucket.org/petsc/pkg-chombo-3.2.git']
-    self.download  = ['https://bitbucket.org/petsc/pkg-chombo-3.2/get/master.tar.gz']
-    self.functionsCxx = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
-    self.includedir = 'include'
-    self.includes     = ['CH_config.H']
-
+    self.gitcommit        = 'master'
+    self.giturls          = ['https://bitbucket.org/petsc/pkg-chombo-3.2.git']
+    self.download         = ['https://bitbucket.org/petsc/pkg-chombo-3.2/get/master.tar.gz']
+    self.functionsCxx     = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
+    self.includedir       = 'include'
+    self.includes         = ['CH_config.H']
     self.downloadonWindows= 0
+    self.hastestsdatafiles= 1
     return
 
   def setupHelp(self, help):

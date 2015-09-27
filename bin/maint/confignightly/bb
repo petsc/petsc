@@ -2,5 +2,5 @@
 #
 set MACH=bb-proxy
 set USR=balay
-set LOC=/home/balay/${RNAME}
+set LOC=/sandbox/balay/${RNAME}
 set CONF=arch-cuda-double

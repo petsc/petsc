@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = normm.c
+SOURCEC  = normm.c normmh.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat

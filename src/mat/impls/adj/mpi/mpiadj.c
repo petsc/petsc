@@ -569,10 +569,10 @@ static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const 
       ierr = MatCreateMPIAdj(scomm_row,irow_n,icol_n,sxadj,sadjncy,svalues,submat[i]);CHKERRQ(ierr);
     }else{
        Mat                sadj = *(submat[i]);
+       Mat_MPIAdj         *sa  = (Mat_MPIAdj*)((sadj)->data);
        ierr = PetscObjectGetComm((PetscObject)sadj,&scomm_mat);CHKERRQ(ierr);
        ierr = MPI_Comm_compare(scomm_row,scomm_mat,&issame);CHKERRQ(ierr);
        if(issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"submatrix  must have the same comm as the col index set\n");
-       Mat_MPIAdj        *sa = (Mat_MPIAdj*)((sadj)->data);
        ierr = PetscMemcpy(sa->i,sxadj,sizeof(PetscInt)*(irow_n+1));CHKERRQ(ierr);
        ierr = PetscMemcpy(sa->j,sadjncy,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);
        if(svalues){ierr = PetscMemcpy(sa->values,svalues,sizeof(PetscInt)*sxadj[irow_n]);CHKERRQ(ierr);}

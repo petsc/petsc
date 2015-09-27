@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
-  ftime    = 1.0;
+  ftime    = .1;
   maxsteps = 10000;
   ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
@@ -202,8 +202,10 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    const PetscReal *a     = user->a;
-    PetscReal       u0t[2] = {1. - PetscPowRealInt(PetscSinReal(12*t),4),0};
+    const PetscReal *a  = user->a;
+    PetscReal       u0t[2];
+    u0t[0] = 1.0 - PetscPowRealInt(PetscSinReal(12*t),4);
+    u0t[1] = 0.0;
     for (j=0; j<2; j++) {
       if (i == 0)              f[i][j] = a[j]/hx*(1./3*u0t[j] + 0.5*x[i][j] - x[i+1][j] + 1./6*x[i+2][j]);
       else if (i == 1)         f[i][j] = a[j]/hx*(-1./12*u0t[j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);

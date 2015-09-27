@@ -422,5 +422,3 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning p
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Hierarchical;
   PetscFunctionReturn(0);
 }
-
-

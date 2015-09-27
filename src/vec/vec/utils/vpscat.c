@@ -3024,7 +3024,8 @@ PetscErrorCode PetscSFCreateFromZero(MPI_Comm comm, Vec gv, PetscSF *sf)
   ierr = VecGetLocalSize(gv, &n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(gv, &start, NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n, &localnodes, n, &remotenodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &localnodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &remotenodes);CHKERRQ(ierr);
   if (!rank) numroots = N;
   else       numroots = 0;
   for (l = 0; l < n; ++l) {

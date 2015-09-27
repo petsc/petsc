@@ -1393,11 +1393,13 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
   PetscErrorCode ierr;
   Mat_Nest       *nest = (Mat_Nest*)A->data;
   PetscInt       m,n,M,N,i,j,k,*dnnz,*onnz,rstart;
+  PetscInt       cstart,cend;
   Mat            C;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
   switch (reuse) {
   case MAT_INITIAL_MATRIX:
     ierr    = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
@@ -1427,18 +1429,22 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
     ierr = ISGetIndices(bNis,&bNindices);CHKERRQ(ierr);
     for (i=0; i<nest->nr; ++i) {
       PetscSF        bmsf;
-      PetscSFNode    *bmedges;
+      PetscSFNode    *iremote;
       Mat            B;
-      PetscInt       bm, *bmdnnz, br;
+      PetscInt       bm, *sub_dnnz,*sub_onnz, br;
       const PetscInt *bmindices;
       B = nest->m[i][j];
       if (!B) continue;
       ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);CHKERRQ(ierr);
       ierr = ISGetIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
       ierr = PetscSFCreate(PetscObjectComm((PetscObject)A), &bmsf);CHKERRQ(ierr);
-      ierr = PetscMalloc1(bm,&bmedges);CHKERRQ(ierr);
-      ierr = PetscMalloc1(2*bm,&bmdnnz);CHKERRQ(ierr);
-      for (k = 0; k < 2*bm; ++k) bmdnnz[k] = 0;
+      ierr = PetscMalloc1(bm,&iremote);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bm,&sub_dnnz);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bm,&sub_onnz);CHKERRQ(ierr);
+      for (k = 0; k < bm; ++k){
+    	sub_dnnz[k] = 0;
+    	sub_onnz[k] = 0;
+      }
       /*
        Locate the owners for all of the locally-owned global row indices for this row block.
        These determine the roots of PetscSF used to communicate preallocation data to row owners.
@@ -1446,33 +1452,33 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
        */
       ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
       for (br = 0; br < bm; ++br) {
-        PetscInt       row = bmindices[br], rowowner = 0, brncols, col, colowner = 0;
+        PetscInt       row = bmindices[br], rowowner = 0, brncols, col;
         const PetscInt *brcols;
         PetscInt       rowrel = 0; /* row's relative index on its owner rank */
-        PetscInt       rowownerm; /* local row size on row's owning rank. */
         ierr      = PetscLayoutFindOwnerIndex(A->rmap,row,&rowowner,&rowrel);CHKERRQ(ierr);
-
-        rowownerm = A->rmap->range[rowowner+1]-A->rmap->range[rowowner];
-
-        bmedges[br].rank = rowowner; bmedges[br].index = rowrel;           /* edge from bmdnnz to dnnz */
-        bmedges[br].rank = rowowner; bmedges[br].index = rowrel+rowownerm; /* edge from bmonnz to onnz */
-        /* Now actually compute the data -- bmdnnz and bmonnz by looking at the global columns in the br row of this block. */
-        /* Note that this is not a pessimistic bound only because we assume the index sets embedding the blocks do not overlap. */
+        /* how many roots  */
+        iremote[br].rank = rowowner; iremote[br].index = rowrel;           /* edge from bmdnnz to dnnz */
+        /*get nonzero pattern */
         ierr = MatGetRow(B,br+rstart,&brncols,&brcols,NULL);CHKERRQ(ierr);
         for (k=0; k<brncols; k++) {
           col  = bNindices[brcols[k]];
-          ierr = PetscLayoutFindOwnerIndex(A->cmap,col,&colowner,NULL);CHKERRQ(ierr);
-          if (colowner == rowowner) bmdnnz[br]++;
-          else onnz[br]++;
+          if(col>=A->cmap->range[rowowner] && col<A->cmap->range[rowowner+1]){
+        	sub_dnnz[br]++;
+          }else{
+        	sub_onnz[br]++;
+          }
         }
         ierr = MatRestoreRow(B,br+rstart,&brncols,&brcols,NULL);CHKERRQ(ierr);
       }
       ierr = ISRestoreIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
       /* bsf will have to take care of disposing of bedges. */
-      ierr = PetscSFSetGraph(bmsf,m,bm,NULL,PETSC_COPY_VALUES,bmedges,PETSC_OWN_POINTER);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(bmsf,MPIU_INT,bmdnnz,dnnz,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(bmsf,MPIU_INT,bmdnnz,dnnz,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscFree(bmdnnz);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(bmsf,m,bm,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(bmsf,MPIU_INT,sub_dnnz,dnnz,MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(bmsf,MPIU_INT,sub_dnnz,dnnz,MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(bmsf,MPIU_INT,sub_onnz,onnz,MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(bmsf,MPIU_INT,sub_onnz,onnz,MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscFree(sub_dnnz);CHKERRQ(ierr);
+      ierr = PetscFree(sub_onnz);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&bmsf);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(bNis,&bNindices);CHKERRQ(ierr);

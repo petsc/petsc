@@ -171,19 +171,9 @@ builtin and then its argument prototype would still apply. */
 
   def checkVSNPrintf(self):
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
-    if self.check('_vsnprintf'):
-      if hasattr(self.compilers, 'CXX'):
-        # Cygwin shows the symbol to C, but chokes on the C++ link, so try the full link
-        self.pushLanguage('C++')
-        if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\n_vsnprintf(str,5, "%d", Argp );\n'):
-          self.delDefine(self.getDefineName('_vsnprintf'))
-          self.popLanguage()
-          # removing _vsnprintf define - hence do not return. [Note: if _vsnprintf is accepted - then make sure to 'return' - and not do the next test]
-        else:
-          self.popLanguage()
-          return
-      else:
-        return
+    if self.checkLink('#include <stdio.h>\n', '_vsnprintf(0,0,0,0);\n'):
+      self.addDefine('HAVE__VSNPRINTF', 1)
+      return
     self.check('vsnprintf')
     if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
       self.addDefine('HAVE_VSNPRINTF_CHAR', 1)

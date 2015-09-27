@@ -902,7 +902,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
 +  -snes_nasm_log - enable logging events for the communication and solve stages
 .  -snes_nasm_type <basic,restrict> - type of subdomain update used
 .  -snes_nasm_finaljacobian - compute the local and global jacobians of the final iterate
-.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> pick state the jacobian is calculated at
+.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the jacobian is calculated at
 .  -sub_snes_ - options prefix of the subdomain nonlinear solves
 .  -sub_ksp_ - options prefix of the subdomain Krylov solver
 -  -sub_pc_ - options prefix of the subdomain preconditioner
