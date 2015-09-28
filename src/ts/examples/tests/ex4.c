@@ -263,12 +263,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscErrorCode    ierr;
   const PetscScalar *tmp;
   PetscReal         maxtime;
-  Data              *data  = (Data*)ctx;
-  PetscReal         tfinal = data->tfinal;
 
   PetscFunctionBeginUser;
-  if (time > tfinal) PetscFunctionReturn(0);
-
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   /* display output at selected time steps */
   ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
