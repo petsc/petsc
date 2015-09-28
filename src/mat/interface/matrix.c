@@ -8989,7 +8989,7 @@ PetscErrorCode  MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
 
    Notes:
    C must have been created by calling MatRARtSymbolic and must be destroyed by
-   the user using MatDeatroy().
+   the user using MatDestroy().
 
    This routine is currently only implemented for pairs of AIJ matrices and classes
    which inherit from AIJ.  C will be of type MATAIJ.
