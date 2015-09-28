@@ -268,7 +268,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   /* display output at selected time steps */
   ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
-  if (nsteps % 10 != 0 && time < maxtime) PetscFunctionReturn(0);
+  if (nsteps % 10 != 0) PetscFunctionReturn(0);
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
