@@ -20,13 +20,16 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 {
   PetscErrorCode   ierr;
   DMNetworkMonitor monitor;
+  MPI_Comm         comm;
   PetscMPIInt      size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(monitor->comm, &size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)network,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Parallel DMNetworkMonitor is not supported yet");
+
   ierr = PetscMalloc1(1,&monitor);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)network,&monitor->comm);CHKERRQ(ierr);
+  monitor->comm      = comm;
   monitor->network   = network;
   monitor->firstnode = PETSC_NULL;
 
