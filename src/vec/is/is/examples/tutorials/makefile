@@ -53,13 +53,13 @@ runex1:
 	   ${RM} -f ex1.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f  | sort > ex1f.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1f  | sort -b > ex1f.tmp 2>&1;\
 	   if (${DIFF} output/ex1f.out ex1f.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1f, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1f.tmp
 
 runex1f90:
-	-@${MPIEXEC} -n 1 ./ex1f90  | sort > ex1f90.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1f90  | sort -b > ex1f90.tmp 2>&1;\
 	   if (${DIFF} output/ex1f90.out ex1f90.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1f90, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1f90.tmp
@@ -83,7 +83,7 @@ runex3:
 	   ${RM} -f ex3.tmp
 
 runex3f90:
-	-@${MPIEXEC} -n 1 ./ex3f90 |sort > ex3f90.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex3f90 |sort -b > ex3f90.tmp 2>&1;\
 	   if (${DIFF} output/ex3f90.out ex3f90.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3f90, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3f90.tmp
