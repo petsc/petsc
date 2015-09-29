@@ -239,8 +239,8 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MyDMNetworkMonitorTS"
-PetscErrorCode MyDMNetworkMonitorTS(TS ts, PetscInt step, PetscReal t, Vec x, void *context)
+#define __FUNCT__ "TSDMNetworkMonitor"
+PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void *context)
 {
   PetscErrorCode     ierr;
   DMNetworkMonitor   monitor;
@@ -726,7 +726,7 @@ int main(int argc,char ** argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = TSMonitorSet(ts, MyDMNetworkMonitorTS, monitor, PETSC_NULL);
+    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, PETSC_NULL);
   }
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
