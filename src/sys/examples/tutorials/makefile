@@ -113,13 +113,13 @@ runex3f:
 
 runex4:
 	-@${MPIEXEC} -n 5 ./ex4  | sort -b  > ex4_1.tmp 2>&1; \
-           if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+           if (sort -b output/ex4_1.out | ${DIFF} - ex4_1.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex4_1.tmp
 
 runex4f:
 	-@${MPIEXEC} -n 5 ./ex4f  | sort -b > ex4f_1.tmp 2>&1; \
-           if (${DIFF} output/ex4f_1.out ex4f_1.tmp) then true; \
+           if (sort -b output/ex4f_1.out | ${DIFF} - ex4f_1.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex4f_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex4f_1.tmp
 
