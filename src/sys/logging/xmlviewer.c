@@ -109,15 +109,13 @@ PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name, const 
 PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble value, const char *format)
 {
   PetscErrorCode ierr;
-  char           buffer[512];
 
   PetscFunctionBegin;
   if (!desc) {
-    sprintf(buffer, "%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, format, name);
+    ierr = PetscViewerASCIIPrintf(viewer,"%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, format, name);CHKERRQ(ierr);
   } else {
-    sprintf(buffer, "%*s<%s desc=\"%s\">%s</%s>\n", XMLSectionDepth, "", name, desc, format, name);
+    ierr = PetscViewerASCIIPrintf(viewer, "%*s<%s desc=\"%s\">%s</%s>\n", XMLSectionDepth, "", name, desc, format, name);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPrintf(viewer, buffer, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
