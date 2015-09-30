@@ -1123,10 +1123,7 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
   else {
     if ((*n >= 0) && (*n < tab->r)) { 
       ierr = VecCopy(glee->Y[*n],*Y); CHKERRQ(ierr);
-    } else {
-      /* Error message */
-      ierr = VecZeroEntries(*Y); CHKERRQ(ierr);
-    }
+    } else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Second argument (%d) out of range[%d,%d].",*n,0,tab->r-1);
   }
   PetscFunctionReturn(0);
 }
@@ -1177,9 +1174,7 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (r != 2) {
-    /* Error message */
-  }
+  if (r != 2) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
     ierr = VecCopy(ts->vec_sol,Y[i]); CHKERRQ(ierr);
     ierr = VecAXPBY(Y[i],S[0],S[1],X); CHKERRQ(ierr);

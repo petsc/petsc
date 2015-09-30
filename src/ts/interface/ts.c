@@ -2323,6 +2323,8 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
+   Note: MUST call after TSSetUp()
+
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
 .  v - the vector containing the error (same size as the solution).
@@ -2372,6 +2374,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
   if (ts->ops->settimeerror) {
     ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr); 
   }
