@@ -116,7 +116,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 
 .seealso: DMNetworkMonitorCreate, DMNetworkMonitorDestroy 
 @*/
-PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscScalar ymin,PetscScalar ymax,PetscBool hold)
+PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscReal ymin,PetscReal ymax,PetscBool hold)
 {
   PetscErrorCode       ierr;
   PetscDrawLG          drawlg;

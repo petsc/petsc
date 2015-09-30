@@ -58,7 +58,7 @@ struct _p_DMNetworkMonitor
 PETSC_EXTERN PetscErrorCode DMNetworkMonitorCreate(DM,DMNetworkMonitor*);
 PETSC_EXTERN PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor*);
 PETSC_EXTERN PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor);
-PETSC_EXTERN PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor,const char*,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar,PetscScalar,PetscBool);
+PETSC_EXTERN PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor,const char*,PetscInt,PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
 PETSC_EXTERN PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor,Vec);
 
 #endif
