@@ -26,7 +26,7 @@ struct _p_Wash
 
   /* Pipe */
   Pipe        pipe;
-  PetscScalar Q0,H0,QL,HL;    /* left and right boundary conditions for H and Q */
+  PetscScalar Q0,H0,QL,HL;    /* left and right boundary conditions for wash-network (not individual pipe) */
 };
 typedef struct _p_Wash *Wash;
 

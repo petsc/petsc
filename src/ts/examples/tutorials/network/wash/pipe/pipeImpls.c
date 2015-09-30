@@ -1,8 +1,13 @@
 #include "../pipe.h"
 
-/* Function evalutions for PIPE */
-/* ---------------------------- */
-PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar QL,PetscScalar HL)
+/* Initial Function for PIPE       */
+/*-------------------------------- */
+/*
+     Q(x) = Q0 (constant)
+     H(x) = H0 - (R/gA) Q0*|Q0|* x
+ */
+/* ----------------------------------- */
+PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
 {
   PetscErrorCode ierr;
   DM             cda;
@@ -19,8 +24,8 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar QL,PetscScalar HL)
   ierr = DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0);CHKERRQ(ierr);
   
   for (i = start; i < start + n; i++) {
-    x[i].q = QL;
-    x[i].h = HL - c * QL * fabs(QL) * coords[i];
+    x[i].q = Q0;
+    x[i].h = H0 - c * Q0 * fabs(Q0) * coords[i];
   }
 
   ierr = DMDAVecRestoreArray(pipe->da, pipe->x, &x);CHKERRQ(ierr);
@@ -28,6 +33,8 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar QL,PetscScalar HL)
   PetscFunctionReturn(0);
 }
 
+/* Function evalutions for PIPE    */
+/*-------------------------------- */
 /* consider using a one-sided higher order fd derivative at boundary. */
 static inline PetscReal dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {

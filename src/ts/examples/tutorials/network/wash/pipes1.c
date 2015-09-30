@@ -19,7 +19,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
   PetscInt       vfrom,vto,offsetfrom,offsetto,type,varoffset,voffset;
   PetscInt       v,vStart,vEnd,e,eStart,eEnd,pipeoffset;
   PetscBool      ghost;
-  PetscScalar    *farr,*vf;
+  PetscScalar    *farr,*vf,*juncx,*juncf;
   Pipe           pipe;
   PipeField      *pipex,*pipexdot,*pipef;
   DMDALocalInfo  info;
@@ -59,12 +59,11 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
   for (v=vStart; v<vEnd; v++) { 
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      PetscScalar    *pipex,*pipef;
       ierr = DMNetworkGetVariableOffset(networkdm,v,&varoffset);CHKERRQ(ierr);
-      pipex  = (PetscScalar*)(xarr+varoffset);
-      pipef  = (PetscScalar*)(farr+varoffset);
-      pipef[0] = pipex[0]; 
-      pipef[1] = pipex[1];
+      juncx  = (PetscScalar*)(xarr+varoffset);
+      juncf  = (PetscScalar*)(farr+varoffset);
+      juncf[0] = juncx[0]; 
+      juncf[1] = juncx[1];
     }
   }
 
@@ -124,11 +123,11 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
     ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,&type,&voffset);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,v,&varoffset);CHKERRQ(ierr);
     junction = (Junction)(nwarr + voffset);
-    PetscScalar *pipef = (PetscScalar *)(farr + varoffset);
+    juncf = (PetscScalar *)(farr + varoffset);
     if (junction->isEnd == -1) { 
-      pipef[1] -= wash->H0; 
+      juncf[1] -= wash->H0; 
       } else if (junction->isEnd == 1) { 
-      pipef[0] -= wash->QL; 
+      juncf[0] -= wash->QL; 
     }
   }
 
@@ -156,6 +155,7 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
   Pipe           pipe;
   Junction       junction;
   const PetscInt *cone;
+  const PetscScalar *xarray;
   DMNetworkComponentGenericDataType *nwarr;
   
   PetscFunctionBegin;
@@ -171,7 +171,6 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
   for (e=eStart; e<eEnd; e++) {   
     ierr = DMNetworkGetVariableOffset(networkdm,e,&varoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&type,&pipeoffset);CHKERRQ(ierr);
-    const PetscScalar *xarray;
   
     /* get from and to vertices */
     ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr); 
@@ -552,26 +551,25 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
 #define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
-  PetscErrorCode ierr;
-  Wash           wash;
-  Junction       junctions,junction;
-  Pipe           pipe,pipes;
-  PetscInt       numEdges,numVertices,*edgelist = NULL,KeyPipe,KeyJunction;
-  PetscInt       i,e,v,eStart,eEnd,vStart,vEnd;
-  PetscInt       vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
-  PetscInt       from_nedge_in,from_nedge_out,to_nedge_in;
-  const PetscInt *cone; 
-  DM             networkdm;
-  PetscMPIInt    size,rank;
-  PetscReal      ftime = 2500.0;
-  Vec            X;
-  TS             ts;
-  PetscInt       maxsteps=-1,steps;
-  PetscInt       pipeOffset,key;
-  TSConvergedReason    reason;
-  PetscBool            viewpipes;
-  PetscInt             pipesCase;
-  DMNetworkMonitor     monitor;
+  PetscErrorCode    ierr;
+  Wash              wash;
+  Junction          junctions,junction;
+  Pipe              pipe,pipes;
+  PetscInt          numEdges,numVertices,*edgelist = NULL,KeyPipe,KeyJunction;
+  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,pipeOffset,key,frombType,tobType;
+  PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
+  PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
+  const PetscInt    *cone; 
+  DM                networkdm;
+  PetscMPIInt       size,rank;
+  PetscReal         ftime = 2500.0;
+  Vec               X;
+  TS                ts;
+  PetscInt          maxsteps=-1,steps;
+  TSConvergedReason reason;
+  PetscBool         viewpipes;
+  PetscInt          pipesCase;
+  DMNetworkMonitor  monitor;
   DMNetworkComponentGenericDataType *nwarr;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -608,7 +606,6 @@ int main(int argc,char ** argv)
   /* Add EDGEDATA component to all edges -- currently networkdm is a sequential network */
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-  //printf("[%d] eStart/eEnd %d %d; numVertices %d, numEdges %d\n",rank,eStart,eEnd,numVertices,numEdges);
   
   for (e = eStart; e < eEnd; e++) {
     /* Add Pipe component to all edges -- create pipe here */
@@ -669,7 +666,6 @@ int main(int argc,char ** argv)
     junction    = (Junction)(nwarr+toOffset);
     to_nedge_in = junction->nedges_in;
         
-    PetscInt frombType,tobType;
     pipe->comm = PETSC_COMM_SELF; /* must be set here, otherwise crashes in my mac??? */
     wash->nnodes_loc += pipe->nnodes; /* local total num of nodes, will be used by PipesView() */
     ierr = PipeSetParameters(pipe,
