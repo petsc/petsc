@@ -120,6 +120,9 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   no adj info\n");CHKERRQ(ierr);
         }
       }
+      if (graph->n_local_subs) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   local sub id: %d\n",graph->local_subs[i]);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   interface subset id: %d\n",graph->subset[i]);CHKERRQ(ierr);
       if (graph->subset[i] && graph->subset_ncc) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   ncc for subset: %d\n",graph->subset_ncc[graph->subset[i]-1]);CHKERRQ(ierr);
@@ -664,7 +667,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
           k = graph->adjncy[j];
           /* get local subdomain id if needed */
           if (graph->n_local_subs) {
-            same_sub = (PetscBool)(graph->local_subs[i] == graph->local_subs[j]);
+            same_sub = (PetscBool)(graph->local_subs[i] == graph->local_subs[k]);
           } else {
             same_sub = PETSC_TRUE;
           }
@@ -1180,7 +1183,6 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   if (graph->n_local_subs) {
     ierr = PetscFree(graph->local_subs);CHKERRQ(ierr);
   }
-  ierr = PCBDDCGraphResetCSR(graph);CHKERRQ(ierr);
   graph->has_dirichlet = PETSC_FALSE;
   graph->nvtxs = 0;
   graph->nvtxs_global = 0;
