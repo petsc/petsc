@@ -29,17 +29,21 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-width",&width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-height",&height,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nports",&nports,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-nolabels",&flg);CHKERRQ(ierr);
   if (flg) {
-    xlabel = (char*)0; toplabel = (char*)0;
+    toplabel = NULL; xlabel = NULL; ylabel = NULL;
   }
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
+
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-nports",&nports,NULL);CHKERRQ(ierr);
+
   ierr = PetscDrawViewPortsCreate(draw,nports,&ports);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
 
   ierr = PetscDrawLGCreate(draw,1,&lg);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
@@ -50,12 +54,20 @@ int main(int argc,char **argv)
   }
   ierr = PetscDrawLGSetUseMarkers(lg,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  while (0) {
+    PetscBool isnull;
+    PetscDraw draw;
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+    if (isnull) break;
+  }
+  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,-3.,150.0,PETSC_DRAW_BLUE,"A legend");CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
