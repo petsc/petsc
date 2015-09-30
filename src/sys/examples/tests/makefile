@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
-                ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
+                ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
                 ex22.c ex23.c ex24.c ex27.c ex28.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
@@ -218,7 +218,7 @@ runex28:
 	   ${RM} -f ex28.tmp
 
 
-TESTEXAMPLES_C		       = ex8.PETSc runex8 runex8_f ex8.rm ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
                                  ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm
