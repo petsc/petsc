@@ -63,8 +63,8 @@ struct _PCBDDCReuseMumps {
   /* placeholders for the solution and rhs on the whole set of dofs of A (size local_dofs - local_vertices)*/
   Vec        sol;
   Vec        rhs;
-  /* size of interior problem */
-  PetscInt   n_I;
+  /* */
+  PetscBool  has_vertices;
   /* shell PCs to handle MUMPS interior/correction solvers */
   PC         interior_solver;
   PC         correction_solver;

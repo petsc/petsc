@@ -113,6 +113,7 @@ typedef struct {
   /* schur complements on interface's subsets */
   PCBDDCSubSchurs sub_schurs;
   PetscBool       sub_schurs_rebuild;
+  PetscBool       sub_schurs_exact_schur;
   PetscInt        sub_schurs_layers;
   PetscBool       sub_schurs_use_useradj;
   PetscBool       computed_rowadj;

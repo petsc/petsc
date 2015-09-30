@@ -143,7 +143,6 @@ PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt
   }
   ierr = PCBDDCGraphSetUp(graph,1,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
   ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
-
   /* partial clean up */
   ierr = PetscFree2(xadj_filtered,adjncy_filtered);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(B,0,PETSC_TRUE,PETSC_FALSE,&n,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
@@ -736,27 +735,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     if (same_data) { /* there's no need of constraints here, deluxe scaling is enough */
       B_neigs = 0;
     } else {
-      if (nmin) {
-        Mat SM,StM;
-        PetscInt j,k,nccs,nccst;
-
-        for (j=0;j<subset_size;j++) {
-          for (k=j;k<subset_size;k++) {
-            S [k*subset_size+j] = S [j*subset_size+k];
-            St[k*subset_size+j] = St[j*subset_size+k];
-          }
-        }
-        ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,S,&SM);CHKERRQ(ierr);
-        ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,St,&StM);CHKERRQ(ierr);
-        ierr = MatDetectDisconnectedComponents(SM,PETSC_TRUE,&nccs,NULL);CHKERRQ(ierr);
-        ierr = MatDetectDisconnectedComponents(StM,PETSC_TRUE,&nccst,NULL);CHKERRQ(ierr);
-        if (nccs != 1 || nccst != 1) {
-          PetscPrintf(PETSC_COMM_SELF,"[%d] Found disc %d %d (size %d)\n",PetscGlobalRank,nccs,nccst,subset_size);
-        }
-        ierr = MatDestroy(&SM);CHKERRQ(ierr);
-        ierr = MatDestroy(&StM);CHKERRQ(ierr);
-      }
-
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         PetscBLASInt B_itype = 1;
         PetscBLASInt B_IL, B_IU;
@@ -5705,7 +5683,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   if (!sub_schurs->use_mumps) {
     /* pcbddc->ksp_D up to date only if not using MUMPS */
     ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
     PetscBool isseqaij;
@@ -5725,7 +5703,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
         ierr = MatConvert(pcbddc->local_mat,MATSEQAIJ,MAT_REUSE_MATRIX,&pcbddc->local_mat);CHKERRQ(ierr);
       }
     }
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
 
