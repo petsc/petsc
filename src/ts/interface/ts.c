@@ -2329,7 +2329,7 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 
    Level: intermediate
 
-.seealso: TSGetSolution()
+.seealso: TSGetSolution(), TSSetTimeError()
 
 .keywords: TS, timestep, get, error
 @*/
@@ -2343,6 +2343,37 @@ PetscErrorCode  TSGetTimeError(TS ts,Vec *v)
     ierr = (*ts->ops->gettimeerror)(ts,v);CHKERRQ(ierr); 
   } else {
     ierr = VecZeroEntries(*v);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetTimeError"
+/*@
+   TSSetTimeError - Sets the estimated error vector, if the chosen
+   TSType has an error estimation functionality. This can be used
+   to restart such a time integrator with a given error vector.
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Parameters :
+.  ts - the TS context obtained from TSCreate() (input parameter).
+.  v - the vector containing the error (same size as the solution).
+
+   Level: intermediate
+
+.seealso: TSSetSolution(), TSGetTimeError)
+
+.keywords: TS, timestep, get, error
+@*/
+PetscErrorCode  TSSetTimeError(TS ts,Vec v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->ops->settimeerror) {
+    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }

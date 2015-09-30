@@ -25,6 +25,7 @@ struct _GLEETableau {
   PetscReal *A,*B,*U,*V,*S,*F,*c; /* Tableau */
   PetscReal *Fembed;              /* Embedded final method coefficients */
   PetscReal *Ferror;              /* Coefficients for computing error   */
+  PetscReal *Serror;              /* Coefficients for initializing the error   */
   PetscInt   pinterp;             /* Interpolation order */
   PetscReal *binterp;             /* Interpolation coefficients */
   PetscReal  ccfl;                /* Placeholder for CFL coefficient relative to forward Euler  */
@@ -157,8 +158,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,0},
       F[2]      = {1,0},
       Fembed[2] = {1,1-gamma},
-      Ferror[2] = {0,1};
-    ierr = TSGLEERegister(TSGLEEi1,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {0,1},
+      Serror[2] = {1,0};
+    ierr = TSGLEERegister(TSGLEEi1,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-eps form */
@@ -175,8 +177,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,0},
       F[2]      = {1,0},
       Fembed[2] = {1,1-gamma},
-      Ferror[2] = {0,1};
-    ierr = TSGLEERegister(TSGLEE23,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {0,1},
+      Serror[2] = {1,0};
+    ierr = TSGLEERegister(TSGLEE23,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-y~ form */
@@ -193,8 +196,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,1},
       F[2]      = {1,0},
       Fembed[2] = {0,1},
-      Ferror[2] = {-1.0/(1.0-gamma),1.0/(1.0-gamma)};
-      ierr = TSGLEERegister(TSGLEE24,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {-1.0/(1.0-gamma),1.0/(1.0-gamma)},
+      Serror[2] = {1.0-gamma,1.0};
+      ierr = TSGLEERegister(TSGLEE24,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-y~ form */
@@ -220,8 +224,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,1},
       F[2]      = {1,0},
       Fembed[2] = {0,1},
-      Ferror[2] = {-1.0/(1.0-gamma),1.0/(1.0-gamma)};
-    ierr = TSGLEERegister(TSGLEE25I,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {-1.0/(1.0-gamma),1.0/(1.0-gamma)},
+      Serror[2] = {1.0-gamma,1.0};
+    ierr = TSGLEERegister(TSGLEE25I,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-y~ form */
@@ -247,8 +252,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,1},
       F[2]      = {1,0},
       Fembed[2] = {0,1},
-      Ferror[2] = {-1.0/(1.0-gamma),1.0/(1.0-gamma)};
-    ierr = TSGLEERegister(TSGLEE35,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {-1.0/(1.0-gamma),1.0/(1.0-gamma)},
+      Serror[2] = {1.0-gamma,1.0};
+    ierr = TSGLEERegister(TSGLEE35,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-eps form */
@@ -271,8 +277,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,0},
       F[2]      = {1,0},
       Fembed[2] = {1,1-gamma},
-      Ferror[2] = {0,1};
-    ierr = TSGLEERegister(TSGLEEEXRK2A,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {0,1},
+      Serror[2] = {1,0};
+    ierr = TSGLEERegister(TSGLEEEXRK2A,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-eps form */
@@ -297,8 +304,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,0},
       F[2]      = {1,0},
       Fembed[2] = {1,1-gamma},
-      Ferror[2] = {0,1};
-    ierr = TSGLEERegister(TSGLEERK32G1,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {0,1},
+      Serror[2] = {1,0};
+    ierr = TSGLEERegister(TSGLEERK32G1,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
   {
     /* y-eps form */
@@ -324,8 +332,9 @@ PetscErrorCode TSGLEERegisterAll(void)
       S[2]      = {1,0},
       F[2]      = {1,0},
       Fembed[2] = {1,1-gamma},
-      Ferror[2] = {0,1};
-    ierr = TSGLEERegister(TSGLEERK285EX,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,0,NULL);CHKERRQ(ierr);
+      Ferror[2] = {0,1},
+      Serror[2] = {1,0};
+    ierr = TSGLEERegister(TSGLEERK285EX,p,s,r,gamma,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -356,6 +365,7 @@ PetscErrorCode TSGLEERegisterDestroy(void)
     ierr = PetscFree2(t->S,t->F);                 CHKERRQ(ierr);
     ierr = PetscFree (t->Fembed);                 CHKERRQ(ierr);
     ierr = PetscFree (t->Ferror);                 CHKERRQ(ierr);
+    ierr = PetscFree (t->Serror);                 CHKERRQ(ierr);
     ierr = PetscFree (t->binterp);                CHKERRQ(ierr);
     ierr = PetscFree (t->name);                   CHKERRQ(ierr);
     ierr = PetscFree (link);                      CHKERRQ(ierr);
@@ -432,6 +442,7 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 .  c - abscissa (dimension s; NULL to use row sums of A)
 .  Fembed - step completion coefficients for embedded method
 .  Ferror - error computation coefficients
+.  Serror - error initialization coefficients
 .  pinterp - order of interpolation (0 if unavailable)
 -  binterp - array of interpolation coefficients (NULL if unavailable)
 
@@ -451,6 +462,7 @@ PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscIn
                               const PetscReal S[],const PetscReal F[],
                               const PetscReal c[],
                               const PetscReal Fembed[],const PetscReal Ferror[],
+                              const PetscReal Serror[],
                               PetscInt pinterp, const PetscReal binterp[])
 {
   PetscErrorCode    ierr;
@@ -482,8 +494,10 @@ PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscIn
   }
   ierr = PetscMalloc1(r,&t->Fembed);CHKERRQ(ierr);
   ierr = PetscMalloc1(r,&t->Ferror);CHKERRQ(ierr);
+  ierr = PetscMalloc1(r,&t->Serror);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Fembed,Fembed,r*sizeof(Fembed[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Ferror,Ferror,r*sizeof(Ferror[0]));CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->Serror,Serror,r*sizeof(Serror[0]));CHKERRQ(ierr);
   t->pinterp = pinterp;
   ierr       = PetscMalloc1(s*pinterp,&t->binterp);CHKERRQ(ierr);
   ierr       = PetscMemcpy(t->binterp,binterp,s*pinterp*sizeof(binterp[0]));CHKERRQ(ierr);
@@ -1110,6 +1124,7 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
     if ((*n >= 0) && (*n < tab->r)) { 
       ierr = VecCopy(glee->Y[*n],*Y); CHKERRQ(ierr);
     } else {
+      /* Error message */
       ierr = VecZeroEntries(*Y); CHKERRQ(ierr);
     }
   }
@@ -1147,6 +1162,28 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts,Vec *X)
   PetscFunctionBegin;
   ierr = VecZeroEntries(*X);CHKERRQ(ierr);
   ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetTimeError_GLEE"
+PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
+{
+  TS_GLEE         *glee = (TS_GLEE*)ts->data;
+  GLEETableau     tab   = glee->tableau;
+  PetscReal       *S    = tab->Serror;
+  PetscInt        r     = tab->r,i;
+  Vec             *Y    = glee->Y;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (r != 2) {
+    /* Error message */
+  }
+  for (i=1; i<r; i++) {
+    ierr = VecCopy(ts->vec_sol,Y[i]); CHKERRQ(ierr);
+    ierr = VecAXPBY(Y[i],S[0],S[1],X); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1194,6 +1231,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ts->ops->getsolutioncomponents  = TSGetSolutionComponents_GLEE;
   ts->ops->getauxsolution         = TSGetAuxSolution_GLEE;
   ts->ops->gettimeerror           = TSGetTimeError_GLEE;
+  ts->ops->settimeerror           = TSSetTimeError_GLEE;
   ts->ops->startingmethod         = TSStartingMethod_GLEE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);

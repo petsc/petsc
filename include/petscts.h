@@ -246,7 +246,9 @@ PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetSolutionComponents(TS,PetscInt*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetAuxSolution(TS,Vec*);
+
 PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,Vec*);
+PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 
 
 /*S
@@ -729,7 +731,7 @@ typedef const char* TSGLEEType;
 J*/
 PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType*);
 PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts,TSGLEEType);
-PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType,PetscInt,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType,PetscInt,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSGLEEFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);

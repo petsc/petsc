@@ -53,6 +53,7 @@ struct _TSOps {
   PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
   PetscErrorCode (*getauxsolution)(TS,Vec*);
   PetscErrorCode (*gettimeerror)(TS,Vec*);
+  PetscErrorCode (*settimeerror)(TS,Vec);
   PetscErrorCode (*startingmethod) (TS);
 };
 
