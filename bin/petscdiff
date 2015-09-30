@@ -6,8 +6,16 @@ export RM="`grep 'RM =' ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables
 export SED="`grep 'SED =' ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | sed s/'SED ='//g`"
 export DIFF="`grep 'DIFF =' ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | sed s/'DIFF ='//g`"
 
+export f=$1
+if [ "JOE${f}" == "JOE-" ]; then
+    export f=`mktemp -t tmp`  ;
+    $(cat /dev/stdin > $f)
+fi
 
-${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $1 | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g"  > tmpA
+echo $f
+
+${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $f | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g"  > tmpA
+${RM} -f $f
 ${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $2 | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > tmpB
 ${DIFF} tmpA tmpB > /dev/null
 if [ $? -ne 0 ]; then
