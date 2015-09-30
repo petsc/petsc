@@ -19,7 +19,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   for (i=rank; i<height; i+=size) {
-    ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/height,1.0,((PetscReal)i)/height,i%256);CHKERRQ(ierr);
+    PetscReal y = ((PetscReal)i)/(height-1);
+    ierr = PetscDrawLine(draw,0.0,y,1.0,y,i%256);CHKERRQ(ierr);
   }
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);

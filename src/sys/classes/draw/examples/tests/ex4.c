@@ -21,7 +21,8 @@ PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   for (i=rank; i<256; i+=size) {
-    ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);CHKERRQ(ierr);
+    PetscReal y = ((PetscReal)i)/(256-1);
+    ierr = PetscDrawLine(draw,0.0,y,1.0,y,i);CHKERRQ(ierr);
   }
   return 0;
 }
