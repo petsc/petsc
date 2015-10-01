@@ -1106,23 +1106,13 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecScatterBegin(matis->rctx,rhs,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->rctx,rhs,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (pcbddc->benign_change) {
-      Mat M;
-
       ierr = MatMultTranspose(pcbddc->benign_change,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
       ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      /* change local iteration matrix TODO (case when mat == pmat) */
-      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = MatPtAP(matis->A,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
-      ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = MatDestroy(&M);CHKERRQ(ierr);
-      ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+      /* swap local iteration matrix (with the benign trick, amat == pmat) */
+      ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
       pcbddc->benign_original_mat = matis->A;
-      ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
       matis->A = pcbddc->local_mat;
-      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
     } else {
       ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1289,10 +1279,9 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (pcbddc->benign_change) {
     Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
-    ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)pcbddc->benign_original_mat);CHKERRQ(ierr);
+    pcbddc->local_mat = matis->A;
     matis->A = pcbddc->benign_original_mat;
-    ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+    pcbddc->benign_original_mat = NULL;
   }
 
   /* get solution in original basis */
@@ -1423,6 +1412,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->benign_saddle_point && !ismatis) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the iteration matrix to be of type MATIS");
   }
+  if (pcbddc->benign_saddle_point && pc->mat != pc->pmat) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the Amat == Pmat");
+  }
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
@@ -1459,7 +1451,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
     /* pop B0 mat from pcbddc->local_mat */
     ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
-
     /* set flag in pcis to not reuse submatrices during PCISCreate */
     pcis->reusesubmatrices = PETSC_FALSE;
   }
