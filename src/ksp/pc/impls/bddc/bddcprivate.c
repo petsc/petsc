@@ -255,8 +255,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)pcbddc->local_mat);CHKERRQ(ierr);
-  pcbddc->benign_original_mat = pcbddc->local_mat;
   /* if a local info on dofs is present, assumes the last field is represented by "pressures"
      otherwise, it uses only zerodiagonal dofs (ok if the pressure block is all zero; it could fail if it is not)
      Checks if all the pressure dofs in each subdomain have a zero diagonal
@@ -280,9 +278,10 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   } else {
     pressures = NULL;
   }
-  ierr = MatGetLocalSize(pcbddc->benign_original_mat,&n,NULL);CHKERRQ(ierr);
+  /* pcis has not been setup yet, so get the local size from the subdomain matrix */
+  ierr = MatGetLocalSize(pcbddc->local_mat,&n,NULL);CHKERRQ(ierr);
   /* TODO: add check for shared dofs and raise error */
-  ierr = MatFindZeroDiagonals(pcbddc->benign_original_mat,&zerodiag);CHKERRQ(ierr);
+  ierr = MatFindZeroDiagonals(pcbddc->local_mat,&zerodiag);CHKERRQ(ierr);
   ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
   if (!sorted) {
     ierr = ISSort(zerodiag);CHKERRQ(ierr);
@@ -395,14 +394,13 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     IS             zerodiagc;
     const PetscInt *idxs,*idxsc;
     PetscInt       i,s,*nnz;
-    Mat            M;
 
     ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
     ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
     ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
     /* local change of basis for pressures */
     ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
-    ierr = MatCreate(PetscObjectComm((PetscObject)pcbddc->benign_original_mat),&pcbddc->benign_change);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)pcbddc->local_mat),&pcbddc->benign_change);CHKERRQ(ierr);
     ierr = MatSetType(pcbddc->benign_change,MATAIJ);CHKERRQ(ierr);
     ierr = MatSetSizes(pcbddc->benign_change,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&nnz);CHKERRQ(ierr);
@@ -456,10 +454,10 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     /* TODO: need optimization? */
+    ierr = MatPtAP(pcbddc->local_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->benign_original_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-    ierr = MatPtAP(pcbddc->benign_original_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
-    ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
-    ierr = MatDestroy(&M);CHKERRQ(ierr);
+    ierr = MatSeqAIJCompress(pcbddc->benign_original_mat,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
     /* store global idxs for p0 */
     ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,pcbddc->benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
   }
@@ -528,6 +526,7 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
     ierr = MatGetSubMatrix(pcbddc->local_mat,is_p0,NULL,reuse,&pcbddc->benign_B0);CHKERRQ(ierr);
     /* remove rows and cols from local problem */
     ierr = MatSetOption(pcbddc->local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(pcbddc->local_mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatZeroRowsColumnsIS(pcbddc->local_mat,is_p0,1.0,NULL,NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&is_p0);CHKERRQ(ierr);
   } else { /* push */
@@ -1024,7 +1023,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = ISDestroy(&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->benign_vec);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
