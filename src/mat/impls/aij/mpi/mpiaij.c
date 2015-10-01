@@ -2288,7 +2288,7 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
 #include <boost/graph/distributed/ilu_preconditioner.hpp>
 #include <boost/graph/distributed/petsc/interface.hpp>
 #include <boost/multi_array.hpp>
-#include <boost/parallel/distributed_property_map->hpp>
+#include <boost/parallel/distributed_property_map.hpp>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_MPIAIJ"
