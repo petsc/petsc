@@ -12,6 +12,7 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   ierr = PetscStrallocpy(name, &(*label)->name);CHKERRQ(ierr);
 
   (*label)->refct          = 1;
+  (*label)->state          = -1;
   (*label)->numStrata      = 0;
   (*label)->stratumValues  = NULL;
   (*label)->arrayValid     = NULL;
@@ -53,6 +54,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
     }
   }
   label->arrayValid[v] = PETSC_TRUE;
+  ++label->state;
   PetscFunctionReturn(0);
 }
 
@@ -87,8 +89,18 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMLabelAddStratum_Private"
-static PetscErrorCode DMLabelAddStratum_Private(DMLabel label, PetscInt value)
+#define __FUNCT__ "DMLabelGetState"
+PetscErrorCode DMLabelGetState(DMLabel label, PetscObjectState *state)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(state, 2);
+  *state = label->state;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelAddStratum"
+PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 {
   PetscInt    v, *tmpV, *tmpS, **tmpP;
   PetscHashI *tmpH;
@@ -482,9 +494,7 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     if (label->stratumValues[v] == value) break;
   }
   /* Create new table */
-  if (v >= label->numStrata) {
-    ierr = DMLabelAddStratum_Private(label, value);CHKERRQ(ierr);
-  }
+  if (v >= label->numStrata) {ierr = DMLabelAddStratum(label, value);CHKERRQ(ierr);}
   ierr = DMLabelMakeInvalid_Private(label, v);CHKERRQ(ierr);
   /* Set key */
   PetscHashIPut(label->ht[v], point, ret, iter);
@@ -617,6 +627,7 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] != value) continue;
     ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
+    if (label->stratumSizes[v]  <= 0)     break;
     if (start) *start = label->points[v][0];
     if (end)   *end   = label->points[v][label->stratumSizes[v]-1]+1;
     break;
@@ -1499,6 +1510,8 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
       next->next = NULL;
       *label     = next->label;
       ierr = PetscFree(next);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
+      if (hasLabel) mesh->depthLabel = NULL;
       break;
     }
     last = next;
