@@ -1,0 +1,115 @@
+0 SNES Function norm 1.371870931195e-01 
+    0 KSP Residual norm 5.202521703100e-02 
+    1 KSP Residual norm 3.628649120919e-02 
+    2 KSP Residual norm 2.230325574124e-02 
+    3 KSP Residual norm 1.462216942278e-02 
+    4 KSP Residual norm 9.581224412384e-03 
+    5 KSP Residual norm 6.351241868891e-03 
+    6 KSP Residual norm 4.183522281136e-03 
+    7 KSP Residual norm 2.771978772685e-03 
+    8 KSP Residual norm 1.828281849373e-03 
+    9 KSP Residual norm 1.210471122973e-03 
+   10 KSP Residual norm 7.989628528035e-04 
+   11 KSP Residual norm 5.286876610580e-04 
+   12 KSP Residual norm 3.491231058106e-04 
+   13 KSP Residual norm 2.309351936887e-04 
+   14 KSP Residual norm 1.525479466782e-04 
+   15 KSP Residual norm 1.008811109304e-04 
+   16 KSP Residual norm 6.665253886838e-05 
+   17 KSP Residual norm 4.407048987132e-05 
+   18 KSP Residual norm 2.912157185677e-05 
+   19 KSP Residual norm 1.925296748842e-05 
+   20 KSP Residual norm 1.272343934593e-05 
+   21 KSP Residual norm 8.411145388865e-06 
+   22 KSP Residual norm 5.558895595164e-06 
+   23 KSP Residual norm 3.674663920619e-06 
+   24 KSP Residual norm 2.428670791039e-06 
+   25 KSP Residual norm 1.605400596446e-06 
+   26 KSP Residual norm 1.061075255669e-06 
+   27 KSP Residual norm 7.013768103532e-07 
+   28 KSP Residual norm 4.635771116599e-07 
+   29 KSP Residual norm 3.064226298117e-07 
+   30 KSP Residual norm 2.025333848877e-07 
+   31 KSP Residual norm 1.338724559771e-07 
+   32 KSP Residual norm 8.848516813936e-08 
+   33 KSP Residual norm 5.848739329081e-08 
+   34 KSP Residual norm 3.865839525350e-08 
+   35 KSP Residual norm 2.555251938429e-08 
+   36 KSP Residual norm 1.688950100326e-08 
+   37 KSP Residual norm 1.116363090538e-08 
+   38 KSP Residual norm 7.378865328614e-09 
+   39 KSP Residual norm 4.877276782258e-09 
+   40 KSP Residual norm 3.223756254680e-09 
+   41 KSP Residual norm 2.130833234893e-09 
+   42 KSP Residual norm 1.408428158805e-09 
+   43 KSP Residual norm 9.309397976948e-10 
+   44 KSP Residual norm 6.153286883025e-10 
+   45 KSP Residual norm 4.067183848195e-10 
+   46 KSP Residual norm 2.688311320979e-10 
+   47 KSP Residual norm 1.776912461182e-10 
+   48 KSP Residual norm 1.174497066354e-10 
+   49 KSP Residual norm 7.763152928561e-11 
+   50 KSP Residual norm 5.131261325312e-11 
+  1 SNES Function norm 1.612624342362e-10 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+SNES Object: 2 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=50
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object:   2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   2 MPI processes
+    type: richardson
+      Richardson: damping factor=1
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object:   2 MPI processes
+    type: asm
+      Additive Schwarz: total subdomain blocks = 4, amount of overlap = 0
+      Additive Schwarz: restriction/interpolation type - RESTRICT
+      Additive Schwarz: local solve composition type - MULTIPLICATIVE
+      Local solve is same for all blocks, in the following KSP and PC objects:
+    KSP Object:    (sub_)     1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object:    (sub_)     1 MPI processes
+      type: lu
+        LU: out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5, needed 1.35714
+          Factored matrix follows:
+            Mat Object:             1 MPI processes
+              type: seqaij
+              rows=8, cols=8
+              package used to perform factorization: petsc
+              total: nonzeros=38, allocated nonzeros=38
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object:       1 MPI processes
+        type: seqaij
+        rows=8, cols=8
+        total: nonzeros=28, allocated nonzeros=28
+        total number of mallocs used during MatSetValues calls =0
+          not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object:     2 MPI processes
+      type: mpiaij
+      rows=32, cols=32
+      total: nonzeros=136, allocated nonzeros=136
+      total number of mallocs used during MatSetValues calls =0
+N: 32 error l2 4.72982e-12 inf 5.97333e-11
