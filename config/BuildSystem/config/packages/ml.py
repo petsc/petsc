@@ -17,6 +17,7 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is
                                  # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
+    self.needsMath         = 1   # ml test needs the system math library
     self.hastests          = 1
     return
 
