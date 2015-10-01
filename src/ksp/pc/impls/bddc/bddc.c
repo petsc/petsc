@@ -1156,15 +1156,16 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
 
     /* set current iteration matrix inside change context (change of basis has been already set into the ctx during PCSetUp) */
-    ierr = MatDestroy(&change_ctx->original_mat);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
-    change_ctx->original_mat = pc->mat;
+    if (!(pcbddc->benign_saddle_point && pcbddc->user_ChangeOfBasisMatrix)) {
+      ierr = MatDestroy(&change_ctx->original_mat);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
+      change_ctx->original_mat = pc->mat;
 
-    /* change iteration matrix */
-    ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)pcbddc->new_global_mat);CHKERRQ(ierr);
-    pc->mat = pcbddc->new_global_mat;
-
+      /* change iteration matrix */
+      ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)pcbddc->new_global_mat);CHKERRQ(ierr);
+      pc->mat = pcbddc->new_global_mat;
+    }
     /* store the original rhs */
     if (copy_rhs) {
       ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
@@ -1263,7 +1264,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if (pcbddc->ChangeOfBasisMatrix) {
+  if (pcbddc->ChangeOfBasisMatrix && !(pcbddc->benign_saddle_point && pcbddc->user_ChangeOfBasisMatrix)) {
     PCBDDCChange_ctx change_ctx;
 
     /* get change ctx */
