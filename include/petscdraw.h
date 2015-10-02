@@ -322,8 +322,8 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
 
 #else
 
-#define PetscDrawCollectiveBegin(draw) do {} while(0)
-#define PetscDrawCollectiveEnd(draw)   do {} while(0)
+#define PetscDrawCollectiveBegin(draw) 0; do {} while(0)
+#define PetscDrawCollectiveEnd(draw)   0; do {} while(0)
 
 #endif
 
