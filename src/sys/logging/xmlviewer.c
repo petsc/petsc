@@ -118,7 +118,6 @@ PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, con
     ierr = PetscSNPrintf(buffer,sizeof(buffer), "%*s<%s desc=\"%s\">%s</%s>\n", XMLSectionDepth, "", name, desc, format, name);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, buffer, value);CHKERRQ(ierr);
-  printf(buffer,value);
   PetscFunctionReturn(0);
 }
 
