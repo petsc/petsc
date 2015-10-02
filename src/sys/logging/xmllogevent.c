@@ -803,7 +803,6 @@ static PetscErrorCode  PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, co
 {
   PetscErrorCode ierr;
 
-  printf("name in %s %g %g\n",name,minvalue,maxvalue);
   PetscFunctionBegin;
   ierr = PetscViewerXMLStartSection(viewer, name, NULL);CHKERRQ(ierr);
   if (maxvalue>minvalue*minmaxtreshold) {
@@ -872,7 +871,6 @@ static PetscErrorCode  PetscLogPrintNestedLine(PetscViewer viewer,PetscEventPerf
     if (countsPerCallMx<1.01 && countsPerCallMn>0.99) {
       /* One call per parent */
     } else {
-    printf("name %s %g %g\n",name,countsPerCallMn, countsPerCallMx);
       ierr = PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", countsPerCallMn, countsPerCallMx, 1.02);CHKERRQ(ierr);
     }
  
