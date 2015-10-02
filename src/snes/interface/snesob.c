@@ -120,7 +120,9 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computeobjective) {
+    ierr = PetscLogEventBegin(SNES_ObjectiveEval,snes,X,0,0);CHKERRQ(ierr);
     ierr = (sdm->ops->computeobjective)(snes,X,ob,sdm->objectivectx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_ObjectiveEval,snes,X,0,0);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
   PetscFunctionReturn(0);
 }

@@ -288,7 +288,7 @@
       </xsl:call-template>
     </td>
     <td width="220"><font color="red" class="numeric">
-      <xsl:call-template name="printperfelem">
+      <xsl:call-template name="printperfelem_calls">
         <xsl:with-param name="varname" select="ncalls"/>
       </xsl:call-template>
     </font></td>
@@ -462,6 +462,43 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="printperfelem_calls">
+    <xsl:param name="varname"/>
+    <xsl:if test="$varname">
+      <xsl:choose>
+        <xsl:when test="$varname/value">
+          &#160;&#160;&#160;&#160;&#160;&#160;
+          <xsl:call-template name="append-pad">
+            <xsl:with-param name="string" select="format-number($varname/value,'####0.00')"/>
+            <xsl:with-param name="appendchar" select="'&#160;'"/>
+            <xsl:with-param name="length" select="4"/>
+          </xsl:call-template>
+        </xsl:when>
+        <xsl:when test="$varname/minvalue">
+          <xsl:call-template name="append-pad">
+            <xsl:with-param name="string" select="format-number($varname/minvalue,'####0.00')"/>
+            <xsl:with-param name="appendchar" select="'&#160;'"/>
+            <xsl:with-param name="length" select="4"/>
+          </xsl:call-template>
+          -
+          <xsl:if test="$varname/avgvalue">
+            <xsl:call-template name="append-pad">
+              <xsl:with-param name="string" select="format-number($varname/avgvalue,'####0.00')"/>
+            <xsl:with-param name="appendchar" select="'&#160;'"/>
+              <xsl:with-param name="length" select="4"/>
+            </xsl:call-template>
+            -
+          </xsl:if>
+          <xsl:call-template name="append-pad">
+            <xsl:with-param name="string" select="format-number($varname/maxvalue,'####0.00')"/>
+            <xsl:with-param name="appendchar" select="'&#160;'"/>
+            <xsl:with-param name="length" select="4"/>
+          </xsl:call-template>
+        </xsl:when>
+      </xsl:choose>
+    </xsl:if>
+  </xsl:template>
+  
   <xsl:template name="toggleTreeLoop">
     <xsl:param name="i"/>
     <xsl:param name="limit"/>

@@ -803,13 +803,14 @@ static PetscErrorCode  PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, co
 {
   PetscErrorCode ierr;
 
+  printf("name in %s %g %g\n",name,minvalue,maxvalue);
   PetscFunctionBegin;
   ierr = PetscViewerXMLStartSection(viewer, name, NULL);CHKERRQ(ierr);
   if (maxvalue>minvalue*minmaxtreshold) {
     ierr = PetscViewerXMLPutDouble(viewer, "minvalue", NULL, minvalue, "%f");CHKERRQ(ierr);
     ierr = PetscViewerXMLPutDouble(viewer, "maxvalue", NULL, maxvalue, "%f");CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerXMLPutDouble(viewer, "value", NULL, (minvalue+maxvalue)/2.0, "%f");CHKERRQ(ierr);
+    ierr = PetscViewerXMLPutDouble(viewer, "value", NULL, (minvalue+maxvalue)/2.0, "%g");CHKERRQ(ierr);
   };
   ierr = PetscViewerXMLEndSection(viewer, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -866,10 +867,12 @@ static PetscErrorCode  PetscLogPrintNestedLine(PetscViewer viewer,PetscEventPerf
     ierr = PetscViewerXMLStartSection(viewer, "event", NULL);CHKERRQ(ierr);
     ierr = PetscViewerXMLPutString(viewer, "name", NULL, name);CHKERRQ(ierr);
     ierr = PetscPrintXMLNestedLinePerfResults(viewer, "time", timeMn/totalTime*100.0, timeMx/totalTime*100.0, 1.02);CHKERRQ(ierr);
- 
+
+
     if (countsPerCallMx<1.01 && countsPerCallMn>0.99) {
       /* One call per parent */
     } else {
+    printf("name %s %g %g\n",name,countsPerCallMn, countsPerCallMx);
       ierr = PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", countsPerCallMn, countsPerCallMx, 1.02);CHKERRQ(ierr);
     }
  
@@ -1070,14 +1073,7 @@ static PetscErrorCode  PetscLogNestedPrint(PetscViewer viewer, PetscNestedEventT
       if ((children[i].val/totalTime) < (threshTime/100.0)) {
         /* ignored: no output */
       } else if (children[i].id==-1) {
-        size_t  len;
-        char    *selfname;
-
-        ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-        ierr = PetscMalloc1(7+len,&selfname);CHKERRQ(ierr);
-        sprintf(selfname,"self-%s",name);
-        ierr = PetscLogPrintNestedLine(viewer, selfPerfInfo, countsPerCall, parentCount, depth+1, selfname, totalTime, &childWasPrinted);CHKERRQ(ierr);
-        ierr = PetscFree(selfname);CHKERRQ(ierr);
+        ierr = PetscLogPrintNestedLine(viewer, selfPerfInfo, 1, parentCount, depth+1, "self", totalTime, &childWasPrinted);CHKERRQ(ierr);
         if (childWasPrinted) {
           ierr = PetscViewerXMLEndSection(viewer,"event");CHKERRQ(ierr);
         }
