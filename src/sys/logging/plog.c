@@ -165,7 +165,7 @@ PetscErrorCode  PetscLogDestroy(void)
 
   Level: developer
 
-.seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
+.seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
 @*/
 PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
                             PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
@@ -230,9 +230,9 @@ PetscErrorCode  PetscLogInitialize(void)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLogBegin"
+#define __FUNCT__ "PetscLogDefaultBegin"
 /*@C
-  PetscLogBegin - Turns on logging of objects and events. This logs flop
+  PetscLogDefaultBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
 
@@ -246,7 +246,7 @@ PetscErrorCode  PetscLogInitialize(void)
   Usage:
 .vb
       PetscInitialize(...);
-      PetscLogBegin();
+      PetscLogDefaultBegin();
        ... code ...
       PetscLogView(viewer); or PetscLogDump();
       PetscFinalize();
@@ -261,7 +261,7 @@ PetscErrorCode  PetscLogInitialize(void)
 .keywords: log, begin
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin()
 @*/
-PetscErrorCode  PetscLogBegin(void)
+PetscErrorCode  PetscLogDefaultBegin(void)
 {
   PetscErrorCode ierr;
 
@@ -291,14 +291,14 @@ PetscErrorCode  PetscLogBegin(void)
 .ve
 
   Notes:
-  A related routine is PetscLogBegin() (with the options key -log), which is
+  A related routine is PetscLogDefaultBegin() (with the options key -log), which is
   intended for production runs since it logs only flop rates and object
   creation (and shouldn't significantly slow the programs).
 
   Level: advanced
 
 .keywords: log, all, begin
-.seealso: PetscLogDump(), PetscLogBegin(), PetscLogTraceBegin()
+.seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogTraceBegin()
 @*/
 PetscErrorCode  PetscLogAllBegin(void)
 {
@@ -333,7 +333,7 @@ PetscErrorCode  PetscLogAllBegin(void)
 
   Level: intermediate
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogBegin()
+.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogDefaultBegin()
 @*/
 PetscErrorCode  PetscLogTraceBegin(FILE *file)
 {
@@ -1122,7 +1122,7 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
   Usage:
 .vb
      PetscInitialize(...);
-     PetscLogBegin(); or PetscLogAllBegin();
+     PetscLogDefaultBegin(); or PetscLogAllBegin();
      ... code ...
      PetscLogDump(filename);
      PetscFinalize();
@@ -1137,7 +1137,7 @@ $    Log.<rank>
   Level: advanced
 
 .keywords: log, dump
-.seealso: PetscLogBegin(), PetscLogAllBegin(), PetscLogView()
+.seealso: PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogView()
 @*/
 PetscErrorCode  PetscLogDump(const char sname[])
 {
@@ -1731,6 +1731,8 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  PetscLogView_Nested(PetscViewer);
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogView"
 /*@C
@@ -1742,24 +1744,27 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 .  viewer - an ASCII viewer
 
   Options Database Keys:
-. -log_view [viewertype[:filename[:format]]] - Prints summary of log information (for code compiled with PETSC_USE_LOG)
-
-  Usage:
-.vb
-     PetscInitialize(...);
-     PetscLogBegin();
-     ... code ...
-     PetscLogView(PetscViewer);
-     PetscFinalize(...);
-.ve
++  -log_view [:filename] - Prints summary of log information
+.  -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
+.  -log_view :filename.xml:ascii_xml - Saves a summary of the logging information in a nested format, use a browser to open this file, for example on
+             Apple MacOS systems use open -a Safari filename.xml
+.  -log_all - Saves a file Log.rank for each MPI process with details of each step of the computation
+-  -log_trace [filename] - Displays a trace of what each process is doing
 
   Notes:
+  It is possible to control the logging programatically but we recommend using the options database approach whenever possible
   By default the summary is printed to stdout.
+
+  Before calling this routine you must have called either PetscLogDefaultBegin() or PetscLogNestedBegin()
+
+  If PETSc is configured with --with-logging=0 then this functionality is not available
+
+  The nested XML format was kindly donated by Koos Huijssen and Christiaan M. Klaij  MARITIME  RESEARCH  INSTITUTE  NETHERLANDS
 
   Level: beginner
 
 .keywords: log, dump, print
-.seealso: PetscLogBegin(), PetscLogDump()
+.seealso: PetscLogDefaultBegin(), PetscLogDump()
 @*/
 PetscErrorCode  PetscLogView(PetscViewer viewer)
 {
@@ -1770,7 +1775,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscStageLog     stageLog;
 
   PetscFunctionBegin;
-  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogDefaultBegin() before calling this routine");
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;
   ierr      = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -1787,6 +1792,8 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     ierr = PetscLogView_Default(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscLogView_Detailed(viewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_XML) {
+    ierr = PetscLogView_Nested(viewer);CHKERRQ(ierr);
   }
   ierr = PetscStageLogPush(stageLog, lastStage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2093,7 +2100,7 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
 . -log_mpe - Prints extensive log information (for code compiled with PETSC_USE_LOG)
 
    Notes:
-   A related routine is PetscLogBegin() (with the options key -log_summary), which is
+   A related routine is PetscLogDefaultBegin() (with the options key -log_summary), which is
    intended for production runs since it logs only flop rates and object
    creation (and should not significantly slow the programs).
 
@@ -2102,7 +2109,7 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
    Concepts: logging^MPE
    Concepts: logging^message passing
 
-.seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogEventActivate(),
+.seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogEventActivate(),
           PetscLogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogMPEBegin(void)

@@ -6,7 +6,8 @@
 #define petsclogview_             PETSCLOGVIEW
 #define petsclogallbegin_         PETSCLOGALLBEGIN
 #define petsclogdestroy_          PETSCLOGDESTROY
-#define petsclogbegin_            PETSCLOGBEGIN
+#define petsclogdefaultbegin_     PETSCLOGDEFAULTBEGIN
+#define petsclognestedbegin_      PETSCLOGNESTEDBEGIN
 #define petsclogdump_             PETSCLOGDUMP
 #define petsclogeventregister_    PETSCLOGEVENTREGISTER
 #define petsclogstagepop_         PETSCLOGSTAGEPOP
@@ -22,7 +23,8 @@
 #define petsclogview_             petsclogview
 #define petsclogallbegin_         petsclogallbegin
 #define petsclogdestroy_          petsclogdestroy
-#define petsclogbegin_            petsclogbegin
+#define petsclogdefaultbegin_     petsclogdefaultbegin
+#define petsclognestedbegin_      petsclognestedbegin
 #define petsclogeventregister_    petsclogeventregister
 #define petsclogdump_             petsclogdump
 #define petsclogstagepop_         petsclogstagepop
@@ -103,10 +105,17 @@ PETSC_EXTERN void PETSC_STDCALL petsclogdestroy_(PetscErrorCode *ierr)
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclogbegin_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petsclogdefaultbegin_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_USE_LOG)
-  *ierr = PetscLogBegin();
+  *ierr = PetscLogDefaultBegin();
+#endif
+}
+
+PETSC_EXTERN void PETSC_STDCALL petsclognestedbegin_(PetscErrorCode *ierr)
+{
+#if defined(PETSC_USE_LOG)
+  *ierr = PetscLogNestedBegin();
 #endif
 }
 

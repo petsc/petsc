@@ -224,8 +224,9 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)h) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)h) : 0)
 /* Initialization functions */
-PETSC_EXTERN PetscErrorCode PetscLogBegin(void);
+PETSC_EXTERN PetscErrorCode PetscLogDefaultBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogAllBegin(void);
+PETSC_EXTERN PetscErrorCode PetscLogNestedBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogTraceBegin(FILE *);
 PETSC_EXTERN PetscErrorCode PetscLogActions(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogObjects(PetscBool);
@@ -443,10 +444,11 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
 #define PetscLogViewFromOptions()           0
-#define PetscLogBegin()                     0
+#define PetscLogDefaultBegin()                     0
 #define PetscLogTraceBegin(file)            0
 #define PetscLogSet(lb,le)                  0
 #define PetscLogAllBegin()                  0
+#define PetscLogNestedBegin()               0
 #define PetscLogDump(c)                     0
 #define PetscLogEventRegister(a,b,c)        0
 #define PetscLogObjects(a)                  0
