@@ -226,7 +226,7 @@
       one    = 1.0
       if( N2 .gt. 0 ) then
          bval = -one/(solver%mx-2)
-!     cval = -one/dble(solver%my*solver%mx)
+!     cval = -one/(solver%my*solver%mx)
          cval = -one
          do 20 row=low,high-1
             j = row/solver%mx   ! row in domain
@@ -577,8 +577,8 @@
       ifive  = 5
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(solver%mx-1)
-      hy     = one/dble(solver%my-1)
+      hx     = one/(solver%mx-1)
+      hy     = one/(solver%my-1)
       sc     = solver%lambda
       hx2inv = one/(hx*hx)
       hy2inv = one/(hy*hy)
