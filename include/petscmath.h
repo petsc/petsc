@@ -540,7 +540,7 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
   PetscReal result = 1;
   if (power < 0) {
     power = -power;
-    if (base != 0.0) base  = 1./base;
+    if (base != (PetscScalar)0.0) base  = 1./base;
   }
   while (power) {
     if (power & 1) result *= base;
@@ -555,7 +555,7 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt powe
   PetscScalar result = 1;
   if (power < 0) {
     power = -power;
-    if (base != 0.0) base  = 1./base;
+    if (base != (PetscScalar)0.0) base  = 1./base;
   }
   while (power) {
     if (power & 1) result *= base;
