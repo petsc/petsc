@@ -71,7 +71,7 @@
       allocate(message(msgLen,msglen))
       do i = 1,msgLen
          do j  = 1,msgLen
-            message(i,j) = 10*j + i*1d0/(rank+1)
+            message(i,j) = 10.0*j + i*1.0/(rank+1)
          end do
       end do
 !
