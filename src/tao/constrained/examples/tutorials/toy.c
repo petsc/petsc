@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np 1 toy[-help] [all TAO options] */
+/* Program usage: mpiexec -n 1 toy[-help] [all TAO options] */
 
 /* ----------------------------------------------------------------------
 min f=(x1-x2)^2 + (x2-2)^2 -2*x1-2*x2

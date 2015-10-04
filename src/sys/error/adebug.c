@@ -34,7 +34,7 @@ static PetscBool Xterm = PETSC_TRUE;
    Notes:
    You can start the debugger for all processes in the same GNU screen session.
 
-     mpirun -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
+     mpiexec -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
 
    will open 4 windows in the session named "debug".
 

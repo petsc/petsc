@@ -955,13 +955,13 @@ runex45:
 	   ${RM} -f ex45.tmp
 
 runex46:
-	-@${MPIEXEC} -np 1 ./ex46 > ex46.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex46 > ex46.tmp 2>&1;\
 	if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex46, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
 
 runex47:
-	-@${MPIEXEC} -np 1 ./ex47 -pc_type fieldsplit > ex47.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex47 -pc_type fieldsplit > ex47.tmp 2>&1;\
 	if (${DIFF} output/ex47_1.out ex47.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex47, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex47.tmp
