@@ -193,7 +193,7 @@
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = d*(xx(i) - 2.0*xx(i+1)                              &
+       ff(i-s+1) = d*(xx(i) - 2.0*xx(i+1)                               &
      &      + xx(i+2)) + xx(i+1)*xx(i+1)                                &
      &      - F2(i-s+1)
  10   continue
