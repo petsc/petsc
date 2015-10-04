@@ -376,6 +376,12 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat_MUMPS* mumps)
     /* restore defaults */
     mumps->id.ICNTL(26) = -1;
     mumps->schur_second_solve = PETSC_FALSE;
+    /* free MUMPS internal array for redrhs if we have solved for multiple rhs in order to save memory space */
+    if (mumps->id.nrhs > 1) {
+      ierr = PetscFree(mumps->id.redrhs);CHKERRQ(ierr);
+      mumps->id.lredrhs = 0;
+      mumps->sizeredrhs = 0;
+    }
   }
   PetscFunctionReturn(0);
 }
