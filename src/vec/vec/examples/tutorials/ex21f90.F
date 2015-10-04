@@ -138,7 +138,7 @@
       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
       call VecGetArrayMyStruct(x,xarray,ierr)
       do i = 1 , 10
-        write(*,*) xarray(i)%a,xarray(i)%b,xarray(i)%c
+        write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
       call VecRestoreArrayMyStruct(x,xarray,ierr)
 
