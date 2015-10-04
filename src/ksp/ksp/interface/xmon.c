@@ -35,22 +35,22 @@
 @*/
 PetscErrorCode  KSPMonitorLGResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
-  PetscDraw      win;
+  PetscDraw      draw;
   PetscErrorCode ierr;
   PetscDrawAxis  axis;
-  PetscDrawLG    draw;
+  PetscDrawLG    lg;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,1,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(draw,1,&lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norm");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
-  (*objs)[0] = (PetscObject)draw;
-  (*objs)[1] = (PetscObject)win;
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(1,objs);CHKERRQ(ierr);
+  (*objs)[0] = (PetscObject)lg;
   PetscFunctionReturn(0);
 }
 
@@ -94,12 +94,10 @@ PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,Pets
 PetscErrorCode  KSPMonitorLGResidualNormDestroy(PetscObject **objs)
 {
   PetscErrorCode ierr;
-  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[0];
-  PetscDraw      draw = (PetscDraw) (*objs)[1];
+  PetscDrawLG    lg = (PetscDrawLG) (*objs)[0];
 
   PetscFunctionBegin;
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
   ierr = PetscFree(*objs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -206,24 +204,24 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
 @*/
 PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
 {
-  PetscDraw      win;
+  PetscDraw      draw;
   PetscErrorCode ierr;
   PetscDrawAxis  axis;
-  PetscDrawLG    draw;
+  PetscDrawLG    lg;
   const char     *names[] = {"Preconditioned","True"};
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,2,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(draw,names);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(draw,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norms");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)win);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
-  (*objs)[0] = (PetscObject)draw;
-  (*objs)[1] = (PetscObject)win;
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(draw,2,&lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,names);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norm");CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(1,objs);CHKERRQ(ierr);
+  (*objs)[0] = (PetscObject)lg;
   PetscFunctionReturn(0);
 }
 
@@ -274,12 +272,10 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscObject **objs)
 {
   PetscErrorCode ierr;
-  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[0];
-  PetscDraw      draw = (PetscDraw) (*objs)[1];
+  PetscDrawLG    lg = (PetscDrawLG) (*objs)[0];
 
   PetscFunctionBegin;
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
   ierr = PetscFree(*objs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

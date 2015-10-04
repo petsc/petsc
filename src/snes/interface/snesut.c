@@ -188,22 +188,21 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(MPI_Comm comm,const char host
   PetscDraw      draw;
   PetscErrorCode ierr;
   PetscDrawAxis  axis;
-  PetscDrawLG    drawlg;
+  PetscDrawLG    lg;
   const char     *names[] = {"Linear residual","Nonlinear residual"};
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(draw,2,&drawlg);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetFromOptions(drawlg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(drawlg,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(draw,2,&lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,names);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions(lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence of Residual Norm","Iteration","Residual Norm");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(3,objs);CHKERRQ(ierr);
-  (*objs)[1] = (PetscObject)drawlg;
-  (*objs)[2] = (PetscObject)draw;
+  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
+  (*objs)[1] = (PetscObject)lg;
   PetscFunctionReturn(0);
 }
 
@@ -211,10 +210,10 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(MPI_Comm comm,const char host
 #define __FUNCT__ "KSPMonitorSNESLGResidualNorm"
 PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
 {
-  PetscDrawLG    lg = (PetscDrawLG) objs[1];
+  SNES           snes = (SNES) objs[0];
+  PetscDrawLG    lg   = (PetscDrawLG) objs[1];
   PetscErrorCode ierr;
   PetscReal      y[2];
-  SNES           snes = (SNES) objs[0];
   Vec            snes_solution,work1,work2;
 
   PetscFunctionBegin;
@@ -260,12 +259,10 @@ PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
 {
   PetscErrorCode ierr;
-  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[1];
-  PetscDraw      draw = (PetscDraw) (*objs)[2];
+  PetscDrawLG    lg = (PetscDrawLG) (*objs)[1];
 
   PetscFunctionBegin;
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
   ierr = PetscFree(*objs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
