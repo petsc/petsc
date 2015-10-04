@@ -1623,6 +1623,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
          During the first pass create the subcommunicators, and use them on the second pass as well.
       */
       for (q = 0; q < 2; ++q) {
+        PetscBool split = PETSC_FALSE;
         /*
           domain limits, (xleft, xright) and (ylow, yheigh) are adjusted
           according to whether the domain with an overlap or without is considered.
@@ -1642,8 +1643,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
         if (q == 0) {
           if (nidx) color = 1;
           else color = MPI_UNDEFINED;
-
           ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRQ(ierr);
+          split = PETSC_TRUE;
         }
         /*
          Proceed only if the number of local indices *with an overlap* is nonzero.
@@ -1680,6 +1681,9 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
             }
           }
           ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*xis)+s);CHKERRQ(ierr);
+          if (split) {
+            ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+          }
         }/* if (n[0]) */
       }/* for (q = 0; q < 2; ++q) */
       if (n[0]) ++s;
