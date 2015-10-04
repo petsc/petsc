@@ -54,6 +54,17 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESDestroy_ASPIN"
+PetscErrorCode SNESDestroy_ASPIN(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESDestroy(&snes->pc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_ASPIN"
 /* -------------------------------------------------------------------------- */
 /*MC
@@ -86,7 +97,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   KSP            ksp;
   PC             pc;
   Mat            aspinmat;
-  MPI_Comm       comm;
   Vec            F;
   PetscInt       n;
   SNESLineSearch linesearch;
@@ -103,19 +113,19 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBT);CHKERRQ(ierr);
 
   /* set up the shell matrix */
   ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(F,&n);CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,n,n,PETSC_DECIDE,PETSC_DECIDE,snes,&aspinmat);CHKERRQ(ierr);
+  ierr = MatCreateShell(PetscObjectComm((PetscObject)snes),n,n,PETSC_DECIDE,PETSC_DECIDE,snes,&aspinmat);CHKERRQ(ierr);
   ierr = MatSetType(aspinmat,MATSHELL);CHKERRQ(ierr);
   ierr = MatShellSetOperation(aspinmat,MATOP_MULT,(void(*)(void))MatMultASPIN);CHKERRQ(ierr);
-
   ierr = SNESSetJacobian(snes,aspinmat,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatDestroy(&aspinmat);CHKERRQ(ierr);
+
+  snes->ops->destroy = SNESDestroy_ASPIN;
 
   PetscFunctionReturn(0);
 }
