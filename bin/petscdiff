@@ -19,7 +19,7 @@ fi
 ${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $2 | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > tmpB
 ${DIFF} tmpA tmpB > /dev/null
 if [ $? -ne 0 ]; then
-  ${DIFF} --suppress-common-lines -B  $1 $2 
+  ${DIFF} -B  $1 $2 
   ${RM} -f tmpA tmpB
   exit 1;
 else
