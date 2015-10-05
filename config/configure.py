@@ -36,6 +36,10 @@ def check_for_option_mistakes(opts):
         raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
   return
 
+def check_for_unsupported_combinations(opts):
+  if '--with-precision=single' in opts and '--with-clanguage=cxx' in opts and '--with-scalar-type=complex' in opts:
+    sys.exit(ValueError('PETSc does not support single precision complex with C++ clanguage, run with --with-clanguage=c'))
+
 def check_for_option_changed(opts):
 # Document changes in command line options here.
   optMap = [('with-64bit-indices','with-64-bit-indices'),('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack')]
@@ -86,6 +90,27 @@ def chkenable():
         sys.argv[l] = head.replace('disable-fortran','with-fortran-interfaces')+'='+tail
       continue
 
+    if name.find('enable-cxx') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++')
+      else:
+        head, tail = name.split('=', 1)
+        if tail=='0':
+          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C')
+        else:
+          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C++')
+      continue
+    if name.find('disable-cxx') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-cxx','with-clanguage=C')
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '0':
+          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C++')
+        else:
+          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C')
+      continue
+
 
     if name.find('enable-') >= 0:
       if name.find('=') == -1:
@@ -108,6 +133,7 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
+
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
   for l in range(0,len(sys.argv)):
@@ -128,7 +154,19 @@ def chksynonyms():
         head, tail = name.split('=', 1)
         sys.argv[l] = head.replace('with-shared','with-shared-libraries')+'='+tail
 
+    if name.find('with-index-size=') >=0:
+      head,tail = name.split('=',1)
+      if int(tail)==32:
+        sys.argv[l] = '--with-64-bit-indices=0'
+      elif int(tail)==64:
+        sys.argv[l] = '--with-64-bit-indices=1'
+      else:
+        raise RuntimeError('--with-index-size= must be 32 or 64')
 
+    if name.find('with-precision=') >=0:
+      head,tail = name.split('=',1)
+      if tail.find('quad')>=0:
+        sys.argv[l]='--with-precision=__float128'
 
 
 def chkwinf90():
@@ -292,6 +330,7 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     sys.exit(msg)
   # check PETSC_ARCH
+  check_for_unsupported_combinations(sys.argv)
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
 

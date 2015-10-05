@@ -118,10 +118,11 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
   SNESCheckFunctionNorm(snes,fnorm);
+  ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  delta      = neP->delta0*fnorm;
+  delta      = xnorm ? neP->delta0*xnorm : neP->delta0;
   neP->delta = delta;
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
@@ -316,7 +317,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 .    -snes_tr_mu <mu>
 .    -snes_tr_eta <eta>
 .    -snes_tr_sigma <sigma>
-.    -snes_tr_delta0 <delta0>
+.    -snes_tr_delta0 <delta0> -  initial size of the trust region is delta0*norm2(x)
 .    -snes_tr_delta1 <delta1>
 .    -snes_tr_delta2 <delta2>
 -    -snes_tr_delta3 <delta3>
@@ -324,10 +325,6 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
    The basic algorithm is taken from "The Minpack Project", by More',
    Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development
    of Mathematical Software", Wayne Cowell, editor.
-
-   This is intended as a model implementation, since it does not
-   necessarily have many of the bells and whistles of other
-   implementations.
 
    Level: intermediate
 

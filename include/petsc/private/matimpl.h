@@ -181,7 +181,7 @@ struct _MatOps {
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
   PetscErrorCode (*placeholder_127)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
+  PetscErrorCode (*getsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
   PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -202,7 +202,7 @@ struct _MatOps {
   PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
   /*144*/
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
-  
+
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -260,6 +260,17 @@ PETSC_EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashS
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
 typedef struct {
+  PetscInt    count;
+} MatStashHeader;
+
+typedef struct {
+  void        *buffer;          /* Of type blocktype, dynamically constructed  */
+  PetscInt    count;
+  char        pending;
+} MatStashFrame;
+
+typedef struct _MatStash MatStash;
+struct _MatStash {
   PetscInt      nmax;                   /* maximum stash size */
   PetscInt      umax;                   /* user specified max-size */
   PetscInt      oldnmax;                /* the nmax value used previously */
@@ -267,6 +278,12 @@ typedef struct {
   PetscInt      bs;                     /* block size of the stash */
   PetscInt      reallocs;               /* preserve the no of mallocs invoked */
   PetscMatStashSpace space_head,space;  /* linked list to hold stashed global row/column numbers and matrix values */
+
+  PetscErrorCode (*ScatterBegin)(Mat,MatStash*,PetscInt*);
+  PetscErrorCode (*ScatterGetMesg)(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+  PetscErrorCode (*ScatterEnd)(MatStash*);
+  PetscErrorCode (*ScatterDestroy)(MatStash*);
+
   /* The following variables are used for communication */
   MPI_Comm      comm;
   PetscMPIInt   size,rank;
@@ -283,7 +300,34 @@ typedef struct {
   PetscMPIInt   *flg_v;                 /* indicates what messages have arrived so far and from whom */
   PetscBool     reproduce;
   PetscInt      reproduce_count;
-} MatStash;
+
+  /* The following variables are used for BTS communication */
+  PetscBool      subset_off_proc; /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
+  PetscBool      use_status;      /* Use MPI_Status to determine number of items in each message */
+  PetscMPIInt    nsendranks;
+  PetscMPIInt    nrecvranks;
+  PetscMPIInt    *sendranks;
+  PetscMPIInt    *recvranks;
+  MatStashHeader *sendhdr,*recvhdr;
+  MatStashFrame  *sendframes;   /* pointers to the main messages */
+  MatStashFrame  *recvframes;
+  MatStashFrame  *recvframe_active;
+  PetscInt       recvframe_i;     /* index of block within active frame */
+  PetscMPIInt    recvframe_count; /* Count actually sent for current frame */
+  PetscInt       recvcount;       /* Number of receives processed so far */
+  PetscMPIInt    *some_indices;   /* From last call to MPI_Waitsome */
+  MPI_Status     *some_statuses;  /* Statuses from last call to MPI_Waitsome */
+  PetscMPIInt    some_count;      /* Number of requests completed in last call to MPI_Waitsome */
+  PetscMPIInt    some_i;          /* Index of request currently being processed */
+  MPI_Request    *sendreqs;
+  MPI_Request    *recvreqs;
+  PetscSegBuffer segsendblocks;
+  PetscSegBuffer segrecvframe;
+  PetscSegBuffer segrecvblocks;
+  MPI_Datatype   blocktype;
+  size_t         blocktype_size;
+  InsertMode     *insertmode;   /* Pointer to check mat->insertmode and set upon message arrival in case no local values have been set. */
+};
 
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
 PETSC_INTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
@@ -344,6 +388,7 @@ struct _p_Mat {
   PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
+  PetscBool              subsetoffprocentries;
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
@@ -1307,7 +1352,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
   PetscInt       k;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %d, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %D, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
   for (k=2; k< lnk[0]+2; k++){
     ierr = PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]);CHKERRQ(ierr);
   }

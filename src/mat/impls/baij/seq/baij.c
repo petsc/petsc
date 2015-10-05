@@ -1329,7 +1329,7 @@ PetscErrorCode MatGetRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin;
   ierr = MatGetRow_SeqBAIJ_private(A,row,nz,idx,v,a->i,a->j,a->a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2602,7 +2602,7 @@ PetscErrorCode MatShift_SeqBAIJ(Mat Y,PetscScalar a)
   Mat_SeqBAIJ     *aij = (Mat_SeqBAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (!aij->nz) {
+  if (!Y->preallocated || !aij->nz) {
     ierr = MatSeqBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
@@ -3414,7 +3414,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.    -mat_block_size - size of the blocks to use
+.   -mat_block_size - size of the blocks to use
 
    Level: intermediate
 

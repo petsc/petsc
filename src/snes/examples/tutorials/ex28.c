@@ -5,7 +5,7 @@ static const char help[] = "1D multiphysics prototype with analytic Jacobians to
  * PDE (U):
  *     -(k u_x)_x = 1 on (0,1), subject to u(0) = 0, u(1) = 1
  * Algebraic (K):
- *     exp(k-1) + k = u + 1/(1/(1+u) + 1/(1+u_x^2))
+ *     exp(k-1) + k = 1/(1/(1+u) + 1/(1+u_x^2))
  *
  * The discretization places k at staggered points, and a separate DMDA is used for each "physics".
  *
@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
   lxk[0]--;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dak);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&pack);CHKERRQ(ierr);

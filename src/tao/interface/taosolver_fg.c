@@ -352,9 +352,10 @@ PetscErrorCode TaoSetGradientRoutine(Tao tao,  PetscErrorCode (*func)(Tao, Vec, 
         routine (may be NULL)
 
   Calling sequence of func:
-$      func (Tao tao, Vec x, Vec g, void *ctx);
+$      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
 + x - input vector
+. f - objective value (output)
 . g - gradient value (output)
 - ctx - [optional] user-defined function context
 

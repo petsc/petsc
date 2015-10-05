@@ -113,10 +113,10 @@ class Configure(config.base.Configure):
     self.libraries = framework.require('config.libraries', None)
     return
 
-  def isNAG(compiler):
+  def isNAG(compiler, log):
     '''Returns true if the compiler is a NAG F90 compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('NAGWare Fortran') >= 0 or output.find('The Numerical Algorithms Group Ltd') >= 0:
         return 1
@@ -125,10 +125,10 @@ class Configure(config.base.Configure):
     return 0
   isNAG = staticmethod(isNAG)
 
-  def isGNU(compiler):
+  def isGNU(compiler, log):
     '''Returns true if the compiler is a GNU compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
       output = output + error
       return (any([s in output for s in ['www.gnu.org',
                                          'bugzilla.redhat.com',
@@ -149,10 +149,10 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(config.memoize(isGNU))
 
-  def isClang(compiler):
+  def isClang(compiler, log):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
       output = output + error
       return any([s in output for s in ['Emit Clang AST']])
     except RuntimeError:
@@ -160,10 +160,10 @@ class Configure(config.base.Configure):
     return 0
   isClang = staticmethod(isClang)
 
-  def isGfortran45x(compiler):
+  def isGfortran45x(compiler, log):
     '''returns true if the compiler is gfortran-4.5.x'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
       output = output +  error
       import re
       if re.match(r'GNU Fortran \(.*\) (4.5.\d+|4.6.0 20100703)', output):
@@ -173,24 +173,27 @@ class Configure(config.base.Configure):
     return 0
   isGfortran45x = staticmethod(isGfortran45x)
 
-  def isGfortran46plus(compiler):
+  def isGfortran46plus(compiler, log):
     '''returns true if the compiler is gfortran-4.6.x or later'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
       output = output +  error
       import re
-      if re.match(r'GNU Fortran \(.*\) (4.([6789]|\d{2,}).\d+)', output):
-        return 1
+      strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (4,6):
+          return 1
     except RuntimeError:
       pass
     return 0
   isGfortran46plus = staticmethod(isGfortran46plus)
 
 
-  def isG95(compiler):
+  def isG95(compiler, log):
     '''Returns true if the compiler is g95'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
@@ -201,10 +204,10 @@ class Configure(config.base.Configure):
     return 0
   isG95 = staticmethod(isG95)
 
-  def isCompaqF90(compiler):
+  def isCompaqF90(compiler, log):
     '''Returns true if the compiler is Compaq f90'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
@@ -215,10 +218,10 @@ class Configure(config.base.Configure):
     return 0
   isCompaqF90 = staticmethod(isCompaqF90)
 
-  def isSun(compiler):
+  def isSun(compiler, log):
     '''Returns true if the compiler is a Sun/Oracle compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find(' Sun ') >= 0:
         return 1
@@ -227,10 +230,10 @@ class Configure(config.base.Configure):
     return 0
   isSun = staticmethod(isSun)
 
-  def isIBM(compiler):
+  def isIBM(compiler, log):
     '''Returns true if the compiler is a IBM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -qversion')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -qversion', log = log)
       output = output + error
       if 'IBM XL' in output:
         return 1
@@ -239,10 +242,10 @@ class Configure(config.base.Configure):
     return 0
   isIBM = staticmethod(isIBM)
 
-  def isIntel(compiler):
+  def isIntel(compiler, log):
     '''Returns true if the compiler is a Intel compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
       output = output + error
       if output.find('Intel Corporation') >= 0 :
         return 1
@@ -251,10 +254,10 @@ class Configure(config.base.Configure):
     return 0
   isIntel = staticmethod(isIntel)
 
-  def isCray(compiler):
+  def isCray(compiler, log):
     '''Returns true if the compiler is a Cray compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V', log = log)
       output = output + error
       if output.find('Cray Standard C') >= 0 or output.find('Cray C++') >= 0 or output.find('Cray Fortran') >= 0:
         return 1
@@ -263,10 +266,10 @@ class Configure(config.base.Configure):
     return 0
   isCray = staticmethod(isCray)
 
-  def isCrayVector(compiler):
+  def isCrayVector(compiler, log):
     '''Returns true if the compiler is a Cray compiler for a Cray Vector system'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -VV')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -VV', log = log)
       output = output + error
       if not status and output.find('x86') >= 0:
         return 0
@@ -280,10 +283,10 @@ class Configure(config.base.Configure):
   isCrayVector = staticmethod(isCrayVector)
 
 
-  def isPGI(compiler):
+  def isPGI(compiler, log):
     '''Returns true if the compiler is a PGI compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('The Portland Group') >= 0:
         return 1
@@ -292,10 +295,10 @@ class Configure(config.base.Configure):
     return 0
   isPGI = staticmethod(isPGI)
 
-  def isSolarisAR(ar):
+  def isSolarisAR(ar, log):
     '''Returns true AR is solaris'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck)
+      (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('Software Generation Utilities') >= 0:
         return 1
@@ -304,10 +307,10 @@ class Configure(config.base.Configure):
     return 0
   isSolarisAR = staticmethod(isSolarisAR)
 
-  def isAIXAR(ar):
+  def isAIXAR(ar, log):
     '''Returns true AR is AIX'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck)
+      (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('[-X{32|64|32_64|d64|any}]') >= 0:
         return 1
@@ -317,54 +320,54 @@ class Configure(config.base.Configure):
   isAIXAR = staticmethod(isAIXAR)
 
 
-  def isLinux():
+  def isLinux(log):
     '''Returns true if system is linux'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('linux') >= 0:
       return 1
     else:
       return 0
   isLinux = staticmethod(isLinux)
 
-  def isCygwin():
+  def isCygwin(log):
     '''Returns true if system is cygwin'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('cygwin') >= 0:
       return 1
     else:
       return 0
   isCygwin = staticmethod(isCygwin)
 
-  def isSolaris():
+  def isSolaris(log):
     '''Returns true if system is solaris'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('sunos') >= 0:
       return 1
     else:
       return 0
   isSolaris = staticmethod(isSolaris)
 
-  def isDarwin():
+  def isDarwin(log):
     '''Returns true if system is Darwin/MacOSX'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status:
       return output.lower().strip() == 'darwin'
     return 0
   isDarwin = staticmethod(isDarwin)
 
-  def isFreeBSD():
+  def isFreeBSD(log):
     '''Returns true if system is FreeBSD'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status:
       return output.lower().strip() == 'freebsd'
     return 0
   isFreeBSD = staticmethod(isFreeBSD)
 
-  def isWindows(compiler):
+  def isWindows(compiler, log):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
       return 1
-    if compiler in ['ifort','f90'] and Configure.isCygwin():
+    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
       return 1
     if compiler in ['lib', 'tlib']:
       return 1
@@ -452,7 +455,7 @@ class Configure(config.base.Configure):
     if not self.argDB['with-batch']:
       if not self.checkRun():
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
-        if self.isIntel(self.getCompiler()):
+        if self.isIntel(self.getCompiler(), self.log):
           msg = msg + 'See http://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
         self.popLanguage()
         raise OSError(msg)
@@ -465,13 +468,13 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CC'):
       yield self.CC
     elif self.argDB.has_key('with-cc'):
-      if self.isWindows(self.argDB['with-cc']):
+      if self.isWindows(self.argDB['with-cc'], self.log):
         yield 'win32fe '+self.argDB['with-cc']
       else:
         yield self.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' does not work.'+'\n'+self.mesg)
     elif self.argDB.has_key('CC'):
-      if self.isWindows(self.argDB['CC']):
+      if self.isWindows(self.argDB['CC'], self.log):
         yield 'win32fe '+self.argDB['CC']
       else:
         yield self.argDB['CC']
@@ -487,13 +490,13 @@ class Configure(config.base.Configure):
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicc') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicc', self.log) and self.argDB['with-gnu-compilers']:
           yield 'mpicc'
-        if Configure.isGNU('hcc') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('hcc', self.log) and self.argDB['with-gnu-compilers']:
           yield 'hcc'
-        if not Configure.isGNU('mpicc') and (not self.vendor is None):
+        if not Configure.isGNU('mpicc', self.log) and (not self.vendor is None):
           yield 'mpicc'
-        if not Configure.isGNU('hcc') and (not self.vendor is None):
+        if not Configure.isGNU('hcc', self.log) and (not self.vendor is None):
           yield 'hcc'
         if not self.vendor is None:
           yield 'mpcc_r'
@@ -503,10 +506,10 @@ class Configure(config.base.Configure):
       vendor = self.vendor
       if (not vendor) and self.argDB['with-gnu-compilers']:
         yield 'gcc'
-        if Configure.isGNU('cc'):
+        if Configure.isGNU('cc', self.log):
           yield 'cc'
       if not self.vendor is None:
-        if not vendor and not Configure.isGNU('cc'):
+        if not vendor and not Configure.isGNU('cc', self.log):
           yield 'cc'
         if vendor == 'borland' or not vendor:
           yield 'win32fe bcc32'
@@ -523,12 +526,12 @@ class Configure(config.base.Configure):
         if vendor == 'portland' or not vendor:
           yield 'pgcc'
         if vendor == 'solaris' or not vendor:
-          if not Configure.isGNU('cc'):
+          if not Configure.isGNU('cc', self.log):
             yield 'cc'
       # duplicate code
       if self.argDB['with-gnu-compilers']:
         yield 'gcc'
-        if Configure.isGNU('cc'):
+        if Configure.isGNU('cc', self.log):
           yield 'cc'
     return
 
@@ -618,7 +621,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'CUDAC'):
           self.checkCompiler('CUDA')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.CUDAC+' --version')
+          compilerVersion = self.executeShellCommand(self.CUDAC+' --version', log = self.log)
           compilerVersion = compilerVersion[0]
           compilerVersion = compilerVersion.split()
           i = 0
@@ -674,13 +677,13 @@ class Configure(config.base.Configure):
 
     if self.argDB.has_key('with-cxx'):
       if self.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
-      if self.isWindows(self.argDB['with-cxx']):
+      if self.isWindows(self.argDB['with-cxx'], self.log):
         yield 'win32fe '+self.argDB['with-cxx']
       else:
         yield self.argDB['with-cxx']
       raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' does not work.'+'\n'+self.mesg)
     elif self.argDB.has_key('CXX'):
-      if self.isWindows(self.argDB['CXX']):
+      if self.isWindows(self.argDB['CXX'], self.log):
         yield 'win32fe '+self.argDB['CXX']
       else:
         yield self.argDB['CXX']
@@ -697,17 +700,17 @@ class Configure(config.base.Configure):
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpicxx') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicxx', self.log) and self.argDB['with-gnu-compilers']:
           yield 'mpicxx'
-        if not Configure.isGNU('mpicxx') and (not self.vendor is None):
+        if not Configure.isGNU('mpicxx', self.log) and (not self.vendor is None):
           yield 'mpicxx'
-        if Configure.isGNU('mpiCC') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpiCC', self.log) and self.argDB['with-gnu-compilers']:
           yield 'mpiCC'
-        if not Configure.isGNU('mpiCC') and (not self.vendor is None):
+        if not Configure.isGNU('mpiCC', self.log) and (not self.vendor is None):
           yield 'mpiCC'
-        if Configure.isGNU('mpic++') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpic++', self.log) and self.argDB['with-gnu-compilers']:
           yield 'mpic++'
-        if not Configure.isGNU('mpic++') and (not self.vendor is None):
+        if not Configure.isGNU('mpic++', self.log) and (not self.vendor is None):
           yield 'mpic++'
         if not self.vendor is None:
           yield 'mpCC_r'
@@ -725,13 +728,13 @@ class Configure(config.base.Configure):
       vendor = self.vendor
       if (not vendor) and self.argDB['with-gnu-compilers']:
         yield 'g++'
-        if Configure.isGNU('c++'):
+        if Configure.isGNU('c++', self.log):
           yield 'c++'
       if not self.vendor is None:
         if not vendor:
-          if not Configure.isGNU('c++'):
+          if not Configure.isGNU('c++', self.log):
             yield 'c++'
-          if not Configure.isGNU('CC'):
+          if not Configure.isGNU('CC', self.log):
             yield 'CC'
           yield 'cxx'
           yield 'cc++'
@@ -754,7 +757,7 @@ class Configure(config.base.Configure):
       #duplicate code
       if self.argDB['with-gnu-compilers']:
         yield 'g++'
-        if Configure.isGNU('c++'):
+        if Configure.isGNU('c++', self.log):
           yield 'c++'
     return
 
@@ -826,13 +829,13 @@ class Configure(config.base.Configure):
     if hasattr(self, 'FC'):
       yield self.FC
     elif self.argDB.has_key('with-fc'):
-      if self.isWindows(self.argDB['with-fc']):
+      if self.isWindows(self.argDB['with-fc'], self.log):
         yield 'win32fe '+self.argDB['with-fc']
       else:
         yield self.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' does not work.'+'\n'+self.mesg)
     elif self.argDB.has_key('FC'):
-      if self.isWindows(self.argDB['FC']):
+      if self.isWindows(self.argDB['FC'], self.log):
         yield 'win32fe '+self.argDB['FC']
       else:
         yield self.argDB['FC']
@@ -853,13 +856,13 @@ class Configure(config.base.Configure):
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
-        if Configure.isGNU('mpif90') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif90', self.log) and self.argDB['with-gnu-compilers']:
           yield 'mpif90'
-        if not Configure.isGNU('mpif90') and (not self.vendor is None):
+        if not Configure.isGNU('mpif90', self.log) and (not self.vendor is None):
           yield 'mpif90'
-        if Configure.isGNU('mpif77') and self.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif77', self.log) and self.argDB['with-gnu-compilers']:
           yield 'mpif77'
-        if not Configure.isGNU('mpif77') and (not self.vendor is None):
+        if not Configure.isGNU('mpif77', self.log) and (not self.vendor is None):
           yield 'mpif77'
         if not self.vendor is None:
           yield 'mpxlf_r'
@@ -880,7 +883,7 @@ class Configure(config.base.Configure):
         yield 'gfortran'
         yield 'g95'
         yield 'g77'
-        if Configure.isGNU('f77'):
+        if Configure.isGNU('f77', self.log):
           yield 'f77'
       if not self.vendor is None:
         if vendor == 'ibm' or not vendor:
@@ -902,14 +905,14 @@ class Configure(config.base.Configure):
         if vendor == 'solaris' or not vendor:
           yield 'f95'
           yield 'f90'
-          if not Configure.isGNU('f77'):
+          if not Configure.isGNU('f77', self.log):
             yield 'f77'
       #duplicate code
       if self.argDB['with-gnu-compilers']:
         yield 'gfortran'
         yield 'g95'
         yield 'g77'
-        if Configure.isGNU('f77'):
+        if Configure.isGNU('f77', self.log):
           yield 'f77'
     return
 
@@ -997,11 +1000,22 @@ class Configure(config.base.Configure):
       return
     raise RuntimeError('Bad compiler flag: '+flag)
 
+  def generatePICGuesses(self):
+    yield ''
+    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+      yield '-fPIC'
+    else:
+      yield '-PIC'
+      yield '-fPIC'
+      yield '-KPIC'
+      yield '-qpic'
+    return
+
   def checkPIC(self):
-    '''Determine the PIC option for each compiler
-       - There needs to be a test that checks that the functionality is actually working'''
+    '''Determine the PIC option for each compiler'''
     self.usePIC = 0
     useSharedLibraries = 'with-shared-libraries' in self.argDB and self.argDB['with-shared-libraries']
+    myLanguage = self.language[-1]
     if not self.argDB['with-pic'] and not useSharedLibraries:
       self.logPrint("Skip checking PIC options on user request")
       return
@@ -1012,21 +1026,27 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      #different compilers are sensitive to the order of testing these flags. So separete out GCC test.
-      if config.setCompilers.Configure.isGNU(self.getCompiler()): testFlags = ['-fPIC']
-      else: testFlags = ['-PIC', '-fPIC', '-KPIC','-qpic']
-      for testFlag in testFlags:
+      if language == 'C' or language == 'Cxx':
+        includeLine = 'void foo(void);\nvoid bar(void){foo();}\n'
+      else:
+        includeLine = '      function foo(a)\n      real:: a, bar\n      foo = bar(a)\n      end\n'
+      compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
+      oldCompilerFlags = getattr(self, compilerFlagsArg)
+      for testFlag in self.generatePICGuesses():
+        self.logPrint('Trying '+language+' compiler flag '+testFlag)
+        acceptedPIC = 1
         try:
-          self.logPrint('Trying '+language+' compiler flag '+testFlag)
-          if not self.checkLinkerFlag(testFlag):
-            self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
-            continue
-          self.logPrint('Adding '+language+' compiler flag '+testFlag)
           self.addCompilerFlag(testFlag, compilerOnly = 1)
-          self.isPIC = 1
-          break
+          acceptedPIC = self.checkLink(includes = includeLine, codeBegin = '', codeEnd = '', cleanup = 1, shared = 1, linkLanguage = myLanguage)
         except RuntimeError:
-          self.logPrint('Rejected '+language+' compiler flag '+testFlag)
+          acceptedPIC = 0
+        if not acceptedPIC:
+          self.logPrint('Rejected '+language+' compiler flag '+testFlag+' because shared linker cannot handle it')
+          setattr(self, compilerFlagsArg, oldCompilerFlags)
+          continue
+        self.logPrint('Accepted '+language+' compiler flag '+testFlag)
+        self.isPIC = 1
+        break
       self.popLanguage()
     return
 
@@ -1062,7 +1082,7 @@ class Configure(config.base.Configure):
         flag = '-a'
       elif 'tlib' in args:
         flag = '-a -P512'
-    if prog.endswith('ar') and not (self.isSolarisAR(prog) or self.isAIXAR(prog)):
+    if prog.endswith('ar') and not (self.isSolarisAR(prog, self.log) or self.isAIXAR(prog, self.log)):
       self.FAST_AR_FLAGS = 'Scq'
     else:
       self.FAST_AR_FLAGS = flag
@@ -1072,13 +1092,13 @@ class Configure(config.base.Configure):
   def generateArchiverGuesses(self):
     defaultAr = None
     if 'with-ar' in self.argDB:
-      if self.isWindows(self.argDB['with-ar']):
+      if self.isWindows(self.argDB['with-ar'], self.log):
         defaultAr = 'win32fe '+self.argDB['with-ar']
       else:
         defaultAr = self.argDB['with-ar']
     envAr = None
     if 'AR' in self.argDB:
-      if self.isWindows(self.argDB['AR']):
+      if self.isWindows(self.argDB['AR'], self.log):
         envAr = 'win32fe '+self.argDB['AR']
       else:
         envAr = self.argDB['AR']
@@ -1209,7 +1229,7 @@ class Configure(config.base.Configure):
       yield (self.argDB['with-shared-ld'], [], 'so')
     if 'LD_SHARED' in self.argDB:
       yield (self.argDB['LD_SHARED'], [], 'so')
-    if Configure.isDarwin():
+    if Configure.isDarwin(self.log):
       if 'with-shared-ld' in self.argDB:
         yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
@@ -1228,7 +1248,7 @@ class Configure(config.base.Configure):
     yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'dll')
     # Solaris default
-    if Configure.isSolaris():
+    if Configure.isSolaris(self.log):
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
         yield (self.CXX, ['-G'], 'so')
       yield (self.CC, ['-G'], 'so')
@@ -1247,26 +1267,37 @@ class Configure(config.base.Configure):
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
-        flagsArg = self.getLinkerFlagsArg()
-        goodFlags = filter(self.checkLinkerFlag, flags)
-        testMethod = 'foo'
-        self.sharedLinker = self.LD_SHARED
-        self.sharedLibraryFlags = goodFlags
-        self.sharedLibraryExt = ext
-        # using printf appears to correctly identify non-pic code on X86_64
-        if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
-          oldLib  = self.linkerObj
-          oldLibs = self.LIBS
-          self.LIBS += ' -L'+self.tmpDir+' -lconftest'
-          if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
-            os.remove(oldLib)
-            self.LIBS = oldLibs
-            self.sharedLibraries = 1
-            self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
-            break
-          os.remove(oldLib)
-          self.LIBS = oldLibs
+        for picFlag in self.generatePICGuesses():
+          self.logPrint('Trying '+self.language[-1]+' compiler flag '+picFlag)
+          compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
+          oldCompilerFlags = getattr(self, compilerFlagsArg)
+          accepted = 1
+          try:
+            self.addCompilerFlag(picFlag,compilerOnly=1)
+          except RuntimeError:
+            accepted = 0
+          if accepted:
+            goodFlags = filter(self.checkLinkerFlag, flags)
+            testMethod = 'foo'
+            self.sharedLinker = self.LD_SHARED
+            self.sharedLibraryFlags = goodFlags
+            self.sharedLibraryExt = ext
+            # using printf appears to correctly identify non-pic code on X86_64
+            if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+              oldLib  = self.linkerObj
+              oldLibs = self.LIBS
+              self.LIBS += ' -L'+self.tmpDir+' -lconftest'
+              accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);')
+              os.remove(oldLib)
+              self.LIBS = oldLibs
+              if accepted:
+                self.sharedLibraries = 1
+                self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
+                break
+          self.logPrint('Rejected '+self.language[-1]+' compiler flag '+picFlag+' because it was not compatible with shared linker '+linker+' using flags '+str(flags))
+          setattr(self, compilerFlagsArg, oldCompilerFlags)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+        if self.sharedLibraries: break
         self.delMakeMacro('LD_SHARED')
         del self.LD_SHARED
         del self.sharedLinker
@@ -1335,12 +1366,12 @@ class Configure(config.base.Configure):
       flag = '-L'
       self.pushLanguage(language)
       # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
-      if not Configure.isDarwin():
+      if not Configure.isDarwin(self.log):
         testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
       else:
         testFlags = ['-Wl,-rpath,']
       # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
-      if self.isSun(self.framework.getCompiler()):
+      if self.isSun(self.framework.getCompiler(), self.log):
         testFlags.insert(0,'-R')
       for testFlag in testFlags:
         self.logPrint('Trying '+language+' linker flag '+testFlag)
@@ -1383,7 +1414,7 @@ class Configure(config.base.Configure):
     if 'with-dynamic-ld' in self.argDB:
       yield (self.argDB['with-dynamic-ld'], [], 'so')
     # Mac OSX
-    if Configure.isDarwin():
+    if Configure.isDarwin(self.log):
       if 'with-dynamic-ld' in self.argDB:
         yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
@@ -1405,13 +1436,19 @@ class Configure(config.base.Configure):
   def checkDynamicLinker(self):
     '''Check that the linker can dynamicaly load shared libraries'''
     self.dynamicLibraries = 0
+    self.headers.saveLog()
     if not self.headers.check('dlfcn.h'):
+      self.logWrite(self.headers.restoreLog())
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
+    self.logWrite(self.headers.restoreLog())
+    self.libraries.saveLog()
     if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
       if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Dynamic linking disabled since functions dlopen(), dlsym(), and dlclose() were not found')
         return
+    self.logWrite(self.libraries.restoreLog())
     for linker, flags, ext in self.generateDynamicLinkerGuesses():
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):
@@ -1548,6 +1585,9 @@ if (dlclose(handle)) {
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
+        elif self.framework.argDB['with-xsdk-defaults'] and not self.framework.clArgDB.has_key('with-environment-variables'):
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n because --with-xsdk-defaults was selected. Add --disable-environment-variables \n to NOT use the environmental variables ******')
+
         else:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
           del os.environ[envVal]
@@ -1567,7 +1607,7 @@ if (dlclose(handle)) {
 
 
   def checkEnvCompilers(self):
-    if self.framework.clArgDB.has_key('with-environment-variables'):
+    if self.framework.clArgDB.has_key('with-environment-variables') or self.framework.clArgDB.has_key('with-xsdk-defaults'):
       envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
         if ev in os.environ:
@@ -1603,12 +1643,12 @@ if (dlclose(handle)) {
     self.executeTest(self.checkFortranCompiler)
     if hasattr(self, 'FC'):
       self.executeTest(self.checkFortranComments)
-    self.executeTest(self.checkPIC)
     self.executeTest(self.checkLargeFileIO)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
-    if Configure.isDarwin():
+    if Configure.isDarwin(self.log):
       self.executeTest(self.checkLinkerMac)
+    self.executeTest(self.checkPIC)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)

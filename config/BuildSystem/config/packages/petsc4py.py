@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.giturls           = ['git@bitbucket.org:petsc/petsc4py.git']
-    self.gitcommit         = 'master'
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
+    self.giturls           = ['https://bitbucket.org/petsc/petsc4py']
+    self.gitcommit         = '0f2c091' # Aug 7 2015
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-'+self.gitcommit+'.tar.gz']
     self.functions         = []
     self.includes          = []
     self.skippackagewithoptions = 1
@@ -22,14 +22,14 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
     archflags = ""
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       if self.types.sizes['known-sizeof-void-p'] == 32:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
@@ -81,7 +81,7 @@ class Configure(config.package.Package):
     if not self.sharedLibraries.useShared:
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload()
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
       # Thus see if the python library in the standard locations points to the Python version
       import sys
@@ -104,3 +104,11 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4py-build','')
     self.addMakeRule('petsc4py-install','')
 
+  def gitPreReqCheck(self):
+    ''' petsc4py git download requires Cython'''
+    flg = True
+    try:
+      import Cython
+    except:
+      flg = False
+    return flg

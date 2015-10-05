@@ -78,6 +78,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   chol->Destroy = MatDestroy_SeqAIJ;
   B->spptr      = chol;
 
+  B->ops->matsolve               = NULL;
   B->ops->view                   = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;

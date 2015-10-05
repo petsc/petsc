@@ -7,7 +7,7 @@ PetscFunctionList SNESList              = NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
-PetscLogEvent SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve;
+PetscLogEvent SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetErrorIfNotConverged"
@@ -410,6 +410,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
   PC             pc;
   PetscBool      match;
   PetscErrorCode ierr;
+  MatNullSpace   nullsp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -431,6 +432,14 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator rutines, only version 1 and 2");
+
+  /* attach any user provided null space that was on Amat to the newly created matrix free matrix */
+  if (snes->jacobian) {
+    ierr = MatGetNullSpace(snes->jacobian,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatSetNullSpace(J,nullsp);CHKERRQ(ierr);
+    }
+  }
 
   ierr = PetscInfo1(snes,"Setting default matrix-free operator routines (version %D)\n", version);CHKERRQ(ierr);
   if (hasOperator) {
@@ -1506,6 +1515,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->numLinearSolveFailures = 0;
   snes->maxLinearSolveFailures = 1;
 
+  snes->vizerotolerance = 1.e-8;
+
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   ierr = PetscNewLog(snes,&kctx);CHKERRQ(ierr);
 
@@ -2050,13 +2061,17 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computefunction) {
-    ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+    if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) {
+      ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+    }
     ierr = VecLockPush(x);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
     ierr = (*sdm->ops->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = VecLockPop(x);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+    if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) {
+      ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+    }
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
@@ -2442,6 +2457,9 @@ M*/
    Notes:
    If the Amat matrix and Pmat matrix are different you must call MatAssemblyBegin/End() on
    each matrix.
+
+   If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
+   space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
 
    If using SNESComputeJacobianDefaultColor() to assemble a Jacobian, the ctx argument
    must be a MatFDColoring.
@@ -3234,6 +3252,7 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   PetscDraw        draw;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
@@ -3903,6 +3922,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = SNESReasonViewFromOptions(snes);CHKERRQ(ierr);
 
     if (snes->errorifnotconverged && snes->reason < 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged");
+    if (snes->reason < 0) break;
     if (grid <  snes->gridsequence) {
       DM  fine;
       Vec xnew;
@@ -3924,7 +3944,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     }
   }
   ierr = SNESViewFromOptions(snes,NULL,"-snes_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(snes->vec_sol,((PetscObject)snes)->prefix,"-snes_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(snes->vec_sol,(PetscObject)snes,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)snes);CHKERRQ(ierr);

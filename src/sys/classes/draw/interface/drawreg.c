@@ -53,7 +53,9 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(indraw,PETSC_DRAW_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)indraw));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(indraw,1,viewer,2);
 
@@ -119,7 +121,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
-  PetscReal      dpause;
+  PetscReal      dpause = 0.0;
   PetscBool      flag;
 
   PetscFunctionBegin;
@@ -143,7 +145,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->port_xr = 1.0;
   draw->port_yl = 0.0;
   draw->port_yr = 1.0;
-  draw->popup   = 0;
+  draw->popup   = NULL;
 
   ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
@@ -337,7 +339,6 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscBool         flg,nox;
   char              vtype[256];
   const char        *def;
-  PetscReal         dpause;
 #if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
   PetscBool         warn;
 #endif
@@ -345,9 +346,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
 
-  if (!PetscDrawList) {
-    ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
-  }
+  ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
 
   if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;
   else {
@@ -391,9 +390,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush","PetscDrawSetSave",draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flg);CHKERRQ(ierr);
-  if (flg) draw->pause = dpause;
-
+  ierr = PetscOptionsReal("-draw_pause","Amount of time that program pauses after plots","PetscDrawSetPause",draw->pause,&draw->pause,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL);CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

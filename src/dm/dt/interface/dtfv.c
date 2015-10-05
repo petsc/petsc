@@ -159,42 +159,6 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLimiterViewFromOptions"
-/*
-  PetscLimiterViewFromOptions - Processes command line options to determine if/how a PetscLimiter is to be viewed.
-
-  Collective on PetscLimiter
-
-  Input Parameters:
-+ lim    - the PetscLimiter
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscLimiter, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter lim, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) lim), prefix,                      optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) lim), ((PetscObject) lim)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscLimiterView(lim, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscLimiterSetFromOptions"
 /*@
   PetscLimiterSetFromOptions - sets parameters in a PetscLimiter from the options database
@@ -1194,42 +1158,6 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFVViewFromOptions"
-/*
-  PetscFVViewFromOptions - Processes command line options to determine if/how a PetscFV is to be viewed.
-
-  Collective on PetscFV
-
-  Input Parameters:
-+ fvm    - the PetscFV
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscFV, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscFVViewFromOptions(PetscFV fvm, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fvm), prefix,                      optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fvm), ((PetscObject) fvm)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscFVView(fvm, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscFVSetFromOptions"
 /*@
   PetscFVSetFromOptions - sets parameters in a PetscFV from the options database
@@ -2151,11 +2079,13 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscScalar   *Brhs, *Aback;
   PetscScalar   *tmpwork;
   PetscReal      rcond;
+#if defined (PETSC_USE_COMPLEX)
+  PetscInt       rworkSize;
+  PetscReal     *rwork;
+#endif
   PetscInt       i, j, maxmn;
   PetscBLASInt   M, N, lda, ldb, ldwork;
-#if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt   nrhs, irank, info;
-#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2179,13 +2109,18 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   ierr  = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   rcond = -1;
   ierr  = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+  nrhs  = M;
 #if defined(PETSC_USE_COMPLEX)
-  if (tmpwork && rcond) rcond = 0.0; /* Get rid of compiler warning */
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "I don't think this makes sense for complex numbers");
+  rworkSize = 5 * PetscMin(M,N);
+  ierr  = PetscMalloc1(rworkSize,&rwork);CHKERRQ(ierr);
+  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info);
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  ierr = PetscFree(rwork);CHKERRQ(ierr);
 #else
   nrhs  = M;
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
+#endif
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
   if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
@@ -2196,7 +2131,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
     for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
   }
   PetscFunctionReturn(0);
-#endif
 }
 
 #if 0

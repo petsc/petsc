@@ -107,12 +107,14 @@ static PetscErrorCode SNESSetFromOptions_NCG(PetscOptions *PetscOptionsObject,SN
 #define __FUNCT__ "SNESView_NCG"
 static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 {
+  SNES_NCG      *ncg = (SNES_NCG *) snes->data;
   PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer, "ncg type: %s\n", SNESNCGTypes[ncg->type]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -471,6 +473,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
 gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
 chooses the initial search direction as F(x) for the initial guess x.
+
+The default type is PRP.
 
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESNQN

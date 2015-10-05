@@ -225,8 +225,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       one    = 1.0
       if( N2 .gt. 0 ) then
-         bval = -one/dble(solver%mx-2)
-!     cval = -one/dble(solver%my*solver%mx)
+         bval = -one/(solver%mx-2)
+!     cval = -one/(solver%my*solver%mx)
          cval = -one
          do 20 row=low,high-1
             j = row/solver%mx   ! row in domain
@@ -451,15 +451,15 @@
 
 !  Local variables:
       PetscInt      row,i,j,ione,low,high
-      PetscScalar   temp1,temp,hx,hy,v
-      PetscScalar   one
+      PetscReal   temp1,temp,hx,hy,v
+      PetscReal   one
 
 !  Set parameters
       ione = 1
       ierr   = 0
       one    = 1.0
-      hx     = one/(dble(solver%mx-1))
-      hy     = one/(dble(solver%my-1))
+      hx     = one/(solver%mx-1)
+      hy     = one/(solver%my-1)
       temp1  = solver%lambda/(solver%lambda + one) + one
 
       call VecGetOwnershipRange(X1,low,high,ierr)
@@ -467,11 +467,11 @@
       do 20 row=low,high-1
          j = row/solver%mx
          i = mod(row,solver%mx)
-         temp = dble(min(j,solver%my-j+1))*hy
+         temp = min(j,solver%my-j+1)*hy
          if (i .eq. 0 .or. j .eq. 0  .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
             v = 0.0
          else
-            v = temp1 * sqrt(min(dble(min(i,solver%mx-i+1)*hx),dble(temp)))
+            v = temp1 * sqrt(min(min(i,solver%mx-i+1)*hx,temp))
          endif
          call VecSetValues(X1,ione,row,v,INSERT_VALUES,ierr)
  20   continue
@@ -577,8 +577,8 @@
       ifive  = 5
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(solver%mx-1)
-      hy     = one/dble(solver%my-1)
+      hx     = one/(solver%mx-1)
+      hy     = one/(solver%my-1)
       sc     = solver%lambda
       hx2inv = one/(hx*hx)
       hy2inv = one/(hy*hy)
@@ -599,15 +599,15 @@
 !     interior grid points
          else
             v(1) = -hy2inv
-            if(j-1==0) v(1) = 0.d0
+            if(j-1==0) v(1) = 0.0
             v(2) = -hx2inv
-            if(i-1==0) v(2) = 0.d0
+            if(i-1==0) v(2) = 0.0
             v(3) = two*(hx2inv + hy2inv) 
             if(add_nl_term) v(3) = v(3) - sc*exp(lx_v(ii))
             v(4) = -hx2inv
-            if(i+1==solver%mx-1) v(4) = 0.d0
+            if(i+1==solver%mx-1) v(4) = 0.0
             v(5) = -hy2inv
-            if(j+1==solver%my-1) v(5) = 0.d0
+            if(j+1==solver%my-1) v(5) = 0.0
             col(1) = row - solver%mx
             col(2) = row - 1
             col(3) = row
@@ -721,7 +721,7 @@
          ii = ii + 1            ! one based local index
    
          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
-            v = 0.d0
+            v = 0.0
          else
             u = lx_v(ii)
             v = -sc*exp(u)

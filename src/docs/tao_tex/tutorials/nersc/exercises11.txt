@@ -67,7 +67,7 @@ On your laptop, execute the program with
   > ./rosenbrock1 -tao_monitor -tao_view 
   (or ./rosenbrock1f -tao_monitor -tao_view)
 On Carver (after using runnow):
-  > mpiexec -np 1 ./rosenbrock1 -tao_monitor -tao_view
+  > mpiexec -n 1 ./rosenbrock1 -tao_monitor -tao_view
 
   What method was used to solve the problem?
   What is the function value at the final iterate? 
@@ -85,7 +85,7 @@ two-dimensional domain in accordance with some boundary conditions.
 Compile and execute the minsurf2 example using
     
   > make minsurf2
-  > mpiexec -np 2 ./minsurf2 -tao_monitor -tao_view
+  > mpiexec -n 2 ./minsurf2 -tao_monitor -tao_view
 
 
 This problem uses the variables 'mx' and 'my' to determine
@@ -93,7 +93,7 @@ the discretization of the grid.  By default, these values are set to
 4 (4 * 4 = 16 variables). Increase the discretization of the 
 domain by using the command 
 
-  > mpiexec -np 2 ./minsurf2 -tao_monitor -tao_view -mx 20 -my 20
+  > mpiexec -n 2 ./minsurf2 -tao_monitor -tao_view -mx 20 -my 20
 
 How does this affect the solve?  more time? more iterations?
 Try different solvers using the option -tao_method followed by
@@ -122,7 +122,7 @@ each algorithm takes to solve the problem. How many floating point operations (f
 
 Run the problem minsurf2.c on four processors and view the output.
 
-  > mpiexec -np 4 ./minsurf2 -tao_monitor -mx 20 -my 20 -log_summary
+  > mpiexec -n 4 ./minsurf2 -tao_monitor -mx 20 -my 20 -log_summary
 
 
 Locate minsurf2.c in the TAO documentation on its web site.  Browse through

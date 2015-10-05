@@ -15,9 +15,12 @@ static PetscErrorCode BoundaryDuplicate(DMBoundary bd, DMBoundary *boundary)
     ierr = PetscStrallocpy(b->labelname, (char **) &b2->labelname);CHKERRQ(ierr);
     ierr = PetscMalloc1(b->numids, &b2->ids);CHKERRQ(ierr);
     ierr = PetscMemcpy(b2->ids, b->ids, b->numids*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc1(b->numcomps, &b2->comps);CHKERRQ(ierr);
+    ierr = PetscMemcpy(b2->comps, b->comps, b->numcomps*sizeof(PetscInt));CHKERRQ(ierr);
     b2->label     = NULL;
     b2->essential = b->essential;
     b2->field     = b->field;
+    b2->numcomps  = b->numcomps;
     b2->func      = b->func;
     b2->numids    = b->numids;
     b2->ctx       = b->ctx;
@@ -50,8 +53,31 @@ PetscErrorCode DMPlexCopyBoundary(DM dm, DM dmNew)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexAddBoundary"
-/* The ids can be overridden by the command line option -bc_<boundary name> */
-PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+/*@C
+  DMPlexAddBoundary - Add a boundary condition to the model
+
+  Input Parameters:
++ dm          - The mesh object
+. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. name        - The BC name
+. labelname   - The label defining constrained points
+. field       - The field to constrain
+. numcomps    - The number of constrained field components
+. comps       - An array of constrained component numbers
+. bcFunc      - A pointwise function giving boundary values
+. numids      - The number of DMLabel ids for constrained points
+. ids         - An array of ids for constrained points
+- ctx         - An optional user context for bcFunc
+
+  Options Database Keys:
++ -bc_<boundary name> <num> - Overrides the boundary ids
+- -bc_<boundary name>_comp <num> - Overrides the boundary components
+
+  Level: developer
+
+.seealso: DMPlexGetBoundary()
+@*/
+PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;
   DMBoundary     b;
@@ -62,14 +88,17 @@ PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[]
   ierr = PetscNew(&b);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
+  if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
-  ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);
+  if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
   if (b->labelname) {
     ierr = DMPlexGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);
     if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
   }
   b->essential   = isEssential;
   b->field       = field;
+  b->numcomps    = numcomps;
   b->func        = bcFunc;
   b->numids      = numids;
   b->ctx         = ctx;
@@ -80,6 +109,19 @@ PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[]
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetNumBoundary"
+/*@
+  DMPlexGetNumBoundary - Get the number of registered BC
+
+  Input Parameters:
+. dm - The mesh object
+
+  Output Parameters:
+. numBd - The number of BC
+
+  Level: intermediate
+
+.seealso: DMPlexAddBoundary(), DMPlexGetBoundary()
+@*/
 PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
 {
   DM_Plex   *mesh = (DM_Plex *) dm->data;
@@ -95,7 +137,34 @@ PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetBoundary"
-PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+/*@C
+  DMPlexGetBoundary - Add a boundary condition to the model
+
+  Input Parameters:
++ dm          - The mesh object
+- bd          - The BC number
+
+  Output Parameters:
++ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. name        - The BC name
+. labelname   - The label defining constrained points
+. field       - The field to constrain
+. numcomps    - The number of constrained field components
+. comps       - An array of constrained component numbers
+. bcFunc      - A pointwise function giving boundary values
+. numids      - The number of DMLabel ids for constrained points
+. ids         - An array of ids for constrained points
+- ctx         - An optional user context for bcFunc
+
+  Options Database Keys:
++ -bc_<boundary name> <num> - Overrides the boundary ids
+- -bc_<boundary name>_comp <num> - Overrides the boundary components
+
+  Level: developer
+
+.seealso: DMPlexAddBoundary()
+@*/
+PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   DM_Plex   *mesh = (DM_Plex *) dm->data;
   DMBoundary b    = mesh->boundary;
@@ -125,20 +194,28 @@ PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, con
     PetscValidPointer(field, 6);
     *field = b->field;
   }
+  if (numcomps) {
+    PetscValidPointer(numcomps, 7);
+    *numcomps = b->numcomps;
+  }
+  if (comps) {
+    PetscValidPointer(comps, 8);
+    *comps = b->comps;
+  }
   if (func) {
-    PetscValidPointer(func, 7);
+    PetscValidPointer(func, 9);
     *func = b->func;
   }
   if (numids) {
-    PetscValidPointer(numids, 8);
+    PetscValidPointer(numids, 10);
     *numids = b->numids;
   }
   if (ids) {
-    PetscValidPointer(ids, 9);
+    PetscValidPointer(ids, 11);
     *ids = b->ids;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 10);
+    PetscValidPointer(ctx, 12);
     *ctx = b->ctx;
   }
   PetscFunctionReturn(0);

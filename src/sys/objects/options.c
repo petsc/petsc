@@ -166,7 +166,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 #endif
   } else {
     PetscToken token;
-    char       *tvalue;
+    char       *tvalue1,*tvalue2;
     PetscBool  neg = PETSC_FALSE, negim = PETSC_FALSE;
     PetscReal  re = 0.0,im = 0.0;
 
@@ -185,34 +185,37 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
     }
 
     ierr = PetscTokenCreate(name,'+',&token);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-    if (!tvalue) {
-      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
-      ierr = PetscTokenCreate(name,'-',&token);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&tvalue1);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&tvalue2);CHKERRQ(ierr);
+    if (!tvalue2) {
+      negim = PETSC_TRUE;
+      ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
+      ierr  = PetscTokenCreate(name,'-',&token);CHKERRQ(ierr);
+      ierr  = PetscTokenFind(token,&tvalue1);CHKERRQ(ierr);
+      ierr  = PetscTokenFind(token,&tvalue2);CHKERRQ(ierr);
     }
-    if (tvalue) {
-      ierr = PetscOptionsStringToReal(tvalue,&re);CHKERRQ(ierr);
-      if (neg) re = -re;
-      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-      if (!tvalue) {
-        *a = re;
-        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
+    if (!tvalue2) {
+      PetscBool isim;
+      ierr = PetscStrendswith(tvalue1,"i",&isim);CHKERRQ(ierr);
+      if (isim) {
+        tvalue2 = tvalue1;
+        tvalue1 = NULL;
+        negim   = neg;
       }
-      ierr = PetscStrlen(tvalue,&len);CHKERRQ(ierr);
-      if (tvalue[len-1] != 'i') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
-      tvalue[len-1] = 0;
-      ierr = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
-      if (negim) im = -im;
     } else {
-      ierr = PetscStrstr(name,"i",&tvalue);CHKERRQ(ierr);
-      if (tvalue) {
-        tvalue[0] = 0;
-        ierr = PetscOptionsStringToReal(name,&im);CHKERRQ(ierr);
-      } else {
-        ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
-      }
+      PetscBool isim;
+      ierr = PetscStrendswith(tvalue2,"i",&isim);CHKERRQ(ierr);
+      if (!isim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+    }
+    if (tvalue1) {
+      ierr = PetscOptionsStringToReal(tvalue1,&re);CHKERRQ(ierr);
+      if (neg) re = -re;
+    }
+    if (tvalue2) {
+      ierr = PetscStrlen(tvalue2,&len);CHKERRQ(ierr);
+      tvalue2[len-1] = 0;
+      ierr = PetscOptionsStringToReal(tvalue2,&im);CHKERRQ(ierr);
+      if (negim) im = -im;
     }
     ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -437,6 +440,10 @@ static char *Petscgetline(FILE * f)
 
 
   Notes: Use  # for lines that are comments and which should be ignored.
+
+   Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
+   such as -log_summary or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
+   calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
 
   Level: developer
 
@@ -1983,10 +1990,10 @@ PetscErrorCode  PetscOptionsGetScalarArray(const char pre[],const char name[],Pe
 
    Notes:
    The array can be passed as
-   a comma seperated list:                                 0,1,2,3,4,5,6,7
+   a comma separated list:                                 0,1,2,3,4,5,6,7
    a range (start-end+1):                                  0-8
    a range with given increment (start-end+1:inc):         0-7:2
-   a combination of values and ranges seperated by commas: 0,1-8,8-15:2
+   a combination of values and ranges separated by commas: 0,1-8,8-15:2
 
    There must be no intervening spaces between the values.
 
@@ -2481,7 +2488,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
    Input Parameters:
 +  name  - option name string
 .  value - option value string
--  dummy - unused monitor context
+-  dummy - an ASCII viewer
 
    Level: intermediate
 
@@ -2495,9 +2502,6 @@ PetscErrorCode  PetscOptionsMonitorDefault(const char name[], const char value[]
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-  }
   ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2595,30 +2599,31 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectViewFromOptions"
 /*@C
-  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed. 
+  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed.
 
   Collective on PetscObject
 
   Input Parameters:
 + obj   - the object
-. prefix - prefix to use for viewing, or NULL to use the prefix of obj
+. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
 - optionname - option to activate viewing
 
   Level: intermediate
 
 @*/
-PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  if (!prefix) prefix = ((PetscObject)obj)->prefix;
+  prefix = bobj ? bobj->prefix : obj->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQI(incall,ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);

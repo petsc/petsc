@@ -1,0 +1,89 @@
+0 SNES Function norm 1.371870931195e-01 
+    0 KSP Residual norm 9.034405081509e-02 
+    1 KSP Residual norm 4.098982326986e-02 
+    2 KSP Residual norm 1.592775170048e-02 
+    3 KSP Residual norm 6.189177068705e-03 
+    4 KSP Residual norm 2.404979278188e-03 
+    5 KSP Residual norm 9.345225163717e-04 
+    6 KSP Residual norm 3.631350762671e-04 
+    7 KSP Residual norm 1.411063739025e-04 
+    8 KSP Residual norm 5.483086062796e-05 
+    9 KSP Residual norm 2.130607706838e-05 
+   10 KSP Residual norm 8.279077053388e-06 
+   11 KSP Residual norm 3.217068850155e-06 
+   12 KSP Residual norm 1.250082819600e-06 
+   13 KSP Residual norm 4.857549305618e-07 
+   14 KSP Residual norm 1.887537760494e-07 
+   15 KSP Residual norm 7.334560232815e-08 
+   16 KSP Residual norm 2.850050206099e-08 
+   17 KSP Residual norm 1.107467374156e-08 
+   18 KSP Residual norm 4.303376767504e-09 
+   19 KSP Residual norm 1.672198406217e-09 
+   20 KSP Residual norm 6.497798404773e-10 
+   21 KSP Residual norm 2.524902808397e-10 
+   22 KSP Residual norm 9.811221849041e-11 
+   23 KSP Residual norm 3.812427263226e-11 
+  1 SNES Function norm 1.021247307988e-10 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=23
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object:   1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   1 MPI processes
+    type: richardson
+      Richardson: damping factor=1
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object:   1 MPI processes
+    type: asm
+      Additive Schwarz: total subdomain blocks = 2, amount of overlap = 0
+      Additive Schwarz: restriction/interpolation type - RESTRICT
+      Additive Schwarz: local solve composition type - MULTIPLICATIVE
+      Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object:      (sub_)       1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object:      (sub_)       1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5, needed 1.875
+            Factored matrix follows:
+              Mat Object:               1 MPI processes
+                type: seqaij
+                rows=16, cols=16
+                package used to perform factorization: petsc
+                total: nonzeros=120, allocated nonzeros=120
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 12 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object:         1 MPI processes
+          type: seqaij
+          rows=16, cols=16
+          total: nonzeros=64, allocated nonzeros=64
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object:     1 MPI processes
+      type: seqaij
+      rows=32, cols=32
+      total: nonzeros=136, allocated nonzeros=136
+      total number of mallocs used during MatSetValues calls =0
+        not using I-node routines
+N: 32 error l2 1.94854e-12 inf 3.15527e-11

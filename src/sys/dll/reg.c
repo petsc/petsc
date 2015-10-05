@@ -183,12 +183,12 @@ static PetscFunctionList dlallhead = 0;
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode PetscFunctionListAdd(PetscFunctionList flist,const char name[],void (*fptr)(void))
+   PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist,const char name[],void (*fptr)(void))
 
    Not Collective
 
    Input Parameters:
-+  flist - pointer registry
++  flist - pointer to function list object
 .  name - string to identify routine
 -  fptr - function pointer
 
@@ -468,10 +468,9 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 
 .seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
+ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {
   PetscErrorCode ierr;
-  PetscInt       count = 0;
   char           p[64];
 
   PetscFunctionBegin;
@@ -484,8 +483,6 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
     list = list->next;
-    count++;
-    if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
   ierr = PetscFPrintf(comm,fd," (%s)\n",man);CHKERRQ(ierr);
   PetscFunctionReturn(0);

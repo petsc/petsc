@@ -3,12 +3,11 @@
 */
 
 #define PETSC_SKIP_COMPLEX
+#define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
-PETSC_CUDA_EXTERN_C_BEGIN
 #include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
-PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #include <cuda_runtime.h>
@@ -1666,7 +1665,7 @@ PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheckHost(vin);CHKERRQ(ierr);
+  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
@@ -1873,7 +1872,7 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec w)
   ierr = VecGetType(w,&t);CHKERRQ(ierr);
   ierr = PetscStrcmp(t,VECSEQCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUSP);
-  
+
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) PetscFree(((Vec_Seq*)w->data)->array_allocated);
     ((Vec_Seq*)w->data)->array = 0;
@@ -1885,9 +1884,10 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec w)
     err = cudaStreamDestroy(((Vec_CUSP*)w->spptr)->stream);CHKERRCUSP(err);
     delete (Vec_CUSP*)w->spptr;
     w->spptr = 0;
-  } 
+  }
 
   if (v->petscnative) {
+    ierr = PetscFree(w->data);CHKERRQ(ierr);
     w->data = v->data;
     w->valid_GPU_array = v->valid_GPU_array;
     w->spptr = v->spptr;

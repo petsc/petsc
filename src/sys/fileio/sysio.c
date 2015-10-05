@@ -558,11 +558,6 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
    Output Parameters:
 .  p - the buffer
 
-   Options Database Key:
-.   -binary_longints - indicates the file was generated on a Cray vector
-         machine (not the T3E/D) and the ints are stored as 64 bit
-         quantities, otherwise they are stored as 32 bit
-
    Level: developer
 
    Notes:

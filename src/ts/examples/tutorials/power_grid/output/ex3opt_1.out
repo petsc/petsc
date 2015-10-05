@@ -1,5 +1,12 @@
-iter =   0, Function value: -1.06062,  Residual: 0.0014333 
-iter =   1, Function value: -1.06062,  Residual: 3.35394e-09 
+iter =   0, Function value: 2.13083,  Residual: 145.324 
+iter =   1, Function value: -0.554568,  Residual: 45.0684 
+iter =   2, Function value: -0.937237,  Residual: 14.9324 
+iter =   3, Function value: -0.998406,  Residual: 4.5851 
+iter =   4, Function value: -1.00641,  Residual: 1.27081 
+iter =   5, Function value: -1.0073,  Residual: 0.345139 
+iter =   6, Function value: -1.00738,  Residual: 0.000412142 
+iter =   7, Function value: -1.00738,  Residual: 1.33802e-07 
+iter =   8, Function value: -1.00738,  Residual: 5.18861e-14 
 Vec Object: 1 MPI processes
   type: seq
-1.06161
+1.00815

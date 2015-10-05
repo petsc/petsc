@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   N = user.mx*user.my;
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"mx:%d, my:%d\n", user.mx,user.my);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"mx:%D, my:%D\n", user.mx,user.my);CHKERRQ(ierr);
 
   /* Create appropriate vectors and matrices */
   ierr = VecCreateSeq(MPI_COMM_SELF, N, &x);

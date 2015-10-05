@@ -309,7 +309,6 @@ publisher = {IEEE Computer Society},
 address = {Los Alamitos, CA},
 }
 
-# https://fs.hlrs.de/projects/par/mpi/mpi30/
 @book{mpi3,
   title="MPI: A Message-Passing Interface Standard, Version 3.0",
   author={Message Passing Interface Forum},
@@ -756,7 +755,7 @@ address = {Los Alamitos, CA},
 	Volume = {195},
 	Year = {2006}}
 
-@conference{georgii2005interactive,
+@conference{georgii2005interactiveb,
 	Author = {Georgii, J. and Westermann, R.},
 	Booktitle = {Proceedings of VMV},
 	Date-Added = {2010-08-19 15:41:36 -0500},
@@ -1002,11 +1001,11 @@ address = {Los Alamitos, CA},
 }
 
 @TechReport{streams,
-  author = "J. D. McCalpin",
-  title = "{STREAM}: Sustainable memory bandwidth in high performance computers",
-  institution = "University of Virginia",
-  note = "http://www.cs.virginia.edu/stream",
-  year = 1995
+  author = {J. D. McCalpin},
+  title = {{STREAM}: Sustainable memory bandwidth in high performance computers},
+  institution = {University of Virginia},
+  url = {http://www.cs.virginia.edu/stream},
+  year = {1995}
 }
 
 @article{AReusken_1988b,
@@ -1624,11 +1623,12 @@ University of Colorado-Boulder",
   month =	 Aug
 }
 
-@Unpublished{ mpich-web-page,
-  author =       "William Gropp and Ewing Lusk",
-  key =          "MPICH",
-  title = 	 "{MPICH} {W}eb page",
-  note = 	 "http://www.mcs.anl.gov/mpi/mpich",
+@misc{mpich-web-page,
+  author = {William Gropp and {et. al.}},
+  title  = {{MPICH} {W}eb page},
+  key    = "MPICH",
+  url    = {http://www.mpich.org},
+  howpublished = {\url{http://www.mpich.org}},
 }
 
 @Article{ MPI-final,
@@ -2148,23 +2148,23 @@ Alvin P. Leung and Manfred Morari",
   volume =	 2,
   pages =	 "1--4"
 }
-n
-@Manual( ibm-essl,
+
+@Manual{ ibm-essl,
     Title = "{E}ngineering and {S}cientific {S}ubroutine {L}ibrary Version 2:
 Guide and Reference",
     Organization = "IBM",
     Year  = 1992,
     Key   = "IBM-ESSL"
-    )
+    }
 
-@Manual( IBM-EUI,
+@Manual{ IBM-EUI,
     Title = "{IBM} {AIX} Parallel Environment Parallel Programming Subroutine
 Reference Release 2.0",
     Organization = "IBM",
     Month = JUN,
     Year  = 1994,
     Key   = "IBM-EUI"
-    )
+    }
 
 @Manual( IBM-EUIH,
     Title = "Using {EUIH}: An Experimental {EUI} Implementation",
@@ -2242,6 +2242,14 @@ MONTH   = DEC,
 YEAR    = 1975,
 PAGES   = "1145--1155",
 KEY     = "Omega Network"
+}
+
+@book{Knuth1986,
+  title  = {The {\TeX}{Book}},
+  author = {Donald Ervin Knuth and Duane Bibby},
+  volume = {1993},
+  year   = {1986},
+  publisher = {Addison-Wesley Reading, Massachusetts}
 }
 
 @book{ Lamport86,
@@ -2465,10 +2473,10 @@ Producing {F}ortran interfaces to {C} source code",
                    Nonlinear Equations",
    PUBLISHER    = "Prentice-Hall",
    ADDRESS      = "Englewood Cliffs, NJ",
-   YEAR         = 1983}
+   YEAR         = {1983}
    }
 
-@TechReport{ more:92,
+@TechReport{more:92,
     AUTHOR      = "Jorge J. Mor\'{e} and David Thuente",
     TITLE       = "Line search algorithms with guaranteed sufficient decrease",
     INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
@@ -2476,7 +2484,7 @@ Producing {F}ortran interfaces to {C} source code",
     NUMBER      = "MCS-P330-1092",
     }
 
-@Article{ brownsaad:90,
+@Article{brownsaad:90,
   author = 	 "Peter N. Brown and Youcef Saad",
   title = 	 "Hybrid {K}rylov Methods for Nonlinear Systems of Equations",
   journal =	 "SIAM J. Sci. Stat. Comput.",
@@ -2999,8 +3007,9 @@ Booktitle = "Supercomputing '95 Proceedings",
 
 @misc{matlab-web-page,
   author = {{The} {MathWorks}},
+  title  = {{Matlab} {Web} page},
   title  = {Matlab},
-  note   = {\url{http://www.mathworks.com}}
+  url    = {http://www.mathworks.com}
 }
 
 @misc {
@@ -3096,7 +3105,6 @@ Booktitle = "Supercomputing '95 Proceedings",
                   usually achieve maximum performance, and tremendous
                   improvements in terms of execution speed can be seen
                   over conventional computers.",
-   acknowledgement = ack-nhfb,
    classification = "723; 921",
    journalabr =   "SIAM Rev",
    keywords =     "computer programming --- Algorithms; dense matrices;
@@ -3464,13 +3472,6 @@ mesh refinement",
   volume  = "165"
 }
 
-@Misc{ matlab-web-page,
-  author =       "",
-  title =        "{Matlab Web page}",
-  howpublished = "\url{http://www.mathworks.com}",
-  key   =        "{Matlab} {Web} page"
-}
-
 @misc{ veltisto-web-page,
   author =       "George Biros",
   title =        "{Veltisto Web page}",
@@ -3715,6 +3716,24 @@ publisher = {ACM Press}
    title = "{TetGen: A Quality Tetrahedral Mesh Generator and Three-Dimensional Delaunay Triangulator}",
    howpublished  = "\url{http://tetgen.berlios.de}",
    year = "2005"
+}
+
+@misc{eigen:homepage,
+  author = {Benoit Jacob and Ga\"el Guennebaud},
+  title  = {{Eigen} {W}eb page},
+  key    = {Jacob},
+  url    = {http://eigen.tuxfamily.org/},
+  howpublished = {\url{http://eigen.tuxfamily.org/}},
+  year   = {2015}
+}
+
+@misc{dune:homepage,
+  author = {Peter Bastian and Markus Blatt and Andreas Dedner and Christian Engwer and Jorrit Fahlke and Christoph Gersbacher and Carsten Gr\"aser and Christoph Gr\"uninger Robert Kl\"ofkorn and Steffen M\"uthing and Martin Nolte and Mario Ohlberger and Oliver Sander},
+  title  = {{DUNE} {W}eb page},
+  key    = {Bastian},
+  url    = {http://www.dune-project.org/},
+  howpublished = {\url{http://www.dune-project.org/}},
+  year   = {2015}
 }
 
 @misc{thrust,
@@ -4392,8 +4411,6 @@ note  = "\url{https://ice.txcorp.com/trac/2011_FspDefinitionWorkshop}"
 
 % -----------------------------------------------------------------------
 % Model coupling refs
-
-http://csdrm.caltech.edu/
 
 @book{greve-blatter,
   author = "Ralf Greve and Heinz Blatter",
@@ -5336,7 +5353,6 @@ It begins with a general introduction to bundles, including such topics as diffe
   MRreviewer =   "Moody T. Chu",
   bibdate =      "Wed Jan 07 15:23:19 1998",
   bibsource =    "ftp://ftp.math.utah.edu/pub/bibnet/authors/t/trefethen-lloyd-n.bib",
-  acknowledgement = ack-nhfb
 }
 
 @inproceedings{Rhea08,
@@ -5616,7 +5632,7 @@ note = "See \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/TownHall.pdf}"
 @misc{www:fenics,
      author = {{FE}ni{CS}},
      title = {{FE}ni{CS} Project},
-     howpublished = {\url{http://www.fenics.org/}}},
+     howpublished = {\url{http://www.fenics.org/}},
      year = {2010},
 }
 
@@ -5854,7 +5870,7 @@ year      = 2009}
   author =       {M.V. Umansky and X.Q. Xu and B. Dudson and L.L. LoDestro
                  and J.R. Myra},
   title =        {{Status and verification of edge plasma turbulence code BOUT}},
-  journal =      CPP,
+  journal =      {Computer Physics Communications},
   year =         2009,
   volume =       {180},
   pages =        {887-903},
@@ -5863,7 +5879,7 @@ year      = 2009}
 @Article{xu:1998,
   author =       {X.Q. Xu and R.H. Cohen},
   title =        {{Scrape-Off Layer Turbulence Theory and Simulations}},
-  journal =      CPP,
+  journal =      {Computer Physics Communications},
   year =         1998,
   volume =       36,
   number =       {1-2},
@@ -5997,7 +6013,7 @@ year = {1993}
   year={2001},
   publisher={Elsevier}
 }
-}
+
 @article{elman1999bfbt,
   title={{Preconditioning for the steady-state Navier-Stokes equations with low viscosity}},
   author={Elman, H.C.},
@@ -6682,7 +6698,7 @@ year	 = {1995}
   author = {Julian Seward, et.al.},
   title  = {Valgrind},
   url    = {http://valgrind.org/},
-  hoepublished = {\url{http://valgrind.org/}},
+  howpublished = {\url{http://valgrind.org/}},
   year   = {2012}
 }
 
@@ -7055,7 +7071,6 @@ year = {2010}
   number  = {5},
   pages   = {8--13},
   url     = {http://www.bepress.com/cgi/viewcontent.cgi?article=1034\&amp;amp;context=sagmb},
-  note    = {\url{http://www.bepress.com/cgi/viewcontent.cgi?article=1034}},
   year    = {2010}
 }
 
@@ -7137,8 +7152,16 @@ year = {2010}
   author  = {Jaydeep P. Bardhan and Matthew G. Knepley and Peter R. Brune},
   title   = {Analytical Nonlocal Electrostatics Using Eigenfunction Expansions of Boundary-Integral Operators},
   journal = {Molecular Based Mathematical Biology},
-  note    = {to appear},
+  doi     = {10.1515/mlbmb-2015-0001},
   year    = {2015}
+}
+
+@inproceedings{BardhanTejaniWieckowskiRamaswamyKnepley2015,
+  title     = {A Nonlinear Boundary Condition for Continuum Models of Biomolecular Electrostatics},
+  author    = {Jaydeep P. Bardhan and D. A. Tejani and N. S. Wieckowski and A. Ramaswamy and Matthew G. Knepley},
+  booktitle = {Proceedings of PIERS},
+  month     = {July},
+  year      = {2015}
 }
 
 @inproceedings{McClanahan2011,
@@ -7157,7 +7180,16 @@ year = {2010}
 	Type = {Tech. report},
 	Title = {Hiding global communication latency in the {GMRES} algorithm on massively parallel machines},
         url = {http://twna.ua.ac.be/sites/twna.ua.ac.be/files/latency_gmres.pdf},
-	Year = {2012}}
+	Year = {2012}
+}
+
+@article{GhyselsAshbyMeerbergenVanroose2013,
+  author  = {Ghysels, P. and Ashby, T.J. and Meerbergen, K. and Vanroose, W.},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {35},
+  number  = {1},
+  pages   = {C48--C71},
+  year    = {2013},
 }
 
 @article{GhyselsVanroose2014,
@@ -7856,13 +7888,6 @@ part I: Theory},
   year={2007},
   publisher={Elsevier}
 }
-@article{ZhengEtAl12,
-  title   = {Implementation of a multigrid solver on {GPU} for {S}tokes equations with strongly variable viscosity based on {M}atlab and {CUDA}},
-  author  = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
-  journal = {IJHPCA},
-  year    = {2012},
-  note    = {submitted}
-}
 @UnPublished(LeeHammond2010,
     Author=    "B. Lee and G.E. Hammond",
     Title=     "Parallel Performance of Preconditioned {Krylov} Solvers for the {Richards} Equation",
@@ -8189,13 +8214,35 @@ part I: Theory},
   note   = {\url{http://en.wikipedia.org/wiki/Hasse_diagram}},
   year   = {2015}
 }
+@misc{Groupoid,
+  author = {Wikipedia},
+  title  = {Groupoid},
+  url    = {https://en.wikipedia.org/wiki/Groupoid},
+  note   = {\url{http://en.wikipedia.org/wiki/Groupoid}},
+  year   = {2015}
+}
 @misc{CWcomplex,
   author = {Wikipedia},
-  title  = {CW complex},
+  title  = {{CW} complex},
   url    = {http://en.wikipedia.org/wiki/CW_complex},
   note   = {\url{http://en.wikipedia.org/wiki/CW_complex}},
   year   = {2015}
 }
+@misc{LinearAlgebra,
+  author = {Wikipedia},
+  title  = {Linear Algebra},
+  url    = {https://en.wikipedia.org/wiki/Linear_algebra},
+  note   = {\url{https://en.wikipedia.org/wiki/Linear_algebra}},
+  year   = {2015}
+}
+@misc{AmdahlsLaw,
+  author = {Wikipedia},
+  title  = {Amdahl's Law},
+  url    = {https://en.wikipedia.org/wiki/Amdahl's_law},
+  note   = {\url{https://en.wikipedia.org/wiki/Amdahl's_law}},
+  year   = {2015}
+}
+
 @article{korelc2002multilanguage,
   title={Multi-language and multi-environment generation of nonlinear finite element codes},
   author={Korelc, J.},
@@ -8655,7 +8702,7 @@ year = {2009}
 }
 
 @article{Si2015,
-  title   = {TetGen, a Delaunay-Based Quality Tetrahedral Mesh Generator},
+  title   = {{TetGen}, a {Delaunay}-Based Quality Tetrahedral Mesh Generator},
   author  = {Hang Si},
   journal = {ACM Trans. on Mathematical Software},
   volume  = {41},
@@ -8663,4 +8710,236 @@ year = {2009}
   month   = {February},
   doi     = {10.1145/2629697},
   year    = {2015},
+}
+
+@article{Bjorck1994,
+  title   = {Numerics of Gram-Schmidt orthogonalization},
+  author  = {{\AA}ke Bj{\"o}rck},
+  journal = {Linear Algebra and Its Applications},
+  volume  = {197},
+  pages   = {297--316},
+  year    = {1994},
+  publisher = {Elsevier}
+}
+
+@phdthesis{Yood05,
+  author = {Charles Nelson Yood},
+  title  = {Argonne National Laboratory and the Emergence of Computer and Computational Science, 1946--1992},
+  school = {The Pennsylvania State University},
+  month  = {August},
+  year   = {2005},
+}
+
+@article{FearnleySander79,
+  title   = {Hermann Grassmann and the Creation of Linear Algebra},
+  author  = {Desmond Fearnley-Sander},
+  journal = {The American Mathematical Monthly},
+  volume  = {86},
+  pages   = {809--817},
+  url     = {http://www.maa.org/sites/default/files/pdf/upload_library/22/Ford/DesmondFearnleySander.pdf},
+  year    = {1979},
+}
+
+@incollection{Knepley2012,
+  author       = {Matthew G. Knepley},
+  title        = {Programming Languages for Scientific Computing},
+  booktitle    = {Encyclopedia of Applied and Computational Mathematics},
+  publisher    = {Springer},
+  year         = 2012,
+  editor       = {Bj\"orn Engquist},
+  url          = {http://arxiv.org/abs/1209.1711},
+  note         = {\url{http://arxiv.org/abs/1209.1711}},
+}
+
+@book{Hughes2000,
+  author = {Thomas J. R. Hughes},
+  title  = {The Finite Element Method: Linear Static and Dynamic Finite Element Analysis},
+  series = {Dover Civil and Mechanical Engineering},
+  pages  = {704},
+  year   = {2000},
+  isbn   = {978-0486411811},
+  publisher = {Dover}
+}
+
+@article{Roache2002,
+  title   = {Code verification by the method of manufactured solutions},
+  author  = {Patrick J. Roache},
+  journal = {Journal of Fluids Engineering},
+  volume  = {124},
+  number  = {1},
+  pages   = {4--10},
+  year    = {2002},
+  publisher = {American Society of Mechanical Engineers}
+}
+
+@incollection{RokosGorman13,
+  title     = {PRAgMaTIc - Parallel Anisotropic Adaptive Mesh Toolkit},
+  author    = {Georgios Rokos and Gerard Gorman},
+  booktitle = {Facing the Multicore-Challenge III},
+  series    = {Lecture Notes in Computer Science},
+  editor    = {Keller, Rainer and Kramer, David and Weiss, Jan-Philipp},
+  publisher = {Springer Berlin Heidelberg},
+  volume    = {7686},
+  pages     = {143-144},
+  doi       = {10.1007/978-3-642-35893-7_22},
+  isbn      = {978-3-642-35892-0},
+  url       = {http://dx.doi.org/10.1007/978-3-642-35893-7_22},
+  year      = {2013},
+}
+
+@misc{hdf5:homepage,
+   author       = {{The HDF Group}},
+   title        = {The {HDF5} Homepage},
+   howpublished = {\url{https://www.hdfgroup.org/HDF5/}},
+   year         = {2015}
+}
+
+@misc{paraview:homepage,
+   author       = {Kitware},
+   title        = {The {ParaView} Homepage},
+   howpublished = {\url{http://www.paraview.org/}},
+   year         = {2015}
+}
+
+@misc{xdmf:homepage,
+   author       = {Kitware},
+   title        = {The Extensible Data Model and Format ({XDMF})},
+   howpublished = {\url{http://www.xdmf.org/}},
+   year         = {2015}
+}
+
+@article{CullerKarp1993,
+  title   = {LogP: Towards a realistic model of parallel computation},
+  author  = {David Culler and Richard Karp and David Patterson and Abhijit Sahay and Klaus Erik Schauser and Eunice Santos and Ramesh Subramonian and Thorsten Von Eicken},
+  journal = {SIGPLAN Notices},
+  volume  = {28},
+  number  = {7},
+  pages   = {1--12},
+  year    = {1993},
+  publisher = {ACM}
+}
+
+@article{AggarwalVitter1988,
+  title   = {The input/output complexity of sorting and related problems},
+  author  = {Alok Aggarwal and Jeffrey Vitter},
+  journal = {Communications of the ACM},
+  volume  = {31},
+  number  = {9},
+  pages   = {1116--1127},
+  year    = {1988},
+  publisher = {ACM}
+}
+
+@inproceedings{CzechowskiBattaglinoMcClanahanChandramowlishwaranVuduc2011,
+  author    = {Kenneth Czechowski and Casey Battaglino and Chris McClanahan and Aparna Chandramowlishwaran and Richard Vuduc},
+  title     = {Balance principles for algorithm-architecture co-design},
+  booktitle = {Proc.~USENIX Wkshp. Hot Topics in Parallelism (HotPar)},
+  month     = {May},
+  address   = {Berkeley, CA, USA},
+  url       = {http://www.usenix.org/events/hotpar11/tech/final_files/Czechowski.pdf},
+  year      = {2011},
+}
+
+@article{WilliamsWatermanPatterson2009,
+  title   = {Roofline: an insightful visual performance model for multicore architectures},
+  author  = {Samuel Williams and Andrew Waterman and David Patterson},
+  journal = {Communications of the ACM},
+  volume  = {52},
+  number  = {4},
+  pages   = {65--76},
+  year    = {2009},
+  publisher = {ACM}
+}
+
+@misc{roofline-web-page,
+  author = {Samuel Williams and {et. al.}},
+  title  = {{R}oofline {P}erformance {M}odel},
+  key    = "Roofline",
+  url    = {http://crd.lbl.gov/departments/computer-science/performance-and-algorithms-research/research/roofline/},
+  howpublished = {\url{http://crd.lbl.gov/departments/computer-science/performance-and-algorithms-research/research/roofline/}},
+}
+
+@misc{roofline-talk2008,
+  author = {Samuel Williams and David Patterson},
+  title  = {{R}oofline {P}erformance {M}odel},
+  key    = {Roofline},
+  year   = {2008},
+  note   = {ParLab Summer Retreat},
+  url    = {http://crd.lbl.gov/assets/pubs_presos/parlab08-roofline-talk.pdf},
+  howpublished = {\url{http://crd.lbl.gov/assets/pubs_presos/parlab08-roofline-talk.pdf}},
+}
+
+@article{Lee2006,
+  title   = {The problem with threads},
+  author  = {Edward A Lee},
+  journal = {Computer},
+  volume  = {39},
+  number  = {5},
+  pages   = {33--42},
+  year    = {2006},
+  url     = {http://ptolemy.eecs.berkeley.edu/publications/papers/06/problemwithThreads/},
+  publisher = {IEEE Computer Society Press}
+}
+
+@article{Hoefler2012,
+  title   = {{Optimization principles for collective neighborhood communications}},
+  author  = {Torsten Hoefler and Timo Schneider},
+  journal = {International Conference for High Performance Computing, Networking, Storage and Analysis, SC},
+  doi     = {10.1109/SC.2012.86},
+  isbn    = {9781467308069},
+  issn    = {21674329},
+  year    = {2012}
+}
+
+@book{GrahamKnuthPatashnik1989,
+  title     = {Concrete Mathematics},
+  author    = {Ronald L Graham and Donald E Knuth and Oren Patashnik},
+  publisher = {Addison-Wesley},
+  year      = {1989}
+}
+
+@book{Jackson1962,
+  title     = {Classical Electrodynamics},
+  author    = {John David Jackson},
+  publisher = {John Wiley \& Sons},
+  year      = {1962}
+}
+
+@article{LeVeque2013,
+  title   = {Top Ten Reasons to Not Share Your Code (and why you should anyway)},
+  author  = {Randall J. LeVeque},
+  journal = {SIAM News},
+  volume  = {46},
+  number  = {3},
+  month   = {April},
+  url     = {http://faculty.washington.edu/rjl/pubs/topten/},
+  year    = {2013}
+}
+
+@inproceedings{Wang2014,
+  title     = {Fjos: Practical, predictable, and efficient system support for fork/join parallelism},
+  author    = {Qi Wang and Gabriel Parmer},
+  booktitle = {Real-Time and Embedded Technology and Applications Symposium (RTAS), 2014 IEEE 20th},
+  pages     = {25--36},
+  year      = {2014},
+  organization = {IEEE}
+}
+
+@Article{FangSaad2009,
+  author  = {Haw-ren Fang and Yousef Saad},
+  title   = {Two classes of multisecant methods for nonlinear acceleration},
+  journal = {Numerical Linear Algebra with Applications},
+  volume  = {16},
+  number  = {3},
+  pages   = {197--221},
+  year    = {2009},
+  doi     = {http://dx.doi.org/10.1002/nla.617},
+  url     = {http://onlinelibrary.wiley.com/journal/10.1002/(ISSN)1099-1506},
+}
+
+@misc{HPCChallenge,
+  title  = {HPC Challenge},
+  author = {Jack Dongarra and Piotr Luszczek and others},
+  url    = {http://icl.cs.utk.edu/hpcc/hpcc_results_lat_band.cgi?display=opt},
+  year   = {2015},
 }

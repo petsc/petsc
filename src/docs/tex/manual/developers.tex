@@ -40,8 +40,8 @@
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 3.5}}
-{}{June 2014}
+{\rm This document is intended for use with PETSc 3.6}}
+{}{June 2015}
 
 \newpage
 
@@ -571,9 +571,9 @@ interface file for the operations, for example, \href{http://www.mcs.anl.gov/pet
 
 Several routines that control the default profiling available in PETSc are
 \findex{PetscLogView()}
-are \findex{PetscLogBegin()} \findex{PetscLogDump()} \findex{PetscLogAllBegin()}
+are \findex{PetscLogDefaultBegin()} \findex{PetscLogDump()} \findex{PetscLogAllBegin()}
 \begin{tabbing}
-   PetscLogBegin();\\
+   PetscLogDefaultBegin();\\
    PetscLogAllBegin();\\
    PetscLogDump(const char *filename);\\
    PetscLogView(PetscViewer);

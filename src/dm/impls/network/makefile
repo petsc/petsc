@@ -3,7 +3,7 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = networkcreate.c network.c
+SOURCEC  = networkcreate.c network.c networkmonitor.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = 

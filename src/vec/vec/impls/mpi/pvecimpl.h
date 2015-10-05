@@ -5,14 +5,39 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 
 typedef struct {
+  PetscInt insertmode;
+  PetscInt count;
+  PetscInt bcount;
+} VecAssemblyHeader;
+
+typedef struct {
+  PetscInt *ints;
+  PetscInt *intb;
+  PetscScalar *scalars;
+  PetscScalar *scalarb;
+  char        pendings;
+  char        pendingb;
+} VecAssemblyFrame;
+
+typedef struct {
   VECHEADER
-  MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
-  PetscInt    nsends,nrecvs;
-  PetscScalar *svalues,*rvalues;
-  PetscInt    rmax;
   PetscInt    nghost;                   /* length of local portion including ghost padding */
   Vec         localrep;                 /* local representation of vector */
   VecScatter  localupdate;              /* scatter to update ghost values */
+
+  PetscBool   assembly_subset;          /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
+  PetscBool   use_status;               /* Use MPI_Status to determine number of items in each message */
+  PetscMPIInt nsendranks;
+  PetscMPIInt nrecvranks;
+  PetscMPIInt *sendranks;
+  PetscMPIInt *recvranks;
+  VecAssemblyHeader *sendhdr,*recvhdr;
+  VecAssemblyFrame *sendptrs;   /* pointers to the main messages */
+  MPI_Request    *sendreqs;
+  MPI_Request    *recvreqs;
+  PetscSegBuffer segrecvint;
+  PetscSegBuffer segrecvscalar;
+  PetscSegBuffer segrecvframe;
 } Vec_MPI;
 
 PETSC_INTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);
@@ -33,6 +58,7 @@ PETSC_INTERN PetscErrorCode VecSetValues_MPI(Vec,PetscInt,const PetscInt [],cons
 PETSC_INTERN PetscErrorCode VecSetValuesBlocked_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode VecAssemblyBegin_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecAssemblyEnd_MPI(Vec);
+PETSC_INTERN PetscErrorCode VecAssemblyReset_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool,PetscInt,const PetscScalar[]);
 
 

@@ -14,7 +14,7 @@ Input arguments are\n\
 #include <petscts.h>
 
 /* special variable - max size of all arrays  */
-#define num_z 60
+#define num_z 10
 
 /*
    User-defined application context - contains data needed by the

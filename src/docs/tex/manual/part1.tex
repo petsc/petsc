@@ -189,12 +189,12 @@ MPICH implementation of MPI \cite{mpich-web-page} and many others, the following
 command initiates a program that uses eight processors:
 \findex{mpiexec} \sindex{running PETSc programs}
 \begin{tabbing}
-   mpiexec -np 8 ./petsc\_program\_name petsc\_options
+   mpiexec -n 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 
 PETSc also comes with a script
 \begin{tabbing}
-   \${PETSC\_DIR}/bin/petscmpiexec -np 8 ./petsc\_program\_name petsc\_options
+   \${PETSC\_DIR}/bin/petscmpiexec -n 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 that uses the information set in \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables} to
 automatically use the correct \trl{mpiexec} for your configuration.
@@ -569,10 +569,10 @@ given in the file \href{faq.html}{\${PETSC\_DIR}/docs/faq.html}.
       /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o  \\
       /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lm\\
    rm -f ex1.o\\
-   eagle: mpiexec -np 1 ./ex2\\
+   eagle: mpiexec -n 1 ./ex2\\
    Norm of error 3.6618e-05 iterations 7\\
    eagle:\\
-   eagle: mpiexec -np 2 ./ex2\\
+   eagle: mpiexec -n 2 ./ex2\\
    Norm of error 5.34462e-05 iterations 9
 \end{tabbing}
 }
@@ -691,22 +691,22 @@ When citing PETSc in a publication please cite the following:
 
 @Mi\=sc\{petsc-web-page,\\
    \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune \\
-\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp \\
 \> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
-\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
+\> \> and Karl Rupp and Barry~F. Smith and Stefano Zampini and Hong Zhang",\\
    \>Title  = "{PETS}c {W}eb page",\\
    \>Note   = "http://www.mcs.anl.gov/petsc",\\
-   \>Year   = "2014"\}\\
+   \>Year   = "2015"\}\\
 
 @TechReport\{petsc-user-ref,\\
    \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune \\
-\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp \\
 \> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
-\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
+\> \> and Karl Rupp and Barry~F. Smith and Stefano Zampini and Hong Zhang",\\
    \>Title       = "PETSc Users Manual",\\
-   \>Number      = "ANL-95/11 - Revision 3.5",\\
+   \>Number      = "ANL-95/11 - Revision 3.6",\\
    \>Institution = "Argonne National Laboratory",\\
-   \>Year        = "2014"\}\\
+   \>Year        = "2015"\}\\
 
 @InProceedings\{petsc-efficient,\\
    \>Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\

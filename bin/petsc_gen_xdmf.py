@@ -79,9 +79,12 @@ class Xdmf:
     if len(f[1].shape) > 2:
       dof = f[1].shape[1]
       bs  = f[1].shape[2]
-    else:
+    elif len(f[1].shape) > 1:
       dof = f[1].shape[0]
       bs  = f[1].shape[1]
+    else:
+      dof = f[1].shape[0]
+      bs  = 1
     fp.write('''\
 	<Attribute
 	   Name="%s"
@@ -111,37 +114,47 @@ class Xdmf:
   def writeFieldComponents(self, fp, numSteps, timestep, spaceDim, name, f, domain):
     vtype = f[1].attrs['vector_field_type']
     if len(f[1].shape) > 2:
-      dof = f[1].shape[1]
-      bs  = f[1].shape[2]
+      dof    = f[1].shape[1]
+      bs     = f[1].shape[2]
+      cdims  = '1 %d 1' % dof
+      dims   = '1 %d 1' % (numSteps, dof, bs)
+      stride = '1 1 1'
+      size   = '1 %d 1' % dof
     else:
-      dof = f[1].shape[0]
-      bs  = f[1].shape[1]
+      dof    = f[1].shape[0]
+      bs     = f[1].shape[1]
+      cdims  = '%d 1' % dof
+      dims   = '%d %d' % (dof, bs)
+      stride = '1 1'
+      size   = '%d 1' % dof
     for c in range(bs):
       ext = self.typeExt[spaceDim][vtype][c]
+      if len(f[1].shape) > 2: start  = '%d 0 %d' % (timestep, c)
+      else:                   start  = '0 %d' % c
       fp.write('''\
 	<Attribute
 	   Name="%s"
 	   Type="Scalar"
 	   Center="%s">
           <DataItem ItemType="HyperSlab"
-		    Dimensions="1 %d 1"
+		    Dimensions="%s"
 		    Type="HyperSlab">
             <DataItem
-	       Dimensions="3 3"
+	       Dimensions="3 %d"
 	       Format="XML">
-              %d 0 %d
-              1 1 1
-              1 %d 1
+              %s
+              %s
+              %s
 	    </DataItem>
 	    <DataItem
 	       DataType="Float" Precision="8"
-	       Dimensions="%d %d %d"
+	       Dimensions="%s"
 	       Format="HDF">
 	      &HeavyData;:%s
 	    </DataItem>
 	  </DataItem>
 	</Attribute>
-''' % (f[0]+'_'+ext, domain, dof, timestep, c, dof, numSteps, dof, bs, name))
+''' % (f[0]+'_'+ext, domain, cdims, len(f[1].shape), start, stride, size, dims, name))
     return
 
   def writeField(self, fp, numSteps, timestep, cellDim, spaceDim, name, f, domain):
@@ -220,4 +233,5 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
   return
 
 if __name__ == '__main__':
-  generateXdmf(sys.argv[1])
+  for f in sys.argv[1:]:
+    generateXdmf(f)

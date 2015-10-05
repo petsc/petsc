@@ -82,7 +82,7 @@ typedef struct {
   PetscInt     *irn,*jcn,nz,sym;
   PetscScalar  *val;
   MPI_Comm     comm_mumps;
-  PetscBool    isAIJ,CleanUpMUMPS;
+  PetscBool    isAIJ;
   PetscInt     ICNTL9_pre;           /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter   scat_rhs, scat_sol;   /* used by MatSolve() */
   Vec          b_seq,x_seq;
@@ -836,21 +836,18 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (mumps->CleanUpMUMPS) {
-    /* Terminate instance, deallocate memories */
-    ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&mumps->scat_rhs);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
-    ierr = VecDestroy(&mumps->b_seq);CHKERRQ(ierr);
-    ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
-    ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
-    ierr = PetscFree(mumps->irn);CHKERRQ(ierr);
-    ierr = PetscFree(mumps->info);CHKERRQ(ierr);
-    ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
-    mumps->id.job = JOB_END;
-    PetscMUMPS_c(&mumps->id);
-    ierr = MPI_Comm_free(&(mumps->comm_mumps));CHKERRQ(ierr);
-  }
+  ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&mumps->scat_rhs);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&mumps->b_seq);CHKERRQ(ierr);
+  ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
+  ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
+  ierr = PetscFree(mumps->irn);CHKERRQ(ierr);
+  ierr = PetscFree(mumps->info);CHKERRQ(ierr);
+  ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
+  mumps->id.job = JOB_END;
+  PetscMUMPS_c(&mumps->id);
+  ierr = MPI_Comm_free(&mumps->comm_mumps);CHKERRQ(ierr);
   if (mumps->Destroy) {
     ierr = (mumps->Destroy)(A);CHKERRQ(ierr);
   }
@@ -1175,7 +1172,6 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   
   (F)->assembled        = PETSC_TRUE;
   mumps->matstruc       = SAME_NONZERO_PATTERN;
-  mumps->CleanUpMUMPS   = PETSC_TRUE;
   mumps->schur_factored = PETSC_FALSE;
   mumps->schur_inverted = PETSC_FALSE;
 
@@ -1313,7 +1309,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->id.sym = mumps->sym;
   PetscMUMPS_c(&mumps->id);
 
-  mumps->CleanUpMUMPS = PETSC_FALSE;
   mumps->scat_rhs     = NULL;
   mumps->scat_sol     = NULL;
 
@@ -1621,7 +1616,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
 
       /* infomation local to each processor */
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",mumps->myid,mumps->id.RINFO(1));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
@@ -1653,7 +1648,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       }
 
 
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
 
       if (!mumps->myid) { /* information from the host */
         ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",mumps->id.RINFOG(1));CHKERRQ(ierr);
@@ -1790,15 +1785,10 @@ PetscErrorCode MatMumpsCreateSchurComplement_MUMPS(Mat F,Mat* S)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
-  } else if (!mumps->id.ICNTL(19)) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
-  } else if (!mumps->id.size_schur) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
-  }
+  if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
+  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  else if (!mumps->schur_restored) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+
   ierr = MatCreate(PetscObjectComm((PetscObject)F),&St);CHKERRQ(ierr);
   ierr = MatSetSizes(St,PETSC_DECIDE,PETSC_DECIDE,mumps->id.size_schur,mumps->id.size_schur);CHKERRQ(ierr);
   ierr = MatSetType(St,MATDENSE);CHKERRQ(ierr);
@@ -1898,15 +1888,10 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
-  } else if (!mumps->id.ICNTL(19)) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
-  } else if (!mumps->id.size_schur) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
-  }
+  if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
+  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  else if (!mumps->schur_restored) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+
   /* It should be the responsibility of the user to handle different ICNTL(19) cases if they want to work with the raw data */
   /* should I also add errors when the Schur complement has been already factored? */
   ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)F),mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&St);CHKERRQ(ierr);
@@ -1956,15 +1941,9 @@ PetscErrorCode MatMumpsRestoreSchurComplement_MUMPS(Mat F,Mat* S)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
-  } else if (!mumps->id.ICNTL(19)) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
-  } else if (!mumps->id.size_schur) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has been already restored");
-  }
+  if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
+  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  else if (mumps->schur_restored) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has been already restored");
   ierr = MatDestroy(S);CHKERRQ(ierr);
   *S = NULL;
   mumps->schur_restored = PETSC_TRUE;
@@ -2013,13 +1992,8 @@ PetscErrorCode MatMumpsInvertSchurComplement_MUMPS(Mat F)
   if (!mumps->id.ICNTL(19)) { /* do nothing */
     PetscFunctionReturn(0);
   }
-  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
-  } else if (!mumps->id.size_schur) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
-  }
+  if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  else if (!mumps->schur_restored) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
   ierr = MatMumpsInvertSchur_Private(mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2062,21 +2036,17 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   MumpsScalar    *orhs;
   PetscScalar    *osol,*nrhs,*nsol;
-  PetscInt       orhs_size,osol_size;
+  PetscInt       orhs_size,osol_size,olrhs_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
-  } else if (!mumps->id.ICNTL(19)) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
-  } else if (!mumps->id.size_schur) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
-  }
+  if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
+  if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  else if (!mumps->schur_restored) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+
   /* swap pointers */
   orhs = mumps->id.redrhs;
+  olrhs_size = mumps->id.lredrhs;
   orhs_size = mumps->sizeredrhs;
   osol = mumps->schur_sol;
   osol_size = mumps->schur_sizesol;
@@ -2084,6 +2054,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecGetArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = (MumpsScalar*)nrhs;
   ierr = VecGetLocalSize(rhs,&mumps->sizeredrhs);CHKERRQ(ierr);
+  mumps->id.lredrhs = mumps->sizeredrhs;
   mumps->schur_sol = nsol;
   ierr = VecGetLocalSize(sol,&mumps->schur_sizesol);CHKERRQ(ierr);
 
@@ -2094,6 +2065,7 @@ PetscErrorCode MatMumpsSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
   ierr = VecRestoreArray(rhs,&nrhs);CHKERRQ(ierr);
   ierr = VecRestoreArray(sol,&nsol);CHKERRQ(ierr);
   mumps->id.redrhs = orhs;
+  mumps->id.lredrhs = olrhs_size;
   mumps->sizeredrhs = orhs_size;
   mumps->schur_sol = osol;
   mumps->schur_sizesol = osol_size;
@@ -2148,15 +2120,10 @@ PetscErrorCode MatMumpsSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec s
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mumps->CleanUpMUMPS) { /* CleanUpMUMPS is set to true after numerical factorization */
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Numerical factorization phase not yet performed! You should call MatFactorSymbolic/Numeric before");
-  } else if (!mumps->id.ICNTL(19)) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
-  } else if (!mumps->id.size_schur) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
-  } else if (!mumps->schur_restored) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
-  }
+  if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatMumpsSetSchurIndices to enable it");
+  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  if (!mumps->schur_restored) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
+
   /* swap pointers */
   orhs = mumps->id.redrhs;
   orhs_size = mumps->sizeredrhs;
@@ -2561,6 +2528,10 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   distributed and sequential matrices via the external package MUMPS.
 
   Works with MATAIJ and MATSBAIJ matrices
+
+  Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with MUMPS
+
+  Use -pc_type cholesky or lu -pc_factor_mat_solver_package mumps to us this direct solver
 
   Options Database Keys:
 +  -mat_mumps_icntl_1 <6>: ICNTL(1): output stream for error messages (None)

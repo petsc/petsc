@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np <proc> minsurf2 [-help] [all TAO options] */
+/* Program usage: mpiexec -n <proc> minsurf2 [-help] [all TAO options] */
 
 /*
   Include "petsctao.h" so we can use TAO solvers.
@@ -778,11 +778,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscRandom rctx;  PetscReal np5=-0.5;
 
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetType(rctx,PETSCRAND);
-   CHKERRQ(ierr);
-    for (i=0; i<start2; i++){
-      ierr = VecSetRandom(X, rctx);CHKERRQ(ierr);
-    }
+    ierr = VecSetRandom(X, rctx);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
     ierr = VecShift(X, np5);CHKERRQ(ierr);
 

@@ -298,9 +298,11 @@ static PetscErrorCode PetscDrawSynchronizedFlush_X(PetscDraw draw)
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   } else {
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+    XFlush(XiWin->disp);
     XSync(XiWin->disp,False);
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
+  if (draw->saveonflush) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -348,13 +350,11 @@ static PetscErrorCode PetscDrawSynchronizedClear_X(PetscDraw draw)
   PetscFunctionBegin;
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscDrawClear_X(draw);CHKERRQ(ierr);
-  }
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscDrawClear_X(draw);CHKERRQ(ierr);}
   XFlush(XiWin->disp);
-  XFlush(XiWin->disp);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-  /*  XSync(XiWin->disp,False); */
+  XSync(XiWin->disp,False);
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -369,12 +369,15 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
 
   PetscFunctionBegin;
   if (win->drw) PetscFunctionReturn(0);
-
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (!rank) win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  if (!rank) win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
   /* try to make sure it is actually done before passing info to all */
+  XFlush(win->disp);
   XSync(win->disp,False);
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+
   ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -385,22 +388,22 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
 #define __FUNCT__ "PetscDrawGetMouseButton_X"
 static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
+  Cursor       cursor;
   XEvent       report;
   PetscDraw_X  *win = (PetscDraw_X*)draw->data;
   Window       root,child;
-  int          root_x,root_y,px,py;
+  int          root_x,root_y,px=0,py=0;
   unsigned int keys_button;
-  Cursor       cursor = 0;
 
   PetscFunctionBegin;
-  /* change cursor to indicate input */
-  if (!cursor) {
-    cursor = XCreateFontCursor(win->disp,XC_hand2);
-    if (!cursor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
-  }
-  XDefineCursor(win->disp,win->win,cursor);
-  XSelectInput(win->disp,win->win,ButtonPressMask | ButtonReleaseMask);
+  *button = PETSC_BUTTON_NONE;
+  if (!win->win) PetscFunctionReturn(0);
 
+  /* change cursor to indicate input */
+  cursor = XCreateFontCursor(win->disp,XC_hand2); if (!cursor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
+  XDefineCursor(win->disp,win->win,cursor);
+  /* wait for mouse button events */
+  XSelectInput(win->disp,win->win,ButtonPressMask | ButtonReleaseMask);
   while (XCheckTypedEvent(win->disp,ButtonPress,&report));
   XMaskEvent(win->disp,ButtonReleaseMask,&report);
   switch (report.xbutton.button) {
@@ -417,17 +420,19 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
     else                                  *button = PETSC_BUTTON_RIGHT;
     break;
   }
+  /* get mouse pointer coordinates */
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);
+  /* cleanup input event handler and cursor  */
+  XSelectInput(win->disp,win->win,NoEventMask);
+  XUndefineCursor(win->disp,win->win);
+  XFreeCursor(win->disp, cursor);
+  XFlush(win->disp);
+  XSync(win->disp,False);
 
   if (x_phys) *x_phys = ((double)px)/((double)win->w);
   if (y_phys) *y_phys = 1.0 - ((double)py)/((double)win->h);
-
   if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)win->w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
   if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
-
-  XUndefineCursor(win->disp,win->win);
-  XFlush(win->disp);
-  XSync(win->disp,False);
   PetscFunctionReturn(0);
 }
 
@@ -442,13 +447,15 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
   if (!win->win) PetscFunctionReturn(0);
   if (draw->pause > 0) PetscSleep(draw->pause);
   else if (draw->pause == -1) {
-    PetscDrawButton button;
     PetscMPIInt     rank;
+    PetscDrawButton button = PETSC_BUTTON_NONE;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscDrawGetMouseButton(draw,&button,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
     }
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
     ierr = MPI_Bcast(&draw->pause,1,MPIU_REAL,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -529,23 +536,30 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   PetscFunctionBegin;
   if (!win->win) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) {
     XFlush(win->disp);
     XSync(win->disp,False);
-    XSync(win->disp,False);
     XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
   }
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+
   ierr = MPI_Bcast(geo,2,MPI_UNSIGNED,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   w    = geo[0];
   h    = geo[1];
   if (w == (unsigned int) win->w && h == (unsigned int) win->h) PetscFunctionReturn(0);
 
   /* record new window sizes */
-
   win->h = h; win->w = w;
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+
   /* Free buffer space and create new version (only first processor does this) */
-  if (win->drw) win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
+  if (!rank && win->drw) {
+    XFreePixmap(win->disp, win->drw);
+    win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
+  }
 
   /* reset the clipping */
   xl = draw->port_xl; yl = draw->port_yl;
@@ -556,7 +570,11 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   XSetClipRectangles(win->disp,win->gc.set,0,0,&box,1,Unsorted);
 
   /* try to make sure it is actually done before passing info to all */
+  XFlush(win->disp);
   XSync(win->disp,False);
+
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+
   ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -570,33 +588,15 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 {
   PetscDraw_X    *win = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
-#if defined(PETSC_HAVE_POPEN)
-  char           command[PETSC_MAX_PATH_LEN];
-  PetscMPIInt    rank;
-  FILE           *fd;
-#endif
 
   PetscFunctionBegin;
-  if (draw->savefinalfilename) {
-    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
-    draw->savefilecount = 0;
-  }
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_POPEN)
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (draw->savefilename && !rank && draw->savefilemovie) {
-    ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg  -i %s/%s_%%d.Gif %s.m4v",draw->savefilename,draw->savefilename,draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
-  }
-#endif
-  ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
-
-  XFreeGC(win->disp,win->gc.set);
-  XCloseDisplay(win->disp);
-  ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
+  if (!win) PetscFunctionReturn(0);
   ierr = PetscFree(win->font);CHKERRQ(ierr);
+  if (win->disp) {
+    XFreeGC(win->disp,win->gc.set);
+    XCloseDisplay(win->disp);
+    win->disp = NULL;
+  }
   ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -888,13 +888,3 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-
-

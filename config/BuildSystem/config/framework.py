@@ -216,7 +216,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Change titles and setup all children'''
     argDB = script.Script.setupArguments(self, argDB)
 
-    self.help.title = 'Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-external-packages-dir=/Users/bsmith/external\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
+    self.help.title = 'Configure Help\n   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-external-packages-dir=/Users/bsmith/external\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
     self.actions.title = 'Configure Actions\n   These are the actions performed by configure on the filesystem'
 
     for child in self.childGraph.vertices:
@@ -395,8 +395,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   ###############################################
   # Filtering Mechanisms
 
-  def filterPreprocessOutput(self,output):
-    self.log.write("Preprocess stderr before filtering:"+output+":\n")
+  def filterPreprocessOutput(self,output, log = None):
+    if log is None: log = self.log
+    log.write("Preprocess stderr before filtering:"+output+":\n")
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
@@ -413,7 +414,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Lahey/Fujitsu
     lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
-    self.log.write("Preprocess stderr after filtering:"+output+":\n")
+    log.write("Preprocess stderr after filtering:"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
@@ -1000,13 +1001,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
           se  = str(e)
-        if ret:
-          self.logWrite(msg+'\n'+se+'\n')
-          try:
-            import sys,traceback
-            traceback.print_tb(sys.exc_info()[2], file = self.log)
-          except: pass
         out = child.restoreLog()
+        if ret:
+          out += '\n'+msg+'\n'+se+'\n'
+          try:
+            import sys,traceback,cStringIO
+            tb = cStringIO.StringIO()
+            traceback.print_tb(sys.exc_info()[2], file = tb)
+            out += tb.getvalue()
+            tb.close()
+          except: pass
         # Udpate queue
         done.put((ret, out, emsg, child))
         q.task_done()

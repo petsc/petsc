@@ -455,41 +455,6 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscPartitionerViewFromOptions"
-/*
-  PetscPartitionerViewFromOptions - Processes command line options to determine if/how a PetscPartitioner is to be viewed.
-
-  Collective on PetscPartitioner
-
-  Input Parameters:
-+ part   - the PetscPartitioner
-. prefix - prefix to use for viewing, or NULL
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscPartitioner, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner part, const char prefix[], const char optionname[])
-{
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (prefix) {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) part), prefix,                       optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  else        {ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) part), ((PetscObject) part)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);}
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscPartitionerView(part, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerSetTypeFromOptions_Internal"
 PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part)
 {
@@ -878,14 +843,75 @@ PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer vi
 #define __FUNCT__ "PetscPartitionerPartition_Simple"
 PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
+  MPI_Comm       comm;
   PetscInt       np;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
-  for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
+  if (size == 1) {
+    for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);}
+  }
+  else {
+    PetscMPIInt rank;
+    PetscInt nvGlobal, *offsets, myFirst, myLast;
+
+    ierr = PetscMalloc1(size+1,&offsets);
+    offsets[0] = 0;
+    ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRQ(ierr);
+    for (np = 2; np <= size; np++) {
+      offsets[np] += offsets[np-1];
+    }
+    nvGlobal = offsets[size];
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    myFirst = offsets[rank];
+    myLast  = offsets[rank + 1] - 1;
+    ierr = PetscFree(offsets);CHKERRQ(ierr);
+    if (numVertices) {
+      PetscInt firstPart = 0, firstLargePart = 0;
+      PetscInt lastPart = 0, lastLargePart = 0;
+      PetscInt rem = nvGlobal % nparts;
+      PetscInt pSmall = nvGlobal/nparts;
+      PetscInt pBig = nvGlobal/nparts + 1;
+
+
+      if (rem) {
+        firstLargePart = myFirst / pBig;
+        lastLargePart  = myLast  / pBig;
+
+        if (firstLargePart < rem) {
+          firstPart = firstLargePart;
+        }
+        else {
+          firstPart = rem + (myFirst - (rem * pBig)) / pSmall;
+        }
+        if (lastLargePart < rem) {
+          lastPart = lastLargePart;
+        }
+        else {
+          lastPart = rem + (myLast - (rem * pBig)) / pSmall;
+        }
+      }
+      else {
+        firstPart = myFirst / (nvGlobal/nparts);
+        lastPart  = myLast  / (nvGlobal/nparts);
+      }
+
+      for (np = firstPart; np <= lastPart; np++) {
+        PetscInt PartStart =  np    * (nvGlobal/nparts) + PetscMin(nvGlobal % nparts,np);
+        PetscInt PartEnd   = (np+1) * (nvGlobal/nparts) + PetscMin(nvGlobal % nparts,np+1);
+
+        PartStart = PetscMax(PartStart,myFirst);
+        PartEnd   = PetscMin(PartEnd,myLast+1);
+        ierr = PetscSectionSetDof(partSection,np,PartEnd-PartStart);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1340,23 +1366,44 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexPartitionLabelClosure_Tree"
-static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point)
+static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point, PetscBool up, PetscBool down)
 {
-  PetscInt       parent, closureSize, *closure = NULL, i, pStart, pEnd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
-  if (parent == point) PetscFunctionReturn(0);
-  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-  for (i = 0; i < closureSize; i++) {
-    PetscInt cpoint = closure[2*i];
+  if (up) {
+    PetscInt parent;
 
-    ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
-    ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
+    if (parent != point) {
+      PetscInt closureSize, *closure = NULL, i;
+
+      ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      for (i = 0; i < closureSize; i++) {
+        PetscInt cpoint = closure[2*i];
+
+        ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    }
   }
-  ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  if (down) {
+    PetscInt numChildren;
+    const PetscInt *children;
+
+    ierr = DMPlexGetTreeChildren(dm,point,&numChildren,&children);CHKERRQ(ierr);
+    if (numChildren) {
+      PetscInt i;
+
+      for (i = 0; i < numChildren; i++) {
+        PetscInt cpoint = children[i];
+
+        ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1395,7 +1442,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
         ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);
-        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c]);CHKERRQ(ierr);
+        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c],PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);

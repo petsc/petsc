@@ -49,17 +49,23 @@
 !
       PetscEnum VEC_IGNORE_OFF_PROC_ENTRIES
       PetscEnum VEC_IGNORE_NEGATIVE_INDICES
+      PetscEnum VEC_SUBSET_OFF_PROC_ENTRIES
 
       parameter (VEC_IGNORE_OFF_PROC_ENTRIES=0)
       parameter (VEC_IGNORE_NEGATIVE_INDICES=1)
+      parameter (VEC_SUBSET_OFF_PROC_ENTRIES=2)
 
 !
 !  VecOperation
 !
+      PetscEnum VECOP_DUPLICATE
       PetscEnum VECOP_VIEW
-      PetscEnum VECOP_LOADINTOVECTOR
+      PetscEnum VECOP_LOAD
+      PetscEnum VECOP_VIEWNATIVE
+      PetscEnum VECOP_LOADNATIVE
 
-      parameter (VECOP_VIEW=33,VECOP_LOADINTOVECTOR=41)
+      parameter (VECOP_DUPLICATE=0,VECOP_VIEW=33,VECOP_LOAD=41)
+      parameter (VECOP_VIEWNATIVE=68,VECOP_LOADNATIVE=69)
 !
 !  End of Fortran include file for the Vec package in PETSc
 

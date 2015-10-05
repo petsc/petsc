@@ -39,6 +39,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
+    help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     return
 
   def setupDependencies(self, framework):
@@ -124,7 +125,7 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
-                 '_set_output_format']
+                 '_set_output_format','_mkdir']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
@@ -218,7 +219,7 @@ prepend-path PATH %s
     if self.mpi.usingMPIUni:
       #
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
-      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'))
+      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -269,7 +270,7 @@ prepend-path PATH %s
       self.setCompilers.pushLanguage('FC')
       # Cannot have NAG f90 as the linker - so use pcc_linker as fc_linker
       fc_linker = self.setCompilers.getLinker()
-      if config.setCompilers.Configure.isNAG(fc_linker):
+      if config.setCompilers.Configure.isNAG(fc_linker, self.log):
         self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
@@ -327,7 +328,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_WITH_BATCH','1')
 
     # Test for compiler-specific macros that need to be defined.
-    if self.setCompilers.isCrayVector('CC'):
+    if self.setCompilers.isCrayVector('CC', self.log):
       self.addDefine('HAVE_CRAY_VECTOR','1')
 
 #-----------------------------------------------------------------------------------------------------
@@ -622,7 +623,7 @@ prepend-path PATH %s
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-ios'] or not self.framework.argDB['with-prefetch']:
+    if config.setCompilers.Configure.isSolaris(self.log) or self.framework.argDB['with-ios'] or not self.framework.argDB['with-prefetch']:
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)
@@ -853,7 +854,7 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
-      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir, log = self.log)
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
@@ -867,7 +868,7 @@ prepend-path PATH %s
   def configureCygwinBrokenPipe(self):
     '''Cygwin version <= 1.7.18 had issues with pipes and long commands invoked from gnu-make
     http://cygwin.com/ml/cygwin/2013-05/msg00340.html '''
-    if config.setCompilers.Configure.isCygwin():
+    if config.setCompilers.Configure.isCygwin(self.log):
       import platform
       import re
       r=re.compile("([0-9]+).([0-9]+).([0-9]+)")

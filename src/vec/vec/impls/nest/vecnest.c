@@ -491,7 +491,7 @@ static PetscErrorCode VecMax_Nest(Vec x,PetscInt *p,PetscReal *max)
   PetscFunctionBegin;
   cnt  = 0;
   *p   = 0;
-  *max = 0.0;
+  *max = PETSC_MIN_REAL;
   ierr = VecMax_Nest_Recursive(x,&cnt,p,max);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -541,7 +541,7 @@ static PetscErrorCode VecMin_Nest(Vec x,PetscInt *p,PetscReal *min)
   PetscFunctionBegin;
   cnt  = 0;
   *p   = 0;
-  *min = 1.0e308;
+  *min = PETSC_MAX_REAL;
   ierr = VecMin_Nest_Recursive(x,&cnt,p,min);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

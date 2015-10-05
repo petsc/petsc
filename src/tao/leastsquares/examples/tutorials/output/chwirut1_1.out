@@ -35,7 +35,7 @@ iter =  33, Function value 2384.48, Residual: 0.287332
 iter =  34, Function value 2384.48, Residual: 0.221247 
 iter =  35, Function value 2384.48, Residual: 0.0183748 
 iter =  36, Function value 2384.48, Residual: 0.0155711 
-iter =  37, Function value 2384.48, Residual: 0.0473476 
+iter =  37, Function value 2384.48, Residual: 0.0473477 
 iter =  38, Function value 2384.48, Residual: 0.00108411 
 iter =  39, Function value 2384.48, Residual: 0.0048771 
 iter =  40, Function value 2384.48, Residual: 0.000172833 
@@ -77,7 +77,7 @@ iter =  41, Function value 2384.48, Residual: 5.48205e-06
 2384.48	0.221247
 2384.48	0.0183748
 2384.48	0.0155711
-2384.48	0.0473476
+2384.48	0.0473477
 2384.48	0.00108411
 2384.48	0.0048771
 2384.48	0.000172833
@@ -88,6 +88,7 @@ Tao Object: 1 MPI processes
       final delta: 0.0015625
       model points: 7
       subproblem solver: tron
+      total subproblem iterations: 91
   convergence tolerances: fatol=0,   frtol=0
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=5.48205e-06

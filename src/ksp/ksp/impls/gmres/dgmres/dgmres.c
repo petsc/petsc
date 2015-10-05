@@ -170,6 +170,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 
   PetscFunctionBegin;
   ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
   res     = res_norm;
   *GRS(0) = res_norm;
 
@@ -317,7 +318,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
 
   for (i = 0; i < dgmres->r; i++) {
-    ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(UU[i],(PetscObject)ksp,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

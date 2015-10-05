@@ -105,7 +105,7 @@ PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
 
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao,const char []);
 PETSC_EXTERN PetscErrorCode TaoView(Tao, PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 
@@ -118,6 +118,11 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergedReason(Tao,TaoConvergedReason);
 PETSC_EXTERN PetscErrorCode TaoSetInitialVector(Tao, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetSolutionVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
+PETSC_EXTERN PetscErrorCode TaoSetGradientNorm(Tao, Mat);
+PETSC_EXTERN PetscErrorCode TaoGetGradientNorm(Tao, Mat*);
+PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao, Mat);
+PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao, Mat*);
+PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao, KSP*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*,void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*), void*);

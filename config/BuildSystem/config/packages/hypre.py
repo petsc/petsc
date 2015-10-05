@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.10.0b-p1.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.10.0b-p2.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.liblist   = [['libHYPRE.a']]
@@ -13,6 +13,8 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 0
     self.double            = 1
     self.complex           = 0
+    self.hastests          = 1
+    self.hastestsdatafiles = 1
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

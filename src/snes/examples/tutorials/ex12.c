@@ -19,21 +19,24 @@ typedef struct {
   PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent createMeshEvent;
   PetscBool     showInitial, showSolution, restart, check;
-  PetscViewer   checkpoint;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   char          filename[2048];    /* The optional ExodusII file */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
+  PetscBool     viewHierarchy;     /* Whether to view the hierarchy */
   /* Problem definition */
   BCType        bcType;
   CoeffType     variableCoefficient;
-  void       (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  /* Solver */
+  PC            pcmg;              /* This is needed for error monitoring */
 } AppCtx;
 
-void zero(const PetscReal coords[], PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  *u = 0.0;
+  u[0] = 0.0;
+  return 0;
 }
 
 /*
@@ -57,9 +60,10 @@ void zero(const PetscReal coords[], PetscScalar *u, void *ctx)
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
 */
-void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
+  return 0;
 }
 
 void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -111,7 +115,7 @@ void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, const PetscReal x[], PetscScalar g3[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
@@ -128,9 +132,10 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\div \nu \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-void nu_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+PetscErrorCode nu_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0] + x[1];
+  return 0;
 }
 
 void f0_analytic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -165,7 +170,7 @@ void f1_field_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_analytic_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                    PetscReal t, const PetscReal x[], PetscScalar g3[])
+                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = x[0] + x[1];
@@ -174,7 +179,7 @@ void g3_analytic_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_field_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                 PetscReal t, const PetscReal x[], PetscScalar g3[])
+                 PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = a[0];
@@ -222,7 +227,7 @@ void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                              PetscReal t, const PetscReal x[], PetscScalar g3[])
+                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscScalar nu = 0.0;
   PetscInt    d, e;
@@ -258,9 +263,10 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
-void quadratic_u_3d(const PetscReal x[], PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_3d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
+  return 0;
 }
 
 #undef __FUNCT__
@@ -288,7 +294,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showSolution        = PETSC_FALSE;
   options->restart             = PETSC_FALSE;
   options->check               = PETSC_FALSE;
-  options->checkpoint          = NULL;
+  options->viewHierarchy       = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -316,16 +322,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-check", "Compare with default integration routines", "ex12.c", options->check, &options->check, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_view_hierarchy", "View the coarsened hierarchy", "ex12.c", options->viewHierarchy, &options->viewHierarchy, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
-
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
-
-  if (options->restart) {
-    ierr = PetscViewerCreate(comm, &options->checkpoint);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(options->checkpoint, PETSCVIEWERHDF5);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(options->checkpoint, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(options->checkpoint, options->filename);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -346,18 +345,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (!len) {
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  } else if (user->checkpoint) {
-    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMLoad(*dm, user->checkpoint);CHKERRQ(ierr);
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   } else {
-    PetscMPIInt rank;
-
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    /* Must have boundary marker for Dirichlet conditions */
   }
   {
     DM refinedMesh     = NULL;
@@ -389,7 +379,45 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  /* Must have boundary marker for Dirichlet conditions */
+  {
+    DM cdm = *dm;
+
+    while (cdm) {
+      PetscBool hasBdLabel;
+
+      ierr = DMPlexHasLabel(cdm, "marker", &hasBdLabel);CHKERRQ(ierr);
+      if (!hasBdLabel) {
+        DMLabel label;
+
+        ierr = DMPlexCreateLabel(cdm, "marker");CHKERRQ(ierr);
+        ierr = DMPlexGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
+        ierr = DMPlexMarkBoundaryFaces(cdm, label);CHKERRQ(ierr);
+        ierr = DMPlexLabelComplete(cdm, label);CHKERRQ(ierr);
+      }
+      ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    }
+  }
+
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  if (user->viewHierarchy) {
+    DM       cdm = *dm;
+    PetscInt i   = 0;
+    char     buf[256];
+
+    while (cdm) {ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr); ++i;}
+    cdm = *dm;
+    while (cdm) {
+      PetscViewer viewer;
+
+      --i;
+      ierr = PetscSNPrintf(buf, 256, "ex12-%d.h5", i);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
+      ierr = DMView(cdm, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -441,7 +469,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupMaterial"
 PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  void (*matFuncs[1])(const PetscReal x[], PetscScalar *u, void *ctx) = {nu_2d};
+  PetscErrorCode (*matFuncs[1])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {nu_2d};
   Vec            nu;
   PetscErrorCode ierr;
 
@@ -512,13 +540,166 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
     }
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feCh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include "petsc/private/petscimpl.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorError"
+/*@C
+  KSPMonitorError - Outputs the error at each iteration of an iterative solver.
+
+  Collective on KSP
+
+  Input Parameters:
++ ksp   - the KSP
+. its   - iteration number
+. rnorm - 2-norm, preconditioned residual value (may be estimated).
+- ctx   - monitor context
+
+  Level: intermediate
+
+.keywords: KSP, default, monitor, residual
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorDefault()
+@*/
+PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
+{
+  AppCtx        *user = (AppCtx *) ctx;
+  DM             dm, edm;
+  PetscDS        prob;
+  PetscFE        fe;
+  Vec            du, r;
+  PetscInt       level = 0;
+  PetscBool      hasLevel;
+  PetscViewer    viewer;
+  char           buf[256];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  /* Create FE space for the error */
+  ierr = PetscFECreateDefault(dm, user->dim, 1, PETSC_TRUE, "error_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
+  /* Create DM for error */
+  ierr = DMClone(dm, &edm);CHKERRQ(ierr);
+  ierr = DMPlexCopyCoordinates(dm, edm);CHKERRQ(ierr);
+  ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  /* Calculate solution */
+  {
+    PC       pc = user->pcmg; /* The MG PC */
+    DM       fdm,  cdm;
+    KSP      fksp, cksp;
+    Vec      fu,   cu;
+    PetscInt levels, l;
+
+    ierr = KSPBuildSolution(ksp, NULL, &du);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetInt((PetscObject) ksp, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
+    ierr = PCMGGetLevels(pc, &levels);CHKERRQ(ierr);
+    ierr = PCMGGetSmoother(pc, levels-1, &fksp);CHKERRQ(ierr);
+    ierr = KSPBuildSolution(fksp, NULL, &fu);CHKERRQ(ierr);
+    for (l = levels-1; l > level; --l) {
+      Mat R;
+      Vec s;
+
+      ierr = PCMGGetSmoother(pc, l-1, &cksp);CHKERRQ(ierr);
+      ierr = KSPGetDM(cksp, &cdm);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(cdm, &cu);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc, l, &R);CHKERRQ(ierr);
+      ierr = PCMGGetRScale(pc, l, &s);CHKERRQ(ierr);
+      ierr = MatRestrict(R, fu, cu);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(cu, cu, s);CHKERRQ(ierr);
+      if (l < levels-1) {ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);}
+      fdm  = cdm;
+      fu   = cu;
+    }
+    if (levels-1 > level) {
+      ierr = VecAXPY(du, 1.0, cu);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(cdm, &cu);CHKERRQ(ierr);
+    }
+  }
+  /* Calculate error */
+  ierr = DMGetGlobalVector(edm, &r);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
+  ierr = DMPlexComputeL2DiffVec(edm, user->exactFuncs, NULL, du, r);CHKERRQ(ierr);
+  /* View error */
+  ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
+  ierr = VecView(r, viewer);CHKERRQ(ierr);
+  /* Cleanup */
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(edm, &r);CHKERRQ(ierr);
+  ierr = DMDestroy(&edm);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitorError"
+/*@C
+  SNESMonitorError - Outputs the error at each iteration of an iterative solver.
+
+  Collective on SNES
+
+  Input Parameters:
++ snes  - the SNES
+. its   - iteration number
+. rnorm - 2-norm of residual
+- ctx   - user context
+
+  Level: intermediate
+
+.keywords: SNES, nonlinear, default, monitor, norm
+.seealso: SNESMonitorDefault(), SNESMonitorSet(), SNESMonitorSolution()
+@*/
+PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *ctx)
+{
+  AppCtx        *user = (AppCtx *) ctx;
+  DM             dm, edm;
+  PetscDS        prob;
+  PetscFE        fe;
+  Vec            u, r;
+  PetscInt       level;
+  PetscBool      hasLevel;
+  PetscViewer    viewer;
+  char           buf[256];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  /* Create FE space for the error */
+  ierr = PetscFECreateDefault(dm, user->dim, 1, PETSC_TRUE, "error_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
+  /* Create DM for error */
+  ierr = DMClone(dm, &edm);CHKERRQ(ierr);
+  ierr = DMPlexCopyCoordinates(dm, edm);CHKERRQ(ierr);
+  ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  /* Calculate error */
+  ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(edm, &r);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
+  ierr = DMPlexComputeL2DiffVec(edm, user->exactFuncs, NULL, u, r);CHKERRQ(ierr);
+  /* View error */
+  ierr = PetscObjectComposedDataGetInt((PetscObject) snes, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
+  ierr = VecView(r, viewer);CHKERRQ(ierr);
+  /* Cleanup */
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(edm, &r);CHKERRQ(ierr);
+  ierr = DMDestroy(&edm);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -535,6 +716,7 @@ int main(int argc, char **argv)
   JacActionCtx   userJ;       /* context for Jacobian MF action */
   PetscInt       its;         /* iterations for convergence */
   PetscReal      error = 0.0; /* L_2 error in the solution */
+  PetscBool      isFAS;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -578,10 +760,7 @@ int main(int argc, char **argv)
   }
   if (user.bcType == NEUMANN) {
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject) dm), PETSC_TRUE, 0, NULL, &nullSpace);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-    if (A != J) {
-      ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-    }
+    ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
 
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*)) DMPlexSNESComputeResidualFEM, &user);CHKERRQ(ierr);
@@ -591,14 +770,20 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMPlexProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  if (user.checkpoint) {
+  if (user.restart) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = PetscViewerHDF5PushGroup(user.checkpoint, "/fields");CHKERRQ(ierr);
-    ierr = VecLoad(u, user.checkpoint);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5PopGroup(user.checkpoint);CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, user.filename);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+    ierr = VecLoad(u, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 #endif
   }
-  ierr = PetscViewerDestroy(&user.checkpoint);CHKERRQ(ierr);
   if (user.showInitial) {
     Vec lv;
     ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
@@ -607,8 +792,36 @@ int main(int argc, char **argv)
     ierr = DMPrintLocalVec(dm, "Local function", 1.0e-10, lv);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &lv);CHKERRQ(ierr);
   }
+  if (user.viewHierarchy) {
+    SNES      lsnes;
+    KSP       ksp;
+    PC        pc;
+    PetscInt  numLevels, l;
+    PetscBool isMG;
+
+    ierr = PetscObjectTypeCompare((PetscObject) snes, SNESFAS, &isFAS);CHKERRQ(ierr);
+    if (isFAS) {
+      ierr = SNESFASGetLevels(snes, &numLevels);CHKERRQ(ierr);
+      for (l = 0; l < numLevels; ++l) {
+        ierr = SNESFASGetCycleSNES(snes, l, &lsnes);CHKERRQ(ierr);
+        ierr = SNESMonitorSet(lsnes, SNESMonitorError, &user, NULL);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject) pc, PCMG, &isMG);CHKERRQ(ierr);
+      if (isMG) {
+        user.pcmg = pc;
+        ierr = PCMGGetLevels(pc, &numLevels);CHKERRQ(ierr);
+        for (l = 0; l < numLevels; ++l) {
+          ierr = PCMGGetSmootherDown(pc, l, &ksp);CHKERRQ(ierr);
+          ierr = KSPMonitorSet(ksp, KSPMonitorError, &user, NULL);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
   if (user.runType == RUN_FULL) {
-    void (*initialGuess[1])(const PetscReal x[], PetscScalar *, void *ctx) = {zero};
+    PetscErrorCode (*initialGuess[1])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {zero};
 
     ierr = DMPlexProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.debug) {

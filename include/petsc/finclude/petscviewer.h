@@ -43,6 +43,7 @@
       PetscEnum PETSC_VIEWER_ASCII_PYTHON
       PetscEnum PETSC_VIEWER_ASCII_FACTOR_INFO
       PetscEnum PETSC_VIEWER_ASCII_LATEX
+      PetscEnum PETSC_VIEWER_ASCII_XML
       PetscEnum PETSC_VIEWER_DRAW_BASIC
       PetscEnum PETSC_VIEWER_DRAW_LG
       PetscEnum PETSC_VIEWER_DRAW_CONTOUR
@@ -73,17 +74,18 @@
       parameter (PETSC_VIEWER_ASCII_PYTHON = 15)
       parameter (PETSC_VIEWER_ASCII_FACTOR_INFO = 16)
       parameter (PETSC_VIEWER_ASCII_LATEX = 17)
-      parameter (PETSC_VIEWER_DRAW_BASIC = 18)
-      parameter (PETSC_VIEWER_DRAW_LG = 19)
-      parameter (PETSC_VIEWER_DRAW_CONTOUR = 20)
-      parameter (PETSC_VIEWER_DRAW_PORTS = 21)
-      parameter (PETSC_VIEWER_VTK_VTS = 22)
-      parameter (PETSC_VIEWER_VTK_VTR = 23)
-      parameter (PETSC_VIEWER_VTK_VTU = 24)
-      parameter (PETSC_VIEWER_BINARY_MATLAB = 25)
-      parameter (PETSC_VIEWER_NATIVE = 26)
-      parameter (PETSC_VIEWER_HDF5_VIZ = 27)
-      parameter (PETSC_VIEWER_NOFORMAT = 28)
+      parameter (PETSC_VIEWER_ASCII_XML = 18)
+      parameter (PETSC_VIEWER_DRAW_BASIC = 19)
+      parameter (PETSC_VIEWER_DRAW_LG = 20)
+      parameter (PETSC_VIEWER_DRAW_CONTOUR = 21)
+      parameter (PETSC_VIEWER_DRAW_PORTS = 22)
+      parameter (PETSC_VIEWER_VTK_VTS = 23)
+      parameter (PETSC_VIEWER_VTK_VTR = 24)
+      parameter (PETSC_VIEWER_VTK_VTU = 25)
+      parameter (PETSC_VIEWER_BINARY_MATLAB = 26)
+      parameter (PETSC_VIEWER_NATIVE = 27)
+      parameter (PETSC_VIEWER_HDF5_VIZ = 28)
+      parameter (PETSC_VIEWER_NOFORMAT = 29)
 !
 !  End of Fortran include file for the PetscViewer package in PETSc
 

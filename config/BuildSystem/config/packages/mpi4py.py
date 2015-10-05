@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz']
+    self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
     return
@@ -19,14 +20,14 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
     archflags = ""
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       if self.types.sizes['known-sizeof-void-p'] == 32:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:

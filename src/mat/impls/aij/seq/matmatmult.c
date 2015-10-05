@@ -65,7 +65,8 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,P
   PetscInt           *ai=a->i,*bi=b->i,*ci,*cj;
   PetscInt           am =A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   PetscReal          afill;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,nlnk_max,*lnk,ndouble=0;
+  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,*lnk,ndouble=0,Crmax;
+  PetscTable         ta;
   PetscBT            lnkbt;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
 
@@ -78,9 +79,14 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,P
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  nlnk_max = a->rmax*b->rmax;
-  if (!nlnk_max || nlnk_max > bn) nlnk_max = bn;
-  ierr = PetscLLCondensedCreate(nlnk_max,bn,&lnk,&lnkbt);CHKERRQ(ierr);
+  Crmax = 2*(b->rmax + (PetscInt)(1.e-2*bn)); /* expected Crmax */;
+  if (Crmax > bn) Crmax = bn;
+  ierr = PetscTableCreate(Crmax,bn,&ta);CHKERRQ(ierr); 
+  MatRowMergeMax_SeqAIJ(b,bn,ta);
+  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
+
+  ierr = PetscLLCondensedCreate(Crmax,bn,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
@@ -280,7 +286,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
   PetscInt           am  = A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   MatScalar          *ca;
   PetscReal          afill;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,nlnk_max,*lnk,ndouble=0;
+  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,*lnk,ndouble=0,Crmax;
+  PetscTable         ta;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
 
   PetscFunctionBegin;
@@ -291,9 +298,14 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  nlnk_max = a->rmax*b->rmax;
-  if (!nlnk_max || nlnk_max > bn) nlnk_max = bn; /* in case rmax is not defined for A or B */
-  ierr = PetscLLCondensedCreate_fast(nlnk_max,&lnk);CHKERRQ(ierr);
+  Crmax = 2*(b->rmax + (PetscInt)(1.e-2*bn)); /* expected Crmax */
+  if (Crmax > bn) Crmax = bn;
+  ierr = PetscTableCreate(Crmax,bn,&ta);CHKERRQ(ierr); 
+  MatRowMergeMax_SeqAIJ(b,bn,ta);
+  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
+
+  ierr = PetscLLCondensedCreate_fast(Crmax,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr          = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
@@ -384,7 +396,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   PetscInt           am  = A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   MatScalar          *ca;
   PetscReal          afill;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,nlnk_max,*lnk,ndouble=0;
+  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,*lnk,ndouble=0,Crmax;
+  PetscTable         ta;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
 
   PetscFunctionBegin;
@@ -395,9 +408,14 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  nlnk_max = a->rmax*b->rmax;
-  if (!nlnk_max || nlnk_max > bn) nlnk_max = bn; /* in case rmax is not defined for A or B */
-  ierr = PetscLLCondensedCreate_Scalable(nlnk_max,&lnk);CHKERRQ(ierr);
+  Crmax = 2*(b->rmax  + (PetscInt)(1.e-2*bn)); /* expected Crmax */
+  if (Crmax > bn) Crmax = bn;
+  ierr = PetscTableCreate(Crmax,bn,&ta);CHKERRQ(ierr); 
+  MatRowMergeMax_SeqAIJ(b,bn,ta);
+  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
+
+  ierr = PetscLLCondensedCreate_Scalable(Crmax,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr          = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);

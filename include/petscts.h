@@ -195,6 +195,11 @@ PETSC_EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TSMonitorCancel(TS);
 
+PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
+
+
 PETSC_EXTERN PetscErrorCode TSSetOptionsPrefix(TS,const char[]);
 PETSC_EXTERN PetscErrorCode TSAppendOptionsPrefix(TS,const char[]);
 PETSC_EXTERN PetscErrorCode TSGetOptionsPrefix(TS,const char *[]);
@@ -237,7 +242,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,const TSTrajectoryType);
 PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
-PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 
@@ -269,6 +274,9 @@ PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawSolution(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawSolutionPhase(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawError(TS,PetscInt,PetscReal,Vec,void*);
+
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void *);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
@@ -382,7 +390,7 @@ PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*)(TS,Pets
 PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**)(TS,PetscReal,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode DMTSGetMinRadius(DM,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMTSSetMinRadius(DM,PetscReal);
-PETSC_EXTERN PetscErrorCode DMTSCheckFromOptions(TS, Vec, void (**)(const PetscReal[], PetscScalar *, void *), void **);
+PETSC_EXTERN PetscErrorCode DMTSCheckFromOptions(TS, Vec, PetscErrorCode (**)(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *), void **);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*),void*);
@@ -427,7 +435,7 @@ PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 
 #define TS_FILE_CLASSID 1211225

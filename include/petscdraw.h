@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char*);
 PETSC_EXTERN PetscErrorCode PetscDrawView(PetscDraw,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 /*
    Number of basic colors in the draw routines, the others are used
@@ -284,5 +284,47 @@ PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer,PetscInt,Pets
 
 PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
 PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
+
+/*
+    Handling of X11 I/O errors in parallel
+*/
+#if defined(PETSC_HAVE_X) && defined(PETSC_HAVE_SETJMP_H)
+
+#include <setjmp.h>
+
+PETSC_EXTERN jmp_buf PetscXIOErrorHandlerJumpBuf;
+PETSC_EXTERN void    PetscXIOErrorHandlerJump(void *);
+PETSC_EXTERN_TYPEDEF typedef void (*PetscXIOErrorHandler)(void *);
+PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
+
+#define PetscDrawCollectiveBegin(draw) 0; do { \
+  PetscErrorCode       _Petsc_ierr; \
+  jmp_buf              _Petsc_jmpbuf; \
+  PetscXIOErrorHandler _Petsc_xioerrhdl = NULL; \
+  PetscBool            _Petsc_isdrawx, _Petsc_xioerr, _Petsc_xioerr_local = PETSC_FALSE; \
+  _Petsc_ierr = PetscObjectTypeCompare((PetscObject)(draw),PETSC_DRAW_X,&_Petsc_isdrawx);CHKERRQ(_Petsc_ierr); \
+  if (_Petsc_isdrawx) { \
+    _Petsc_ierr = PetscMemcpy(&_Petsc_jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(_Petsc_jmpbuf));CHKERRQ(_Petsc_ierr); \
+    _Petsc_xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump); \
+    if (setjmp(PetscXIOErrorHandlerJumpBuf)) {_Petsc_xioerr_local = PETSC_TRUE; {_Petsc_ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(_Petsc_ierr);} \
+  } do {} while(0)
+
+#define PetscDrawCollectiveEnd(draw) 0; \
+  if (_Petsc_isdrawx) { \
+    (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl); \
+    _Petsc_ierr = PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&_Petsc_jmpbuf,sizeof(PetscXIOErrorHandlerJumpBuf));CHKERRQ(_Petsc_ierr); \
+    _Petsc_ierr = MPI_Allreduce(&_Petsc_xioerr_local,&_Petsc_xioerr,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)));CHKERRQ(_Petsc_ierr); \
+    if (_Petsc_xioerr) { \
+      _Petsc_ierr = PetscDrawSetType((draw),PETSC_DRAW_NULL);CHKERRQ(_Petsc_ierr); \
+      PetscFunctionReturn(0); \
+    } \
+  } } while(0)
+
+#else
+
+#define PetscDrawCollectiveBegin(draw) 0; do {} while(0)
+#define PetscDrawCollectiveEnd(draw)   0; do {} while(0)
+
+#endif
 
 #endif

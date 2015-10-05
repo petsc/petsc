@@ -136,7 +136,7 @@ PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
   n   /= bs;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     if (is->isperm) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
     }
@@ -147,7 +147,7 @@ PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block %D Index %D\n",i,idx[i]);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -130,6 +130,7 @@ program main
  
   ! Initial set-up finished.
   ! Time loop
+  maxstep = 5 
   do itime=1,maxstep 
 
     ! Communicate such that everyone has the correct values in ghost cells

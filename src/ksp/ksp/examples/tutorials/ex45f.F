@@ -49,18 +49,35 @@
        PetscInt ctx(*)
        Vec b
        PetscScalar  h
+
        h=0.0
        call VecSet(b,h,ierr)
        end subroutine
 
        subroutine ComputeRHS(ksp,b,dummy,ierr)
        implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
        PetscErrorCode  ierr
        KSP ksp
        Vec b
        integer dummy(*)
-       PetscScalar  h
-       h=1.0
+       PetscScalar  h,Hx,Hy
+       PetscInt  mx,my
+       DM dm
+
+       call KSPGetDM(ksp,dm,ierr)
+       call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,  &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,ierr)
+
+       Hx = 1.0 / (mx-1)
+       Hy = 1.0 / (my-1)
+       h=Hx*Hy
        call VecSet(b,h,ierr)
        end subroutine
 
@@ -91,8 +108,8 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,ierr)
 
-      Hx = 1.d0 / (mx-1)
-      Hy = 1.d0 / (my-1)
+      Hx = 1.0 / (mx-1)
+      Hy = 1.0 / (my-1)
       HxdHy = Hx/Hy
       HydHx = Hy/Hx
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,            &
@@ -102,7 +119,7 @@
           row(MatStencil_i) = i
           row(MatStencil_j) = j
           if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1 ) then
-            v(1) = 2.d0*(HxdHy + HydHx)
+            v(1) = 2.0*(HxdHy + HydHx)
             call MatSetValuesStencil(B,i1,row,i1,row,v,                 &
      &           INSERT_VALUES,ierr)
           else
@@ -112,7 +129,7 @@
             v(2) = -HydHx
             col(MatStencil_i,2) = i-1
             col(MatStencil_j,2) = j
-            v(3) = 2.d0*(HxdHy + HydHx)
+            v(3) = 2.0*(HxdHy + HydHx)
             col(MatStencil_i,3) = i
             col(MatStencil_j,3) = j
             v(4) = -HydHx

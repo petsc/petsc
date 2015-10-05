@@ -3,18 +3,20 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = '46cd70474923a5dde71337aa354f7423a8f2ca20'
-    self.giturls   = ['https://bitbucket.org/petsc/pkg-mumps.git']
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.0-p1.tar.gz']
-    self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
-                     ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
-                     ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a']]
-    self.functions = ['dmumps_c']
-    self.includes  = ['dmumps_c.h']
+    self.gitcommit        = '46cd70474923a5dde71337aa354f7423a8f2ca20'
+    self.giturls          = ['https://bitbucket.org/petsc/pkg-mumps.git']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.0-p1.tar.gz']
+    self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
+                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
+                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a']]
+    self.functions        = ['dmumps_c']
+    self.includes         = ['dmumps_c.h']
     #
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.downloadonWindows= 1
+    self.hastests         = 1
+    self.hastestsdatafiles= 1
     return
 
   def setupHelp(self, help):

@@ -87,7 +87,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     ierr = VecCopy(X,W);CHKERRQ(ierr);
     ierr = VecCopy(F,G);CHKERRQ(ierr);
     ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -140,7 +140,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
         ierr = PetscViewerASCIIPrintf(monitor,"    Line search: maximum iterations reached\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       }
-      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_INSUFFICENT_REDUCTION);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
 
@@ -240,7 +240,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   /* postcheck */
   ierr = SNESLineSearchPostCheck(linesearch,X,Y,G,&changed_y,&changed_w);CHKERRQ(ierr);
   if (changed_y || changed_w) {
-    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_USER_CHANGE);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_USER);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Changing the search direction here doesn't make sense.\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

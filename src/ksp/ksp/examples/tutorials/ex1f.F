@@ -168,7 +168,7 @@
 
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
-      tol = 1.d-7
+      tol = 1.e-7
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                         &
      &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 

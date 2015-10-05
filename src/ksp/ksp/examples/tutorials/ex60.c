@@ -72,11 +72,7 @@ PetscErrorCode PCSetup_Noise(PC pc)
   PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ctx->random);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(ctx->random,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(ctx->random,-1.0,1.0);CHKERRQ(ierr);
-
-  /* ctx->random could be randomly seeded here if desired */
-
   PetscFunctionReturn(0);
 }
 

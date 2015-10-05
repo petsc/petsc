@@ -3,17 +3,19 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.3.tar.gz']
-    self.functions    = ['set_default_options']
-    self.includes     = ['slu_ddefs.h']
-    self.liblist      = [['libsuperlu_4.3.a']]
+    self.download         = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz',
+                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.3.tar.gz']
+    self.functions        = ['set_default_options']
+    self.includes         = ['slu_ddefs.h']
+    self.liblist          = [['libsuperlu_4.3.a']]
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
-    self.excludedDirs = ['SuperLU_DIST','SuperLU_MT']
+    self.excludedDirs     = ['SuperLU_DIST','SuperLU_MT']
     # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1
+    self.hastests         = 1
+    self.hastestsdatafiles= 1
     return
 
   def setupDependencies(self, framework):

@@ -11,7 +11,8 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    '--with-sowing=1',
+    '--download-sowing=1',
+    '--download-c2html=1',
     '--with-hwloc=0',
     '--with-mpi=0',
     '--with-ios=1',

@@ -92,7 +92,7 @@ is illustrated in section ???</para>
 <prompt>bash$</prompt> <command>framework.py -help</command>
 <computeroutput>
 Python Configure Help
-   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)
+   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)
     For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]
 ----------------------------------------------------------------------------------------
 Script:
@@ -116,7 +116,7 @@ normally load the compiler module, which reveals the host of optios controlling 
 <prompt>bash$</prompt> <command>framework.py -configModules=[config.compilers] -help</command>
 <computeroutput>
 Python Configure Help
-   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)
+   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)
     For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]
 ----------------------------------------------------------------------------------------
 Script:

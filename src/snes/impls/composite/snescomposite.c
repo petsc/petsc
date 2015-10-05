@@ -21,6 +21,7 @@ typedef struct {
   PetscInt           nsnes;
   SNESCompositeType  type;
   Vec                Xorig;
+  PetscInt           innerFailures; /* the number of inner failures we've seen */
 
   /* context for ADDITIVEOPTIMAL */
   Vec                *Xes,*Fes;      /* solution and residual vectors for the subsolvers */
@@ -62,8 +63,11 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
   ierr = SNESSolve(next->snes,B,X);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(next->snes,&reason);CHKERRQ(ierr);
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-    snes->reason = SNES_DIVERGED_INNER;
-    PetscFunctionReturn(0);
+    jac->innerFailures++;
+    if (jac->innerFailures >= snes->maxFailures) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
   }
 
   while (next->next) {
@@ -78,8 +82,11 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     ierr = SNESSolve(next->snes,B,X);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(next->snes,&reason);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-      snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      jac->innerFailures++;
+      if (jac->innerFailures >= snes->maxFailures) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
     }
   }
   if (next->snes->pcside == PC_RIGHT) {
@@ -135,8 +142,11 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
   ierr = SNESSolve(next->snes,B,Y);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(next->snes,&reason);CHKERRQ(ierr);
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-    snes->reason = SNES_DIVERGED_INNER;
-    PetscFunctionReturn(0);
+    jac->innerFailures++;
+    if (jac->innerFailures >= snes->maxFailures) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
   }
   ierr = VecAXPY(Y,-1.0,Xorig);CHKERRQ(ierr);
   ierr = VecAXPY(X,next->dmp,Y);CHKERRQ(ierr);
@@ -146,8 +156,11 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
     ierr = SNESSolve(next->snes,B,Y);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(next->snes,&reason);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-      snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      jac->innerFailures++;
+      if (jac->innerFailures >= snes->maxFailures) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
     }
     ierr = VecAXPY(Y,-1.0,Xorig);CHKERRQ(ierr);
     ierr = VecAXPY(X,next->dmp,Y);CHKERRQ(ierr);
@@ -209,8 +222,11 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   ierr = SNESSolve(next->snes,B,Xes[i]);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(next->snes,&reason);CHKERRQ(ierr);
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-    snes->reason = SNES_DIVERGED_INNER;
-    PetscFunctionReturn(0);
+    jac->innerFailures++;
+    if (jac->innerFailures >= snes->maxFailures) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
   }
   while (next->next) {
     i++;
@@ -219,8 +235,11 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
     ierr = SNESSolve(next->snes,B,Xes[i]);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(next->snes,&reason);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-      snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      jac->innerFailures++;
+      if (jac->innerFailures >= snes->maxFailures) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
     }
   }
 
@@ -331,7 +350,6 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
   while (next) {
     n++;
     ierr = SNESSetDM(next->snes,dm);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(next->snes);CHKERRQ(ierr);
     ierr = SNESSetApplicationContext(next->snes, snes->user);CHKERRQ(ierr);
     if (snes->xl && snes->xu) {
       if (snes->ops->computevariablebounds) {
@@ -763,6 +781,7 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
   snes->norm   = 0.;
+  comp->innerFailures = 0;
   ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr         = SNESSetWorkVecs(snes, 1);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -924,4 +943,3 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetDamping_C",SNESCompositeSetDamping_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

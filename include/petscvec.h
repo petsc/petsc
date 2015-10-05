@@ -125,7 +125,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,con
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
-PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
 
 PETSC_EXTERN PetscErrorCode VecSetUp(Vec);
 PETSC_EXTERN PetscErrorCode VecDestroy(Vec*);
@@ -274,7 +274,7 @@ PETSC_EXTERN PetscErrorCode VecAssemblyBegin(Vec);
 PETSC_EXTERN PetscErrorCode VecAssemblyEnd(Vec);
 PETSC_EXTERN PetscErrorCode VecStashSetInitialSize(Vec,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode VecStashView(Vec,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 /*MC
@@ -326,7 +326,7 @@ PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterM
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
 
@@ -413,7 +413,7 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 
-typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES} VecOption;
+typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES,VEC_SUBSET_OFF_PROC_ENTRIES} VecOption;
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
 
 PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
@@ -472,7 +472,7 @@ PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
     These numbers need to match the entries in
   the function table in vecimpl.h
 */
-typedef enum { VECOP_VIEW = 33, VECOP_LOAD = 41, VECOP_DUPLICATE = 0} VecOperation;
+typedef enum { VECOP_DUPLICATE = 0, VECOP_VIEW = 33, VECOP_LOAD = 41, VECOP_VIEWNATIVE = 68, VECOP_LOADNATIVE = 69 } VecOperation;
 PETSC_EXTERN PetscErrorCode VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*
@@ -576,6 +576,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
 PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal []);
+
+PETSC_EXTERN PetscErrorCode PetscSFCreateFromZero(MPI_Comm,Vec,PetscSF*);
 
 #endif
 
