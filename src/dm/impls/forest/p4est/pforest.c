@@ -1,6 +1,7 @@
 #include <petsc/private/dmforestimpl.h>
 #include <petsc/private/viewerimpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
+#include "petsc_p4est_package.h"
 
 #if defined(PETSC_HAVE_P4EST)
 
@@ -361,12 +362,10 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscP4estInitialize();CHKERRQ(ierr);
   ierr = DMCreate_Forest(dm);CHKERRQ(ierr);
   ierr = DMInitialize_pforest(dm);CHKERRQ(ierr);
   ierr = DMSetDimension(dm,P4EST_DIM);CHKERRQ(ierr);
-
-  /* TODO: interface libsc signals and logging with petsc.  For now, just silencing all libsc/p4est  */
-  sc_set_log_defaults(NULL,NULL,SC_LP_SILENT);
 
   /* set forest defaults */
   ierr = DMForestSetTopology(dm,"unit");CHKERRQ(ierr);
