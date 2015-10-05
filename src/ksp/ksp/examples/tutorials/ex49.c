@@ -1269,6 +1269,25 @@ static PetscErrorCode DMDABCApplyCompression(DM elas_da,Mat A,Vec f)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "Orthogonalize"
+static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
+{
+  PetscInt       i,j;
+  PetscScalar    dot;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+  ierr = VecNormalize(vecs[i],PETSC_NULL);CHKERRQ(ierr);
+     for (j=i+1; j<n; j++) {
+       ierr = VecDot(vecs[i],vecs[j],&dot);CHKERRQ(ierr);
+       ierr = VecAXPY(vecs[j],-dot,vecs[i]);CHKERRQ(ierr);
+     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDABCApplySymmetricCompression"
 static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff)
 {
@@ -1327,11 +1346,12 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScatterEnd(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   {                             /* Constrain near-null space */
-    PetscInt nvecs;
-    const Vec *vecs;
-    Vec *uvecs;
-    PetscBool has_const;
+    PetscInt     nvecs;
+    const        Vec *vecs;
+    Vec          *uvecs;
+    PetscBool    has_const;
     MatNullSpace mnull,unull;
+
     ierr = MatGetNearNullSpace(A,&mnull);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvecs,&vecs);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(*ff,nvecs,&uvecs);CHKERRQ(ierr);
@@ -1339,13 +1359,11 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
       ierr = VecScatterBegin(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),has_const,nvecs,uvecs,&unull);CHKERRQ(ierr);
+    ierr = Orthogonalize(nvecs,uvecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,nvecs,uvecs,&unull);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(*AA,unull);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&unull);CHKERRQ(ierr);
-    for (i=0; i<nvecs; i++) {
-      ierr = VecDestroy(&uvecs[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(uvecs);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(nvecs,&uvecs);CHKERRQ(ierr);
   }
 
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
