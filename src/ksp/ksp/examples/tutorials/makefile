@@ -491,14 +491,13 @@ runex7_2:
 	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_2.tmp
-# the next four do not work because there is no support for CUSP factored matrix; how did these tests ever get written
 runex7_mpiaijcusp:
-	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -pc_factor_mat_solver_package cusparse -vec_type mpicusp > ex7_mpiaijcusp.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp > ex7_mpiaijcusp.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp.out ex7_mpiaijcusp.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp.tmp
 runex7_mpiaijcusp_2:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -pc_factor_mat_solver_package cusparse -vec_type mpicusp > ex7_mpiaijcusp_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp > ex7_mpiaijcusp_2.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp_2.out ex7_mpiaijcusp_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp_2.tmp
