@@ -64,8 +64,8 @@ static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
     *topo = NULL;
     PetscFunctionReturn(0);
   }
-  p4est_geometry_destroy((*topo)->geom);
-  p4est_connectivity_destroy((*topo)->conn);
+  PetscStackCallP4est(p4est_geometry_destroy,((*topo)->geom));
+  PetscStackCallP4est(p4est_connectivity_destroy,((*topo)->conn));
   ierr = PetscFree(*topo);CHKERRQ(ierr);
   *topo = NULL;
   PetscFunctionReturn(0);
@@ -83,11 +83,11 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
 
   (*topo)->refct = 1;
 #if !defined(P4_TO_P8)
-  (*topo)->conn  = p4est_connectivity_new_brick((int) N[0], (int) N[1], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1);
+  PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_brick,((int) N[0], (int) N[1], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1));
 #else
-  (*topo)->conn  = p8est_connectivity_new_brick((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1);
+  PetscStackCallP4estReturn((*topo)->conn,p8est_connectivity_new_brick,((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1));
 #endif
-  (*topo)->geom  = p4est_geometry_new_connectivity((*topo)->conn);
+  PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
   PetscFunctionReturn(0);
 }
 
@@ -129,9 +129,9 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     ierr = PetscNewLog(dm,topo);CHKERRQ(ierr);
 
     (*topo)->refct = 1;
-    (*topo)->conn  = p4est_connectivity_new_byname(name);
+    PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_byname,(name));
 #if !defined(P4_TO_P8)
-    (*topo)->geom  = p4est_geometry_new_connectivity((*topo)->conn);
+    PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
 #else
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
@@ -140,7 +140,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
         ierr = PetscOptionsGetReal(prefix,"-dm_p4est_shell_outer_radius",&R2,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(prefix,"-dm_p4est_shell_inner_radius",&R1,NULL);CHKERRQ(ierr);
       }
-      (*topo)->geom = p8est_geometry_new_shell((*topo)->conn,R2,R1);
+      PetscStackCallP4estReturn((*topo)->geom,p8est_geometry_new_shell,((*topo)->conn,R2,R1));
     }
     else if (isSphere) {
       PetscReal R2 = 1., R1 = 0.191728, R0 = 0.039856;
@@ -150,10 +150,10 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
         ierr = PetscOptionsGetReal(prefix,"-dm_p4est_sphere_inner_radius",&R1,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(prefix,"-dm_p4est_sphere_core_radius",&R0,NULL);CHKERRQ(ierr);
       }
-      (*topo)->geom = p8est_geometry_new_sphere((*topo)->conn,R2,R1,R0);
+      PetscStackCallP4estReturn((*topo)->geom,p8est_geometry_new_sphere,((*topo)->conn,R2,R1,R0));
     }
     else {
-      (*topo)->geom  = p4est_geometry_new_connectivity((*topo)->conn);
+      PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
     }
 #endif
   }
@@ -170,11 +170,11 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (pforest->lnodes) p4est_lnodes_destroy(pforest->lnodes);
+  if (pforest->lnodes) PetscStackCallP4est(p4est_lnodes_destroy,(pforest->lnodes));
   pforest->lnodes = NULL;
-  if (pforest->ghost)  p4est_ghost_destroy(pforest->ghost);
+  if (pforest->ghost)  PetscStackCallP4est(p4est_ghost_destroy,(pforest->ghost));
   pforest->ghost = NULL;
-  if (pforest->forest) p4est_destroy(pforest->forest);
+  if (pforest->forest) PetscStackCallP4est(p4est_destroy,(pforest->forest));
   pforest->forest = NULL;
   ierr = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
   ierr = PetscFree(forest->data);CHKERRQ(ierr);
@@ -256,22 +256,22 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     DM_Forest         *aforest  = (DM_Forest *) adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest *) aforest->data;
 
-    pforest->forest = p4est_copy(apforest->forest, 0); /* 0 indicates no data copying */
+    PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
     /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
     /* ... */
-    p4est_reset_data(pforest->forest,0,NULL,(void *)dm); /* this dm is the user context for the new forest */
+    PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
   }
   else {
     PetscInt minLevel;
 
     ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
-    pforest->forest = p4est_new_ext(PetscObjectComm((PetscObject)dm),pforest->topo->conn,
-                                    0,           /* minimum number of quadrants per processor */
-                                    minLevel,    /* minimum level of refinement */
-                                    1,           /* uniform refinement */
-                                    0,           /* we don't allocate any per quadrant data */
-                                    NULL,        /* there is no special quadrant initialization */
-                                    (void *)dm); /* this dm is the user context */
+    PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(PetscObjectComm((PetscObject)dm),pforest->topo->conn,
+                                                             0,           /* minimum number of quadrants per processor */
+                                                             minLevel,    /* minimum level of refinement */
+                                                             1,           /* uniform refinement */
+                                                             0,           /* we don't allocate any per quadrant data */
+                                                             NULL,        /* there is no special quadrant initialization */
+                                                             (void *)dm)); /* this dm is the user context */
   }
   PetscFunctionReturn(0);
 }
@@ -308,14 +308,14 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
       filenameStrip[len-4]='\0';
       name = filenameStrip;
     }
-    p4est_vtk_write_all(pforest->forest,pforest->topo->geom,(double)vtkScale,
-                        1, /* write tree */
-                        1, /* write level */
-                        1, /* write rank */
-                        0, /* do not wrap rank */
-                        0, /* no scalar fields */
-                        0, /* no vector fields */
-                        name);
+    PetscStackCallP4est(p4est_vtk_write_all,(pforest->forest,pforest->topo->geom,(double)vtkScale,
+                                             1, /* write tree */
+                                             1, /* write level */
+                                             1, /* write rank */
+                                             0, /* do not wrap rank */
+                                             0, /* no scalar fields */
+                                             0, /* no vector fields */
+                                             name));
     ierr = PetscFree(filenameStrip);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
