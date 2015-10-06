@@ -1,4 +1,5 @@
 #include <petsc/private/dmforestimpl.h>
+#include <petsc/private/dmpleximpl.h>
 #include <petsc/private/viewerimpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 #include "petsc_p4est_package.h"
@@ -36,6 +37,7 @@
 #define DMFTopologyDestroy_pforest      _append_pforest(DMFTopologyDestroy)
 #define DMFTopologyCreate_pforest       _append_pforest(DMFTopologyCreate)
 #define DMFTopologyCreateBrick_pforest  _append_pforest(DMFTopologyCreateBrick)
+#define DMConvert_Plex_pforest          _append_pforest(DMConvert_Plex)
 
 typedef struct {
   PetscInt             refct;
@@ -342,6 +344,47 @@ static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMConvert_Plex_pforest)
+static PetscErrorCode DMConvert_Plex_pforest(DM dm, DMType newtype, DM *pforest)
+{
+  DM_Plex        *plex;
+  PetscObject    odm;
+  MPI_Comm       comm;
+  PetscBool      isPlex;
+  PetscInt       dim, depth, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  odm  = (PetscObject)dm;
+  comm = PetscObjectComm(odm);
+  ierr = PetscObjectTypeCompare(odm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (!isPlex) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPLEX,odm->type_name);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expeted DM dimension %d, got %d\n",P4EST_DIM,dim);
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  if (depth == 2) {
+    DM dmInterpolated;
+    ierr = DMPlexInterpolate(dm,&dmInterpolated);CHKERRQ(ierr);
+    dm   = dmInterpolated;
+    odm  = (PetscObject) dm;
+  }
+  else if (depth == P4EST_DIM + 1){
+    PetscObjectReference(odm);
+  }
+  else {
+    SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Plex is neither interpolated nor uninterpolated? depth %d, expected 2 or %d\n",depth,P4EST_DIM + 1);
+  }
+  plex = (DM_Plex *) dm->data;
+
+  /* if we had to interpolate, destroy the temporary dm */
+  PetscObjectDereference(odm);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
