@@ -49,7 +49,7 @@ cdef class Log:
     @classmethod
     def begin(cls, all=False):
         if all: CHKERR( PetscLogAllBegin() )
-        else:   CHKERR( PetscLogBegin() )
+        else:   CHKERR( PetscLogDefaultBegin() )
 
     @classmethod
     def view(self, Viewer viewer=None):

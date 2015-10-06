@@ -8,7 +8,7 @@ cdef extern from * nogil:
         PetscLogDouble messageLength
         PetscLogDouble numReductions
 
-    int PetscLogBegin()
+    int PetscLogDefaultBegin()
     int PetscLogAllBegin()
     int PetscLogView(PetscViewer)
     int PetscLogDestroy()
