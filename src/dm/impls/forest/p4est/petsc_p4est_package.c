@@ -25,6 +25,7 @@ static void PetscScLogHandler (FILE *log_stream, const char *filename, int linen
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscScJumpBuf;
 PETSC_INTERN void PetscScAbort_longjmp(void)
 {
+  PetscError(PETSC_COMM_SELF,-1,"p4est function","p4est file",PETSC_ERR_LIB,PETSC_ERROR_INITIAL,"Error in p4est stack call\n");
   longjmp(PetscScJumpBuf,1);
   return;
 }
