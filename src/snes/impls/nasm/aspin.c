@@ -61,6 +61,9 @@ PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESDestroy(&snes->pc);CHKERRQ(ierr);
+  /* reset NEWTONLS and free the data */
+  ierr = SNESReset(snes);CHKERRQ(ierr);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
