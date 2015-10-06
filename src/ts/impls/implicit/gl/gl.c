@@ -1232,7 +1232,6 @@ static PetscErrorCode TSSetFromOptions_GL(PetscOptions *PetscOptionsObject,TS ts
         ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
       }
     }
-    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
     {
       TSGLAdapt adapt;
       ierr = TSGLGetAdapt(ts,&adapt);CHKERRQ(ierr);

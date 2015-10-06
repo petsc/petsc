@@ -357,7 +357,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (snes) {
     if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
-    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
