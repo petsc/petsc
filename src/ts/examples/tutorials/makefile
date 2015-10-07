@@ -7,10 +7,10 @@ LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
-                ex28.c ex30.cxx ex31.c ex34.c extchem.c\
+                ex28.c ex31.c ex34.c ex35.cxx extchem.c\
                 ex16adj.c ex16opt_p.c ex16opt_ic.c  \
                 ex20adj.c ex20opt_p.c ex20opt_ic.c  \
-                ex28.c ex30.cxx ex31.c ex40.c ex41.c
+                ex40.c ex41.c
 EXAMPLESF       = ex1f.F ex22f.F # ex22f_mf.F90
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
@@ -186,6 +186,10 @@ ex34: ex34.o chkopts
 	-${CLINKER} -o ex34 ex34.o ${PETSC_TS_LIB}
 	${RM} ex34.o
 
+ex35: ex35.o chkopts
+	-${CLINKER} -o ex35 ex35.o ${PETSC_TS_LIB}
+	${RM} ex35.o
+
 ex36: ex36.o chkopts
 	-${CLINKER} -o ex36 ex36.o ${PETSC_TS_LIB}
 	${RM} ex36.o
@@ -213,10 +217,6 @@ ex40: ex40.o chkopts
 ex41: ex41.o chkopts
 	-${CLINKER} -o ex41 ex41.o ${PETSC_TS_LIB}
 	${RM} ex41.o
-
-ex35: ex35.o chkopts
-	-${CLINKER} -o ex35 ex35.o ${PETSC_TS_LIB}
-	${RM} ex35.o
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -597,8 +597,8 @@ TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
-TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5    = ex30.PETSc runex30_2 ex30.rm ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_MOAB         = ex35.PETSc runex35 ex35.rm
+TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
