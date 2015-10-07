@@ -417,7 +417,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   for (f = fStart; f < fEnd; f++) {
     PetscInt numSupp, c;
     PetscInt myFace[2] = {-1, -1};
-    PetscInt myOrnt[2] = {-1, -1};
+    PetscInt myOrnt[2] = {PETSC_MIN_INT, PETSC_MIN_INT};
     const PetscInt *supp;
 
     ierr = DMPlexGetSupportSize(dm, f, &numSupp);CHKERRQ(ierr);
@@ -449,40 +449,29 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
       }
       else {
         conn->tree_to_tree[6 * (p - cStart) + PetscFaceToP4estFace[i]] = supp[1 - c] - cStart;
-        myFace[c] = i;
-        myOrnt[c] = orient;
+        myFace[c] = PetscFaceToP4estFace[i];
+        myOrnt[c] = DihedralCompose((P4EST_CHILDREN/2),P4estFaceToPetscOrnt[myFace[c]],orient);
       }
     }
     if (numSupp == 2) {
-      PetscInt p4estFace[2];
-      for (c = 0; c < 2; c++) {
-        p4estFace[c] = PetscFaceToP4estFace[myFace[c]];
-      }
       for (c = 0; c < numSupp; c++) {
         PetscInt p = supp[c];
         PetscInt orntAtoB;
         PetscInt p4estOrient;
 
-        conn->tree_to_face[6 * (p - cStart) + p4estFace[c]] = (int8_t) p4estFace[1 - c];
-
-        orntAtoB = DihedralCompose(P4EST_CHILDREN/2,myOrnt[c],DihedralInvert(P4EST_CHILDREN/2,myOrnt[1-c]));
-        p4estOrient = PetscOrientToP4estOrient(p4estFace[c],orntAtoB);
+        orntAtoB = DihedralCompose((P4EST_CHILDREN/2),myOrnt[c],DihedralInvert((P4EST_CHILDREN/2),myOrnt[1-c]));
 #if !defined(P4_TO_P8)
+        p4estOrient = orntAtoB < 0 ? -(orntAtoB + 1) : orntAtoB;
 #else
         {
-          PetscInt i;
-          int ref;
+          PetscInt firstVert = orntAtoB < 0 ? ((-orntAtoB) % (P4EST_CHILDREN/2)): orntAtoB;
+          PetscInt p4estFirstVert = firstVert < 2 ? firstVert : (firstVert ^ 1);
 
-          ref = p8est_face_permutation_refs[p4estFace[c]][p4estFace[1 - c]];
-          for (i = 0; i < 4; i++) {
-            if (p8est_face_permutation_sets[ref][i] == p4estOrient) {
-              conn->tree_to_face[6 * (p - cStart) + p4estFace[c]] += P4EST_FACES * i;
-              break;
-            }
-          }
-          if (i == 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error determining p4est orientation\n");
+                                                                                           /* swap bits */
+          p4estOrient = ((myFace[c] <= myFace[1 - c]) || (orntAtoB < 0)) ? p4estFirstVert : ((p4estFirstVert >> 1) | ((p4estFirstVert & 1) << 1));
         }
 #endif
+        conn->tree_to_face[6 * (p - cStart) + myFace[c]] = (int8_t) myFace[1 - c] + p4estOrient * P4EST_FACES;
       }
     }
   }
