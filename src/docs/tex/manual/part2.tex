@@ -2422,14 +2422,14 @@ not for timing. These monitors may be accessed with the command line options
 To employ the default graphical monitor, one should use the
 commands
 \begin{tabbing}
-   PetscDrawLG lg;\\
-  KSPMonitorLGResidualNormCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
+  PetscDrawLG lg;\\
+  KSPMonitorLGResidualNormCreate(MPI\_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
   KSPMonitorSet(KSP ksp,KSPMonitorLGResidualNorm,lg,0);
 \end{tabbing}
 When no longer needed, the line graph should be destroyed
 with the command
 \begin{tabbing}
-  KSPMonitorLGResidualNormDestroy(PetscDrawLG *lg);
+  PetscDrawLGDestroy(PetscDrawLG *lg);
 \end{tabbing}
 The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and
 \trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}

@@ -1436,7 +1436,6 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS 
     if (!((PetscObject)snes)->type_name) {
       ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
     }
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
