@@ -1412,8 +1412,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatReuse");
   }
-
-  /* Preallocation */
   ierr = PetscMalloc1(2*m,&dnnz);CHKERRQ(ierr);
   onnz = dnnz + m;
   for (k=0; k<m; k++) {
@@ -1459,7 +1457,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
         ierr      = PetscLayoutFindOwnerIndex(A->rmap,row,&rowowner,&rowrel);CHKERRQ(ierr);
         /* how many roots  */
         iremote[br].rank = rowowner; iremote[br].index = rowrel;           /* edge from bmdnnz to dnnz */
-        /*get nonzero pattern */
+        /* get nonzero pattern */
         ierr = MatGetRow(B,br+rstart,&brncols,&brcols,NULL);CHKERRQ(ierr);
         for (k=0; k<brncols; k++) {
           col  = bNindices[brcols[k]];
@@ -1485,7 +1483,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
     ierr = ISRestoreIndices(bNis,&bNindices);CHKERRQ(ierr);
     ierr = ISDestroy(&bNis);CHKERRQ(ierr);
   }
-  /* dnnz is not correct */
   ierr = MatSeqAIJSetPreallocation(C,0,dnnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(C,0,dnnz,0,onnz);CHKERRQ(ierr);
   ierr = PetscFree(dnnz);CHKERRQ(ierr);
@@ -1516,8 +1513,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
         ierr = PetscMalloc1(brncols,&cols);CHKERRQ(ierr);
         for (k=0; k<brncols; k++) cols[k] = bNindices[brcols[k]];
         /*
-         Nest blocks are required to be nonoverlapping -- otherwise nest and monolithic index layouts wouldn't match.
-         Thus, we could use INSERT_VALUES, but I prefer ADD_VALUES.
+          Nest blocks are required to be nonoverlapping -- otherwise nest and monolithic index layouts wouldn't match.
+          Thus, we could use INSERT_VALUES, but I prefer ADD_VALUES.
          */
         ierr = MatSetValues(C,1,&row,brncols,cols,brcoldata,ADD_VALUES);CHKERRQ(ierr);
         ierr = MatRestoreRow(B,br+rstart,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);

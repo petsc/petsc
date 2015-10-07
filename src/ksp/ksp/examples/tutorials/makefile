@@ -1414,7 +1414,7 @@ TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10
                                           ex10.rm
 TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
 TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
-TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm \
+TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
 	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
 TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
 TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
