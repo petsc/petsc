@@ -24,6 +24,7 @@ typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERPARMETIS "parmetis"
 #define PETSCPARTITIONERSHELL    "shell"
 #define PETSCPARTITIONERSIMPLE   "simple"
+#define PETSCPARTITIONERGATHER   "gather"
 
 PETSC_EXTERN PetscFunctionList PetscPartitionerList;
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
@@ -204,6 +205,7 @@ PETSC_EXTERN PetscErrorCode DMPlexDistributeField(DM,PetscSF,PetscSection,Vec,Pe
 PETSC_EXTERN PetscErrorCode DMPlexDistributeFieldIS(DM, PetscSF, PetscSection, IS, PetscSection, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeData(DM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**);
 PETSC_EXTERN PetscErrorCode DMPlexMigrate(DM, PetscSF, DM);
+PETSC_EXTERN PetscErrorCode DMPlexGetRedundantDM(DM, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseCone(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseCone(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseClosure(DM,PetscBool);

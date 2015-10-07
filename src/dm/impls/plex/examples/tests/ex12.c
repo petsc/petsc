@@ -89,51 +89,34 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
   }
-  if (user->testPartition) {
-    const PetscInt  *sizes = NULL;
-    const PetscInt  *points = NULL;
-    PetscPartitioner part;
+  if (!user->testRedundant) {
+    if (user->testPartition) {
+      const PetscInt  *sizes = NULL;
+      const PetscInt  *points = NULL;
+      PetscPartitioner part;
 
-    if (!rank) {
-      if (dim == 2 && cellSimplex && numProcs == 2) {
-        sizes = triSizes_n2; points = triPoints_n2;
-      } else if (dim == 2 && cellSimplex && numProcs == 3) {
-        sizes = triSizes_n3; points = triPoints_n3;
-      } else if (dim == 2 && cellSimplex && numProcs == 4) {
-        sizes = triSizes_n4; points = triPoints_n4;
-      } else if (dim == 2 && cellSimplex && numProcs == 8) {
-        sizes = triSizes_n8; points = triPoints_n8;
-      } else if (dim == 2 && !cellSimplex && numProcs == 2) {
-        sizes = quadSizes; points = quadPoints;
+      if (!rank) {
+        if (dim == 2 && cellSimplex && numProcs == 2) {
+          sizes = triSizes_n2; points = triPoints_n2;
+        } else if (dim == 2 && cellSimplex && numProcs == 3) {
+          sizes = triSizes_n3; points = triPoints_n3;
+        } else if (dim == 2 && cellSimplex && numProcs == 4) {
+          sizes = triSizes_n4; points = triPoints_n4;
+        } else if (dim == 2 && cellSimplex && numProcs == 8) {
+          sizes = triSizes_n8; points = triPoints_n8;
+        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+          sizes = quadSizes; points = quadPoints;
+        }
       }
+      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
     }
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   }
-  else if (user->testRedundant) {
-    PetscInt         *sizes, *points, numPoints, p, q;
-    IS               globalIS;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetCellNumbering(*dm,&globalIS);CHKERRQ(ierr);
-    ierr = ISGetSize(globalIS,&numPoints);CHKERRQ(ierr);
-    ierr = ISDestroy(&globalIS);CHKERRQ(ierr);
-    ierr = PetscMalloc2(numProcs,&sizes,numProcs*numPoints,&points);CHKERRQ(ierr);
-    for (p = 0, q = 0; p < numProcs; p++) {
-      PetscInt r;
-
-      sizes[p] = numPoints;
-      for (r = 0; r < numPoints; r++, q++) {
-        points[q] = r;
-      }
-    }
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
-    ierr = PetscFree2(sizes,points);CHKERRQ(ierr);
+  else {
+    ierr = DMPlexGetRedundantDM(*dm,&distMesh);CHKERRQ(ierr);
   }
-  ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   if (distMesh) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = distMesh;
