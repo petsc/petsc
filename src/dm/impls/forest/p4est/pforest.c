@@ -26,18 +26,19 @@
 #include <p8est_vtk.h>
 #endif
 
-#define DMInitialize_pforest            _append_pforest(DMInitialize)
-#define DMCreate_pforest                _append_pforest(DMCreate)
-#define DMForestDestroy_pforest         _append_pforest(DMForestDestroy)
-#define DMSetUp_pforest                 _append_pforest(DMSetUp)
-#define DMView_pforest                  _append_pforest(DMView)
-#define DMView_VTK_pforest              _append_pforest(DMView_VTK)
-#define DM_Forest_pforest               _append_pforest(DM_Forest)
-#define DMFTopology_pforest             _append_pforest(DMFTopology)
-#define DMFTopologyDestroy_pforest      _append_pforest(DMFTopologyDestroy)
-#define DMFTopologyCreate_pforest       _append_pforest(DMFTopologyCreate)
-#define DMFTopologyCreateBrick_pforest  _append_pforest(DMFTopologyCreateBrick)
-#define DMConvert_Plex_pforest          _append_pforest(DMConvert_Plex)
+#define DMInitialize_pforest             _append_pforest(DMInitialize)
+#define DMCreate_pforest                 _append_pforest(DMCreate)
+#define DMForestDestroy_pforest          _append_pforest(DMForestDestroy)
+#define DMSetUp_pforest                  _append_pforest(DMSetUp)
+#define DMView_pforest                   _append_pforest(DMView)
+#define DMView_VTK_pforest               _append_pforest(DMView_VTK)
+#define DM_Forest_pforest                _append_pforest(DM_Forest)
+#define DMFTopology_pforest              _append_pforest(DMFTopology)
+#define DMFTopologyDestroy_pforest       _append_pforest(DMFTopologyDestroy)
+#define DMFTopologyCreate_pforest        _append_pforest(DMFTopologyCreate)
+#define DMFTopologyCreateBrick_pforest   _append_pforest(DMFTopologyCreateBrick)
+#define DMConvert_Plex_pforest           _append_pforest(DMConvert_Plex)
+#define DMPlexCreateConnectivity_pforest _append_pforest(DMPlexCreateConnectivity)
 
 typedef struct {
   PetscInt             refct;
@@ -346,45 +347,225 @@ static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMPlexCreateConnectivity_pforest)
+static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity_t **connOut)
+{
+  p4est_topidx_t       numTrees, numVerts, numCorns, numCtt;
+  PetscSection         ctt;
+#if defined(P4_TO_P8)
+  p4est_topidx_t       numEdges, numEtt;
+  PetscSection         ett;
+  PetscInt             eStart, eEnd, e, ettSize;
+#endif
+  p4est_connectivity_t *conn;
+  PetscInt             cStart, cEnd, vStart, vEnd, v, fStart, fEnd, f;
+  PetscInt             *closure = NULL, closureSize, cttSize;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  /* 1: count objects, allocate */
+  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = P4estTopidxCast(cEnd-cStart,&numTrees);CHKERRQ(ierr);
+  numVerts = P4EST_CHILDREN * numTrees;
+  ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
+  ierr = P4estTopidxCast(vEnd-vStart,&numCorns);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF,&ctt);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(ctt,vStart,vEnd);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; v++) {
+    PetscInt c;
+
+    ierr = DMPlexGetTransitiveClosure(dm,v,PETSC_FALSE,&closureSize,&closure);CHKERRQ(ierr);
+    for (c = 0; c < closureSize; c++) {
+      PetscInt p = closure[2*c];
+
+      if (p >= cStart && p < cEnd) {
+        ierr = PetscSectionAddDof(ctt,v,1);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(ctt);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(ctt,&cttSize);CHKERRQ(ierr);
+  ierr = P4estTopidxCast(cttSize,&numCtt);CHKERRQ(ierr);
+#if defined(P4_TO_P8)
+  ierr = DMPlexGetDepthStratum(dm,1,&eStart,&eEnd);CHKERRQ(ierr);
+  ierr = P4estTopidxCast(eEnd-eStart,&numEdges);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF,&ett);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(ett,eStart,eEnd);CHKERRQ(ierr);
+  for (e = eStart; e < eEnd; e++) {
+    PetscInt c;
+
+    ierr = DMPlexGetTransitiveClosure(dm,e,PETSC_FALSE,&closureSize,&closure);CHKERRQ(ierr);
+    for (c = 0; c < closureSize; c++) {
+      PetscInt p = closure[2*c];
+
+      if (p >= cStart && p < cEnd) {
+        ierr = PetscSectionAddDof(ett,e,1);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(ctt);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(ctt,&ettSize);CHKERRQ(ierr);
+  ierr = P4estTopidxCast(ettSize,&numEtt);CHKERRQ(ierr);
+
+  PetscStackCallP4estReturn(conn,p8est_connectivity_new,(numVerts,numTrees,numEdges,numEtt,numCorns,numCtt));
+#else
+  PetscStackCallP4estReturn(conn,p4est_connectivity_new,(numVerts,numTrees,numCorns,numCtt));
+#endif
+
+  /* 2: visit every face, determine neighboring cells(trees) */
+  ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
+  for (f = fStart; f < fEnd; f++) {
+    PetscInt numSupp, c;
+    PetscInt myFace[2] = {-1, -1};
+    PetscInt myOrnt[2] = {-1, -1};
+    const PetscInt *supp;
+
+    ierr = DMPlexGetSupportSize(dm, f, &numSupp);CHKERRQ(ierr);
+    if (numSupp != 1 && numSupp != 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"point %d has facet with %d sides: must be 1 or 2 (boundary or conformal)\n",f,numSupp);
+    ierr = DMPlexGetSupport(dm, f, &supp);CHKERRQ(ierr);
+
+    for (c = 0; c < numSupp; c++) {
+      PetscInt p = supp[c], i;
+      PetscInt numCone;
+      const PetscInt *cone;
+      const PetscInt *ornt;
+      PetscInt orient = PETSC_MIN_INT;
+
+      ierr = DMPlexGetConeSize(dm, p, &numCone);CHKERRQ(ierr);
+      if (numCone != P4EST_FACES) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %d has %d facets, expect %d\n",p,numCone,P4EST_FACES);
+      ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
+      for (i = 0; i < P4EST_FACES; i++) {
+        if (cone[i] == f) {
+          orient = ornt[i];
+          break;
+        }
+      }
+      if (i >= P4EST_FACES) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %d faced %d mismatch\n",p,f);
+      if (numSupp == 1) {
+        /* boundary faces indicated by self reference */
+        conn->tree_to_tree[6 * (p - cStart) + PetscFaceToP4estFace[i]] = p - cStart;
+        conn->tree_to_face[6 * (p - cStart) + PetscFaceToP4estFace[i]] = (int8_t) PetscFaceToP4estFace[i];
+      }
+      else {
+        conn->tree_to_tree[6 * (p - cStart) + PetscFaceToP4estFace[i]] = supp[1 - c] - cStart;
+        myFace[c] = i;
+        myOrnt[c] = orient;
+      }
+    }
+    if (numSupp == 2) {
+      PetscInt p4estFace[2];
+      for (c = 0; c < 2; c++) {
+        p4estFace[c] = PetscFaceToP4estFace[myFace[c]];
+      }
+      for (c = 0; c < numSupp; c++) {
+        PetscInt p = supp[c];
+        PetscInt orntAtoB;
+        PetscInt p4estOrient;
+
+        conn->tree_to_face[6 * (p - cStart) + p4estFace[c]] = (int8_t) p4estFace[1 - c];
+
+        orntAtoB = DihedralCompose(P4EST_CHILDREN/2,myOrnt[c],DihedralInvert(P4EST_CHILDREN/2,myOrnt[1-c]));
+        p4estOrient = PetscOrientToP4estOrient(p4estFace[c],orntAtoB);
+#if !defined(P4_TO_P8)
+#else
+        {
+          PetscInt i;
+          int ref;
+
+          ref = p8est_face_permutation_refs[p4estFace[c]][p4estFace[1 - c]];
+          for (i = 0; i < 4; i++) {
+            if (p8est_face_permutation_sets[ref][i] == p4estOrient) {
+              conn->tree_to_face[6 * (p - cStart) + p4estFace[c]] += P4EST_FACES * i;
+              break;
+            }
+          }
+          if (i == 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error determining p4est orientation\n");
+        }
+#endif
+      }
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMConvert_Plex_pforest)
 static PetscErrorCode DMConvert_Plex_pforest(DM dm, DMType newtype, DM *pforest)
 {
-  DM_Plex        *plex;
-  PetscObject    odm;
   MPI_Comm       comm;
   PetscBool      isPlex;
-  PetscInt       dim, depth, d;
+  PetscInt       dim, depth;
+  PetscMPIInt    size, rank;
+  p4est_connectivity_t *conn = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  odm  = (PetscObject)dm;
-  comm = PetscObjectComm(odm);
-  ierr = PetscObjectTypeCompare(odm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (!isPlex) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPLEX,odm->type_name);
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (!isPlex) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPLEX,((PetscObject)dm)->type_name);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expeted DM dimension %d, got %d\n",P4EST_DIM,dim);
   ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
   if (depth == 2) {
     DM dmInterpolated;
+
     ierr = DMPlexInterpolate(dm,&dmInterpolated);CHKERRQ(ierr);
     dm   = dmInterpolated;
-    odm  = (PetscObject) dm;
   }
   else if (depth == P4EST_DIM + 1){
-    PetscObjectReference(odm);
+    ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   }
   else {
     SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Plex is neither interpolated nor uninterpolated? depth %d, expected 2 or %d\n",depth,P4EST_DIM + 1);
   }
-  plex = (DM_Plex *) dm->data;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    /* p4est connectivities are not distributed: they must be the same on each process */
+    PetscPartitioner partOld, partSerial;
+    PetscInt         numPoints;
+    IS               globalIS;
+    PetscInt         *sizes, *points, i;
+    DM               dmSerial;
 
-  /* if we had to interpolate, destroy the temporary dm */
-  PetscObjectDereference(odm);
+    ierr = DMPlexCreatePointNumbering(dm,&globalIS);CHKERRQ(ierr);
+    ierr = ISGetSize(globalIS,&numPoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&globalIS);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,&sizes,numPoints,&points);CHKERRQ(ierr);
+    sizes[0] = numPoints;
+    for (i = 1; i < size; i++) {
+      sizes[i] = 0;
+    }
+    for (i = 0; i < numPoints; i++) {
+      points[i] = 0;
+    }
+    ierr = PetscPartitionerCreate(comm,&partSerial);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(partSerial,PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(partSerial,size,sizes,points);CHKERRQ(ierr);
+    ierr = DMPlexGetPartitioner(dm,&partOld);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)partOld);CHKERRQ(ierr);
+    ierr = DMPlexSetPartitioner(dm,partSerial);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm,0,NULL,&dmSerial);CHKERRQ(ierr);
+    ierr = DMPlexSetPartitioner(dm,partOld);CHKERRQ(ierr);
+    ierr = PetscPartitionerDestroy(&partOld);CHKERRQ(ierr);
+    ierr = PetscPartitionerDestroy(&partSerial);CHKERRQ(ierr);
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    dm   = dmSerial;
+  }
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = DMPlexCreateConnectivity_pforest(dm,&conn);CHKERRQ(ierr);
+  }
+  else {
+  }
+
+  /* if we had to interpolate or serializes, destroy the temporary dm */
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
