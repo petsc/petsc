@@ -4,6 +4,7 @@
 */
 
 #include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
+#include <petscdraw.h>
 
 extern PetscBool KSPRegisterAllCalled;
 
@@ -534,20 +535,20 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   */
   ierr = PetscOptionsBool("-ksp_monitor_lg_residualnorm","Monitor graphically preconditioned residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
-    PetscObject *ctx;
+    PetscDrawLG ctx;
 
-    ierr = KSPMonitorLGResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGResidualNormDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorLGResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   /*
     Graphically plots preconditioned and true residual norm
   */
   ierr = PetscOptionsBool("-ksp_monitor_lg_true_residualnorm","Monitor graphically true residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
-    PetscObject *ctx;
+    PetscDrawLG ctx;
 
-    ierr = KSPMonitorLGTrueResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGTrueResidualNormDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorLGTrueResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   /*
     Graphically plots preconditioned residual norm and range of residual element values
@@ -556,7 +557,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscViewer ctx;
 
-    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)ksp),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
