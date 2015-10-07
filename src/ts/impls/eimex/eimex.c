@@ -477,7 +477,6 @@ static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptions *PetscOptionsObject,TS
       ierr = TSEIMEXSetRowCol(ts,tindex[0],tindex[1]);CHKERRQ(ierr);
     }
     ierr = PetscOptionsBool("-ts_eimex_order_adapt","Solve the problem with adaptive order","TSEIMEXSetOrdAdapt",ext->ord_adapt,&ext->ord_adapt,NULL);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
