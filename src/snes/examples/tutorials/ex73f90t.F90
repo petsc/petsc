@@ -108,12 +108,13 @@
       DM::       daphi,dalam
       IS::        isglobal(2)
       PetscErrorCode   ierr
-      PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
+      PetscInt         its,N1,N2,i,j,irow,row(1)
+      PetscInt         col(1),low,high,lamlow,lamhigh
       PetscBool        flg
       PetscInt         ione,nfour,itwo,nloc,nloclam
       PetscReal lambda_max,lambda_min
       type(petsc_kkt_solver_type)  solver
-      PetscScalar      bval,cval,one
+      PetscScalar      bval(1),cval(1),one
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -225,18 +226,21 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       one    = 1.0
       if( N2 .gt. 0 ) then
-         bval = -one/(solver%mx-2)
+         bval(1) = -one/(solver%mx-2)
 !     cval = -one/(solver%my*solver%mx)
-         cval = -one
-         do 20 row=low,high-1
-            j = row/solver%mx   ! row in domain
-            i = mod(row,solver%mx)
+         cval(1) = -one
+         do 20 irow=low,high-1
+            j = irow/solver%mx   ! row in domain
+            i = mod(irow,solver%mx)
+            row(1) = irow
+            col(1) = j
             if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
                !     no op
             else
-               call MatSetValues(Bmat,ione,row,ione,j,bval,INSERT_VALUES,ierr)
+               call MatSetValues(Bmat,ione,row,ione,col,bval,INSERT_VALUES,ierr)
             endif
-            call MatSetValues(Cmat,ione,j,ione,row,cval,INSERT_VALUES,ierr)
+            row(1) = j
+            call MatSetValues(Cmat,ione,row,ione,row,cval,INSERT_VALUES,ierr)
  20   continue
       endif
       call MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY,ierr)
@@ -248,7 +252,9 @@
 !  Set D (indentity)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       do 30 j=lamlow,lamhigh-1
-         call MatSetValues(Dmat,ione,j,ione,j,one,INSERT_VALUES,ierr)
+         row(1) = j
+         cval(1) = one
+         call MatSetValues(Dmat,ione,row,ione,row,cval,INSERT_VALUES,ierr)
  30   continue
       call MatAssemblyBegin(Dmat,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(Dmat,MAT_FINAL_ASSEMBLY,ierr)
@@ -566,7 +572,7 @@
       PetscErrorCode ierr
 
 !  Local variables:
-      PetscInt    row,col(5),i,j
+      PetscInt    irow,row(1),col(5),i,j
       PetscInt    ione,ifive,low,high,ii
       PetscScalar two,one,hx,hy,hy2inv
       PetscScalar hx2inv,sc,v(5)
@@ -587,13 +593,14 @@
       call VecGetArrayReadF90(X1,lx_v,ierr)
 
       ii = 0
-      do 20 row=low,high-1
-         j = row/solver%mx
-         i = mod(row,solver%mx)
+      do 20 irow=low,high-1
+         j = irow/solver%mx
+         i = mod(irow,solver%mx)
          ii = ii + 1            ! one based local index
 !     boundary points
          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1) then
-            col(1) = row
+            col(1) = irow
+            row(1) = irow
             v(1)   = one
             call MatSetValues(jac,ione,row,ione,col,v,INSERT_VALUES,ierr)
 !     interior grid points
@@ -608,11 +615,12 @@
             if(i+1==solver%mx-1) v(4) = 0.0
             v(5) = -hy2inv
             if(j+1==solver%my-1) v(5) = 0.0
-            col(1) = row - solver%mx
-            col(2) = row - 1
-            col(3) = row
-            col(4) = row + 1
-            col(5) = row + solver%mx
+            col(1) = irow - solver%mx
+            col(2) = irow - 1
+            col(3) = irow
+            col(4) = irow + 1
+            col(5) = irow + solver%mx
+            row(1) = irow
             call MatSetValues(jac,ione,row,ifive,col,v,INSERT_VALUES,ierr)
          endif
  20   continue
@@ -702,8 +710,8 @@
       PetscErrorCode ierr
 !  Local variables:
       PetscScalar one,sc
-      PetscScalar u,v
-      PetscInt  i,j,low,high,ii,ione,row
+      PetscScalar u,v(1)
+      PetscInt  i,j,low,high,ii,ione,irow,row(1)
       PetscScalar,pointer :: lx_v(:)
 
       one    = 1.0
@@ -715,16 +723,16 @@
 
 !     Compute function over the locally owned part of the grid
       ii = 0
-      do 20 row=low,high-1
-         j = row/solver%mx
-         i = mod(row,solver%mx)
+      do 20 irow=low,high-1
+         j = irow/solver%mx
+         i = mod(irow,solver%mx)
          ii = ii + 1            ! one based local index
-   
+         row(1) = irow
          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
-            v = 0.0
+            v(1) = 0.0
          else
             u = lx_v(ii)
-            v = -sc*exp(u)
+            v(1) = -sc*exp(u)
          endif
          call VecSetValues(F1,ione,row,v,INSERT_VALUES,ierr)
  20   continue
