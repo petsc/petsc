@@ -58,6 +58,10 @@ typedef struct {
   PetscInt dummy;
 } PetscPartitioner_Simple;
 
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Gather;
+
 /* This is an integer map, in addition it is also a container class
    Design points:
      - Low storage is the most important design point
