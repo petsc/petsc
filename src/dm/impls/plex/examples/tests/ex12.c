@@ -9,6 +9,7 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscInt  overlap;                      /* The cell overlap to use during partitioning */
   PetscBool testPartition;                /* Use a fixed partitioning for testing */
+  PetscBool testRedundant;                /* Use a redundant partitioning for testing */
   PetscBool loadBalance;                  /* Load balance via a second distribute step */
 } AppCtx;
 
@@ -31,6 +32,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-filename", "The mesh file", "ex12.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -108,6 +110,28 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+  }
+  else if (user->testRedundant) {
+    PetscInt         *sizes, *points, numPoints, p, q;
+    IS               globalIS;
+    PetscPartitioner part;
+
+    ierr = DMPlexGetCellNumbering(*dm,&globalIS);CHKERRQ(ierr);
+    ierr = ISGetSize(globalIS,&numPoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&globalIS);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numProcs,&sizes,numProcs*numPoints,&points);CHKERRQ(ierr);
+    for (p = 0, q = 0; p < numProcs; p++) {
+      PetscInt r;
+
+      sizes[p] = numPoints;
+      for (r = 0; r < numPoints; r++, q++) {
+        points[q] = r;
+      }
+    }
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,points);CHKERRQ(ierr);
   }
   ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   if (distMesh) {
