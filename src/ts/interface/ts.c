@@ -1534,6 +1534,9 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 +  ts - the TS context obtained from TSCreate()
 -  usrP - optional user context
 
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+
    Level: intermediate
 
 .keywords: TS, timestep, set, application, context
@@ -1561,6 +1564,9 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 
     Output Parameter:
 .   usrP - user context
+
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
     Level: intermediate
 

@@ -185,9 +185,8 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 
     Level: advanced
 
-    Notes:
-    This routine is intended for use within various shell matrix routines,
-    as set with MatShellSetOperation().
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .keywords: matrix, shell, get, context
 
@@ -632,8 +631,9 @@ $    MatDestroy(mat);
    with KSP (such as, for use with matrix-free methods). You should not
    use the shell type if you plan to define a complete matrix class.
 
-   Fortran Notes: The context can only be an integer or a PetscObject
-      unfortunately it cannot be a Fortran array or derived type.
+   Fortran Notes: To use this from Fortran with a ctx you must write an interface definition for this
+    function and for MatShellGetContext() that tells Fortran the Fortran derived data type you are passing
+    in as the ctx argument.
 
    PETSc requires that matrices and vectors being used for certain
    operations are partitioned accordingly.  For example, when
@@ -691,8 +691,8 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
    Level: advanced
 
-   Fortran Notes: The context can only be an integer or a PetscObject
-      unfortunately it cannot be a Fortran array or derived type.
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/

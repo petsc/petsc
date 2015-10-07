@@ -976,6 +976,9 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 
    Level: intermediate
 
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+
 .keywords: SNES, nonlinear, set, application, context
 
 .seealso: SNESGetApplicationContext()
@@ -1006,6 +1009,9 @@ PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 
    Output Parameter:
 .  usrP - user context
+
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
 
