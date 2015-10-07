@@ -181,8 +181,11 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   pforest->forest = NULL;
   ierr = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
   ierr = PetscFree(forest->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_Plex_pforest),NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,p4est_connectivity_t**);
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMSetUp_pforest)
@@ -200,15 +203,20 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   ierr = DMForestGetFineForest(dm,&fine);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
   ierr = DMForestGetTopology(dm,&topoName);CHKERRQ(ierr);
-  if (coarse && fine)            SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot adapt from both a coarse and a fine forest");
+  if (coarse && fine)                   SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot adapt from both a coarse and a fine forest");
   adaptFrom = coarse ? coarse : fine;
-  if (!base && !topoName)        SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs either a topology or a base DM");
+  if (!adaptFrom && !base && !topoName) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs a topology, a base DM, or a DM to adapt from");
 
   /* === Step 1: DMFTopology === */
   if (adaptFrom) { /* reference already created topology */
+    PetscBool         ispforest;
     DM_Forest         *aforest  = (DM_Forest *) adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest *) aforest->data;
 
+    ierr = PetscObjectTypeCompare((PetscObject)adaptFrom,DMPFOREST,&ispforest);CHKERRQ(ierr);
+    if (!ispforest) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Trying to adapt from %s, which is not %s\n",((PetscObject)adaptFrom)->type_name,DMPFOREST);
+    ierr = DMForestGetBaseDM(adaptFrom,&base);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
     if (!apforest->topo) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
     apforest->topo->refct++;
     pforest->topo = apforest->topo;
@@ -224,23 +232,47 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     PetscBool isPlex, isDA;
     const char *name;
 
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Converting a DM to a" P4EST_STRING "_connectivity_t needs to be implemented");
     ierr = PetscObjectGetName((PetscObject)base,&name);CHKERRQ(ierr);
     ierr = DMForestSetTopology(dm,(DMForestTopology)name);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)base,DMPLEX,&isPlex);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)base,DMDA,&isDA);CHKERRQ(ierr);
     if (isPlex) {
-#if 0
-      DM redundantBase;
+      MPI_Comm             comm = PetscObjectComm((PetscObject)dm);
+      PetscInt             depth;
+      PetscMPIInt          size;
+      p4est_connectivity_t *conn = NULL;
+      DM                   connDM;
+      DMFTopology_pforest  *topo;
+      PetscErrorCode       ierr;
 
-      DMPlexGetRedundantDM(base,&redundantBase);CHKERRQ(ierr);
-      if (redundantBase) {
-        DMForestSetBaseDM(dm,redundantBase);CHKERRQ(ierr);
-        base = redundantBase;
-        ierr = DMDestroy(&redundantBase);CHKERRQ(ierr);
+      ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);
+      if (depth == 2) {
+        ierr  = DMPlexInterpolate(base,&connDM);CHKERRQ(ierr);
       }
-      ierr = DMPlexConvert_DMFTopology_pforest(base,&pforest->topo);CHKERRQ(ierr);
-#endif
+      else if (depth == P4EST_DIM + 1) {
+        connDM = base;
+        ierr   = PetscObjectReference((PetscObject)base);CHKERRQ(ierr);
+      }
+      else {
+        SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Base plex is neither interpolated nor uninterpolated? depth %d, expected 2 or %d\n",depth,P4EST_DIM + 1);
+      }
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      if (size > 1) {
+        DM dmRedundant;
+
+        ierr = DMPlexGetRedundantDM(base,&dmRedundant);CHKERRQ(ierr);
+        if (!dmRedundant) SETERRQ(comm,PETSC_ERR_PLIB,"Could not create redundant DM\n");
+        ierr   = DMDestroy(&connDM);CHKERRQ(ierr);
+        connDM = dmRedundant;
+      }
+      ierr = DMPlexCreateConnectivity_pforest(connDM,&conn);CHKERRQ(ierr);
+      /* if we had to interpolate or make redundant, destroy the temporary dm */
+      ierr = DMDestroy(&connDM);CHKERRQ(ierr);
+      ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
+      topo->refct   = 1;
+      topo->conn    = conn;
+      topo->geom    = NULL;
+      pforest->topo = topo;
     }
     else if (isDA) {
 #if 0
@@ -634,9 +666,7 @@ static PetscErrorCode DMConvert_Plex_pforest(DM dm, DMType newtype, DM *pforest)
 {
   MPI_Comm       comm;
   PetscBool      isPlex;
-  PetscInt       dim, depth;
-  PetscMPIInt    size, rank;
-  p4est_connectivity_t *conn = NULL;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -647,62 +677,9 @@ static PetscErrorCode DMConvert_Plex_pforest(DM dm, DMType newtype, DM *pforest)
   if (!isPlex) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPLEX,((PetscObject)dm)->type_name);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expeted DM dimension %d, got %d\n",P4EST_DIM,dim);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  if (depth == 2) {
-    DM dmInterpolated;
-
-    ierr = DMPlexInterpolate(dm,&dmInterpolated);CHKERRQ(ierr);
-    dm   = dmInterpolated;
-  }
-  else if (depth == P4EST_DIM + 1){
-    ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  }
-  else {
-    SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Plex is neither interpolated nor uninterpolated? depth %d, expected 2 or %d\n",depth,P4EST_DIM + 1);
-  }
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) {
-    /* p4est connectivities are not distributed: they must be the same on each process */
-    PetscPartitioner partOld, partSerial;
-    PetscInt         numPoints;
-    IS               globalIS;
-    PetscInt         *sizes, *points, i;
-    DM               dmSerial;
-
-    ierr = DMPlexCreatePointNumbering(dm,&globalIS);CHKERRQ(ierr);
-    ierr = ISGetSize(globalIS,&numPoints);CHKERRQ(ierr);
-    ierr = ISDestroy(&globalIS);CHKERRQ(ierr);
-    ierr = PetscMalloc2(size,&sizes,numPoints,&points);CHKERRQ(ierr);
-    sizes[0] = numPoints;
-    for (i = 1; i < size; i++) {
-      sizes[i] = 0;
-    }
-    for (i = 0; i < numPoints; i++) {
-      points[i] = 0;
-    }
-    ierr = PetscPartitionerCreate(comm,&partSerial);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(partSerial,PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(partSerial,size,sizes,points);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(dm,&partOld);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)partOld);CHKERRQ(ierr);
-    ierr = DMPlexSetPartitioner(dm,partSerial);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm,0,NULL,&dmSerial);CHKERRQ(ierr);
-    ierr = DMPlexSetPartitioner(dm,partOld);CHKERRQ(ierr);
-    ierr = PetscPartitionerDestroy(&partOld);CHKERRQ(ierr);
-    ierr = PetscPartitionerDestroy(&partSerial);CHKERRQ(ierr);
-    ierr = PetscFree2(sizes,points);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    dm   = dmSerial;
-  }
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = DMPlexCreateConnectivity_pforest(dm,&conn);CHKERRQ(ierr);
-  }
-  else {
-  }
-
-  /* if we had to interpolate or serializes, destroy the temporary dm */
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm,pforest);CHKERRQ(ierr);
+  ierr = DMSetType(*pforest,DMPFOREST);CHKERRQ(ierr);
+  ierr = DMForestSetBaseDM(*pforest,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -748,6 +725,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   pforest->forest = NULL;
   pforest->ghost  = NULL;
   pforest->lnodes = NULL;
+
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_Plex_pforest),DMConvert_Plex_pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
