@@ -356,10 +356,14 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   p4est_topidx_t       numEdges, numEtt;
   PetscSection         ett;
   PetscInt             eStart, eEnd, e, ettSize;
+  PetscInt             vertOff = 1 + P4EST_FACES + P8EST_EDGES;
+  PetscInt             edgeOff = 1 + P4EST_FACES;
+#else
+  PetscInt             vertOff = 1 + P4EST_FACES;
 #endif
   p4est_connectivity_t *conn;
-  PetscInt             cStart, cEnd, vStart, vEnd, v, fStart, fEnd, f;
-  PetscInt             *closure = NULL, closureSize, cttSize;
+  PetscInt             cStart, cEnd, c, vStart, vEnd, v, fStart, fEnd, f;
+  PetscInt             *star = NULL, *closure = NULL, closureSize, starSize, cttSize;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -372,16 +376,28 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&ctt);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(ctt,vStart,vEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; v++) {
-    PetscInt c;
+    PetscInt s;
 
-    ierr = DMPlexGetTransitiveClosure(dm,v,PETSC_FALSE,&closureSize,&closure);CHKERRQ(ierr);
-    for (c = 0; c < closureSize; c++) {
-      PetscInt p = closure[2*c];
+    ierr = DMPlexGetTransitiveClosure(dm,v,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+    for (s = 0; s < starSize; s++) {
+      PetscInt p = star[2*s];
 
       if (p >= cStart && p < cEnd) {
-        ierr = PetscSectionAddDof(ctt,v,1);CHKERRQ(ierr);
+        /* we want to count every time cell p references v, so we see how many times it comes up in the closure.  This
+         * only protects against periodicity problems */
+        ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        for (c = 0; c < P4EST_CHILDREN; c++) {
+          PetscInt cellVert = closure[2 * (c + vertOff)];
+
+          if (cellVert < vStart || cellVert >= vEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure: vertices\n");
+          if (cellVert == v) {
+            ierr = PetscSectionAddDof(ctt,v,1);CHKERRQ(ierr);
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       }
     }
+    ierr = DMPlexRestoreTransitiveClosure(dm,v,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(ctt);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(ctt,&cttSize);CHKERRQ(ierr);
@@ -392,21 +408,34 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&ett);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(ett,eStart,eEnd);CHKERRQ(ierr);
   for (e = eStart; e < eEnd; e++) {
-    PetscInt c;
+    PetscInt s;
 
-    ierr = DMPlexGetTransitiveClosure(dm,e,PETSC_FALSE,&closureSize,&closure);CHKERRQ(ierr);
-    for (c = 0; c < closureSize; c++) {
-      PetscInt p = closure[2*c];
+    ierr = DMPlexGetTransitiveClosure(dm,e,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+    for (s = 0; s < starSize; s++) {
+      PetscInt p = star[2*c];
 
       if (p >= cStart && p < cEnd) {
-        ierr = PetscSectionAddDof(ett,e,1);CHKERRQ(ierr);
+        /* we want to count every time cell p references e, so we see how many times it comes up in the closure.  This
+         * only protects against periodicity problems */
+        ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        for (c = 0; c < P8EST_EDGES; c++) {
+          PetscInt cellEdge = closure[2 * (c + edgeOff)];
+
+          if (cellEdge < eStart || cellEdge >= eEnd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure: edges\n");
+          if (cellEdge == e) {
+            ierr = PetscSectionAddDof(ett,e,1);CHKERRQ(ierr);
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       }
     }
+    ierr = DMPlexRestoreTransitiveClosure(dm,e,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(ctt);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(ctt,&ettSize);CHKERRQ(ierr);
   ierr = P4estTopidxCast(ettSize,&numEtt);CHKERRQ(ierr);
 
+  /* This routine allocates space for the arrays, which we fill below */
   PetscStackCallP4estReturn(conn,p8est_connectivity_new,(numVerts,numTrees,numEdges,numEtt,numCorns,numCtt));
 #else
   PetscStackCallP4estReturn(conn,p4est_connectivity_new,(numVerts,numTrees,numCorns,numCtt));
@@ -415,7 +444,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   /* 2: visit every face, determine neighboring cells(trees) */
   ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; f++) {
-    PetscInt numSupp, c;
+    PetscInt numSupp, s;
     PetscInt myFace[2] = {-1, -1};
     PetscInt myOrnt[2] = {PETSC_MIN_INT, PETSC_MIN_INT};
     const PetscInt *supp;
@@ -424,8 +453,8 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
     if (numSupp != 1 && numSupp != 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"point %d has facet with %d sides: must be 1 or 2 (boundary or conformal)\n",f,numSupp);
     ierr = DMPlexGetSupport(dm, f, &supp);CHKERRQ(ierr);
 
-    for (c = 0; c < numSupp; c++) {
-      PetscInt p = supp[c], i;
+    for (s = 0; s < numSupp; s++) {
+      PetscInt p = supp[s], i;
       PetscInt numCone;
       const PetscInt *cone;
       const PetscInt *ornt;
@@ -444,22 +473,29 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
       if (i >= P4EST_FACES) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %d faced %d mismatch\n",p,f);
       if (numSupp == 1) {
         /* boundary faces indicated by self reference */
-        conn->tree_to_tree[6 * (p - cStart) + PetscFaceToP4estFace[i]] = p - cStart;
-        conn->tree_to_face[6 * (p - cStart) + PetscFaceToP4estFace[i]] = (int8_t) PetscFaceToP4estFace[i];
+        conn->tree_to_tree[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = p - cStart;
+        conn->tree_to_face[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = (int8_t) PetscFaceToP4estFace[i];
       }
       else {
-        conn->tree_to_tree[6 * (p - cStart) + PetscFaceToP4estFace[i]] = supp[1 - c] - cStart;
-        myFace[c] = PetscFaceToP4estFace[i];
-        myOrnt[c] = DihedralCompose((P4EST_CHILDREN/2),P4estFaceToPetscOrnt[myFace[c]],orient);
+        conn->tree_to_tree[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = supp[1 - s] - cStart;
+        myFace[s] = PetscFaceToP4estFace[i];
+        /* get the orientation of cell p in p4est-type closure to facet f, by composing the p4est-closure to
+         * petsc-closure permutation and the petsc-closure to facet orientation */
+        myOrnt[s] = DihedralCompose((P4EST_CHILDREN/2),P4estFaceToPetscOrnt[myFace[s]],orient);
       }
     }
     if (numSupp == 2) {
-      for (c = 0; c < numSupp; c++) {
-        PetscInt p = supp[c];
+      for (s = 0; s < numSupp; s++) {
+        PetscInt p = supp[s];
         PetscInt orntAtoB;
         PetscInt p4estOrient;
 
-        orntAtoB = DihedralCompose((P4EST_CHILDREN/2),myOrnt[c],DihedralInvert((P4EST_CHILDREN/2),myOrnt[1-c]));
+        /* composing the forward permutation with the other cell's inverse permutation gives the self-to-neighbor
+         * permutation of this cell-facet's cone */
+        orntAtoB = DihedralCompose((P4EST_CHILDREN/2),myOrnt[s],DihedralInvert((P4EST_CHILDREN/2),myOrnt[1-s]));
+
+        /* convert cone-description permutation (i.e., edges around facet) to cap-description permutation (i.e.,
+         * vertices around facet) */
 #if !defined(P4_TO_P8)
         p4estOrient = orntAtoB < 0 ? -(orntAtoB + 1) : orntAtoB;
 #else
@@ -468,13 +504,126 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
           PetscInt p4estFirstVert = firstVert < 2 ? firstVert : (firstVert ^ 1);
 
                                                                                            /* swap bits */
-          p4estOrient = ((myFace[c] <= myFace[1 - c]) || (orntAtoB < 0)) ? p4estFirstVert : ((p4estFirstVert >> 1) | ((p4estFirstVert & 1) << 1));
+          p4estOrient = ((myFace[s] <= myFace[1 - s]) || (orntAtoB < 0)) ? p4estFirstVert : ((p4estFirstVert >> 1) | ((p4estFirstVert & 1) << 1));
         }
 #endif
-        conn->tree_to_face[6 * (p - cStart) + myFace[c]] = (int8_t) myFace[1 - c] + p4estOrient * P4EST_FACES;
+        /* encode neighbor face and orientation in tree_to_face per p4est_connectivity standard (see
+         * p4est_connectivity.h, p8est_connectivity.h) */
+        conn->tree_to_face[6 * (p - cStart) + myFace[s]] = (int8_t) myFace[1 - s] + p4estOrient * P4EST_FACES;
       }
     }
   }
+
+#if defined(P4_TO_P8)
+  /* 3: visit every edge */
+  conn->ett_offset[0] = 0;
+  for (e = eStart; e < eEnd; e++) {
+    PetscInt off, s;
+
+    ierr = PetscSectionGetOffset(ett,e,&off);CHKERRQ(ierr);
+    conn->ett_offset[e - eStart] = (p4est_topidx_t) off;
+    ierr = DMPlexGetTransitiveClosure(dm,e,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+    for (s = 0; s < starSize; s++) {
+      PetscInt p = star[2 * s];
+
+      if (p >= cStart && p < cEnd) {
+        ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        if (closureSize != P4EST_INSUL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure\n");
+        for (c = 0; c < P8EST_EDGES; c++) {
+          PetscInt cellEdge = closure[2 * (c + edgeOff)];
+          PetscInt cellOrnt = closure[2 * (c + edgeOff) + 1];
+
+          if (cellEdge == e) {
+            PetscInt p4estEdge = PetscEdgeToP4estEdge[c];
+            PetscInt totalOrient;
+
+            /* compose p4est-closure to petsc-closure permutation and petsc-closure to edge orientation */
+            totalOrient = DihedralCompose(2,P4estEdgeToPetscOrnt[p4estEdge],cellOrnt);
+            /* p4est orientations are positive: -2 => 1, -1 => 0 */
+            totalOrient = (totalOrient < 0) ? -(totalOrient + 1) : totalOrient;
+            conn->edge_to_tree[off] = (p4est_locidx_t) (p - cStart);
+            /* encode cell-edge and orientation in edge_to_edge per p8est_connectivity standart (see
+             * p8est_connectivity.h) */
+            conn->edge_to_edge[off++] = (int8_t) p4estEdge + P8EST_EDGES * totalOrient;
+            conn->tree_to_edge[P8EST_EDGES * (p - cStart) + p4estEdge] = e - eStart;
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      }
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm,e,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionDestroy(&ett);CHKERRQ(ierr);
+#endif
+
+  /* 4: visit every vertex */
+  conn->ctt_offset[0] = 0;
+  for (v = vStart; v < vEnd; v++) {
+    PetscInt off, s;
+
+    ierr = PetscSectionGetOffset(ctt,v,&off);CHKERRQ(ierr);
+    conn->ctt_offset[v - vStart] = (p4est_topidx_t) off;
+    ierr = DMPlexGetTransitiveClosure(dm,v,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+    for (s = 0; s < starSize; s++) {
+      PetscInt p = star[2 * s];
+
+      if (p >= cStart && p < cEnd) {
+        ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        if (closureSize != P4EST_INSUL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure\n");
+        for (c = 0; c < P4EST_CHILDREN; c++) {
+          PetscInt cellVert = closure[2 * (c + vertOff)];
+
+          if (cellVert == v) {
+            PetscInt p4estVert = PetscVertToP4estVert[c];
+
+            conn->corner_to_tree[off] = (p4est_locidx_t) (p - cStart);
+            conn->corner_to_corner[off++] = (int8_t) p4estVert;
+            conn->tree_to_corner[P4EST_CHILDREN * (p - cStart) + p4estVert] = v - vStart;
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      }
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm,v,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionDestroy(&ctt);CHKERRQ(ierr);
+
+  /* 5: Compute the coordinates */
+  {
+    PetscInt     coordDim;
+    Vec          coordVec;
+    PetscSection coordSec;
+
+    ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm,&coordVec);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm,&coordSec);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; c++) {
+      PetscInt    dof;
+      PetscScalar *cellCoords = NULL;
+
+      ierr = DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords);CHKERRQ(ierr);
+      if (dof != P4EST_CHILDREN * coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners\n");
+      for (v = 0; v < P4EST_CHILDREN; v++) {
+        PetscInt i, lim = PetscMin(3, coordDim);
+        PetscInt p4estVert = PetscVertToP4estVert[v];
+
+        /* p4est vertices are always embedded in R^3 */
+        for (i = 0; i < 3; i++) {
+          conn->tree_to_vertex[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = 0.;
+        }
+        for (i = 0; i < lim; i++) {
+          conn->tree_to_vertex[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = PetscRealPart(cellCoords[v * coordDim + i]);
+        }
+      }
+      ierr = DMPlexVecRestoreClosure(dm, coordSec, coordVec, c, &dof, &cellCoords);CHKERRQ(ierr);
+    }
+  }
+
+#if P4EST_ENABLE_DEBUG
+  if (!p4est_connectivity_is_valid(conn)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Plex to p4est conversion failed\n");
+#endif
+
+  *connOut = conn;
 
   PetscFunctionReturn(0);
 }
@@ -541,6 +690,7 @@ static PetscErrorCode DMConvert_Plex_pforest(DM dm, DMType newtype, DM *pforest)
     ierr = DMPlexSetPartitioner(dm,partOld);CHKERRQ(ierr);
     ierr = PetscPartitionerDestroy(&partOld);CHKERRQ(ierr);
     ierr = PetscPartitionerDestroy(&partSerial);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,points);CHKERRQ(ierr);
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = dmSerial;
   }
