@@ -1718,6 +1718,58 @@ PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
 
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESSetFunctionNorm"
+/*@
+  SNESSetFunctionNorm - Sets the last computed residual norm.
+
+  Logically Collective on SNES
+
+  Input Parameters:
++ snes - the SNES context
+
+- normschedule - the frequency of norm computation
+
+  Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+.seealso: SNESGetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+@*/
+PetscErrorCode SNESSetFunctionNorm(SNES snes, PetscReal norm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->norm = norm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetFunctionNorm"
+/*@
+  SNESGetFunctionNorm - Gets the last computed norm of the residual
+
+  Not Collective
+
+  Input Parameter:
+. snes - the SNES context
+
+  Output Parameter:
+. norm - the last computed residual norm
+
+  Level: developer
+
+.keywords: SNES, nonlinear, set, function, norm, type
+.seealso: SNESSetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+@*/
+PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(norm, 2);
+  *norm = snes->norm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFunctionType"
 /*@C
    SNESSetFunctionType - Sets the SNESNormSchedule used in covergence and monitoring

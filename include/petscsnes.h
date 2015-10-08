@@ -436,6 +436,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
 PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);
+PETSC_EXTERN PetscErrorCode SNESSetFunctionNorm(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESGetFunctionNorm(SNES,PetscReal*);
 
 /*E
     SNESFunctionType - Type of function computed
