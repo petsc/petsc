@@ -3535,14 +3535,39 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESSetConvergenceTest(), SNESConvergedReason
+.seealso: SNESSetConvergenceTest(), SNESSetConvergedReason(), SNESConvergedReason
 @*/
-PetscErrorCode  SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
+PetscErrorCode SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,2);
   *reason = snes->reason;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetConvergedReason"
+/*@
+   SNESSetConvergedReason - Sets the reason the SNES iteration was stopped.
+
+   Not Collective
+
+   Input Parameters:
++  snes - the SNES context
+-  reason - negative value indicates diverged, positive value converged, see SNESConvergedReason or the
+            manual pages for the individual convergence tests for complete lists
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, test
+.seealso: SNESGetConvergedReason(), SNESSetConvergenceTest(), SNESConvergedReason
+@*/
+PetscErrorCode SNESSetConvergedReason(SNES snes,SNESConvergedReason reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->reason = reason;
   PetscFunctionReturn(0);
 }
 
