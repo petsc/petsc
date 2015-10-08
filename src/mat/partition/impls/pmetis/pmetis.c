@@ -11,11 +11,12 @@
       The first 5 elements of this structure are the input control array to Metis
 */
 typedef struct {
-  PetscInt cuts;         /* number of cuts made (output) */
-  PetscInt foldfactor;
-  PetscInt parallel;     /* use parallel partitioner for coarse problem */
-  PetscInt indexing;     /* 0 indicates C indexing, 1 Fortran */
-  PetscInt printout;     /* indicates if one wishes Metis to print info */
+  PetscInt  cuts;         /* number of cuts made (output) */
+  PetscInt  foldfactor;
+  PetscInt  parallel;     /* use parallel partitioner for coarse problem */
+  PetscInt  indexing;     /* 0 indicates C indexing, 1 Fortran */
+  PetscInt  printout;     /* indicates if one wishes Metis to print info */
+  PetscBool repartition;
 } MatPartitioning_Parmetis;
 
 #define CHKERRQPARMETIS(n,func)                                             \
@@ -60,7 +61,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     PetscInt   *xadj    = adj->i;
     PetscInt   *adjncy  = adj->j;
     PetscInt   itmp     = 0,wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[24], i, j;
-    real_t     *tpwgts,*ubvec;
+    real_t     *tpwgts,*ubvec,itr=0.1;
     int        status;
 
     ierr = PetscObjectGetComm((PetscObject)pmat,&pcomm);CHKERRQ(ierr);
@@ -101,7 +102,11 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     ierr   = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
-    PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
+    if(pmetis->repartition){
+      PetscStackCallParmetis(ParMETIS_V3_AdaptiveRepart,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,&itr,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
+    }else{
+      PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
+    }
     ierr   = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
     ierr = PetscFree(tpwgts);CHKERRQ(ierr);
@@ -147,10 +152,10 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
       ierr = PetscViewerASCIIPrintf(viewer,"  Using sequential coarse grid partitioner\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Using %d fold factor\n",pmetis->foldfactor);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,pmetis->cuts);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -175,6 +180,29 @@ PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 
   PetscFunctionBegin;
   pmetis->parallel = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningParmetisSetRepartition"
+/*@
+     MatPartitioningParmetisSetRepartition - Repartition
+     current mesh to rebalance computation.
+
+  Logically Collective on MatPartitioning
+
+  Input Parameter:
+.  part - the partitioning context
+
+   Level: advanced
+
+@*/
+PetscErrorCode  MatPartitioningParmetisSetRepartition(MatPartitioning part)
+{
+  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis*)part->data;
+
+  PetscFunctionBegin;
+  pmetis->repartition = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -213,6 +241,10 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptions *PetscOptions
   ierr = PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsBool("-mat_partitioning_parmetis_repartition","","MatPartitioningParmetisSetRepartition",flag,&flag,NULL);CHKERRQ(ierr);
+  if(flag){
+    ierr =  MatPartitioningParmetisSetRepartition(part);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -269,6 +301,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   pmetis->parallel   = 2;   /* use parallel partitioner for coarse grid */
   pmetis->indexing   = 0;   /* index numbering starts from 0 */
   pmetis->printout   = 0;   /* print no output while running */
+  pmetis->repartition      = PETSC_FALSE;
 
   part->ops->apply          = MatPartitioningApply_Parmetis;
   part->ops->view           = MatPartitioningView_Parmetis;

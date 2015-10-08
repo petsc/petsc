@@ -13,11 +13,11 @@ int main(int argc, char *argv[])
   PetscMPIInt    rank, size;
 
   /* We must call MPI_Init() first, making us, not PETSc, responsible for MPI */
-  ierr = MPI_Init(&argc, &argv);CHKERRQ(ierr);
+  ierr = MPI_Init(&argc, &argv);
 
   /* We can now change the communicator universe for PETSc */
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_split(MPI_COMM_WORLD, rank%2, 0, &PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  ierr = MPI_Comm_split(MPI_COMM_WORLD, rank%2, 0, &PETSC_COMM_WORLD);
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);
 
   /*
      The following MPI calls return the number of processes
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
   */
   ierr = PetscFinalize();
 
+  ierr = MPI_Comm_free(&PETSC_COMM_WORLD);
   /* Since we initialized MPI, we must call MPI_Finalize() */
   ierr = MPI_Finalize();
   return 0;

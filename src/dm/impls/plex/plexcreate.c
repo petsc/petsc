@@ -993,6 +993,7 @@ extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened);
 extern PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[]);
+extern PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]);
 extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
@@ -1123,7 +1124,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
 #define __FUNCT__ "DMSetFromOptions_Plex"
 PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
-  PetscInt       refine = 0, r;
+  PetscInt       refine = 0, coarsen = 0, r;
   PetscBool      isHierarchy;
   PetscErrorCode ierr;
 
@@ -1143,13 +1144,16 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     ierr = DMPlexSwap_Static(dm, dms[refine-1]);CHKERRQ(ierr);
     if (refine == 1) {
       ierr = DMPlexSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
     } else {
       ierr = DMPlexSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
       ierr = DMPlexSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dms[0], PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
-      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
@@ -1157,14 +1161,40 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     for (r = 0; r < refine; ++r) {
       DM refinedMesh;
 
-      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
       ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+  /* Handle DMPlex coarsening */
+  ierr = PetscOptionsInt("-dm_coarsen", "Coarsen the mesh", "DMCreate", coarsen, &coarsen, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_coarsen_hierarchy", "The number of coarsenings", "DMCreate", coarsen, &coarsen, &isHierarchy);CHKERRQ(ierr);
+  if (coarsen && isHierarchy) {
+    DM *dms;
+
+    ierr = PetscMalloc1(coarsen, &dms);CHKERRQ(ierr);
+    ierr = DMCoarsenHierarchy(dm, coarsen, dms);CHKERRQ(ierr);
+    /* Free DMs */
+    for (r = 0; r < coarsen; ++r) {
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dms);CHKERRQ(ierr);
+  } else {
+    for (r = 0; r < coarsen; ++r) {
+      DM coarseMesh;
+
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      ierr = DMCoarsen(dm, PetscObjectComm((PetscObject) dm), &coarseMesh);CHKERRQ(ierr);
+      /* Total hack since we do not pass in a pointer */
+      ierr = DMPlexReplace_Static(dm, coarseMesh);CHKERRQ(ierr);
+      ierr = DMDestroy(&coarseMesh);CHKERRQ(ierr);
+    }
+  }
+  /* Handle */
+  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1179,7 +1209,9 @@ static PetscErrorCode DMCreateGlobalVector_Plex(DM dm,Vec *vec)
   ierr = DMCreateGlobalVector_Section_Private(dm,vec);CHKERRQ(ierr);
   /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
   ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEWNATIVE, (void (*)(void)) VecView_Plex_Native);CHKERRQ(ierr);
   ierr = VecSetOperation(*vec, VECOP_LOAD, (void (*)(void)) VecLoad_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_LOADNATIVE, (void (*)(void)) VecLoad_Plex_Native);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1241,7 +1273,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->refine                          = DMRefine_Plex;
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;
-  dm->ops->coarsenhierarchy                = NULL;
+  dm->ops->coarsenhierarchy                = DMCoarsenHierarchy_Plex;
   dm->ops->globaltolocalbegin              = NULL;
   dm->ops->globaltolocalend                = NULL;
   dm->ops->localtoglobalbegin              = NULL;
@@ -1315,8 +1347,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
+  mesh->coarseMesh          = NULL;
+  mesh->regularRefinement   = PETSC_FALSE;
   mesh->labels              = NULL;
   mesh->depthLabel          = NULL;
+  mesh->depthState          = -1;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   mesh->anchorSection       = NULL;
@@ -1636,8 +1671,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extCGNS   = ".cgns";
   const char    *extExodus = ".exo";
   const char    *extFluent = ".cas";
+  const char    *extHDF5   = ".h5";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isFluent;
+  PetscBool      isGmsh, isCGNS, isExodus, isFluent, isHDF5;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -1651,6 +1687,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,   5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent, 4, &isFluent);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,   3, &isHDF5);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
@@ -1659,6 +1696,17 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isFluent) {
     ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+  } else if (isHDF5) {
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscFunctionReturn(0);
 }

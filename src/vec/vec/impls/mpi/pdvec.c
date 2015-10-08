@@ -24,6 +24,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
     ierr = VecDestroy(&x->localrep);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&x->localupdate);CHKERRQ(ierr);
   }
+  ierr = VecAssemblyReset_MPI(v);CHKERRQ(ierr);
+
   /* Destroy the stashes: note the order - so that the tags are freed properly */
   ierr = VecStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
   ierr = VecStashDestroy_Private(&v->stash);CHKERRQ(ierr);
@@ -736,7 +738,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(xin->map->n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1 || dim2) {
+  if (bs > 1 || dim2) {
     count[dim] = bs;
     ++dim;
   }
@@ -760,7 +762,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1 || dim2) {
+  if (bs > 1 || dim2) {
     offset[dim] = 0;
     ++dim;
   }
@@ -1013,6 +1015,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = MPI_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
+  xin->bstash.insertmode = addv; /* Block stash implicitly tracks InsertMode of scalar stash */
 
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);

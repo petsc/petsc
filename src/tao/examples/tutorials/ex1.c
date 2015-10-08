@@ -3,14 +3,19 @@ Using the Interior Point Method.\n\n\n";
 
 /*F
   We are solving the parameter estimation problem for the Laplacian. We will ask to minimize a Lagrangian
-function over $y$ and $u$, given by
+function over $a$ and $u$, given by
 \begin{align}
-  L(u, a, \lambda) = \frac{1}{2} || Qu - d ||^2 + \frac{1}{2} || L (u - u_r) ||^2 + \lambda F(u; a)
+  L(u, a, \lambda) = \frac{1}{2} || Qu - d ||^2 + \frac{1}{2} || L (a - a_r) ||^2 + \lambda F(u; a)
 \end{align}
 where $Q$ is a sampling operator, $L$ is a regularization operator, $F$ defines the PDE.
 
 Currently, we have perfect information, meaning $Q = I$, and then we need no regularization, $L = I$. We
-also give the exact control for the reference $u_r$.
+also give the exact control for the reference $a_r$.
+
+The PDE will be the Laplace equation with homogeneous boundary conditions
+\begin{align}
+  -nabla \cdot a \nabla u = f
+\end{align}
 
 F*/
 
@@ -63,6 +68,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
+/* u - (x^2 + y^2) */
 void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -70,6 +76,7 @@ void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   f0[0] = u[0] - (x[0]*x[0] + x[1]*x[1]);
 }
+/* a \nabla\lambda */
 void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -78,6 +85,7 @@ void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u[1]*u_x[dim*2+d];
 }
+/* I */
 void g0_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -85,6 +93,7 @@ void g0_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   g0[0] = 1.0;
 }
+/* \nabla */
 void g2_ua(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -93,6 +102,7 @@ void g2_ua(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt d;
   for (d = 0; d < dim; ++d) g2[d] = u_x[dim*2+d];
 }
+/* a */
 void g3_ul(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -101,7 +111,7 @@ void g3_ul(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = u[1];
 }
-
+/* a - (x + y) */
 void f0_a(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -109,6 +119,7 @@ void f0_a(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   f0[0] = u[1] - (x[0] + x[1]);
 }
+/* \lambda \nabla u */
 void f1_a(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -117,6 +128,7 @@ void f1_a(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u[2]*u_x[d];
 }
+/* I */
 void g0_aa(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -124,7 +136,7 @@ void g0_aa(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   g0[0] = 1.0;
 }
-
+/* 6 (x + y) */
 void f0_l(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -132,6 +144,7 @@ void f0_l(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   f0[0] = 6.0*(x[0] + x[1]);
 }
+/* a \nabla u */
 void f1_l(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -140,6 +153,7 @@ void f1_l(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u[1]*u_x[d];
 }
+/* \nabla u */
 void g2_la(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -148,6 +162,7 @@ void g2_la(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt d;
   for (d = 0; d < dim; ++d) g2[d] = u_x[d];
 }
+/* a */
 void g3_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -178,9 +193,9 @@ PetscErrorCode linear_a_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, Petsc
   *a = x[0] + x[1];
   return 0;
 }
-PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
 {
-  *u = 0.0;
+  *l = 0.0;
   return 0;
 }
 

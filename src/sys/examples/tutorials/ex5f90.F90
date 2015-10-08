@@ -84,7 +84,7 @@
       call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
      &      'rarray help message',ierr)
 !     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
-      svalue = 103.2d0
+      svalue = 103.20
       call PetscBagRegisterScalar(bag,data%x ,svalue,'x',                &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
@@ -93,13 +93,13 @@
      &      'tarray help message',ierr)
       call PetscBagRegisterString(bag,data%c,'hello','c',                &
      &      'string help message',ierr)
-      value = -11.0d0
+      value = -11.00
       call PetscBagRegisterReal(bag,data%y ,value,'y',                   &
      &       'y variable help message',ierr)
-      value = 1.0d0
+      value = 1.00
       call PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1',         &
      &      'tuple value 1 help message',ierr)
-      value = 2.0d0
+      value = 2.00
       call PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2',         &
      &      'tuple value 2 help message',ierr)
       call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum',            &

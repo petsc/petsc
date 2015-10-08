@@ -1,0 +1,37 @@
+  0 KSP Residual norm 64.6898 
+  1 KSP Residual norm 2.03678 
+  2 KSP Residual norm 0.058197 
+  3 KSP Residual norm 0.00214252 
+  4 KSP Residual norm 7.41894e-05 
+  5 KSP Residual norm 1.91523e-06 
+  6 KSP Residual norm 6.46494e-08 
+Number of iterations =   6
+Residual norm 2.55345e-07
+[0]Total space allocated 32 bytes
+[ 0]16 bytes PetscSharedTmp() line 167 in /Users/barrysmith/Src/PETSc/src/sys/fileio/fretrieve.c
+      [0]  PetscSharedTmp() line 167 in /Users/barrysmith/Src/PETSc/src/sys/fileio/fretrieve.c
+      [0]  PetscFileRetrieve() line 367 in /Users/barrysmith/Src/PETSc/src/sys/fileio/fretrieve.c
+      [0]  PetscViewerFileSetUp_Binary() line 1199 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/impls/binary/binv.c
+      [0]  PetscViewerSetUp_Binary() line 1376 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/impls/binary/binv.c
+      [0]  PetscViewerSetUp() line 272 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/interface/view.c
+      [0]  MatLoad_MPIAIJ() line 2793 in /Users/barrysmith/Src/PETSc/src/mat/impls/aij/mpi/mpiaij.c
+      [0]  MatLoad() line 986 in /Users/barrysmith/Src/PETSc/src/mat/interface/matrix.c
+[ 0]16 bytes PetscCommDuplicate() line 149 in /Users/barrysmith/Src/PETSc/src/sys/objects/tagm.c
+      [0]  PetscCommDuplicate() line 149 in /Users/barrysmith/Src/PETSc/src/sys/objects/tagm.c
+      [0]  PetscHeaderCreate_Private() line 36 in /Users/barrysmith/Src/PETSc/src/sys/objects/inherit.c
+      [0]  PetscViewerCreate() line 181 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/interface/viewreg.c
+      [0]  PetscViewerBinaryOpen() line 831 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/impls/binary/binv.c
+[1]Total space allocated 32 bytes
+[ 1]16 bytes PetscSharedTmp() line 167 in /Users/barrysmith/Src/PETSc/src/sys/fileio/fretrieve.c
+      [1]  PetscSharedTmp() line 167 in /Users/barrysmith/Src/PETSc/src/sys/fileio/fretrieve.c
+      [1]  PetscFileRetrieve() line 367 in /Users/barrysmith/Src/PETSc/src/sys/fileio/fretrieve.c
+      [1]  PetscViewerFileSetUp_Binary() line 1199 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/impls/binary/binv.c
+      [1]  PetscViewerSetUp_Binary() line 1376 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/impls/binary/binv.c
+      [1]  PetscViewerSetUp() line 272 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/interface/view.c
+      [1]  MatLoad_MPIAIJ() line 2793 in /Users/barrysmith/Src/PETSc/src/mat/impls/aij/mpi/mpiaij.c
+      [1]  MatLoad() line 986 in /Users/barrysmith/Src/PETSc/src/mat/interface/matrix.c
+[ 1]16 bytes PetscCommDuplicate() line 149 in /Users/barrysmith/Src/PETSc/src/sys/objects/tagm.c
+      [1]  PetscCommDuplicate() line 149 in /Users/barrysmith/Src/PETSc/src/sys/objects/tagm.c
+      [1]  PetscHeaderCreate_Private() line 36 in /Users/barrysmith/Src/PETSc/src/sys/objects/inherit.c
+      [1]  PetscViewerCreate() line 181 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/interface/viewreg.c
+      [1]  PetscViewerBinaryOpen() line 831 in /Users/barrysmith/Src/PETSc/src/sys/classes/viewer/impls/binary/binv.c

@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np 1 rosenbrock1f [-help] [all TAO options]
+!  Program usage: mpiexec -n 1 rosenbrock1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve an
 !  unconstrained minimization problem on a single processor.  We minimize the

@@ -69,6 +69,8 @@ class Package(config.base.Configure):
     self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
 
     self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
+    self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
+    self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
     return
 
   def __str__(self):
@@ -373,7 +375,8 @@ class Package(config.base.Configure):
       raise RuntimeError('--with-'+self.package+'-dir='+self.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include' in self.argDB and not 'with-'+self.package+'-lib' in self.argDB:
-      raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
+      if self.liblist[0]:
+        raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
     if 'with-'+self.package+'-lib' in self.argDB and not 'with-'+self.package+'-include' in self.argDB:
       if self.includes:
         raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
@@ -381,19 +384,25 @@ class Package(config.base.Configure):
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
     if 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
-      libs = self.argDB['with-'+self.package+'-lib']
+      if self.liblist[0]:
+        libs  = self.argDB['with-'+self.package+'-lib']
+        slibs = str(self.argDB['with-'+self.package+'-lib'])
+      else:
+        libs  = []
+        slibs = 'NoneNeeded'
       inc  = []
+      d  = None
       if self.includes:
         inc = self.argDB['with-'+self.package+'-include']
-      # hope that package root is one level above first include directory specified
-        d   = os.path.dirname(inc[0])
-      else:
-        d   = None
+        # hope that package root is one level above first include directory specified
+        if inc:
+          d   = os.path.dirname(inc[0])
+
       if not isinstance(inc, list): inc = inc.split(' ')
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
-      msg = '--with-'+self.package+'-lib='+str(self.argDB['with-'+self.package+'-lib'])
+      msg = '--with-'+self.package+'-lib='+slibs
       if self.includes:
         msg += ' and \n'+'--with-'+self.package+'-include='+str(self.argDB['with-'+self.package+'-include'])
       msg += ' did not work'
@@ -623,7 +632,8 @@ class Package(config.base.Configure):
           self.directory = directory
           self.framework.packages.append(self)
           return
-      self.logWrite(self.libraries.restoreLog())
+      else:
+        self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 

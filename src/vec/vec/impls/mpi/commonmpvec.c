@@ -306,11 +306,18 @@ PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatte
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOption_MPI"
-PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool flag)
+PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 {
+  Vec_MPI        *v = (Vec_MPI*)V->data;
   PetscFunctionBegin;
-  if (op == VEC_IGNORE_OFF_PROC_ENTRIES)      v->stash.donotstash   = flag;
-  else if (op == VEC_IGNORE_NEGATIVE_INDICES) v->stash.ignorenegidx = flag;
+  switch (op) {
+  case VEC_IGNORE_OFF_PROC_ENTRIES: V->stash.donotstash = flag;
+    break;
+  case VEC_IGNORE_NEGATIVE_INDICES: V->stash.ignorenegidx = flag;
+    break;
+  case VEC_SUBSET_OFF_PROC_ENTRIES: v->assembly_subset = flag;
+    break;
+  }
   PetscFunctionReturn(0);
 }
 

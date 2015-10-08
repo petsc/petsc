@@ -104,7 +104,7 @@ cmake: chk_makej
 gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
-	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} V=${V}
+	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} ${MAKE_PAR_OUT_FLG} V=${V}
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
@@ -526,6 +526,7 @@ getautoconfargs:
 	  grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
+          grep -v "clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\

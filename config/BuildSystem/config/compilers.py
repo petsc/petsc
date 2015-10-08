@@ -136,12 +136,16 @@ class Configure(config.base.Configure):
 
   def checkRestrict(self,language):
     '''Check for the C/CXX restrict keyword'''
-    self.pushLanguage(language)
     # Try the official restrict keyword, then gcc's __restrict__, then
     # SGI's __restrict.  __restrict has slightly different semantics than
     # restrict (it's a bit stronger, in that __restrict pointers can't
     # overlap even with non __restrict pointers), but I think it should be
     # okay under the circumstances where restrict is normally used.
+    if config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
+      self.addDefine(language.upper()+'_RESTRICT', ' ')
+      self.logPrint('PGI restrict word is broken cannot handle [restrict] '+str(language)+' restrict keyword', 4, 'compilers')
+      return
+    self.pushLanguage(language)
     for kw in ['restrict', ' __restrict__', '__restrict']:
       if self.checkCompile('', 'float * '+kw+' x;'):
         if language.lower() == 'c':
@@ -306,6 +310,7 @@ class Configure(config.base.Configure):
         self.setCompilers.LIBS = oldLibs
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
         raise RuntimeError('C libraries cannot directly be used from Fortran')
       self.logWrite(self.setCompilers.restoreLog())
     return
@@ -702,13 +707,14 @@ class Configure(config.base.Configure):
         self.fortranPreprocess = 1
         self.setCompilers.popLanguage()
         self.logPrint('Fortran uses CPP preprocessor', 3, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
         return
       except RuntimeError:
         setattr(self.setCompilers, flagsArg, oldFlags)
     self.setCompilers.popLanguage()
     self.fortranPreprocess = 0
-    self.logWrite(self.setCompilers.restoreLog())
     self.logPrint('Fortran does NOT use CPP preprocessor', 3, 'compilers')
+    self.logWrite(self.setCompilers.restoreLog())
     return
 
   def checkFortranDefineCompilerOption(self):
@@ -723,12 +729,12 @@ class Configure(config.base.Configure):
         self.FortranDefineCompilerOption = flag
         self.framework.addMakeMacro('FC_DEFINE_FLAG',self.FortranDefineCompilerOption)
         self.setCompilers.popLanguage()
-        self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
+        self.logWrite(self.setCompilers.restoreLog())
         return
     self.setCompilers.popLanguage()
-    self.logWrite(self.setCompilers.restoreLog())
     self.logPrint('Fortran does not support defining macro', 3, 'compilers')
+    self.logWrite(self.setCompilers.restoreLog())
     return
 
   def checkFortranLibraries(self):

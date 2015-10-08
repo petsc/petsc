@@ -183,12 +183,12 @@ static PetscFunctionList dlallhead = 0;
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode PetscFunctionListAdd(PetscFunctionList flist,const char name[],void (*fptr)(void))
+   PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist,const char name[],void (*fptr)(void))
 
    Not Collective
 
    Input Parameters:
-+  flist - pointer registry
++  flist - pointer to function list object
 .  name - string to identify routine
 -  fptr - function pointer
 

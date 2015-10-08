@@ -16,6 +16,7 @@ testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX}
 testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX}
 testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH}
 testexamples_Cxx_DATAFILESPATH: ${TESTEXAMPLES_CXX_DATAFILESPATH}
+testexamples_DOUBLEINT32: ${TESTEXAMPLES_DOUBLEINT32}
 
 testexamples_F90_DataTypes: ${TESTEXAMPLES_F90_DATATYPES}
 testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX}
@@ -40,13 +41,18 @@ testexamples_VALGRIND: ${TESTEXAMPLES_VALGRIND}
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB}
 testexamples_MATLAB_ENGINE: ${TESTEXAMPLES_MATLAB_ENGINE}
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS}
+testexamples_MUMPS_DATAFILESPATH: ${TESTEXAMPLES_MUMPS_DATAFILESPATH}
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU}
+testexamples_SUPERLU_DATAFILESPATH: ${TESTEXAMPLES_SUPERLU_DATAFILESPATH}
 testexamples_ELEMENTAL: ${TESTEXAMPLES_ELEMENTAL}
 testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
 testexamples_SUITESPARSE: ${TESTEXAMPLES_SUITESPARSE}
+testexamples_SUITESPARSE_DATAFILESPATH: ${TESTEXAMPLES_SUITESPARSE_DATAFILESPATH}
 testexamples_MKL_PARDISO: ${TESTEXAMPLES_MKL_PARDISO}
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST}
+testexamples_SUPERLU_DIST_DATAFILESPATH: ${TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH}
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
+testexamples_HYPRE_DATAFILESPATH: ${TESTEXAMPLES_HYPRE_DATAFILESPATH}
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
 testexamples_CHOMBO: ${TESTEXAMPLES_CHOMBO}
@@ -60,11 +66,11 @@ testexamples_BOOST: ${TESTEXAMPLES_BOOST}
 testexamples_TETGEN: ${TESTEXAMPLES_TETGEN}
 testexamples_PTSCOTCH: ${TESTEXAMPLES_PTSCOTCH}
 testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
+testexamples_PASTIX_DATAFILESPATH: ${TESTEXAMPLES_PASTIX_DATAFILESPATH}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
 testexamples_CUDA: ${TESTEXAMPLES_CUDA}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
-testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
 testexamples_MOAB: ${TESTEXAMPLES_MOAB}
 testexamples_MOAB_HDF5: ${TESTEXAMPLES_MOAB_HDF5}
 testexamples_TRILINOS: ${TESTEXAMPLES_TRILINOS}
@@ -159,6 +165,8 @@ buildexamples_MKL_PARDISO:
 	-@${OMAKE} testexamples_MKL_PARDISO TESTEXAMPLES_MKL_PARDISO=`echo ${TESTEXAMPLES_MKL_PARDISO} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SUPERLU_DIST:
 	-@${OMAKE} testexamples_SUPERLU_DIST TESTEXAMPLES_SUPERLU_DIST=`echo ${TESTEXAMPLES_SUPERLU_DIST} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_HYPRE_DATAFILESPATH:
+	-@${OMAKE} testexamples_HYPRE_DATAFILESPATH TESTEXAMPLES_HYPRE_DATAFILESPATH=`echo ${TESTEXAMPLES_HYPRE_DATAFILESPATH} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_HYPRE:
 	-@${OMAKE} testexamples_HYPRE TESTEXAMPLES_HYPRE=`echo ${TESTEXAMPLES_HYPRE} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_HDF5:
@@ -186,8 +194,6 @@ buildexamples_CUDA:
 	-@${OMAKE} testexamples_CUDA TESTEXAMPLES_CUDA=`echo ${TESTEXAMPLES_CUDA} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_YAML:
 	-@${OMAKE} testexamples_YAML TESTEXAMPLES_YAML=`echo ${TESTEXAMPLES_YAML} | sed s/runex[0-9]*[a-z0-9_]*//g`
-buildexamples_THREADCOMM:
-	-@${OMAKE} testexamples_THREADCOMM TESTEXAMPLES_THREADCOMM=`echo ${TESTEXAMPLES_THREADCOMM} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_MOAB:
 	-@${OMAKE} testexamples_MOAB TESTEXAMPLES_MOAB=`echo ${TESTEXAMPLES_MOAB} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_X:
@@ -209,14 +215,31 @@ TESTMODE = testexamples
 alltests:
 	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@if [ "${PETSC_WITH_BATCH}" == "" ]; then make PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} stream NPMAX=4 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log ;fi
 	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
 
 alltest:
+	-@date
 	-@for i in ${TEST_RUNS} ; do \
           echo "******* Testing: ${TESTMODE}_$$i *******"; \
 	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" NO_PRINT_DIR=yes tree ; \
 	done
+	-@date
+
+#
+#  parallel make of examples by directory
+#  The MAKEFLAGS= MFLAGS=  are so that the sub make processes don't know about the parallel make server of the main make process
+#  split the larger test directories up for more parallelism
+SUBDIRS =    src/ts/examples/tutorials src/snes/examples/tutorials src/ksp/ksp/examples/tutorials src/dm src/sys src/mat src/vec src/ksp/ksp/examples/tests src/ksp/ksp/examples/tests src/ts/examples/tests src/ksp/pc
+
+$(SUBDIRS)::
+	MAKEFLAGS= MFLAGS= $(OMAKE) -j 1 -C $@ alltest  > $@/alltests.log  2>&1 
+
+palltests:
+	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	-@${OMAKE} -j ${MAKE_NP} $(SUBDIRS)
+	-@cat src/*/alltests.log src/*/examples/*/alltests.log  src/ksp/pc/alltests.log  > ${PETSC_ARCH}/lib/petsc/conf/alltests.log
+
 
 tests_DATAFILESPATH:
 	make ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}

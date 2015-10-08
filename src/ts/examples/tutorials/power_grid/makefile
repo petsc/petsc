@@ -165,11 +165,11 @@ ex27: ex27.o chkopts
 
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_max_steps 10  > ex1_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1  > ex1_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1  -ts_max_steps 10  > ex1_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_2.tmp
 
@@ -199,12 +199,12 @@ runex3_2:
 	   ${RM} -f ex3_1.tmp
 
 runex3adj:
-	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3adj_1.out ex3adj_1.tmp || printf "${PWD}\nPossible problem with ex3adj_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3adj_1.tmp
 
 runex3adj_events:
-	-@${MPIEXEC} -n 1 ./ex3adj_events -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_events_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3adj_events -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_events_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3adj_events_1.out ex3adj_events_1.tmp || printf "${PWD}\nPossible problem with ex3adj_events_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3adj_events_1.tmp
 
@@ -214,7 +214,7 @@ runex3opt:
 	   ${RM} -f ex3opt_1.tmp
 
 runex3opt_fd:
-	-@${MPIEXEC} -n 1 ./ex3opt_fd -viewer_binary_skip_info  -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3opt_fd -tao_max_it 6 -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_fd_1.out ex3opt_fd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fd_1.tmp
 

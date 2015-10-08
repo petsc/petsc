@@ -57,7 +57,7 @@ runbm4:
 	-@${MPIEXEC} -n 4 ./flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh -partition ${DATAFILESPATH}/part_vec.part.4 > out.4.${HOST}
 
 
-TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
+#TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
 
 include $(PETSC_DIR)/lib/petsc/conf/test
 

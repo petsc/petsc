@@ -43,18 +43,44 @@
 
       <p>
         With the advent of multicore machines as standard practice from laptops
-        to supercomputers, the issue of a hybrid MPI-thread (MPI-OpenMP)
+        to supercomputers, the issue of a hybrid MPI-thread (for example, MPI-OpenMP)
         "version" of PETSc is of interest.  In this model, one MPI process per
         CPU (node) and several threads on that CPU (node) work together inside
-        that MPI process. Many people throw around the term "hybrid MPI-OpenMP"
-        as if it is a trivial change in the programming model. It is not --
-        major ramifications must be understood if such a hybrid approach is to
-        be used successfully.  Hybrid approaches can be developed in many ways
-        that affect usability and performance.
+        that MPI process. </p>
+
+      <p>The core PETSc team has come to the consensus that pure MPI
+      using neighborhood collectives and the judicious using of MPI
+      shared memory (for data structures that you may not wish to have
+      duplicated on each MPI process due to memory constraints) will
+      provide the best performance for HPC simulation needs on current generation systems, next generation systems and exascale systems.
+      It is also a much simpler programming model
+      then MPI + threads (leading to simpler code). </p>
+
+       <p> Note that the PETSc team has no problems with proposals to
+       replace the pure MPI programming model with a different
+       programming model but only with an alternative that is
+       demonstrably __better__, not with something more complicated
+       that has not been demonstrated to be better nor that has any
+       technical reason to be believed to be any better. Ever since
+       the the IBM SP2 in 1996 we've been told that
+       "pure MPI won't scale to the next generation of machine", this
+       has yet to be true and there is no reason to believe that it
+       will be true.
       </p>
 
       <p>
-        <b><u>The simplest model of PETSc with threads</u></b> is to contain all
+        Though the current and planned programming model for PETSc is
+       pure MPI we do provide some limited support for use with the
+       hybrid MPI-thread model. These are discussed below.  Many
+       people throw around the term "hybrid MPI-thread" as if it is a
+       trivial change in the programming model. It is not -- major
+       ramifications must be understood if such a hybrid approach is
+       to be used successfully.  Hybrid approaches can be developed in
+       many ways that affect usability and performance.
+      </p>
+
+      <p>
+        <b><u>The simple model of PETSc with threads</u></b> is to contain all
         the thread operations <b><u>inside</u></b> the Mat and Vec classes,
         leaving the user's programming model identical to what it is today. This
         model can be done in two ways by having Vec and Mat class implementations
@@ -67,11 +93,23 @@
       </ol>
 
       <p>
-        In petsc-3.2 we have implemented approach 2 (pthreads). The
-        corresponding classes are VECSEQPTHREAD and MATSEQAIJPTHREAD; these are
-        very preliminary but can be explored. We found the code was never faster than
+        We tried this approach (with support for both OpenMP and pthreads) and found the code was never faster than
         pure MPI and cumbersome to use hence we have removed it.
-              </p>
+      </p>
+
+      <p>
+        <b><u>An alternative simple model of PETSc with
+        threads</u></b> is to have individual threads (OpenMP or others) to each
+        manage their own (sequential) PETSc objects (and each thread
+        can interact only with its own objects). This is useful when
+        one has many small systems (or sets of ODEs) that must be
+        integrated in an "embarrassingly parallel" fashion.
+      </ol>
+
+      <p>
+        To use this feature one must ./configure PETSc with the option --with-threadsafety --with-log=0 [--with-openmp or --download-concurrencykit]. src/ksp/ksp/examples/tutorials/ex61f.F90 demonstrates how this may be used with OpenMP. The code uses a small number of #pragma omp critical in non-time-critical locations in the code and thus only works with OpenMP and not with pthreads.
+      </p>
+
 
       <p>
         <b><u>A more complicated model of PETSc with threads</u></b>, which would
@@ -83,7 +121,7 @@
         "software threads" as opposed to "hardware threads."
       </p>
 
-      <p>Threads are used in 2 main ways:</p>
+      <p>Threads are used in 2 main ways in HPC:</p>
 
       <ol>
         <li>
@@ -127,29 +165,9 @@
         a time.
       </p>
 
-      <p>PETSc is not thread-safe for three reasons: </p>
+      <p>PETSc is not "generically" "thread-safe" because: </p>
 
       <ol>
-        <li>
-          A few miscellaneous global variables - these may be fixed in later
-          PETSc releases and are not a big deal.
-        </li>
-
-        <li>
-          A variety of global data structures that are used for profiling and
-          error handling. These are not easily removed or modified to make
-          thread-safe. The reason is that simply putting locks around all of
-          these data accesses would have a major impact on performance, as the
-          profiling data structures are being constantly updated by the running
-          code. In some cases, for example updating the flop counters, locks
-          could be avoided and something like atomic fetch and add operations
-          could be used. It is possible to build such operations on all major
-          systems, often using special two-step memory operations (e.g.,
-          load-link and store-conditional on MIPS and load-reservation on
-          PowerXX). But this cannot be done in a portable, high-performance
-          way, as such operations are not part of C, and there is no
-          standardization on issuing asm code from within C source.
-        </li>
 
         <li>
           All the PETSc objects created during a simulation do not have locks
@@ -163,15 +181,6 @@
           object.
         </li>
       </ol>
-
-      <p>
-        PETSc can be used in a limited way that is thread safe.  So long as
-        only one of the threads calls methods on objects, or calls profiled
-        PETSc routines, PETSc will run fine. For example, one could use
-        loop-level parallelism to evaluate a finite difference stencil on
-        a grid. This is supported through the PETSc routines VecCreateShared();
-        see src/snes/examples/tutorials/ex5s.c. However, this is limited power.
-      </p>
 
       <p>
         <span class="warning">Some concerns about a thread model for parallelism</span>.

@@ -231,37 +231,37 @@ runex69:
 
 runex69_2:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_matmult > ex69_2.tmp 2>&1; \
-	   ${DIFF} output/ex69_2.out ex69_2.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_2.out ex69_2.tmp || printf "${PWD}\nPossible problem with ex69_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_2.tmp
 
 runex69_3:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_pcapply > ex69_3.tmp 2>&1; \
-	   ${DIFF} output/ex69_3.out ex69_3.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_3.out ex69_3.tmp || printf "${PWD}\nPossible problem with ex69_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_3.tmp
 
 runex69_4:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_pcsetup > ex69_4.tmp 2>&1; \
-	   ${DIFF} output/ex69_4.out ex69_4.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_4.out ex69_4.tmp || printf "${PWD}\nPossible problem with ex69_4, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_4.tmp
 
 runex69_5:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type bjacobi > ex69_5.tmp 2>&1; \
-	   ${DIFF} output/ex69_5.out ex69_5.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_5.out ex69_5.tmp || printf "${PWD}\nPossible problem with ex69_5, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_5.tmp
 
 runex69_6:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf > ex69_6.tmp 2>&1; \
-	   ${DIFF} output/ex69_6.out ex69_6.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_6.out ex69_6.tmp || printf "${PWD}\nPossible problem with ex69_6, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_6.tmp
 
 runex69_7:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_domain  > ex69_7.tmp 2>&1; \
-	   ${DIFF} output/ex69_7.out ex69_7.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_7.out ex69_7.tmp || printf "${PWD}\nPossible problem with ex69_7, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_7.tmp
 
 runex69_8:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_domain -snes_mf > ex69_8.tmp 2>&1; \
-	   ${DIFF} output/ex69_8.out ex69_8.tmp || printf "${PWD}\nPossible problem with ex69, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex69_8.out ex69_8.tmp || printf "${PWD}\nPossible problem with ex69_8, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_8.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm \

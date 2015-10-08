@@ -870,7 +870,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   PetscRandom rctx;
   ierr = MatCreateVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
   ierr = PetscRandomCreate(dd.gcomm,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rctx,PETSCRAND);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[1],rctx);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,2,vecs,&near_null_space);CHKERRQ(ierr);

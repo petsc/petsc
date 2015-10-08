@@ -134,6 +134,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscMPIInt      *maxval,flg;
 
   PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscCommSpinLock);CHKERRQ(ierr);
   ierr = MPI_Attr_get(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
 
   if (!flg) {  /* this is NOT a PETSc comm */
@@ -187,6 +188,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   if (first_tag) *first_tag = counter->tag--;
 
   counter->refcount++; /* number of references to this comm */
+  ierr = PetscSpinlockUnlock(&PetscCommSpinLock);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -216,6 +218,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
   PetscFunctionBegin;
   if (*comm == MPI_COMM_NULL) PetscFunctionReturn(0);
+  ierr = PetscSpinlockLock(&PetscCommSpinLock);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
   if (!flg) { /* not a PETSc comm, check if it has an inner comm */
     ierr = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRQ(ierr);
@@ -242,6 +245,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
   }
   *comm = MPI_COMM_NULL;
+  ierr = PetscSpinlockUnlock(&PetscCommSpinLock);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +297,7 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
     /* Obtain the sum of all roots -- the global number of distinct subcomms. */
     ierr = MPI_Allreduce(&roots,count,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   }
-  if (numbering) {
+  if (numbering){
     /* Introduce a global numbering for subcomms, initially known only by subcomm roots. */
     /*
       At each subcomm root number all of the subcomms it owns locally

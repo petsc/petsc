@@ -8,18 +8,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - P_max \sin(\theta) -D(\omega - \omega_s)\\
 \end{eqnarray}
 
-
-
-  Ensemble of initial conditions
-   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Fault at .1 seconds
-   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Initial conditions same as when fault is ended
-   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
-
-
 F*/
 
 /*
@@ -43,19 +31,32 @@ typedef struct {
 #define __FUNCT__ "PostStepFunction"
 PetscErrorCode PostStepFunction(TS ts)
 {
-  PetscErrorCode ierr;
-  Vec            U;
-  PetscReal      t;
-  const PetscScalar    *u;
+  PetscErrorCode    ierr;
+  Vec               U;
+  PetscReal         t;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"delta(%3.2f) = %8.7f\n",t,u[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"delta(%3.2f) = %8.7f\n",(double)t,(double)u[0]);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
+}
+
+/*
+    In order to insure that the event gets triggered at the same time independent of the
+  precision of the calculation we decrease the event time by a small fraction of the time step.
+  Otherwise in __float128 precision the event was delayed by one timestep producing completely 
+  different results
+*/
+PETSC_STATIC_INLINE PetscBool EventTolerance(TS ts,PetscReal t,PetscReal tf,PetscReal tc)
+{
+  PetscReal dt;
+  TSGetTimeStep(ts,&dt);
+  return (t > tf - .01*PetscAbs(dt) && t < tc -.01*PetscAbs(dt)) ? PETSC_TRUE : PETSC_FALSE;
 }
 
 #undef __FUNCT__
@@ -74,9 +75,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (EventTolerance(ts,t,ctx->tf,ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
-  
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
   f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
 
@@ -101,7 +101,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (EventTolerance(ts,t,ctx->tf,ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
 
   J[0][0] = a;                       J[0][1] = -ctx->omega_b;
@@ -337,13 +337,10 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,10.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-#if 0
-  ierr = TSSetPostStep(ts,PostStepFunction);CHKERRQ(ierr);
-#endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -355,7 +352,7 @@ int main(int argc,char **argv)
       u[0] += du[0];
       u[1] += du[1];
       ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-      ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+      ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
       ierr = TSSolve(ts,U);CHKERRQ(ierr);
     }
   } else {
@@ -389,7 +386,8 @@ int main(int argc,char **argv)
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%g\n",(double)(x_ptr[0]-ctx.Pm));CHKERRQ(ierr);
- 
+  ierr = VecRestoreArray(q,&x_ptr);CHKERRQ(ierr);
+
   ierr = ComputeSensiP(lambda[0],mu[0],&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -226,7 +226,6 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptions *PetscOptionsObject,TS
     ierr = PetscOptionsReal("-ts_alpha_adapt_max","maximum dt scale","",th->scale_max,&th->scale_max,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_dt_min","minimum dt","",th->dt_min,&th->dt_min,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_dt_max","maximum dt","",th->dt_max,&th->dt_max,NULL);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

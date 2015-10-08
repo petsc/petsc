@@ -4,12 +4,13 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Triangle.tar.gz']
-    self.functions = ['triangulate']
-    self.includes  = ['triangle.h']
-    self.liblist   = [['libtriangle.a']]
-    self.needsMath = 1
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Triangle.tar.gz']
+    self.functions        = ['triangulate']
+    self.includes         = ['triangle.h']
+    self.liblist          = [['libtriangle.a']]
+    self.needsMath        = 1
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
+    self.hastests         = 1
     return
 
   def setupDependencies(self, framework):

@@ -19,6 +19,7 @@ typedef struct {
 
   PetscInt grad;
   PetscInt reset;
+  Mat      H0;
 } TAO_BLMVM;
 
 #endif  /* ifndef __TAO_BLMVM_H */

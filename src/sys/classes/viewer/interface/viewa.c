@@ -20,6 +20,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_PYTHON",
   "ASCII_FACTOR_INFO",
   "ASCII_LATEX",
+  "ASCII_XML",
   "DRAW_BASIC",
   "DRAW_LG",
   "DRAW_CONTOUR",
@@ -79,6 +80,8 @@ const char *const PetscViewerFormats[] = {
    If a format (for example PETSC_VIEWER_DRAW_CONTOUR) was applied to a viewer
   where it didn't apply (PETSC_VIEWER_STDOUT_WORLD) it cause the default behavior
   for that viewer to be used.
+
+    Note: This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
    Concepts: PetscViewer^setting format
 

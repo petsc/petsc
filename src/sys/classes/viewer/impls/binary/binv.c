@@ -28,8 +28,8 @@ typedef struct  {
 } PetscViewer_Binary;
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSingleton_Binary"
-PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
+#define __FUNCT__ "PetscViewerGetSubViewer_Binary"
+PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   int                rank;
   PetscErrorCode     ierr;
@@ -43,13 +43,13 @@ PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *ou
     ierr    = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
-  } SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot get singleton viewer for binary files or sockets");
+  } SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot get subcomm viewer for binary files or sockets unless SubViewer contains the rank 0 process");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSingleton_Binary"
-PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
+#define __FUNCT__ "PetscViewerRestoreSubViewer_Binary"
+PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscErrorCode rank;
@@ -1434,8 +1434,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->skipoptions     = PETSC_TRUE;
   vbinary->skipheader      = PETSC_FALSE;
   vbinary->setfromoptionscalled = PETSC_FALSE;
-  v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
-  v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
+  v->ops->getsubviewer     = PetscViewerGetSubViewer_Binary;
+  v->ops->restoresubviewer = PetscViewerRestoreSubViewer_Binary;
   v->ops->read             = PetscViewerBinaryRead;
   vbinary->btype           = (PetscFileMode) -1;
   vbinary->storecompressed = PETSC_FALSE;

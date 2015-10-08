@@ -10,9 +10,9 @@ foreach matrix (medium arco1)
 
       foreach mode (nothing -mat_seqbaij -mat_aij_no_inode)
 
-        echo "mpirun ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order $mode"
+        echo "mpiexec ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order $mode"
 
-        mpirun ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order -ksp_monitor $mode
+        mpiexec ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order -ksp_monitor $mode
 
       end
 

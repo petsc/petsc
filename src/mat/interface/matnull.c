@@ -92,6 +92,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   PetscScalar       *v[6],dots[5];
   Vec               vec[6];
   PetscInt          n,N,dim,nmodes,i,j;
+  PetscReal         sN;
 
   PetscFunctionBegin;
   ierr = VecGetBlockSize(coords,&dim);CHKERRQ(ierr);
@@ -99,6 +100,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   ierr = VecGetSize(coords,&N);CHKERRQ(ierr);
   n   /= dim;
   N   /= dim;
+  sN = 1./PetscSqrtReal((PetscReal)N);
   switch (dim) {
   case 1:
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_TRUE,0,NULL,sp);CHKERRQ(ierr);
@@ -115,23 +117,23 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
     ierr = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (dim == 2) {
-        v[0][i*2+0] = 1./N;
+        v[0][i*2+0] = sN;
         v[0][i*2+1] = 0.;
         v[1][i*2+0] = 0.;
-        v[1][i*2+1] = 1./N;
+        v[1][i*2+1] = sN;
         /* Rotations */
         v[2][i*2+0] = -x[i*2+1];
         v[2][i*2+1] = x[i*2+0];
       } else {
-        v[0][i*3+0] = 1./N;
+        v[0][i*3+0] = sN;
         v[0][i*3+1] = 0.;
         v[0][i*3+2] = 0.;
         v[1][i*3+0] = 0.;
-        v[1][i*3+1] = 1./N;
+        v[1][i*3+1] = sN;
         v[1][i*3+2] = 0.;
         v[2][i*3+0] = 0.;
         v[2][i*3+1] = 0.;
-        v[2][i*3+2] = 1./N;
+        v[2][i*3+2] = sN;
 
         v[3][i*3+0] = x[i*3+1];
         v[3][i*3+1] = -x[i*3+0];
@@ -184,7 +186,9 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)sp));
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sp,1,viewer,2);
 
@@ -252,6 +256,32 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
+#if defined(PETSC_USE_DEBUG)
+  if (n) {
+    PetscScalar *dots;
+    for (i=0; i<n; i++) {
+      PetscReal norm;
+      ierr = VecNorm(vecs[i],NORM_2,&norm);CHKERRQ(ierr);
+      if (PetscAbsReal(norm - 1.0) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
+    }
+    if (has_cnst) {
+      for (i=0; i<n; i++) {
+        PetscScalar sum;
+        ierr = VecSum(vecs[i],&sum);CHKERRQ(ierr);
+        if (PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
+      }
+    }
+    ierr = PetscMalloc1(n-1,&dots);CHKERRQ(ierr);
+    for (i=0; i<n-1; i++) {
+      PetscInt j;
+      ierr = VecMDot(vecs[i],n-i-1,vecs+i+1,dots);CHKERRQ(ierr);
+      for (j=0;j<n-i-1;j++) {
+        if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
+      }
+    }
+    PetscFree(dots);CHKERRQ(ierr);
+  }
+#endif
 
   *SP = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);

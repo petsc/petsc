@@ -11,7 +11,7 @@
 #endif
 
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode PetscLogBegin_Private(void);
+extern PetscErrorCode PetscLogInitialize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -203,26 +203,37 @@ PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datat
     Returns the max of the first entry owned by this processor and the
 sum of the second entry.
 
-    The reason nprocs[2*i] contains lengths nprocs[2*i+1] contains flag of 1 if length is nonzero
-is so that the PetscMaxSum_Op() can set TWO values, if we passed in only nprocs[i] with lengths
+    The reason sizes[2*i] contains lengths sizes[2*i+1] contains flag of 1 if length is nonzero
+is so that the PetscMaxSum_Op() can set TWO values, if we passed in only sizes[i] with lengths
 there would be no place to store the both needed results.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
 PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,PetscInt *sum)
 {
-  PetscMPIInt    size,rank;
-  struct {PetscInt max,sum;} *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce((void*)sizes,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  *max = work[rank].max;
-  *sum = work[rank].sum;
-  ierr = PetscFree(work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
+  {
+    struct {PetscInt max,sum;} work;
+    ierr = MPI_Reduce_scatter_block((void*)sizes,&work,1,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    *max = work.max;
+    *sum = work.sum;
+  }
+#else
+  {
+    PetscMPIInt    size,rank;
+    struct {PetscInt max,sum;} *work;
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
+    ierr = MPI_Allreduce((void*)sizes,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    *max = work[rank].max;
+    *sum = work[rank].sum;
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -648,7 +659,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
--  -memory_info - Print memory usage at end of run
+-  -memory_view - Print memory usage at end of run
 
    Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
@@ -749,6 +760,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscGlobalArgs = *args;
   }
   PetscFinalizeCalled = PETSC_FALSE;
+  ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockCreate(&PetscCommSpinLock);CHKERRQ(ierr);
 
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) PETSC_COMM_WORLD = MPI_COMM_WORLD;
   ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
@@ -843,9 +856,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
 #endif
 
-  /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
+  /* Creates the logging data structures; this is enabled even if logging is not turned on */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
+  ierr = PetscLogInitialize();CHKERRQ(ierr);
 #endif
 
   /*
@@ -895,7 +908,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       Setup building of stack frames for all function calls
   */
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 
@@ -1037,10 +1050,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-memory_info",&flg2,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-memory_view",&flg2,NULL);CHKERRQ(ierr);
   }
   if (flg2) {
-    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
+    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
 #endif
 
@@ -1357,6 +1370,9 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Keyval_free(&Petsc_Counter_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
+
+  ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockDestroy(&PetscCommSpinLock);CHKERRQ(ierr);
 
   if (PetscBeganMPI) {
 #if defined(PETSC_HAVE_MPI_FINALIZED)

@@ -806,6 +806,14 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
           in ix in calls to VecSetValues() or VecGetValues(). These rows are simply
           ignored.
+-     VEC_SUBSET_OFF_PROC_ENTRIES, which causes VecAssemblyBegin() to assume that the off-process
+          entries will always be a subset (possibly equal) of the off-process entries set on the
+          first assembly.  This reuses the communication pattern, thus avoiding a global reduction.
+          Subsequent assemblies setting off-process values should use the same InsertMode as the
+          first assembly.
+
+   Developer Note:
+   The InsertMode restriction could be removed by packing the stash messages out of place.
 
    Level: intermediate
 
@@ -1817,7 +1825,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   s    = &v->bstash;
 
   /* print block stash */
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
@@ -1846,8 +1854,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -68,6 +68,7 @@ typedef const char* PCType;
 #define PCAINVCUSP        "ainvcusp"
 #define PCBDDC            "bddc"
 #define PCKACZMARZ        "kaczmarz"
+#define PCTELESCOPE       "telescope"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

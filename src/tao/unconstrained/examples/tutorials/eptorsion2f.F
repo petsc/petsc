@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np <proc> eptorsion2f [all TAO options]
+!  Program usage: mpiexec -n <proc> eptorsion2f [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve
 !  unconstrained minimization problems in parallel.  This example is based

@@ -1340,7 +1340,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
     for (i=0; i<m; i++) {
       x = l[i];
       v = mat->v + i;
-      for (j=0; j<n; j++) { (*v) *= x; v+= m;}
+      for (j=0; j<n; j++) { (*v) *= x; v+= mat->lda;}
     }
     ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
     ierr = PetscLogFlops(1.0*n*m);CHKERRQ(ierr);
@@ -1351,7 +1351,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
     if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vec wrong size");
     for (i=0; i<n; i++) {
       x = r[i];
-      v = mat->v + i*m;
+      v = mat->v + i*mat->lda;
       for (j=0; j<m; j++) (*v++) *= x;
     }
     ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
@@ -1788,8 +1788,22 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   PetscBLASInt   m,n,k;
   PetscScalar    _DOne=1.0,_DZero=0.0;
   PetscErrorCode ierr;
+  PetscBool      flg;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Second matrix must be dense");
+
+  /* Handle case where where user provided the final C matrix rather than calling MatMatMult() with MAT_INITIAL_MATRIX*/
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (flg) {
+    C->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqDense;
+    ierr = (*C->ops->matmultnumeric)(A,B,C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"First matrix must be dense");
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(B->cmap->n,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);

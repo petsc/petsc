@@ -1,20 +1,20 @@
 Vec Object: 1 MPI processes
   type: seq
-0.513862
-0.999881
+0.753358
+1.00849
 
  sensitivity wrt initial conditions: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]
 Vec Object: 1 MPI processes
   type: seq
--47.6033
-3808.72
+-165.219
+14909.2
 Vec Object: 1 MPI processes
   type: seq
-110.508
+430.657
 Vec Object: 1 MPI processes
   type: seq
-1.36345
+12.3383
 
- cost function=0.263447
+ cost function=11.2383
 
- sensitivity wrt parameter pm: 83.6802597 
+ sensitivity wrt parameter pm: 337.5448867 

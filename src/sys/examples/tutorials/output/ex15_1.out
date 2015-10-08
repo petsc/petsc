@@ -1,0 +1,7 @@
+Print called on original full viewer 0
+  Print called on sub viewers 0
+  Print called on sub sub viewers 0
+  Print called on sub sub viewers 1
+  Print called on sub viewers 2
+  Print called on sub sub viewers 2
+  Print called on sub sub viewers 3

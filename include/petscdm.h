@@ -92,6 +92,8 @@ PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 PETSC_EXTERN PetscErrorCode DMGetDimension(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSetDimension(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM,PetscInt,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMGetUseNatural(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMSetUseNatural(DM,PetscBool);
 
 /* Coordinate support */
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
@@ -113,6 +115,8 @@ PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*
 PETSC_EXTERN PetscErrorCode DMSubDomainRestrict(DM,VecScatter,VecScatter,DM);
 
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM,const char []);
+PETSC_EXTERN PetscErrorCode DMAppendOptionsPrefix(DM,const char []);
+PETSC_EXTERN PetscErrorCode DMGetOptionsPrefix(DM,const char*[]);
 PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
 PETSC_EXTERN PetscErrorCode DMGetVecType(DM,VecType*);
 PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);

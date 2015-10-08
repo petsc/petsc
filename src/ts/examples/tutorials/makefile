@@ -7,14 +7,13 @@ LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
-                ex28.c ex30.cxx ex31.c ex34.c extchem.c\
+                ex28.c ex31.c ex34.c ex35.cxx extchem.c\
                 ex16adj.c ex16opt_p.c ex16opt_ic.c  \
                 ex20adj.c ex20opt_p.c ex20opt_ic.c  \
-                ex28.c ex30.cxx ex31.c ex40.c ex41.c
-EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
-EXAMPLESFH      = ex2f.h
+                ex40.c ex41.c
+EXAMPLESF       = ex1f.F ex22f.F # ex22f_mf.F90
 MANSEC          = TS
-DIRS            = phasefield advection-diffusion-reaction eimex power_grid
+DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -30,10 +29,6 @@ ex1f: ex1f.o  chkopts
 ex2: ex2.o chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_TS_LIB}
 	${RM} ex2.o
-
-ex2f: ex2f.o chkopts
-	-${FLINKER} -o ex2f ex2f.o ${PETSC_TS_LIB}
-	${RM} ex2f.o
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
@@ -191,6 +186,10 @@ ex34: ex34.o chkopts
 	-${CLINKER} -o ex34 ex34.o ${PETSC_TS_LIB}
 	${RM} ex34.o
 
+ex35: ex35.o chkopts
+	-${CLINKER} -o ex35 ex35.o ${PETSC_TS_LIB}
+	${RM} ex35.o
+
 ex36: ex36.o chkopts
 	-${CLINKER} -o ex36 ex36.o ${PETSC_TS_LIB}
 	${RM} ex36.o
@@ -219,10 +218,6 @@ ex41: ex41.o chkopts
 	-${CLINKER} -o ex41 ex41.o ${PETSC_TS_LIB}
 	${RM} ex41.o
 
-ex35: ex35.o chkopts
-	-${CLINKER} -o ex35 ex35.o ${PETSC_TS_LIB}
-	${RM} ex35.o
-
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
@@ -234,7 +229,7 @@ runex1_2:
 	   ${RM} -f ex1_2.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 > ex1f_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1f_1.tmp
 
@@ -242,11 +237,6 @@ runex2:
 	-@${MPIEXEC} -n 2 ./ex2 -nox -ts_dt 10 -mymonitor > ex2_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex2_1.out ex2_1.tmp || printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex2_1.tmp
-
-runex2f:
-	-@${MPIEXEC} -n 1 ./ex2f -ts_max_steps 100 > ex2f_1.tmp 2>&1; \
-	  ${DIFF} output/ex2f_1.out ex2f_1.tmp || printf "${PWD}\nPossible problem with ex2f_1, diffs above\n=========================================\n"; \
-	  ${RM} -f ex2_1.tmp
 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 > ex3_1.tmp 2>&1;	  \
@@ -466,17 +456,17 @@ runex20:
 	   ${RM} -f ex20_1.tmp
 
 runex20adj:
-	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1000000 > ex20adj_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -mu 100000 > ex20adj_1.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_1.out ex20adj_1.tmp || printf "${PWD}\nPossible problem with ex20adj_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj_1.tmp 
 
 runex20opt_ic:
-	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -tao_view -mu 1000000 > ex20opt_ic_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view -mu 100000 > ex20opt_ic_1.tmp 2>&1; \
 	  ${DIFF} output/ex20opt_ic_1.out ex20opt_ic_1.tmp || printf "${PWD}\nPossible problem with ex20opt_ic_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20opt_ic_1.tmp
 
 runex20opt_p:
-	-@${MPIEXEC} -n 1 ./ex20opt_p -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -tao_view -mu 1 > ex20opt_p_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20opt_p -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view > ex20opt_p_1.tmp 2>&1; \
 	  ${DIFF} output/ex20opt_p_1.out ex20opt_p_1.tmp || printf "${PWD}\nPossible problem with ex20opt_p_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20opt_p_1.tmp 
 
@@ -602,13 +592,13 @@ TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc
                             ex20opt_p.PETSc   ex20opt_p.rm \
                             ex20opt_ic.PETSc  ex20opt_ic.rm
 TESTEXAMPLES_C_X	  =
-TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
-TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5    = ex30.PETSc runex30_2 ex30.rm ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_MOAB         = ex35.PETSc runex35 ex35.rm
+TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

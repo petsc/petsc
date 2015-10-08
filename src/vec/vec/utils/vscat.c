@@ -868,6 +868,9 @@ extern PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt*,PetscInt,co
 
 #define VecScatterOptimizedBS(mbs) (2 <= mbs)
 
+#undef __FUNCT__
+#define __FUNCT__ "VecScatterCreateEmpty"
+
 PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 {
   VecScatter     ctx;

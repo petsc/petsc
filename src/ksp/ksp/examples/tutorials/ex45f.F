@@ -75,8 +75,8 @@
      &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &                     PETSC_NULL_INTEGER,ierr)
 
-       Hx = 1.d0 / (mx-1)
-       Hy = 1.d0 / (my-1)
+       Hx = 1.0 / (mx-1)
+       Hy = 1.0 / (my-1)
        h=Hx*Hy
        call VecSet(b,h,ierr)
        end subroutine
@@ -108,8 +108,8 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,ierr)
 
-      Hx = 1.d0 / (mx-1)
-      Hy = 1.d0 / (my-1)
+      Hx = 1.0 / (mx-1)
+      Hy = 1.0 / (my-1)
       HxdHy = Hx/Hy
       HydHx = Hy/Hx
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,            &
@@ -119,7 +119,7 @@
           row(MatStencil_i) = i
           row(MatStencil_j) = j
           if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1 ) then
-            v(1) = 2.d0*(HxdHy + HydHx)
+            v(1) = 2.0*(HxdHy + HydHx)
             call MatSetValuesStencil(B,i1,row,i1,row,v,                 &
      &           INSERT_VALUES,ierr)
           else
@@ -129,7 +129,7 @@
             v(2) = -HydHx
             col(MatStencil_i,2) = i-1
             col(MatStencil_j,2) = j
-            v(3) = 2.d0*(HxdHy + HydHx)
+            v(3) = 2.0*(HxdHy + HydHx)
             col(MatStencil_i,3) = i
             col(MatStencil_j,3) = j
             v(4) = -HydHx
