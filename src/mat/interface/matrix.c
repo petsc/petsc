@@ -8691,6 +8691,43 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFactorSetSchurIS"
+/*@
+   MatFactorSetSchurIS - Set indices corresponding to the Schur complement
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  is - the index set defining the Schur indices (0-based)
+
+   Notes:
+
+   Level: developer
+
+   Concepts:
+
+.seealso:
+
+@*/
+PetscErrorCode  MatFactorSetSchurIS(Mat mat,IS is)
+{
+  PetscErrorCode ierr,(*f)(Mat,IS);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidType(is,2);
+  PetscCheckSameComm(mat,1,is,2);
+  if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorSetSchurIS_C",&f);CHKERRQ(ierr);
+  if (!f) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatSolverPackage %s does not support Schur complement computation",mat->solvertype);
+  ierr = (*f)(mat,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
 /*@
    MatPtAP - Creates the matrix product C = P^T * A * P

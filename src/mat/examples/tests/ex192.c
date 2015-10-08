@@ -1,6 +1,6 @@
 
 static char help[] = "Tests MatSolve() and MatMatSolve() with mumps sequential solver in Schur complement mode.\n\
-Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 -symmetric_solve -hermitian_solve -sratio 0.3\n\n";
+Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 -symmetric_solve -hermitian_solve -schur_ratio 0.3\n\n";
 
 #include <petscmat.h>
 
@@ -11,9 +11,10 @@ int main(int argc,char **args)
   Mat            A,RHS,C,F,X,S;
   Vec            u,x,b;
   Vec            xschur,bschur,uschur;
+  IS             is_schur;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       icntl19,size_schur,*idxs_schur,i,m,n,nfact,nsolve,nrhs;
+  PetscInt       icntl19,size_schur,i,m,n,nfact,nsolve,nrhs;
   PetscReal      norm,tol=1.e-12;
   PetscRandom    rand;
   PetscBool      flg,herm,symm;
@@ -118,12 +119,9 @@ int main(int argc,char **args)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
   }
   size_schur = (PetscInt)(sratio*m);
-  ierr = PetscMalloc1(size_schur,&idxs_schur);CHKERRQ(ierr);
-  for (i=0;i<size_schur;i++) {
-    idxs_schur[i] = m-size_schur+i+1; /* fortran like */
-  }
-  ierr = MatMumpsSetSchurIndices(F,size_schur,idxs_schur);CHKERRQ(ierr);
-  ierr = PetscFree(idxs_schur);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur);CHKERRQ(ierr);
+  ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
   if (!symm) {
     ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {

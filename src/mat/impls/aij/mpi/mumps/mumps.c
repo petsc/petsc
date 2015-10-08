@@ -865,7 +865,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRinfo_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRinfog_C",NULL);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetSchurIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSetSchurIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsInvertSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsCreateSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetSchurComplement_C",NULL);CHKERRQ(ierr);
@@ -1713,21 +1713,28 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
 
 /* -------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "MatMumpsSetSchurIndices_MUMPS"
-PetscErrorCode MatMumpsSetSchurIndices_MUMPS(Mat F,PetscInt size,PetscInt idxs[])
+#define __FUNCT__ "MatFactorSetSchurIS_MUMPS"
+PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 {
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
+  const PetscInt *idxs;
+  PetscInt       size,i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (mumps->size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS parallel Schur complements not yet supported from PETSc\n");
+  ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
   if (mumps->id.size_schur != size) {
     ierr = PetscFree2(mumps->id.listvar_schur,mumps->id.schur);CHKERRQ(ierr);
     mumps->id.size_schur = size;
     mumps->id.schur_lld = size;
     ierr = PetscMalloc2(size,&mumps->id.listvar_schur,size*size,&mumps->id.schur);CHKERRQ(ierr);
   }
+  ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
   ierr = PetscMemcpy(mumps->id.listvar_schur,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  /* MUMPS expects Fortran style indices */
+  for (i=0;i<size;i++) mumps->id.listvar_schur[i]++;
+  ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
   if (F->factortype == MAT_FACTOR_LU) {
     mumps->id.ICNTL(19) = 3; /* MUMPS returns full matrix */
   } else {
@@ -2617,7 +2624,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetSchurIndices_C",MatMumpsSetSchurIndices_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsInvertSchurComplement_C",MatMumpsInvertSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsCreateSchurComplement_C",MatMumpsCreateSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetSchurComplement_C",MatMumpsGetSchurComplement_MUMPS);CHKERRQ(ierr);
@@ -2699,7 +2706,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetSchurIndices_C",MatMumpsSetSchurIndices_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsInvertSchurComplement_C",MatMumpsInvertSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsCreateSchurComplement_C",MatMumpsCreateSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetSchurComplement_C",MatMumpsGetSchurComplement_MUMPS);CHKERRQ(ierr);
@@ -2770,7 +2777,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetSchurIndices_C",MatMumpsSetSchurIndices_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsInvertSchurComplement_C",MatMumpsInvertSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsCreateSchurComplement_C",MatMumpsCreateSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetSchurComplement_C",MatMumpsGetSchurComplement_MUMPS);CHKERRQ(ierr);
