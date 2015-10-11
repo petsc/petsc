@@ -87,7 +87,6 @@ typedef struct {
   VecScatter   scat_rhs, scat_sol;   /* used by MatSolve() */
   Vec          b_seq,x_seq;
   PetscInt     ninfo,*info;          /* display INFO */
-  PetscBool    schur_second_solve;
   PetscInt     sizeredrhs;
   PetscInt     *schur_pivots;
   PetscInt     schur_B_lwork;
@@ -340,7 +339,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat_MUMPS* mumps, PetscBool sol
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsHandleSchur_Private"
-static PetscErrorCode MatMumpsHandleSchur_Private(Mat_MUMPS* mumps)
+static PetscErrorCode MatMumpsHandleSchur_Private(Mat_MUMPS* mumps, PetscBool expansion)
 {
   PetscErrorCode ierr;
 
@@ -348,12 +347,12 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat_MUMPS* mumps)
   if (!mumps->id.ICNTL(19)) { /* do nothing when Schur complement has not been computed */
     PetscFunctionReturn(0);
   }
-  if (!mumps->schur_second_solve) { /* prepare for the condensation step */
+  if (!expansion) { /* prepare for the condensation step */
     /* check if schur complement has been computed
        We set by default ICNTL(26) == -1 when Schur indices have been provided by the user.
        According to MUMPS (5.0.0) manual, any value should be harmful during the factorization phase
        Unless the user provides a valid value for ICNTL(26), MatSolve and MatMatSolve routines solve the full system.
-       This requires an extra call to PetscMUMPS_c and the computation of the factors for S, handled setting double_schur_solve to PETSC_TRUE */
+       This requires an extra call to PetscMUMPS_c and the computation of the factors for S */
     if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
       PetscInt sizeredrhs = mumps->id.nrhs*mumps->id.size_schur;
       /* allocate MUMPS internal array to store reduced right-hand sides */
@@ -363,18 +362,16 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat_MUMPS* mumps)
         ierr = PetscMalloc1(mumps->id.nrhs*mumps->id.lredrhs,&mumps->id.redrhs);CHKERRQ(ierr);
         mumps->sizeredrhs = mumps->id.nrhs*mumps->id.lredrhs;
       }
-      mumps->schur_second_solve = PETSC_TRUE;
       mumps->id.ICNTL(26) = 1; /* condensation phase */
     }
   } else { /* prepare for the expansion step */
-    /* solve Schur complement (this should be done by the MUMPS user, so basically us) */
+    /* solve Schur complement (this has to be done by the MUMPS user, so basically us) */
     ierr = MatMumpsSolveSchur_Private(mumps,PETSC_TRUE);CHKERRQ(ierr);
     mumps->id.ICNTL(26) = 2; /* expansion phase */
     PetscMUMPS_c(&mumps->id);
     if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
     /* restore defaults */
     mumps->id.ICNTL(26) = -1;
-    mumps->schur_second_solve = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -905,7 +902,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   }
 
   /* handle condensation step of Schur complement (if any) */
-  ierr = MatMumpsHandleSchur_Private(mumps);CHKERRQ(ierr);
+  ierr = MatMumpsHandleSchur_Private(mumps,PETSC_FALSE);CHKERRQ(ierr);
 
   /* solve phase */
   /*-------------*/
@@ -914,7 +911,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
   /* handle expansion step of Schur complement (if any) */
-  ierr = MatMumpsHandleSchur_Private(mumps);CHKERRQ(ierr);
+  ierr = MatMumpsHandleSchur_Private(mumps,PETSC_TRUE);CHKERRQ(ierr);
 
   if (mumps->size > 1) { /* convert mumps distributed solution to petsc mpi x */
     if (mumps->scat_sol && mumps->ICNTL9_pre != mumps->id.ICNTL(9)) {
@@ -983,7 +980,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
     mumps->id.rhs = (MumpsScalar*)array;
     /* handle condensation step of Schur complement (if any) */
-    ierr = MatMumpsHandleSchur_Private(mumps);CHKERRQ(ierr);
+    ierr = MatMumpsHandleSchur_Private(mumps,PETSC_FALSE);CHKERRQ(ierr);
 
     /* solve phase */
     /*-------------*/
@@ -992,7 +989,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
     /* handle expansion step of Schur complement (if any) */
-    ierr = MatMumpsHandleSchur_Private(mumps);CHKERRQ(ierr);
+    ierr = MatMumpsHandleSchur_Private(mumps,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
   } else {  /*--------- parallel case --------*/
     PetscInt       lsol_loc,nlsol_loc,*isol_loc,*idx,*iidx,*idxx,*isol_loc_save;
@@ -1325,7 +1322,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->id.size_schur      = 0;
   mumps->id.listvar_schur   = NULL;
   mumps->id.schur           = NULL;
-  mumps->schur_second_solve = PETSC_FALSE;
   mumps->sizeredrhs         = 0;
   mumps->schur_pivots       = NULL;
   mumps->schur_work         = NULL;
