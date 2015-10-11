@@ -8728,6 +8728,37 @@ PetscErrorCode  MatFactorSetSchurIS(Mat mat,IS is)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFactorCreateSchurComplement"
+/*@
+  MatFactorCreateSchurComplement - Create a Schur complement matrix object using Schur data computed during the factorization step
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  *S - location where to return the Schur complement (MATDENSE)
+
+   Notes:
+   The routine provides a copy of the Schur data stored within solver's data strutures. The caller must destroy the object when it is no longer needed.
+   If MatFactorInvertSchurComplement has been called, the routine gets back the inverse
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement()
+@*/
+PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscUseMethod(F,"MatFactorCreateSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSchurComplement"
 /*@
   MatFactorGetSchurComplement - Get a Schur complement matrix object using the current Schur data
