@@ -8722,7 +8722,7 @@ PetscErrorCode  MatFactorSetSchurIS(Mat mat,IS is)
   PetscCheckSameComm(mat,1,is,2);
   if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorSetSchurIS_C",&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatSolverPackage %s does not support Schur complement computation",mat->solvertype);
+  if (!f) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"The selected MatSolverPackage does not support Schur complement computation. You should use MATSOLVERMUMPS or MATSOLVERMKL_PARDISO");
   ierr = (*f)(mat,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8815,7 +8815,8 @@ PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorRestoreSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  PetscValidHeaderSpecific(*S,MAT_CLASSID,1);
+  ierr = MatDestroy(S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
