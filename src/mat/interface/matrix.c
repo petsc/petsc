@@ -8698,7 +8698,7 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
    Collective on Mat
 
    Input Parameters:
-+  mat - the matrix
++  mat - the factored matrix
 -  is - the index set defining the Schur indices (0-based)
 
    Notes:
@@ -8707,7 +8707,7 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 
    Concepts:
 
-.seealso:
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
 
 @*/
 PetscErrorCode  MatFactorSetSchurIS(Mat mat,IS is)
@@ -8726,6 +8726,166 @@ PetscErrorCode  MatFactorSetSchurIS(Mat mat,IS is)
   ierr = (*f)(mat,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorGetSchurComplement"
+/*@
+  MatFactorGetSchurComplement - Get a Schur complement matrix object using the current Schur data
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+.  *S - location where to return the Schur complement (in MATDENSE format)
+
+   Notes:
+   Schur complement mode is currently implemented for sequential matrices.
+   The routine returns a dense matrix pointing to the raw data of the Schur Complement stored within the data strutures of the solver; e.g. if MatFactorInvertSchurComplement has been called, the returned matrix is actually the inverse of the Schur complement.
+   The caller should call MatFactorRestoreSchurComplement when the object is no longer needed.
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+@*/
+PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscUseMethod(F,"MatFactorGetSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorRestoreSchurComplement"
+/*@
+  MatFactorRestoreSchurComplement - Restore the Schur complement matrix object obtained from a call to MatFactorGetSchurComplement
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+.  *S - location where the Schur complement is stored
+
+   Notes:
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+@*/
+PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscUseMethod(F,"MatFactorRestoreSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorSolveSchurComplementTranspose"
+/*@
+  MatFactorSolveSchurComplementTranspose - Solve the transpose of the Schur complement system computed during the factorization step
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+.  rhs - location where the right hand side of the Schur complement system is stored
+-  sol - location where the solution of the Schur complement system has to be returned
+
+   Notes:
+   The sizes of the vectors should match the size of the Schur complement
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS()
+@*/
+PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscCheckSameComm(F,1,rhs,2);
+  PetscCheckSameComm(F,1,sol,3);
+  ierr = PetscUseMethod(F,"MatFactorSolveSchurComplementTranspose_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorSolveSchurComplement"
+/*@
+  MatFactorSolveSchurComplement - Solve the Schur complement system computed during the factorization step
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+.  rhs - location where the right hand side of the Schur complement system is stored
+-  sol - location where the solution of the Schur complement system has to be returned
+
+   Notes:
+   The sizes of the vectors should match the size of the Schur complement
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS()
+@*/
+PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscCheckSameComm(F,1,rhs,2);
+  PetscCheckSameComm(F,1,sol,3);
+  ierr = PetscUseMethod(F,"MatFactorSolveSchurComplement_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorInvertSchurComplement"
+/*@
+  MatFactorInvertSchurComplement - Invert the raw Schur data computed during the factorization step
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+
+   Notes:
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS()
+@*/
+PetscErrorCode MatFactorInvertSchurComplement(Mat F)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscUseMethod(F,"MatFactorInvertSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
