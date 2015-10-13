@@ -1723,13 +1723,15 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   /* MUMPS expects Fortran style indices */
   for (i=0;i<size;i++) mumps->id.listvar_schur[i]++;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
-  if (F->factortype == MAT_FACTOR_LU) {
-    mumps->id.ICNTL(19) = 3; /* MUMPS returns full matrix */
-  } else {
-    mumps->id.ICNTL(19) = 2; /* MUMPS returns lower triangular part */
+  if (size) { /* turn on Schur switch if we the set of indices is not empty */
+    if (F->factortype == MAT_FACTOR_LU) {
+      mumps->id.ICNTL(19) = 3; /* MUMPS returns full matrix */
+    } else {
+      mumps->id.ICNTL(19) = 2; /* MUMPS returns lower triangular part */
+    }
+    /* set a special value of ICNTL (not handled my MUMPS) to be used in the solve phase by PETSc */
+    mumps->id.ICNTL(26) = -1;
   }
-  /* set a special value of ICNTL (not handled my MUMPS) to be used in the solve phase by PETSc */
-  mumps->id.ICNTL(26) = -1;
   PetscFunctionReturn(0);
 }
 
