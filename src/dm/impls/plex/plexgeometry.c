@@ -349,18 +349,19 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   /* Compute boxes which overlap each cell: http://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscCalloc2((dim+1) * dim, &dboxes, dim+1, &boxes);CHKERRQ(ierr);
+  ierr = PetscCalloc2(16 * dim, &dboxes, 16, &boxes);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscReal *h       = lbox->h;
     PetscScalar     *ccoords = NULL;
+    PetscInt         csize   = 0;
     PetscScalar      point[3];
     PetscInt         dlim[6], d, e, i, j, k;
 
     /* Find boxes enclosing each vertex */
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
-    ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, boxes);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, &csize, &ccoords);CHKERRQ(ierr);
+    ierr = PetscGridHashGetEnclosingBox(lbox, csize/dim, ccoords, dboxes, boxes);CHKERRQ(ierr);
     /* Mark cells containing the vertices */
-    for (e = 0; e < dim+1; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
+    for (e = 0; e < csize/dim; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
     /* Get grid of boxes containing these */
     for (d = 0;   d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
     for (d = dim; d < 3;   ++d) {dlim[d*2+0] = dlim[d*2+1] = 0;}
