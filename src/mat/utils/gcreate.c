@@ -405,6 +405,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   ((PetscObject)A)->refct = refct;
   ((PetscObject)A)->state = state + 1;
 
+  ((PetscObject)*C)->refct = 1;
   ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
