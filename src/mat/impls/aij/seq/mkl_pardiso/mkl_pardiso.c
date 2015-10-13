@@ -2,8 +2,9 @@
 #define MKL_ILP64
 #endif
 
-#include <../src/mat/impls/aij/seq/aij.h>    /*I "petscmat.h" I*/
-#include <../src/mat/impls/dense/seq/dense.h>
+#include <../src/mat/impls/aij/seq/aij.h>        /*I "petscmat.h" I*/
+#include <../src/mat/impls/sbaij/seq/sbaij.h>    /*I "petscmat.h" I*/
+#include <../src/mat/impls/dense/seq/dense.h>    /*I "petscmat.h" I*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,6 +135,7 @@ PetscErrorCode MatCopy_MKL_PARDISO(Mat A, MatReuse reuse, INT_TYPE *nnz, INT_TYP
 PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
 {
   Mat_MKL_PARDISO *mat_mkl_pardiso=(Mat_MKL_PARDISO*)A->spptr;
+  PetscBool       isSeqSBAIJ;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -165,7 +167,9 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMkl_PardisoSetCntl_C",NULL);CHKERRQ(ierr);
 
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
+  if (isSeqSBAIJ) {ierr = MatDestroy_SeqSBAIJ(A);CHKERRQ(ierr);}
+  else            {ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -328,14 +332,13 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->spptr;
   PetscErrorCode      ierr;
-  PetscInt            icntl;
+  PetscInt            icntl, threads = 1;
   PetscBool           flg;
-  int                 pt[IPARM_SIZE], threads = 1;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of threads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
-  if (flg) mkl_set_num_threads(threads);
+  if (flg) mkl_set_num_threads((int)threads);
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_pardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_pardiso->maxfct = icntl;
@@ -348,8 +351,9 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_69","Defines the matrix type","None",mat_mkl_pardiso->mtype,&icntl,&flg);CHKERRQ(ierr);
   if(flg){
-   mat_mkl_pardiso->mtype = icntl;
-   MKL_PARDISO_INIT(&pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
+    void *pt[IPARM_SIZE];
+    mat_mkl_pardiso->mtype = icntl;
+    MKL_PARDISO_INIT(pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
 #if defined(PETSC_USE_REAL_SINGLE)
     mat_mkl_pardiso->iparm[27] = 1;
 #else
@@ -642,9 +646,9 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
     else if(icntl == 68)
       mat_mkl_pardiso->msglvl = ival;
     else if(icntl == 69){
-      int pt[IPARM_SIZE];
+      void *pt[IPARM_SIZE];
       mat_mkl_pardiso->mtype = ival;
-      MKL_PARDISO_INIT(&pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
+      MKL_PARDISO_INIT(pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
 #if defined(PETSC_USE_REAL_SINGLE)
       mat_mkl_pardiso->iparm[27] = 1;
 #else
