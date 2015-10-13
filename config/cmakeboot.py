@@ -77,7 +77,7 @@ class PETScMaker(script.Script):
 
    output,error,retcode = self.executeShellCommand([self.cmake.cmake, '--version'], checkCommand=noCheck, log=log)
    import re
-   m = re.match(r'cmake version (.+)$', output)
+   m = re.match(r'cmake version (.+)', output)
    if not m:
        self.logPrint('Could not parse CMake version: %s, disabling cmake build option' % output)
        return False
