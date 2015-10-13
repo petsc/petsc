@@ -97,47 +97,57 @@ typedef struct {
   PetscBool CleanUp;
 
   /* Conversion to a format suitable for MKL */
-  PetscErrorCode (*Convert)(Mat, PetscBool, MatReuse, INT_TYPE*, INT_TYPE**, INT_TYPE**, void**);
+  PetscErrorCode (*Convert)(Mat, PetscBool, MatReuse, PetscBool*, INT_TYPE*, INT_TYPE**, INT_TYPE**, void**);
   PetscErrorCode (*Destroy)(Mat);
 } Mat_MKL_PARDISO;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMKLPardiso_Convert_seqsbaij"
-PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
+PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse,PetscBool *free,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
 {
-  Mat_SeqSBAIJ   *aa=(Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *aa = (Mat_SeqSBAIJ*)A->data;
+  PetscInt       bs  = A->rmap->bs;
+
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
+  if (!sym) {
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+  }
+  if (bs == 1) { /* already in the correct format */
+    *v    = aa->a;
+    *r    = aa->i;
+    *c    = aa->j;
+    *nnz  = aa->nz;
+    *free = PETSC_FALSE;
   } else {
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Conversion from SeqSBAIJ to MKL Pardiso format still need to be implemented");
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMKLPardiso_Convert_seqbaij"
-PetscErrorCode MatMKLPardiso_Convert_seqbaij(Mat A,PetscBool sym,MatReuse reuse,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
+PetscErrorCode MatMKLPardiso_Convert_seqbaij(Mat A,PetscBool sym,MatReuse reuse,PetscBool *free,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
 {
   Mat_SeqBAIJ    *aa=(Mat_SeqBAIJ*)A->data;
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-  } else {
-  }
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Conversion from SeqBAIJ to MKL Pardiso format still need to be implemented");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMKLPardiso_Convert_seqaij"
-PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
+PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,PetscBool *free,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
 {
   Mat_SeqAIJ     *aa = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!sym) { /* already in the correct format */
-    *v   = aa->a;
-    *r   = aa->i;
-    *c   = aa->j;
-    *nnz = aa->nz;
+    *v    = aa->a;
+    *r    = aa->i;
+    *c    = aa->j;
+    *nnz  = aa->nz;
+    *free = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
   /* need to get the triangular part */
@@ -166,10 +176,11 @@ PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,I
       }
       row[i+1]    = row[i] + rl;
     }
-    *v   = vals;
-    *r   = row;
-    *c   = col;
-    *nnz = nz;
+    *v    = vals;
+    *r    = row;
+    *c    = col;
+    *nnz  = nz;
+    *free = PETSC_TRUE;
   } else {
     PetscScalar *vv;
     PetscInt    m = A->rmap->n,i;
@@ -183,6 +194,7 @@ PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,I
         *vv = *av; vv++; av++;
       }
     }
+    *free = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -770,7 +782,7 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
 
   PetscFunctionBegin;
   mat_mkl_pardiso->matstruc = SAME_NONZERO_PATTERN;
-  ierr = (*mat_mkl_pardiso->Convert)(A,mat_mkl_pardiso->needsym,MAT_REUSE_MATRIX,&mat_mkl_pardiso->nz,&mat_mkl_pardiso->ia,&mat_mkl_pardiso->ja,&mat_mkl_pardiso->a);CHKERRQ(ierr);
+  ierr = (*mat_mkl_pardiso->Convert)(A,mat_mkl_pardiso->needsym,MAT_REUSE_MATRIX,&mat_mkl_pardiso->freeaij,&mat_mkl_pardiso->nz,&mat_mkl_pardiso->ia,&mat_mkl_pardiso->ja,&mat_mkl_pardiso->a);CHKERRQ(ierr);
 
   mat_mkl_pardiso->phase = JOB_NUMERICAL_FACTORIZATION;
   MKL_PARDISO (mat_mkl_pardiso->pt,
@@ -977,11 +989,12 @@ PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,const MatFac
   mat_mkl_pardiso->matstruc = DIFFERENT_NONZERO_PATTERN;
   ierr = PetscSetMKL_PARDISOFromOptions(F,A);CHKERRQ(ierr);
 
+  /* throw away any previously computed structure */
   if (mat_mkl_pardiso->freeaij) {
     ierr = PetscFree2(mat_mkl_pardiso->ia,mat_mkl_pardiso->ja);CHKERRQ(ierr);
     ierr = PetscFree(mat_mkl_pardiso->a);CHKERRQ(ierr);
   }
-  ierr = (*mat_mkl_pardiso->Convert)(A,mat_mkl_pardiso->needsym,MAT_INITIAL_MATRIX,&mat_mkl_pardiso->nz,&mat_mkl_pardiso->ia,&mat_mkl_pardiso->ja,&mat_mkl_pardiso->a);CHKERRQ(ierr);
+  ierr = (*mat_mkl_pardiso->Convert)(A,mat_mkl_pardiso->needsym,MAT_INITIAL_MATRIX,&mat_mkl_pardiso->freeaij,&mat_mkl_pardiso->nz,&mat_mkl_pardiso->ia,&mat_mkl_pardiso->ja,&mat_mkl_pardiso->a);CHKERRQ(ierr);
   mat_mkl_pardiso->n = A->rmap->N;
 
   mat_mkl_pardiso->phase = JOB_ANALYSIS;
@@ -1232,15 +1245,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMKL_PARDISO;
     B->factortype            = MAT_FACTOR_LU;
+    mat_mkl_pardiso->needsym = PETSC_FALSE;
     if (isSeqAIJ) {
       mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqaij;
-      mat_mkl_pardiso->freeaij = PETSC_FALSE;
     } else if (isSeqBAIJ) {
       mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqbaij;
-      mat_mkl_pardiso->freeaij = PETSC_TRUE;
     } else if (isSeqSBAIJ) {
-      mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqsbaij;
-      mat_mkl_pardiso->freeaij = PETSC_TRUE;
+      SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU factor with SEQSBAIJ format! Use MAT_FACTOR_CHOLESKY instead");
     } else {
       SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU with %s format",((PetscObject)A)->type_name);
     }
@@ -1260,13 +1271,10 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     B->factortype                  = MAT_FACTOR_CHOLESKY;
     if (isSeqAIJ) {
       mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqaij;
-      mat_mkl_pardiso->freeaij = PETSC_TRUE;
     } else if (isSeqBAIJ) {
       mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqbaij;
-      mat_mkl_pardiso->freeaij = PETSC_TRUE;
     } else if (isSeqSBAIJ) {
       mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqsbaij;
-      mat_mkl_pardiso->freeaij = PETSC_FALSE;
     } else {
       SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with %s format",((PetscObject)A)->type_name);
     }
@@ -1313,6 +1321,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void)
   PetscFunctionBegin;
   ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
