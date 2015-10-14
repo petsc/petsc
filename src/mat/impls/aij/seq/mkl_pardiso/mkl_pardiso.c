@@ -92,6 +92,7 @@ typedef struct {
   PetscInt     *schur_pivots;
   PetscBool    schur_factored;
   PetscBool    schur_inverted;
+  PetscBool    solve_interior;
 
   /* True if mkl_pardiso function have been used.*/
   PetscBool CleanUp;
@@ -592,6 +593,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
     mat_mkl_pardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
   }
   mat_mkl_pardiso->iparm[6-1] = 0;
+
   MKL_PARDISO (mat_mkl_pardiso->pt,
     &mat_mkl_pardiso->maxfct,
     &mat_mkl_pardiso->mnum,
@@ -619,11 +621,17 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
       shift = 0;
     }
 
-    /* solve Schur complement */
-    ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatMKLPardisoSolveSchur_Private(mat_mkl_pardiso,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
-    ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work+shift,PETSC_FALSE);CHKERRQ(ierr);
-
+    if (!mat_mkl_pardiso->solve_interior) {
+      /* solve Schur complement */
+      ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatMKLPardisoSolveSchur_Private(mat_mkl_pardiso,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
+      ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work+shift,PETSC_FALSE);CHKERRQ(ierr);
+    } else { /* if we are solving for the interior problem, any value in barray[schur] forward-substitued to xarray[schur] will be neglected */
+      PetscInt i;
+      for (i=0;i<mat_mkl_pardiso->schur_size;i++) {
+        xarray[mat_mkl_pardiso->schur_idxs[i]] = 0.;
+      }
+    }
     /* expansion phase */
     mat_mkl_pardiso->iparm[6-1] = 1;
     mat_mkl_pardiso->phase = JOB_SOLVE_BACKWARD_SUBSTITUTION;
@@ -698,6 +706,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       mat_mkl_pardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
     }
     mat_mkl_pardiso->iparm[6-1] = 0;
+
     MKL_PARDISO (mat_mkl_pardiso->pt,
       &mat_mkl_pardiso->maxfct,
       &mat_mkl_pardiso->mnum,
@@ -738,10 +747,19 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       }
 
       /* solve Schur complement */
-      ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatMKLPardisoSolveSchur_Private(mat_mkl_pardiso,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
-      ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work+shift,PETSC_FALSE);CHKERRQ(ierr);
-
+      if (!mat_mkl_pardiso->solve_interior) {
+        ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = MatMKLPardisoSolveSchur_Private(mat_mkl_pardiso,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
+        ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work+shift,PETSC_FALSE);CHKERRQ(ierr);
+      } else { /* if we are solving for the interior problem, any value in barray[schur,n] forward-substitued to xarray[schur,n] will be neglected */
+        PetscInt i,n,m=0;
+        for (n=0;n<mat_mkl_pardiso->nrhs;n++) {
+          for (i=0;i<mat_mkl_pardiso->schur_size;i++) {
+            xarray[mat_mkl_pardiso->schur_idxs[i]+m] = 0.;
+          }
+          m += mat_mkl_pardiso->n;
+        }
+      }
       /* expansion phase */
       mat_mkl_pardiso->iparm[6-1] = 1;
       mat_mkl_pardiso->phase = JOB_SOLVE_BACKWARD_SUBSTITUTION;
@@ -805,11 +823,19 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
 
   if (mat_mkl_pardiso->schur) { /* schur output from pardiso is in row major format */
     PetscInt j,k,n=mat_mkl_pardiso->schur_size;
-    for (j=0; j<n; j++) {
-      for (k=0; k<j; k++) {
-        PetscScalar tmp = mat_mkl_pardiso->schur[j + k*n];
-        mat_mkl_pardiso->schur[j + k*n] = mat_mkl_pardiso->schur[k + j*n];
-        mat_mkl_pardiso->schur[k + j*n] = tmp;
+    if (!mat_mkl_pardiso->schur_solver_type) {
+      for (j=0; j<n; j++) {
+        for (k=0; k<j; k++) {
+          PetscScalar tmp = mat_mkl_pardiso->schur[j + k*n];
+          mat_mkl_pardiso->schur[j + k*n] = mat_mkl_pardiso->schur[k + j*n];
+          mat_mkl_pardiso->schur[k + j*n] = tmp;
+        }
+      }
+    } else { /* we could use row-major in LAPACK routines (e.g. use 'U' instead of 'L'; instead, I prefer consistency between data structures and swap to column major */
+      for (j=0; j<n; j++) {
+        for (k=0; k<j; k++) {
+          mat_mkl_pardiso->schur[j + k*n] = mat_mkl_pardiso->schur[k + j*n];
+        }
       }
     }
   }
@@ -1133,6 +1159,8 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
       mat_mkl_pardiso->iparm[27] = 0;
 #endif
       mat_mkl_pardiso->iparm[34] = 1;
+    } else if(icntl==70) {
+      mat_mkl_pardiso->solve_interior = !!ival;
     }
   }
   PetscFunctionReturn(0);
