@@ -972,7 +972,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
-    ierr = MatHeaderMerge(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1300,7 +1300,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
   ierr = PetscFree3(v_rowwise,rows,cols);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
   }

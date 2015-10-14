@@ -226,8 +226,8 @@ PETSC_EXTERN MatBaseName MatBaseNameList;
 */
 PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
-PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
+PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 #if defined(PETSC_USE_DEBUG)
