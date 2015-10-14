@@ -14,12 +14,13 @@ int main(int argc,char **args)
   IS             is_schur;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       size_schur,m,n,nfact,nsolve,nrhs;
+  PetscInt       isolver=0,size_schur,m,n,nfact,nsolve,nrhs;
   PetscReal      norm,tol=1.e-12;
   PetscRandom    rand;
   PetscBool      flg,herm,symm;
   PetscReal      sratio = 5.1/12.;
   PetscViewer    fd;              /* viewer */
+  char           solver[256];
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -101,9 +102,39 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
+  ierr = PetscOptionsGetInt(NULL,"-solver",&isolver,NULL);CHKERRQ(ierr);
+  switch (isolver) {
+#if defined(PETSC_HAVE_MUMPS)
+    case 0:
+      ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
+      break;
+#endif
+#if defined(PETSC_HAVE_MKL_PARDISO)
+    case 1:
+      ierr = PetscStrcpy(solver,MATSOLVERMKL_PARDISO);CHKERRQ(ierr);
+      break;
+#endif
+    default:
+      ierr = PetscStrcpy(solver,MATSOLVERPETSC);CHKERRQ(ierr);
+      break;
+  }
+
+  ierr = PetscOptionsGetReal(NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
+  if (sratio < 0. || sratio > 1.) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
+  }
+  size_schur = (PetscInt)(sratio*m);
+
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %d, sym %d, herm %d, size schur %d, size mat %d\n",solver,nrhs,symm,herm,size_schur,m);CHKERRQ(ierr);
+
+  if (herm) { /* test also conversion routines inside the solver packages */
+    ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQSBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  }
+
   /* Test LU/Cholesky Factorization */
   if (!symm) {
-    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   } else {
     if (herm) {
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -112,13 +143,8 @@ int main(int argc,char **args)
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
       ierr = MatSetOption(A,MAT_SPD,PETSC_FALSE);CHKERRQ(ierr);
     }
-    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetReal(NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
-  if (sratio < 0. || sratio > 1.) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
-  }
-  size_schur = (PetscInt)(sratio*m);
   ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur);CHKERRQ(ierr);
   ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
   ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
@@ -127,9 +153,9 @@ int main(int argc,char **args)
   } else {
     ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving: nrhs %d, sym %d, herm %d, size schur %d, size mat %d\n",nrhs,symm,herm,size_schur,m);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 3; nfact++) {
+    Mat AD;
 
     if (!nfact) {
       ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
@@ -206,12 +232,13 @@ int main(int argc,char **args)
         }
       }
     }
-
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD);
     if (!nfact) {
-      ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
+      ierr = MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
     } else {
-      ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
+      ierr = MatMatMult(AD,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
     }
+    ierr = MatDestroy(&AD);CHKERRQ(ierr);
     for (nsolve = 0; nsolve < 2; nsolve++) {
       ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
