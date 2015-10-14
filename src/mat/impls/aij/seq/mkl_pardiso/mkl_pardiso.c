@@ -129,7 +129,6 @@ PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse
 #define __FUNCT__ "MatMKLPardiso_Convert_seqbaij"
 PetscErrorCode MatMKLPardiso_Convert_seqbaij(Mat A,PetscBool sym,MatReuse reuse,PetscBool *free,INT_TYPE *nnz,INT_TYPE **r,INT_TYPE **c,void **v)
 {
-  Mat_SeqBAIJ    *aa=(Mat_SeqBAIJ*)A->data;
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Conversion from SeqBAIJ to MKL Pardiso format still need to be implemented");
   PetscFunctionReturn(0);
@@ -188,7 +187,6 @@ PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,P
 
     vv = *v;
     for (i=0; i<m; i++) {
-      PetscInt    *aj = aa->j + aa->diag[i];
       PetscScalar *av = aa->a + aa->diag[i];
       PetscInt    rl = aa->i[i+1] - aa->diag[i],j;
       for (j=0; j<rl; j++) {
