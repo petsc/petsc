@@ -2,7 +2,7 @@
 #define MKL_ILP64
 #endif
 
-#include <../src/mat/impls/aij/seq/aij.h>    /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>        /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscblaslapack.h>
@@ -495,6 +495,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose_MKL_PARDISO(Mat F, Vec rhs
 PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
 {
   Mat_MKL_PARDISO *mat_mkl_pardiso=(Mat_MKL_PARDISO*)A->spptr;
+  PetscBool       isSeqSBAIJ;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -548,7 +549,6 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
 static PetscErrorCode MatMKLPardisoScatterSchur_Private(Mat_MKL_PARDISO *mpardiso, PetscScalar *whole, PetscScalar *schur, PetscBool reduce)
 {
   PetscFunctionBegin;
-
   if (reduce) { /* data given for the whole matrix */
     PetscInt i,m=0,p=0;
     for (i=0;i<mpardiso->nrhs;i++) {
@@ -853,14 +853,13 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->spptr;
   PetscErrorCode      ierr;
-  PetscInt            icntl;
+  PetscInt            icntl, threads = 1;
   PetscBool           flg;
-  int                 pt[IPARM_SIZE], threads = 1;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of threads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
-  if (flg) mkl_set_num_threads(threads);
+  if (flg) mkl_set_num_threads((int)threads);
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_pardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_pardiso->maxfct = icntl;
@@ -873,8 +872,9 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_69","Defines the matrix type","None",mat_mkl_pardiso->mtype,&icntl,&flg);CHKERRQ(ierr);
   if(flg){
-   mat_mkl_pardiso->mtype = icntl;
-   MKL_PARDISO_INIT(&pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
+    void *pt[IPARM_SIZE];
+    mat_mkl_pardiso->mtype = icntl;
+    MKL_PARDISO_INIT(pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
 #if defined(PETSC_USE_REAL_SINGLE)
     mat_mkl_pardiso->iparm[27] = 1;
 #else
@@ -1150,9 +1150,9 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
     else if(icntl == 68)
       mat_mkl_pardiso->msglvl = ival;
     else if(icntl == 69){
-      int pt[IPARM_SIZE];
+      void *pt[IPARM_SIZE];
       mat_mkl_pardiso->mtype = ival;
-      MKL_PARDISO_INIT(&pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
+      MKL_PARDISO_INIT(pt, &mat_mkl_pardiso->mtype, mat_mkl_pardiso->iparm);
 #if defined(PETSC_USE_REAL_SINGLE)
       mat_mkl_pardiso->iparm[27] = 1;
 #else
