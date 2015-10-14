@@ -361,11 +361,16 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
   const PetscInt  *idxs;
   PetscInt        size,i;
   PetscMPIInt     csize;
+  PetscBool       sorted;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)F),&csize);CHKERRQ(ierr);
   if (csize > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MKL_PARDISO parallel Schur complements not yet supported from PETSc\n");
+  ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
+  if (!sorted) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS for MKL_PARDISO Schur complements needs to be sorted\n");
+  }
   ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
   if (mpardiso->schur_size != size) {
     mpardiso->schur_size = size;
@@ -879,7 +884,7 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 #else
     mat_mkl_pardiso->iparm[27] = 0;
 #endif
-    mat_mkl_pardiso->iparm[34] = 1;
+    mat_mkl_pardiso->iparm[34] = 1; /* use 0-based indexing */
   }
   ierr = PetscOptionsInt("-mat_mkl_pardiso_1","Use default values","None",mat_mkl_pardiso->iparm[0],&icntl,&flg);CHKERRQ(ierr);
 
