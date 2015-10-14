@@ -115,6 +115,12 @@ int main(int argc,char **args)
     }
     break;
 #endif
+#if defined(PETSC_HAVE_MKL_PARDISO)
+  case 3:
+    if (!rank) printf(" MKL_PARDISO LU:\n");
+    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    break;
+#endif
   default:
     if (!rank) printf(" PETSC LU:\n");
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
