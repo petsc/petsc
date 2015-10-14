@@ -381,10 +381,15 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   ierr = MatCreateVecs(sub_schurs->S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
   /* Compute deluxe sequential scatter */
-  if (sub_schurs->reuse_mumps && !sub_schurs->is_dir) {
+  if (sub_schurs->reuse_mumps) {
     PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
-    ierr = PetscObjectReference((PetscObject)reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
-    deluxe_ctx->seq_scctx = reuse_mumps->correction_scatter_B;
+
+    if (!reuse_mumps->has_vertices && !sub_schurs->is_dir) {
+      ierr = PetscObjectReference((PetscObject)reuse_mumps->correction_scatter_B);CHKERRQ(ierr);
+      deluxe_ctx->seq_scctx = reuse_mumps->correction_scatter_B;
+    } else {
+      ierr = VecScatterCreate(pcbddc->work_scaling,sub_schurs->is_Ej_all,deluxe_ctx->seq_work1,NULL,&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
+    }
   } else {
     ierr = VecScatterCreate(pcbddc->work_scaling,sub_schurs->is_Ej_all,deluxe_ctx->seq_work1,NULL,&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
   }
