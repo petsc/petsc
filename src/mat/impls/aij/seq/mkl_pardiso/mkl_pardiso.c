@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <mkl.h>
+#include <mkl_pardiso.h>
 
 /*
  *  Possible mkl_pardiso phases that controls the execution of the solver.
@@ -855,13 +855,11 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->spptr;
   PetscErrorCode      ierr;
-  PetscInt            icntl, threads = 1;
+  PetscInt            icntl;
   PetscBool           flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of threads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
-  if (flg) mkl_set_num_threads((int)threads);
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_pardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_pardiso->maxfct = icntl;
@@ -1143,9 +1141,7 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
   if(icntl <= 64){
     mat_mkl_pardiso->iparm[icntl - 1] = ival;
   } else {
-    if(icntl == 65)
-      mkl_set_num_threads((int)ival);
-    else if(icntl == 66)
+    if(icntl == 66)
       mat_mkl_pardiso->maxfct = ival;
     else if(icntl == 67)
       mat_mkl_pardiso->mnum = ival;
@@ -1207,7 +1203,6 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to us this direct solver
 
   Options Database Keys:
-+ -mat_mkl_pardiso_65 - Number of threads to use
 . -mat_mkl_pardiso_66 - Maximum number of factors with identical sparsity structure that must be kept in memory at the same time
 . -mat_mkl_pardiso_67 - Indicates the actual matrix for the solution phase
 . -mat_mkl_pardiso_68 - Message level information
