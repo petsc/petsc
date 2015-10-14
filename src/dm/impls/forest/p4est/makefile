@@ -1,3 +1,5 @@
+#requirespackage  'PETSC_HAVE_P4EST'
+
 ALL: lib
 
 CPPFLAGS =
