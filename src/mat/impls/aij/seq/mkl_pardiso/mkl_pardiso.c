@@ -495,7 +495,6 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose_MKL_PARDISO(Mat F, Vec rhs
 PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
 {
   Mat_MKL_PARDISO *mat_mkl_pardiso=(Mat_MKL_PARDISO*)A->spptr;
-  PetscBool       isSeqSBAIJ;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
