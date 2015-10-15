@@ -222,7 +222,13 @@ static PetscErrorCode MatMKLPardisoFactorSchur_Private(Mat_MKL_PARDISO* mpardiso
   }
   ierr = PetscBLASIntCast(mpardiso->schur_size,&B_N);CHKERRQ(ierr);
   switch (mpardiso->schur_solver_type) {
-    case 1: /* symmetric */
+    case 1: /* hermitian solver */
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,mpardiso->schur,&B_N,&B_ierr));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+      break;
+    case 2: /* symmetric */
       if (!mpardiso->schur_pivots) {
         ierr = PetscMalloc1(B_N,&mpardiso->schur_pivots);CHKERRQ(ierr);
       }
@@ -230,12 +236,6 @@ static PetscErrorCode MatMKLPardisoFactorSchur_Private(Mat_MKL_PARDISO* mpardiso
       PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,mpardiso->schur_work,&mpardiso->schur_work_size,&B_ierr));
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
-      break;
-    case 2: /* hermitian solver */
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,mpardiso->schur,&B_N,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
       break;
     default: /* general */
       if (!mpardiso->schur_pivots) {
@@ -262,17 +262,17 @@ static PetscErrorCode MatMKLPardisoInvertSchur_Private(Mat_MKL_PARDISO* mpardiso
   ierr = MatMKLPardisoFactorSchur_Private(mpardiso);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(mpardiso->schur_size,&B_N);CHKERRQ(ierr);
   switch (mpardiso->schur_solver_type) {
-    case 1: /* symmetric */
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,mpardiso->schur_work,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
-      break;
-    case 2: /* hermitian solver */
+    case 1: /* hermitian solver */
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,mpardiso->schur,&B_N,&B_ierr));
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+      break;
+    case 2: /* symmetric */
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,mpardiso->schur_work,&B_ierr));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
       break;
     default: /* general */
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -305,17 +305,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat_MKL_PARDISO* mpardiso,
   schur_rhs = B;
   schur_sol = X;
   switch (mpardiso->schur_solver_type) {
-    case 1: /* symmetric solver */
-      if (mpardiso->schur_inverted) {
-        PetscStackCallBLAS("BLASsymm",BLASsymm_("L","L",&B_N,&B_Nrhs,&one,mpardiso->schur,&B_N,schur_rhs,&B_N,&zero,schur_sol,&B_N));
-      } else {
-        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&B_N,&B_Nrhs,mpardiso->schur,&B_N,mpardiso->schur_pivots,schur_sol,&B_N,&B_ierr));
-        ierr = PetscFPTrapPop();CHKERRQ(ierr);
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRS Lapack routine %d",(int)B_ierr);
-      }
-      break;
-    case 2: /* hermitian solver */
+    case 1: /* hermitian solver */
       if (mpardiso->schur_inverted) { /* BLAShemm should go here */
         PetscStackCallBLAS("BLASsymm",BLASsymm_("L","L",&B_N,&B_Nrhs,&one,mpardiso->schur,&B_N,schur_rhs,&B_N,&zero,schur_sol,&B_N));
       } else {
@@ -323,6 +313,16 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat_MKL_PARDISO* mpardiso,
         PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&B_N,&B_Nrhs,mpardiso->schur,&B_N,schur_sol,&B_N,&B_ierr));
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRS Lapack routine %d",(int)B_ierr);
+      }
+      break;
+    case 2: /* symmetric solver */
+      if (mpardiso->schur_inverted) {
+        PetscStackCallBLAS("BLASsymm",BLASsymm_("L","L",&B_N,&B_Nrhs,&one,mpardiso->schur,&B_N,schur_rhs,&B_N,&zero,schur_sol,&B_N));
+      } else {
+        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+        PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&B_N,&B_Nrhs,mpardiso->schur,&B_N,mpardiso->schur_pivots,schur_sol,&B_N,&B_ierr));
+        ierr = PetscFPTrapPop();CHKERRQ(ierr);
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRS Lapack routine %d",(int)B_ierr);
       }
       break;
     default: /* general */
@@ -897,7 +897,6 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
   mat_mkl_pardiso->CleanUp  = PETSC_TRUE;
   mat_mkl_pardiso->schur_factored = PETSC_FALSE;
   mat_mkl_pardiso->schur_inverted = PETSC_FALSE;
-  mat_mkl_pardiso->schur_solver_type = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1360,10 +1359,10 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     mat_mkl_pardiso->mtype = 13;
 #else
     if (A->spd_set && A->spd) {
-      mat_mkl_pardiso->schur_solver_type = 2;
+      mat_mkl_pardiso->schur_solver_type = 1;
       mat_mkl_pardiso->mtype = 2;
     } else {
-      mat_mkl_pardiso->schur_solver_type = 1;
+      mat_mkl_pardiso->schur_solver_type = 2;
       mat_mkl_pardiso->mtype = -2;
     }
 #endif
