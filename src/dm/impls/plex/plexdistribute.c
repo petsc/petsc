@@ -1076,11 +1076,14 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
 /* Here we are assuming that process 0 always has everything */
 PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
 {
-  MPI_Comm       comm;
-  PetscMPIInt    rank;
-  PetscInt       numLabels, numLocalLabels, l;
-  PetscBool      hasLabels = PETSC_FALSE;
-  PetscErrorCode ierr;
+  DM_Plex         *mesh = (DM_Plex*) dm->data;
+  MPI_Comm         comm;
+  DMLabel          depth;
+  PetscMPIInt      rank;
+  PetscInt         numLabels, numLocalLabels, l;
+  PetscBool        hasLabels = PETSC_FALSE, lsendDepth, sendDepth;
+  PetscObjectState depthState = -1;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1089,6 +1092,15 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
+  /* If the user has changed the depth label, communicate it instead */
+  ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
+  if (depth) {ierr = DMLabelGetState(depth, &depthState);CHKERRQ(ierr);}
+  lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
+  if (sendDepth) {
+    ierr = DMPlexRemoveLabel(dmParallel, "depth", &depth);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&depth);CHKERRQ(ierr);
+  }
   /* Everyone must have either the same number of labels, or none */
   ierr = DMPlexGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
   numLabels = numLocalLabels;
@@ -1104,7 +1116,7 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
       ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
     }
     ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-    if (isdepth) continue;
+    if (isdepth && !sendDepth) continue;
     ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
     ierr = DMPlexAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
   }

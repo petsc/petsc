@@ -1351,6 +1351,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->regularRefinement   = PETSC_FALSE;
   mesh->labels              = NULL;
   mesh->depthLabel          = NULL;
+  mesh->depthState          = -1;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   mesh->anchorSection       = NULL;

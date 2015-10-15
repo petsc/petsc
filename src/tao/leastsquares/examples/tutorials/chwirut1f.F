@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options]
+!  Program usage: mpiexec -n 1 chwirut1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve a
 !  nonlinear least-squares problem on a single processor.  We minimize the
@@ -53,7 +53,7 @@
 
       external FormFunction
 
-      zero = 0.0d0
+      zero = 0.0
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

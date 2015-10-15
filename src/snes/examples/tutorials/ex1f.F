@@ -329,7 +329,7 @@
 
       PetscScalar       mone
 
-      mone = -1.0d0
+      mone = -1.0
       call SNESLineSearchGetSNES(linesearch, snes, ierr)
       call SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)

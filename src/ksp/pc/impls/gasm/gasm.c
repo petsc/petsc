@@ -331,8 +331,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     }
     if (!osm->ois) {
       /*
-	Initially make outer subdomains the same as inner subdomains. If nonzero additional overlap
-	has been requested, copy the inner subdomains over so they can be modified.
+	    Initially make outer subdomains the same as inner subdomains. If nonzero additional overlap
+	    has been requested, copy the inner subdomains over so they can be modified.
       */
       ierr = PetscMalloc1(osm->n,&osm->ois);CHKERRQ(ierr);
       for (i=0; i<osm->n; ++i) {
@@ -374,7 +374,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = PCGASMPrintSubdomains(pc);CHKERRQ(ierr);
 
     /*
-     Merge the ISs, create merged vectors and restrictions.
+       Merge the ISs, create merged vectors and restrictions.
      */
     /* Merge outer subdomain ISs and construct a restriction onto the disjoint union of local outer subdomains. */
     on = 0;
@@ -416,17 +416,15 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscScalar    *array;
       const PetscInt *indices;
       PetscInt        k;
-      /*  */
       on = 0;
       for (i=0; i<osm->n; i++) {
         ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
         on  += oni;
       }
-      /* allocate memory */
       ierr = PetscMalloc1(on, &iidx);CHKERRQ(ierr);
       ierr = PetscMalloc1(on, &ioidx);CHKERRQ(ierr);
       ierr = VecGetArray(y,&array);CHKERRQ(ierr);
-      /* set communicator id */
+      /* set communicator id to determine where overlap is */
       in   = 0;
       for (i=0; i<osm->n; i++) {
         ierr   = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
@@ -446,9 +444,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     	ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
     	ierr = ISGetIndices(osm->ois[i],&indices);CHKERRQ(ierr);
     	for (k=0; k<oni; k++) {
-          /*  skip overlapping indices */
+          /*  skip overlapping indices to get inner domain */
           if(PetscRealPart(array[on+k]) != numbering[i]) continue;
-          /*  record inner indices */
           iidx[in]    = indices[k];
           ioidx[in++] = gostart+on+k;
     	}
@@ -1626,6 +1623,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
          During the first pass create the subcommunicators, and use them on the second pass as well.
       */
       for (q = 0; q < 2; ++q) {
+        PetscBool split = PETSC_FALSE;
         /*
           domain limits, (xleft, xright) and (ylow, yheigh) are adjusted
           according to whether the domain with an overlap or without is considered.
@@ -1645,8 +1643,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
         if (q == 0) {
           if (nidx) color = 1;
           else color = MPI_UNDEFINED;
-
           ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRQ(ierr);
+          split = PETSC_TRUE;
         }
         /*
          Proceed only if the number of local indices *with an overlap* is nonzero.
@@ -1683,6 +1681,9 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
             }
           }
           ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*xis)+s);CHKERRQ(ierr);
+          if (split) {
+            ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+          }
         }/* if (n[0]) */
       }/* for (q = 0; q < 2; ++q) */
       if (n[0]) ++s;

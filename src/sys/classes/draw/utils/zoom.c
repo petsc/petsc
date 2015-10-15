@@ -1,17 +1,6 @@
 
 #include <petscdraw.h>     /*I "petscdraw.h"  I*/
 
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <setjmp.h>
-static jmp_buf PetscXIOErrorJumpBuf;
-static void PetscXIOHandler(Display *dpy)
-{
-  longjmp(PetscXIOErrorJumpBuf, 1);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawZoom"
 /*@C
@@ -43,18 +32,11 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
-  if (!setjmp(PetscXIOErrorJumpBuf)) XSetIOErrorHandler((XIOErrorHandler)PetscXIOHandler);
-  else {
-    XSetIOErrorHandler(NULL);
-    ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-#endif
-
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawGetPause(draw,&dpause);CHKERRQ(ierr);
@@ -67,33 +49,28 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
-  w    = xr - xl; xmin = xl; ymin = yl; xmax = xr; ymax = yr;
-  h    = yr - yl;
+  w    = xr - xl; xmin = xl; xmax = xr;
+  h    = yr - yl; ymin = yl; ymax = yr;
 
-  if (button != PETSC_BUTTON_NONE) {
-    while (button != PETSC_BUTTON_RIGHT) {
-
-      ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-      if (button == PETSC_BUTTON_LEFT)        scale = .5;
-      else if (button == PETSC_BUTTON_CENTER) scale = 2.;
-      xl   = scale*(xl + w - xc) + xc - w*scale;
-      xr   = scale*(xr - w - xc) + xc + w*scale;
-      yl   = scale*(yl + h - yc) + yc - h*scale;
-      yr   = scale*(yr - h - yc) + yc + h*scale;
-      w   *= scale; h *= scale;
-      ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-
-      ierr = (*func)(draw,ctx);CHKERRQ(ierr);
-      ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
-      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-      ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
-    }
+  while (button != PETSC_BUTTON_NONE && button != PETSC_BUTTON_RIGHT) {
+    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    if (button == PETSC_BUTTON_LEFT)        scale = .5;
+    else if (button == PETSC_BUTTON_CENTER) scale = 2.;
+    xl   = scale*(xl + w - xc) + xc - w*scale;
+    xr   = scale*(xr - w - xc) + xc + w*scale;
+    yl   = scale*(yl + h - yc) + yc - h*scale;
+    yr   = scale*(yr - h - yc) + yc + h*scale;
+    w   *= scale; h *= scale;
+    ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   }
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 theend:
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
-  XSetIOErrorHandler(NULL);
-#endif
   PetscFunctionReturn(0);
 }
 

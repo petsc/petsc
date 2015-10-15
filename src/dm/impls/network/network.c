@@ -437,6 +437,34 @@ PetscErrorCode DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMNetworkGetNumVariables"
+/*@ 
+  DMNetworkGetNumVariables - Gets number of variables for a vertex/edge point.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMNetworkObject
+- p    - the vertex/edge point
+
+  Output Parameters:
+. nvar - number of variables
+
+  Level: intermediate
+
+.seealso: DMNetworkAddNumVariables, DMNetworkSddNumVariables
+@*/
+PetscErrorCode DMNetworkGetNumVariables(DM dm,PetscInt p,PetscInt *nvar)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetDof(network->DofSection,p,nvar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMNetworkSetNumVariables"
 /*@ 
   DMNetworkSetNumVariables - Sets number of variables for a vertex/edge point.

@@ -55,7 +55,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     ierr = DMMoabOutput(user.dm,(const char*)user.output_file,"");CHKERRQ(ierr);
   }
 
-  if (user.fieldnames) {
+  if (user.nfields) {
     for(i=0; i<user.nfields; i++) {
       ierr = PetscFree(user.fieldnames[i]);CHKERRQ(ierr);
     }

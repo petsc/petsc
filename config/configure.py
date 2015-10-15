@@ -36,6 +36,10 @@ def check_for_option_mistakes(opts):
         raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
   return
 
+def check_for_unsupported_combinations(opts):
+  if '--with-precision=single' in opts and '--with-clanguage=cxx' in opts and '--with-scalar-type=complex' in opts:
+    sys.exit(ValueError('PETSc does not support single precision complex with C++ clanguage, run with --with-clanguage=c'))
+
 def check_for_option_changed(opts):
 # Document changes in command line options here.
   optMap = [('with-64bit-indices','with-64-bit-indices'),('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack')]
@@ -326,6 +330,7 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     sys.exit(msg)
   # check PETSC_ARCH
+  check_for_unsupported_combinations(sys.argv)
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
 
