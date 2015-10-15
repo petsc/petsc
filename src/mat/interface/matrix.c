@@ -8943,7 +8943,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscTryMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  ierr = PetscUseMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
