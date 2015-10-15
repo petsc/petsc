@@ -510,6 +510,20 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose_MKL_PARDISO(Mat F, Vec rhs
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFactorSetSchurComplementSolverType_MKL_PARDISO"
+PetscErrorCode MatFactorSetSchurComplementSolverType_MKL_PARDISO(Mat F, PetscInt sym)
+{
+  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->spptr;
+
+  PetscFunctionBegin;
+  if (mpardiso->schur_factored && sym != mpardiso->schur_solver_type) {
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Cannot change the Schur solver! Schur complement data has been already factored");
+  }
+  mpardiso->schur_solver_type = sym;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MKL_PARDISO"
 PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
 {
@@ -559,6 +573,7 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorFactorizeSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSolveSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSolveSchurComplementTranspose_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSetSchurComplementSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMkl_PardisoSetCntl_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1382,6 +1397,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorFactorizeSchurComplement_C",MatFactorFactorizeSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSolveSchurComplement_C",MatFactorSolveSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSolveSchurComplementTranspose_C",MatFactorSolveSchurComplementTranspose_MKL_PARDISO);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurComplementSolverType_C",MatFactorSetSchurComplementSolverType_MKL_PARDISO);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_PardisoSetCntl_C",MatMkl_PardisoSetCntl_MKL_PARDISO);CHKERRQ(ierr);
 
   *F = B;

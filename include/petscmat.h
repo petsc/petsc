@@ -1051,6 +1051,7 @@ PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
+PETSC_EXTERN PetscErrorCode MatFactorSetSchurComplementSolverType(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
 
 /*E
@@ -1628,7 +1629,6 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
-PETSC_EXTERN PetscErrorCode MatMumpsSchurComplementSetSym(Mat,PetscInt);
 #endif
 
 /*

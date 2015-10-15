@@ -751,12 +751,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS) /* be sure that icntl 19 is not set by command line */
         ierr = MatMumpsSetIcntl(F,19,2);CHKERRQ(ierr);
-        if (sub_schurs->is_posdef) {
-          ierr = MatMumpsSchurComplementSetSym(F,1);CHKERRQ(ierr);
-        } else {
-          ierr = MatMumpsSchurComplementSetSym(F,2);CHKERRQ(ierr);
-        }
 #endif
+        if (sub_schurs->is_posdef) {
+          ierr = MatFactorSetSchurComplementSolverType(F,1);CHKERRQ(ierr);
+        } else {
+          ierr = MatFactorSetSchurComplementSolverType(F,2);CHKERRQ(ierr);
+        }
         ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
         S_lower_triangular = PETSC_TRUE;
       } else {
