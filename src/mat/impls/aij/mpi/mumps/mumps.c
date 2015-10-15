@@ -1989,7 +1989,7 @@ PetscErrorCode MatMumpsSchurComplementSetSym(Mat F, PetscInt sym)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(F,sym,2);
-  ierr = PetscUseMethod(F,"MatMumpsSchurComplementSetSym_C",(Mat,PetscInt),(F,sym));CHKERRQ(ierr);
+  ierr = PetscTryMethod(F,"MatMumpsSchurComplementSetSym_C",(Mat,PetscInt),(F,sym));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
