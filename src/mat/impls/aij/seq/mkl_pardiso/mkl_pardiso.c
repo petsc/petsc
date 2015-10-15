@@ -845,7 +845,6 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
   mat_mkl_pardiso->CleanUp  = PETSC_TRUE;
   mat_mkl_pardiso->schur_factored = PETSC_FALSE;
   mat_mkl_pardiso->schur_inverted = PETSC_FALSE;
-  mat_mkl_pardiso->schur_solver_type = 0;
   PetscFunctionReturn(0);
 }
 
