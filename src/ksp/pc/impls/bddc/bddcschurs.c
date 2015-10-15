@@ -24,9 +24,12 @@ static PetscErrorCode PCBDDCMumpsReuseSolve_Private(PC pc, Vec rhs, Vec sol, Pet
     ierr = MatMumpsSetIcntl(ctx->F,26,-1);CHKERRQ(ierr);
 #endif
     copy = ctx->has_vertices;
-  } else {
+  } else { /* interior solver */
 #if defined(PETSC_HAVE_MUMPS)
     ierr = MatMumpsSetIcntl(ctx->F,26,0);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MKL_PARDISO)
+    ierr = MatMkl_PardisoSetCntl(ctx->F,70,1);CHKERRQ(ierr);
 #endif
     copy = PETSC_TRUE;
   }
@@ -58,6 +61,9 @@ static PetscErrorCode PCBDDCMumpsReuseSolve_Private(PC pc, Vec rhs, Vec sol, Pet
       ierr = MatSolve(ctx->F,rhs,sol);CHKERRQ(ierr);
     }
   }
+#if defined(PETSC_HAVE_MKL_PARDISO)
+  ierr = MatMkl_PardisoSetCntl(ctx->F,70,0);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -667,6 +673,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscScalar *work,*S_data,*schur_factor;
     PetscInt    n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
     PetscBool   economic,mumps_S,S_lower_triangular = PETSC_FALSE,factor_workaround;
+    char        solver[256];
 
     /* get sizes */
     n_I = 0;
@@ -720,6 +727,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatSetOption(A,MAT_SYMMETRIC,sub_schurs->is_hermitian);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
+    ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString("sub_schurs_","-mat_solver_package",solver,256,NULL);CHKERRQ(ierr);
 
     /* when using the benign subspace trick, the local Schur complements are SPD */
     if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
@@ -728,9 +737,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       IS is_schur;
 
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
-        ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+        ierr = MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
       } else {
-        ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+        ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
       }
       /* subsets ordered last */
       ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,n_I,1,&is_schur);CHKERRQ(ierr);
@@ -760,7 +769,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* get explicit Schur Complement computed during numeric factorization */
       ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
-
       /* we can reuse the solvers if we are not using the economic version */
       reuse_solvers = (PetscBool)(reuse_solvers && !economic);
       factor_workaround = (PetscBool)(reuse_solvers && factor_workaround);
