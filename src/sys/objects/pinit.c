@@ -527,11 +527,11 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
   if (!PetscGlobalRank) {
     char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline,*options,version[64];
     int            port;
-    PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
+    PetscBool      flg,rootlocal = PETSC_FALSE,flg2,selectport = PETSC_FALSE;
     size_t         applinelen,introlen;
     PetscErrorCode ierr;
-    /* char           sawsurl[256]; */
-    
+    char           sawsurl[256];
+
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
       char  sawslog[PETSC_MAX_PATH_LEN];
@@ -547,9 +547,15 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     if (flg) {
       PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
     }
-    ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscStackCallSAWs(SAWs_Set_Port,(port));
+    ierr = PetscOptionsGetBool(NULL,"-saws_port_auto_select",&selectport,NULL);CHKERRQ(ierr);
+    if (selectport) {
+        PetscStackCallSAWs(SAWs_Get_Available_Port,(&port));
+        PetscStackCallSAWs(SAWs_Set_Port,(port));
+    } else {
+      ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscStackCallSAWs(SAWs_Set_Port,(port));
+      }
     }
     ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -600,8 +606,10 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Initialize,());
-    /* PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
-     ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr); */
+    if (selectport) {
+      PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr);
+    }
     ierr = PetscCitationsRegister("@TechReport{ saws,\n"
                                   "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
                                   "  Title  = {Scientific Application Web Server (SAWs) Users Manual},\n"
@@ -675,6 +683,14 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 -  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 
     Only one of -log_trace, -log_summary, -log_all, -log, or -log_mpe may be used at a time
+
+   Options Database Keys for SAWs:
++  -saws_port <portnumber> - port number to publish SAWs data, default is 8080
+.  -saws_port_auto_select - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
+                            this is useful when you are running many jobs that utilize SAWs at the same time
+.  -saws_log <filename> - save a log of all SAWs communication
+.  -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
+-  -saws_root <directory> - allow SAWs to have access to the given directory to search for requested resources and files
 
    Environmental Variables:
 +   PETSC_TMP - alternative tmp directory
