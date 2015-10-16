@@ -1049,6 +1049,8 @@ $     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 .  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
+   Notes: The TS solver may modify the nonzero structure and the entries of the matrices Amat and Pmat between the calls to f()
+          You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
    Level: beginner
 
@@ -1263,6 +1265,9 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
    a and vector W depend on the integration method, step size, and past states. For example with
    the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
    W + a*U = a*(U - U(previous timestep)) = (U - U(previous timestep))/dt
+
+   Notes: The TS solver may modify the nonzero structure and the entries of the matrices Amat and Pmat between the calls to f()
+          You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
    Level: beginner
 
