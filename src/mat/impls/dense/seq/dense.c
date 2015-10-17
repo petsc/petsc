@@ -2032,6 +2032,14 @@ static PetscErrorCode  MatSetRandom_SeqDense(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_SeqDense"
+static PetscErrorCode MatMissingDiagonal_SeqDense(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
@@ -2147,7 +2155,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         0,
                                         MatGetRowMin_SeqDense,
                                         MatGetColumnVector_SeqDense,
-                                        0,
+                                        MatMissingDiagonal_SeqDense,
                                 /*114*/ 0,
                                         0,
                                         0,

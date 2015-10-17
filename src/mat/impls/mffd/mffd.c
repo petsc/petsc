@@ -659,6 +659,15 @@ PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_MFFD"
+static PetscErrorCode MatMissingDiagonal_MFFD(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATMFFD - MATMFFD = "mffd" - A matrix free matrix type.
 
@@ -708,16 +717,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   A->data = mfctx;
 
-  A->ops->mult           = MatMult_MFFD;
-  A->ops->destroy        = MatDestroy_MFFD;
-  A->ops->view           = MatView_MFFD;
-  A->ops->assemblyend    = MatAssemblyEnd_MFFD;
-  A->ops->getdiagonal    = MatGetDiagonal_MFFD;
-  A->ops->scale          = MatScale_MFFD;
-  A->ops->shift          = MatShift_MFFD;
-  A->ops->diagonalscale  = MatDiagonalScale_MFFD;
-  A->ops->diagonalset    = MatDiagonalSet_MFFD;
-  A->ops->setfromoptions = MatSetFromOptions_MFFD;
+  A->ops->mult            = MatMult_MFFD;
+  A->ops->destroy         = MatDestroy_MFFD;
+  A->ops->view            = MatView_MFFD;
+  A->ops->assemblyend     = MatAssemblyEnd_MFFD;
+  A->ops->getdiagonal     = MatGetDiagonal_MFFD;
+  A->ops->scale           = MatScale_MFFD;
+  A->ops->shift           = MatShift_MFFD;
+  A->ops->diagonalscale   = MatDiagonalScale_MFFD;
+  A->ops->diagonalset     = MatDiagonalSet_MFFD;
+  A->ops->setfromoptions  = MatSetFromOptions_MFFD;
+  A->ops->missingdiagonal = MatMissingDiagonal_MFFD;
   A->assembled           = PETSC_TRUE;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);

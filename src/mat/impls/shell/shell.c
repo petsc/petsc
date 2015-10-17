@@ -417,6 +417,15 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 
 extern PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_Shell"
+static PetscErrorCode MatMissingDiagonal_Shell(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
@@ -530,7 +539,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatMissingDiagonal_Shell,
                                /*114*/ 0,
                                        0,
                                        0,
