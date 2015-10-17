@@ -125,7 +125,6 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
     /* increase the state of the output vector since the user did not update its state themselve as should have been done */
     ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   }
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
