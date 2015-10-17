@@ -232,13 +232,20 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
 #define __FUNCT__ "MatMult_Shell"
 PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
-  Mat_Shell      *shell = (Mat_Shell*)A->data;
-  PetscErrorCode ierr;
-  Vec            xx;
+  Mat_Shell        *shell = (Mat_Shell*)A->data;
+  PetscErrorCode   ierr;
+  Vec              xx;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   ierr = MatShellPreScaleRight(A,x,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   ierr = (*shell->mult)(A,xx,y);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleLeft(A,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -267,13 +274,20 @@ PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 #define __FUNCT__ "MatMultTranspose_Shell"
 PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
-  Mat_Shell      *shell = (Mat_Shell*)A->data;
-  PetscErrorCode ierr;
-  Vec            xx;
+  Mat_Shell        *shell = (Mat_Shell*)A->data;
+  PetscErrorCode   ierr;
+  Vec              xx;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   ierr = MatShellPreScaleLeft(A,x,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   ierr = (*shell->multtranspose)(A,xx,y);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleRight(A,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);

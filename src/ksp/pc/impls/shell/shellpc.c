@@ -112,12 +112,20 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
 #define __FUNCT__ "PCApply_Shell"
 static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 {
-  PC_Shell       *shell = (PC_Shell*)pc->data;
-  PetscErrorCode ierr;
+  PC_Shell         *shell = (PC_Shell*)pc->data;
+  PetscErrorCode   ierr;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   if (!shell->apply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   PetscStackCall("PCSHELL user function apply()",ierr = (*shell->apply)(pc,x,y);CHKERRQ(ierr));
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themselve as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -125,12 +133,19 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyBA_Shell"
 static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
 {
-  PC_Shell       *shell = (PC_Shell*)pc->data;
-  PetscErrorCode ierr;
+  PC_Shell         *shell = (PC_Shell*)pc->data;
+  PetscErrorCode   ierr;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   if (!shell->applyBA) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
+  ierr = PetscObjectStateGet((PetscObject)w, &instate);CHKERRQ(ierr);
   PetscStackCall("PCSHELL user function applyBA()",ierr = (*shell->applyBA)(pc,side,x,y,w);CHKERRQ(ierr));
+  ierr = PetscObjectStateGet((PetscObject)w, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themselve as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -164,12 +179,19 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 #define __FUNCT__ "PCApplyTranspose_Shell"
 static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
-  PC_Shell       *shell = (PC_Shell*)pc->data;
-  PetscErrorCode ierr;
+  PC_Shell         *shell = (PC_Shell*)pc->data;
+  PetscErrorCode   ierr;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   if (!shell->applytranspose) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   PetscStackCall("PCSHELL user function applytranspose()",ierr = (*shell->applytranspose)(pc,x,y);CHKERRQ(ierr));
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -177,12 +199,19 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyRichardson_Shell"
 static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
-  PetscErrorCode ierr;
-  PC_Shell       *shell = (PC_Shell*)pc->data;
+  PetscErrorCode   ierr;
+  PC_Shell         *shell = (PC_Shell*)pc->data;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   if (!shell->applyrich) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   PetscStackCall("PCSHELL user function applyrichardson()",ierr = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason);CHKERRQ(ierr));
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
