@@ -745,7 +745,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth type          %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth num levels    %d\n",jac->smoothnumlevels);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n");CHKERRQ(ierr);
     }
     if (jac->smoothtype==3) {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Euclid ILU(k) levels %d\n",jac->eu_level);CHKERRQ(ierr);
