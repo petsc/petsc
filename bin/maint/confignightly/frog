@@ -1,6 +1,6 @@
 #! /bin/csh
 #
-set MACH=bb-proxy
+set MACH=frog
 set USR=balay
-set LOC=/sandbox/balay/${RNAME}
+set LOC=/home/balay/${RNAME}
 set CONF=arch-cuda-double
