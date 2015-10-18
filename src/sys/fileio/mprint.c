@@ -146,7 +146,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     PetscBool foundedot;
     size_t cnt = 0,ncnt = 0,leng;
     ierr = PetscStrlen(str,&leng);CHKERRQ(ierr);
-    if (leng > 5) {
+    if (leng > 4) {
       for (cnt=0; cnt<leng-4; cnt++) {
         if (str[cnt] == '[' && str[cnt+1] == '|'){
            cnt++; cnt++;
