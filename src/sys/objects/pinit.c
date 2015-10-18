@@ -776,7 +776,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscGlobalArgs = *args;
   }
   PetscFinalizeCalled = PETSC_FALSE;
-  ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
+  ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
+  ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
   ierr = PetscSpinlockCreate(&PetscCommSpinLock);CHKERRQ(ierr);
 
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) PETSC_COMM_WORLD = MPI_COMM_WORLD;
@@ -1387,7 +1389,9 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
 
-  ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
+  ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
+  ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
   ierr = PetscSpinlockDestroy(&PetscCommSpinLock);CHKERRQ(ierr);
 
   if (PetscBeganMPI) {

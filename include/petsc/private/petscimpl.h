@@ -858,7 +858,9 @@ typedef int PetscSpinlock;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLock;
+extern PetscSpinlock PetscViewerASCIISpinLockOpen;
+extern PetscSpinlock PetscViewerASCIISpinLockStdout;
+extern PetscSpinlock PetscViewerASCIISpinLockStderr;
 extern PetscSpinlock PetscCommSpinLock;
 #endif
 #endif
