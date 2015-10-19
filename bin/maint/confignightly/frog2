@@ -3,4 +3,4 @@
 set MACH=frog
 set USR=balay
 set LOC=/home/balay/${RNAME}-2
-set CONF=arch-cuda
+set CONF=arch-cuda-single
