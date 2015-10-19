@@ -1317,7 +1317,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXSetFullyImplicit"
-/*@C
+/*@
   TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly
 
   Logically collective
