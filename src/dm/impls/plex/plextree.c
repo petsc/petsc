@@ -1693,9 +1693,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
 #if defined(PETSC_USE_DEBUG)
         for (r = 0; r < cDof; r++) {
           if (cDof > 1 && r) {
-            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %d vs. %d", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
-            }
+            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
           }
         }
 #endif

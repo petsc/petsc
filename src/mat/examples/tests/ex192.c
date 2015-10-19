@@ -114,9 +114,7 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetReal(NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
-  if (sratio < 0. || sratio > 1.) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
-  }
+  if (sratio < 0. || sratio > 1.) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
   size_schur = (PetscInt)(sratio*m);
   ierr = PetscMalloc1(size_schur,&idxs_schur);CHKERRQ(ierr);
   for (i=0;i<size_schur;i++) {

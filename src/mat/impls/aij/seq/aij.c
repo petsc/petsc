@@ -4486,9 +4486,7 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C,IS rowemb,IS colemb,MatStructure patter
     ierr = ISGetLocalSize(rowemb,&m);CHKERRQ(ierr);
     if (m != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %D is incompatible with matrix row size %D",m,B->rmap->n);
   } else {
-    if (C->rmap->n != B->rmap->n) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Input matrix is row-incompatible with the target matrix");
-    }
+    if (C->rmap->n != B->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Input matrix is row-incompatible with the target matrix");
   }
   if (colemb) {
     ierr = ISGetLocalSize(colemb,&n);CHKERRQ(ierr);

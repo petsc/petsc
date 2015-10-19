@@ -3302,11 +3302,9 @@ PetscErrorCode  TSAdjointStep(TS ts)
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
-      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) {
-        SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      } else if (ts->reason == TS_DIVERGED_STEP_REJECTED) {
-        SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_reject or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
+      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      else if (ts->reason == TS_DIVERGED_STEP_REJECTED) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_reject or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
     if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;

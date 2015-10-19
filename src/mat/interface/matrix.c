@@ -1159,7 +1159,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 #if defined(PETSC_USE_COMPLEX)
         SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g+ig at matrix entry (%D,%D)",(double)PetscRealPart(v[i*n+j]),(double)PetscImaginaryPart(v[i*n+j]),idxm[i],idxn[j]);
 #else
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g at matrix entry (%D,%D)",(double)v[i*n+j],idxm[i],idxn[j]);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g at matrix entry (%D,%D)",(double)v[i*n+j],idxm[i],idxn[j]);
 #endif
     }
   }

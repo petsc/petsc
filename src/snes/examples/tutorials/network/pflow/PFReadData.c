@@ -27,16 +27,13 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 
   fp = fopen(filename,"r");
   /* Check for valid file */
-  if (fp == NULL)  {
-     ierr = PetscPrintf(PETSC_COMM_WORLD,"Can't open Matpower data file\n");CHKERRQ(ierr);
-     exit(EXIT_FAILURE);
-  }
+  if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open Matpower data file %s",filename);
   pf->nload=0;
-  while(fgets(line,MAXLINE,fp) != NULL) {
-    if(strstr(line,"mpc.bus") != NULL)    bus_start_line = line_counter+1; /* Bus data starts from next line */
-    if(strstr(line,"mpc.gen") != NULL && gen_start_line == -1)    gen_start_line = line_counter+1; /* Generator data starts from next line */
-    if(strstr(line,"mpc.branch") != NULL) br_start_line = line_counter+1; /* Branch data starts from next line */
-    if(strstr(line,"];") != NULL) {
+  while(fgets(line,MAXLINE,fp)) {
+    if(strstr(line,"mpc.bus"))    bus_start_line = line_counter+1; /* Bus data starts from next line */
+    if(strstr(line,"mpc.gen") && gen_start_line == -1)    gen_start_line = line_counter+1; /* Generator data starts from next line */
+    if(strstr(line,"mpc.branch")) br_start_line = line_counter+1; /* Branch data starts from next line */
+    if(strstr(line,"];")) {
       if (bus_start_line != -1 && bus_end_line == -1) bus_end_line = line_counter;
       if (gen_start_line != -1 && gen_end_line == -1) gen_end_line = line_counter;
       if (br_start_line  != -1 && br_end_line == -1) br_end_line = line_counter;

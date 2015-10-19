@@ -661,22 +661,22 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /* sum7 += rho; */
 
   /* Output */
-  if (nu != NULL) {
+  if (nu) {
     *nu = Z;
   }
-  if (vel != NULL) {
+  if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (p != NULL) {
+  if (p) {
     (*p) = sum5;
   }
-  if (s != NULL) {
+  if (s) {
     s[0] = sum3;
     s[1] = sum4;
     s[2] = sum6;
   }
-  if (gamma != NULL) {
+  if (gamma) {
     /* sigma = tau - p, tau = sigma + p, tau[] = 2*eta*gamma[] */
     gamma[0] = (sum3+sum5)/(2.0*Z);
     gamma[1] = (sum4)/(2.0*Z);
@@ -2973,22 +2973,22 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   sum4 += u4;
 
   /* Output */
-  if (nu != NULL) {
+  if (nu) {
     *nu = Z;
   }
-  if (vel != NULL) {
+  if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (p != NULL) {
+  if (p) {
     (*p) = sum5;
   }
-  if (s != NULL) {
+  if (s) {
     s[0] = sum3;
     s[1] = sum4;
     s[2] = sum6;
   }
-  if (gamma != NULL) {
+  if (gamma) {
     /* sigma = tau - p, tau = sigma + p, tau[] = 2*eta*gamma[] */
     gamma[0] = (sum3+sum5)/(2.0*Z);
     gamma[1] = (sum4)/(2.0*Z);
