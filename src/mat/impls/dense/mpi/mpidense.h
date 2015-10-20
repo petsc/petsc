@@ -4,9 +4,8 @@
 /*  Data stuctures for basic parallel dense matrix  */
 
 typedef struct { /* used by MatTransposeMatMult_MPIDense_MPIDense() */
-  PetscScalar *sendbuf,*recvbuf;
+  PetscScalar *sendbuf,*recvbuf,*atbarray;
   PetscInt    *recvcounts;
-  Mat         C_loc;
   PetscErrorCode (*destroy)(Mat);
 } Mat_TransMatMultDense;
 
