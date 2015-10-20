@@ -71,10 +71,12 @@ int main(int argc,char **argv)
   const PetscInt *rows,*cols;
   PetscScalar    *v,rval;
   PetscBool      Test_MatMatMult=PETSC_TRUE;
-  PetscMPIInt    rank;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  //ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+
   ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -95,7 +97,7 @@ int main(int argc,char **argv)
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       ierr         = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);
-      v[i*ncols+j] = rval; //0.1*(rank+1); //rval;
+      v[i*ncols+j] = rval; 
     }
   }
   ierr = MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -109,7 +111,7 @@ int main(int argc,char **argv)
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
 
   /* Test MatMatMult() */
-  if (Test_MatMatMult) { 
+  if (Test_MatMatMult && size == 1) { 
     Mat B;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
     ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
@@ -123,13 +125,14 @@ int main(int argc,char **argv)
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
 
   /* Test MatTransposeMatMult() */
   ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
   if (!iselemental) {
     ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
-    ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D*x != A^T*A");
     ierr = MatDestroy(&D);CHKERRQ(ierr);

@@ -1776,42 +1776,27 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   MPI_Comm       comm;
   PetscMPIInt    rank,size,*recvcounts;
   PetscScalar    *lCarray,recvbuf[A->cmap->n * B->cmap->N],sendbuf[C->rmap->N * C->cmap->N];
-  PetscInt       i,N=C->cmap->N,M=C->rmap->N;
+  PetscInt       i,N=C->cmap->N,M=C->rmap->N,proc,k,j;
+  Mat            lmatC;
+  const PetscInt *ranges;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  printf("[%d] Numeric_ lmatAt: %d, %d; lmatB: %d, %d; CN=%d\n",rank,matA->A->cmap->N,matA->A->rmap->N,matB->A->rmap->N,matB->A->cmap->N,N);
-  Mat lmatC;
+
   ierr = MatTransposeMatMultSymbolic_SeqDense_SeqDense(matA->A,matB->A,1.0,&lmatC);CHKERRQ(ierr);
   ierr = MatTransposeMatMultNumeric_SeqDense_SeqDense(matA->A,matB->A,lmatC);CHKERRQ(ierr);
-
-  const PetscInt *ranges;
+ 
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
-#if 1
-  if (!rank) {
-    for (i=0; i<=size; i++) {
-      printf("ranges[%d]= %d\n",i,ranges[i]);
-    }
-  }
-#endif
-  ierr = PetscSynchronizedFlush(comm,stdout);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFPrintf(comm,stdout,"recvbufsize: A->cmap->n * B->cmap->N= %d\n",A->cmap->n * B->cmap->N);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm,stdout);CHKERRQ(ierr);
-
   ierr = MatDenseGetArray(lmatC,&lCarray);CHKERRQ(ierr);
-  
   ierr = PetscMalloc1(size,&recvcounts);CHKERRQ(ierr);
-  
   for (i=0; i<size; i++) {
     recvcounts[i] = (ranges[i+1] - ranges[i])*N;
-    if (!rank) printf("recvcounts[%d]= %d\n",i,recvcounts[i]);
   }
   if (A->cmap->n * B->cmap->N != recvcounts[rank]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"recvcounts is wrong");
 
   /* arrange lCarray into sendbuf */
-  PetscInt proc,k,j;
   k = 0;
   for (proc=0; proc<size; proc++) {
     for (j=0; j<N; j++) {
@@ -1820,18 +1805,10 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
       }
     }
   }
-
-  //ierr = MPI_Reduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts[],MPI_Datatype datatype, MPI_Op op,comm);
   ierr = MPI_Reduce_scatter(sendbuf,recvbuf,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
 
   ierr = MatDenseRestoreArray(lmatC,&lCarray);CHKERRQ(ierr);
   ierr = PetscFree(recvcounts);CHKERRQ(ierr);
-
-  if (rank == 1) {
-    printf("[%d] lmatC:\n",rank);
-    ierr = MatView(lmatC,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  }
-  
 
   /* setvalues to C */
   ierr = MatDenseGetArray(matC->A,&lCarray);CHKERRQ(ierr);
@@ -1839,10 +1816,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
     lCarray[i] = recvbuf[i];
   }
   ierr = MatDenseRestoreArray(matC->A,&lCarray);CHKERRQ(ierr);
-  //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   ierr = MatDestroy(&lmatC);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1855,8 +1829,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscRe
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  printf("Symbolic_ A(%d,%d): %d x %d; B(%d,%d),: %d x %d\n",A->rmap->N,A->cmap->N,A->cmap->n,A->rmap->n,B->rmap->N,B->cmap->N,B->rmap->n,B->cmap->n);
-  /* check if matrix local sizes are compatible */
   if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
   }
