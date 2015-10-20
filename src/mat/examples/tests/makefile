@@ -2396,7 +2396,7 @@ runex190:
 	   ${RM} -f ex190.tmp
 
 runex191:
-	  -@${MPIEXEC} -n 2 ./ex191   > ex191.tmp 2>&1; \
+	  -@${MPIEXEC} -n 2 ./ex191  | grep -v alloced > ex191.tmp 2>&1; \
 	   ${DIFF} output/ex191_1.out ex191.tmp || printf "${PWD}\nPossible problem with ex191, diffs above\n=========================================\n"; \
 	   ${RM} -f ex191.tmp
 
