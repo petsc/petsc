@@ -380,17 +380,6 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetConvergedReason"
-static PetscErrorCode
-SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  snes->reason = reason;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SNESGetUseMFFD"
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscBool *flag)
