@@ -300,7 +300,7 @@ PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
 PETSC_EXTERN PetscErrorCode TSEventMonitorInitialize(TS);
 
-PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PETSC_EXTERN PetscLogEvent TS_adjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
@@ -325,5 +325,6 @@ struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
 
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, Disk_Write, Disk_Read;
 
 #endif
