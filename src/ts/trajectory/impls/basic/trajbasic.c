@@ -103,7 +103,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,Pets
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryCreate_Basic"
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj)
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj,TS ts)
 {
   PetscFunctionBegin;
   tj->ops->set  = TSTrajectorySet_Basic;
