@@ -253,7 +253,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
       } else {
         d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
       }
-    fcg->ned = ksp->its-1;
+      fcg->ned = ksp->its-1;
     }
     ++i;
   } while (i<ksp->max_it);
