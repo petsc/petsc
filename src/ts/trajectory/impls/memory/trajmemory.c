@@ -34,6 +34,7 @@ typedef struct _Stack {
   PetscBool     use_online;
   PetscBool     recompute;
   PetscBool     solution_only;
+  PetscBool     save_stack;
   MPI_Comm      comm;
   RevolveCTX    *rctx;
   PetscInt      max_cps_ram;  /* maximum checkpoints in RAM */
@@ -502,7 +503,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
 #endif
       id = stepnum/s->stride;
-      if (s->stack_buffer) {
+      if (s->save_stack) {
         ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
         s->top = -1; /* reset top */
 #ifdef PETSC_HAVE_REVOLVE
@@ -525,7 +526,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     localstepnum = stepnum%s->stride;
     if (stepnum != s->total_steps && stepnum != 0 && localstepnum==0 && !s->recompute) {
       id = stepnum/s->stride;
-      if (s->stack_buffer) {
+      if (s->save_stack) {
         ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
         s->top = -1; /* reset top */
       } else {
@@ -646,7 +647,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   StackElement   e = NULL;
   Stack          *s = (Stack*)tj->data;
   PetscReal      stepsize;
-  PetscInt       localstepnum,id;
+  PetscInt       localstepnum,id,steps;
 #ifdef PETSC_HAVE_REVOLVE
   PetscInt       whattodo,shift;
 #endif
@@ -660,7 +661,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 #ifdef PETSC_HAVE_REVOLVE
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mLoad stack from file\033[0m\n");
 #endif
-      if (s->stack_buffer) {
+      if (s->save_stack) {
         id = stepnum/s->stride;
         ierr = StackLoadAll(ts,s,id);CHKERRQ(ierr);
         s->top = s->stacksize-1;
@@ -680,10 +681,10 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
       s->rctx->capo  = 0;
       s->rctx->fine  = s->stride;
       if (!s->solution_only) {
-      whattodo = 0;
-      while(whattodo!=3) { /* stupid revolve */
-        whattodo = revolve_action(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,s->rctx->snaps_in,&s->rctx->info,&s->rctx->where);
-      }
+        whattodo = 0;
+        while(whattodo!=3) { /* stupid revolve */
+          whattodo = revolve_action(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,s->rctx->snaps_in,&s->rctx->info,&s->rctx->where);
+        }
       }
 #endif
       for (i=ts->steps;i<stepnum;i++) { /* assume fixed step size */
@@ -704,10 +705,11 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     localstepnum = stepnum%s->stride;
     if (stepnum != s->total_steps && localstepnum==0) {
       id = stepnum/s->stride;
-      if (s->stack_buffer) {
+      if (s->save_stack) {
         ierr = StackLoadAll(ts,s,id);CHKERRQ(ierr);
       } else {
-        ierr = AsynLoad(ts,s,id);CHKERRQ(ierr);
+        ierr = AsyncLoad(ts,id);CHKERRQ(ierr);
+      }
     }
   } else {
     localstepnum = stepnum;
@@ -720,7 +722,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
     PetscFunctionReturn(0);
   }
 #endif
-  if ((!s->solution_only && localstepnum == 0) || stepnum == s->total_steps)) {
+  if ((!s->solution_only && localstepnum == 0) || stepnum == s->total_steps) {
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     s->rctx->reverseonestep = PETSC_FALSE;//?
@@ -845,7 +847,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   s->max_cps_disk = -1; /* -1 indicates that it is not set */
   s->stride       = 0; /* if not zero, two-level checkpointing will be used */
   s->use_online   = PETSC_FALSE;
-  s->stack_buffer = PETSC_FALSE;
+  s->save_stack   = PETSC_FALSE;
   s->solution_only= PETSC_TRUE;
   tj->data        = s;
   PetscFunctionReturn(0);
