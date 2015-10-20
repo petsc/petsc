@@ -306,7 +306,6 @@ runex11:
                 -fc_ksp_view \
                 -fc_ksp_monitor_short \
                 -fc_ksp_type fgmres \
-                -fc_ksp_rtol 1.0e-10 \
                 -fc_ksp_max_it 4000 \
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
@@ -333,7 +332,6 @@ runex11_2:
                 -fc_ksp_view \
                 -fc_ksp_monitor_short \
                 -fc_ksp_type fgmres \
-                -fc_ksp_rtol 1.0e-10 \
                 -fc_ksp_max_it 4000 \
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
