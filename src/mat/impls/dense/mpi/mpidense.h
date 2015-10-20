@@ -3,6 +3,13 @@
 
 /*  Data stuctures for basic parallel dense matrix  */
 
+typedef struct { /* used by MatTransposeMatMult_MPIDense_MPIDense() */
+  PetscScalar *sendbuf,*recvbuf;
+  PetscInt    *recvcounts;
+  Mat         C_loc;
+  PetscErrorCode (*destroy)(Mat);
+} Mat_TransMatMultDense;
+
 typedef struct {
   PetscInt    nvec;                     /* this is the n size for the vector one multiplies with */
   Mat         A;                        /* local submatrix */
@@ -22,6 +29,7 @@ typedef struct {
   PetscBool roworiented;                /* if true, row oriented input (default) */
 
   Mat_MatTransMatMult *atb;             /* used by MatTransposeMatMult_MPIAIJ_MPIDense */
+  Mat_TransMatMultDense *atbdense;      /* used by MatTransposeMatMult_MPIDense_MPIDense */
 } Mat_MPIDense;
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);

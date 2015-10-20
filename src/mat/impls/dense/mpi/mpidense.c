@@ -6,6 +6,7 @@
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>    /*I   "petscmat.h"  I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscblaslapack.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDenseGetLocalMatrix"
@@ -1768,15 +1769,32 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MatTransMatMult_MPIDense_MPIDense"
+PetscErrorCode MatDestroy_MatTransMatMult_MPIDense_MPIDense(Mat A)
+{
+  PetscErrorCode        ierr;
+  Mat_MPIDense          *a = (Mat_MPIDense*)A->data;
+  Mat_TransMatMultDense *atb = a->atbdense;
+
+  PetscFunctionBegin;
+  ierr = PetscFree3(atb->sendbuf,atb->recvbuf,atb->recvcounts);CHKERRQ(ierr);
+  ierr = (atb->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(atb);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatTransposeMatMultNumeric_MPIDense_MPIDense"
 PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
 {
-  Mat_MPIDense   *matA=(Mat_MPIDense*)A->data,*matB=(Mat_MPIDense*)B->data,*matC=(Mat_MPIDense*)C->data;
+  Mat_MPIDense   *a=(Mat_MPIDense*)A->data,*b=(Mat_MPIDense*)B->data,*c=(Mat_MPIDense*)C->data;
+  Mat_SeqDense   *cloc = (Mat_SeqDense*)c->A->data;
+  Mat_TransMatMultDense *atb = c->atbdense;
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscMPIInt    rank,size,*recvcounts;
-  PetscScalar    *lCarray,recvbuf[A->cmap->n * B->cmap->N],sendbuf[C->rmap->N * C->cmap->N];
-  PetscInt       i,N=C->cmap->N,M=C->rmap->N,proc,k,j;
+  PetscMPIInt    rank,size,*recvcounts=atb->recvcounts;
+  PetscScalar    *lCarray,*recvbuf=atb->recvbuf,*sendbuf=atb->sendbuf;
+  PetscInt       i,cm=C->rmap->n,cN=C->cmap->N,M=C->rmap->N,proc,k,j;
   Mat            lmatC;
   const PetscInt *ranges;
 
@@ -1785,21 +1803,50 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = MatTransposeMatMultSymbolic_SeqDense_SeqDense(matA->A,matB->A,1.0,&lmatC);CHKERRQ(ierr);
-  ierr = MatTransposeMatMultNumeric_SeqDense_SeqDense(matA->A,matB->A,lmatC);CHKERRQ(ierr);
+  //ierr = MatTransposeMatMultSymbolic_SeqDense_SeqDense(a->A,b->A,1.0,&lmatC);CHKERRQ(ierr);
+  PetscInt m=(a->A)->cmap->n,n=(b->A)->cmap->n;
+  ierr = MatCreate(PETSC_COMM_SELF,&lmatC);CHKERRQ(ierr);
+  ierr = MatSetSizes(lmatC,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(lmatC,MATSEQDENSE);CHKERRQ(ierr);
+
+#if 0 
+  PetscBLASInt lda,Nmax;
+  ierr = PetscBLASIntCast(cm,&lda);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(cN,&Nmax);CHKERRQ(ierr);
+  ierr = PetscCalloc1((size_t)(lda*Nmax),&lCarray);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(lmatC,lCarray);CHKERRQ(ierr);
+#endif
+  ierr = MatSeqDenseSetPreallocation(lmatC,NULL);CHKERRQ(ierr);
+  lmatC->assembled = PETSC_TRUE;
+
+  //PetscBLASInt lda,Nmax;
+  //ierr = PetscBLASIntCast(cm,&lda);CHKERRQ(ierr);
+  //ierr = PetscBLASIntCast(cN,&Nmax);CHKERRQ(ierr);
+  //ierr = PetscCalloc1((size_t)(lda*Nmax),&lCarray);CHKERRQ(ierr);
+
+  //ierr = MatTransposeMatMultNumeric_SeqDense_SeqDense(a->A,b->A,lmatC);CHKERRQ(ierr);
+  PetscScalar    _DOne=1.0,_DZero=0.0;
+  ierr = PetscBLASIntCast(a->A->cmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(b->A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(a->A->rmap->n,&k);CHKERRQ(ierr);
+  /*
+     Note the m and n arguments below are the number rows and columns of A', not A!
+  */
+  Mat_SeqDense   *aa = (Mat_SeqDense*)(a->A)->data;
+  Mat_SeqDense   *bb = (Mat_SeqDense*)(b->A)->data;
+  Mat_SeqDense   *cc = (Mat_SeqDense*)lmatC->data;
+  lCarray = cc->v;
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&m,&n,&k,&_DOne,aa->v,&aa->lda,bb->v,&bb->lda,&_DZero,(PetscScalar  *)lCarray,&cc->lda));
  
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(lmatC,&lCarray);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&recvcounts);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
-    recvcounts[i] = (ranges[i+1] - ranges[i])*N;
+    recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
   }
-  if (A->cmap->n * B->cmap->N != recvcounts[rank]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"recvcounts is wrong");
 
   /* arrange lCarray into sendbuf */
   k = 0;
   for (proc=0; proc<size; proc++) {
-    for (j=0; j<N; j++) {
+    for (j=0; j<cN; j++) {
       for (i=ranges[proc]; i<ranges[proc+1]; i++) {
         sendbuf[k] = lCarray[i+j*M]; k++;
       }
@@ -1807,16 +1854,14 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   }
   ierr = MPI_Reduce_scatter(sendbuf,recvbuf,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
 
-  ierr = MatDenseRestoreArray(lmatC,&lCarray);CHKERRQ(ierr);
-  ierr = PetscFree(recvcounts);CHKERRQ(ierr);
-
   /* setvalues to C */
-  ierr = MatDenseGetArray(matC->A,&lCarray);CHKERRQ(ierr);
-  for (i=0; i< (ranges[rank+1]-ranges[rank])*N; i++) {
+  ierr = MatDenseGetArray(c->A,&lCarray);CHKERRQ(ierr);
+  for (i=0; i< (ranges[rank+1]-ranges[rank])*cN; i++) {
     lCarray[i] = recvbuf[i];
   }
-  ierr = MatDenseRestoreArray(matC->A,&lCarray);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(c->A,&lCarray);CHKERRQ(ierr);
   ierr = MatDestroy(&lmatC);CHKERRQ(ierr);
+  //ierr = PetscFree(lCarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1824,23 +1869,39 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
 #define __FUNCT__ "MatTransposeMatMultSymbolic_MPIDense_MPIDense"
 PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
-  Mat            Cmat;
-  MPI_Comm       comm;
+  PetscErrorCode        ierr;
+  Mat                   Cdense;
+  MPI_Comm              comm;
+  PetscMPIInt           size;
+  PetscInt              cm,cM,cN;
+  Mat_MPIDense          *c;
+  Mat_TransMatMultDense *atb;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
   }
+
+  /* create matrix product Cdense */
+  ierr = MatCreate(comm,&Cdense);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cdense,A->cmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(Cdense,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(Cdense,NULL);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Cdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Cdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *C   = Cdense;
+
+  /* create data structure for reuse Cdense */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscNew(&atb);CHKERRQ(ierr);
+  cm = Cdense->rmap->n; cM = Cdense->rmap->N; cN = Cdense->cmap->N;
+  ierr = PetscMalloc3(cM*cN,&atb->sendbuf,cm*cN,&atb->recvbuf,size,&atb->recvcounts);CHKERRQ(ierr);
   
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MatCreate(comm,&Cmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Cmat,A->cmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(Cmat,NULL);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *C = Cmat;
+  c                    = (Mat_MPIDense*)Cdense->data;
+  c->atbdense          = atb;
+  atb->destroy         = Cdense->ops->destroy;
+  Cdense->ops->destroy = MatDestroy_MatTransMatMult_MPIDense_MPIDense;
   PetscFunctionReturn(0);
 }
 
