@@ -12,7 +12,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool  
   PetscErrorCode ierr;
   Vec            x,s1,s2,s3;
   PetscRandom    rctx;
-  PetscReal      r1,r2,tol=1.e-10;
+  PetscReal      r1,r2,tol=1.e-14;
   PetscInt       am,an,bm,bn,cm,cn,k;
   PetscScalar    none = -1.0;
 
@@ -61,7 +61,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool  
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat            A,C,D;
+  Mat            A,B,C,D;
   PetscInt       i,M=10,N=5,j,nrows,ncols;
   PetscErrorCode ierr;
   PetscRandom    r;
@@ -74,7 +74,6 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  //ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
@@ -112,7 +111,6 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult() */
   if (Test_MatMatMult && size == 1) { 
-    Mat B;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
     ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
 
@@ -137,6 +135,35 @@ int main(int argc,char **argv)
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D*x != A^T*A");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
+
+    /* Test D = A^T* C * A, where C is in AIJ format */
+    PetscInt    am,an,rstart,rend;
+    PetscScalar v = 1.0;
+    ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,am,am);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetSizes(C,am,am,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    }
+    ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+    ierr = MatSetUp(C);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatSetValues(C,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    /* B = C * A; D = A^T * B */
+    ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+    ierr = MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
+    ierr = MatTransposeMatMultEqual(A,B,D,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D*x != A^T*A");
+
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);

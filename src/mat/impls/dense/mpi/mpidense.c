@@ -1777,7 +1777,7 @@ PetscErrorCode MatDestroy_MatTransMatMult_MPIDense_MPIDense(Mat A)
   Mat_TransMatMultDense *atb = a->atbdense;
 
   PetscFunctionBegin;
-  ierr = PetscFree4(atb->sendbuf,atb->recvbuf,atb->atbarray,atb->recvcounts);CHKERRQ(ierr);
+  ierr = PetscFree3(atb->sendbuf,atb->atbarray,atb->recvcounts);CHKERRQ(ierr);
   ierr = (atb->destroy)(A);CHKERRQ(ierr);
   ierr = PetscFree(atb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1793,7 +1793,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    rank,size,*recvcounts=atb->recvcounts;
-  PetscScalar    *carray,*atbarray=atb->atbarray,*recvbuf=atb->recvbuf,*sendbuf=atb->sendbuf;
+  PetscScalar    *carray,*atbarray=atb->atbarray,*sendbuf=atb->sendbuf;
   PetscInt       i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j;
   PetscScalar    _DOne=1.0,_DZero=0.0;
   PetscBLASInt   am,an,bn;
@@ -1804,32 +1804,25 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
+  /* compute atbarray = aseq^T * bseq */
   ierr = PetscBLASIntCast(a->A->cmap->n,&an);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(b->A->cmap->n,&bn);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(a->A->rmap->n,&am);CHKERRQ(ierr);
   PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&an,&bn,&am,&_DOne,aseq->v,&aseq->lda,bseq->v,&bseq->lda,&_DZero,atbarray,&cM));
  
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
-  for (i=0; i<size; i++) {
-    recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
-  }
-
+  for (i=0; i<size; i++) recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
+  
   /* arrange atbarray into sendbuf */
   k = 0;
   for (proc=0; proc<size; proc++) {
     for (j=0; j<cN; j++) {
-      for (i=ranges[proc]; i<ranges[proc+1]; i++) {
-        sendbuf[k++] = atbarray[i+j*cM]; 
-      }
+      for (i=ranges[proc]; i<ranges[proc+1]; i++) sendbuf[k++] = atbarray[i+j*cM]; 
     }
   }
-  ierr = MPI_Reduce_scatter(sendbuf,recvbuf,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
-
-  /* setvalues to C */
+  /* sum all atbarray to local values of C */
   ierr = MatDenseGetArray(c->A,&carray);CHKERRQ(ierr);
-  for (i=0; i< (ranges[rank+1]-ranges[rank])*cN; i++) {
-    carray[i] = recvbuf[i];
-  }
+  ierr = MPI_Reduce_scatter(sendbuf,carray,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(c->A,&carray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1865,7 +1858,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscRe
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscNew(&atb);CHKERRQ(ierr);
   cM = Cdense->rmap->N; 
-  ierr = PetscMalloc4(cM*cN,&atb->sendbuf,cm*cN,&atb->recvbuf,cM*cN,&atb->atbarray,size,&atb->recvcounts);CHKERRQ(ierr);
+  ierr = PetscMalloc3(cM*cN,&atb->sendbuf,cM*cN,&atb->atbarray,size,&atb->recvcounts);CHKERRQ(ierr);
   
   c                    = (Mat_MPIDense*)Cdense->data;
   c->atbdense          = atb;
