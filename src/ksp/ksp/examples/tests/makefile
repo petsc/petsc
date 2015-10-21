@@ -458,16 +458,11 @@ runex24_4:
            ${RM} -f ex24_4.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro -ksp_rtol 1.e-3 > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_1.tmp
-runex25_2:
-	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro \
-		-pc_type jacobi -pc_jacobi_type rowmax > ex25_2.tmp 2>&1; \
-           if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
-           else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
-           ${RM} -f ex25_2.tmp
+
 runex26:
 	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short > ex26_1.tmp 2>&1; \
 	if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
@@ -986,7 +981,7 @@ TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
-                                 ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
+                                 ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
                                  ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
