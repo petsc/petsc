@@ -440,7 +440,7 @@ static PetscErrorCode TSStep_RK(TS ts)
       ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
       ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,i,Y,&accept);CHKERRQ(ierr);
+      ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&accept);CHKERRQ(ierr);
       if (!accept) break;
       ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }

@@ -191,7 +191,7 @@ struct _TSAdaptOps {
 struct _p_TSAdapt {
   PETSCHEADER(struct _TSAdaptOps);
   void *data;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
+  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscReal,Vec,PetscBool*);
   struct {
     PetscInt   n;                /* number of candidate schemes, including the one currently in use */
     PetscBool  inuse_set;        /* the current scheme has been set */

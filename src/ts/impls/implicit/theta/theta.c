@@ -200,7 +200,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,th->stage_time,0,&th->X,&stageok);CHKERRQ(ierr);
+    ierr = TSAdaptCheckStage(adapt,ts,th->stage_time,th->X,&stageok);CHKERRQ(ierr);
     if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
     ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,NULL);CHKERRQ(ierr);

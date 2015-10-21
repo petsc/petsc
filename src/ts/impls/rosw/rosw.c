@@ -1046,7 +1046,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,i,Y,&accept);CHKERRQ(ierr);
+        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       } else {
         Mat J,Jp;

@@ -515,7 +515,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidatesGet(TSAdapt,PetscInt*,const PetscInt**,const PetscInt**,const PetscReal**,const PetscReal**);
 PETSC_EXTERN PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
-PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscReal,PetscInt,Vec*,PetscBool*);
+PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscReal,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptions*,TSAdapt);
@@ -523,7 +523,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscBool*));
+PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
 
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity

@@ -332,7 +332,7 @@ $  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
 
 .seealso: TSAdaptChoose()
 @*/
-PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt,TS,PetscBool*))
+PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt,TS,PetscReal,Vec,PetscBool*))
 {
 
   PetscFunctionBegin;
@@ -599,7 +599,9 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
 
    Input Arguments:
 +  adapt - adaptive controller context
--  ts - time stepper
+.  ts - time stepper
+.  t - Current simulation time
+-  Y - Current solution vector
 
    Output Arguments:
 .  accept - PETSC_TRUE to accept the stage, PETSC_FALSE to reject
@@ -608,7 +610,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
 
 .seealso:
 @*/
-PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,PetscInt stage,Vec* Y,PetscBool *accept)
+PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool *accept)
 {
   PetscErrorCode      ierr;
   SNES                snes;
@@ -637,9 +639,9 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,PetscInt stage,
       new_dt = dt*adapt->scale_solve_failed;
     }
   } else {
-    ierr = TSFunctionDomainError(ts,t,Y[stage],accept);CHKERRQ(ierr);
+    ierr = TSFunctionDomainError(ts,t,Y,accept);CHKERRQ(ierr);
     if(*accept && adapt->checkstage) {
-      ierr = (*adapt->checkstage)(adapt,ts,accept);CHKERRQ(ierr);
+      ierr = (*adapt->checkstage)(adapt,ts,t,Y,accept);CHKERRQ(ierr);
     }
   }
 
