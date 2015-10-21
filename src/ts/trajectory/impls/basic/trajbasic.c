@@ -9,8 +9,8 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(PETSC_COMM_WORLD,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer,filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -103,7 +103,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,Pets
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryCreate_Basic"
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj,TS ts)
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj)
 {
   PetscFunctionBegin;
   tj->ops->set  = TSTrajectorySet_Basic;
