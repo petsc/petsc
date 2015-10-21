@@ -390,6 +390,28 @@ PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySetSaveStack"
+PetscErrorCode TSTrajectorySetSaveStack(TSTrajectory tj,PetscBool save_stack)
+{
+  Stack *s = (Stack*)tj->data;
+
+  PetscFunctionBegin;
+  s->save_stack = save_stack;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySetSolutionOnly"
+PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_only)
+{
+  Stack *s = (Stack*)tj->data;
+
+  PetscFunctionBegin;
+  s->solution_only = solution_only;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetFromOptions_Memory"
 PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObject,TSTrajectory tj)
 {
@@ -403,6 +425,8 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObjec
     ierr = PetscOptionsInt("-tstrajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk_Memory",s->max_cps_disk,&s->max_cps_disk,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-tstrajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride_Memory",s->stride,&s->stride,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-tstrajectory_revolve_online","Trick TS trajectory into using online mode of revolve","TSTrajectorySetRevolveOnline",s->use_online,&s->use_online,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-tstrajectory_save_stack","Save all stack to disk","TSTrajectorySetSaveStack",s->save_stack,&s->save_stack,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-tstrajectory_solution_only","Checkpoint solution only","TSTrajectorySetSolutionOnly",s->solution_only,&s->solution_only,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -508,29 +532,32 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if (s->stype == TWO_LEVEL_REVOLVE) { /* two-level mode */
     localstepnum = stepnum%s->stride;
     if (stepnum!=s->total_steps && localstepnum==0 && !s->recompute) {
-#ifdef PETSC_HAVE_REVOLVE
-      PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
-#endif
       id = stepnum/s->stride;
       if (s->save_stack) {
-        ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
-        s->top = -1; /* reset top */
+        if (stepnum) {
 #ifdef PETSC_HAVE_REVOLVE
-        if (s->stype == TWO_LEVEL_REVOLVE) {
-          revolve_reset();
-          revolve_create_offline(s->stride,s->max_cps_ram);
-          rctx = s->rctx;
-          rctx->check = 0;
-          rctx->capo  = 0;
-          rctx->fine  = s->stride;
+          PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
+#endif
+          ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
+          s->top = -1; /* reset top */
+#ifdef PETSC_HAVE_REVOLVE
+          if (s->stype == TWO_LEVEL_REVOLVE) {
+            revolve_reset();
+            revolve_create_offline(s->stride,s->max_cps_ram);
+            rctx = s->rctx;
+            rctx->check = 0;
+            rctx->capo  = 0;
+            rctx->fine  = s->stride;
+          }
         }
 #endif
       } else {
         ierr = DumpSingle(ts,s,id);CHKERRQ(ierr);
+        PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump a single point to file\033[0m\n");
       }
     }
     /* first forward sweep only checkpoints once in each stride */
-    if (!s->recompute) PetscFunctionReturn(0);
+    if (!s->recompute && !s->save_stack) PetscFunctionReturn(0);
   } else if (s->stype == TWO_LEVEL_NOREVOLVE) {
     localstepnum = stepnum%s->stride;
     if (stepnum != s->total_steps && stepnum != 0 && localstepnum==0 && !s->recompute) {
@@ -550,7 +577,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 #ifdef PETSC_HAVE_REVOLVE
     rctx = s->rctx;
     if (rctx->reverseonestep && stepnum==s->total_steps) { /* intermediate information is ready inside TS, this happens at last time step */
-      rctx->reverseonestep = PETSC_FALSE; //?
+      //rctx->reverseonestep = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (rctx->stepsleft != 0) { /* advance the solution without checkpointing anything as Revolve requires */
@@ -663,7 +690,8 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr); /* stepnum should be larger than 0 */
+  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  if (stepnum == 0) PetscFunctionReturn(0);
   if (s->stype == TWO_LEVEL_REVOLVE) { /* two-level mode */
     localstepnum = stepnum%s->stride;
     if (localstepnum == 0) {
@@ -734,7 +762,6 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   if ((!s->solution_only && localstepnum == 0) || stepnum == s->total_steps) {
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
-    s->rctx->reverseonestep = PETSC_FALSE;//?
     PetscFunctionReturn(0);
   }
 
@@ -757,11 +784,11 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
   }
   /* restore a checkpoint */
   if (!(s->stype == REVOLVE_MULTISTAGE && !s->rctx->where)) {
-	if (s->stype == REVOLVE_ONLINE) {
-	  ierr = StackFind(s,&e,s->rctx->check);CHKERRQ(ierr);
-	} else {
-	  ierr = StackTop(s,&e);CHKERRQ(ierr);
-	}
+    if (s->stype == REVOLVE_ONLINE) {
+      ierr = StackFind(s,&e,s->rctx->check);CHKERRQ(ierr);
+    } else {
+      ierr = StackTop(s,&e);CHKERRQ(ierr);
+    }
     ierr = VecCopy(e->X,ts->vec_sol);CHKERRQ(ierr);
     if (!s->solution_only) {
       ierr = TSGetStages(ts,&s->numY,&Y);CHKERRQ(ierr);
@@ -856,7 +883,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   s->max_cps_disk = -1; /* -1 indicates that it is not set */
   s->stride       = 0; /* if not zero, two-level checkpointing will be used */
   s->use_online   = PETSC_FALSE;
-  s->save_stack   = PETSC_FALSE;
+  s->save_stack   = PETSC_TRUE;
   s->solution_only= PETSC_TRUE;
   tj->data        = s;
   PetscFunctionReturn(0);
