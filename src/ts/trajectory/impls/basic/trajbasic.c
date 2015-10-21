@@ -9,8 +9,8 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(PETSC_COMM_WORLD,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD,viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer,filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
