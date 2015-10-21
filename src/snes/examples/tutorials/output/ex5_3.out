@@ -14,7 +14,7 @@ SNES Object: 2 MPI processes
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    tolerances: relative=1.000000e-08, absolute=1.000000e-20, lambda=1.000000e-08
     maximum iterations=40
   KSP Object:   2 MPI processes
     type: gmres
