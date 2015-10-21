@@ -4,6 +4,7 @@
 PetscFunctionList TSTrajectoryList              = NULL;
 PetscBool         TSTrajectoryRegisterAllCalled = PETSC_FALSE;
 PetscClassId      TSTRAJECTORY_CLASSID;
+PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get;
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryRegister"
@@ -42,7 +43,9 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
   PetscFunctionBegin;
   if (!tj) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(TSTrajectory_Set,tj,ts,0,0);CHKERRQ(ierr);
   ierr = (*tj->ops->set)(tj,ts,stepnum,time,X);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_Set,tj,ts,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -54,7 +57,9 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
   PetscFunctionBegin;
   if (!tj) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"TS solver did not save trajectory");
+  ierr = PetscLogEventBegin(TSTrajectory_Get,tj,ts,0,0);CHKERRQ(ierr);
   ierr = (*tj->ops->get)(tj,ts,stepnum,time);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_Get,tj,ts,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
