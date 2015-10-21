@@ -678,7 +678,7 @@ runex19_4: #test pc_redundant
 runex19_5: #test different scatters
 	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
            for B in " " -vecscatter_merge ; do \
-             ${MPIEXEC} -n 4 ./ex19 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full $$A $$B > ex19_5.tmp 2>&1; \
+             ${MPIEXEC} -n 4 ./ex19 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full $$A $$B -options_left off > ex19_5.tmp 2>&1; \
 	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
 	     else  printf "${PWD}\nPossible problem with ex19_5 " $$A $$B " diffs above\n=========================================\n"; fi; \
            done;\
