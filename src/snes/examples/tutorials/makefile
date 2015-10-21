@@ -1028,7 +1028,7 @@ runex35_7:
 	   ${RM} -f ex35_7.tmp
 
 runex35_8:
-	-@${MPIEXEC} -n 1 ./ex35  -da_refine 2 -snes_monitor_short  -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas   > ex35_8.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35  -da_refine 2 -snes_monitor_short  -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas  -snes_rtol 1.e-5 > ex35_8.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_8.out ex35_8.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_8, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_8.tmp
