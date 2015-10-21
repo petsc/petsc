@@ -579,7 +579,7 @@ runex30_shift_in_blocks_sbaij: # sensitive to machine, thus not submitted to the
 	   ${RM} -f ex30.tmp
 
 runex31:
-	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition -mat_partitioning_type parmetis > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex31, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex31.tmp
@@ -983,9 +983,10 @@ TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
-                                 ex31.PETSc runex31 ex31.rm \
                                  ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
                                  ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
+TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex31.PETSc runex31 ex31.rm
+
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
