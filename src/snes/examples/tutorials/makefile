@@ -306,7 +306,7 @@ runex5:
 	   else  printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
-	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_esteig 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full > ex5_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_esteig 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full  -ksp_atol -1. > ex5_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_2.tmp
@@ -316,7 +316,7 @@ runex5_3:
 	   else  printf "${PWD}\nPossible problem with ex5_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:
-	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_converged_reason -snes_converged_reason -snes_view -pc_type mg > ex5_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_converged_reason -snes_converged_reason -snes_view -pc_type mg -snes_atol -1 -ksp_atol -1  > ex5_4.tmp 2>&1; \
 	   if (${DIFF} output/ex5_4.out ex5_4.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_4.tmp
@@ -1092,11 +1092,11 @@ runex47cu:
 	   ${RM} -f ex47cu_1.tmp
 
 runex48:
-	-@${MPIEXEC} -n 1 ./ex48 -M 6 -P 4 -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type icc > ex48.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex48 -M 6 -P 4 -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type icc  > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_1.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_2:
-	-@${MPIEXEC} -n 2 ./ex48 -M 6 -P 4 -thi_hom z -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -snes_grid_sequence 1 -mat_partitioning_type current > ex48.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex48 -M 6 -P 4 -thi_hom z -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -snes_grid_sequence 1 -mat_partitioning_type current -ksp_atol -1 > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_2.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_3:
@@ -1104,7 +1104,7 @@ runex48_3:
 	   ${DIFF} output/ex48_3.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_4:
-	-@${MPIEXEC} -n 6 ./ex48 -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -snes_grid_sequence 3 -ksp_converged_reason -ksp_type fgmres -ksp_rtol 1e-2 -pc_type mg -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -snes_view -mg_levels_0_pc_type redundant -mg_levels_0_ksp_type preonly > ex48.tmp 2>&1; \
+	-@${MPIEXEC} -n 6 ./ex48 -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -snes_grid_sequence 3 -ksp_converged_reason -ksp_type fgmres -ksp_rtol 1e-2 -pc_type mg -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -snes_view -mg_levels_0_pc_type redundant -mg_levels_0_ksp_type preonly -ksp_atol -1 > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_4.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_4, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_5:
