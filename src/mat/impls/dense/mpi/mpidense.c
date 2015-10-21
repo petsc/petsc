@@ -1792,11 +1792,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   Mat_TransMatMultDense *atb = c->atbdense;
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscMPIInt    rank,size,*recvcounts=atb->recvcounts;
+  PetscMPIInt    rank,size;
   PetscScalar    *carray,*atbarray=atb->atbarray,*sendbuf=atb->sendbuf;
-  PetscInt       i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j;
+  PetscInt       i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j,*recvcounts=atb->recvcounts;
   PetscScalar    _DOne=1.0,_DZero=0.0;
-  PetscBLASInt   am,an,bn;
+  PetscBLASInt   am,an,bn,aN;
   const PetscInt *ranges;
 
   PetscFunctionBegin;
@@ -1808,7 +1808,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = PetscBLASIntCast(a->A->cmap->n,&an);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(b->A->cmap->n,&bn);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(a->A->rmap->n,&am);CHKERRQ(ierr);
-  PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&an,&bn,&am,&_DOne,aseq->v,&aseq->lda,bseq->v,&bseq->lda,&_DZero,atbarray,&cM));
+  ierr = PetscBLASIntCast(A->cmap->N,&aN);CHKERRQ(ierr);
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&an,&bn,&am,&_DOne,aseq->v,&aseq->lda,bseq->v,&bseq->lda,&_DZero,atbarray,&aN));
  
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
   for (i=0; i<size; i++) recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
