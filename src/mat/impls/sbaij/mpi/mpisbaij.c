@@ -1735,7 +1735,9 @@ PetscErrorCode MatShift_MPISBAIJ(Mat Y,PetscScalar a)
   if (!Y->preallocated) {
     ierr = MatMPISBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL,0,NULL);CHKERRQ(ierr);
   } else if (!aij->nz) {
+    PetscInt nonew = aij->nonew;
     ierr = MatSeqSBAIJSetPreallocation(maij->A,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
+    aij->nonew = nonew;
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
