@@ -269,7 +269,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
 
   /* get num of local and global total nnodes */
   nidx = wash->nnodes_loc; 
-  ierr = MPI_Allreduce(&nidx,&nx,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nidx,&nx,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   //printf("[%d] nx %d, nidx %d\n",rank,nx,nidx);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&Xq);CHKERRQ(ierr);

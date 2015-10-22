@@ -1322,7 +1322,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
       PetscInt    n,N,bs;
       PetscMPIInt size;

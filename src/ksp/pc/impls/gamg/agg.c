@@ -843,9 +843,9 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
   ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-/* ierr = MPI_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, comm); */
+/* ierr = MPIU_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, comm); */
 /* MatGetSize(a_Prol, &kk, &jj); */
-/* ierr = MPI_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, comm); */
+/* ierr = MPIU_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, comm); */
 /* PetscPrintf(comm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",rank,__FUNCT__,ii,kk/bs,ndone,jj); */
 
 #if defined(OUT_AGGS)
