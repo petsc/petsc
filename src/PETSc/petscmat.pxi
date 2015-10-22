@@ -264,6 +264,7 @@ cdef extern from * nogil:
     int MatGetDiagonalBlock(PetscMat,PetscMat*)
     int MatGetLocalSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
     int MatRestoreLocalSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
+    int MatDestroyMatrices(PetscInt,PetscMat*[])
 
     int MatConjugate(PetscMat)
     int MatRealPart(PetscMat)

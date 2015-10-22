@@ -1115,23 +1115,21 @@ cdef class Mat(Object):
             submats = list(submats)
             assert len(submats) == len(isrows)
             reuse = MAT_REUSE_MATRIX
-        else:
-            submats = [None for _ in range(n)]
+            CHKERR( PetscMalloc(cn*sizeof(PetscMat), &cmats) )
         tmp1 = oarray_p(empty_p(n), NULL, <void**>&cisrows)
         for i from 0 <= i < n: cisrows[i] = (<IS?>isrows[i]).iset
         tmp2 = oarray_p(empty_p(n), NULL, <void**>&ciscols)
         for i from 0 <= i < n: ciscols[i] = (<IS?>iscols[i]).iset
         tmp3 = oarray_p(empty_p(n), NULL, <void**>&cmats)
-
-        # if iscol is not None: ciscol = iscol.iset
-        # if submat is None: submat = Mat()
-        # if submat.mat != NULL: reuse = MAT_REUSE_MATRIX
         CHKERR( MatGetSubMatrices(self.mat, cn, cisrows, ciscols, reuse, &cmats) )
-        for i from 0 <= i < n:
-            mat = Mat()
-            mat.mat = cmats[i]
-            PetscINCREF(mat.obj)
-            submats[i] = mat
+        if submats is None:
+            submats = [None for _ in range(n)]
+            for i from 0 <= i < n:
+                mat = Mat()
+                mat.mat = cmats[i]
+                PetscINCREF(mat.obj)
+                submats[i] = mat
+        CHKERR( MatDestroyMatrices(cn, &cmats) )
         return submats
 
     #
