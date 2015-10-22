@@ -871,7 +871,7 @@ static PetscErrorCode GetTrajRON(TS ts,Stack *s,PetscInt stepnum)
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
     ts->steps = steps;
-    //ts->total_steps = stepnum;
+    ts->total_steps = stepnum;
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     #ifdef PETSC_HAVE_REVOLVE
@@ -1022,7 +1022,7 @@ static PetscErrorCode GetTrajTLR(TS ts,Stack *s,PetscInt stepnum)
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
     ts->steps = steps;
-    //ts->total_steps = stepnum;
+    ts->total_steps = stepnum;
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     #ifdef PETSC_HAVE_REVOLVE
@@ -1101,7 +1101,7 @@ static PetscErrorCode GetTrajTLNR(TS ts,Stack *s,PetscInt stepnum)
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
     ts->steps = steps;
-    //ts->total_steps = stepnum;
+    ts->total_steps = stepnum;
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
   } else {
@@ -1181,7 +1181,7 @@ static PetscErrorCode GetTrajRMS(TS ts,Stack *s,PetscInt stepnum)
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
     ts->steps = steps;
-    //ts->total_steps = stepnum;
+    ts->total_steps = stepnum;
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     #ifdef PETSC_HAVE_REVOLVE
