@@ -847,10 +847,7 @@ static PetscErrorCode GetTrajRON(TS ts,Stack *s,PetscInt stepnum)
 #endif
 
   /* restore a checkpoint */
-  ierr = StackTop(s,&e);CHKERRQ(ierr);
-  if (e && e->stepnum >= stepnum) {
-    SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);
-  }
+  ierr = StackFind(s,&e,s->rctx->check);CHKERRQ(ierr);
   ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) { /* must recompute */
     s->recompute = PETSC_TRUE;
@@ -990,9 +987,6 @@ static PetscErrorCode GetTrajTLR(TS ts,Stack *s,PetscInt stepnum)
 
   /* restore a checkpoint */
   ierr = StackTop(s,&e);CHKERRQ(ierr);
-  if (e && e->stepnum >= stepnum) {
-    SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);
-  }
   ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) { /* must recompute */
     s->recompute = PETSC_TRUE;
@@ -1063,9 +1057,6 @@ static PetscErrorCode GetTrajTLNR(TS ts,Stack *s,PetscInt stepnum)
 
   /* restore a checkpoint */
   ierr = StackTop(s,&e);CHKERRQ(ierr);
-  if (e && e->stepnum >= stepnum) {
-    SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);
-  }
   ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) { /* must recompute */
     s->recompute = PETSC_TRUE;
