@@ -1101,6 +1101,39 @@ cdef class Mat(Object):
                                 reuse, &submat.mat) )
         return submat
 
+    def getSubMatrices(self, list isrows not None, list iscols not None, list submats=None):
+        assert len(isrows) == len(iscols)
+        cdef Py_ssize_t i, n = len(isrows)
+        cdef PetscInt cn = asInt(n)
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscMat *cmats   = NULL
+        cdef PetscIS  *cisrows = NULL
+        cdef PetscIS  *ciscols = NULL
+        cdef object tmp1, tmp2, tmp3
+        cdef Mat mat
+        if submats:
+            submats = list(submats)
+            assert len(submats) == len(isrows)
+            reuse = MAT_REUSE_MATRIX
+        else:
+            submats = [None for _ in range(n)]
+        tmp1 = oarray_p(empty_p(n), NULL, <void**>&cisrows)
+        for i from 0 <= i < n: cisrows[i] = (<IS?>isrows[i]).iset
+        tmp2 = oarray_p(empty_p(n), NULL, <void**>&ciscols)
+        for i from 0 <= i < n: ciscols[i] = (<IS?>iscols[i]).iset
+        tmp3 = oarray_p(empty_p(n), NULL, <void**>&cmats)
+
+        # if iscol is not None: ciscol = iscol.iset
+        # if submat is None: submat = Mat()
+        # if submat.mat != NULL: reuse = MAT_REUSE_MATRIX
+        CHKERR( MatGetSubMatrices(self.mat, cn, cisrows, ciscols, reuse, &cmats) )
+        for i from 0 <= i < n:
+            mat = Mat()
+            mat.mat = cmats[i]
+            PetscINCREF(mat.obj)
+            submats[i] = mat
+        return submats
+
     #
 
     def getLocalSubMatrix(self, IS isrow not None, IS iscol not None, Mat submat=None):
