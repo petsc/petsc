@@ -1277,7 +1277,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetMinMax(ix,&min,&max);CHKERRQ(ierr);
       if (min >= start && max < end) islocal = PETSC_TRUE;
       else islocal = PETSC_FALSE;
-      ierr = MPIU_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
       if (cando) {
         ierr               = PetscMalloc2(1,&to12,1,&from12);CHKERRQ(ierr);
         to12->n            = nx;
@@ -1299,7 +1300,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPIU_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     }
 
     /* test for special case of all processors getting entire vector */
@@ -1319,7 +1320,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (nx != N) totalv = PETSC_FALSE;
       else if (from_first == 0 && from_step == 1 && from_first == to_first && from_step == to_step) totalv = PETSC_TRUE;
       else totalv = PETSC_FALSE;
-      ierr = MPIU_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
       if (cando && (yin->map->N < PETSC_MPI_INT_MAX)) {
@@ -1349,7 +1351,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPIU_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     }
 
     /* test for special case of processor 0 getting entire vector */
@@ -1377,7 +1379,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         if (!nx) totalv = PETSC_TRUE;
         else     totalv = PETSC_FALSE;
       }
-      ierr = MPIU_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
       if (cando && (yin->map->N < PETSC_MPI_INT_MAX)) {
@@ -1407,7 +1410,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPIU_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     }
 
     ierr = PetscObjectTypeCompare((PetscObject)ix,ISBLOCK,&ixblock);CHKERRQ(ierr);
@@ -1494,7 +1497,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetMinMax(iy,&min,&max);CHKERRQ(ierr);
       if (min >= start && max < end) islocal = PETSC_TRUE;
       else islocal = PETSC_FALSE;
-      ierr = MPIU_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)yin));CHKERRQ(ierr);
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)yin));CHKERRQ(ierr);
       if (cando) {
         ierr              = PetscMalloc2(1,&to,1,&from);CHKERRQ(ierr);
         to->n             = nx;
@@ -1516,7 +1520,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPIU_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)yin));CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)yin));CHKERRQ(ierr);
     }
     /* special case block to stride */
     if (ix_type == IS_BLOCK_ID && iy_type == IS_STRIDE_ID) {
