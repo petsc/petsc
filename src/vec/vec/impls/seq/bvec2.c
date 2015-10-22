@@ -272,7 +272,6 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     *z = tmp;
 #else
     PetscStackCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
-    if (*z <= 0.0) *z = 0.0;
 #endif
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
