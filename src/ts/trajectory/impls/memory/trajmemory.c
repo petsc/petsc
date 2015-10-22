@@ -96,9 +96,10 @@ static PetscErrorCode StackCreate(MPI_Comm comm,Stack *s,PetscInt size,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "StackDestroy"
-static PetscErrorCode StackDestroy(Stack *s)
+static PetscErrorCode StackDestroy(Stack **stack)
 {
   PetscInt       i;
+  Stack          *s = (*stack);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -115,7 +116,7 @@ static PetscErrorCode StackDestroy(Stack *s)
   if (s->stype) {
     ierr = PetscFree(s->rctx);CHKERRQ(ierr);
   }
-  ierr = PetscFree(s);CHKERRQ(ierr);
+  ierr = PetscFree(*stack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -706,7 +707,7 @@ static PetscErrorCode GetTrajN(TS ts,Stack *s,PetscInt stepnum)
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
     ts->steps = steps;
-    //ts->total_steps = stepnum;
+    ts->total_steps = stepnum;
     ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
   }
@@ -1109,7 +1110,6 @@ static PetscErrorCode GetTrajTLNR(TS ts,Stack *s,PetscInt stepnum)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "SetTrajRMS"
 static PetscErrorCode SetTrajRMS(TS ts,Stack *s,PetscInt stepnum,PetscReal time,Vec X)
@@ -1279,7 +1279,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
     revolve_reset();
 #endif
   }
-  ierr = StackDestroy(s);CHKERRQ(ierr);
+  ierr = StackDestroy(&s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
