@@ -47,14 +47,6 @@ typedef struct _Stack {
   StackElement  *stack;       /* container */
 } Stack;
 
-static PetscErrorCode StackCreate(MPI_Comm,Stack *,PetscInt,PetscInt);
-static PetscErrorCode StackDestroy(Stack*);
-static PetscErrorCode StackPush(Stack*,StackElement);
-static PetscErrorCode StackPop(Stack*,StackElement*);
-static PetscErrorCode StackTop(Stack*,StackElement*);
-static PetscErrorCode StackDumpAll(TS,Stack*,PetscInt);
-static PetscErrorCode StackLoadAll(TS,Stack*,PetscInt);
-
 #ifdef PETSC_HAVE_REVOLVE
 static void printwhattodo(PetscInt whattodo,RevolveCTX *rctx,PetscInt shift)
 {
