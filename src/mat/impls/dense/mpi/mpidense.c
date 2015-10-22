@@ -1091,6 +1091,15 @@ static PetscErrorCode  MatSetRandom_MPIDense(Mat x,PetscRandom rctx)
 
 extern PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat,Mat);
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_MPIDense"
+static PetscErrorCode MatMissingDiagonal_MPIDense(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatGetRow_MPIDense,
@@ -1206,7 +1215,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
-                                        0,
+                                        MatMissingDiagonal_MPIDense,
                                 /*114*/ 0,
                                         0,
                                         0,

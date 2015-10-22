@@ -2682,6 +2682,25 @@ PetscErrorCode MatShift_MPIBAIJ(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_MPIBAIJ"
+PetscErrorCode MatMissingDiagonal_MPIBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only works for square matrices");
+  ierr = MatMissingDiagonal(a->A,missing,d);CHKERRQ(ierr);
+  if (d) {
+    PetscInt rstart;
+    ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+    *d += rstart/A->rmap->bs;
+
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatGetRow_MPIBAIJ,
@@ -2796,7 +2815,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatMissingDiagonal_MPIBAIJ,
                                 /*114*/MatGetSeqNonzeroStructure_MPIBAIJ,
                                        0,
                                        MatGetGhosts_MPIBAIJ,
