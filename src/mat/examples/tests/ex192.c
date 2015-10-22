@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       icntl19,size_schur,*idxs_schur,i,m,n,nfact,nsolve,nrhs;
-  PetscReal      norm,tol=1.e-12;
+  PetscReal      norm,tol=100*PETSC_MACHINE_EPSILON;
   PetscRandom    rand;
   PetscBool      flg,herm,symm;
   PetscReal      sratio = 5.1/12.;
