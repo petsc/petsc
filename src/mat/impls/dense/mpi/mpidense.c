@@ -1823,7 +1823,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   }
   /* sum all atbarray to local values of C */
   ierr = MatDenseGetArray(c->A,&carray);CHKERRQ(ierr);
-  ierr = MPI_Reduce_scatter(sendbuf,carray,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce_scatter(sendbuf,carray,(const PetscInt *)recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(c->A,&carray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
