@@ -1420,8 +1420,8 @@ TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 r
 TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
 TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
-TESTEXAMPLES_CUDA                       = ex10.PETSc runex10_aijcusparse ex10.rm \
-                                          ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+TESTEXAMPLES_CUDA_DATAFILESPATH         = ex10.PETSc runex10_aijcusparse ex10.rm
+TESTEXAMPLES_CUDA                       = ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
                                           ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
 TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm

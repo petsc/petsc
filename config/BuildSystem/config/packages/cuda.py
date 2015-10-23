@@ -15,6 +15,7 @@ class Configure(config.package.Package):
     self.CUDAVersion      = '4200' # Minimal cuda version is 4.2
     self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
     self.hastests         = 1
+    self.hastestsdatafiles= 1
     return
 
   def __str__(self):
