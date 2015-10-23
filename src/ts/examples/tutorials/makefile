@@ -566,7 +566,7 @@ runex35_2:
 	   ${RM} -f ex35_2.tmp
 
 runex42:
-	-@${MPIEXEC} -n 1 ./ex42  > ex42.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 11  > ex42.tmp 2>&1;	  \
 	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
 	   ${RM} -f ex42.tmp
 

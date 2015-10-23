@@ -55,7 +55,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
     a = x[2*i];
     h = x[2*i+1];
     // Reaction:
-    da = alpha * a*a / (1 + beta * h) + rho_a - mu_a * a;
+    da = alpha * a*a / (1. + beta * h) + rho_a - mu_a * a;
     dh = alpha * a*a + rho_h - mu_h*h;
     // Diffusion:
     d2a = d2h = 0.;
@@ -79,16 +79,16 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
 #define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
 {
-  AppCtx          *user = (AppCtx*)ptr;
-  PetscInt        nb_cells, i, idx;
-  PetscReal       alpha, beta;
-  PetscReal       mu_a, D_a;
-  PetscReal       mu_h, D_h;
-  PetscReal       a, h;
-  const PetscReal *x;
-  PetscReal       va[4], vh[4];
-  PetscInt        ca[4], ch[4], rowa, rowh;
-  PetscErrorCode  ierr;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscInt          nb_cells, i, idx;
+  PetscReal         alpha, beta;
+  PetscReal         mu_a, D_a;
+  PetscReal         mu_h, D_h;
+  PetscReal         a, h;
+  const PetscScalar *x;
+  PetscScalar       va[4], vh[4];
+  PetscInt          ca[4], ch[4], rowa, rowh;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   nb_cells = user->nb_cells;
@@ -106,10 +106,10 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
     a = x[2*i];
     h = x[2*i+1];
     ca[0] = ch[1] = 2*i;
-    va[0] = 2*alpha*a / (1+beta*h) - mu_a;
+    va[0] = 2*alpha*a / (1.+beta*h) - mu_a;
     vh[1] = 2*alpha*a;
     ca[1] = ch[0] = 2*i+1;
-    va[1] = -beta*alpha*a*a / ((1+beta*h)*(1+beta*h));
+    va[1] = -beta*alpha*a*a / ((1.+beta*h)*(1.+beta*h));
     vh[0] = -mu_h;
     idx = 2;
     if(i > 0) {
@@ -147,17 +147,17 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
 #define __FUNCT__ "DomainErrorFunction"
 PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
 {
-  AppCtx          *user;
-  PetscReal       dt;
-  PetscErrorCode  ierr;
-  const PetscReal *x;
-  PetscInt        nb_cells, i;
+  AppCtx            *user;
+  PetscReal         dt;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscInt          nb_cells, i;
 
   ierr = TSGetApplicationContext(ts, &user);CHKERRQ(ierr);
   nb_cells = user->nb_cells;
   ierr = VecGetArrayRead(Y, &x);CHKERRQ(ierr);
   for(i = 0 ; i < 2*nb_cells ; ++i) {
-    if(x[i] < 0) {
+    if(PetscRealPart(x[i]) < 0) {
       ierr = TSGetTimeStep(ts, &dt);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, " ** Domain Error at time %g\n", (double)t);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
@@ -178,7 +178,7 @@ PetscErrorCode FormInitialState(Vec X, AppCtx* user)
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD, &R);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(R);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(R, 0, 10);CHKERRQ(ierr);
+  ierr = PetscRandomSetInterval(R, 0., 10.);CHKERRQ(ierr);
 
   /*
    * Initialize the state vector
@@ -192,10 +192,10 @@ PetscErrorCode FormInitialState(Vec X, AppCtx* user)
 #define __FUNCT__ "PrintSolution"
 PetscErrorCode PrintSolution(Vec X, AppCtx *user)
 {
-  PetscErrorCode ierr;
-  const PetscReal *x;
-  PetscInt i;
-  PetscInt nb_cells = user->nb_cells;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscInt          i;
+  PetscInt          nb_cells = user->nb_cells;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
