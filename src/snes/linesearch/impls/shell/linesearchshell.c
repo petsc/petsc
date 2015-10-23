@@ -1,5 +1,5 @@
-#include <petsc-private/linesearchimpl.h>
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h>
+#include <petsc/private/snesimpl.h>
 
 
 typedef struct {
@@ -31,7 +31,7 @@ $     Vec  X,Y,F,W,G;
 $     SNES snes;
 $     PetscFunctionBegin;
 $     ierr = SNESLineSearchGetSNES(linesearch,&snes);CHKERRQ(ierr);
-$     ierr = SNESLineSearchSetSuccess(linesearch,PETSC_TRUE);CHKERRQ(ierr);
+$     ierr = SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
 $     ierr = SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G);CHKERRQ(ierr);
 $     .. determine lambda using W and G as work vecs..
 $     ierr = VecAXPY(X,-lambda,Y);CHKERRQ(ierr);

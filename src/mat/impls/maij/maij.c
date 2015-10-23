@@ -18,7 +18,7 @@
 
 #include <../src/mat/impls/maij/maij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJGetAIJ"
@@ -206,6 +206,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   } else {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIMAIJ);CHKERRQ(ierr);
   }
+  A->preallocated  = PETSC_TRUE;
+  A->assembled     = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -3299,7 +3301,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
   } else {
     *newmat = B;
   }
@@ -3370,7 +3372,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
     PetscInt refct = ((PetscObject)A)->refct; /* save ((PetscObject)A)->refct */
     ((PetscObject)A)->refct = 1;
 
-    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
 
     ((PetscObject)A)->refct = refct; /* restore ((PetscObject)A)->refct */
   } else {

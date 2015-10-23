@@ -1,5 +1,5 @@
-mu 1, steps 0, ftime 0.5
-mu 1, steps 7, ftime 0.5
+mu 1., steps 0, ftime 0.5
+mu 1., steps 7, ftime 0.5
 mu 1.000000, steps 75, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=[2.103106;-0.382918], Cost function f=0.009261
 iter =   0, Function value: 0.00926095,  Residual: 0.176577 
@@ -104,7 +104,7 @@ Tao Object: 1 MPI processes
   TaoLineSearch Object:   1 MPI processes
     type: more-thuente
   convergence tolerances: fatol=1e-10,   frtol=1e-10
-  convergence tolerances: gatol=1e-10,   steptol=0,   gttol=0
+  convergence tolerances: gatol=1e-10,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=9.9553e-06
   Objective value=4.68544e-10
   total number of iterations=29,                          (max: 2000)

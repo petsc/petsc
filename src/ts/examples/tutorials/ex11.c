@@ -53,8 +53,6 @@ typedef struct _n_Model *Model;
 
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
-
-typedef void (*RiemannFunction)(const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
@@ -77,11 +75,11 @@ struct _n_FunctionalLink {
 };
 
 struct _n_Physics {
-  RiemannFunction riemann;
-  PetscInt        dof;          /* number of degrees of freedom per cell */
-  PetscReal       maxspeed;     /* kludge to pick initial time step, need to add monitoring and step control */
-  void            *data;
-  PetscInt        nfields;
+  PetscRiemannFunc riemann;
+  PetscInt         dof;          /* number of degrees of freedom per cell */
+  PetscReal        maxspeed;     /* kludge to pick initial time step, need to add monitoring and step control */
+  void             *data;
+  PetscInt         nfields;
   const struct FieldDescription *field_desc;
 };
 
@@ -203,7 +201,7 @@ static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Advect"
-static void PhysicsRiemann_Advect(const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
+static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscReal      wind[DIM],wn;
@@ -287,7 +285,7 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOp
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
-  phys->riemann    = PhysicsRiemann_Advect;
+  phys->riemann    = (PetscRiemannFunc)PhysicsRiemann_Advect;
   ierr = PetscNew(&advect);CHKERRQ(ierr);
   phys->data       = advect;
   ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
@@ -324,8 +322,8 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOp
   {
     const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
     /* Register "canned" boundary conditions and defaults for where to apply. */
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 0, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
     /* Initial/transient solution with default boundary conditions */
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
     /* Register "canned" functionals */
@@ -386,7 +384,7 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_SW"
-static void PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
+static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_SW   *sw = (Physics_SW*)phys->data;
   PetscReal    cL,cR,speed,nn[DIM];
@@ -394,7 +392,7 @@ static void PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n, const Pet
   SWNode       fL,fR;
   PetscInt     i;
 
-  if (uL->h < 0 || uR->h < 0) {for (i=0; i<1+DIM; i++) flux[i] = NAN; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
+  if (uL->h < 0 || uR->h < 0) {for (i=0; i<1+dim; i++) flux[i] = NAN; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2(nn);
@@ -403,7 +401,7 @@ static void PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n, const Pet
   cL    = PetscSqrtReal(sw->gravity*PetscRealPart(uL->h));
   cR    = PetscSqrtReal(sw->gravity*PetscRealPart(uR->h)); /* gravity wave speed */
   speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,nn)/uL->h) + cL,PetscAbsScalar(Dot2(uR->uh,nn)/uR->h) + cR);
-  for (i=0; i<1+DIM; i++) flux[i] = (0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i])) * Norm2(n);
+  for (i=0; i<1+dim; i++) flux[i] = (0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i])) * Norm2(n);
 }
 
 #undef __FUNCT__
@@ -452,7 +450,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
-  phys->riemann = (RiemannFunction) PhysicsRiemann_SW;
+  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
   ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
@@ -465,7 +463,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
@@ -573,7 +571,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
 /* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
-static void PhysicsRiemann_Euler_Rusanov(const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
+static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Euler   *eu = (Physics_Euler*)phys->data;
   PetscScalar     cL,cR,speed;
@@ -581,13 +579,13 @@ static void PhysicsRiemann_Euler_Rusanov(const PetscReal *qp, const PetscReal *n
   EulerNode       fL,fR;
   PetscInt        i;
 
-  if (uL->r < 0 || uR->r < 0) {for (i=0; i<2+DIM; i++) flux[i] = NAN; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative"); */
+  if (uL->r < 0 || uR->r < 0) {for (i=0; i<2+dim; i++) flux[i] = NAN; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative"); */
   EulerFlux(phys,n,uL,&fL);
   EulerFlux(phys,n,uR,&fR);
   eu->sound(eu->pars,uL,&cL);
   eu->sound(eu->pars,uR,&cR);
   speed = PetscMax(cL,cR)+PetscMax(PetscAbsScalar(DotDIM(uL->ru,n)/NormDIM(n)),PetscAbsScalar(DotDIM(uR->ru,n)/NormDIM(n)));
-  for (i=0; i<2+DIM; i++) flux[i] = 0.5*(fL.vals[i]+fR.vals[i])+0.5*speed*(xL[i]-xR[i]);
+  for (i=0; i<2+dim; i++) flux[i] = 0.5*(fL.vals[i]+fR.vals[i])+0.5*speed*(xL[i]-xR[i]);
 }
 
 #undef __FUNCT__
@@ -632,7 +630,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
-  phys->riemann = (RiemannFunction) PhysicsRiemann_Euler_Rusanov;
+  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
@@ -648,7 +646,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   phys->maxspeed = 1.0;
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
@@ -726,7 +724,6 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   {
     DMLabel label;
 
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(dm, bdname, &label);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

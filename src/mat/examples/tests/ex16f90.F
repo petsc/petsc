@@ -18,10 +18,10 @@
 !     petscmat.h    - matrices
 !     petscmat.h90  - to allow access to Fortran 90 features of matrices
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscmat.h90>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscmat.h90>
 
       Mat A
       PetscErrorCode ierr
@@ -50,7 +50,7 @@
         iar(1) = i
         do 20, j=0,n-1
           jar(1) = j
-          v(1)   = 9.d0/(i+j+1)
+          v(1)   = 9.0/(i+j+1)
           call MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr)
  20     continue
  10   continue

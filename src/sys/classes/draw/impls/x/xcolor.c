@@ -231,6 +231,7 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,char *host,Colormap col
     vis     = DefaultVisual(display,screen);
 
     ierr = PetscDrawSetUpColormap_X(display,screen,vis,colormap);CHKERRQ(ierr);
+    XCloseDisplay(display);
   }
   XiWin->cmap       = gColormap;
   ierr              = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PetscDrawXiPixVal));CHKERRQ(ierr);

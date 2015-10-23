@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
@@ -627,7 +627,7 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
   if ((left = shell->left)) {ierr = PetscObjectReference((PetscObject)left);CHKERRQ(ierr);}
   if ((right = shell->right)) {ierr = PetscObjectReference((PetscObject)right);CHKERRQ(ierr);}
 
-  ierr = MatHeaderReplace(mat,tmat);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(mat,&tmat);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(mat,left,right);CHKERRQ(ierr);
   ierr = MatScale(mat,scale);CHKERRQ(ierr);

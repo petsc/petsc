@@ -224,8 +224,9 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)h) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)h) : 0)
 /* Initialization functions */
-PETSC_EXTERN PetscErrorCode PetscLogBegin(void);
+PETSC_EXTERN PetscErrorCode PetscLogDefaultBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogAllBegin(void);
+PETSC_EXTERN PetscErrorCode PetscLogNestedBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogTraceBegin(FILE *);
 PETSC_EXTERN PetscErrorCode PetscLogActions(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogObjects(PetscBool);
@@ -298,7 +299,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
      These are used internally in the PETSc routines to keep a count of MPI messages and
    their sizes.
 
-     This does not work for MPI-Uni because our include/petsc-mpiuni/mpi.h file
+     This does not work for MPI-Uni because our include/petsc/mpiuni/mpi.h file
    uses macros to defined the MPI operations.
 
      It does not work correctly from HP-UX because it processes the
@@ -373,6 +374,9 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
   ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
 
+#define MPI_Reduce_scatter_block(sendbuf,recvbuf,recvcount,datatype,op,comm) \
+  ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || MPI_Reduce_scatter_block(sendbuf,recvbuf,recvcount,datatype,op,comm))
+
 #define MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
  ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
 
@@ -440,10 +444,11 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
 #define PetscLogViewFromOptions()           0
-#define PetscLogBegin()                     0
+#define PetscLogDefaultBegin()                     0
 #define PetscLogTraceBegin(file)            0
 #define PetscLogSet(lb,le)                  0
 #define PetscLogAllBegin()                  0
+#define PetscLogNestedBegin()               0
 #define PetscLogDump(c)                     0
 #define PetscLogEventRegister(a,b,c)        0
 #define PetscLogObjects(a)                  0

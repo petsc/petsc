@@ -29,12 +29,12 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -204,9 +204,9 @@
       subroutine FormFunction(snes,x,f,dummy,ierr)
       implicit none
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscsnes.h>
 
       SNES     snes
       Vec      x,f
@@ -215,7 +215,7 @@
 
 !  Declarations for use with local arrays
 
-      PetscScalar  lx_v(1),lf_v(1)
+      PetscScalar  lx_v(2),lf_v(2)
       PetscOffset  lx_i,lf_i
 
 !  Get pointers to vector data.
@@ -261,11 +261,11 @@
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
       implicit none
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscsnes.h>
 
       SNES         snes
       Vec          X
@@ -313,12 +313,12 @@
 
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscsnes.h>
 
       SNES              snes
       integer           lctx
@@ -329,7 +329,7 @@
 
       PetscScalar       mone
 
-      mone = -1.0d0
+      mone = -1.0
       call SNESLineSearchGetSNES(linesearch, snes, ierr)
       call SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)

@@ -4,8 +4,8 @@
   used for finite difference computations of Jacobians using coloring.
 */
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetF"
@@ -450,7 +450,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   if (M != N) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
 

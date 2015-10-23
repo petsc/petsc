@@ -733,7 +733,6 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   {
     DMLabel label;
 
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(dm, bdname, &label);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -1428,18 +1427,16 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   ierr = VecCreate(PETSC_COMM_WORLD,&odesolution);CHKERRQ(ierr);
   ierr = VecLoad(odesolution,viewer);CHKERRQ(ierr);
   VecEqual(X,odesolution,&equal);
-  if(!equal) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
-  } else {
+  if(!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
+  else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Vec\n");CHKERRQ(ierr);
   }
   /*Nr   = 1;
    ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
-  if(timeread!=time) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
-  } else {
+  if(timeread!=time) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
+  else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for PetscReal\n");CHKERRQ(ierr);
   }
    

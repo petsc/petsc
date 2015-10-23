@@ -1,10 +1,12 @@
 
 ALL: lib
 
-SOURCEH  = ../../include/petsc-private/taoimpl.h ../../include/taolinesearchimpl.h
+SOURCEH  = ../../include/petsctao.h ../../include/petsctaolinesearch.h \
+        ../../include/petsc/private/taoimpl.h ../../include/petsc/private/taolinesearchimpl.h
 DIRS     = interface util unconstrained constrained bound complementarity linesearch matrix leastsquares pde_constrained
+MANSEC   = Tao
 LOCDIR   = src/tao/
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

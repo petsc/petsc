@@ -24,7 +24,7 @@
     0 KSP Residual norm < 1.e-11
   1 KSP Residual norm 0.0413945 
     Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 1 
+    0 KSP Residual norm 1. 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
     1 KSP Residual norm 0.542365 
@@ -50,87 +50,12 @@
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
     8 KSP Residual norm 3.68241e-06 
   2 KSP Residual norm 9.15832e-07 
-    Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 0.221479 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
-    1 KSP Residual norm 0.17427 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 20
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
-    2 KSP Residual norm 0.0910935 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 19
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
-    3 KSP Residual norm 0.0628922 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
-    4 KSP Residual norm 0.022719 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
-    5 KSP Residual norm 0.0140147 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 6
-    6 KSP Residual norm 0.00905004 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 16
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 6
-    7 KSP Residual norm 0.00241639 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 12
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
-    8 KSP Residual norm 0.000570944 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
-    9 KSP Residual norm 0.000149772 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
-   10 KSP Residual norm 6.27213e-05 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 6
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
-   11 KSP Residual norm 2.89249e-05 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
-   12 KSP Residual norm 1.0213e-05 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 4
-   13 KSP Residual norm 4.08227e-06 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 10
-   14 KSP Residual norm 1.14907e-06 
-  3 KSP Residual norm 1.82592e-08 
-    Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 0.99952 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
-    1 KSP Residual norm 0.843473 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
-    2 KSP Residual norm 0.158112 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 26
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 14
-    3 KSP Residual norm 0.0906504 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 29
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
-    4 KSP Residual norm 0.0334366 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 27
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 11
-    5 KSP Residual norm 0.0059726 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 22
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 13
-    6 KSP Residual norm 0.000980307 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 21
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 9
-    7 KSP Residual norm 0.000154731 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 18
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 7
-    8 KSP Residual norm 2.40344e-05 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 15
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 5
-    9 KSP Residual norm 3.95405e-06 
-  4 KSP Residual norm < 1.e-11
 KSP Object:(fc_) 4 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
-  tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   diagonally scaled system
   using UNPRECONDITIONED norm type for convergence test
@@ -145,7 +70,7 @@ PC Object:(fc_) 4 MPI processes
       KSP Object:      (fc_fieldsplit_velocity_)       4 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-06, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fc_fieldsplit_velocity_)       4 MPI processes
@@ -155,7 +80,7 @@ PC Object:(fc_) 4 MPI processes
         KSP Object:        (fc_fieldsplit_velocity_sub_)         1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object:        (fc_fieldsplit_velocity_sub_)         1 MPI processes
@@ -163,7 +88,7 @@ PC Object:(fc_) 4 MPI processes
             Cholesky: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
-            factor fill ratio given 5, needed 2.84512
+            factor fill ratio given 5., needed 2.84512
               Factored matrix follows:
                 Mat Object:                 1 MPI processes
                   type: seqsbaij
@@ -192,18 +117,16 @@ PC Object:(fc_) 4 MPI processes
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         right preconditioning
-        has attached null space
         using UNPRECONDITIONED norm type for convergence test
       PC Object:      (fc_fieldsplit_pressure_)       4 MPI processes
         type: lsc
           KSP Object:          (fc_fieldsplit_pressure_lsc_)           4 MPI processes
             type: cg
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=0.01, absolute=1e-50, divergence=10000
+            tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
             left preconditioning
-            has attached null space
             using PRECONDITIONED norm type for convergence test
           PC Object:          (fc_fieldsplit_pressure_lsc_)           4 MPI processes
             type: bjacobi
@@ -212,7 +135,7 @@ PC Object:(fc_) 4 MPI processes
             KSP Object:            (fc_fieldsplit_pressure_lsc_sub_)             1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object:            (fc_fieldsplit_pressure_lsc_sub_)             1 MPI processes
@@ -221,7 +144,7 @@ PC Object:(fc_) 4 MPI processes
                 tolerance for zero pivot 2.22045e-14
                 using Manteuffel shift [POSITIVE_DEFINITE]
                 matrix ordering: natural
-                factor fill ratio given 1, needed 1
+                factor fill ratio given 1., needed 1.
                   Factored matrix follows:
                     Mat Object:                     1 MPI processes
                       type: seqsbaij
@@ -243,11 +166,13 @@ PC Object:(fc_) 4 MPI processes
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
               total number of mallocs used during MatSetValues calls =0
+                has attached null space
                 not using I-node (on process 0) routines
         linear system matrix followed by preconditioner matrix:
         Mat Object:        (fc_fieldsplit_pressure_)         4 MPI processes
           type: schurcomplement
           rows=1024, cols=1024
+            has attached null space
             Schur complement A11 - A10 inv(A00) A01
             A11
               Mat Object:              (fc_fieldsplit_pressure_)               4 MPI processes
@@ -267,7 +192,7 @@ PC Object:(fc_) 4 MPI processes
               KSP Object:              (fc_fieldsplit_velocity_)               4 MPI processes
                 type: cg
                 maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-06, absolute=1e-50, divergence=10000
+                tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
                 left preconditioning
                 using PRECONDITIONED norm type for convergence test
               PC Object:              (fc_fieldsplit_velocity_)               4 MPI processes
@@ -277,7 +202,7 @@ PC Object:(fc_) 4 MPI processes
                 KSP Object:                (fc_fieldsplit_velocity_sub_)                 1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using NONE norm type for convergence test
                 PC Object:                (fc_fieldsplit_velocity_sub_)                 1 MPI processes
@@ -285,7 +210,7 @@ PC Object:(fc_) 4 MPI processes
                     Cholesky: out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
-                    factor fill ratio given 5, needed 2.84512
+                    factor fill ratio given 5., needed 2.84512
                       Factored matrix follows:
                         Mat Object:                         1 MPI processes
                           type: seqsbaij
@@ -333,17 +258,17 @@ PC Object:(fc_) 4 MPI processes
         (1,0) : type=mpiaij, rows=1024, cols=2046 
         (1,1) : prefix="fc_fieldsplit_pressure_", type=mpiaij, rows=1024, cols=1024 
 -- vector vector values --
-  Min(u)  = -0.017280 [loc=2035]
-  Max(u)  = 0.018577 [loc=2024]
+  Min(u)  = -0.017279 [loc=2035]
+  Max(u)  = 0.018578 [loc=2024]
   Norm(u) = 0.249724 
-  Sum(u)  = 0.189536 
+  Sum(u)  = 0.189760 
 -- pressure vector values --
-  Min(p)  = -6.039639 [loc=844]
-  Max(p)  = 4.836615 [loc=16]
-  Norm(p) = 94.125988 
+  Min(p)  = -6.121011 [loc=844]
+  Max(p)  = 4.836591 [loc=16]
+  Norm(p) = 94.134061 
   Sum(p)  = 0.000000 
 -- Full vector values --
-  Min(u,p)  = -6.039639 [loc=2890]
-  Max(u,p)  = 4.836615 [loc=528]
-  Norm(u,p) = 94.126319 
-  Sum(u,p)  = 0.189536 
+  Min(u,p)  = -6.121011 [loc=2890]
+  Max(u,p)  = 4.836591 [loc=528]
+  Norm(u,p) = 94.134392 
+  Sum(u,p)  = 0.189760 

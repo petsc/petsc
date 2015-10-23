@@ -6,8 +6,8 @@
 !      redraw the figure
 !
       subroutine zoomfunction(draw,dummy,ierr)
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscdraw.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdraw.h>
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
@@ -21,8 +21,8 @@
       end
 
       program main
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscdraw.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdraw.h>
       PetscDraw draw
       PetscErrorCode ierr
       integer  x,y,width,height
@@ -33,7 +33,7 @@
       height = 256
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      & 'Title',x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
       call PetscDrawZoom(draw,zoomfunction,PETSC_NULL_INTEGER,ierr)

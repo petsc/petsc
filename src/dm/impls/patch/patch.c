@@ -1,4 +1,4 @@
-#include <petsc-private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
+#include <petsc/private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 #include <petscsf.h>
 
@@ -384,10 +384,7 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
 #define __FUNCT__ "DMCreateSubDM_Patch"
 PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

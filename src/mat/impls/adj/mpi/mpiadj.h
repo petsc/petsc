@@ -1,7 +1,7 @@
 
 #if !defined(__ADJ_H)
 #define __ADJ_H
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 
 /*
@@ -23,5 +23,10 @@ typedef struct {
   PetscScalar *rowvalues;            /* scalar work space for MatGetRow() */
   PetscInt    rowvalues_alloc;
 } Mat_MPIAdj;
+
+/*where should I put this declaration???*/
+PetscErrorCode MatGetSubMatrices_MPIAdj(Mat,PetscInt,const IS*,const IS*,MatReuse,Mat **);
+PetscErrorCode MatGetSubMatricesMPI_MPIAdj(Mat,PetscInt, const IS[],const IS[],MatReuse,Mat **);
+
 
 #endif

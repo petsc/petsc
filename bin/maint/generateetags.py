@@ -52,9 +52,11 @@ def createTags(flist,etagfile,ctagfile):
   if ctagfile:
     (status,output) = commands.getstatusoutput('ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(frlist))
     if status:
-      (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(frlist))
+      (status,output) = commands.getstatusoutput('/usr/local/bin/ctags -a -f '+ctagfile+' '+' '.join(frlist))
       if status:
-        raise RuntimeError("Error running ctags "+output)
+        (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(frlist))
+        if status:
+          raise RuntimeError("Error running ctags "+output)
   return
 
 def endsWithSuffix(file,suffixes):
@@ -111,7 +113,7 @@ def processDir(flist,dirname,names):
   # check for configure generated PETSC_ARCHes
   rmnames=[]
   for name in names:
-    if os.path.isdir(os.path.join(dirname,name,'petsc-conf')):
+    if os.path.isdir(os.path.join(dirname,name,'petsc','conf')):
       rmnames.append(name)
   for rmname in rmnames:
     names.remove(rmname)
@@ -121,7 +123,7 @@ def processFiles(dirname,flist):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['petsc-conf/*','src/docs/website/documentation/changes/dev.html']
+  lists=['petsc/conf/*','src/docs/website/documentation/changes/dev.html']
 
   for glist in lists:
     gfiles = glob.glob(glist)

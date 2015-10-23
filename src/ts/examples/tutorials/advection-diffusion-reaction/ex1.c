@@ -93,7 +93,7 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(AppCtx),ctx);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(v,&(*ctx)->k,1,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(v,&(*ctx)->k,1,NULL,PETSC_SCALAR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

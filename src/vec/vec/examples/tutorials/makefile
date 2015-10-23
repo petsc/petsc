@@ -9,8 +9,8 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex15.c ex16.c  ex18.c ex19.c ex42.c ex42a.c ex21.c
 EXAMPLESF	 = ex1f.F ex1f90.F ex2f.F ex3f.F ex4f.F ex4f90.F ex7f.F ex9f.F ex11f.F ex14f.F ex20f90.F90 ex21f90.F
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
@@ -153,16 +153,6 @@ runex1_2:
 	   if (${DIFF} output/ex1_1.out ex1_2.tmp) then true ;  \
 	   else printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1_2.tmp
-runex1_pthread:
-	-@${MPIEXEC} -n 1 ./ex1 -threadcomm_type pthread -threadcomm_nthreads 2 > ex1_p.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_1.out ex1_p.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex1_pthread, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex1_p.tmp
-runex1_openmp:
-	-@${MPIEXEC} -n 1 ./ex1 -threadcomm_type openmp -threadcomm_nthreads 2 > ex1_o.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_1.out ex1_o.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex1_openmp, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex1_o.tmp
 runex1f:
 	-@${MPIEXEC} -n 1  ./ex1f > ex1f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
@@ -228,8 +218,8 @@ runex6:
 	-@${RM} -f ex6_1.tmp input.dat input.dat.info
 runex7:
 	-@${RM} -f input.dat input.dat.info
-	-@${MPIEXEC} -n 3 ./ex7 | sort |grep -v "MPI processes" > ex7_1.tmp 2>&1;\
-	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+	-@${MPIEXEC} -n 3 ./ex7 | sort -b |grep -v "MPI processes" > ex7_1.tmp 2>&1;\
+	   if (sort -b output/ex7_1.out | ${DIFF} - ex7_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi
 	-@${RM} -f ex7_1.tmp input.dat input.dat.info
 runex8:
@@ -322,6 +312,5 @@ TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex
 TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm ex7.PETSc ex7.rm
 TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex20f90.PETSc runex20f90 ex20f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
-TESTEXAMPLES_THREADCOMM     = ex1.PETSc runex1_pthread runex1_openmp ex1.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

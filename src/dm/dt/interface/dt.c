@@ -4,11 +4,14 @@
 #if defined(PETSC_HAVE_MATHIMF_H)
 #include <mathimf.h>           /* this needs to be included before math.h */
 #endif
+#ifdef PETSC_HAVE_MPFR
+#include <mpfr.h>
+#endif
 
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
-#include <petsc-private/petscimpl.h>
-#include <petsc-private/dtimpl.h>
+#include <petsc/private/petscimpl.h>
+#include <petsc/private/dtimpl.h>
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
@@ -48,7 +51,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   PetscFunctionBegin;
   PetscValidPointer(q, 2);
   ierr = DMInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*q,_p_PetscQuadrature,int,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*q,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
   (*q)->order     = -1;
   (*q)->numPoints = 0;
@@ -767,6 +770,257 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
   ierr = PetscQuadratureSetData(*q, dim, npoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTTanhSinhTensorQuadrature"
+/*@C
+  PetscDTTanhSinhTensorQuadrature - create tanh-sinh quadrature for a tensor product cell
+
+  Not Collective
+
+  Input Arguments:
++ dim   - The cell dimension
+. level - The number of points in one dimension, 2^l
+. a     - left end of interval (often-1)
+- b     - right end of interval (often +1)
+
+  Output Argument:
+. q - A PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscDTGaussTensorQuadrature()
+@*/
+PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, PetscReal a, PetscReal b, PetscQuadrature *q)
+{
+  const PetscInt  p     = 16;                        /* Digits of precision in the evaluation */
+  const PetscReal alpha = (b-a)/2.;                  /* Half-width of the integration interval */
+  const PetscReal beta  = (b+a)/2.;                  /* Center of the integration interval */
+  const PetscReal h     = PetscPowReal(2.0, -level); /* Step size, length between x_k */
+  PetscReal       xk;                                /* Quadrature point x_k on reference domain [-1, 1] */
+  PetscReal       wk    = 0.5*PETSC_PI;              /* Quadrature weight at x_k */
+  PetscReal      *x, *w;
+  PetscInt        K, k, npoints;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (dim > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %d not yet implemented", dim);
+  if (!level) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a number of significant digits");
+  /* Find K such that the weights are < 32 digits of precision */
+  for (K = 1; PetscAbsReal(PetscLog10Real(wk)) < 2*p; ++K) {
+    wk = 0.5*h*PETSC_PI*PetscCoshReal(K*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(K*h)));
+  }
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, 2*K+1);CHKERRQ(ierr);
+  npoints = 2*K-1;
+  ierr = PetscMalloc1(npoints*dim, &x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints, &w);CHKERRQ(ierr);
+  /* Center term */
+  x[0] = beta;
+  w[0] = 0.5*alpha*PETSC_PI;
+  for (k = 1; k < K; ++k) {
+    wk = 0.5*alpha*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
+    xk = tanh(0.5*PETSC_PI*PetscSinhReal(k*h));
+    x[2*k-1] = -alpha*xk+beta;
+    w[2*k-1] = wk;
+    x[2*k+0] =  alpha*xk+beta;
+    w[2*k+0] = wk;
+  }
+  ierr = PetscQuadratureSetData(*q, dim, npoints, x, w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTTanhSinhIntegrate"
+PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+{
+  const PetscInt  p     = 16;        /* Digits of precision in the evaluation */
+  const PetscReal alpha = (b-a)/2.;  /* Half-width of the integration interval */
+  const PetscReal beta  = (b+a)/2.;  /* Center of the integration interval */
+  PetscReal       h     = 1.0;       /* Step size, length between x_k */
+  PetscInt        l     = 0;         /* Level of refinement, h = 2^{-l} */
+  PetscReal       osum  = 0.0;       /* Integral on last level */
+  PetscReal       psum  = 0.0;       /* Integral on the level before the last level */
+  PetscReal       sum;               /* Integral on current level */
+  PetscReal       yk;                /* Quadrature point 1 - x_k on reference domain [-1, 1] */
+  PetscReal       lx, rx;            /* Quadrature points to the left and right of 0 on the real domain [a, b] */
+  PetscReal       wk;                /* Quadrature weight at x_k */
+  PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
+  PetscInt        d;                 /* Digits of precision in the integral */
+
+  PetscFunctionBegin;
+  if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
+  /* Center term */
+  func(beta, &lval);
+  sum = 0.5*alpha*PETSC_PI*lval;
+  /* */
+  do {
+    PetscReal lterm, rterm, maxTerm = 0.0, d1, d2, d3, d4;
+    PetscInt  k = 1;
+
+    ++l;
+    /* PetscPrintf(PETSC_COMM_SELF, "LEVEL %D sum: %15.15f\n", l, sum); */
+    /* At each level of refinement, h --> h/2 and sum --> sum/2 */
+    psum = osum;
+    osum = sum;
+    h   *= 0.5;
+    sum *= 0.5;
+    do {
+      wk = 0.5*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
+      yk = 1.0/(PetscExpReal(0.5*PETSC_PI*PetscSinhReal(k*h)) * PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
+      lx = -alpha*(1.0 - yk)+beta;
+      rx =  alpha*(1.0 - yk)+beta;
+      func(lx, &lval);
+      func(rx, &rval);
+      lterm   = alpha*wk*lval;
+      maxTerm = PetscMax(PetscAbsReal(lterm), maxTerm);
+      sum    += lterm;
+      rterm   = alpha*wk*rval;
+      maxTerm = PetscMax(PetscAbsReal(rterm), maxTerm);
+      sum    += rterm;
+      /* if (l == 1) printf("k is %d and sum is %15.15f and wk is %15.15f\n", k, sum, wk); */
+      ++k;
+      /* Only need to evaluate every other point on refined levels */
+      if (l != 1) ++k;
+    } while (PetscAbsReal(PetscLog10Real(wk)) < p); /* Only need to evaluate sum until weights are < 32 digits of precision */
+
+    d1 = PetscLog10Real(PetscAbsReal(sum - osum));
+    d2 = PetscLog10Real(PetscAbsReal(sum - psum));
+    d3 = PetscLog10Real(maxTerm) - p;
+    if (PetscMax(PetscAbsReal(lterm), PetscAbsReal(rterm)) == 0.0) d4 = 0.0;
+    else d4 = PetscLog10Real(PetscMax(PetscAbsReal(lterm), PetscAbsReal(rterm)));
+    d  = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1)/d2, 2*d1), d3), d4)));
+  } while (d < digits && l < 12);
+  *sol = sum;
+
+  PetscFunctionReturn(0);
+}
+
+#ifdef PETSC_HAVE_MPFR
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+{
+  const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */
+  PetscInt        l            = 0;  /* Level of refinement, h = 2^{-l} */
+  mpfr_t          alpha;             /* Half-width of the integration interval */
+  mpfr_t          beta;              /* Center of the integration interval */
+  mpfr_t          h;                 /* Step size, length between x_k */
+  mpfr_t          osum;              /* Integral on last level */
+  mpfr_t          psum;              /* Integral on the level before the last level */
+  mpfr_t          sum;               /* Integral on current level */
+  mpfr_t          yk;                /* Quadrature point 1 - x_k on reference domain [-1, 1] */
+  mpfr_t          lx, rx;            /* Quadrature points to the left and right of 0 on the real domain [a, b] */
+  mpfr_t          wk;                /* Quadrature weight at x_k */
+  PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
+  PetscInt        d;                 /* Digits of precision in the integral */
+  mpfr_t          pi2, kh, msinh, mcosh, maxTerm, curTerm, tmp;
+
+  PetscFunctionBegin;
+  if (digits <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
+  /* Create high precision storage */
+  mpfr_inits2(PetscCeilReal(safetyFactor*digits*PetscLogReal(10.)/PetscLogReal(2.)), alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
+  /* Initialization */
+  mpfr_set_d(alpha, 0.5*(b-a), MPFR_RNDN);
+  mpfr_set_d(beta,  0.5*(b+a), MPFR_RNDN);
+  mpfr_set_d(osum,  0.0,       MPFR_RNDN);
+  mpfr_set_d(psum,  0.0,       MPFR_RNDN);
+  mpfr_set_d(h,     1.0,       MPFR_RNDN);
+  mpfr_const_pi(pi2, MPFR_RNDN);
+  mpfr_mul_d(pi2, pi2, 0.5, MPFR_RNDN);
+  /* Center term */
+  func(0.5*(b+a), &lval);
+  mpfr_set(sum, pi2, MPFR_RNDN);
+  mpfr_mul(sum, sum, alpha, MPFR_RNDN);
+  mpfr_mul_d(sum, sum, lval, MPFR_RNDN);
+  /* */
+  do {
+    PetscReal d1, d2, d3, d4;
+    PetscInt  k = 1;
+
+    ++l;
+    mpfr_set_d(maxTerm, 0.0, MPFR_RNDN);
+    /* PetscPrintf(PETSC_COMM_SELF, "LEVEL %D sum: %15.15f\n", l, sum); */
+    /* At each level of refinement, h --> h/2 and sum --> sum/2 */
+    mpfr_set(psum, osum, MPFR_RNDN);
+    mpfr_set(osum,  sum, MPFR_RNDN);
+    mpfr_mul_d(h,   h,   0.5, MPFR_RNDN);
+    mpfr_mul_d(sum, sum, 0.5, MPFR_RNDN);
+    do {
+      mpfr_set_si(kh, k, MPFR_RNDN);
+      mpfr_mul(kh, kh, h, MPFR_RNDN);
+      /* Weight */
+      mpfr_set(wk, h, MPFR_RNDN);
+      mpfr_sinh_cosh(msinh, mcosh, kh, MPFR_RNDN);
+      mpfr_mul(msinh, msinh, pi2, MPFR_RNDN);
+      mpfr_mul(mcosh, mcosh, pi2, MPFR_RNDN);
+      mpfr_cosh(tmp, msinh, MPFR_RNDN);
+      mpfr_sqr(tmp, tmp, MPFR_RNDN);
+      mpfr_mul(wk, wk, mcosh, MPFR_RNDN);
+      mpfr_div(wk, wk, tmp, MPFR_RNDN);
+      /* Abscissa */
+      mpfr_set_d(yk, 1.0, MPFR_RNDZ);
+      mpfr_cosh(tmp, msinh, MPFR_RNDN);
+      mpfr_div(yk, yk, tmp, MPFR_RNDZ);
+      mpfr_exp(tmp, msinh, MPFR_RNDN);
+      mpfr_div(yk, yk, tmp, MPFR_RNDZ);
+      /* Quadrature points */
+      mpfr_sub_d(lx, yk, 1.0, MPFR_RNDZ);
+      mpfr_mul(lx, lx, alpha, MPFR_RNDU);
+      mpfr_add(lx, lx, beta, MPFR_RNDU);
+      mpfr_d_sub(rx, 1.0, yk, MPFR_RNDZ);
+      mpfr_mul(rx, rx, alpha, MPFR_RNDD);
+      mpfr_add(rx, rx, beta, MPFR_RNDD);
+      /* Evaluation */
+      func(mpfr_get_d(lx, MPFR_RNDU), &lval);
+      func(mpfr_get_d(rx, MPFR_RNDD), &rval);
+      /* Update */
+      mpfr_mul(tmp, wk, alpha, MPFR_RNDN);
+      mpfr_mul_d(tmp, tmp, lval, MPFR_RNDN);
+      mpfr_add(sum, sum, tmp, MPFR_RNDN);
+      mpfr_abs(tmp, tmp, MPFR_RNDN);
+      mpfr_max(maxTerm, maxTerm, tmp, MPFR_RNDN);
+      mpfr_set(curTerm, tmp, MPFR_RNDN);
+      mpfr_mul(tmp, wk, alpha, MPFR_RNDN);
+      mpfr_mul_d(tmp, tmp, rval, MPFR_RNDN);
+      mpfr_add(sum, sum, tmp, MPFR_RNDN);
+      mpfr_abs(tmp, tmp, MPFR_RNDN);
+      mpfr_max(maxTerm, maxTerm, tmp, MPFR_RNDN);
+      mpfr_max(curTerm, curTerm, tmp, MPFR_RNDN);
+      /* if (l == 1) printf("k is %d and sum is %15.15f and wk is %15.15f\n", k, sum, wk); */
+      ++k;
+      /* Only need to evaluate every other point on refined levels */
+      if (l != 1) ++k;
+      mpfr_log10(tmp, wk, MPFR_RNDN);
+      mpfr_abs(tmp, tmp, MPFR_RNDN);
+    } while (mpfr_get_d(tmp, MPFR_RNDN) < safetyFactor*digits); /* Only need to evaluate sum until weights are < 32 digits of precision */
+    mpfr_sub(tmp, sum, osum, MPFR_RNDN);
+    mpfr_abs(tmp, tmp, MPFR_RNDN);
+    mpfr_log10(tmp, tmp, MPFR_RNDN);
+    d1 = mpfr_get_d(tmp, MPFR_RNDN);
+    mpfr_sub(tmp, sum, psum, MPFR_RNDN);
+    mpfr_abs(tmp, tmp, MPFR_RNDN);
+    mpfr_log10(tmp, tmp, MPFR_RNDN);
+    d2 = mpfr_get_d(tmp, MPFR_RNDN);
+    mpfr_log10(tmp, maxTerm, MPFR_RNDN);
+    d3 = mpfr_get_d(tmp, MPFR_RNDN) - digits;
+    mpfr_log10(tmp, curTerm, MPFR_RNDN);
+    d4 = mpfr_get_d(tmp, MPFR_RNDN);
+    d  = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1)/d2, 2*d1), d3), d4)));
+  } while (d < digits && l < 8);
+  *sol = mpfr_get_d(sum, MPFR_RNDN);
+  /* Cleanup */
+  mpfr_clears(alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
+  PetscFunctionReturn(0);
+}
+#else
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+{
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method will not work without MPFR. Reconfigure using --download-mpfr --download-gmp");
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDTPseudoInverseQR"

@@ -1,0 +1,3 @@
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
+  Linear solve converged due to CONVERGED_RTOL iterations 16
+Nonlinear solve did not converge due to DIVERGED_LINE_SEARCH iterations 0

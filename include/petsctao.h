@@ -68,7 +68,7 @@ PETSC_EXTERN PetscFunctionList TaoList;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
-    include/petsc-finclude/petsctao.h
+    include/petsc/finclude/petsctao.h
 */
 typedef enum {/* converged */
   TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */
@@ -105,7 +105,7 @@ PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
 
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao,const char []);
 PETSC_EXTERN PetscErrorCode TaoView(Tao, PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 
@@ -118,6 +118,11 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergedReason(Tao,TaoConvergedReason);
 PETSC_EXTERN PetscErrorCode TaoSetInitialVector(Tao, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetSolutionVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
+PETSC_EXTERN PetscErrorCode TaoSetGradientNorm(Tao, Mat);
+PETSC_EXTERN PetscErrorCode TaoGetGradientNorm(Tao, Mat*);
+PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao, Mat);
+PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao, Mat*);
+PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao, KSP*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*,void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*), void*);
@@ -179,6 +184,11 @@ PETSC_EXTERN PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoGetMaximumIterations(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoGetIterationNumber(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetIterationNumber(Tao, PetscInt);
+PETSC_EXTERN PetscErrorCode TaoGetTotalIterationNumber(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetTotalIterationNumber(Tao, PetscInt);
+
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);

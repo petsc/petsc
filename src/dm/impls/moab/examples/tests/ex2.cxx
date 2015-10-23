@@ -55,7 +55,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
@@ -121,7 +121,6 @@ int main(int argc, char **argv)
   if (user.debug) PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n");
   ierr = DMCreateGlobalVector(user.dm,&solution);CHKERRQ(ierr);
   ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rctx,PETSCRAND48);CHKERRQ(ierr);
   ierr = VecSetRandom(solution,rctx);CHKERRQ(ierr);
 
   /* test if matrix allocation for the prescribed matrix type is done correctly */
@@ -134,7 +133,7 @@ int main(int argc, char **argv)
     ierr = DMMoabOutput(user.dm,(const char*)user.output_file,"");CHKERRQ(ierr);
   }
 
-  if (user.fieldnames) {
+  if (user.nfields) {
     for(i=0; i<user.nfields; i++) {
       ierr = PetscFree(user.fieldnames[i]);CHKERRQ(ierr);
     }

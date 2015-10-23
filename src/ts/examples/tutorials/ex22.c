@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
-  ftime    = 1.0;
+  ftime    = .1;
   maxsteps = 10000;
   ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
@@ -150,8 +150,8 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArrayRead(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
@@ -161,8 +161,8 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArrayRead(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -197,13 +197,15 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArrayRead(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    const PetscReal *a     = user->a;
-    PetscReal       u0t[2] = {1. - PetscPowRealInt(PetscSinReal(12*t),4),0};
+    const PetscReal *a  = user->a;
+    PetscReal       u0t[2];
+    u0t[0] = 1.0 - PetscPowRealInt(PetscSinReal(12*t),4);
+    u0t[1] = 0.0;
     for (j=0; j<2; j++) {
       if (i == 0)              f[i][j] = a[j]/hx*(1./3*u0t[j] + 0.5*x[i][j] - x[i+1][j] + 1./6*x[i+2][j]);
       else if (i == 1)         f[i][j] = a[j]/hx*(-1./12*u0t[j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
@@ -214,7 +216,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArrayRead(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -240,8 +242,8 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArrayRead(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -254,8 +256,8 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArrayRead(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

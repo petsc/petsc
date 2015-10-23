@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>               /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>               /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscClassId MAT_PARTITIONING_CLASSID;
@@ -26,6 +26,45 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
 
   ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)part),m,rank,0,partitioning);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+   partition an index to rebalance the computation
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Average"
+static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *partitioning)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,M,nparts,*indices,r,d,*parts,i,start,end,loc;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(part->adj,&M,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
+  nparts = part->n;
+  ierr = PetscCalloc1(nparts,&parts);CHKERRQ(ierr);
+  d = M/nparts;
+  for(i=0; i<nparts; i++){
+	parts[i] = d;
+  }
+  r = M%nparts;
+  for(i=0; i<r; i++){
+	parts[i] += 1;
+  }
+  for(i=1; i<nparts; i++){
+	parts[i] += parts[i-1];
+  }
+  ierr = PetscCalloc1(m,&indices);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(part->adj,&start,&end);CHKERRQ(ierr);
+  for(i=start; i<end; i++){
+	ierr = PetscFindInt(i,nparts,parts,&loc);CHKERRQ(ierr);
+	if(loc<0) loc = -(loc+1);
+	else loc = loc+1;
+	indices[i-start] = loc;
+  }
+  ierr = PetscFree(parts);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),m,indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -63,6 +102,17 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
+  part->ops->view    = 0;
+  part->ops->destroy = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Average"
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
+{
+  PetscFunctionBegin;
+  part->ops->apply   = MatPartitioningApply_Average;
   part->ops->view    = 0;
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
@@ -400,7 +450,7 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   *newp = 0;
 
   ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(part,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = NULL;
   part->part_weights   = NULL;
 

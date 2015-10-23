@@ -15,8 +15,8 @@ DOCS		 =
 DIRS		 =
 CLEANFILES       = plate2 jbearing2 plate2f jbearing2f
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 plate2: plate2.o chkopts
 	-${CLINKER} -o plate2 plate2.o ${PETSC_TAO_LIB}
@@ -57,7 +57,7 @@ runplate2_5:
         ${RM} -f plate2_5.tmp
 
 runplate2_6:
-	-@${MPIEXEC} -n 3 ./plate2 -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none -tao_type blmvm > plate2_6.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./plate2 -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree  -tao_type blmvm > plate2_6.tmp 2>&1;\
         ${DIFF} output/plate2_6.out plate2_6.tmp || printf '${PWD}\nPossible problem with plate2_6 stdout, diffs above \n=========================================\n';\
         ${RM} -f plate2_6.tmp
 
@@ -67,13 +67,13 @@ runplate2_7:
         ${RM} -f plate2_7.tmp
 
 runplate2f:
-	-@${MPIEXEC} -n 1 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm > plate2f_1.tmp 2>&1;\
-	${DIFF} output/plate2f_1.out plate2f_1.tmp || printf '${PWD}\nPossible problem with plate2f_1 stdout, diffs above \n=========================================\n';\
+	-@${MPIEXEC} -n 1 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm | sort -b  > plate2f_1.tmp 2>&1;\
+	sort -b output/plate2f_1.out | ${DIFF} - plate2f_1.tmp || printf '${PWD}\nPossible problem with plate2f_1 stdout, diffs above \n=========================================\n';\
 	${RM} -f plate2f_1.tmp
 
 runplate2f_2:
-	-@${MPIEXEC} -n 2 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm > plate2f_2.tmp 2>&1;\
-	${DIFF} output/plate2f_2.out plate2f_2.tmp || printf '${PWD}\nPossible problem with plate2f_2 stdout, diffs above \n=========================================\n';\
+	-@${MPIEXEC} -n 2 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm | sort -b  > plate2f_2.tmp 2>&1;\
+	sort -b  output/plate2f_2.out | ${DIFF} - plate2f_2.tmp || printf '${PWD}\nPossible problem with plate2f_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f plate2f_2.tmp
 
 runjbearing2:
@@ -102,4 +102,4 @@ TESTEXAMPLES_C_X_MPIUNI         = plate2.PETSc runplate2 plate2.rm jbearing2.PET
 TESTEXAMPLES_FORTRAN            = plate2f.PETSc runplate2f runplate2f_2 plate2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI     = plate2f.PETSc runplate2f plate2f.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

@@ -1,5 +1,5 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <petscsf.h>
 
 PetscFunctionList PCGAMGClassicalProlongatorList    = NULL;
@@ -191,12 +191,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   MPI_Comm         fcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-
-
-  /* construct the graph if necessary */
-  if (!G) {
-    SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
-  }
+  if (!G) SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
 
   ierr = MatCoarsenCreate(fcomm,&crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);
@@ -1023,7 +1018,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   PC_GAMG_Classical *pc_gamg_classical;
 
   PetscFunctionBegin;
-  ierr = PCGAMGClassicalInitializePackage();
+  ierr = PCGAMGClassicalInitializePackage();CHKERRQ(ierr);
   if (pc_gamg->subctx) {
     /* call base class */
     ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);

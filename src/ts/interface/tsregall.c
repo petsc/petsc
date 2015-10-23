@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>     /*I  "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>     /*I  "petscts.h"  I*/
 PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS);

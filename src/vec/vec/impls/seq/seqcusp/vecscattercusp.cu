@@ -3,12 +3,11 @@
 */
 
 #define PETSC_SKIP_COMPLEX
+#define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
-PETSC_CUDA_EXTERN_C_BEGIN
-#include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
-PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #include <cuda_runtime.h>
@@ -46,9 +45,7 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
       stos_scatter->fromFirst = fromFirst;
       stos_scatter->fromStep = fromStep;
       stos_scatter->fromMode = VEC_SCATTER_CUSP_STRIDED;
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide fslots or fromStep.");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide fslots or fromStep.");
   }
 
   /* create the "to" indices */
@@ -68,9 +65,7 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
       stos_scatter->toFirst = toFirst;
       stos_scatter->toStep = toStep;
       stos_scatter->toMode = VEC_SCATTER_CUSP_STRIDED;
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide tslots or toStep.");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide tslots or toStep.");
   }
 
   /* allocate the stream variable */

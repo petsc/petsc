@@ -1,4 +1,4 @@
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/armijo/armijo.h>
 
 #define REPLACE_FIFO 1
@@ -31,9 +31,7 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (armP->memory != NULL) {
-    ierr = PetscFree(armP->memory);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(armP->memory);CHKERRQ(ierr);
   armP->memorySetup = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -105,15 +103,6 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
 .  X - new iterate
 -  step - final step length
 
-   Info is set to one of:
-.   0 - the line search succeeds; the sufficient decrease
-   condition and the directional derivative condition hold
-
-   negative number if an input parameter is invalid
--   -1 -  step < 0
-
-   positive number > 1 if the line search otherwise terminates
-+    1 -  Step is at the lower bound, stepmin.
 @ */
 static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
@@ -281,6 +270,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   }
 
   /* Successful termination, update memory */
+  ls->reason = TAOLINESEARCH_SUCCESS;
   armP->lastReference = ref;
   if (armP->replacementPolicy == REPLACE_FIFO) {
     armP->memory[armP->current++] = *f;

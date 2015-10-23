@@ -963,7 +963,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 1.0;
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
+  ierr = TSSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 

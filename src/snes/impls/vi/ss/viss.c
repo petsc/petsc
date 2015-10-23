@@ -1,8 +1,8 @@
 
 #include <../src/snes/impls/vi/ss/vissimpl.h> /*I "petscsnes.h" I*/
-#include <../include/petsc-private/kspimpl.h>
-#include <../include/petsc-private/matimpl.h>
-#include <../include/petsc-private/dmimpl.h>
+#include <../include/petsc/private/kspimpl.h>
+#include <../include/petsc/private/matimpl.h>
+#include <../include/petsc/private/dmimpl.h>
 
 
 /*
@@ -233,15 +233,15 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 #define __FUNCT__ "SNESSolve_VINEWTONSSLS"
 PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
-  SNES_VINEWTONSSLS  *vi = (SNES_VINEWTONSSLS*)snes->data;
-  PetscErrorCode     ierr;
-  PetscInt           maxits,i,lits;
-  PetscBool          lssucceed;
-  PetscReal          gnorm,xnorm=0,ynorm;
-  Vec                Y,X,F;
-  KSPConvergedReason kspreason;
-  DM                 dm;
-  DMSNES             sdm;
+  SNES_VINEWTONSSLS    *vi = (SNES_VINEWTONSSLS*)snes->data;
+  PetscErrorCode       ierr;
+  PetscInt             maxits,i,lits;
+  SNESLineSearchReason lssucceed;
+  PetscReal            gnorm,xnorm=0,ynorm;
+  Vec                  Y,X,F;
+  KSPConvergedReason   kspreason;
+  DM                   dm;
+  DMSNES               sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  SNESCheckFunctionNorm(snes,vi->merit);
 
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
@@ -342,7 +342,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
     ierr = SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetReason(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -351,7 +351,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
-    if (!lssucceed) {
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

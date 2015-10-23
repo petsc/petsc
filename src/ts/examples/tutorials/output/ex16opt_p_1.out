@@ -1,7 +1,7 @@
-mu 1, steps 0, ftime 0.5
-mu 1, steps 7, ftime 0.5
+mu 1., steps 0, ftime 0.5
+mu 1., steps 7, ftime 0.5
 WARNING: Variable bounds have been set but will be ignored by cg algorithm
-mu 6, steps 16, ftime 0.5
+mu 6., steps 16, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=1.987294, Cost function f=0.070862
 iter =   0, Function value: 0.070862,  Residual: 0.00976762 
 mu 5.02324, steps 15, ftime 0.5
@@ -158,7 +158,7 @@ Tao Object: 1 MPI processes
     type: more-thuente
   Active Set subset type: subvec
   convergence tolerances: fatol=1e-13,   frtol=1e-13
-  convergence tolerances: gatol=1e-13,   steptol=0,   gttol=0
+  convergence tolerances: gatol=1e-13,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.22256e-07
   Objective value=1.4339e-12
   total number of iterations=21,                          (max: 2000)

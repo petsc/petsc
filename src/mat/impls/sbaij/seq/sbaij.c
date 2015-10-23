@@ -1206,10 +1206,10 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqSBAIJ(Y,X,nnz);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
-    
+
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-    
-    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+
+    ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
@@ -1359,7 +1359,7 @@ PetscErrorCode MatShift_SeqSBAIJ(Mat Y,PetscScalar a)
   Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (!aij->nz) {
+  if (!Y->preallocated || !aij->nz) {
     ierr = MatSeqSBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
@@ -1980,7 +1980,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
-.    -mat_block_size - size of the blocks to use (only works if a negative bs is passed in
+.   -mat_block_size - size of the blocks to use (only works if a negative bs is passed in
 
    Level: intermediate
 

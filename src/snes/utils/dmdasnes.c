@@ -1,6 +1,6 @@
 #include <petscdmda.h>          /*I "petscdmda.h" I*/
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {
@@ -86,9 +86,11 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   switch (dmdasnes->residuallocalimode) {
   case INSERT_VALUES: {
     ierr = DMDAVecGetArray(dm,F,&f);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SNES_FunctionEval,snes,X,F,0);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = (*dmdasnes->residuallocal)(&info,x,f,dmdasnes->residuallocalctx);CHKERRQ(ierr);
     CHKMEMQ;
+    ierr = PetscLogEventEnd(SNES_FunctionEval,snes,X,F,0);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dm,F,&f);CHKERRQ(ierr);
   } break;
   case ADD_VALUES: {
@@ -96,9 +98,11 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
     ierr = DMGetLocalVector(dm,&Floc);CHKERRQ(ierr);
     ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Floc,&f);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SNES_FunctionEval,snes,X,F,0);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = (*dmdasnes->residuallocal)(&info,x,f,dmdasnes->residuallocalctx);CHKERRQ(ierr);
     CHKMEMQ;
+    ierr = PetscLogEventEnd(SNES_FunctionEval,snes,X,F,0);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dm,Floc,&f);CHKERRQ(ierr);
     ierr = VecZeroEntries(F);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(dm,Floc,ADD_VALUES,F);CHKERRQ(ierr);
@@ -109,6 +113,9 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    ierr = VecSetInf(F);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +152,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_DMDA"
-static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
+PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;

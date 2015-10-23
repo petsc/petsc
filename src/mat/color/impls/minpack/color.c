@@ -3,8 +3,8 @@
      Routines that call the kernel minpack coloring subroutines
 */
 
-#include <petsc-private/matimpl.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/matimpl.h>
+#include <petsc/private/isimpl.h>
 #include <../src/mat/color/impls/minpack/color.h>
 
 /*

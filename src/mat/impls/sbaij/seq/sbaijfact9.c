@@ -1,6 +1,6 @@
 
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /* Version for when blocks are 6 by 6 */
 #undef __FUNCT__

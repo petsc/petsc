@@ -137,7 +137,7 @@ static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL],PetscScalar GNx[][
     GNx[1][i] = GNi[0][i]*iJ10+GNi[1][i]*iJ11;
   }
 
-  if (det_J != NULL) *det_J = J;
+  if (det_J) *det_J = J;
 }
 
 static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscScalar gp_weight[])
@@ -165,15 +165,15 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);
   DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);
 
-  if (mxl != NULL) {
+  if (mxl) {
     *mxl = m;
     if ((sx+m) == M) *mxl = m-1;  /* last proc */
   }
-  if (myl != NULL) {
+  if (myl) {
     *myl = n;
     if ((sy+n) == N) *myl = n-1;  /* last proc */
   }
-  if (mzl != NULL) {
+  if (mzl) {
     *mzl = p;
     if ((sz+p) == P) *mzl = p-1;  /* last proc */
   }
@@ -835,14 +835,12 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_eta);
       FormGradientOperatorQ1(Ge,el_coords);
-    /*FormDivergenceOperatorQ1(De,el_coords);*/
       FormScaledMassMatrixOperatorQ1(Ce,el_coords,prop_eta);
 
       /* insert element matrix into global matrix */
       ierr = DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej);CHKERRQ(ierr);
       ierr = MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES);CHKERRQ(ierr);
-    /*ierr = MatSetValuesStencil(A, NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES);*/
       ierr = MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES);CHKERRQ(ierr);
     }
   }
@@ -1615,12 +1613,12 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
   nbcs = 0;
   if ((si+nx) == (M)) nbcs = ny;
 
-  if (b != NULL) {
+  if (b) {
     ierr = VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
-  if (A != NULL) {
+  if (A) {
     ierr = MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
@@ -1678,13 +1676,13 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
   nbcs = 0;
   if (si == 0) nbcs = ny;
 
-  if (b != NULL) {
+  if (b) {
     ierr = VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
 
-  if (A != NULL) {
+  if (A) {
     ierr = MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
@@ -1742,12 +1740,12 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
   nbcs = 0;
   if ((sj+ny) == (N)) nbcs = nx;
 
-  if (b != NULL) {
+  if (b) {
     ierr = VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
-  if (A != NULL) {
+  if (A) {
     ierr = MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
@@ -1805,12 +1803,12 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
   nbcs = 0;
   if (sj == 0) nbcs = nx;
 
-  if (b != NULL) {
+  if (b) {
     ierr = VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
-  if (A != NULL) {
+  if (A) {
     ierr = MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 

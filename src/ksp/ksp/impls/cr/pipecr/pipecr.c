@@ -1,4 +1,4 @@
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
      KSPSetUp_PIPECR - Sets up the workspace needed by the PIPECR method.

@@ -10,10 +10,10 @@
   This method is designed to be linearly implicit on F and can use an approximate and lagged Jacobian.
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 static TSRosWType TSRosWDefault = TSROSWRA34PW2;
 static PetscBool  TSRosWRegisterAllCalled;
@@ -1064,7 +1064,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
 
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr);
-        ierr = VecScale(Y[i],h);
+        ierr = VecScale(Y[i],h);CHKERRQ(ierr);
         ts->ksp_its += 1;
       }
       ierr = TSPostStage(ts,ros->stage_time,i,Y);CHKERRQ(ierr);
@@ -1436,7 +1436,6 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS 
     if (!((PetscObject)snes)->type_name) {
       ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
     }
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

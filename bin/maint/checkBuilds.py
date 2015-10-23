@@ -174,13 +174,19 @@ class BuildChecker(script.Script):
     return relpath
 
   def addLineBlameDict(self,line,filename,ln,petscdir,commit,arch,logfile):
-    ''' hack to avoid C++ instantiation sequences '''
-    if re.search(r'instantiated from here',line):
-      return
-    if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):
-      return
-    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):
-      return
+    # avoid solaris compiler errors
+    if re.search(r'warning: loop not entered at top',line): return
+    if re.search(r'warning: statement not reached',line): return
+    # avoid C++ instantiation sequences
+    if re.search(r'instantiated from here',line):      return
+    # avoid MPI argument checks that cannot handle const
+    if re.search(r"\(aka 'const double \*'\) doesn't match specified 'MPI' type tag that requires 'double \*'",line): return
+    if re.search(r"\(aka 'const int \*'\) doesn't match specified 'MPI' type tag that requires 'int \*'",line): return
+    # avoid MPI argument checks that cannot handle long long * vs long *
+    if re.search(r"\(aka 'long \*'\) doesn't match specified 'MPI' type tag that requires 'long long \*",line): return
+    if re.search(r"\(aka 'const long \*'\) doesn't match specified 'MPI' type tag that requires 'long long \*",line): return
+    if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):  return
+    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):  return
     message = line.rstrip()
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
@@ -297,8 +303,11 @@ class BuildChecker(script.Script):
       pairs = [ln+','+ln for ln in sorted(self.commitfileDict[key])]
       output=''
       try:
-        (output, error, status) = self.executeShellCommand('git blame -w -M --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1])
-      except: pass
+        # Requires git version 1.9 or newer!
+        git_blame_cmd = 'git blame -w -M --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1]
+        (output, error, status) = self.executeShellCommand(git_blame_cmd)
+      except:
+        print 'Error running:',git_blame_cmd
       if output:
         blamelines = output.split('\n')
         current = -1
@@ -326,7 +335,7 @@ class BuildChecker(script.Script):
             email =  m.group('mail')
           m = re.match(r'^summary (?P<summary>.*)',bl)
           if m:
-            commit = commit + ' ' + m.group('summary')
+            commit = "https://bitbucket.org/petsc/petsc/commits/" + commit + '\n' + m.group('summary')
         warnings = self.filelineDict[(key[0],key[1],lns[current])]
         fullauthor = author+' '+email
         if not fullauthor in self.blameDict:
@@ -369,6 +378,11 @@ Thanks,
       import smtplib
       from email.mime.text import MIMEText
 
+      if author == 'Mark Adams <mark.adams@columbia.edu>':
+        author =  'Mark Adams <mfadams@lbl.gov>'
+      if author == 'Karl Rupp <rupp@mcs.anl.gov>':
+        author =  'Karl Rupp <me@karlrupp.net>'
+
       checkbuilds = 'PETSc checkBuilds <petsc-checkbuilds@mcs.anl.gov>'
       dev = 'petsc-dev <petsc-dev@mcs.anl.gov>'
       today = self.argDB['blameMailDate']
@@ -382,7 +396,9 @@ Thanks,
       msg['Reply-To'] = ','.join(REPLY_TO)
       msg['Subject'] = "PETSc blame digest (%s) %s\n\n" % (self.argDB['buildBranch'], today)
 
-      if self.argDB['blameMailPost']:
+      if author in ['Peter Brune <brune@mcs.anl.gov>']:
+        print 'Skipping sending e-mail to:',author
+      elif self.argDB['blameMailPost']:
         server = smtplib.SMTP('localhost')
         server.sendmail(FROM, TO, msg.as_string())
         server.quit()

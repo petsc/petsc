@@ -1,5 +1,6 @@
 #include <petsctaolinesearch.h>
 #include <../src/tao/matrix/lmvmmat.h>
+#include <../src/tao/unconstrained/impls/lmvm/lmvm.h>
 #include <../src/tao/bound/impls/blmvm/blmvm.h>
 
 /*------------------------------------------------------------*/
@@ -13,7 +14,6 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    stepsize = 1.0,delta;
-  PetscInt                     iter = 0;
 
   PetscFunctionBegin;
   /*  Project initial point onto bounds */
@@ -21,14 +21,15 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
+
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution,&f,blmP->unprojected_gradient);CHKERRQ(ierr);
   ierr = VecBoundGradientProjection(blmP->unprojected_gradient,tao->solution, tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
 
-  ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Set initial scaling for the function */
@@ -99,7 +100,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
       /* This may be incorrect; linesearch has values fo stepmax and stepmin
          that should be reset. */
-      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
@@ -111,12 +112,12 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
     /* Check for converged */
     ierr = VecBoundGradientProjection(blmP->unprojected_gradient, tao->solution, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
-    ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+    ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
 
 
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Not-a-Number");
-    iter++;
-    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
+    tao->niter++;
+    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -128,12 +129,13 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
+  KSP            H0ksp;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetup() */
   ierr = VecDuplicate(tao->solution,&blmP->Xold);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&blmP->Gold);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);
+  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);CHKERRQ(ierr);
 
   if (!tao->stepdirection) {
     ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);
@@ -154,6 +156,25 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
   ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&blmP->M);CHKERRQ(ierr);
   ierr = MatLMVMAllocateVectors(blmP->M,tao->solution);CHKERRQ(ierr);
+
+  /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
+  if (blmP->H0) {
+    const char *prefix;
+    PC H0pc;
+
+    ierr = MatLMVMSetH0(blmP->M, blmP->H0);CHKERRQ(ierr);
+    ierr = MatLMVMGetH0KSP(blmP->M, &H0ksp);CHKERRQ(ierr);
+
+    ierr = TaoGetOptionsPrefix(tao, &prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(H0ksp, prefix);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0ksp, "tao_h0_");CHKERRQ(ierr);
+    ierr = KSPGetPC(H0ksp, &H0pc);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0pc,  "tao_h0_");CHKERRQ(ierr);
+
+    ierr = KSPSetFromOptions(H0ksp);CHKERRQ(ierr);
+    ierr = KSPSetUp(H0ksp);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -172,6 +193,11 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
     ierr = VecDestroy(&blmP->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->Gold);CHKERRQ(ierr);
   }
+
+  if (blmP->H0) {
+    PetscObjectDereference((PetscObject)blmP->H0);
+  }
+
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -276,15 +302,101 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   tao->ops->computedual = TaoComputeDual_BLMVM;
 
   ierr = PetscNewLog(tao,&blmP);CHKERRQ(ierr);
+  blmP->H0 = NULL;
   tao->data = (void*)blmP;
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoLMVMSetH0"
+PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
+{
+  TAO_LMVM       *lmP;
+  TAO_BLMVM      *blmP;
+  const TaoType  type;
+  PetscBool is_lmvm, is_blmvm;
+
+  PetscErrorCode ierr;
+
+  ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
+
+  if (is_lmvm) {
+    lmP = (TAO_LMVM *)tao->data;
+    ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
+    lmP->H0 = H0;
+  } else if (is_blmvm) {
+    blmP = (TAO_BLMVM *)tao->data;
+    ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
+    blmP->H0 = H0;
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoLMVMGetH0"
+PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
+{
+  TAO_LMVM       *lmP;
+  TAO_BLMVM      *blmP;
+  const TaoType  type;
+  PetscBool      is_lmvm, is_blmvm;
+  Mat            M;
+
+  PetscErrorCode ierr;
+
+  ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
+
+  if (is_lmvm) {
+    lmP = (TAO_LMVM *)tao->data;
+    M = lmP->M;
+  } else if (is_blmvm) {
+    blmP = (TAO_BLMVM *)tao->data;
+    M = blmP->M;
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+
+  ierr = MatLMVMGetH0(M, H0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoLMVMGetH0KSP"
+PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
+{
+  TAO_LMVM       *lmP;
+  TAO_BLMVM      *blmP;
+  const TaoType  type;
+  PetscBool      is_lmvm, is_blmvm;
+  Mat            M;
+  PetscErrorCode ierr;
+
+  ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
+
+  if (is_lmvm) {
+    lmP = (TAO_LMVM *)tao->data;
+    M = lmP->M;
+  } else if (is_blmvm) {
+    blmP = (TAO_BLMVM *)tao->data;
+    M = blmP->M;
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+
+  ierr = MatLMVMGetH0KSP(M, ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

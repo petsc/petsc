@@ -186,16 +186,16 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject)rd->da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,Xdot,(void*)&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(rd->da,F,(void*)&f);CHKERRQ(ierr);
   for (i=info.xs; i<info.xs+info.xm; i++) {
     ierr = PetscSynchronizedPrintf(comm,"x[%D] (%10.2G,%10.2G) (%10.2G,%10.2G) (%10.2G,%10.2G)\n",i,PetscRealPart(x[i].E),PetscRealPart(x[i].T),
                                    PetscRealPart(xdot[i].E),PetscRealPart(xdot[i].T), PetscRealPart(f[i].E),PetscRealPart(f[i].T));CHKERRQ(ierr);
   }
-  ierr = DMDAVecRestoreArrayRead(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,X,(void*)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,Xdot,(void*)&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(rd->da,F,(void*)&f);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -707,9 +707,9 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     rc[0] = i; rc[1] = i+1;
     ierr  = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
     for (q=0; q<nq; q++) {
-      PetscScalar D_R;
-      PetscScalar PETSC_UNUSED rad;
-      RDNode      n,nx,nt,ntx,drad,dD_R,dxD_R,dEm;
+      PetscScalar              D_R;
+      PETSC_UNUSED PetscScalar rad;
+      RDNode                   n,nx,nt,ntx,drad,dD_R,dxD_R,dEm;
       RDEvaluate(interp,deriv,q,x,i,&n,&nx);
       RDEvaluate(interp,deriv,q,xdot,i,&nt,&ntx);
       rad = RDRadiation(rd,&n,&drad);

@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring);
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring);

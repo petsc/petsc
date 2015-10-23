@@ -1,4 +1,4 @@
-#include <petsc-private/taolinesearchimpl.h>
+#include <petsc/private/taolinesearchimpl.h>
 #include <../src/tao/linesearch/impls/gpcglinesearch/gpcglinesearch.h>
 
 /* ---------------------------------------------------------- */
@@ -185,6 +185,9 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   ierr = PetscInfo2(ls,"%D function evals in line search, step = %g\n",ls->nfeval+ls->nfgeval,(double)ls->step);CHKERRQ(ierr);
   /* set new solution vector and compute gradient if necessary */
   ierr = VecCopy(neP->W2, x);CHKERRQ(ierr);
+  if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) {
+    ls->reason = TAOLINESEARCH_SUCCESS;
+  }
   if (!g_computed) {
     ierr = TaoLineSearchComputeGradient(ls,x,g);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>           /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>           /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate"
@@ -34,8 +34,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   *vec = NULL;
   ierr = VecInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_CLASSID,  "Vec", "Vector", "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
-  ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
 
   ierr            = PetscLayoutCreate(comm,&v->map);CHKERRQ(ierr);
   v->array_gotten = PETSC_FALSE;

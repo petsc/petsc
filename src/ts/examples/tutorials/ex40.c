@@ -47,14 +47,14 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionBegin;
   if (event_list[0] == 0) {
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %f seconds\n",t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %f seconds\n",(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     u[0] = 0.0;
     u[1] = -0.9*u[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
     ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
   } else if (event_list[0] == 1) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %d times\n",app->nbounces);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %D times\n",app->nbounces);CHKERRQ(ierr);
   }
   app->nbounces++;
   PetscFunctionReturn(0);
@@ -132,6 +132,7 @@ int main(int argc,char **argv)
   AppCtx         app;
   PetscInt       direction[2];
   PetscBool      terminate[2];
+  TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -191,7 +192,6 @@ int main(int argc,char **argv)
   terminate[0] = PETSC_FALSE;   terminate[1] = PETSC_TRUE;
   ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
-  TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in 
      the same event occuring multiple times in the same interval. A max. step 

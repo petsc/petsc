@@ -41,9 +41,6 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
-
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
@@ -264,7 +261,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   *aoout = 0;
   ierr = AOInitializePackage();CHKERRQ(ierr);
 
-  ierr     = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr     = PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr     = PetscNewLog(ao,&aomap);CHKERRQ(ierr);
   ierr     = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;

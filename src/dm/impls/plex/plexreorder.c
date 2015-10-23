@@ -1,5 +1,5 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/matorderimpl.h> /*I      "petscmat.h"      I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateOrderingClosure_Static"
@@ -56,23 +56,27 @@ PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, con
 
   Input Parameter:
 + dm - The DMPlex object
-- otype - type of reordering, one of the following:
+. otype - type of reordering, one of the following:
 $     MATORDERINGNATURAL - Natural
 $     MATORDERINGND - Nested Dissection
 $     MATORDERING1WD - One-way Dissection
 $     MATORDERINGRCM - Reverse Cuthill-McKee
 $     MATORDERINGQMD - Quotient Minimum Degree
+- label - [Optional] Label used to segregate ordering into sets, or NULL
 
 
   Output Parameter:
-. perm - The point permutation as an IS
+. perm - The point permutation as an IS, perm[old point number] = new point number
+
+  Note: The label is used to group sets of points together by label value. This makes it easy to reorder a mesh which
+  has different types of cells, and then loop over each set of reordered cells for assembly.
 
   Level: intermediate
 
 .keywords: mesh
 .seealso: MatGetOrdering()
 @*/
-PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
+PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
   PetscInt       numCells = 0;
   PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm, *invclperm, *mask, *xls, pStart, pEnd, c, i;
@@ -93,8 +97,43 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
   ierr = PetscFree(adjacency);CHKERRQ(ierr);
   /* Shift for Fortran numbering */
   for (c = 0; c < numCells; ++c) --cperm[c];
+  /* Segregate */
+  if (label) {
+    IS              valueIS;
+    const PetscInt *values;
+    PetscInt        numValues, numPoints = 0;
+    PetscInt       *sperm, *vsize, *voff, v;
+
+    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
+    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = PetscCalloc3(numCells,&sperm,numValues,&vsize,numValues+1,&voff);CHKERRQ(ierr);
+    for (v = 0; v < numValues; ++v) {
+      ierr = DMLabelGetStratumSize(label, values[v], &vsize[v]);CHKERRQ(ierr);
+      if (v < numValues-1) voff[v+2] += vsize[v] + voff[v+1];
+      numPoints += vsize[v];
+    }
+    if (numPoints != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label only covers %D cells < %D total", numPoints, numCells);
+    for (c = 0; c < numCells; ++c) {
+      const PetscInt oldc = cperm[c];
+      PetscInt       val, vloc;
+
+      ierr = DMLabelGetValue(label, oldc, &val);CHKERRQ(ierr);
+      if (val == -1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %D not present in label", oldc);
+      ierr = PetscFindInt(val, numValues, values, &vloc);CHKERRQ(ierr);
+      if (vloc < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D not present label", val);
+      sperm[voff[vloc+1]++] = oldc;
+    }
+    for (v = 0; v < numValues; ++v) {
+      if (voff[v+1] - voff[v] != vsize[v]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %D values found is %D != %D", values[v], voff[v+1] - voff[v], vsize[v]);
+    }
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+    ierr = PetscMemcpy(cperm, sperm, numCells * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscFree3(sperm, vsize, voff);CHKERRQ(ierr);
+  }
   /* Construct closure */
-  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);
+  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);CHKERRQ(ierr);
   ierr = PetscFree3(cperm,mask,xls);CHKERRQ(ierr);
   ierr = PetscFree(clperm);CHKERRQ(ierr);
   /* Invert permutation */
@@ -112,7 +151,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
 
   Input Parameter:
 + dm - The DMPlex object
-- perm - The point permutation
+- perm - The point permutation, perm[old point number] = new point number
 
   Output Parameter:
 . pdm - The permuted DM

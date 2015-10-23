@@ -2,7 +2,7 @@
 /*
    Defines a block Jacobi preconditioner.
 */
-#include <petsc-private/pcimpl.h>              /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>              /*I "petscpc.h" I*/
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h>
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
@@ -209,13 +209,13 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       if (jac->ksp && !jac->psubcomm) {
-        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         if (!rank) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
-        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       } else if (jac->psubcomm && !jac->psubcomm->color) {
         ierr = PetscViewerASCIIGetStdout(PetscSubcommChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -225,27 +225,27 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     } else {
       PetscInt n_global;
       ierr = MPI_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",
                                                 rank,jac->n_local,jac->first_local);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local block number %D\n",rank,i);CHKERRQ(ierr);
         ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blks=%D",jac->n);CHKERRQ(ierr);
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[25];
@@ -547,16 +547,13 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
          and set the options directly on the resulting KSP object (you can access its PC
          KSPGetPC())
 
+     For CUSP vectors it is recommended to use exactly one block per MPI process for best
+         performance.  Different block partitioning may lead to additional data transfers
+         between host and GPU that lead to degraded performance.
+
    Level: beginner
 
    Concepts: block Jacobi
-
-   Developer Notes: This preconditioner does not currently work with CUDA/CUSP for a couple of reasons.
-       (1) It creates seq vectors as work vectors that should be cusp
-       (2) The use of VecPlaceArray() is not handled properly by CUSP (that is it will not know where
-           the ownership of the vector is so may use wrong values) even if it did know the ownership
-           it may induce extra copy ups and downs. Satish suggests a VecTransplantArray() to handle two
-           vectors sharing the same pointer and handling the CUSP side as well instead of VecGetArray()/VecPlaceArray().
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
@@ -788,6 +785,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       wasSetup = PETSC_FALSE;
 
       ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -1041,6 +1039,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
       for (i=0; i<n_local; i++) {
         ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
         ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
         ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -1194,7 +1193,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
@@ -1234,6 +1233,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     /* create a new PC that processors in each subcomm have copy of */
     ierr = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
     ierr = KSPCreate(subcomm,&jac->ksp[0]);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(jac->ksp[0],pc->erroriffailure);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0],(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->ksp[0]);CHKERRQ(ierr);
     ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats);CHKERRQ(ierr);

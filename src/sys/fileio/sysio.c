@@ -229,17 +229,17 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 #if !defined(PETSC_WORDS_BIGENDIAN)
   void              *ptmp = p;
 #endif
-  char              fname[64];
-  PetscBool         functionload = PETSC_FALSE;
+  char              *fname = NULL;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
-    functionload = PETSC_TRUE;
     m            = 64;
     type         = PETSC_CHAR;
+    fname        = (char*) malloc(m*sizeof(char));
+    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
     pp           = (char*)fname;
 #if !defined(PETSC_WORDS_BIGENDIAN)
     ptmp         = (void*)fname;
@@ -294,12 +294,13 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
 #endif
 
-  if (functionload) {
+  if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLSym(NULL,fname,(void**)p);CHKERRQ(ierr);
 #else
     *(void**)p = NULL;
 #endif
+    free(fname);
   }
   PetscFunctionReturn(0);
 }
@@ -355,7 +356,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 #if !defined(PETSC_WORDS_BIGENDIAN)
   void           *ptmp = p;
 #endif
-  char           fname[64];
+  char           *fname = NULL;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
@@ -364,14 +365,17 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     const char *fnametmp;
-
+#endif
+    m     = 64;
+    fname = (char*)malloc(m*sizeof(char));
+    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
     if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
     ierr = PetscFPTFind(*(void**)p,&fnametmp);CHKERRQ(ierr);
-    ierr = PetscStrncpy(fname,fnametmp,64);CHKERRQ(ierr);
+    ierr = PetscStrncpy(fname,fnametmp,m);CHKERRQ(ierr);
 #else
-    ierr = PetscStrncpy(fname,"",64);CHKERRQ(ierr);
+    ierr = PetscStrncpy(fname,"",m);CHKERRQ(ierr);
 #endif
-    m    = 64;
     type = PETSC_CHAR;
     pp   = (char*)fname;
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -408,6 +412,9 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
   }
 #endif
+  if (type == PETSC_FUNCTION) {
+    free(fname);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -551,11 +558,6 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
    Output Parameters:
 .  p - the buffer
 
-   Options Database Key:
-.   -binary_longints - indicates the file was generated on a Cray vector
-         machine (not the T3E/D) and the ints are stored as 64 bit
-         quantities, otherwise they are stored as 32 bit
-
    Level: developer
 
    Notes:
@@ -577,18 +579,16 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   MPI_Datatype   mtype;
-  char           *fname;
-  PetscBool      functionload = PETSC_FALSE;
-  void           *ptmp        = NULL;
+  char           *fname = NULL;
+  void           *ptmp = NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
-    functionload = PETSC_TRUE;
     n            = 64;
     type         = PETSC_CHAR;
     ptmp         = p;
-    /* warning memory leak */
-    fname        = (char*)malloc(64*sizeof(char));
+    fname        = (char*)malloc(n*sizeof(char));
+    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
     p            = (void*)fname;
   }
 
@@ -599,12 +599,13 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
   ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
 
-  if (functionload) {
+  if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,fname,(void**)ptmp);CHKERRQ(ierr);
 #else
     *(void**)ptmp = NULL;
 #endif
+    free(fname);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 /* Get new PetscMatStashSpace into the existing space */
 #undef __FUNCT__
@@ -39,7 +39,7 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *spa
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  while ((*space) != NULL) {
+  while ((*space)) {
     a    = (*space)->next;
     ierr = PetscMemcpy(val,(*space)->val,((*space)->local_used*bs2)*sizeof(PetscScalar));CHKERRQ(ierr);
     val += bs2*(*space)->local_used;

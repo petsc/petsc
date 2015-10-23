@@ -8,7 +8,7 @@ class CompilerOptions(config.base.Configure):
 
     if compiler.find('mpicc') >=0:
       try:
-        output   = self.executeShellCommand(compiler + ' -show')[0]
+        output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
@@ -16,9 +16,11 @@ class CompilerOptions(config.base.Configure):
 
     flags = []
     # GNU gcc
-    if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
+    if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        if config.setCompilers.Configure.isClang(compiler, self.log):
+          flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
       elif bopt == 'g':
@@ -28,12 +30,15 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
         else:
           flags.append('-g3')
-        flags.append('-O0') # MPICH puts CFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt == 'O':
-        flags.append('-O')
+        flags.append('-g')
+        if config.setCompilers.Configure.isClang(compiler, self.log):
+          flags.append('-O3')
+        else:
+          flags.append('-O')
     else:
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
           # next one fails in OpenMP build and we don't use it anyway so remove
@@ -41,6 +46,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
@@ -68,6 +74,8 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt == 'O':
         flags.append('-O')
+    if bopt == 'O':
+      self.logPrintBox('***** WARNING: Using default optimization C flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n COPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCxxFlags(self, compiler, bopt):
@@ -75,7 +83,7 @@ class CompilerOptions(config.base.Configure):
 
     if compiler.find('mpiCC') >=0  or compiler.find('mpicxx') >=0 :
       try:
-        output   = self.executeShellCommand(compiler+' -show')[0]
+        output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
       except:
@@ -83,7 +91,7 @@ class CompilerOptions(config.base.Configure):
 
     flags = []
     # GNU g++
-    if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
+    if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
         # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
@@ -95,10 +103,13 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
-        flags.append('-O0') # MPICH puts CXXFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt in ['O']:
+        flags.append('-g')
         if os.environ.has_key('USER'):
-          flags.append('-O')
+          if config.setCompilers.Configure.isClang(compiler, self.log):
+            flags.append('-O3')
+          else:
+            flags.append('-O')
     # IBM
     elif compiler.find('mpCC') >= 0 or compiler.find('xlC') >= 0:
       if bopt == '':
@@ -109,12 +120,13 @@ class CompilerOptions(config.base.Configure):
         flags.append('-O')
     else:
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
@@ -142,33 +154,35 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt in ['O']:
         flags.append('-O')
+    if bopt == 'O':
+      self.logPrintBox('***** WARNING: Using default C++ optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n CXXOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
 
     if compiler.endswith('mpif77') or compiler.endswith('mpif90'):
       try:
-        output   = self.executeShellCommand(compiler+' -show')[0]
+        output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
         pass
 
     flags = []
-    if config.setCompilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-Wno-unused-variable', '-ffree-line-length-0'])
-        if config.setCompilers.Configure.isGfortran46plus(compiler):
+        if config.setCompilers.Configure.isGfortran46plus(compiler, self.log):
           flags.extend(['-Wno-unused-dummy-argument']) # Silence warning because dummy parameters are sometimes necessary
-        if config.setCompilers.Configure.isGfortran45x(compiler):
+        if config.setCompilers.Configure.isGfortran45x(compiler, self.log):
           flags.extend(['-Wno-line-truncation']) # Work around bug in this series, fixed in 4.6: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42852
       elif bopt == 'g':
         if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
-        flags.append('-O0') # MPICH puts FFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt == 'O':
+        flags.append('-g')
         flags.extend(['-O'])
     else:
       # Portland Group Fortran 90
@@ -178,10 +192,11 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
+          flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
@@ -205,6 +220,8 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt == 'O':
         flags.append('-O')
+    if bopt == 'O':
+      self.logPrintBox('***** WARNING: Using default FORTRAN optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n FOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCompilerFlags(self, language, compiler, bopt):

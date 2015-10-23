@@ -7,7 +7,7 @@
       subroutine PetscSetCommonBlock(c1,c2)
       implicit none
 
-#include      <petsc-finclude/petscsys.h>
+#include      <petsc/finclude/petscsys.h>
 
       integer c1,c2
 
@@ -24,7 +24,7 @@
 
       subroutine PetscGetCommonCOMM(c1)
       implicit none
-#include      <petsc-finclude/petscsys.h>
+#include      <petsc/finclude/petscsys.h>
       integer c1
 
       c1 = PETSC_COMM_WORLD
@@ -35,7 +35,7 @@
       subroutine PetscSetCommonBlockMPI(freal,fscalar,fsum)
       implicit none
 
-#include      <petsc-finclude/petscsys.h>
+#include      <petsc/finclude/petscsys.h>
 
       integer freal,fscalar,fsum
 
@@ -50,7 +50,7 @@
      &                     small,pinf,pninf)
       implicit none
 
-#include      <petsc-finclude/petscsys.h>
+#include      <petsc/finclude/petscsys.h>
 
       PetscReal pi,maxreal,minreal,eps,seps
       PetscReal small,pinf,pninf
@@ -71,7 +71,7 @@
       block data PetscCommInit
       implicit none
 !
-!     this code is duplicated - because including petsc-finclude/petscsys.h here
+!     this code is duplicated - because including petsc/finclude/petscsys.h here
 !     gives compile errors.
 !
       MPI_Comm PETSC_COMM_WORLD
@@ -81,3 +81,20 @@
       data   PETSC_COMM_WORLD /0/
       data   PETSC_COMM_SELF /0/
       end
+
+#if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
+      integer function PetscCommandArgumentCount()
+      implicit none
+      PetscCommandArgumentCount= command_argument_count()
+      return
+      end
+
+      subroutine PetscGetCommandArgument(n,val)
+      implicit none
+      integer n
+      character(*) val
+      call get_command_argument(n,val)
+      return
+      end
+
+#endif

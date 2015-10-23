@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/snesimpl.h>
 
 typedef struct {
   PetscBool complete_print;
@@ -81,11 +81,11 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(A,viewer);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Hand-coded minus finite difference Jacobian (%s)\n",loc[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Hand-coded minus finite-difference Jacobian (%s)\n",loc[i]);CHKERRQ(ierr);
       ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     if (!gnorm) gnorm = 1; /* just in case */
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Norm of matrix ratio %g difference %g (%s)\n",(double)(nrm/gnorm),(double)nrm,loc[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Norm of matrix ratio %g, difference %g (%s)\n",(double)(nrm/gnorm),(double)nrm,loc[i]);CHKERRQ(ierr);
 
     ierr = SNESGetObjective(snes,&objective,&ctx);CHKERRQ(ierr);
     if (objective) {
@@ -101,7 +101,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = VecNorm(f1,NORM_2,&f1norm);CHKERRQ(ierr);
       if (neP->complete_print) {
         PetscViewer viewer;
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Finite-Difference Function (%s)\n",loc[i]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Finite-difference Function (%s)\n",loc[i]);CHKERRQ(ierr);
         ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes),&viewer);CHKERRQ(ierr);
         ierr = VecView(f1,viewer);CHKERRQ(ierr);
       }
@@ -109,7 +109,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = VecAXPY(f,-1.0,f1);CHKERRQ(ierr);
       ierr = VecNorm(f,NORM_2,&dnorm);CHKERRQ(ierr);
       if (!fnorm) fnorm = 1.;
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Norm of function ratio %g difference %g (%s)\n",dnorm/fnorm,dnorm,loc[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Norm of function ratio %g, difference %g (%s)\n",dnorm/fnorm,dnorm,loc[i]);CHKERRQ(ierr);
       if (neP->complete_print) {
         PetscViewer viewer;
         ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Difference (%s)\n",loc[i]);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
    Abort after the first iteration due to the jacobian not being valid.
   */
 
-  SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESTest aborts after Jacobian test");
+  SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESTest aborts after Jacobian test: it is NORMAL behavior.");
   PetscFunctionReturn(0);
 }
 
@@ -171,16 +171,24 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
       SNESTEST - Test hand-coded Jacobian against finite difference Jacobian
 
    Options Database:
-.    -snes_test_display - Display difference between approximate and hand-coded Jacobian
++  -snes_type test    - use a SNES solver that evaluates the difference between hand-code and finite-difference Jacobians
+-  -snes_test_display - display the elements of the matrix, the difference between the Jacobian approximated by finite-differencing and hand-coded Jacobian
 
    Level: intermediate
 
    Notes: This solver is not a solver and does not converge to a solution.  SNESTEST checks the Jacobian at three
-   points: the 0, 1, and -1 solution vectors.  After doing these three tests, it always aborts with the error message
+   points: the 0, 1, and -1 solution vectors.  At each point the following is reported.
+
+   Output:
++  difference - ||J - Jd||, the norm of the difference of the hand-coded Jacobian J and the approximate Jacobian Jd obtained by finite-differencing
+   the residual,
+-  ratio      - ||J - Jd||/||J||, the ratio of the norms of the above difference and the hand-coded Jacobian.
+
+   Frobenius norm is used in the above throughout. After doing these three tests, it always aborts with the error message
    "SNESTest aborts after Jacobian test".  No other behavior is to be expected.  It may be similarly used to check if a
    SNES function is the gradient of an objective function set with SNESSetObjective().
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESUpdateCheckJacobian(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
 #undef __FUNCT__
@@ -213,11 +221,19 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 
    Options Database:
 +    -snes_check_jacobian - use this every time SNESSolve() is called
--    -snes_check_jacobian_view -  Display difference between approximate and hand-coded Jacobian
+-    -snes_check_jacobian_view -  Display difference between Jacobian approximated by finite-differencing and the hand-coded Jacobian
+
+   Output:
++  difference - ||J - Jd||, the norm of the difference of the hand-coded Jacobian J and the approximate Jacobian Jd obtained by finite-differencing
+   the residual,
+-  ratio      - ||J - Jd||/||J||, the ratio of the norms of the above difference and the hand-coded Jacobian.
+
+   Notes:
+   Frobenius norm is used in the above throughout.  This check is carried out every SNES iteration.
 
    Level: intermediate
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESSolve()
+.seealso:  SNESTEST, SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESSolve()
 
 @*/
 PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
@@ -259,7 +275,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
 
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,((PetscObject)snes)->prefix,"-snes_check_jacobian_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,(PetscObject)snes,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   /* compare */
   ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -267,12 +283,12 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded Jacobian\n");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(A,((PetscObject)snes)->prefix,"-snes_check_jacobian_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A,(PetscObject)snes,"-snes_check_jacobian_view");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded minus finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,((PetscObject)snes)->prefix,"-snes_check_jacobian_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,(PetscObject)snes,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   if (!gnorm) gnorm = 1; /* just in case */
-  ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||//J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||/||J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
 
   ierr = SNESGetObjective(snes,&objective,&ctx);CHKERRQ(ierr);
   if (objective) {

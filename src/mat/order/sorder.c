@@ -3,7 +3,7 @@
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
 PetscFunctionList MatOrderingList              = 0;
@@ -270,7 +270,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (flg) {
     Mat tmat;
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(tmat,((PetscObject)mat)->prefix,"-mat_view_ordering");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(tmat,(PetscObject)mat,"-mat_view_ordering");CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

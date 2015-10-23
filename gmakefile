@@ -1,8 +1,8 @@
 # -*- mode: makefile-gmake -*-
 
 # If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
-include ./$(PETSC_ARCH)/lib/petsc-conf/petscvariables
-include ./lib/petsc-conf/variables
+include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
 MODDIR := $(PETSC_ARCH)/include
@@ -52,7 +52,7 @@ else
 endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
 
-generated := $(PETSC_ARCH)/lib/petsc-conf/files
+generated := $(PETSC_ARCH)/lib/petsc/conf/files
 
 all : $(generated) $(libpetscall)
 
@@ -73,7 +73,7 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-$(PETSC_ARCH)/lib/petsc-conf/files : $(PETSC_ARCH)/include/petscconf.h
+$(PETSC_ARCH)/lib/petsc/conf/files : $(PETSC_ARCH)/include/petscconf.h
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)

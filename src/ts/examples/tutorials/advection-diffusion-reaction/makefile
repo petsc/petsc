@@ -10,8 +10,8 @@ EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -32,6 +32,10 @@ ex4: ex4.o  chkopts
 ex5: ex5.o  chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_TS_LIB}
 	${RM} ex5.o
+
+ex5adj: ex5adj.o  chkopts
+	-${CLINKER} -o ex5adj ex5adj.o  ${PETSC_TS_LIB}
+	${RM} ex5adj.o
 
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_TS_LIB}
@@ -92,6 +96,15 @@ runex5:
 	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
 
+runex5adj:
+	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 3 -da_grid_y 3 > ex5adj_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_1.out ex5adj_1.tmp) then true; \
+	   else printf "${PWD}\n Possible problem with ex5adj_1, diffs above\n=======================================\n"; fi; \
+	   ${RM} -f ex5adj_1.tmp
+
+runex5adj_2:
+	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi -draw_pause -2
+
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5 -ts_monitor  > ex7_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
@@ -141,10 +154,11 @@ runex10_4:
 
 
 TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc runex3 ex3.rm \
-                            ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm
+                            ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm \
+                            ex5adj.PETSc runex5adj ex5adj.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_13		  =
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

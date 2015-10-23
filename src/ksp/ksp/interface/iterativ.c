@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files)
  */
-#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
 #undef __FUNCT__
@@ -58,7 +58,7 @@ PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
       During the ith iteration this returns i-1
 .keywords: KSP, get, residual norm
 
-.seealso: KSPBuildResidual(), KSPGetResidualNorm()
+.seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetTotalIterations()
 @*/
 PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
@@ -66,6 +66,37 @@ PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidIntPointer(its,2);
   *its = ksp->its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGetTotalIterations"
+/*@
+   KSPGetTotalIterations - Gets the total number of iterations this KSP object has performed since was created, counted over all linear solves
+
+   Not Collective
+
+   Input Parameters:
+.  ksp - the iterative context
+
+   Output Parameters:
+.  its - total number of iterations
+
+   Level: intermediate
+
+   Notes: Use KSPGetIterationNumber() to get the count for the most recent solve only
+   If this is called within a linear solve (such as in a KSPMonitor routine) then it does not include iterations within that current solve
+
+.keywords: KSP, get, residual norm
+
+.seealso: KSPBuildResidual(), KSPGetResidualNorm(), KSPGetIterationNumber()
+@*/
+PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidIntPointer(its,2);
+  *its = ksp->totalits;
   PetscFunctionReturn(0);
 }
 
@@ -105,9 +136,7 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (!ksp->calc_sings) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,(double)rnorm);CHKERRQ(ierr);
@@ -132,7 +161,7 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void 
 +  ksp - the KSP context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  dummy - either a viewer or NULL
+-  dummy - a viewer
 
    Level: intermediate
 
@@ -151,19 +180,11 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
-  if (!viewer) {
-    MPI_Comm comm;
-    ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-  }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_THREADSAFETY)
-#define KSPMonitorDefault KSPMonitorDefaultUnsafe
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDefault"
@@ -177,7 +198,7 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - unused monitor context
+-  dummy - an ASCII PetscViewer
 
    Level: intermediate
 
@@ -191,9 +212,7 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (n == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
@@ -202,17 +221,6 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_THREADSAFETY)
-#undef KSPMonitorDefault
-PetscErrorCode KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
-{
-  PetscErrorCode ierr;
-#pragma omp critical
-  ierr = KSPMonitorDefaultUnsafe(ksp,n,rnorm,dummy);
-  return ierr;
-}
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorTrueResidualNorm"
@@ -226,7 +234,7 @@ PetscErrorCode KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - unused monitor context
+-  dummy - an ASCII PetscViewer
 
    Options Database Key:
 .  -ksp_monitor_true_residual - Activates KSPMonitorTrueResidualNorm()
@@ -249,9 +257,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   char           normtype[256];
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (n == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
@@ -279,7 +285,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - norm (preconditioned) residual value (may be estimated).
--  dummy - unused monitor context
+-  dummy - an ASCII viewer
 
    Options Database Key:
 .  -ksp_monitor_max - Activates KSPMonitorTrueResidualMaxNorm()
@@ -302,9 +308,7 @@ PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm
   char           normtype[256];
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (n == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms (max) for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
@@ -357,7 +361,7 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
 +  ksp   - iterative context
 .  it    - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - unused monitor context
+-  dummy - an ASCII viewer
 
    Options Database Key:
 .  -ksp_monitor_range - Activates KSPMonitorRange()
@@ -377,9 +381,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
   static PetscReal prev;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (!it) prev = rnorm;
   if (it == 0 && ((PetscObject)ksp)->prefix) {
@@ -493,9 +495,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
   PetscViewer    viewer = (PetscViewer)dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (its == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
@@ -945,6 +945,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     else {
       if (ksp->pc) {
         ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
         if (matset) {
           ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
           ierr = MatCreateVecs(mat,&vecr,NULL);CHKERRQ(ierr);
@@ -974,12 +975,13 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     else {
       if (ksp->pc) {
         ierr = PCGetOperatorsSet(ksp->pc,&matset,&pmatset);CHKERRQ(ierr);
+        /* check for mat before pmat because for KSPLSQR pmat may be a different size than mat since pmat maybe mat'*mat */
         if (matset) {
           ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
-          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
         } else if (pmatset) {
           ierr = PCGetOperators(ksp->pc,NULL,&mat);CHKERRQ(ierr);
-          ierr = MatCreateVecs(mat,&vecl,NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(mat,NULL,&vecl);CHKERRQ(ierr);
         }
       }
       if (!vecl) {
@@ -1059,24 +1061,18 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
    Output Parameter:
 .  reason - negative value indicates diverged, positive value converged, see KSPConvergedReason
 
-   Possible values for reason:
-+  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
-.  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
-.  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence
-           test routine is set.
-.  KSP_CONVERGED_CG_NEG_CURVE
-.  KSP_CONVERGED_CG_CONSTRAINED
-.  KSP_CONVERGED_STEP_LENGTH
-.  KSP_DIVERGED_ITS  (required more than its to reach convergence)
-.  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
-.  KSP_DIVERGED_NANORINF (residual norm became Not-a-number or Inf likely due to 0/0)
-.  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
--  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial
-                                residual. Try a different preconditioner, or a different initial Level.)
-
-   See also manual page for each reason.
-
-   guess: beginner
+   Possible values for reason: See also manual page for each reason
+$  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
+$  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
+$  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence test routine is set.
+$  KSP_CONVERGED_CG_NEG_CURVE
+$  KSP_CONVERGED_CG_CONSTRAINED
+$  KSP_CONVERGED_STEP_LENGTH
+$  KSP_DIVERGED_ITS  (required more than its to reach convergence)
+$  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
+$  KSP_DIVERGED_NANORINF (residual norm became Not-a-number or Inf likely due to 0/0)
+$  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
+$  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial residual. Try a different preconditioner, or a different initial Level.)
 
    Notes: Can only be called after the call the KSPSolve() is complete.
 
@@ -1095,7 +1091,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetDM"
 /*@
@@ -1210,6 +1206,9 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 +  ksp - the KSP context
 -  usrP - optional user context
 
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+
    Level: intermediate
 
 .keywords: KSP, set, application, context
@@ -1241,6 +1240,9 @@ PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
 
    Output Parameter:
 .  usrP - user context
+
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
 

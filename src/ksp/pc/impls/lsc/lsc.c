@@ -1,5 +1,5 @@
 
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 
 typedef struct {
   PetscBool allocated;
@@ -21,11 +21,11 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL);CHKERRQ(ierr);
+  ierr = KSPSetErrorIfNotConverged(lsc->kspL,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = KSPSetType(lsc->kspL,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
   ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
@@ -66,6 +66,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
     ierr = VecReciprocal(lsc->scale);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(lsc->kspL,L,Lp);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

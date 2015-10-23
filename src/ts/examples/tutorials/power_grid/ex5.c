@@ -30,7 +30,7 @@ Power System Modeling and Scripting - F. Milano
 
 typedef struct {
   /* Parameters for wind speed model */
-  PetscReal nsamples; /* Number of wind samples */
+  PetscInt  nsamples; /* Number of wind samples */
   PetscReal cw;   /* Scale factor for Weibull distribution */
   PetscReal kw;   /* Shape factor for Weibull distribution */
   Vec       wind_data; /* Vector to hold wind speeds */
@@ -63,12 +63,6 @@ typedef struct {
 PetscScalar s = -0.00011577790353;
 /*Pw = 0.011064344110238; %Te*wm */
 PetscScalar       vwa  = 22.317142184449754;
-const PetscScalar Vds  = 0.221599610176842;
-const PetscScalar Vqs  = 0.985390081525825;
-const PetscScalar Edp  = 0.204001061991491;
-const PetscScalar Eqp  = 0.930016956074682;
-PetscScalar       Ids  = -0.315782941309702;
-PetscScalar       Iqs  = 0.081163163902447;
 PetscReal         tmax = 20.0;
 
 /* Saves the solution at each time to a matrix */
@@ -118,7 +112,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   {
     ierr = PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-nsamples","","",user->nsamples,&user->nsamples,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -235,9 +229,17 @@ int main(int argc,char **argv)
   Mat            A;             /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       n = 2;
+  PetscInt       n = 2,idx;
   AppCtx         user;
   PetscScalar    *u;
+  SNES           snes;
+  PetscScalar       *mat;
+  const PetscScalar *x;
+  Mat         B;
+  PetscScalar *amat;
+  PetscViewer viewer;
+
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -279,7 +281,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
-  SNES snes;
+
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,A,A,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
   /*  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr); */
@@ -291,9 +293,7 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* Save initial solution */
-  PetscScalar       *mat;
-  const PetscScalar *x;
-  PetscInt    idx=3*user.stepnum;
+  idx=3*user.stepnum;
 
   ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&x);CHKERRQ(ierr);
@@ -318,15 +318,13 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
-  Mat         B;
-  PetscScalar *amat;
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B);CHKERRQ(ierr);
   ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(B,&amat);CHKERRQ(ierr);
   ierr = PetscMemcpy(amat,mat,user.stepnum*3*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(B,&amat);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  PetscViewer viewer;
+
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

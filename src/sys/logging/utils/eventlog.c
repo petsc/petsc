@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <petsc-private/logimpl.h>  /*I    "petscsys.h"   I*/
+#include <petsc/private/logimpl.h>  /*I    "petscsys.h"   I*/
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
@@ -589,6 +589,7 @@ PetscErrorCode PetscLogEventGetPerfInfo(int stage, PetscLogEvent event, PetscEve
 
   PetscFunctionBegin;
   PetscValidPointer(info, 3);
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogDefaultBegin() before calling this routine");
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   if (stage < 0) {ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);}
   ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
@@ -606,6 +607,7 @@ PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogDefaultBegin() before calling this routine");
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr   = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   ierr   = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);

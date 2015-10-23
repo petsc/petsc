@@ -24,6 +24,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
     ierr = VecDestroy(&x->localrep);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&x->localupdate);CHKERRQ(ierr);
   }
+  ierr = VecAssemblyReset_MPI(v);CHKERRQ(ierr);
+
   /* Destroy the stashes: note the order - so that the tags are freed properly */
   ierr = VecStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
   ierr = VecStashDestroy_Private(&v->stash);CHKERRQ(ierr);
@@ -642,7 +644,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t             memspace;  /* memory dataspace identifier */
   hid_t             file_id;
   hid_t             group;
-  hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
+  hid_t             memscalartype; /* scalar type for mem (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
+  hid_t             filescalartype; /* scalar type for file (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   PetscInt          bs = PetscAbs(xin->map->bs);
   hsize_t           dim;
   hsize_t           maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
@@ -652,11 +655,13 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   const char        *vecname;
   PetscErrorCode    ierr;
   PetscBool         dim2;
+  PetscBool         spoutput;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetBaseDimension2(viewer,&dim2);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetSPOutput(viewer,&spoutput);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset.
    *
@@ -696,11 +701,14 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
 #if defined(PETSC_USE_REAL_SINGLE)
-  scalartype = H5T_NATIVE_FLOAT;
+  memscalartype = H5T_NATIVE_FLOAT;
+  filescalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
 #else
-  scalartype = H5T_NATIVE_DOUBLE;
+  memscalartype = H5T_NATIVE_DOUBLE;
+  if (spoutput == PETSC_TRUE) filescalartype = H5T_NATIVE_FLOAT;
+  else filescalartype = H5T_NATIVE_DOUBLE;
 #endif
 
   /* Create the dataset with default properties and close filespace */
@@ -711,9 +719,9 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     PetscStackCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
 
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    PetscStackCallHDF5Return(dset_id,H5Dcreate2,(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
+    PetscStackCallHDF5Return(dset_id,H5Dcreate2,(group, vecname, filescalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
 #else
-    PetscStackCallHDF5Return(dset_id,H5Dcreate,(group, vecname, scalartype, filespace, H5P_DEFAULT));
+    PetscStackCallHDF5Return(dset_id,H5Dcreate,(group, vecname, filescalartype, filespace, H5P_DEFAULT));
 #endif
     PetscStackCallHDF5(H5Pclose,(chunkspace));
   } else {
@@ -730,7 +738,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(xin->map->n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1 || dim2) {
+  if (bs > 1 || dim2) {
     count[dim] = bs;
     ++dim;
   }
@@ -754,7 +762,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
-  if (bs >= 1 || dim2) {
+  if (bs > 1 || dim2) {
     offset[dim] = 0;
     ++dim;
   }
@@ -778,7 +786,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
   ierr   = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Dwrite,(dset_id, scalartype, memspace, filespace, plist_id, x));
+  PetscStackCallHDF5(H5Dwrite,(dset_id, memscalartype, memspace, filespace, plist_id, x));
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
 
@@ -1007,6 +1015,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = MPI_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
+  xin->bstash.insertmode = addv; /* Block stash implicitly tracks InsertMode of scalar stash */
 
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);

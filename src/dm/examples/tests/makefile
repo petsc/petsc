@@ -8,12 +8,12 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex19.c ex20.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c \
-	          ex42.c
+	          ex42.c ex43.c
 EXAMPLESF       =
 MANSEC          = DM
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -172,6 +172,9 @@ ex41:ex41.o   chkopts
 ex42:ex42.o   chkopts
 	-${CLINKER} -o ex42 ex42.o  ${PETSC_DM_LIB}
 	${RM} -f ex42.o
+ex43:ex43.o   chkopts
+	-${CLINKER} -o ex43 ex43.o  ${PETSC_DM_LIB}
+	${RM} -f ex43.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox | grep -v -i Object > ex1_1.tmp 2>&1;	  \
@@ -194,12 +197,12 @@ runex2:
 	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIEXEC} -n 3 ./ex2 -wrap none -local_print -nox > ex2_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap none -local_print -nox | grep -v "Vec Object:Vec" > ex2_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -n 3 ./ex2 -wrap ghosted -local_print -nox > ex2_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap ghosted -local_print -nox  | grep -v "Vec Object:Vec" > ex2_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_3.tmp
@@ -397,11 +400,16 @@ runex42:
 	-@${MPIEXEC} -n 2 ./ex42 ;\
 	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
 
+runex43:
+	-@${MPIEXEC} -n 2 ./ex43 > ex43.tmp; \
+	  ${DIFF} output/ex43_1.out ex43.tmp || printf "${PWD}\nPossible problem with 43, diffs above\n=========================================\n" ; \
+	  ${RM} -f ex43.tmp
 
 TESTEXAMPLES_C		  = ex2.PETSc runex2_2 runex2_3 ex2.rm ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
-                            ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
+                            ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm \
+                            ex43.PETSc runex43 ex43.rm
 TESTEXAMPLES_C_X	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex11.PETSc runex11 runex11_2 runex11_3 ex11.rm ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 runex23_2 ex23.rm ex37.PETSc runex37 ex37.rm
@@ -414,4 +422,4 @@ TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.P
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test

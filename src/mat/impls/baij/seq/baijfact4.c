@@ -3,7 +3,7 @@
     Factorization code for BAIJ format.
 */
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__
@@ -15,7 +15,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
   PetscErrorCode ierr;
   const PetscInt *r,*ic;
   PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  PetscInt       *ajtmpold,*ajtmp,nz,row,bslog,*ai=a->i,*aj=a->j,k,flg;
+  PetscInt       *ajtmpold,*ajtmp,nz,row,*ai=a->i,*aj=a->j,k,flg;
   PetscInt       *diag_offset=b->diag,diag,bs=A->rmap->bs,bs2 = a->bs2,*pj,*v_pivots;
   MatScalar      *ba         = b->a,*aa = a->a,*pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
 
@@ -26,9 +26,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
   ierr = PetscMemzero(rtmp,(bs2*n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
   ierr = PetscMalloc3(bs,&v_work,bs2,&multiplier,bs,&v_pivots);CHKERRQ(ierr);
-
-  /* flops in while loop */
-  bslog = 2*bs*bs2;
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -62,7 +59,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
         for (j=0; j<nz; j++) {
           PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
-        ierr = PetscLogFlops(bslog*(nz+1.0)-bs);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*bs*bs2*(nz+1.0)-bs);CHKERRQ(ierr);
       }
       row = *ajtmp++;
     }

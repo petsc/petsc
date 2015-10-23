@@ -57,14 +57,14 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscis.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       MPI_Comm comm
       Vec      X,Y,F,localX
@@ -90,8 +90,8 @@
       PetscScalar        mone
       PetscErrorCode ierr
 
-      mone           = -1.d0
-      rtol           = 1.d-8
+      mone           = -1.0
+      rtol           = 1.e-8
       max_nonlin_its = 10
       one            = 1
       ifive          = 5
@@ -301,14 +301,14 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscis.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
       Vec       X,localX
@@ -321,8 +321,8 @@
       Mat              B
       common   /mycommon/ mx,my,B,localX,da
 
-      one    = 1.d0
-      lambda = 6.d0
+      one    = 1.0
+      lambda = 6.0
       hx     = one/(mx-1)
       hy     = one/(my-1)
       temp1  = lambda/(lambda + one)
@@ -348,7 +348,7 @@
           row = i - xs + (j - ys)*xm + 1
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
      &        j .eq. my-1) then
-            xx(idx+row) = 0.d0
+            xx(idx+row) = 0.0
             continue
           endif
           xx(idx+row) = temp1*sqrt(min((min(i,mx-i-1))*hx,temp))
@@ -379,14 +379,14 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscis.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       Vec              X,F,localX
       PetscInt         gys,gxm,gym
@@ -401,9 +401,9 @@
       Mat              B
       common   /mycommon/ mx,my,B,localX,da
 
-      two    = 2.d0
-      one    = 1.d0
-      lambda = 6.d0
+      two    = 2.0
+      one    = 1.0
+      lambda = 6.0
 
       hx     = one/(mx-1)
       hy     = one/(my-1)
@@ -485,14 +485,14 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscis.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       Vec         X
       Mat         jac
@@ -515,14 +515,14 @@
 
       ione   = 1
       ifive  = 5
-      one    = 1.d0
-      two    = 2.d0
+      one    = 1.0
+      two    = 2.0
       hx     = one/(mx-1)
       hy     = one/(my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx
-      lambda = 6.d0
+      lambda = 6.0
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().

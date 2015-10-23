@@ -19,8 +19,8 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
 !
 
       Vec               x
@@ -35,7 +35,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       n   = 20
-      one = 1.d0
+      one = 1.0
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 !

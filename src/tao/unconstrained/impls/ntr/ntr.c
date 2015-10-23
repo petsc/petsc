@@ -3,8 +3,8 @@
 
 #include <petscksp.h>
 #include <petscpc.h>
-#include <petsc-private/kspimpl.h>
-#include <petsc-private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
+#include <petsc/private/pcimpl.h>
 
 #define NTR_KSP_NASH    0
 #define NTR_KSP_STCG    1
@@ -83,7 +83,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   PetscReal          delta;
   PetscReal          norm_d;
   PetscErrorCode     ierr;
-  PetscInt           iter = 0;
   PetscInt           bfgsUpdates = 0;
   PetscInt           needH;
 
@@ -112,11 +111,11 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
-  ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Create vectors for the limited memory preconditioner */
@@ -283,12 +282,12 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         ierr = VecAXPY(tao->solution, sigma, tao->gradient);CHKERRQ(ierr);
         ierr = TaoComputeGradient(tao,tao->solution, tao->gradient);CHKERRQ(ierr);
 
-        ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+        ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
 
         if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
         needH = 1;
 
-        ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
+        ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
         if (reason != TAO_CONTINUE_ITERATING) {
           PetscFunctionReturn(0);
         }
@@ -322,7 +321,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
-    ++iter;
+    ++tao->niter;
     tao->ksp_its=0;
     /* Compute the Hessian */
     if (needH) {
@@ -597,7 +596,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
       /* The step computed was not good and the radius was decreased.
          Monitor the radius to terminate. */
-      ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
     }
 
     /* The radius may have been increased; modify if it is too large */
@@ -606,11 +605,11 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     if (reason == TAO_CONTINUE_ITERATING) {
       ierr = VecCopy(tr->W, tao->solution);CHKERRQ(ierr);
       f = ftrial;
-      ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);
-      ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+      ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);CHKERRQ(ierr);
+      ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       needH = 1;
-      ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -784,17 +783,17 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_NTR;
   tao->ops->destroy = TaoDestroy_NTR;
 
-  tao->max_it = 50;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 50;
+  if (!tao->trust0_changed) tao->trust0 = 100.0;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol = 1e-5;
-  tao->frtol = 1e-5;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
 #else
-  tao->fatol = 1e-10;
-  tao->frtol = 1e-10;
+  if (!tao->fatol_changed) tao->fatol = 1.0e-10;
+  if (!tao->frtol_changed) tao->frtol = 1.0e-10;
 #endif
   tao->data = (void*)tr;
-
-  tao->trust0 = 100.0;
 
   /*  Standard trust region update parameters */
   tr->eta1 = 1.0e-4;
@@ -843,6 +842,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 
   /* Set linear solver to default for trust region */
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

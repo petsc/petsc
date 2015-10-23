@@ -1,7 +1,7 @@
 /*
        Code for Timestepping with explicit SSP.
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 PetscFunctionList TSSSPList = 0;
 static PetscBool TSSSPPackageInitialized;

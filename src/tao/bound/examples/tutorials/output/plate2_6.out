@@ -22,12 +22,9 @@ Tao Object: 3 MPI processes
     type: more-thuente
   Active Set subset type: matrixfree
   convergence tolerances: fatol=0.0001,   frtol=0.0001
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=0.00948284
   Objective value=1.49412
   total number of iterations=13,                          (max: 2000)
   total number of function/gradient evaluations=17,      (max: 4000)
   Solution converged:   estimated f(x)-f(X*) <= fatol
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_type value: none

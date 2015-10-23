@@ -8,18 +8,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - P_max \sin(\theta) -D(\omega - \omega_s)\\
 \end{eqnarray}
 
-
-
-  Ensemble of initial conditions
-   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Fault at .1 seconds
-   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
-  Initial conditions same as when fault is ended
-   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
-
-
 F*/
 
 /*
@@ -42,6 +30,24 @@ typedef struct {
 
 PetscErrorCode FormFunction(Tao,Vec,PetscReal*,void*);
 
+/*                                                                                                                     \
+                                                                                                                        
+    In order to insure that the event gets triggered at the same time independent of the                               \
+                                                                                                                        
+  precision of the calculation we decrease the event time by a small fraction of the time step.                        \
+                                                                                                                        
+  Otherwise in __float128 precision the event was delayed by one timestep producing completely                         \
+                                                                                                                        
+  different results                                                                                                    \
+                                                                                                                        
+ */
+PETSC_STATIC_INLINE PetscBool EventTolerance(TS ts,PetscReal t,PetscReal tf,PetscReal tc)
+{
+  PetscReal dt;
+  TSGetTimeStep(ts,&dt);
+  return (t > tf - .01*PetscAbs(dt) && t < tc -.01*PetscAbs(dt)) ? PETSC_TRUE : PETSC_FALSE;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "IFunction"
 /*
@@ -58,7 +64,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (EventTolerance(ts,t,ctx->tf,ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
 
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
@@ -85,7 +91,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (EventTolerance(ts,t,ctx->tf,ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
 
   J[0][0] = a;                       J[0][1] = -ctx->omega_b;
@@ -181,7 +187,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,AppCtx *ctx)
   ierr = VecGetArrayRead(lambda,&x);CHKERRQ(ierr);
   ierr = VecGetArray(mu,&y);CHKERRQ(ierr);
   sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %g \n",(double)sensip);CHKERRQ(ierr);
+  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %g \n",(double)sensip);CHKERRQ(ierr); */
   y[0] = sensip;
   ierr = VecRestoreArray(mu,&y);
   ierr = VecRestoreArrayRead(lambda,&x);CHKERRQ(ierr);
@@ -199,7 +205,6 @@ int main(int argc,char **argv)
   AppCtx             ctx;
   Vec                lowerb,upperb;
   Tao                tao;
-  TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
 
@@ -230,7 +235,7 @@ int main(int argc,char **argv)
     ctx.X       = 0.545;
     ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
-    ctx.Pm     = 0.4;
+    ctx.Pm      = 1.061605;
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
     ctx.tf      = 0.1;
     ctx.tcl     = 0.2;
@@ -265,7 +270,7 @@ int main(int argc,char **argv)
   x_ptr[0] = 0.;
   ierr = VecRestoreArray(lowerb,&x_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 1.1;;
+  x_ptr[0] = 1.1;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
@@ -281,13 +286,8 @@ int main(int argc,char **argv)
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
 
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-  }
-
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
@@ -313,22 +313,24 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 {
-  AppCtx         *ctx = (AppCtx*)ctx0;
-  TS             ts;
+  AppCtx            *ctx = (AppCtx*)ctx0;
+  TS                ts;
 
-  Vec            U;             /* solution will be stored here */
-  Mat            A;             /* Jacobian matrix */
-  Mat            Jacp;          /* Jacobian matrix */
-  PetscErrorCode ierr;
-  PetscInt       n = 2;
-  PetscReal      ftime;
-  PetscInt       steps;
-  PetscScalar    *u;
-  PetscScalar    *x_ptr,*y_ptr;
-  Vec            lambda[1],q,mu[1];
+  Vec               U;             /* solution will be stored here */
+  Mat               A;             /* Jacobian matrix */
+  Mat               Jacp;          /* Jacobian matrix */
+  PetscErrorCode    ierr;
+  PetscInt          n = 2;
+  PetscReal         ftime;
+  PetscInt          steps;
+  PetscScalar       *u;
+  PetscScalar       *mx_ptr,*y_ptr;
+  const PetscScalar *x_ptr,*qx_ptr;
+  Vec               lambda[1],q,mu[1];
 
-  ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(P,&x_ptr);CHKERRQ(ierr);
   ctx->Pm = x_ptr[0];
+  ierr = VecRestoreArrayRead(P,&x_ptr);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -350,7 +352,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,ctx);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
@@ -372,7 +374,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,10.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -394,23 +396,24 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = -1.0;
-  ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
+  ierr = VecGetArray(mu[0],&mx_ptr);CHKERRQ(ierr);
+  mx_ptr[0] = -1.0;
+  ierr = VecRestoreArray(mu[0],&mx_ptr);CHKERRQ(ierr);
+  ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+  ierr = TSSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
+  ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = ComputeSensiP(lambda[0],mu[0],ctx);CHKERRQ(ierr);
 
-  ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
-  *f   = -ctx->Pm + x_ptr[0];
+  ierr = VecGetArrayRead(q,&qx_ptr);CHKERRQ(ierr);
+  *f   = -ctx->Pm + qx_ptr[0];
+  ierr = VecRestoreArrayRead(q,&qx_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.

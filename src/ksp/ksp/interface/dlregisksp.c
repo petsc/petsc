@@ -1,6 +1,6 @@
 
-#include <petsc-private/pcimpl.h>
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/kspimpl.h>
 
 static const char *const PCSides_Shifted[]    = {"DEFAULT","LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
 const char *const *const PCSides              = PCSides_Shifted + 1;
@@ -88,6 +88,8 @@ PetscErrorCode  PCInitializePackage(void)
       ierr = PetscLogEventDeactivateClass(PC_CLASSID);CHKERRQ(ierr);
     }
   }
+  /* Register data */
+  ierr = PetscObjectComposedDataRegister(&PetscMGLevelId);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PCFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -96,13 +98,13 @@ const char *const KSPCGTypes[]                  = {"SYMMETRIC","HERMITIAN","KSPC
 const char *const KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS","KSPGMRESRefinementType","KSP_GMRES_CGS_",0};
 const char *const KSPNormTypes_Shifted[]        = {"DEFAULT","NONE","PRECONDITIONED","UNPRECONDITIONED","NATURAL","KSPNormType","KSP_NORM_",0};
 const char *const*const KSPNormTypes = KSPNormTypes_Shifted + 1;
-const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NANORINF","DIVERGED_INDEFINITE_PC",
+const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_PCSETUP_FAILED","DIVERGED_INDEFINITE_MAT","DIVERGED_NANORINF","DIVERGED_INDEFINITE_PC",
                                                    "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
                                                    "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
                                                    "CONVERGED_RTOL_NORMAL","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
                                                    "CONVERGED_CG_NEG_CURVE","CONVERGED_CG_CONSTRAINED","CONVERGED_STEP_LENGTH",
                                                    "CONVERGED_HAPPY_BREAKDOWN","CONVERGED_ATOL_NORMAL","KSPConvergedReason","KSP_",0};
-const char *const*KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
+const char *const*KSPConvergedReasons = KSPConvergedReasons_Shifted + 11;
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__

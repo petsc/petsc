@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>       /*I "petscmat.h"  I*/
+#include <petsc/private/matimpl.h>       /*I "petscmat.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatShift_Basic"
@@ -81,12 +81,38 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   *A = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(B,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
 
   B->preallocated = PETSC_FALSE;
   *A              = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetErrorIfFPE"
+/*@
+   MatSetErrorIfFPE - Causes Mat to generate an error if a FPE, for example a zero pivot, is detected.
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat -  matrix obtained from MatCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Level: advanced
+
+.keywords: Mat, set, initial guess, nonzero
+
+.seealso: PCSetErrorIfFailure()
+@*/
+PetscErrorCode  MatSetErrorIfFPE(Mat mat,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(mat,flg,2);
+  mat->erroriffpe = flg;
   PetscFunctionReturn(0);
 }
 
@@ -295,19 +321,19 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatHeaderMerge"
-PetscErrorCode MatHeaderMerge(Mat A,Mat C)
+PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
 {
   PetscErrorCode ierr;
   PetscInt       refct;
-  PetscOps       *Abops;
-  MatOps         Aops;
+  PetscOps       Abops;
+  struct _MatOps Aops;
   char           *mtype,*mname;
   void           *spptr;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
-  Abops = ((PetscObject)A)->bops;
-  Aops  = A->ops;
+  Abops = ((PetscObject)A)->bops[0];
+  Aops  = A->ops[0];
   refct = ((PetscObject)A)->refct;
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
@@ -320,7 +346,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
-  ierr = PetscFree(C->spptr);CHKERRQ(ierr);
+  ierr = PetscFree((*C)->spptr);CHKERRQ(ierr);
 
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
@@ -328,21 +354,21 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ierr = PetscObjectListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
 
   /* copy C over to A */
-  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   /* return the parts of A we saved */
-  ((PetscObject)A)->bops      = Abops;
-  A->ops                      = Aops;
+  ((PetscObject)A)->bops[0]   = Abops;
+  A->ops[0]                   = Aops;
   ((PetscObject)A)->refct     = refct;
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
   A->spptr                    = spptr;
 
   /* since these two are copied into A we do not want them destroyed in C */
-  ((PetscObject)C)->qlist = 0;
-  ((PetscObject)C)->olist = 0;
+  ((PetscObject)*C)->qlist = 0;
+  ((PetscObject)*C)->olist = 0;
 
-  ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -356,35 +382,30 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatHeaderReplace"
-PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 {
   PetscErrorCode   ierr;
   PetscInt         refct;
   PetscObjectState state;
+  struct _p_Mat    buffer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(C,MAT_CLASSID,2);
-  if (A == C) PetscFunctionReturn(0);
-  PetscCheckSameComm(A,1,C,2);
-  if (((PetscObject)C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)C)->refct);
+  PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
+  if (A == *C) PetscFunctionReturn(0);
+  PetscCheckSameComm(A,1,*C,2);
+  if (((PetscObject)*C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)*C)->refct);
 
-  /* free all the interior data structures from mat */
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscFree(A->ops);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-
-  /* copy C over to A */
+  /* swap C and A */
   refct = ((PetscObject)A)->refct;
   state = ((PetscObject)A)->state;
-  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-
+  ierr  = PetscMemcpy(&buffer,A,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ((PetscObject)A)->refct = refct;
   ((PetscObject)A)->state = state + 1;
 
-  ierr = PetscFree(C);CHKERRQ(ierr);
+  ((PetscObject)*C)->refct = 1;
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

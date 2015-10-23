@@ -2250,18 +2250,18 @@ static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   
   }
 
   /* Output */
-  if (vel != NULL) {
+  if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (presssure != NULL) (*presssure) = sum5;
+  if (presssure) (*presssure) = sum5;
 
-  if (total_stress != NULL) {
+  if (total_stress) {
     total_stress[0] = sum3;
     total_stress[1] = sum6;
     total_stress[2] = sum4;
   }
-  if (strain_rate != NULL) {
+  if (strain_rate) {
     if (x>xc) Z = ZB;
     else Z = ZA;
 

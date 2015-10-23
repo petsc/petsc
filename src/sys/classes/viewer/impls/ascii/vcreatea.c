@@ -2,6 +2,7 @@
 #include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
 
 /* ---------------------------------------------------------------------*/
+
 /*
     The variable Petsc_Viewer_Stdout_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
@@ -35,6 +36,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);CHKERRQ(ierr);
@@ -46,6 +48,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stdout_keyval,(void*)*viewer);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -83,6 +86,7 @@ PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 }
 
 /* ---------------------------------------------------------------------*/
+
 /*
     The variable Petsc_Viewer_Stderr_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
@@ -116,6 +120,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);CHKERRQ(ierr);
@@ -127,6 +132,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stderr_keyval,(void*)*viewer);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -201,12 +207,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
    Notes:
    This PetscViewer can be destroyed with PetscViewerDestroy().
 
-   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD),
-   then only the first processor in the group opens the file.  All other
-   processors send their data to the first processor to print.
-
-   Each processor can instead write its own independent output by
-   specifying the communicator PETSC_COMM_SELF.
+   The MPI communicator used here must match that used by the object one is viewing. For example if the 
+   Mat was created with a PETSC_COMM_WORLD, then the Viewer must be created with PETSC_COMM_WORLD
 
    As shown below, PetscViewerASCIIOpen() is useful in conjunction with
    MatView() and VecView()
@@ -239,6 +241,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
     ierr = PetscObjectReference((PetscObject)*lab);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
@@ -260,6 +263,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
         ierr = PetscObjectReference((PetscObject)vlink->viewer);CHKERRQ(ierr);
         *lab = vlink->viewer;
         ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+        ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       vlink = vlink->next;
@@ -285,6 +289,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
     }
   }
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

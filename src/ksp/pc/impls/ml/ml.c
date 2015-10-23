@@ -4,8 +4,8 @@
    Note: Something non-obvious breaks -pc_mg_type ADDITIVE for parallel runs
                                     Jed Brown, see [PETSC #18321, #18449].
 */
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
-#include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscdm.h>            /* for DMDestroy(&pc->mg) hack */
@@ -1187,7 +1187,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptions *PetscOptionsObject,PC pc)
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetNumberSmoothDown(),
            PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
-           PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
+           PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
 #undef __FUNCT__

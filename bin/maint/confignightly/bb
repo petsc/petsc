@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=bb-proxy
-set USR=balay
-set LOC=/home/balay/${RNAME}
-set CONF=arch-cuda-double

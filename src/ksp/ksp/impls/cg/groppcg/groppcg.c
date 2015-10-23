@@ -1,4 +1,4 @@
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 /*
  KSPSetUp_GROPPCG - Sets up the workspace needed by the GROPPCG method.
@@ -76,7 +76,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = VecNorm(r,NORM_2,&dp);CHKERRQ(ierr);                /*     dp <- r'*r = e'*A'*A*e            */
     break;
   case KSP_NORM_NATURAL:
-    if (PetscIsInfOrNanScalar(gamma)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    KSPCheckDot(ksp,gamma);
     dp = PetscSqrtReal(PetscAbsScalar(gamma));                  /*     dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
@@ -125,7 +125,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = VecDotEnd(r,z,&gammaNew);CHKERRQ(ierr);
 
     if (ksp->normtype == KSP_NORM_NATURAL) {
-      if (PetscIsInfOrNanScalar(gammaNew)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+      KSPCheckDot(ksp,gammaNew);
       dp = PetscSqrtReal(PetscAbsScalar(gammaNew));                  /*     dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     } else if (ksp->normtype == KSP_NORM_NONE) {
       dp = 0.0;

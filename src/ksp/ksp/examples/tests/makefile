@@ -7,13 +7,13 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c
+                ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex43.c ex44.c ex45.c ex46.cxx ex47.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -140,9 +140,6 @@ ex33: ex33.o  chkopts
 ex34: ex34.o  chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_KSP_LIB}
 	${RM} ex34.o
-ex35: ex35.o  chkopts
-	-${CLINKER} -o ex35 ex35.o  ${PETSC_KSP_LIB}
-	${RM} ex35.o
 ex36: ex36.o  chkopts
 	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
 	${RM} ex36.o
@@ -173,6 +170,15 @@ ex44: ex44.o chkopts
 ex45: ex45.o chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_KSP_LIB}
 	${RM} ex45.o
+ex46: ex46.o chkopts
+	-${CLINKER} -o ex46 ex46.o ${PETSC_KSP_LIB}
+	${RM} ex46.o
+ex47: ex47.o chkopts
+	-${CLINKER} -o ex47 ex47.o ${PETSC_KSP_LIB}
+	${RM} ex47.o
+ex47f: ex47f.o chkopts
+	-${FLINKER} -o ex47f ex47f.o ${PETSC_KSP_LIB}
+	${RM} ex47f.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -300,7 +306,6 @@ runex11:
                 -fc_ksp_view \
                 -fc_ksp_monitor_short \
                 -fc_ksp_type fgmres \
-                -fc_ksp_rtol 1.0e-10 \
                 -fc_ksp_max_it 4000 \
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
@@ -327,7 +332,6 @@ runex11_2:
                 -fc_ksp_view \
                 -fc_ksp_monitor_short \
                 -fc_ksp_type fgmres \
-                -fc_ksp_rtol 1.0e-10 \
                 -fc_ksp_max_it 4000 \
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
@@ -395,7 +399,7 @@ runex19_2:
 	   else printf "${PWD}\nPossible problem with ex19_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_2.tmp
 runex20:
-	-@${MPIEXEC} -n 1 ./ex20 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -mat_view -ksp_monitor_short -ksp_atol 1.0e-13 > ex20_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20 -ksp_monitor_short  > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
@@ -443,7 +447,7 @@ runex24_2:
            else printf "${PWD}\nPossible problem with ex24_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_2.tmp
 runex24_3:
-	-@${MPIEXEC} -n 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular > ex24_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular -ksp_max_it 8 > ex24_3.tmp 2>&1; \
            if (${DIFF} output/ex24_3.out ex24_3.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex24_3, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_3.tmp
@@ -454,16 +458,11 @@ runex24_4:
            ${RM} -f ex24_4.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -f ${DATAFILESPATH}/matrices/indefinite/afiro -ksp_rtol 1.e-3 > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_1.tmp
-runex25_2:
-	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
-		-pc_type jacobi -pc_jacobi_type rowmax > ex25_2.tmp 2>&1; \
-           if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
-           else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
-           ${RM} -f ex25_2.tmp
+
 runex26:
 	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short > ex26_1.tmp 2>&1; \
 	if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
@@ -508,7 +507,7 @@ runex28_2:
 	   ${RM} -f ex28.tmp
 runex28_3:
 	-@${MPIEXEC} -n 5 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
-	if (${DIFF} output/ex28.out ex28.tmp) then true; \
+	if (${DIFF} output/ex28_3.out ex28.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex28_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex29:
@@ -580,7 +579,7 @@ runex30_shift_in_blocks_sbaij: # sensitive to machine, thus not submitted to the
 	   ${RM} -f ex30.tmp
 
 runex31:
-	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition -mat_partitioning_type parmetis > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex31, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex31.tmp
@@ -871,25 +870,25 @@ runex42_2:
 	   ${RM} -f ex42.tmp
 
 runex43:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format ell -vec_type seqcusp -pc_type ilu > ex43.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse  -mat_cusparse_storage_format ell -vec_type seqcusp -pc_type ilu > ex43.tmp 2>&1;\
 	if (${DIFF} output/ex43.out ex43.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43.tmp
 
 runex43_2:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -mat_cusparse_storage_format hyb -vec_type seqcusp -ksp_type cg -pc_type icc > ex43_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format hyb -vec_type seqcusp -ksp_type cg -pc_type icc > ex43_2.tmp 2>&1;\
 	if (${DIFF} output/ex43_2.out ex43_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu > ex43_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu > ex43_3.tmp 2>&1;\
 	if (${DIFF} output/ex43_3.out ex43_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_3.tmp
 
 runex43_4:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd > ex43_4.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd > ex43_4.tmp 2>&1;\
 	if (${DIFF} output/ex43_4.out ex43_4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_4.tmp
@@ -948,9 +947,21 @@ runex45:
 	   else printf "${PWD}\nPossible problem with ex45, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex45.tmp
 
+runex46:
+	-@${MPIEXEC} -n 1 ./ex46 > ex46.tmp 2>&1;\
+	if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex47:
+	-@${MPIEXEC} -n 1 ./ex47 -pc_type fieldsplit > ex47.tmp 2>&1;\
+	if (${DIFF} output/ex47_1.out ex47.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex47, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex47.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
-                                 ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 ex21.rm \
+                                 ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
@@ -961,7 +972,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
-                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm
+                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
@@ -970,15 +981,17 @@ TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
-                                 ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
+                                 ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
-                                 ex31.PETSc runex31 ex31.rm \
                                  ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
                                  ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
+TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex31.PETSc runex31 ex31.rm
+
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 TESTEXAMPLES_CUDA              = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
-include ${PETSC_DIR}/lib/petsc-conf/test
+TESTEXAMPLES_CHOMBO            =
+include ${PETSC_DIR}/lib/petsc/conf/test

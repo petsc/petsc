@@ -124,7 +124,9 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscBool      hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (itcount) *itcount = 0;
   ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
   res     = res_norm;
   *GRS(0) = res_norm;
 
@@ -136,7 +138,6 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
-    if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
     ierr        = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -156,6 +157,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* update hessenberg matrix and do Gram-Schmidt */
     ierr = (*gmres->orthog)(ksp,it);CHKERRQ(ierr);
+    if (ksp->reason) break;
 
     /* vv(i+1) . vv(i+1) */
     ierr = VecNormalize(VEC_VV(it+1),&tt);CHKERRQ(ierr);

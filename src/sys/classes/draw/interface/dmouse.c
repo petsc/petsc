@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetMouseButton"
@@ -17,8 +17,8 @@
 
     Output Parameters:
 +   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT
-.   x_user, y_user - user coordinates of location (user may pass in 0).
--   x_phys, y_phys - window coordinates (user may pass in 0).
+.   x_user, y_user - user coordinates of location (user may pass in NULL).
+-   x_phys, y_phys - window coordinates (user may pass in NULL).
 
     Level: intermediate
 
@@ -34,8 +34,9 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidPointer(button,2);
   *button = PETSC_BUTTON_NONE;
-  ierr    = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
   ierr = (*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
@@ -55,8 +56,8 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
 
     Output Parameters:
 +   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT
-.   x_user, y_user - user coordinates of location (user may pass in 0).
--   x_phys, y_phys - window coordinates (user may pass in 0).
+.   x_user, y_user - user coordinates of location (user may pass in NULL).
+-   x_phys, y_phys - window coordinates (user may pass in NULL).
 
     Level: intermediate
 
@@ -70,13 +71,16 @@ PetscErrorCode  PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidPointer(button,2);
+
+  *button = PETSC_BUTTON_NONE;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscDrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
-  }
-  if (button) {
-    ierr = MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-  }
+
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscDrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);}
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+
+  ierr = MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   if (x_user) bcast[0] = *x_user;
   if (y_user) bcast[1] = *y_user;
   if (x_phys) bcast[2] = *x_phys;

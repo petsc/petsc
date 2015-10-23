@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 
 PetscFunctionList TSTrajectoryList              = NULL;
 PetscBool         TSTrajectoryRegisterAllCalled = PETSC_FALSE;
@@ -48,7 +48,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet"
-PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time)
+PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *time)
 {
   PetscErrorCode ierr;
 
@@ -143,8 +143,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tstra)
   *tstra = NULL;
   ierr = TSInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(t, _p_TSTrajectory, struct _TSTrajectoryOps, TSTRAJECTORY_CLASSID, "TSTrajectory", "Time stepping", "TS", comm, TSTrajectoryDestroy, TSTrajectoryView);CHKERRQ(ierr);
-  ierr = PetscMemzero(t->ops, sizeof(struct _TSTrajectoryOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(t, TSTRAJECTORY_CLASSID, "TSTrajectory", "Time stepping", "TS", comm, TSTrajectoryDestroy, TSTrajectoryView);CHKERRQ(ierr);
   *tstra = t;
   PetscFunctionReturn(0);
 }

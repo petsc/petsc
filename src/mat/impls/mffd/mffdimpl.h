@@ -13,7 +13,7 @@
 #define __MFFD_H__
 
 #include <petscmat.h>         /*I  "petscmat.h"   I*/
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 /*
     Table of functions that manage the computation and understanding
@@ -29,7 +29,6 @@ struct _MFOps {
 struct _p_MatMFFD {    /* context for default matrix-free SNES */
   PETSCHEADER(struct _MFOps);
   Vec            w;                        /* work vector */
-  MatNullSpace   sp;                       /* null space context */
   PetscReal      error_rel;                /* square root of relative error in computing function */
   PetscScalar    currenth;                 /* last differencing parameter h used */
   PetscScalar    *historyh;                /* history of differencing parameter h */

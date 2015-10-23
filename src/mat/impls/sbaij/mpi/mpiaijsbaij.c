@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscmat.h>
 
 #undef __FUNCT__
@@ -53,7 +53,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&M);CHKERRQ(ierr);
   } else {
     *newmat = M;
   }
@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,M
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&M);CHKERRQ(ierr);
   } else {
     *newmat = M;
   }

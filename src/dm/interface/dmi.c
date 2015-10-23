@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
 #undef __FUNCT__
@@ -174,5 +174,18 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       }
     }
   }
+#if 0
+  /* We need a way to filter the original SF for given fields:
+       - Keeping the original section around it too much I think
+       - We could keep the distributed section, and subset it
+   */
+  if (dm->sfNatural) {
+    PetscSF sfNatural;
+
+    ierr = PetscSectionCreateSubsection(dm->originalSection, numFields, fields, &(*subdm)->originalSection);CHKERRQ(ierr);
+    ierr = DMPlexCreateGlobalToNaturalPetscSF(*subdm, &sfNatural);CHKERRQ(ierr);
+    ierr = DMPlexSetGlobalToNaturalPetscSF(*subdm, sfNatural);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }

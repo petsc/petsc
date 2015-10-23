@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInvertCell_Internal"
@@ -1099,11 +1099,12 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
 #define __FUNCT__ "DMRefine_Plex"
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
-  PetscReal      refinementLimit;
-  PetscInt       dim, cStart, cEnd;
-  char           genname[1024], *name = NULL;
-  PetscBool      isUniform, isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg;
-  PetscErrorCode ierr;
+  PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
+  PetscReal        refinementLimit;
+  PetscInt         dim, cStart, cEnd;
+  char             genname[1024], *name = NULL;
+  PetscBool        isUniform, isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
@@ -1116,7 +1117,8 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
-  if (refinementLimit == 0.0) PetscFunctionReturn(0);
+  ierr = DMPlexGetRefinementFunction(dm, &refinementFunc);CHKERRQ(ierr);
+  if (refinementLimit == 0.0 && !refinementFunc) PetscFunctionReturn(0);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) dm)->prefix, "-dm_plex_generator", genname, 1024, &flg);CHKERRQ(ierr);
@@ -1134,7 +1136,16 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscInt c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+      if (refinementFunc) {
+        for (c = cStart; c < cEnd; ++c) {
+          PetscReal vol, centroid[3];
+
+          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
+          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
+        }
+      } else {
+        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+      }
       ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
 #else
@@ -1149,7 +1160,16 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscInt   c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+      if (refinementFunc) {
+        for (c = cStart; c < cEnd; ++c) {
+          PetscReal vol, centroid[3];
+
+          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
+          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
+        }
+      } else {
+        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+      }
       ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
@@ -1160,7 +1180,16 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscInt c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+      if (refinementFunc) {
+        for (c = cStart; c < cEnd; ++c) {
+          PetscReal vol, centroid[3];
+
+          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
+          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
+        }
+      } else {
+        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+      }
       ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --with-c-language=cxx --download-tetgen.");
@@ -1193,20 +1222,8 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
     ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
     ierr = DMPlexCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
     ierr = DMPlexSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
+    ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
     cdm  = dmRefined[r];
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_Plex"
-PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
-{
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject) mesh->coarseMesh);CHKERRQ(ierr);
-  *dmCoarsened = mesh->coarseMesh;
   PetscFunctionReturn(0);
 }

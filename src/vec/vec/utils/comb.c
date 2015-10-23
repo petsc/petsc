@@ -19,7 +19,7 @@
            insure that the user calls the routines in the correct order
 */
 
-#include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
+#include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MPIPetsc_Iallreduce"
@@ -386,9 +386,9 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
   }
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
-  if (!x->ops->dot_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not suppport local dots");
+  if (!x->ops->tdot_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not suppport local dots");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
+  ierr = (*x->ops->tdot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

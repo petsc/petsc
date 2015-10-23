@@ -15,7 +15,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/petsc-finclude.  This
+!  PETSc include files in the directory petsc/include/petsc/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
@@ -41,11 +41,11 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscpc.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -168,7 +168,7 @@
 
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
-      tol = 1.d-7
+      tol = .0000001
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                         &
      &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
@@ -204,8 +204,8 @@
       else
         write(6,200) its
       endif
- 100  format('Norm of error = ',e11.4,',  Iterations = ',i5)
- 200  format('Norm of error < 1.e-12,Iterations = ',i5)
+ 100  format('Norm of error ',e11.4,',  Iterations = ',i5)
+ 200  format('Norm of error < 1.e-12, Iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

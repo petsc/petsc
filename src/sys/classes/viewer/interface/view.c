@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_VIEWER_CLASSID;
 
@@ -362,8 +362,11 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
    Input Parameters:
 +  viewer   - The viewer
 .  data     - Location to write the data
-.  count    - Number of items of data to read
+.  num      - Number of items of data to read
 -  datatype - Type of data to read
+
+   Output Parameters:
+.  count - number of items of data actually read, or NULL
 
    Level: beginner
 
@@ -373,28 +376,30 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer
 @*/
-PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype)
+PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, PetscInt *count, PetscDataType dtype)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (dtype == PETSC_STRING) {
-    PetscInt c, i = 0;
+    PetscInt c, i = 0, cnt;
     char *s = (char *)data;
-    for (c = 0; c < count; c++) {
+    for (c = 0; c < num; c++) {
       /* Skip leading whitespaces */
-      do {ierr = (*viewer->ops->read)(viewer, &(s[i]), 1, PETSC_CHAR);CHKERRQ(ierr);}
-      while (s[i]=='\n' || s[i]=='\t' || s[i]==' ' || s[i]=='\0');
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i]), 1, &cnt, PETSC_CHAR);CHKERRQ(ierr); if (count && !cnt) break;}
+      while (s[i]=='\n' || s[i]=='\t' || s[i]==' ' || s[i]=='\0' || s[i]=='\v' || s[i]=='\f' || s[i]=='\r');
       i++;
       /* Read strings one char at a time */
-      do {ierr = (*viewer->ops->read)(viewer, &(s[i++]), 1, PETSC_CHAR);CHKERRQ(ierr);}
-      while (s[i-1]!='\n' && s[i-1]!='\t' && s[i-1]!=' ' && s[i-1]!='\0');
+      do {ierr = (*viewer->ops->read)(viewer, &(s[i++]), 1, &cnt, PETSC_CHAR);CHKERRQ(ierr); if (count && !cnt) break;}
+      while (s[i-1]!='\n' && s[i-1]!='\t' && s[i-1]!=' ' && s[i-1]!='\0' && s[i-1]!='\v' && s[i-1]!='\f' && s[i-1]!='\r');
       /* Terminate final string */
-      if (c == count-1) s[i-1] = '\0';
+      if (c == num-1) s[i-1] = '\0';
     }
+    if (count) *count = c;
+    else if (c < num) SETERRQ2(PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %D < %D strings", c, num);
   } else {
-    ierr = (*viewer->ops->read)(viewer, data, count, dtype);CHKERRQ(ierr);
+    ierr = (*viewer->ops->read)(viewer, data, num, count, dtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I     "petscsys.h"   I*/
+#include <petsc/private/viewerimpl.h>  /*I     "petscsys.h"   I*/
 
 #define QUEUESTRINGSIZE 1024
 
@@ -142,8 +142,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;
   viewer->ops->flush            = PetscViewerFlush_VU;
-  viewer->ops->getsingleton     = NULL;
-  viewer->ops->restoresingleton = NULL;
+  viewer->ops->getsubviewer     = NULL;
+  viewer->ops->restoresubviewer = NULL;
 
   vu->fd          = NULL;
   vu->mode        = FILE_MODE_WRITE;

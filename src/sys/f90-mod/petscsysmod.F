@@ -6,15 +6,15 @@
         use mpi
 #define PETSC_AVOID_MPIF_H
 #endif
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscviewer.h>
-#include <petsc-finclude/ftn-custom/petscviewerdef.h90>
-#include <petsc-finclude/petscdraw.h>
-#include <petsc-finclude/petsclog.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscviewer.h>
+#include <petsc/finclude/ftn-custom/petscviewerdef.h90>
+#include <petsc/finclude/petscdraw.h>
+#include <petsc/finclude/petsclog.h>
         end module
 
         module petscsys
         use petscsysdef
-#include <petsc-finclude/petscviewer.h90>
+#include <petsc/finclude/petscviewer.h90>
         end module
 

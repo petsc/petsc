@@ -891,15 +891,9 @@ PetscErrorCode MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)mat->data;
   PetscErrorCode ierr;
   PetscInt       nstash,reallocs;
-  InsertMode     addv;
 
   PetscFunctionBegin;
   if (baij->donotstash || mat->nooffprocentries) PetscFunctionReturn(0);
-
-  /* make sure all processors are either in INSERTMODE or ADDMODE */
-  ierr = MPI_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
-  mat->insertmode = addv; /* in case this processor had no cache */
 
   ierr = MatStashScatterBegin_Private(mat,&mat->stash,mat->rmap->range);CHKERRQ(ierr);
   ierr = MatStashScatterBegin_Private(mat,&mat->bstash,baij->rangebs);CHKERRQ(ierr);
@@ -921,7 +915,6 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscInt       *row,*col;
   PetscBool      r1,r2,r3,other_disassembled;
   MatScalar      *val;
-  InsertMode     addv = mat->insertmode;
   PetscMPIInt    n;
 
   PetscFunctionBegin;
@@ -939,7 +932,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         if (j < n) ncols = j-i;
         else       ncols = n-i;
         /* Now assemble all these values with a single function call */
-        ierr = MatSetValues_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i,addv);CHKERRQ(ierr);
+        ierr = MatSetValues_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i,mat->insertmode);CHKERRQ(ierr);
         i    = j;
       }
     }
@@ -966,7 +959,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         }
         if (j < n) ncols = j-i;
         else       ncols = n-i;
-        ierr = MatSetValuesBlocked_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i*bs2,addv);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i*bs2,mat->insertmode);CHKERRQ(ierr);
         i    = j;
       }
     }
@@ -1050,7 +1043,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
       MatInfo info;
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D bs %D mem %D\n",
                                                 rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,mat->rmap->bs,(PetscInt)info.memory);CHKERRQ(ierr);
       ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -1058,7 +1051,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
       ierr = MatGetInfo(baij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] off-diagonal part: nz %D \n",rank,(PetscInt)info.nz_used);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Information on VecScatter used in matrix-vector product: \n");CHKERRQ(ierr);
       ierr = VecScatterView(baij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -1135,13 +1128,14 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the PetscDraw object
     */
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPIBAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
       ierr = MatView_SeqBAIJ(((Mat_MPIBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1776,7 +1770,7 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
 
   if (reuse == MAT_INITIAL_MATRIX || *matout != A) *matout = B;
   else {
-    ierr = MatHeaderMerge(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2118,7 +2112,7 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatMPIBAIJSetPreallocation(B,bs,0,nnz_d,0,nnz_o);CHKERRQ(ierr);
     /* MatAXPY_BasicWithPreallocation() for BAIJ matrix is much slower than AIJ, even for bs=1 ! */
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
     ierr = PetscFree(nnz_d);CHKERRQ(ierr);
     ierr = PetscFree(nnz_o);CHKERRQ(ierr);
   }
@@ -2674,13 +2668,36 @@ PetscErrorCode MatShift_MPIBAIJ(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *maij = (Mat_MPIBAIJ*)Y->data;
-  Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ*)maij->A->data,*bij = (Mat_SeqBAIJ*)maij->B->data;
+  Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ*)maij->A->data;
 
   PetscFunctionBegin;
-  if (!aij->nz && !bij->nz) {
+  if (!Y->preallocated) {
     ierr = MatMPIBAIJSetPreallocation(Y,Y->rmap->bs,1,NULL,0,NULL);CHKERRQ(ierr);
+  } else if (!aij->nz) {
+    PetscInt nonew = aij->nonew;
+    ierr = MatSeqBAIJSetPreallocation(maij->A,Y->rmap->bs,1,NULL);CHKERRQ(ierr);
+    aij->nonew = nonew;
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_MPIBAIJ"
+PetscErrorCode MatMissingDiagonal_MPIBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only works for square matrices");
+  ierr = MatMissingDiagonal(a->A,missing,d);CHKERRQ(ierr);
+  if (d) {
+    PetscInt rstart;
+    ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+    *d += rstart/A->rmap->bs;
+
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2798,7 +2815,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatMissingDiagonal_MPIBAIJ,
                                 /*114*/MatGetSeqNonzeroStructure_MPIBAIJ,
                                        0,
                                        MatGetGhosts_MPIBAIJ,
@@ -3091,7 +3108,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
   } else {
    *newmat = B;
   }

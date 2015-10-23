@@ -1,0 +1,45 @@
+
+After setting all values to 0:
+begin rank 0 portion (with ghosts, 4 x 5)
+0., 0., 0., 0., 0., 
+0., 0., 0., 0., 0., 
+0., 0., 0., 0., 0., 
+0., 0., 0., 0., 0., 
+end rank 0 portion
+begin rank 1 portion (with ghosts, 4 x 5)
+0., 0., 0., 0., 0., 
+0., 0., 0., 0., 0., 
+0., 0., 0., 0., 0., 
+0., 0., 0., 0., 0., 
+end rank 1 portion
+done
+
+After setting interior values to 1:
+begin rank 0 portion (with ghosts, 4 x 5)
+0., 0., 0., 0., 0., 
+0., 1., 1., 1., 0., 
+0., 1., 1., 1., 0., 
+0., 0., 0., 0., 0., 
+end rank 0 portion
+begin rank 1 portion (with ghosts, 4 x 5)
+0., 0., 0., 0., 0., 
+0., 1., 1., 1., 0., 
+0., 1., 1., 1., 0., 
+0., 0., 0., 0., 0., 
+end rank 1 portion
+done
+
+After local-to-local communication:
+begin rank 0 portion (with ghosts, 4 x 5)
+1., 1., 1., 1., 1., 
+1., 1., 1., 1., 1., 
+1., 1., 1., 1., 1., 
+1., 1., 1., 1., 1., 
+end rank 0 portion
+begin rank 1 portion (with ghosts, 4 x 5)
+1., 1., 1., 1., 1., 
+1., 1., 1., 1., 1., 
+1., 1., 1., 1., 1., 
+1., 1., 1., 1., 1., 
+end rank 1 portion
+done

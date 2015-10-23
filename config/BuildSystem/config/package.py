@@ -69,6 +69,8 @@ class Package(config.base.Configure):
     self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
 
     self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
+    self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
+    self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
     return
 
   def __str__(self):
@@ -373,7 +375,8 @@ class Package(config.base.Configure):
       raise RuntimeError('--with-'+self.package+'-dir='+self.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include' in self.argDB and not 'with-'+self.package+'-lib' in self.argDB:
-      raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
+      if self.liblist[0]:
+        raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
     if 'with-'+self.package+'-lib' in self.argDB and not 'with-'+self.package+'-include' in self.argDB:
       if self.includes:
         raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
@@ -381,19 +384,25 @@ class Package(config.base.Configure):
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
     if 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
-      libs = self.argDB['with-'+self.package+'-lib']
+      if self.liblist[0]:
+        libs  = self.argDB['with-'+self.package+'-lib']
+        slibs = str(self.argDB['with-'+self.package+'-lib'])
+      else:
+        libs  = []
+        slibs = 'NoneNeeded'
       inc  = []
+      d  = None
       if self.includes:
         inc = self.argDB['with-'+self.package+'-include']
-      # hope that package root is one level above first include directory specified
-        d   = os.path.dirname(inc[0])
-      else:
-        d   = None
+        # hope that package root is one level above first include directory specified
+        if inc:
+          d   = os.path.dirname(inc[0])
+
       if not isinstance(inc, list): inc = inc.split(' ')
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
-      msg = '--with-'+self.package+'-lib='+str(self.argDB['with-'+self.package+'-lib'])
+      msg = '--with-'+self.package+'-lib='+slibs
       if self.includes:
         msg += ' and \n'+'--with-'+self.package+'-include='+str(self.argDB['with-'+self.package+'-include'])
       msg += ' did not work'
@@ -427,18 +436,7 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    downloadPackage = 0
-    downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
-    if isinstance(downloadPackageVal, str):
-      self.download = [downloadPackageVal]
-      self.downloadURLSetByUser = True
-      downloadPackage = 1
-    elif downloadPackageVal:
-      downloadPackage = 1
-
-    if downloadPackage:
-      if not self.download:
-        raise RuntimeError('Package'+self.package+' does not support automatic download.\n')
+    if self.argDB['download-'+self.downloadname.lower()]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -451,7 +449,7 @@ class Package(config.base.Configure):
 
   def installNeeded(self, mkfile):
     makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, 'lib','petsc-conf',self.name)
+    makefileSaved = os.path.join(self.confDir, 'lib','petsc','conf',self.name)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
@@ -464,7 +462,7 @@ class Package(config.base.Configure):
     self.log.write('********Output of running make on '+self.name+' follows *******\n')
     self.log.write(output)
     self.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc-conf', self.name), timeout=5, log = self.log)
+    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc','conf', self.name), timeout=5, log = self.log)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -524,8 +522,8 @@ class Package(config.base.Configure):
         self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
-          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
-          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
+          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo], log = self.log)
+          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo, log = self.log)
           self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
           return
         except RuntimeError, e:
@@ -550,7 +548,9 @@ class Package(config.base.Configure):
       self.headers.pushLanguage('C++')
     else:
       self.headers.pushLanguage(self.defaultLanguage)
+    self.headers.saveLog()
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
+    self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return ret
 
@@ -617,8 +617,10 @@ class Package(config.base.Configure):
         if directory: self.logPrint('Contents: '+str(os.listdir(directory)))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
+      self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
+        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           if self.includes:
@@ -630,6 +632,8 @@ class Package(config.base.Configure):
           self.directory = directory
           self.framework.packages.append(self)
           return
+      else:
+        self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
@@ -669,6 +673,10 @@ class Package(config.base.Configure):
   def configure(self):
     if self.download and self.argDB['download-'+self.downloadname.lower()]:
       self.argDB['with-'+self.package] = 1
+      downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
+      if isinstance(downloadPackageVal, str):
+        self.download = [downloadPackageVal]
+        self.downloadURLSetByUser = True
     if not 'with-'+self.package in self.argDB:
       self.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.argDB or 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
@@ -967,7 +975,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   The main contribution is in the implementation of a generic Install method, which attempts
   to automate the building of a package based on the mostly standard instance variables.
 
-  
+
   Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
   a GNU configure arguments stamp to perform the check in the future, etc.
@@ -1026,6 +1034,8 @@ class GNUPackage(Package):
     args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
+    if self.setCompilers.LDFLAGS:
+      args.append('LDFLAGS="'+self.setCompilers.LDFLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
@@ -1039,7 +1049,7 @@ class GNUPackage(Package):
       fc = self.getCompiler()
       if self.compilers.fortranIsF90:
         try:
-          output, error, status = self.executeShellCommand(fc+' -v')
+          output, error, status = self.executeShellCommand(fc+' -v', log = self.log)
           output += error
         except:
           output = ''
@@ -1130,7 +1140,7 @@ class CMakePackage(Package):
   def formCMakeConfigureArgs(self):
     import os
     import shlex
- 
+
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     self.framework.pushLanguage('C')
@@ -1152,6 +1162,12 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
+
+    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+      args.append('-DBUILD_SHARED_LIBS=on')
+    else:
+      args.append('-DBUILD_SHARED_LIBS=off')
+
     return args
 
   def Install(self):

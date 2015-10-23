@@ -1,5 +1,5 @@
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
 const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
@@ -473,7 +473,7 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementComputeExplicitOperator"
@@ -546,10 +546,14 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   if (D) {
-    MatInfo info;
+    MatInfo   info;
+    PetscReal norm;
 
     ierr = MatGetInfo(D, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
-    if (info.nz_used) SETERRQ(PetscObjectComm((PetscObject) M), PETSC_ERR_SUP, "Not yet implemented");
+    if (info.nz_used) {
+      ierr = MatNorm(D, NORM_INFINITY, &norm);CHKERRQ(ierr);
+      if (norm > PETSC_MACHINE_EPSILON) SETERRQ(PetscObjectComm((PetscObject) M), PETSC_ERR_SUP, "Not yet implemented for Schur complements with non-vanishing D");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -561,6 +565,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 {
   PetscErrorCode ierr;
   Mat            A=0,Ap=0,B=0,C=0,D=0;
+  MatReuse       reuse;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -575,19 +580,18 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
-  if (mreuse != MAT_IGNORE_MATRIX) {
-    /* Use MatSchurComplement */
-    if (mreuse == MAT_REUSE_MATRIX) {
-      ierr = MatSchurComplementGetSubMatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
-      if (!A || !Ap || !B || !C) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
-      if (A != Ap) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
-      ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
-    }
+  reuse = MAT_INITIAL_MATRIX;
+  if (mreuse == MAT_REUSE_MATRIX) {
+    ierr = MatSchurComplementGetSubMatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
+    if (!A || !Ap || !B || !C) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
+    if (A != Ap) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
+    ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
+    reuse = MAT_REUSE_MATRIX;
   }
-  ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,isrow1,iscol0,mreuse,&C);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,isrow1,iscol1,mreuse,&D);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow0,iscol0,reuse,&A);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow0,iscol1,reuse,&B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow1,iscol0,reuse,&C);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow1,iscol1,reuse,&D);CHKERRQ(ierr);
   switch (mreuse) {
   case MAT_INITIAL_MATRIX:
     ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
@@ -812,7 +816,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     }
 
   } else {
-    Mat         AdB,Sp;
+    Mat         AdB;
     Vec         diag;
 
     ierr = MatCreateVecs(A00,&diag,NULL);CHKERRQ(ierr);
@@ -825,15 +829,16 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
     ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
     ierr = VecDestroy(&diag);CHKERRQ(ierr);
-    Sp       = (preuse == MAT_REUSE_MATRIX) ? *Spmat : (Mat)0;
-    ierr     = MatMatMult(A10,AdB,preuse,PETSC_DEFAULT,&Sp);CHKERRQ(ierr);
+    /* Cannot really reuse Spmat in MatMatMult() because of MatAYPX() -->
+         MatAXPY() --> MatHeaderReplace() --> MatDestroy_XXX_MatMatMult()  */
+    ierr     = MatDestroy(Spmat);CHKERRQ(ierr);
+    ierr     = MatMatMult(A10,AdB,MAT_INITIAL_MATRIX,PETSC_DEFAULT,Spmat);CHKERRQ(ierr);
     if (!A11) {
-      ierr = MatScale(Sp,-1.0);CHKERRQ(ierr);
+      ierr = MatScale(*Spmat,-1.0);CHKERRQ(ierr);
     } else {
       /* TODO: when can we pass SAME_NONZERO_PATTERN? */
-      ierr     = MatAYPX(Sp,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr     = MatAYPX(*Spmat,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
-    *Spmat    = Sp;
     ierr     = MatDestroy(&AdB);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

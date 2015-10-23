@@ -1,6 +1,7 @@
 
-#include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
 #include <petscviewer.h>
+#include <petscsf.h>
 
 const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
 
@@ -75,14 +76,16 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
   Developer Note: This cannot use PetscObjectViewFromOptions() because ISColoring is not a PetscObject
 
 */
-PetscErrorCode ISColoringViewFromOptions(ISColoring obj,const char prefix[],const char optionname[])
+PetscErrorCode ISColoringViewFromOptions(ISColoring obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
+  prefix = bobj ? bobj->prefix : NULL;
   ierr   = PetscOptionsGetViewer(obj->comm,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -131,11 +134,11 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&is);CHKERRQ(ierr);
   for (i=0; i<iscoloring->n; i++) {
@@ -330,6 +333,127 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   ierr = PetscInfo1(0,"Number of colors %D\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "ISBuildTwoSided"
+/*@
+    ISBuildTwoSided - Takes an IS that describes where we will go. Generates an IS that contains new numbers from remote or local
+    on the IS.
+
+    Collective on IS
+
+    Input Parameters
+.   to - an IS describes where we will go. Negative target rank will be ignored
+.   toindx - an IS describes what indices should send. NULL means sending natural numbering
+
+    Output Parameter:
+.   rows - contains new numbers from remote or local
+
+   Level: advanced
+
+.seealso: MatPartitioningCreate(), ISPartitioningToNumbering(), ISPartitioningCount()
+
+@*/
+PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
+{
+   const PetscInt       *ito_indices,*toindx_indices;
+   PetscInt             *send_indices,rstart,*recv_indices,nrecvs,nsends;
+   PetscInt             *tosizes,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
+   PetscMPIInt          *toranks,*fromranks,size,target_rank,*fromperm_newtoold,nto,nfrom;
+   PetscLayout           isrmap;
+   MPI_Comm              comm;
+   PetscSF               sf;
+   PetscSFNode          *iremote;
+   PetscErrorCode        ierr;
+
+   PetscFunctionBegin;
+   ierr = PetscObjectGetComm((PetscObject)ito,&comm);CHKERRQ(ierr);
+   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+   ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
+   /* why we do not have ISGetLayout? */
+   isrmap = ito->map;
+   ierr = PetscLayoutGetRange(isrmap,&rstart,PETSC_NULL);CHKERRQ(ierr);
+   ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
+   ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
+   for(i=0; i<ito_ln; i++){
+     if(ito_indices[i]<0) continue;
+#if defined(PETSC_USE_DEBUG)
+     if(ito_indices[i]>=size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %d is larger than communicator size %d ",ito_indices[i],size);
+#endif
+     tosizes_tmp[ito_indices[i]]++;
+   }
+   nto = 0;
+   for(i=0; i<size; i++){
+	 tooffsets_tmp[i+1] = tooffsets_tmp[i]+tosizes_tmp[i];
+     if(tosizes_tmp[i]>0) nto++;
+    }
+   ierr = PetscCalloc2(nto,&toranks,2*nto,&tosizes);CHKERRQ(ierr);
+   nto = 0;
+   for(i=0; i<size; i++){
+     if(tosizes_tmp[i]>0){
+        toranks[nto]      = i;
+        tosizes[2*nto]    = tosizes_tmp[i];/* size */
+        tosizes[2*nto+1]  = tooffsets_tmp[i];/* offset */
+        nto++;
+     }
+   }
+   nsends = tooffsets_tmp[size];
+   ierr = PetscCalloc1(nsends,&send_indices);CHKERRQ(ierr);
+   if(toindx){
+	 ierr = ISGetIndices(toindx,&toindx_indices);CHKERRQ(ierr);
+   }
+   for(i=0; i<ito_ln; i++){
+	 if(ito_indices[i]<0) continue;
+	 target_rank = ito_indices[i];
+	 send_indices[tooffsets_tmp[target_rank]] = toindx? toindx_indices[i]:(i+rstart);
+	 tooffsets_tmp[target_rank]++;
+   }
+   if(toindx){
+   	 ierr = ISRestoreIndices(toindx,&toindx_indices);CHKERRQ(ierr);
+   }
+   ierr = ISRestoreIndices(ito,&ito_indices);CHKERRQ(ierr);
+   ierr = PetscFree2(tosizes_tmp,tooffsets_tmp);CHKERRQ(ierr);
+   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
+   ierr = PetscFree2(toranks,tosizes);CHKERRQ(ierr);
+   ierr = PetscCalloc1(nfrom,&fromperm_newtoold);CHKERRQ(ierr);
+   for(i=0; i<nfrom; i++){
+	 fromperm_newtoold[i] = i;
+   }
+   ierr = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold);CHKERRQ(ierr);
+   nrecvs   = 0;
+   for(i=0; i<nfrom; i++){
+	 nrecvs += fromsizes[i*2];
+   }
+   ierr = PetscCalloc1(nrecvs,&recv_indices);CHKERRQ(ierr);
+   ierr = PetscCalloc1(nrecvs,&iremote);CHKERRQ(ierr);
+   nrecvs = 0;
+   for(i=0; i<nfrom; i++){
+     for(j=0; j<fromsizes[2*fromperm_newtoold[i]]; j++){
+       iremote[nrecvs].rank    = fromranks[i];
+       iremote[nrecvs++].index = fromsizes[2*fromperm_newtoold[i]+1]+j;
+     }
+   }
+   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
+   ierr = PetscSFSetGraph(sf,nsends,nrecvs,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
+   /* how to put a prefix ? */
+   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+   ierr = PetscSFBcastBegin(sf,MPIU_INT,send_indices,recv_indices);CHKERRQ(ierr);
+   ierr = PetscSFBcastEnd(sf,MPIU_INT,send_indices,recv_indices);CHKERRQ(ierr);
+   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+   ierr = PetscFree(fromranks);CHKERRQ(ierr);
+   ierr = PetscFree(fromsizes);CHKERRQ(ierr);
+   ierr = PetscFree(fromperm_newtoold);CHKERRQ(ierr);
+   ierr = PetscFree(send_indices);CHKERRQ(ierr);
+   if(rows){
+	 ierr = PetscSortInt(nrecvs,recv_indices);CHKERRQ(ierr);
+     ierr = ISCreateGeneral(comm, nrecvs,recv_indices,PETSC_OWN_POINTER,rows);CHKERRQ(ierr);
+   }else{
+	 ierr = PetscFree(recv_indices);CHKERRQ(ierr);
+   }
+   PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ISPartitioningToNumbering"
@@ -533,7 +657,10 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     ierr       = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
     ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
     offsets[0] = 0;
-    for (i=1; i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+    for (i=1; i<size; i++) {
+      PetscInt s = offsets[i-1] + sizes[i-1];
+      ierr = PetscMPIIntCast(s,&offsets[i]);CHKERRQ(ierr);
+    }
     N = offsets[size-1] + sizes[size-1];
 
     ierr = PetscMalloc1(N,&indices);CHKERRQ(ierr);

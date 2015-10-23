@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 
 /*
     This routine is shared by SeqAIJ and SeqBAIJ matrices,

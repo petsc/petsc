@@ -4,7 +4,7 @@
 !
       program main
 
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
 
       PetscErrorCode ierr
 
@@ -33,9 +33,9 @@
 !
       subroutine Demo1()
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscviewer.h>
 
       Mat         A
       PetscInt   n,m
@@ -86,9 +86,9 @@
 !
       subroutine Demo2()
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscviewer.h>
 
       PetscInt   n,m
       PetscErrorCode ierr
@@ -122,7 +122,7 @@
 
       do 10, j=1,n
         do 20, i=1,m
-          X(i,j) = 1.d0/(i+j-1)
+          X(i,j) = 1.0/(i+j-1)
  20     continue
  10   continue
       return

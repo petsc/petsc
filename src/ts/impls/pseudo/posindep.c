@@ -1,7 +1,7 @@
 /*
        Code for Timestepping with implicit backwards Euler.
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;       /* work vector where new solution is formed */
@@ -325,9 +325,6 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ts),&viewer);CHKERRQ(ierr);
-  }
   if (pseudo->fnorm < 0) {      /* The last computed norm is stale, recompute */
     ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
     ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
@@ -362,8 +359,6 @@ static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,T
   }
   ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,NULL);CHKERRQ(ierr);
-
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

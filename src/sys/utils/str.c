@@ -16,7 +16,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscStrToArray"
 /*@C
-   PetscStrToArray - Seperates a string by a charactor (for example ' ' or '\n') and creates an array of strings
+   PetscStrToArray - Separates a string by a charactor (for example ' ' or '\n') and creates an array of strings
 
    Not Collective
 
@@ -942,6 +942,11 @@ struct _p_PetscToken {char token;char *array;char *current;};
      This version also treats all characters etc. inside a double quote "
    as a single token.
 
+     For example if the separator character is + and the string is xxxx+y then the first fine will return a pointer to a null terminated xxxx and the 
+   second will return a null terminated y
+
+     If the separator character is + and the string is xxxx then the first and only token found will be a pointer to a null terminated xxxx
+
     Not for use in Fortran
 
    Level: intermediate
@@ -983,10 +988,10 @@ PetscErrorCode  PetscTokenFind(PetscToken a,char *result[])
 
    Input Parameters:
 +  string - the string to look in
--  token - the character to look for
+-  b - the separator character
 
    Output Parameter:
-.  a - pointer to token
+.  t- the token object
 
    Notes:
 
@@ -1241,15 +1246,13 @@ PetscErrorCode PetscEListFind(PetscInt n,const char *const *list,const char *str
 PetscErrorCode PetscEnumFind(const char *const *enumlist,const char *str,PetscEnum *value,PetscBool *found)
 {
   PetscErrorCode ierr;
-  PetscInt n,evalue;
+  PetscInt n = 0,evalue;
   PetscBool efound;
 
   PetscFunctionBegin;
-  for (n = 0; enumlist[n]; n++) {
-    if (n > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
-  }
+  while (enumlist[n++]) if (n > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
   if (n < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
-  n -= 3;                       /* drop enum name, prefix, and null termination */
+  n -= 3; /* drop enum name, prefix, and null termination */
   ierr = PetscEListFind(n,enumlist,str,&evalue,&efound);CHKERRQ(ierr);
   if (efound) *value = (PetscEnum)evalue;
   if (found) *found = efound;

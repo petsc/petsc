@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawIsNull"
@@ -26,8 +26,8 @@ PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
   PetscBool      isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidIntPointer(yes,2);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) *yes = PETSC_TRUE;
   else            *yes = PETSC_FALSE;

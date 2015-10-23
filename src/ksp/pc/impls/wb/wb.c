@@ -1,6 +1,6 @@
 
 #include <petscdmda.h>   /*I "petscdmda.h" I*/
-#include <petsc-private/pcmgimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/pcmgimpl.h>   /*I "petscksp.h" I*/
 #include <petscctable.h>
 
 typedef struct {
@@ -718,12 +718,12 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"      Using iterative solver to construct interpolation\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* should not need to push this twice? */
-      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
       if (!rank) {
         ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
       }
-      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
@@ -753,6 +753,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptions *PetscOptionsObject,PC pc)
     if (!ctx->ksp) {
       const char *prefix;
       ierr = KSPCreate(PETSC_COMM_SELF,&ctx->ksp);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(ctx->ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ctx->ksp);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);

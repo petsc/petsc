@@ -21,9 +21,9 @@
 !     petscvec.h    - vectors
 !  Include petscviewer.h so that we can use the PETSc viewers.
 !
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscviewer.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscviewer.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -59,7 +59,7 @@
 !   - Each processor needs to insert only elements that it owns locally.
       ione = 1
       do 100 i=istart,iend-1
-         v = dble(i)
+         v = 1.0*i
          call VecSetValues(x,ione,i,v,INSERT_VALUES,ierr)
  100  continue
 

@@ -1,0 +1,3 @@
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
+  Linear solve did not converge due to DIVERGED_NANORINF iterations 3
+Nonlinear solve did not converge due to DIVERGED_FUNCTION_DOMAIN iterations 0

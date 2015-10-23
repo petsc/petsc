@@ -1,5 +1,5 @@
 #include <petsctao.h>         /*I  "petsctao.h"  I*/
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 #include <petscsnes.h>
 
 /*
@@ -62,10 +62,9 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
   PetscErrorCode ierr;
   PetscInt       low,high,N,i;
   PetscBool      flg;
-  PetscReal      h=PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal      h=.5*PETSC_SQRT_MACHINE_EPSILON;
 
   PetscFunctionBegin;
-  ierr = TaoComputeObjective(tao, X,&f);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-tao_fd_delta",&h,&flg);CHKERRQ(ierr);
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
@@ -73,7 +72,15 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
   for (i=0;i<N;i++) {
     if (i>=low && i<high) {
       ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-      x[i-low] += h;
+      x[i-low] -= h;
+      ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    }
+
+    ierr = TaoComputeObjective(tao, X,&f);CHKERRQ(ierr);
+
+    if (i>=low && i<high) {
+      ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+      x[i-low] += 2*h;
       ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     }
 
@@ -85,7 +92,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
       ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     }
     if (i>=low && i<high) {
-      g[i-low]=(f2-f)/h;
+      g[i-low]=(f2-f)/(2.0*h);
     }
   }
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);

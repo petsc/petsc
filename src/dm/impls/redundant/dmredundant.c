@@ -1,4 +1,4 @@
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 #include <petscdmredundant.h>   /*I      "petscdmredundant.h" I*/
 
 typedef struct  {
@@ -330,7 +330,7 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidType(dm,1);
-  PetscValidLogicalCollectiveInt(dm,rank,2);
+  PetscValidLogicalCollectiveMPIInt(dm,rank,2);
   PetscValidLogicalCollectiveInt(dm,N,3);
   ierr = PetscTryMethod(dm,"DMRedundantSetSize_C",(DM,PetscMPIInt,PetscInt),(dm,rank,N));CHKERRQ(ierr);
   PetscFunctionReturn(0);

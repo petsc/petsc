@@ -802,12 +802,11 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   ierr     = PetscMalloc1(nrqs+1,&rbuf2);CHKERRQ(ierr);
   rbuf2[0] = tmp + msz;
   for (i=1; i<nrqs; ++i) {
-    j        = pa[i];
     rbuf2[i] = rbuf2[i-1]+w1[pa[i-1]];
   }
   for (i=0; i<nrqs; ++i) {
-    j    = pa[i];
-    ierr = MPI_Irecv(rbuf2[i],w1[j],MPIU_INT,j,tag1,comm,r_waits2+i);CHKERRQ(ierr);
+    j        = pa[i];
+    ierr     = MPI_Irecv(rbuf2[i],w1[j],MPIU_INT,j,tag1,comm,r_waits2+i);CHKERRQ(ierr);
   }
 
   /* Send to other procs the buf size they should allocate */
@@ -895,9 +894,11 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         kmax = rbuf1[i][2*j];
         for (k=0; k<kmax; k++,ct1++) {
           row    = rbuf1_i[ct1] - rstart;
-          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+          nzA    = a_i[row+1] - a_i[row];
+          nzB    = b_i[row+1] - b_i[row];
           ncols  = nzA + nzB;
-          cworkA = a_j + a_i[row]; cworkB = b_j + b_i[row];
+          cworkA = a_j + a_i[row];
+          cworkB = b_j + b_i[row];
 
           /* load the column indices for this row into cols*/
           cols = sbuf_aj_i + ct2;
@@ -935,10 +936,12 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
           kmax = rbuf1_i[2*j];
           for (k=0; k<kmax; k++,ct1++) {
             row    = rbuf1_i[ct1] - rstart;
-            nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+            nzA    = a_i[row+1] - a_i[row];
+            nzB    = b_i[row+1] - b_i[row];
             ncols  = nzA + nzB;
-            cworkA = a_j + a_i[row];     cworkB = b_j + b_i[row];
-            vworkA = a_a + a_i[row]*bs2; vworkB = b_a + b_i[row]*bs2;
+            cworkB = b_j + b_i[row];
+            vworkA = a_a + a_i[row]*bs2;
+            vworkB = b_a + b_i[row]*bs2;
 
             /* load the column values for this row into vals*/
             vals = sbuf_aa_i+ct2*bs2;
@@ -1028,8 +1031,10 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       if (proc == rank) {
         /* Get indices from matA and then from matB */
         row    = row - rstart;
-        nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
-        cworkA =  a_j + a_i[row]; cworkB = b_j + b_i[row];
+        nzA    = a_i[row+1] - a_i[row];
+        nzB    = b_i[row+1] - b_i[row];
+        cworkA =  a_j + a_i[row];
+        cworkB = b_j + b_i[row];
         if (!allcolumns[i]) {
 #if defined(PETSC_USE_CTABLE)
           for (k=0; k<nzA; k++) {

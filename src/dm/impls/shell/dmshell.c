@@ -1,6 +1,6 @@
 #include <petscdmshell.h>       /*I    "petscdmshell.h"  I*/
 #include <petscmat.h>
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 
 typedef struct  {
   Vec        Xglobal;
@@ -748,6 +748,34 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createfielddecomposition = decomp;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMShellSetCreateSubDM - Set the routine used to create a sub DM from the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  subdm - the routine to create the decomposition
+
+   Level: advanced
+
+.seealso: DMCreateSubDM()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateSubDM"
+PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,PetscInt[],IS*,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createsubdm = subdm;
   PetscFunctionReturn(0);
 }
 

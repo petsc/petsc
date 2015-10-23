@@ -58,6 +58,8 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -92,17 +94,10 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
   }
   fminnorm = fnorm;
 
@@ -147,7 +142,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
     ivec = k_restart % ngmres->msize;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
       ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm);CHKERRQ(ierr);
-      ierr = SNESNGMRESSelectRestart_Private(snes,l,fnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
+      ierr = SNESNGMRESSelectRestart_Private(snes,l,fMnorm,fnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
       /* if the restart conditions persist for more than restart_it iterations, restart. */
       if (selectRestart) restart_count++;
       else restart_count = 0;
@@ -261,4 +256,3 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   ngmres->andersonBeta = 1.0;
   PetscFunctionReturn(0);
 }
-

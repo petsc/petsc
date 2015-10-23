@@ -1,5 +1,5 @@
 
-#include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
+#include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 
 typedef struct {
   PetscViewer viewer;
@@ -10,9 +10,6 @@ typedef struct {
 PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory jac,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   TSTrajectory_Singlefile *sf = (TSTrajectory_Singlefile*)jac->data;
-  PetscInt                ns,i;
-  Vec                     *Y;
-  PetscReal               tprev;
   PetscErrorCode          ierr;
   const char              *filename;
 
@@ -24,15 +21,8 @@ PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory jac,TS ts,PetscInt stepnu
     ierr = PetscObjectGetName((PetscObject)jac,&filename);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(sf->viewer, filename);CHKERRQ(ierr);
   }
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
   ierr = VecView(X,sf->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(sf->viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-
-  for (i=0;i<ns;i++) {
-    ierr = VecView(Y[i],sf->viewer);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -50,7 +40,7 @@ PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory jac)
 }
 
 /*MC
-      TSTRAJECTORYSINGLEFILE - Stores all solutions of the ODE/ADE into a single file
+      TSTRAJECTORYSINGLEFILE - Stores all solutions of the ODE/ADE into a single file followed by each timestep. Does not save the intermediate stages in a multistage method
 
   Level: intermediate
 

@@ -8,6 +8,7 @@ class Configure(config.package.CMakePackage):
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a']]
     self.needsMath         = 1
+    self.hastests          = 1
     return
 
   def setupDependencies(self, framework):

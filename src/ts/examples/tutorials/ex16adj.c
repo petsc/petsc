@@ -248,7 +248,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(mu[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
+  ierr = TSSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS Jacobian for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);

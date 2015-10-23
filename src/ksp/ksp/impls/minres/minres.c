@@ -1,5 +1,5 @@
 
-#include <petsc-private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscReal haptol;
@@ -200,7 +200,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   PetscFunctionBegin;
   ierr           = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr           = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
+
+  /* this parameter is arbitrary; but e-50 didn't work for __float128 in one example */
+#if defined(PETSC_USE_REAL___FLOAT128)
+  minres->haptol = 1.e-100;
+#else
   minres->haptol = 1.e-50;
+#endif
   ksp->data      = (void*)minres;
 
   /*

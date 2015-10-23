@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petsc-private/vecimpl.h>       /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
 #define PetscCheckSameSizeVec(x,y) \
@@ -201,17 +201,17 @@ $     NORM_1 denotes sum_i |x_i|
 $     NORM_2 denotes sqrt(sum_i (x_i)^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
+      For complex numbers NORM_1 will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
+      norm of the absolutely values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
+      the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
+      people expect the former.
+
    Level: intermediate
 
    Performance Issues:
 $    per-processor memory bandwidth
 $    interprocessor latency
 $    work load inbalance that causes certain processes to arrive much earlier than others
-
-   Compile Option:
-   PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
- than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
- (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow.
 
    Concepts: norm
    Concepts: vector^norm
@@ -961,7 +961,7 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
 
    Notes:
    VecSetValuesBlocked() sets x[bs*ix[i]+j] = y[bs*i+j],
-   for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
+   for j=0,...,bs-1, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
    Calls to VecSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES
    options cannot be mixed without intervening calls to the assembly
@@ -1635,7 +1635,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d()
 @*/
 PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 {
@@ -1843,7 +1843,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    petsc/src/snes/examples/tutorials/ex5f.F for details.
    For Fortran 90 see VecRestoreArrayF90()
 
-.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
+.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecRestoreArrayReadF90(), VecPlaceArray(), VecRestoreArray2d()
 @*/
 PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 {
@@ -2038,13 +2038,13 @@ M*/
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
+    xx_v(3) = a
     call VecRestoreArrayF90(x,xx_v,ierr)
 .ve
 
     Level: beginner
 
-.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran
+.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran, VecRestoreArrayReadF90()
 
 M*/
 
@@ -2095,16 +2095,83 @@ M*/
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
+    xx_v(3) = a
     call VecRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    If you ONLY intend to read entries from the array and not change any entries you should use VecGetArrayReadF90().
+
+    Level: beginner
+
+.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), VecGetArrayReadF90(), UsingFortran
+
+M*/
+
+ /*MC
+    VecGetArrayReadF90 - Accesses a read only array from Fortran90. For default PETSc
+    vectors, VecGetArrayF90() returns a pointer to the local data array. Otherwise,
+    this routine is implementation dependent. You MUST call VecRestoreArrayReadF90()
+    when you no longer need access to the array.
+
+    Synopsis:
+    VecGetArrayReadF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Logically Collective on Vec
+
+    Input Parameter:
+.   x - vector
+
+    Output Parameters:
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
+
+    Example of Usage:
+.vb
+    PetscScalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayReadF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayReadF90(x,xx_v,ierr)
+.ve
+
+    If you intend to write entries into the array you must use VecGetArrayF90().
+
+    Level: beginner
+
+.seealso:  VecRestoreArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(), VecGetArrayF90(), UsingFortran
+
+M*/
+
+/*MC
+    VecRestoreArrayReadF90 - Restores a readonly vector to a usable state after a call to
+    VecGetArrayReadF90().
+
+    Synopsis:
+    VecRestoreArrayReadF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Logically Collective on Vec
+
+    Input Parameters:
++   x - vector
+-   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Example of Usage:
+.vb
+    PetscScalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayReadF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayReadF90(x,xx_v,ierr)
 .ve
 
     Level: beginner
 
-.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran
+.seealso:  VecGetArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(),UsingFortran, VecRestoreArrayF90()
 
 M*/
-
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArray2d"
@@ -2932,7 +2999,7 @@ PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockGet"
-/*@C
+/*@
    VecLockGet  - Gets the current lock status of a vector
 
    Logically Collective on Vec
@@ -2959,7 +3026,7 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockPush"
-/*@C
+/*@
    VecLockPush  - Lock a vector from writing
 
    Logically Collective on Vec
@@ -2987,7 +3054,7 @@ PetscErrorCode VecLockPush(Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLockPop"
-/*@C
+/*@
    VecLockPop  - Unlock a vector from writing
 
    Logically Collective on Vec

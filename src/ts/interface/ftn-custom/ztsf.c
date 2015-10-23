@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscts.h>
 #include <petscviewer.h>
 
@@ -127,7 +127,7 @@ PETSC_EXTERN void PETSC_STDCALL tssetpoststep_(TS *ts,PetscErrorCode (PETSC_STDC
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   ((PetscObject)*ts)->fortran_func_pointers[OUR_POSTSTEP] = (PetscVoidFunction)f;
 
-  *ierr = TSSetPreStep(*ts,ourpoststep);
+  *ierr = TSSetPostStep(*ts,ourpoststep);
 }
 
 PETSC_EXTERN void tscomputerhsfunctionlinear_(TS *ts,PetscReal *t,Vec *X,Vec *F,void *ctx,PetscErrorCode *ierr)

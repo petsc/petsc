@@ -10,9 +10,11 @@ class Configure(config.package.Package):
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
-    self.cudaArch      = ''
-    self.CUDAVersion   = '4200' # Minimal cuda version is 4.2
-    self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
+    self.complex          = 0   # Currently CUDA with complex numbers is not supported
+    self.cudaArch         = ''
+    self.CUDAVersion      = '4200' # Minimal cuda version is 4.2
+    self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
+    self.hastests         = 1
     return
 
   def __str__(self):
@@ -82,7 +84,7 @@ class Configure(config.package.Package):
     import config.setCompilers
 #    if self.scalartypes.scalartype == 'complex':
 #      raise RuntimeError('Must use real numbers with CUDA')
-    if not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+    if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
       raise RuntimeError('Must use GNU compilers with CUDA')
     if not self.scalartypes.precision in ['double', 'single']:
       raise RuntimeError('Must use either single or double precision with CUDA')
@@ -154,11 +156,5 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
-    if self.languages.clanguage == 'C':
-      self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
-      self.addDefine('CUDA_EXTERN_C_END','}')
-    else:
-      self.addDefine('CUDA_EXTERN_C_BEGIN',' ')
-      self.addDefine('CUDA_EXTERN_C_END',' ')
     self.configureTypes()
     return

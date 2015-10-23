@@ -39,6 +39,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
+    help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     return
 
   def setupDependencies(self, framework):
@@ -124,7 +125,7 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
-                 '_set_output_format']
+                 '_set_output_format','_mkdir']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
@@ -179,10 +180,10 @@ class Configure(config.base.Configure):
 
   def DumpModule(self):
     ''' Create a module file '''
-    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules')):
-      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules'))
-    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc')):
-      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','modules')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','modules','petsc')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','modules','petsc'))
     if self.framework.argDB['prefix']:
       installdir  = self.installdir.dir
       installarch = ''
@@ -191,7 +192,7 @@ class Configure(config.base.Configure):
       installdir  = self.petscdir.dir
       installarch = self.arch.arch
       installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
-    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc',self.petscdir.version),'w')
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','modules','petsc',self.petscdir.version),'w')
     fd.write('''\
 #%%Module
 
@@ -218,7 +219,7 @@ prepend-path PATH %s
     if self.mpi.usingMPIUni:
       #
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
-      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'))
+      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -269,7 +270,7 @@ prepend-path PATH %s
       self.setCompilers.pushLanguage('FC')
       # Cannot have NAG f90 as the linker - so use pcc_linker as fc_linker
       fc_linker = self.setCompilers.getLinker()
-      if config.setCompilers.Configure.isNAG(fc_linker):
+      if config.setCompilers.Configure.isNAG(fc_linker, self.log):
         self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
@@ -327,7 +328,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_WITH_BATCH','1')
 
     # Test for compiler-specific macros that need to be defined.
-    if self.setCompilers.isCrayVector('CC'):
+    if self.setCompilers.isCrayVector('CC', self.log):
       self.addDefine('HAVE_CRAY_VECTOR','1')
 
 #-----------------------------------------------------------------------------------------------------
@@ -470,7 +471,7 @@ prepend-path PATH %s
 
   def dumpCMakeConfig(self):
     '''
-    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc-conf/PETScConfig.cmake.
+    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc/conf/PETScBuildInternal.cmake.
     This file is private to PETSc and should not be included by third parties
     (a suitable file can be produced later by CMake, but this is not it).
     '''
@@ -580,7 +581,7 @@ prepend-path PATH %s
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
       includes = filter(notstandardinclude,includes)
       fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
-    fd = open(os.path.join(self.arch.arch,'lib','petsc-conf','PETScConfig.cmake'), 'w')
+    fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScBuildInternal.cmake'), 'w')
     writeMacroDefinitions(fd)
     writeBuildFlags(fd)
     fd.close()
@@ -622,7 +623,7 @@ prepend-path PATH %s
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-ios'] or not self.framework.argDB['with-prefetch']:
+    if config.setCompilers.Configure.isSolaris(self.log) or self.framework.argDB['with-ios'] or not self.framework.argDB['with-prefetch']:
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)
@@ -853,7 +854,7 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
-      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir, log = self.log)
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
@@ -867,7 +868,7 @@ prepend-path PATH %s
   def configureCygwinBrokenPipe(self):
     '''Cygwin version <= 1.7.18 had issues with pipes and long commands invoked from gnu-make
     http://cygwin.com/ml/cygwin/2013-05/msg00340.html '''
-    if config.setCompilers.Configure.isCygwin():
+    if config.setCompilers.Configure.isCygwin(self.log):
       import platform
       import re
       r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
@@ -881,12 +882,12 @@ prepend-path PATH %s
 
 #-----------------------------------------------------------------------------------------------------
   def configureDefaultArch(self):
-    conffile = os.path.join('lib','petsc-conf', 'petscvariables')
+    conffile = os.path.join('lib','petsc','conf', 'petscvariables')
     if self.framework.argDB['with-default-arch']:
       fd = file(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
-      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','petscvariables')+'\n')
+      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','petscvariables')+'\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
     elif os.path.isfile(conffile):
@@ -901,7 +902,7 @@ prepend-path PATH %s
     '''Output a script in the conf directory which will reproduce the configuration'''
     import nargs
     import sys
-    scriptName = os.path.join(self.arch.arch,'lib','petsc-conf', 'reconfigure-'+self.arch.arch+'.py')
+    scriptName = os.path.join(self.arch.arch,'lib','petsc','conf', 'reconfigure-'+self.arch.arch+'.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'with-clean' in args:
       del args['with-clean']
@@ -977,8 +978,8 @@ prepend-path PATH %s
       raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR/PETSC_ARCH!')
     self.framework.header          = os.path.join(self.arch.arch,'include','petscconf.h')
     self.framework.cHeader         = os.path.join(self.arch.arch,'include','petscfix.h')
-    self.framework.makeMacroHeader = os.path.join(self.arch.arch,'lib','petsc-conf','petscvariables')
-    self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'lib','petsc-conf','petscrules')
+    self.framework.makeMacroHeader = os.path.join(self.arch.arch,'lib','petsc','conf','petscvariables')
+    self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'lib','petsc','conf','petscrules')
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):

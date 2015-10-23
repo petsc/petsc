@@ -1,4 +1,4 @@
-#include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
+#include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 #include <petscctable.h>
 
 /* Logging support */
@@ -41,7 +41,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   PetscValidPointer(sf,2);
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(b,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
 
   b->nroots    = -1;
   b->nleaves   = -1;
@@ -448,8 +448,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,(ilocal ? ilocal[i] : i)+1);
-  ierr = PetscMalloc2(nroots,&roots,nleaves,&leaves);CHKERRQ(ierr);
-  for (i=0; i<nleaves; i++) {
+  ierr = PetscMalloc2(nroots,&roots,maxlocal,&leaves);CHKERRQ(ierr);
+  for (i=0; i<maxlocal; i++) {
     leaves[i].rank  = rank;
     leaves[i].index = i;
   }
@@ -614,7 +614,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine ? sf->mine[i] : i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
@@ -631,7 +631,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -782,8 +782,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     inoffset[0] = 0;
     for (i=0; i<sf->nroots; i++) inoffset[i+1] = inoffset[i] + indegree[i];
     for (i=0; i<maxlocal; i++) outones[i] = 1;
-    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPI_SUM);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
 #if 0
 #if defined(PETSC_USE_DEBUG)                                 /* Check that the expected number of increments occurred */
@@ -890,6 +890,50 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateEmbeddedLeafSF"
+/*@C
+  PetscSFCreateEmbeddedLeafSF - removes edges from all but the selected leaves, does not remap indices
+
+  Collective
+
+  Input Arguments:
++ sf - original star forest
+. nleaves - number of leaves to select on this process
+- selected - selected leaves on this process
+
+  Output Arguments:
+.  newsf - new star forest
+
+  Level: advanced
+
+.seealso: PetscSFCreateEmbeddedSF(), PetscSFSetGraph(), PetscSFGetGraph()
+@*/
+PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nleaves, const PetscInt *selected, PetscSF *newsf)
+{
+  PetscSFNode   *iremote;
+  PetscInt      *ilocal;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  if (nleaves) PetscValidPointer(selected, 3);
+  PetscValidPointer(newsf, 4);
+  ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves, &iremote);CHKERRQ(ierr);
+  for (i = 0; i < nleaves; ++i) {
+    const PetscInt l = selected[i];
+
+    ilocal[i]        = sf->mine ? sf->mine[l] : l;
+    iremote[i].rank  = sf->remote[l].rank;
+    iremote[i].index = sf->remote[l].index;
+  }
+  ierr = PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, newsf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*newsf, sf->nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1060,7 +1104,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
     ierr = PetscMalloc1(maxlocal,&sf->degreetmp);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) sf->degree[i] = 0;
     for (i=0; i<maxlocal; i++) sf->degreetmp[i] = 1;
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp,sf->degree,MPI_SUM);CHKERRQ(ierr);
   }
   *degree = NULL;
   PetscFunctionReturn(0);
@@ -1091,7 +1135,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
   if (!sf->degreeknown) {
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp,sf->degree,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscFree(sf->degreetmp);CHKERRQ(ierr);
 
     sf->degreeknown = PETSC_TRUE;
@@ -1303,5 +1347,44 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFCompose"
+/*@
+  PetscSFCompose - Compose a new PetscSF equivalent to action to PetscSFs
+
+  Input Parameters:
++ sfA - The first PetscSF
+- sfB - The second PetscSF
+
+  Output Parameters:
+. sfBA - equvalent PetscSF for applying A then B
+
+  Level: developer
+
+.seealso: PetscSF, PetscSFGetGraph(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
+{
+  MPI_Comm           comm;
+  const PetscSFNode *remotePointsA, *remotePointsB;
+  PetscSFNode       *remotePointsBA;
+  const PetscInt    *localPointsA, *localPointsB;
+  PetscInt           numRootsA, numLeavesA, numRootsB, numLeavesB;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfA, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(sfB, PETSCSF_CLASSID, 1);
+  ierr = PetscObjectGetComm((PetscObject) sfA, &comm);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfA, &numRootsA, &numLeavesA, &localPointsA, &remotePointsA);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfB, &numRootsB, &numLeavesB, &localPointsB, &remotePointsB);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesB, &remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, remotePointsBA);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, sfBA);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfBA, numRootsA, numLeavesB, localPointsB, PETSC_COPY_VALUES, remotePointsBA, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

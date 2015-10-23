@@ -1,8 +1,8 @@
 !
 !
       program main
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscdraw.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdraw.h>
 !
 !  This example demonstrates basic use of the Fortran interface for
 !  PetscDraw routines.
@@ -27,13 +27,13 @@
 !  GetInt requires a PetscInt so have to do this ugly setting
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',w,          &
      &     flg,ierr)
-      width = w
+      width = int(w)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',h,         &
      &     flg,ierr)
-      height = h
+      height = int(h)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-      call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
@@ -52,7 +52,6 @@
 
       call PetscDrawLGSetUseMarkers(lg,PETSC_TRUE,ierr)
       call PetscDrawLGDraw(lg,ierr)
-      call PetscDrawFlush(draw,ierr)
 
       call PetscSleep(10,ierr)
 

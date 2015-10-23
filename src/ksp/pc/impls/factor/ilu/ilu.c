@@ -229,6 +229,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
     }
+    ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
     ierr = MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -310,7 +311,7 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 .  -pc_factor_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
 .  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
-.  -pc_factor_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
+-  -pc_factor_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
                              than 1 the diagonal blocks are factored with partial pivoting (this increases the
                              stability of the ILU factorization
 
@@ -335,7 +336,8 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
    T.A. Oliphant. An implicit numerical method for solving two-dimensional time-dependent dif-
    fusion problems. Quart. Appl. Math., 19:221--229, 1961.
 
-   Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
+   Review article: 
+    APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
       http://igitur-archive.library.uu.nl/math/2001-0621-115821/proc.pdf chapter in Parallel Numerical
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer, pp. 167--202.

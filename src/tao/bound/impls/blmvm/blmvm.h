@@ -1,6 +1,6 @@
 #ifndef __TAO_BLMVM_H
 #define __TAO_BLMVM_H
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 /*
  Context for limited memory variable metric method for bound constrained
@@ -19,6 +19,7 @@ typedef struct {
 
   PetscInt grad;
   PetscInt reset;
+  Mat      H0;
 } TAO_BLMVM;
 
 #endif  /* ifndef __TAO_BLMVM_H */

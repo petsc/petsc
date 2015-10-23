@@ -98,7 +98,7 @@ int main()
  */
 
 
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 /* compiler-specific configuration */
 #if UINT_MAX == 0xffffffffu

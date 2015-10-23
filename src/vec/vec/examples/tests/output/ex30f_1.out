@@ -1,46 +1,46 @@
 Vec Object:V1 4 MPI processes
   type: mpi
 Process [0]
-0
-2
-0
-1
+0.
+2.
+0.
+1.
 Process [1]
-0
-2
-0
-1
+0.
+2.
+0.
+1.
 Process [2]
-0
-2
-0
-1
+0.
+2.
+0.
+1.
 Process [3]
-0
-2
-0
-1
+0.
+2.
+0.
+1.
 Vec Object:V2 4 MPI processes
   type: mpi
 Process [0]
-32
-0
+32.
+0.
 Process [1]
-0
-0
+0.
+0.
 Process [2]
-0
-0
+0.
+0.
 Process [3]
-0
-16
+0.
+16.
 Vec Object:V3 1 MPI processes
   type: seq
-8
-0
-0
-0
-0
-0
-0
-4
+8.
+0.
+0.
+0.
+0.
+0.
+0.
+4.

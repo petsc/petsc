@@ -20,13 +20,13 @@
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscpc.h>
-#include <petsc-finclude/petscksp.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
       PetscErrorCode   ierr
       DM               da
       KSP              ksp
@@ -62,10 +62,10 @@
       subroutine ComputeRHS(ksp,b,ctx,ierr)
       implicit none
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       PetscErrorCode  ierr
       PetscInt mx,my,mz
@@ -82,7 +82,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,ierr)
-      h    = 1.d0/((mx-1)*(my-1)*(mz-1))
+      h    = 1.0/((mx-1)*(my-1)*(mz-1))
 
       call VecSet(b,h,ierr)
       return
@@ -92,11 +92,11 @@
       subroutine ComputeMatrix(ksp,JJ,jac,ctx,ierr)
       implicit none
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 
       Mat          jac,JJ
       PetscErrorCode    ierr
@@ -119,9 +119,9 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,ierr)
 
-      Hx = 1.d0 / (mx-1)
-      Hy = 1.d0 / (my-1)
-      Hz = 1.d0 / (mz-1)
+      Hx = 1.0 / (mx-1)
+      Hy = 1.0 / (my-1)
+      Hz = 1.0 / (mz-1)
       HxHydHz = Hx*Hy/Hz
       HxHzdHy = Hx*Hz/Hy
       HyHzdHx = Hy*Hz/Hx
@@ -135,7 +135,7 @@
           row(MatStencil_k) = k
           if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or.         &
      &         j.eq.my-1 .or. k.eq.mz-1) then
-            v(1) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
+            v(1) = 2.0*(HxHydHz + HxHzdHy + HyHzdHx)
             call MatSetValuesStencil(jac,i1,row,i1,row,v,INSERT_VALUES,    &
      &                               ierr)
           else
@@ -151,7 +151,7 @@
              col(MatStencil_i,3) = i-1
              col(MatStencil_j,3) = j
              col(MatStencil_k,3) = k
-            v(4) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
+            v(4) = 2.0*(HxHydHz + HxHzdHy + HyHzdHx)
              col(MatStencil_i,4) = i
              col(MatStencil_j,4) = j
              col(MatStencil_k,4) = k

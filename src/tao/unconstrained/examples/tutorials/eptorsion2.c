@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np <proc> eptorsion2 [-help] [all TAO options] */
+/* Program usage: mpiexec -n <proc> eptorsion2 [-help] [all TAO options] */
 
 /* ----------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateClosureIndex"
@@ -70,6 +70,6 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
     if (q*2 != cldof) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", q*2, cldof);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, clSize, clPoints, PETSC_OWN_POINTER, &closureIS);CHKERRQ(ierr);
-  ierr = PetscSectionSetClosureIndex(section, (PetscObject) dm, closureSection, closureIS);
+  ierr = PetscSectionSetClosureIndex(section, (PetscObject) dm, closureSection, closureIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

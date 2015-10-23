@@ -10,7 +10,7 @@ DIRS     = lu ilu icc cholesky
 LOCDIR   = src/ksp/pc/impls/factor/
 MANSEC   = PC
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
-include ${PETSC_DIR}/lib/petsc-conf/test
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test
 

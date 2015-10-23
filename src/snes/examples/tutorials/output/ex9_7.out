@@ -1,0 +1,18 @@
+setup done: grid  Mx,My = 21,21  with spacing  dx,dy = 0.2000,0.2000
+  0 SNES Function norm 4.16496 
+    0 SNES VI Function norm 5.529305066445e+00 Active lower constraints 69/79 upper constraints 0/0 Percent of total 0.156463 Percent of bounded 0.
+    1 SNES VI Function norm 6.955134607642e-01 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.
+    0 SNES VI Function norm 6.955134607642e-01 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.
+    1 SNES VI Function norm 2.094553435635e-01 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  1 SNES Function norm 0.209455 
+    0 SNES VI Function norm 2.094553435635e-01 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 8.520955028454e-02 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    0 SNES VI Function norm 8.520955028454e-02 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    1 SNES VI Function norm 1.306727995906e-02 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+  2 SNES Function norm 0.0130673 
+    0 SNES VI Function norm 1.306727995906e-02 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    1 SNES VI Function norm 5.700004299565e-08 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    0 SNES VI Function norm 5.700004299565e-08 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    1 SNES VI Function norm 4.214574191759e-13 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+  3 SNES Function norm < 1.e-11
+errors:     av |u-uexact|  = 1.287e-03    |u-uexact|_inf = 7.882e-03

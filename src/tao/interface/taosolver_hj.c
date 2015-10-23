@@ -1,4 +1,4 @@
-#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetHessianRoutine"

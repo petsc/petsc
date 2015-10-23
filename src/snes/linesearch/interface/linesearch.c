@@ -1,4 +1,4 @@
-#include <petsc-private/linesearchimpl.h> /*I "petscsnes.h" I*/
+#include <petsc/private/linesearchimpl.h> /*I "petscsnes.h" I*/
 
 PetscBool         SNESLineSearchRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESLineSearchList              = NULL;
@@ -40,10 +40,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   ierr = SNESInitializePackage();CHKERRQ(ierr);
   *outlinesearch = NULL;
 
-  ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
-
-  linesearch->ops->precheck  = NULL;
-  linesearch->ops->postcheck = NULL;
+  ierr = PetscHeaderCreate(linesearch,SNESLINESEARCH_CLASSID, "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
 
   linesearch->vec_sol_new  = NULL;
   linesearch->vec_func_new = NULL;
@@ -55,7 +52,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   linesearch->fnorm        = 1.0;
   linesearch->ynorm        = 1.0;
   linesearch->xnorm        = 1.0;
-  linesearch->success      = PETSC_TRUE;
+  linesearch->result       = SNES_LINESEARCH_SUCCEEDED;
   linesearch->norms        = PETSC_TRUE;
   linesearch->keeplambda   = PETSC_FALSE;
   linesearch->damping      = 1.0;
@@ -544,7 +541,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
   PetscValidHeaderSpecific(Y,VEC_CLASSID,4);
 
-  linesearch->success = PETSC_TRUE;
+  linesearch->result = SNES_LINESEARCH_SUCCEEDED;
 
   linesearch->vec_sol    = X;
   linesearch->vec_update = Y;
@@ -1525,15 +1522,15 @@ PetscErrorCode  SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nw
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetSuccess"
+#define __FUNCT__ "SNESLineSearchGetReason"
 /*@
-   SNESLineSearchGetSuccess - Gets the success/failure status of the last line search application
+   SNESLineSearchGetReason - Gets the success/failure status of the last line search application
 
    Input Parameters:
 .  linesearch - linesearch context
 
    Output Parameters:
-.  success - The success or failure status
+.  result - The success or failure status
 
    Notes:
    This is typically called after SNESLineSearchApply() in order to determine if the line-search failed
@@ -1541,25 +1538,25 @@ PetscErrorCode  SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nw
 
    Level: intermediate
 
-.seealso: SNESLineSearchSetSuccess()
+.seealso: SNESLineSearchSetReason(), SNESLineSearchReason
 @*/
-PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch linesearch, PetscBool *success)
+PetscErrorCode  SNESLineSearchGetReason(SNESLineSearch linesearch, SNESLineSearchReason *result)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  PetscValidPointer(success, 2);
-  if (success) *success = linesearch->success;
+  PetscValidPointer(result, 2);
+  *result = linesearch->result;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetSuccess"
+#define __FUNCT__ "SNESLineSearchSetReason"
 /*@
-   SNESLineSearchSetSuccess - Sets the success/failure status of the last line search application
+   SNESLineSearchSetReason - Sets the success/failure status of the last line search application
 
    Input Parameters:
 +  linesearch - linesearch context
--  success - The success or failure status
+-  result - The success or failure status
 
    Notes:
    This is typically called in a SNESLineSearchApply() or SNESLineSearchShell implementation to set
@@ -1567,13 +1564,13 @@ PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch linesearch, PetscBool *s
 
    Level: developer
 
-.seealso: SNESLineSearchGetSuccess()
+.seealso: SNESLineSearchGetSResult()
 @*/
-PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch linesearch, PetscBool success)
+PetscErrorCode  SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearchReason result)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  linesearch->success = success;
+  linesearch->result = result;
   PetscFunctionReturn(0);
 }
 

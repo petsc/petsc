@@ -63,7 +63,7 @@ def bootstrap():
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
-    sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc-conf'))
+    sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc','conf'))
     # Generate package __init__.py file
     from distutils.dir_util import mkpath
     pkgdir = os.path.join('config', 'pypi')
@@ -135,14 +135,15 @@ def config(prefix, dry_run=False):
         log.info(' '*4 + opt)
     # Run PETSc configure
     if dry_run: return
-    use_config_py = True
+    use_config_py = False
     if use_config_py:
         import configure
         configure.petsc_configure(options)
         import logger
         logger.Logger.defaultLog = None
     else:
-        command = ['./configure'] + options
+        python = find_executable('python2') or find_executable('python')
+        command = [python, './configure'] + options
         status = os.system(" ".join(command))
         if status != 0: raise RuntimeError(status)
 
@@ -172,7 +173,7 @@ def install(dest_dir, dry_run=False):
         log.info(' '*4 + opt)
     # Run PETSc installer
     if dry_run: return
-    use_install_py = True
+    use_install_py = False
     if use_install_py:
         import install
         install.Installer(options).run()
@@ -238,7 +239,6 @@ def version():
         'major'  : re.compile(r"#define\s+PETSC_VERSION_MAJOR\s+(\d+)"),
         'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
         'micro'  : re.compile(r"#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)"),
-        'patch'  : re.compile(r"#define\s+PETSC_VERSION_PATCH\s+(\d+)"),
         'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(\d+)"),
         }
     petscversion_h = os.path.join('include','petscversion.h')
@@ -246,27 +246,18 @@ def version():
     major = int(version_re['major'].search(data).groups()[0])
     minor = int(version_re['minor'].search(data).groups()[0])
     micro = int(version_re['micro'].search(data).groups()[0])
-    patch = int(version_re['patch'].search(data).groups()[0])
     release = int(version_re['release'].search(data).groups()[0])
     if release:
-        v = "%d.%d" % (major, minor)
-        if micro > 0:
-            v += ".%d" % micro
-        #if patch > 0:
-        #    v += ".post%d" % patch
+        v = "%d.%d.%d" % (major, minor, micro)
     else:
-        v = "%d.%d.dev%d" % (major, minor+1, 0)
+        v = "%d.%d.0.dev%d" % (major, minor+1, 0)
     return v
 
 def tarball():
     VERSION = version()
-    if '.dev' in VERSION:
-        return None
-    bits = VERSION.split('.')
-    if len(bits) == 2: bits.append('0')
-    PETSC_VERSION = '.'.join(bits[:3])
+    if '.dev' in VERSION: return None
     return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
-            'petsc-lite-%s.tar.gz#egg=petsc-%s' % (PETSC_VERSION, VERSION))
+            'petsc-lite-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """
@@ -282,6 +273,10 @@ Programming Language :: Python
 Topic :: Scientific/Engineering
 Topic :: Software Development :: Libraries
 """
+
+if 'bdist_wheel' in sys.argv:
+    sys.stderr.write("petsc: this package cannot be built as a wheel\n")
+    sys.exit(1)
 
 bootstrap()
 setup(name='petsc',

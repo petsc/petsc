@@ -20,7 +20,6 @@
    TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
    PetscReal                    step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta;
    PetscReal                    gd_old,gnorm2_old,f_old;
-   PetscInt                     iter=0;
 
    PetscFunctionBegin;
    if (tao->XL || tao->XU || tao->ops->computebounds) {
@@ -32,7 +31,7 @@
    ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
-   ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+   ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
    if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
    /*  Set initial direction to -gradient */
@@ -78,7 +77,7 @@
      }
 
      /*  Search direction for improving point */
-     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
+     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
      ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
      ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
      if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
@@ -103,7 +102,7 @@
        ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
-       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
+       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
        ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
        ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
@@ -118,7 +117,7 @@
          ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
          ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
-         ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
+         ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
          ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
          ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
          if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
@@ -141,8 +140,8 @@
 
      /*  Check for termination */
      gnorm2 =gnorm * gnorm;
-     iter++;
-     ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+     tao->niter++;
+     ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
      if (reason != TAO_CONTINUE_ITERATING) {
        break;
      }
@@ -302,10 +301,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_CG;
   tao->ops->destroy = TaoDestroy_CG;
 
-  tao->max_it = 2000;
-  tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
+  /* Override default settings (unless already changed) */
+  if (!tao->max_it_changed) tao->max_it = 2000;
+  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  if (!tao->fatol_changed) tao->fatol = 1e-4;
+  if (!tao->frtol_changed) tao->frtol = 1e-4;
 
   /*  Note: nondefault values should be used for nonlinear conjugate gradient  */
   /*  method.  In particular, gtol should be less that 0.5; the value used in  */
@@ -314,6 +314,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = PetscNewLog(tao,&cgP);CHKERRQ(ierr);
   tao->data = (void*)cgP;

@@ -4,8 +4,8 @@
 !
 !
 ! -----------------------------------------------------------------------
-#include <petsc-finclude/petscsysdef.h>
-#include <petsc-finclude/petscvecdef.h>
+#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscvecdef.h>
 
       module mymodule
       type MyStruct
@@ -22,7 +22,7 @@
       subroutine F90Array1dCreateMyStruct(array,start,len,ptr)
       use mymodule
       implicit none
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       PetscInt start,len
       type(MyStruct), target ::                                               &
      &             array(start:start+len-1)
@@ -34,7 +34,7 @@
       subroutine F90Array1dAccessMyStruct(ptr,address)
       use mymodule
       implicit none
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       type(MyStruct), pointer :: ptr(:)
       PetscFortranAddr address
       PetscInt start
@@ -46,7 +46,7 @@
       subroutine F90Array1dDestroyMyStruct(ptr)
       use mymodule
       implicit none
-#include <petsc-finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h>
       type(MyStruct), pointer :: ptr(:)
 
       nullify(ptr)
@@ -72,10 +72,10 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscviewer.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscvec.h90>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscviewer.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
 
 !
 !   These two routines are defined in ex21.c they create the Fortran pointer to the derived type
@@ -138,7 +138,7 @@
       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
       call VecGetArrayMyStruct(x,xarray,ierr)
       do i = 1 , 10
-        write(*,*) xarray(i)%a,xarray(i)%b,xarray(i)%c
+        write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
       call VecRestoreArrayMyStruct(x,xarray,ierr)
 

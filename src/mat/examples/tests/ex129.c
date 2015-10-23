@@ -32,7 +32,7 @@ int main(int argc,char **args)
   IS             perm,iperm;
   PetscInt       dof =1,M=-8,m,n,nrhs;
   PetscScalar    one = 1.0;
-  PetscReal      norm,tol=1.e-13;
+  PetscReal      norm,tol = 1000*PETSC_MACHINE_EPSILON;
   PetscBool      InplaceLU=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -233,7 +233,6 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
 
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rand,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);

@@ -35,7 +35,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-#include <petsc-private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
+#include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 
 PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
 PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
@@ -1520,18 +1520,16 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   /*ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
-  if(timeread!=time) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the current time from file");
-  } else {
+  if(timeread!=time) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the current time from file");
+  else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for PetscReal\n");CHKERRQ(ierr);
   }
 
   for (i=0;i<ns && stepnum >1;i++) {
     ierr = VecLoad(stagesol,viewer);CHKERRQ(ierr);
     VecEqual(Y[i],stagesol,&equal);
-    if(!equal) {
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the %2d-th stage value from file",i);
-    } else {
+    if(!equal) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the %2d-th stage value from file",i);
+    else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Stage values\n");CHKERRQ(ierr);
     }
   }

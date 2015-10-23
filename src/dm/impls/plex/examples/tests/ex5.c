@@ -381,7 +381,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
   ierr = DMPlexCopyLabels(*dm, idm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(idm, "in_", "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -513,7 +513,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
   ierr = DMPlexCopyLabels(*dm, idm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(idm, "in_", "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -619,7 +619,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
     ierr = DMPlexCreateLabel(idm, "fault");CHKERRQ(ierr);
   }
-  ierr = DMViewFromOptions(idm, "in_", "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -666,7 +666,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMPlexGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(*dm, faultLabel, &hybridLabel, &dmHybrid);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -677,13 +676,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM      dmHybrid = NULL;
     DMLabel faultLabel, hybridLabel;
 
-    ierr = DMViewFromOptions(*dm, "orig_", "-dm_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
     ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
     ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "faultB", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(*dm, faultLabel, &hybridLabel, &dmHybrid);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscsnes.h>
 #include <petscviewer.h>
 #include <../src/sys/f90-src/f90impl.h>
@@ -13,6 +13,7 @@
 #define snesgettype_                     SNESGETTYPE
 #define snessetfunction_                 SNESSETFUNCTION
 #define snessetngs_                       SNESSETNGS
+#define snessetupdate_                    SNESSETUPDATE
 #define snesgetfunction_                 SNESGETFUNCTION
 #define snesgetngs_                       SNESGETNGS
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
@@ -39,6 +40,7 @@
 #define snesgettype_                     snesgettype
 #define snessetfunction_                 snessetfunction
 #define snessetngs_                       snessetngs
+#define snessetupdate_                    snessetupdate
 #define snesgetfunction_                 snesgetfunction
 #define snesgetngs_                       snesgetngs
 #define snessetconvergencetest_          snessetconvergencetest
@@ -65,6 +67,7 @@ static struct {
   PetscFortranCallbackId monitor;
   PetscFortranCallbackId mondestroy;
   PetscFortranCallbackId ngs;
+  PetscFortranCallbackId update;
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
   PetscFortranCallbackId function_pgiptr;
 #endif
@@ -102,6 +105,12 @@ static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat m,Mat p,void *ctx)
   PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),(&snes,&x,&m,&p,_ctx,&ierr));
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "oursnesupdate"
+static PetscErrorCode oursnesupdate(SNES snes,PetscInt i)
+{
+  PetscObjectUseFortranCallback(snes,_cb.update,(SNES*,PetscInt *,PetscErrorCode*),(&snes,&i,&ierr));
+}
 #undef __FUNCT__
 #define __FUNCT__ "oursnesngs"
 static PetscErrorCode oursnesngs(SNES snes,Vec x,Vec b,void *ctx)
@@ -214,6 +223,11 @@ PETSC_EXTERN void PETSC_STDCALL snessetngs_(SNES *snes,void (PETSC_STDCALL *func
   CHKFORTRANNULLOBJECT(ctx);
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.ngs,(PetscVoidFunction)func,ctx);
   if (!*ierr) *ierr = SNESSetNGS(*snes,oursnesngs,NULL);
+}
+PETSC_EXTERN void PETSC_STDCALL snessetupdate_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.update,(PetscVoidFunction)func,NULL);
+  if (!*ierr) *ierr = SNESSetUpdate(*snes,oursnesupdate);
 }
 /* ---------------------------------------------------------*/
 

@@ -3,20 +3,20 @@ Global Vector:
   type: mpi
   type: mpi
 Process [0]
-1
-1
-1
-1
-1
-1
-1
+1.
+1.
+1.
+1.
+1.
+1.
+1.
 Process [1]
-2
-2
-2
-2
-2
-2
+2.
+2.
+2.
+2.
+2.
+2.
 
 
 Local to global mapping

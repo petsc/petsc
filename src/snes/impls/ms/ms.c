@@ -1,4 +1,4 @@
-#include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
+#include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 static SNESMSType SNESMSDefault = SNESMSM62;
 static PetscBool  SNESMSRegisterAllCalled;
@@ -274,10 +274,6 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
     ierr = VecAXPY(S2,delta[i],S1);CHKERRQ(ierr);
     if (i>0) {
       ierr = SNESComputeFunction(snes,S1,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     }
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = VecMAXPY(S1,4,scoeff,Ss);CHKERRQ(ierr);
@@ -296,6 +292,8 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -304,10 +302,6 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
@@ -315,10 +309,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   }
   if (ms->norms) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
+    SNESCheckFunctionNorm(snes,fnorm);
     /* Monitor convergence */
     ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
@@ -341,18 +332,11 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 
     if (i+1 < snes->max_its || ms->norms) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-      if (snes->domainerror) {
-        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
-      }
     }
 
     if (ms->norms) {
       ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
+      SNESCheckFunctionNorm(snes,fnorm);
 
       /* Monitor convergence */
       ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);

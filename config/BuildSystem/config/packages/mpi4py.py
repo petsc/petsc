@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz']
+    self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
     return
@@ -19,14 +20,14 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
     archflags = ""
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       if self.types.sizes['known-sizeof-void-p'] == 32:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
@@ -36,17 +37,17 @@ class Configure(config.package.Package):
                        ['@echo "*** Building mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
            python setup.py clean --all && \\\n\
-           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     self.addMakeRule('mpi4pyinstall','', \
                        ['@echo "*** Installing mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc-conf/mpi4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/lib/petsc/conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\

@@ -3,7 +3,7 @@
     Factorization code for BAIJ format.
 */
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
@@ -714,7 +714,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,const MatFactorInfo *info
   A->ops->solve          = C->ops->solve;
   A->ops->solvetranspose = C->ops->solvetranspose;
 
-  ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)((Mat_SeqBAIJ*)(A->data))->icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

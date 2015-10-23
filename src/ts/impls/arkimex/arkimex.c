@@ -9,7 +9,7 @@
   where F represents the stiff part of the physics and G represents the non-stiff part.
 
 */
-#include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
 static TSARKIMEXType  TSARKIMEXDefault = TSARKIMEX3;
@@ -697,7 +697,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   const PetscInt  s    = tab->s;
   const PetscReal *At  = tab->At,*A = tab->A,*ct = tab->ct,*c = tab->c;
   PetscScalar     *w   = ark->work;
-  Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,Ydot0 = ark->Ydot0,W = ark->Work,Z = ark->Z;
+  Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,Ydot0 = ark->Ydot0,Z = ark->Z;
   PetscBool       init_guess_extrp = ark->init_guess_extrp;
   TSAdapt         adapt;
   SNES            snes;
@@ -714,21 +714,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
     if (!isvalid || valid_time != ts->ptime) {
       TS        ts_start;
-      SNES      snes_start;
-      DM        dm;
-      PetscReal atol;
-      Vec       vatol;
-      PetscReal rtol;
-      Vec       vrtol;
+      SNES      snes_dup=NULL;
 
-      ierr = TSCreate(PetscObjectComm((PetscObject)ts),&ts_start);CHKERRQ(ierr);
-      ierr = TSGetSNES(ts,&snes_start);CHKERRQ(ierr);
-      ierr = TSSetSNES(ts_start,snes_start);CHKERRQ(ierr);
-      ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-      ierr = TSSetDM(ts_start,dm);CHKERRQ(ierr);
-
-      ts_start->adapt=ts->adapt;
-      PetscObjectReference((PetscObject)ts_start->adapt);
+      ierr = TSClone(ts,&ts_start);CHKERRQ(ierr);
 
       ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
@@ -737,18 +725,19 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
       ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
-      ierr = TSSetEquationType(ts_start,ts->equation_type);CHKERRQ(ierr);
-      ierr = TSGetTolerances(ts,&atol,&vatol,&rtol,&vrtol);CHKERRQ(ierr);
-      ierr = TSSetTolerances(ts_start,atol,vatol,rtol,vrtol);CHKERRQ(ierr);
+
       ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
 
       ts->time_step = ts_start->time_step;
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
-      ts_start->snes=NULL;
-      ierr = TSSetSNES(ts,snes_start);CHKERRQ(ierr);
-      ierr = SNESDestroy(&snes_start);CHKERRQ(ierr);
+
+      /* Set the correct TS in SNES */
+      /* We'll try to bypass this by changing the method on the fly */
+      ierr = TSGetSNES(ts,&snes_dup);CHKERRQ(ierr);
+      ierr = TSSetSNES(ts,snes_dup);CHKERRQ(ierr);
+
       ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
     }
   }
@@ -766,6 +755,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     for (i=0; i<s; i++) {
       ark->stage_time = t + h*ct[i];
       if (At[i*s+i] == 0) {           /* This stage is explicit */
+        if(i!=0 && ts->equation_type>=TS_EQ_IMPLICIT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Explicit stages other than the first one are not supported for implicit problems");
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Y[i],i,w,YdotI);CHKERRQ(ierr);
@@ -774,16 +764,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       } else {
         ark->scoeff     = 1./At[i*s+i];
         ierr            = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
-        /* Affine part */
-        ierr = VecZeroEntries(W);CHKERRQ(ierr);
-        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
-        ierr = VecMAXPY(W,i,w,YdotRHS);CHKERRQ(ierr);
-        ierr = VecScale(W, ark->scoeff/h);CHKERRQ(ierr);
 
         /* Ydot = shift*(Y-Z) */
         ierr = VecCopy(ts->vec_sol,Z);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
+        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
+        ierr = VecMAXPY(Z,i,w,YdotRHS);CHKERRQ(ierr);
 
         if (init_guess_extrp && ark->prev_step_valid) {
           /* Initial guess extrapolated from previous time step stage values */
@@ -792,7 +779,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
           /* Initial guess taken from last stage */
           ierr        = VecCopy(i>0 ? Y[i-1] : ts->vec_sol,Y[i]);CHKERRQ(ierr);
         }
-        ierr          = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
+        ierr          = SNESSolve(snes,NULL,Y[i]);CHKERRQ(ierr);
         ierr          = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
@@ -808,14 +795,19 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = TSPostStage(ts,ark->stage_time,i,Y); CHKERRQ(ierr);
       if (ts->equation_type>=TS_EQ_IMPLICIT) {
         if (i==0 && tab->explicit_first_stage) {
-          ierr = VecCopy(Ydot0,YdotI[0]);CHKERRQ(ierr);
+          if(!tab->stiffly_accurate ) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s is not stiffly accurate and therefore explicit-first stage methods cannot be used if the equation is implicit because the slope cannot be evaluated",ark->tableau->name);
+          ierr = VecCopy(Ydot0,YdotI[0]);CHKERRQ(ierr);                                      /* YdotI = YdotI(tn-1) */
         } else {
-          ierr = VecAXPBYPCZ(YdotI[i],-ark->scoeff/h,ark->scoeff/h,0,Z,Y[i]);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
+          ierr = VecAXPBYPCZ(YdotI[i],-ark->scoeff/h,ark->scoeff/h,0,Z,Y[i]);CHKERRQ(ierr);  /* YdotI = shift*(X-Z) */
         }
       } else {
-        ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
-        ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],ark->imex);CHKERRQ(ierr);
-        ierr = VecScale(YdotI[i], -1.0);CHKERRQ(ierr);
+        if (i==0 && tab->explicit_first_stage) {
+          ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
+          ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],ark->imex);CHKERRQ(ierr);/* YdotI = -G(t,Y,0)   */
+          ierr = VecScale(YdotI[i], -1.0);CHKERRQ(ierr);
+        } else {
+          ierr = VecAXPBYPCZ(YdotI[i],-ark->scoeff/h,ark->scoeff/h,0,Z,Y[i]);CHKERRQ(ierr);  /* YdotI = shift*(X-Z) */
+        }
         if (ark->imex) {
           ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
         } else {
@@ -1325,7 +1317,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXSetFullyImplicit"
-/*@C
+/*@
   TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly
 
   Logically collective
@@ -1408,6 +1400,8 @@ PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 
   Notes:
   The default is TSARKIMEX3, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
+
+  If the equation is implicit or a DAE, then TSSetEquationType() needs to be set accordingly. Refer to the manual for further information. 
 
   Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 

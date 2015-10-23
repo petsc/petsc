@@ -3,7 +3,7 @@
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
 */
 
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 /* ------------------------------------------------------------------------------*/
 /*

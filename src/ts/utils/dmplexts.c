@@ -1,5 +1,6 @@
-#include <petsc-private/dmpleximpl.h> /*I "petscdmplex.h" I*/
-#include <petsc-private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/dmpleximpl.h> /*I "petscdmplex.h" I*/
+#include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
+#include <petsc/private/snesimpl.h>
 #include <petscds.h>
 #include <petscfv.h>
 
@@ -110,12 +111,16 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
   Vec            locF;
+  PetscInt       cStart, cEnd, cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locF);CHKERRQ(ierr);
-  ierr = DMPlexComputeResidual_Internal(dm, time, locX, NULL, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeResidual_Internal(dm, cStart, cEnd, time, locX, NULL, locF, user);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
@@ -143,95 +148,37 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
+  PetscInt       cStart, cEnd, cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeResidual_Internal(dm, time, locX, locX_t, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexComputeResidual_Internal(dm, cStart, cEnd, time, locX, locX_t, locF, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSCheckFromOptions"
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
   SNES           snes;
-  Mat            J, M;
-  Vec            sol, r, b;
-  MatNullSpace   nullSpace;
-  PetscReal     *error, res = 0.0;
-  PetscInt       numFields;
+  Vec            sol;
   PetscBool      check;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(ts->hdr.prefix, "-dmts_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
   ierr = TSSetSolution(ts, sol);CHKERRQ(ierr);
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
   ierr = SNESSetSolution(snes, sol);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  M    = J;
-#if 0
-  {
-    ierr = CreatePressureNullSpace(dm, user, &nullSpace);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-    if (M != J) {ierr = MatSetNullSpace(M, nullSpace);CHKERRQ(ierr);}
-  }
-#endif
-  /* Check discretization error */
-  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(1, numFields), &error);CHKERRQ(ierr);
-  if (numFields > 1) {
-    PetscInt f;
-
-    ierr = DMPlexComputeL2FieldDiff(dm, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
-    for (f = 0; f < numFields; ++f) {
-      if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
-      if (error[f] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "%g", error[f]);CHKERRQ(ierr);}
-      else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "< 1.0e-11");CHKERRQ(ierr);}
-    }
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexComputeL2Diff(dm, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
-    if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error[0]);CHKERRQ(ierr);}
-    else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
-  }
-  ierr = PetscFree(error);CHKERRQ(ierr);
-  /* Check residual */
-  ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
-  ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
-  ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) r, "Initial Residual");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(r, "res_", "-vec_view");CHKERRQ(ierr);
-  /* Check Jacobian */
-  ierr = SNESComputeJacobian(snes, u, M, M);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(J, &nullSpace);CHKERRQ(ierr);
-  if (nullSpace) {
-    PetscBool isNull;
-    ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
-    if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
-  }
-  ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
-  ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
-  ierr = MatMult(M, u, r);CHKERRQ(ierr);
-  ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
-  ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) r, "Au - b = Au + F(0)");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(r, "linear_res_", "-vec_view");CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions_Internal(snes, dm, u, sol, exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = VecDestroy(&sol);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

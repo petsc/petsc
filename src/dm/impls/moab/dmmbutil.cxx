@@ -1,5 +1,5 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
+#include <petsc/private/vecimpl.h>
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
@@ -419,13 +419,12 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
         first '0' specifies "root set", or entire MOAB instance, second the entity dimension being requested */
   merr = mbiface->get_entities_by_dimension(0, dim, ownedelms);MBERRNM(merr);
 
-  if (locnele+ghnele != (int) ownedelms.size())
-    SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of elements! (%D!=%D)",locnele+ghnele,ownedelms.size());
-  else if(locnpts+ghnpts != (int) ownedvtx.size())
-    SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,ownedvtx.size());    
-  else
-    PetscInfo2(NULL, "Created %D elements and %D vertices.\n", ownedelms.size(), ownedvtx.size());
-
+  if (locnele+ghnele != (int) ownedelms.size()) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of elements! (%D!=%D)",locnele+ghnele,ownedelms.size());
+  else if(locnpts+ghnpts != (int) ownedvtx.size()) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,ownedvtx.size());    
+  else {
+    ierr = PetscInfo2(NULL, "Created %D elements and %D vertices.\n", ownedelms.size(), ownedvtx.size());CHKERRQ(ierr);
+  }
+  
   /* lets create some sets */
   merr = mbiface->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);MBERRNM(merr);
 

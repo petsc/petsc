@@ -111,6 +111,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
   prevsnes      = snes;
   /* setup the finest level */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetInt((PetscObject) snes, PetscMGLevelId, levels-1);CHKERRQ(ierr);
   for (i = levels - 1; i >= 0; i--) {
     if (comms) comm = comms[i];
     fas->level  = i;
@@ -126,6 +127,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
       ierr = SNESSetTolerances(fas->next, fas->next->abstol, fas->next->rtol, fas->next->stol, fas->n_cycles, fas->next->max_funcs);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
+      ierr = PetscObjectComposedDataSetInt((PetscObject) fas->next, PetscMGLevelId, i-1);CHKERRQ(ierr);
 
       ((SNES_FAS*)fas->next->data)->previous = prevsnes;
 
@@ -504,6 +506,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
   ierr    = PetscObjectIncrementTabLevel((PetscObject)nsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)snes,(PetscObject)nsmooth);CHKERRQ(ierr);
   ierr    = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)nsmooth);CHKERRQ(ierr);
+  ierr    = PetscObjectComposedDataSetInt((PetscObject) nsmooth, PetscMGLevelId, fas->level);CHKERRQ(ierr);
   *smooth = nsmooth;
   PetscFunctionReturn(0);
 }
@@ -1190,21 +1193,20 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASGetCoarseSolve"
 /*@
-   SNESFASGetCoarseSolve - Gets the coarsest solver.
+  SNESFASGetCoarseSolve - Gets the coarsest solver.
 
-   Input Parameters:
-+  snes   - the multigrid context
+  Input Parameters:
+. snes - the multigrid context
 
-   Output Parameters:
-   solve  - the coarse-level solver
+  Output Parameters:
+. coarse - the coarse-level solver
 
-   Level: advanced
+  Level: advanced
 
 .keywords: FAS, MG, get, multigrid, solver, coarse
-
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction()
 @*/
-PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth)
+PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 {
   SNES_FAS       *fas;
   PetscErrorCode ierr;
@@ -1217,7 +1219,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth)
   if (!fas->smoothd) {
     ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
-  *smooth = fas->smoothd;
+  *coarse = fas->smoothd;
   PetscFunctionReturn(0);
 }
 

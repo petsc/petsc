@@ -180,9 +180,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *in
     klu_K_free_numeric(&lu->Numeric,&lu->Common);
   }
   lu->Numeric = klu_K_factor(ai,aj,(PetscReal*)av,lu->Symbolic,&lu->Common);
-  if(!lu->Numeric) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Numeric factorization failed");
-  }
+  if(!lu->Numeric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Numeric factorization failed");
 
   lu->flg                = SAME_NONZERO_PATTERN;
   lu->CleanUpKLU         = PETSC_TRUE;
@@ -220,9 +218,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
   } else { /* use klu internal ordering */
     lu->Symbolic = klu_K_analyze(n,ai,aj,&lu->Common);
   }
-  if (!lu->Symbolic) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Symbolic Factorization failed");
-  }
+  if (!lu->Symbolic) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Symbolic Factorization failed");
 
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpKLU            = PETSC_TRUE;
@@ -300,6 +296,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 
   ./configure --download-suitesparse to install PETSc to use KLU
 
+  Use -pc_type lu -pc_factor_mat_solver_package klu to us this direct solver
+
   Consult KLU documentation for more information on the options database keys below.
 
   Options Database Keys:
@@ -348,9 +346,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   /* ------------------------------------------------*/
   /* get the default control parameters */
   status = klu_K_defaults(&lu->Common);
-  if(status <= 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Initialization failed");
-  }
+  if(status <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Initialization failed");
+
   lu->Common.scale = 0; /* No row scaling */
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"KLU Options","Mat");CHKERRQ(ierr);

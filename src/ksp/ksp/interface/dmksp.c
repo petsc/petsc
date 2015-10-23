@@ -1,5 +1,5 @@
-#include <petsc-private/dmimpl.h>
-#include <petsc-private/kspimpl.h> /*I "petscksp.h" I*/
+#include <petsc/private/dmimpl.h>
+#include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -25,8 +25,7 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
 
   PetscFunctionBegin;
   ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*kdm, _p_DMKSP, struct _DMKSPOps, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
-  ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMKSPOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

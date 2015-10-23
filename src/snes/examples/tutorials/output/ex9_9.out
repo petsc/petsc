@@ -1,0 +1,21 @@
+setup done: grid  Mx,My = 21,21  with spacing  dx,dy = 0.2000,0.2000
+  0 SNES Function norm 4.16496 
+    0 SNES VI Function norm 5.529305066445e+00 Active lower constraints 69/79 upper constraints 0/0 Percent of total 0.156463 Percent of bounded 0.
+    1 SNES VI Function norm 6.955134607642e-01 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.
+  1 SNES Function norm 0.708647 
+    0 SNES VI Function norm 6.520805467410e-01 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.
+    1 SNES VI Function norm 2.242111559824e-01 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  2 SNES Function norm 0.759478 
+    0 SNES VI Function norm 2.242111559824e-01 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 8.520960016210e-02 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+  3 SNES Function norm 0.134526 
+    0 SNES VI Function norm 1.345259947681e-01 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    1 SNES VI Function norm 2.347080344381e-07 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+  4 SNES Function norm 0.00191518 
+    0 SNES VI Function norm 1.915180573496e-03 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    1 SNES VI Function norm 3.337090244033e-09 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+  5 SNES Function norm 3.82153e-07 
+    0 SNES VI Function norm 3.821526562597e-07 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+    1 SNES VI Function norm 7.033950685756e-13 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.
+  6 SNES Function norm < 1.e-11
+errors:     av |u-uexact|  = 1.287e-03    |u-uexact|_inf = 7.882e-03

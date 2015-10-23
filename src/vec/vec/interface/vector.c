@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petsc-private/vecimpl.h>    /*I  "petscvec.h"   I*/
+#include <petsc/private/vecimpl.h>    /*I  "petscvec.h"   I*/
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
@@ -523,11 +523,9 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
    Notes:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their
-         data to the first processor to print.
++     PETSC_VIEWER_STDOUT_SELF - for sequential vectors
+.     PETSC_VIEWER_STDOUT_WORLD - for parallel vectors created on PETSC_COMM_WORLD
+-     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
    option PetscViewerSetFormat().
@@ -808,6 +806,14 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
           in ix in calls to VecSetValues() or VecGetValues(). These rows are simply
           ignored.
+-     VEC_SUBSET_OFF_PROC_ENTRIES, which causes VecAssemblyBegin() to assume that the off-process
+          entries will always be a subset (possibly equal) of the off-process entries set on the
+          first assembly.  This reuses the communication pattern, thus avoiding a global reduction.
+          Subsequent assemblies setting off-process values should use the same InsertMode as the
+          first assembly.
+
+   Developer Note:
+   The InsertMode restriction could be removed by packing the stash messages out of place.
 
    Level: intermediate
 
@@ -1751,7 +1757,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 
   Input Parameters:
 + obj   - the VecStash object
-. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+. bobj - optional other object that provides the prefix
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -1759,14 +1765,16 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   Developer Note: This cannot use PetscObjectViewFromOptions() because it takes a Vec as an argument but does not use VecView
 
 */
-PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char optionname[])
+PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   PetscViewerFormat format;
+  char              *prefix;
 
   PetscFunctionBegin;
+  prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -1817,7 +1825,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   s    = &v->bstash;
 
   /* print block stash */
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
@@ -1846,8 +1854,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1928,5 +1935,21 @@ PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetInf"
+PetscErrorCode VecSetInf(Vec xin)
+{
+  PetscInt       i,n = xin->map->n;
+  PetscScalar    *xx;
+  PetscScalar    zero=0.0,one=1.0,inf=one/zero;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  for (i=0; i<n; i++) xx[i] = inf;
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

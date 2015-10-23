@@ -25,12 +25,12 @@
       program main
       implicit none
 
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
 
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
@@ -51,7 +51,7 @@
       i3 = 3
       N  = 10
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
-      h = 1.d0/(N-1.d0)
+      h = 1.0/(N-1.0)
       ctx(6) = N
       ctx(4) = PETSC_COMM_WORLD
 
@@ -139,17 +139,17 @@
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
 
 
       call MPI_Comm_rank(ctx(4),rank,ierr)
       call MPI_Comm_size(ctx(4),size,ierr)
-      h     = 1.d0/(ctx(6) - 1.d0)
+      h     = 1.0/(ctx(6) - 1.0)
       call DMGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
       call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
@@ -193,13 +193,13 @@
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = d*(xx(i) - 2.d0*xx(i+1)                              &
+       ff(i-s+1) = d*(xx(i) - 2.0*xx(i+1)                               &
      &      + xx(i+2)) + xx(i+1)*xx(i+1)                                &
      &      - F2(i-s+1)
  10   continue
 
       if (rank .eq. size-1) then
-        ff(n-s) = xx(n) - 1.d0
+        ff(n-s) = xx(n) - 1.0
       endif
 
       call VecRestoreArray(f,vff,iff,ierr)
@@ -212,15 +212,15 @@
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
       PetscScalar      five
 
-      five = 5.d-1
+      five = .5
       call VecSet(x,five,ierr)
       return
       end
@@ -229,12 +229,12 @@
 
       subroutine FormJacobian(snes,x,jac,B,ctx,ierr)
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscvec.h>
-#include <petsc-finclude/petscdm.h>
-#include <petsc-finclude/petscdmda.h>
-#include <petsc-finclude/petscmat.h>
-#include <petsc-finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscsnes.h>
       SNES             snes
       Vec              x
       Mat              jac,B
@@ -247,7 +247,7 @@
       PetscScalar      d,A,h,vxx(1)
 
       i1 = 1
-      h = 1.d0/(ctx(6) - 1.d0)
+      h = 1.0/(ctx(6) - 1.0)
       d = h*h
       call MPI_Comm_rank(ctx(4),rank,ierr)
       call MPI_Comm_size(ctx(4),size,ierr)

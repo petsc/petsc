@@ -21,6 +21,25 @@ J*/
 typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"
 
+typedef void (*PetscPointFunc)(PetscInt, PetscInt, PetscInt,
+                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                               PetscReal, const PetscReal[], PetscScalar[]);
+typedef void (*PetscPointJac)(PetscInt, PetscInt, PetscInt,
+                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                              PetscReal, PetscReal, const PetscReal[], PetscScalar[]);
+typedef void (*PetscBdPointFunc)(PetscInt, PetscInt, PetscInt,
+                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                 PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]);
+typedef void (*PetscBdPointJac)(PetscInt, PetscInt, PetscInt,
+                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]);
+typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *);
+
+
 PETSC_EXTERN PetscFunctionList PetscDSList;
 PETSC_EXTERN PetscErrorCode PetscDSCreate(MPI_Comm, PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSDestroy(PetscDS *);
@@ -28,7 +47,8 @@ PETSC_EXTERN PetscErrorCode PetscDSSetType(PetscDS, PetscDSType);
 PETSC_EXTERN PetscErrorCode PetscDSGetType(PetscDS, PetscDSType *);
 PETSC_EXTERN PetscErrorCode PetscDSSetUp(PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSetFromOptions(PetscDS);
-PETSC_EXTERN PetscErrorCode PetscDSViewFromOptions(PetscDS,const char[],const char[]);
+PETSC_STATIC_INLINE PetscErrorCode PetscDSViewFromOptions(PetscDS A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+
 PETSC_EXTERN PetscErrorCode PetscDSView(PetscDS,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDSRegister(const char [], PetscErrorCode (*)(PetscDS));
 PETSC_EXTERN PetscErrorCode PetscDSRegisterDestroy(void);
@@ -41,6 +61,10 @@ PETSC_EXTERN PetscErrorCode PetscDSGetTotalComponents(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetFieldOffset(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdFieldOffset(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffset(PetscDS, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffsets(PetscDS, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscDSGetComponentBdOffsets(PetscDS, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscDSGetComponentBdDerivativeOffsets(PetscDS, PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetDiscretization(PetscDS, PetscInt, PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscDSSetDiscretization(PetscDS, PetscInt, PetscObject);
@@ -52,50 +76,131 @@ PETSC_EXTERN PetscErrorCode PetscDSGetImplicit(PetscDS, PetscInt, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscDSSetImplicit(PetscDS, PetscInt, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDSGetAdjacency(PetscDS, PetscInt, PetscBool*, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscDSSetAdjacency(PetscDS, PetscInt, PetscBool,  PetscBool);
-PETSC_EXTERN PetscErrorCode PetscDSGetObjective(PetscDS, PetscInt, void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscDSSetObjective(PetscDS, PetscInt, void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSGetObjective(PetscDS, PetscInt,
+                                                void (**)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, const PetscReal[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSSetObjective(PetscDS, PetscInt,
+                                                void (*)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetResidual(PetscDS, PetscInt,
-                                                    void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
+                                               void (**)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (**)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSSetResidual(PetscDS, PetscInt,
-                                                    void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
+                                               void (*)(PetscInt, PetscInt, PetscInt,
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (*)(PetscInt, PetscInt, PetscInt,
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        PetscReal, const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetJacobian(PetscDS, PetscInt, PetscInt,
-                                                    void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
+                                               void (**)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (**)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (**)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (**)(PetscInt, PetscInt, PetscInt,
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                         PetscReal, PetscReal, const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSSetJacobian(PetscDS, PetscInt, PetscInt,
-                                                    void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                    void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]));
+                                               void (*)(PetscInt, PetscInt, PetscInt,
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        PetscReal, PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (*)(PetscInt, PetscInt, PetscInt,
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        PetscReal, PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (*)(PetscInt, PetscInt, PetscInt,
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        PetscReal, PetscReal, const PetscReal[], PetscScalar[]),
+                                               void (*)(PetscInt, PetscInt, PetscInt,
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                        PetscReal, PetscReal, const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetRiemannSolver(PetscDS, PetscInt,
-                                                    void (**)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
+                                                    void (**)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode PetscDSSetRiemannSolver(PetscDS, PetscInt,
-                                                    void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
+                                                    void (*)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode PetscDSGetContext(PetscDS, PetscInt, void **);
 PETSC_EXTERN PetscErrorCode PetscDSSetContext(PetscDS, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdResidual(PetscDS, PetscInt,
-                                                      void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]));
+                                                 void (**)(PetscInt, PetscInt, PetscInt,
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (**)(PetscInt, PetscInt, PetscInt,
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSSetBdResidual(PetscDS, PetscInt,
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]));
+                                                 void (*)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (*)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetBdJacobian(PetscDS, PetscInt, PetscInt,
-                                                      void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]));
+                                                 void (**)(PetscInt, PetscInt, PetscInt,
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (**)(PetscInt, PetscInt, PetscInt,
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (**)(PetscInt, PetscInt, PetscInt,
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (**)(PetscInt, PetscInt, PetscInt,
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSSetBdJacobian(PetscDS, PetscInt, PetscInt,
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]));
+                                                 void (*)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (*)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (*)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                 void (*)(PetscInt, PetscInt, PetscInt,
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                          PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetRefCoordArrays(PetscDS, PetscReal **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
 
 #endif

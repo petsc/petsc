@@ -1,4 +1,4 @@
-#include <petsc-private/petscimpl.h>       /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>       /*I "petscsys.h" I*/
 
 /* ---------------------------------------------------------------- */
 
@@ -318,9 +318,9 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(url,2);
-  if (PetscPythonMonitorSet_C == NULL) {
+  if (!PetscPythonMonitorSet_C) {
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-    if (PetscPythonMonitorSet_C == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
+    if (!PetscPythonMonitorSet_C) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
   }
   ierr = PetscPythonMonitorSet_C(obj,url);CHKERRQ(ierr);
   PetscFunctionReturn(0);

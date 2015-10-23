@@ -1,0 +1,257 @@
+
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscdmplexdef.h90"
+#endif
+
+#include "petsc/finclude/ftn-custom/petscdmhide.h90"
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(USE_DMPLEX_HIDE)
+#  define USE_DMPLEX_HIDE use petscdmplexdef
+#elif !defined(USE_DMPLEX_HIDE)
+#  define USE_DMPLEX_HIDE
+#endif
+
+      Interface
+        Subroutine DMPlexGetCone(m,p,cone,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreCone(m,p,cone,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetConeOrientation(m,p,coneOrient,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: coneOrient(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetSupport(m,p,support,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreSupport(m,p,support,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetTransitiveClosure(m,p,useCone,points,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscBool    useCone
+          PetscInt, pointer :: points(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreTransitiveClosure(m,p,uC,points,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscBool    uC
+          PetscInt, pointer :: points(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetJoin(m,numPoints,points,join,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFullJoin(m,numPoints,points,join,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreJoin(m,numPoints,points,join,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetMeet(m,numPoints,points,meet,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFullMeet(m,numPoints,points,meet,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreMeet(m,numPoints,points,meet,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexVecGetClosure(m,section,v,point,values,ierr)
+          USE_DMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          VEC_HIDE     v
+          PetscInt     point
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexVecRestoreClosure(m,section,v,point,vs,ierr)
+          USE_DMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          VEC_HIDE     v
+          PetscInt     point
+          PetscScalar, pointer :: vs(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexVecSetClosure(m,sec,v,point,vs,mode,ierr)
+          USE_DMPLEX_HIDE
+          PETSCSECTION_HIDE sec
+          VEC_HIDE     v
+          PetscInt     point
+          InsertMode   mode
+          PetscScalar, pointer :: vs(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexMatSetClosure(m,s,gS,A,p,v,mode,ierr)
+          USE_DMPLEX_HIDE
+          PETSCSECTION_HIDE s
+          PETSCSECTION_HIDE gS
+          MAT_HIDE     A
+          PetscInt     p
+          InsertMode   mode
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexCreateSection(m,d,nF,nC,nD,nB,bF,bC,bP,pm,sc,e)
+          USE_DMPLEX_HIDE
+          PETSCSECTION_HIDE sc
+          PetscInt     d, nF, nB
+          PetscInt, pointer :: nC(:)
+          PetscInt, pointer :: nD(:)
+          PetscInt, pointer :: bF(:)
+          IS_HIDE,  pointer :: bC(:)
+          IS_HIDE,  pointer :: bP(:)
+          IS_HIDE pm
+          PetscErrorCode e
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryAffineFEM(m,c,v0,J,iJ,dJ,er)
+          USE_DMPLEX_HIDE
+          PetscInt   c
+          PetscReal, pointer :: v0(:)
+          PetscReal, pointer :: J(:)
+          PetscReal, pointer :: iJ(:)
+          PetscReal  dJ
+          PetscErrorCode er
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryFEM(m,c,fe,v0,J,iJ,dJ,er)
+          USE_DMPLEX_HIDE
+          USE_PETSCFE_HIDE
+          PetscInt   c
+          PetscReal, pointer :: v0(:)
+          PetscReal, pointer :: J(:)
+          PetscReal, pointer :: iJ(:)
+          PetscReal  dJ
+          PetscErrorCode er
+          PETSCFE_HIDE fe
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryFVM(m,cell,vol,ct,nm,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt   cell
+          PetscReal  vol
+          PetscReal, pointer :: ct(:)
+          PetscReal, pointer :: nm(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface

@@ -12,11 +12,13 @@ class Configure(config.package.CMakePackage):
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0
+    self.hastests         = 1
     self.downloadfilename = 'Elemental'
     return
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.mpi             = framework.require('config.packages.MPI',self)
@@ -26,6 +28,8 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
+    if not self.cmake.found:
+      raise RuntimeError('CMake > 2.5 is needed to build Elemental')
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DEL_USE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
@@ -33,8 +37,10 @@ class Configure(config.package.CMakePackage):
     args.append('-DBUILD_METIS=OFF')
     args.append('-DBUILD_PARMETIS=OFF')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
+      args.append('-DBUILD_SHARED_LIBS=off')
+    if not self.sharedLibraries.useShared:
       args.append('-DBUILD_SHARED_LIBS=off')
 
     self.framework.pushLanguage('C')
@@ -44,7 +50,7 @@ class Configure(config.package.CMakePackage):
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
-    if config.setCompilers.Configure.isSolaris():
+    if config.setCompilers.Configure.isSolaris(self.log):
        raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()

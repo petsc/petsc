@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   if (flg) {
     xlabel = (char*)0; toplabel = (char*)0;
   }
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawHGCreate(draw,bins,&hist);CHKERRQ(ierr);
   ierr = PetscDrawHGGetAxis(hist,&axis);CHKERRQ(ierr);
@@ -45,7 +45,6 @@ int main(int argc,char **argv)
   }
   ierr = PetscDrawHGSetColor(hist,color);CHKERRQ(ierr);
   ierr = PetscDrawHGDraw(hist);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawHGDestroy(&hist);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);

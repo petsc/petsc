@@ -2,12 +2,14 @@
 #define __LMVMMAT_H
 
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
+#include <petscksp.h>
 
 #define MatLMVM_Scale_None              0
 #define MatLMVM_Scale_Scalar            1
 #define MatLMVM_Scale_Broyden           2
-#define MatLMVM_Scale_Types             3
+#define MatLMVM_Scale_H0                3
+#define MatLMVM_Scale_Types             4
 
 #define MatLMVM_Rescale_None            0
 #define MatLMVM_Rescale_Scalar          1
@@ -70,11 +72,14 @@ typedef struct{
 
   PetscReal delta;
   PetscReal sigma;
+  PetscReal theta;
   PetscReal *rho;
   PetscReal *beta;
 
   PetscBool useDefaultH0;
-  Mat H0;
+  Mat H0_mat;
+  KSP H0_ksp;
+  Vec H0_norm;
 
   PetscBool useScale;
   Vec scale;
@@ -113,6 +118,8 @@ PetscErrorCode MatLMVMSetDelta(Mat,PetscReal);
 PetscErrorCode MatLMVMSetScale(Mat,Vec);
 PetscErrorCode MatLMVMGetRejects(Mat,PetscInt*);
 PetscErrorCode MatLMVMSetH0(Mat,Mat);
+PetscErrorCode MatLMVMGetH0(Mat,Mat*);
+PetscErrorCode MatLMVMGetH0KSP(Mat,KSP*);
 PetscErrorCode MatLMVMSetPrev(Mat,Vec,Vec);
 PetscErrorCode MatLMVMGetX0(Mat,Vec);
 PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);

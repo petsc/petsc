@@ -1,4 +1,4 @@
-#include <petsc-private/fortranimpl.h>
+#include <petsc/private/fortranimpl.h>
 #include <petscpc.h>
 #include <petscksp.h>
 
@@ -82,7 +82,7 @@ static PetscErrorCode ourshellsetupctx(PC pc)
   PetscErrorCode ierr = 0;
   void           *ctx;
   ierr = PCShellGetContext(pc,&ctx);CHKERRQ(ierr);
-  (*(void (PETSC_STDCALL *)(PC*,void*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[3]))(&pc,ctx,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(PC*,void*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[4]))(&pc,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -129,7 +129,7 @@ PETSC_EXTERN void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *app
 
 PETSC_EXTERN void PETSC_STDCALL pcshellsetapplyctx_(PC *pc,void (PETSC_STDCALL *apply)(void*,void*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,5);
+  PetscObjectAllocateFortranPointers(*pc,9);
   ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoidFunction)apply;
 
   *ierr = PCShellSetApply(*pc,ourshellapplyctx);
@@ -160,8 +160,8 @@ PETSC_EXTERN void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STD
 
 PETSC_EXTERN void PETSC_STDCALL pcshellsetsetupctx_(PC *pc,void (PETSC_STDCALL *setup)(void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,5);
-  ((PetscObject)*pc)->fortran_func_pointers[3] = (PetscVoidFunction)setup;
+  PetscObjectAllocateFortranPointers(*pc,9);
+  ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFunction)setup;
 
   *ierr = PCShellSetSetUp(*pc,ourshellsetupctx);
 }

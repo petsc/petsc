@@ -4,9 +4,9 @@
 !  this case each local vector is as long as the entire parallel vector.
 !
       implicit none
-#include <petsc-finclude/petscsys.h>
-#include <petsc-finclude/petscis.h>
-#include <petsc-finclude/petscvec.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
 
       PetscErrorCode ierr
       PetscMPIInt  size,rank
@@ -19,7 +19,7 @@
       VecScatter   ctx
 
       n    = 5
-      zero = 0.d0
+      zero = 0.0
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)

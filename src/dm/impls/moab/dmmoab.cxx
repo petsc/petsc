@@ -1,4 +1,4 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
+#include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>

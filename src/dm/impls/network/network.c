@@ -1,4 +1,4 @@
-#include <petsc-private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
+#include <petsc/private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 
@@ -437,7 +437,35 @@ PetscErrorCode DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMNetworkAddNumVariables"
+#define __FUNCT__ "DMNetworkGetNumVariables"
+/*@ 
+  DMNetworkGetNumVariables - Gets number of variables for a vertex/edge point.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMNetworkObject
+- p    - the vertex/edge point
+
+  Output Parameters:
+. nvar - number of variables
+
+  Level: intermediate
+
+.seealso: DMNetworkAddNumVariables, DMNetworkSddNumVariables
+@*/
+PetscErrorCode DMNetworkGetNumVariables(DM dm,PetscInt p,PetscInt *nvar)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetDof(network->DofSection,p,nvar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMNetworkSetNumVariables"
 /*@ 
   DMNetworkSetNumVariables - Sets number of variables for a vertex/edge point.
 
@@ -486,13 +514,13 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
     ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
     /* Copy header */
     header = &network->header[p];
-    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));
+    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     /* Copy data */
     cvalue = &network->cvalue[p];
     ncomp = header->ndata;
     for (i = 0; i < ncomp; i++) {
       offset = offsetp + network->dataheadersize + header->offset[i];
-      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));
+      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -554,7 +582,7 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
   Notes:
   This routine should be called only when using multiple processors.
 
-  Distributes the network with a non-overlapping partitioning of the edges.
+  Distributes the network with <overlap>-overlapping partitioning of the edges.
 
   Level: intermediate
 

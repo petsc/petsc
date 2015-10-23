@@ -1,13 +1,13 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscds.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCompositeSetCoupling"
 /*@C
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
-      seperate components (DMs) in a DMto build the correct matrix nonzero structure.
+      separate components (DMs) in a DMto build the correct matrix nonzero structure.
 
 
     Logically Collective on MPI_Comm
@@ -902,12 +902,15 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
        DMCompositeGetISLocalToGlobalMappings() for to map local sub-DM (including ghost) indices to packed global
        indices.
 
+    Fortran Notes:
+
+       The output argument 'is' must be an allocated array of sufficient length, which can be learned using DMCompositeGetNumberDM().
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
 
 @*/
-
 PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 {
   PetscErrorCode         ierr;

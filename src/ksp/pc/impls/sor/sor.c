@@ -2,7 +2,7 @@
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
-#include <petsc-private/pcimpl.h>               /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>               /*I "petscpc.h" I*/
 
 typedef struct {
   PetscInt   its;         /* inner iterations, number of sweeps */
@@ -30,9 +30,11 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
   PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-
+  PetscReal      fshift;
+  
   PetscFunctionBegin;
-  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
+  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
+  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -43,11 +45,13 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
   MatSORType     stype = jac->sym;
+  PetscReal      fshift;
 
   PetscFunctionBegin;
   ierr = PetscInfo1(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
   if (guesszero) stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS);
-  ierr = MatSOR(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
+  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
+  ierr = MatSOR(pc->pmat,b,jac->omega,stype,fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
   *outits = its;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   PetscFunctionReturn(0);
@@ -433,6 +437,7 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 .  -pc_sor_local_symmetric - Activates local symmetric version  (default version)
 .  -pc_sor_local_backward - Activates local backward version
 .  -pc_sor_omega <omega> - Sets omega
+.  -pc_sor_diagonal_shift <shift> - shift the diagonal entries; useful if the matrix has zeros on the diagonal
 .  -pc_sor_its <its> - Sets number of iterations   (default 1)
 -  -pc_sor_lits <lits> - Sets number of local iterations  (default 1)
 
@@ -444,7 +449,19 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
           Not a true parallel SOR, in parallel this implementation corresponds to block
           Jacobi with SOR on each block.
 
+          For AIJ matrix if a diagonal entry is zero (and the diagonal shift is zero) then by default the inverse of that
+          zero will be used and hence the KSPSolve() will terminate with KSP_DIVERGED_NANORIF. If the option
+          KSPSetErrorIfNotConverged() or -ksp_error_if_not_converged the code will terminate as soon as it detects the 
+          zero pivot.
+
           For SeqBAIJ matrices this implements point-block SOR, but the omega, its, lits options are not supported.
+
+          For SeqBAIJ the diagonal blocks are inverted using dense LU with partial pivoting. If a zero pivot is detected 
+          the computation is stopped with an error
+
+  Developer Notes: We should add support for diagonal blocks that are singular to generate a Inf and thus cause KSPSolve()
+           to terminate with KSP_DIVERGED_NANORIF instead of stopping the program allowing
+           a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT

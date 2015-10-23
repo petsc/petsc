@@ -3,7 +3,7 @@
     Defines the operations for the X PetscDraw implementation.
 */
 
-#include <petsc-private/drawimpl.h>         /*I  "petscsys.h" I*/
+#include <petsc/private/drawimpl.h>         /*I  "petscsys.h" I*/
 
 typedef struct {
   char      *filename;
@@ -82,6 +82,17 @@ PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
   if (!win->written) PetscFunctionReturn(0);
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSynchronizedClear_TikZ"
+PetscErrorCode PetscDrawSynchronizedClear_TikZ(PetscDraw draw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawClear_TikZ(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -180,7 +191,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       0,
                                       0,
-                                      0,
+                                      PetscDrawSynchronizedClear_TikZ,
                                       0,
                                       0,
                                       0,

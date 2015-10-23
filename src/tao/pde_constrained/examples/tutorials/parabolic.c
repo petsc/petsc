@@ -1,4 +1,4 @@
-#include <petsc-private/taoimpl.h>
+#include <petsc/private/taoimpl.h>
 
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
@@ -125,10 +125,11 @@ int main(int argc, char **argv)
   PetscInt           lo,hi,hi2,lo2,ksp_old;
   PetscInt           ntests = 1;
   PetscInt           i;
-  int                stages[1];
+#if defined(PETSC_USE_LOG)
+  PetscLogStage      stages[1];
+#endif
 
   PetscInitialize(&argc, &argv, (char*)0,help);
-
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);

@@ -4,7 +4,7 @@
    This file was created by Peter Mell   6/30/95
 */
 
-#include <petsc-private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
 #include <petscdraw.h>
 #undef __FUNCT__
@@ -35,11 +35,11 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,dd->M,dd->m,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",info.xs,info.xs+info.xm);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     } else {
       ierr = DMView_DA_VTK(da, viewer);CHKERRQ(ierr);
     }

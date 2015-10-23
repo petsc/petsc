@@ -1,5 +1,5 @@
 #include <petscis.h>         /*I  "petscis.h"  I*/
-#include <petsc-private/isimpl.h>
+#include <petsc/private/isimpl.h>
 #include <petscviewerhdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
@@ -131,9 +131,7 @@ PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
     SETERRQ(PetscObjectComm((PetscObject) is), PETSC_ERR_SUP, "This should be implemented");
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
-    if (!((PetscObject) is)->name) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Since HDF5 format gives ASCII name for each object in file; must use ISLoad() after setting name of Vec with PetscObjectSetName()");
-    }
+    if (!((PetscObject) is)->name) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Since HDF5 format gives ASCII name for each object in file; must use ISLoad() after setting name of Vec with PetscObjectSetName()");
     ierr = ISLoad_HDF5(is, viewer);CHKERRQ(ierr);
 #endif
   }

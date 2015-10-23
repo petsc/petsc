@@ -1,5 +1,5 @@
-#include <petsc-private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
-#include <petsc-private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
+#include <petsc/private/snesimpl.h>
 
 typedef struct {
   PetscReal norm_delta_x_prev; /* norm of previous update */
@@ -68,7 +68,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 
   /* precheck */
   ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
 
   ierr = VecNormBegin(Y, NORM_2, &ynorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     ierr = VecCopy(X,W);CHKERRQ(ierr);
     ierr = VecCopy(F,G);CHKERRQ(ierr);
     ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -140,7 +140,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
         ierr = PetscViewerASCIIPrintf(monitor,"    Line search: maximum iterations reached\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       }
-      ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
 
@@ -240,7 +240,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   /* postcheck */
   ierr = SNESLineSearchPostCheck(linesearch,X,Y,G,&changed_y,&changed_w);CHKERRQ(ierr);
   if (changed_y || changed_w) {
-    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_USER);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Changing the search direction here doesn't make sense.\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

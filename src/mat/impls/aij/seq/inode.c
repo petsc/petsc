@@ -596,12 +596,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   ns       = a->inode.size;     /* Node Size array */
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  } else {
-    z = y;
-  }
+  ierr = VecGetArrayPair(zz,yy,&z,&y);CHKERRQ(ierr);
   zt = z;
 
   idx = a->j;
@@ -764,10 +759,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
     }
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayPair(zz,yy,&z,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2751,7 +2743,7 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
   PetscFunctionReturn(0);
 }
 
-#include <petsc-private/kernels/blockinvert.h>
+#include <petsc/private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSOR_SeqAIJ_Inode"
@@ -2771,6 +2763,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   PetscFunctionBegin;
   if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
+  if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   if (fshift != 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
 
   if (!a->inode.ibdiagvalid) {

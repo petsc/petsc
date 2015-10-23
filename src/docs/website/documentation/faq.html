@@ -90,6 +90,14 @@
         <li><a href="#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
         <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
+        <li><a href="#PetscOptionsInsertFile">What does it mean when make test gives:</a>
+            <pre>
+Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
+See http://www.mcs.anl.gov/petsc/documentation/faq.html
+[0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
+            </pre></li>
       </ul>
 
       <h4><a href="#usage">Usage</a></h4>
@@ -271,7 +279,7 @@
         </p>
 
 
-          The software <a href="http://open-mx.org">http://open-mx.org</a>
+          The software <a href="http://open-mx.gforge.inria.fr">http://open-mx.gforge.inria.fr</a>
           provides faster speed for ethernet systems, we have not tried it but it
           claims it can dramatically reduce latency and increase bandwidth on
           Linux system. You must first install this software and then install
@@ -453,7 +461,7 @@
       though they try to implement the built-in data types of double etc are not
       native types and cannot "just be used" in a general piece of numerical
       source code rather the code has to rewritten to live within the limitations
-      of QD classes.
+      of QD classes. But note, above, that PETSc can be built to use quad precision.
 
       <hr>
 
@@ -608,6 +616,21 @@
 
       <p>
         grep "self.download "  config/BuildSystem/config/packages/*.py
+      </p>
+
+      <hr>
+
+      <h3><a name="PetscOptionsInsertFile">What does it mean when make test gives:</a></h3>
+            <pre>
+Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
+See http://www.mcs.anl.gov/petsc/documentation/faq.html
+[0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
+[0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
+</pre></li>
+
+      <p>
+        The machine has a funky network configuration and for some reason MPICH is unable to communicate between processes with the socket connections it has established. This can happen even if you are running MPICH on just one machine. Often you will find that ping `hostname` fails with this network configuration; that is processes on the machine cannot even connect to the same machine. You can try completely disconnecting your machine from the network and see if make test then works or speaking with your system adminstrator. You can also use the ./configure options --download-mpich --download-mpich-device=ch3:nemesis 
       </p>
 
       <hr>
@@ -956,7 +979,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <p>
        To write the code (rather than use the options above) use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
        SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
-       the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() seperately on BOTH
+       the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() separately on BOTH
        matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
       </p>
 
@@ -1204,7 +1227,7 @@ PETSC_COMM_WORLD = NewComm;
 
       Running the PETSc program with the option -help will print of many of the
       options. To print the options that have been specified within a program,
-      employ -optionsleft to print any options that the user specified but were
+      employ -options_left to print any options that the user specified but were
       not actually used by the program and all options used; this is helpful for
       detecting typo errors.
 
@@ -1284,7 +1307,7 @@ PETSC_COMM_WORLD = NewComm;
       Some makefiles use ${DATAFILESPATH}/matrices/medium and other files. These
       test matrices in PETSc binary format can be found with anonymous ftp from
       <a href="http://ftp.mcs.anl.gov">ftp.mcs.anl.gov</a> in the directory
-      pub/petsc/matrices. The are not included with the PETSc distribution in the
+      pub/petsc/Datafiles/matrices. The are not included with the PETSc distribution in the
       interest of reducing the distribution size.
 
       <h3><a name="info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></h3>
@@ -1506,13 +1529,14 @@ PETSC_COMM_WORLD = NewComm;
 
         <li>
           The equations are intentionally singular (e.g.  constant null space),
-          but the Krylov method was not informed, see KSPSetNullSpace().
+          but the Krylov method was not informed, see MatSetNullSpace().
         </li>
 
         <li>
-          The equations are intentionally singular and KSPSetNullSpace() was
+          The equations are intentionally singular and MatSetNullSpace() was
           used, but the right hand side is not consistent. You may have to call
           MatNullSpaceRemove() on the right hand side before calling KSPSolve().
+          See MatSetTransposeNullSpace()
         </li>
 
         <li>
@@ -1769,7 +1793,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         grid solver.  See PCFactorSetShiftType(), PCFactorSetAmount().
       </p>
 
-      <p>This error can also happen if your matrix is singular, see KSPSetNullSpace() for how to handle this.</p>
+      <p>This error can also happen if your matrix is singular, see MatSetNullSpace() for how to handle this.</p>
 
       <p>
         If this error occurs in the zeroth row of the matrix, it is likely you have

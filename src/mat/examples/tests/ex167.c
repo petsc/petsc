@@ -152,7 +152,7 @@ int main(int argc,char **args)
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
   if (show_inversions) {
-    ierr = MPI_Reduce(&inversions,&total_inversions,1,MPIU_INT, MPIU_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&inversions,&total_inversions,1,MPIU_INT, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "*Total inversions: %D\n", total_inversions);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);

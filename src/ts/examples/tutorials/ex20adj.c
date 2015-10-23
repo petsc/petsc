@@ -87,7 +87,7 @@ struct _n_User {
   PetscReal ftime;
   Mat       A;                       /* Jacobian matrix */
   Mat       Jacp;                    /* JacobianP matrix */
-  Vec       x,lambda[2],mu[2];  /* adjoint variables */
+  Vec       x,lambda[2],mup[2];  /* adjoint variables */
 };
 
 /*
@@ -239,7 +239,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
@@ -254,6 +254,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     Save trajectory of solution so that TSAdjointSolve() may be used
@@ -288,16 +289,16 @@ int main(int argc,char **argv)
   y_ptr[0] = 0.0; y_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
 
-  ierr = MatCreateVecs(user.Jacp,&user.mu[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(user.mu[0],&x_ptr);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.mup[0],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(user.mup[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user.mu[0],&x_ptr);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.Jacp,&user.mu[1],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(user.mu[1],&x_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user.mup[0],&x_ptr);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.mup[1],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(user.mup[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user.mu[1],&x_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user.mup[1],&x_ptr);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetCostGradients(ts,2,user.lambda,user.mu);CHKERRQ(ierr);
+  ierr = TSSetCostGradients(ts,2,user.lambda,user.mup);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
@@ -309,9 +310,9 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[z(tf)]/d[y0]  d[z(tf)]/d[z0]\n");CHKERRQ(ierr);
   ierr = VecView(user.lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: d[y(tf)]/d[mu]\n");CHKERRQ(ierr);
-  ierr = VecView(user.mu[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(user.mup[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensivitity wrt parameters: d[z(tf)]/d[mu]\n");CHKERRQ(ierr);
-  ierr = VecView(user.mu[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(user.mup[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -322,8 +323,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[1]);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.mu[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.mu[1]);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.mup[1]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();

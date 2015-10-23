@@ -56,8 +56,10 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   PetscInt       nl, nxe, nye, ne;
   PetscInt       k = 0, m  = 0;
   PetscInt       i, j;
-  PetscLogEvent  integrationEvent;
   PetscErrorCode ierr;
+#if defined(PETSC_USE_LOG)
+  PetscLogEvent  integrationEvent;
+#endif
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventRegister("ElemIntegration", DM_CLASSID, &integrationEvent);CHKERRQ(ierr);
@@ -116,8 +118,10 @@ int main(int argc, char **argv)
   PetscInt       *elemRows;
   PetscScalar    *elemMats;
   PetscBool      doGPU = PETSC_TRUE, doCPU = PETSC_TRUE, doSolve = PETSC_FALSE, doView = PETSC_TRUE;
-  PetscLogStage  gpuStage, cpuStage;
   PetscErrorCode ierr;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage  gpuStage, cpuStage;
+#endif
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
@@ -172,7 +176,7 @@ int main(int argc, char **argv)
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp);CHKERRQ(ierr);
-    ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(A, nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);

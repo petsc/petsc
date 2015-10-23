@@ -22,8 +22,8 @@ EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 FLOW_OBJSF       = $(EXAMPLESF:.F=.o)
 #
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 flow: flow.o $(FLOW_OBJSF) chkopts
 	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_SNES_LIB)
@@ -57,8 +57,8 @@ runbm4:
 	-@${MPIEXEC} -n 4 ./flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh -partition ${DATAFILESPATH}/part_vec.part.4 > out.4.${HOST}
 
 
-TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
+#TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
 
-include $(PETSC_DIR)/lib/petsc-conf/test
+include $(PETSC_DIR)/lib/petsc/conf/test
 
 

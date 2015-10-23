@@ -102,8 +102,7 @@ PETSC_EXTERN PetscErrorCode KSPGetRhs(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetSolution(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP,PetscInt*);
-PETSC_EXTERN PetscErrorCode KSPSetNullSpace(KSP,MatNullSpace);
-PETSC_EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
+PETSC_EXTERN PetscErrorCode KSPGetTotalIterations(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPCreateVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 PETSC_DEPRECATED("Use KSPCreateVecs()") PETSC_STATIC_INLINE PetscErrorCode KSPGetVecs(KSP ksp,PetscInt n,Vec **x,PetscInt m,Vec **y) {return KSPCreateVecs(ksp,n,x,m,y);}
 
@@ -143,6 +142,7 @@ PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseRandom(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetRandom(KSP,PetscRandom);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP,KSP*);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
@@ -294,7 +294,7 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode KSPReasonView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
@@ -305,6 +305,7 @@ PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
 
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC,KSP*);
 
 /*E
     KSPNormType - Norm that is passed in the Krylov convergence
@@ -315,7 +316,7 @@ PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match petsc-finclude/petscksp.h
+   Notes: this must match petsc/finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
@@ -376,7 +377,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match petsc-finclude/petscksp.h
+   Developer notes: this must match petsc/finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
@@ -403,6 +404,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_PC       = -8,
               KSP_DIVERGED_NANORINF            = -9,
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
+              KSP_DIVERGED_PCSETUP_FAILED      = -11,
 
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 PETSC_EXTERN const char *const*KSPConvergedReasons;
@@ -585,12 +587,10 @@ PETSC_EXTERN PetscErrorCode PCPreSolve(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCPostSolve(PC,KSP);
 
 #include <petscdrawtypes.h>
-PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormDestroy(PetscObject**);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormDestroy(PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);
 
 PETSC_EXTERN PetscErrorCode PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));

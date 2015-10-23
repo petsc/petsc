@@ -178,9 +178,10 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes,PetscInt l,Vec X,Vec F,Vec XM,V
 #define __FUNCT__ "SNESNGMRESSelect_Private"
 PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec FM,PetscReal xMnorm,PetscReal fMnorm,PetscReal yMnorm,Vec XA,Vec FA,PetscReal xAnorm,PetscReal fAnorm,PetscReal yAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,Vec X,Vec F,Vec Y,PetscReal *xnorm,PetscReal *fnorm,PetscReal *ynorm)
 {
-  SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
-  PetscErrorCode ierr;
-  PetscBool      lssucceed,selectA;
+  SNES_NGMRES          *ngmres = (SNES_NGMRES*) snes->data;
+  PetscErrorCode       ierr;
+  SNESLineSearchReason lssucceed;
+  PetscBool            selectA;
 
   PetscFunctionBegin;
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
@@ -194,14 +195,14 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
     ierr   = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);
     *fnorm = fMnorm;
     ierr   = SNESLineSearchApply(ngmres->additive_linesearch,X,F,fnorm,Y);CHKERRQ(ierr);
-    ierr   = SNESLineSearchGetSuccess(ngmres->additive_linesearch,&lssucceed);CHKERRQ(ierr);
-    if (!lssucceed) {
+    ierr   = SNESLineSearchGetReason(ngmres->additive_linesearch,&lssucceed);CHKERRQ(ierr);
+    ierr   = SNESLineSearchGetNorms(ngmres->additive_linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
+    if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         PetscFunctionReturn(0);
       }
     }
-    ierr    = SNESLineSearchGetNorms(ngmres->additive_linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
     if (ngmres->monitor) {
       ierr = PetscViewerASCIIPrintf(ngmres->monitor,"Additive solution: ||F||_2 = %e\n",*fnorm);CHKERRQ(ierr);
     }
@@ -249,7 +250,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESSelectRestart_Private"
-PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,PetscBool *selectRestart)
+PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fMnorm, PetscReal fAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,PetscBool *selectRestart)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*)snes->data;
   PetscErrorCode ierr;
@@ -270,5 +271,14 @@ PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fA
     }
     *selectRestart = PETSC_TRUE;
   }
+
+  /* F_M stagnation restart */
+  if (ngmres->restart_fm_rise && fMnorm > snes->norm) {
+    if (ngmres->monitor) {
+      ierr = PetscViewerASCIIPrintf(ngmres->monitor,"F_M rise restart: %e > %e\n",fMnorm,snes->norm);CHKERRQ(ierr);
+    }
+    *selectRestart = PETSC_TRUE;
+  }
+
   PetscFunctionReturn(0);
 }

@@ -28,7 +28,7 @@ Options Database:
 .   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
 .   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
 .   -snes_fas_monitor -  Monitor progress of all of the levels
-.   -snes_fas_full_downsweepsmooth<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
+.   -snes_fas_full_downsweep<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
 .   -fas_levels_snes_ -  SNES options for all smoothers
 .   -fas_levels_cycle_snes_ -  SNES options for all cycles
 .   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
@@ -697,15 +697,15 @@ With the coarse RHS (defect correction) as below.
  */
 PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 {
-  Vec                 F, B, Xhat;
-  Vec                 X_c, Xo_c, F_c, B_c;
-  PetscErrorCode      ierr;
-  SNESConvergedReason reason;
-  PetscReal           xnorm, fnorm, ynorm;
-  PetscBool           lssuccess;
-  SNES                next;
-  Mat                 restrct, interpolate;
-  SNES_FAS            *fas = (SNES_FAS*)snes->data,*fasc;
+  Vec                  F, B, Xhat;
+  Vec                  X_c, Xo_c, F_c, B_c;
+  PetscErrorCode       ierr;
+  SNESConvergedReason  reason;
+  PetscReal            xnorm, fnorm, ynorm;
+  SNESLineSearchReason lsresult;
+  SNES                 next;
+  Mat                  restrct, interpolate;
+  SNES_FAS             *fas = (SNES_FAS*)snes->data,*fasc;
 
   PetscFunctionBegin;
   ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
@@ -760,14 +760,14 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 
     /* additive correction of the coarse direction*/
     ierr = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Xhat);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssuccess);CHKERRQ(ierr);
-    if (!lssuccess) {
+    ierr = SNESLineSearchGetReason(snes->linesearch, &lsresult);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &snes->norm, &ynorm);CHKERRQ(ierr);
+    if (lsresult) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         PetscFunctionReturn(0);
       }
     }
-    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &snes->norm, &ynorm);CHKERRQ(ierr);
   } else {
     ierr = SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
   }
@@ -857,6 +857,7 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
     } else {
+      /* The smoother on the coarse level is the coarse solver */
       ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
     }
     fas->full_stage = 1;
@@ -920,6 +921,9 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscBool      isFine;
 
   PetscFunctionBegin;
+
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   maxits       = snes->max_its;      /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -936,18 +940,10 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     if (fas->eventresidual) {ierr = PetscLogEventBegin(fas->eventresidual,0,0,0,0);CHKERRQ(ierr);}
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (fas->eventresidual) {ierr = PetscLogEventEnd(fas->eventresidual,0,0,0,0);CHKERRQ(ierr);}
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-  if (PetscIsInfOrNanReal(fnorm)) {
-    snes->reason = SNES_DIVERGED_FNORM_NAN;
-    PetscFunctionReturn(0);
-  }
-
+  SNESCheckFunctionNorm(snes,fnorm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -984,9 +980,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
       ierr = SNESFASCycle_Full(snes, X);CHKERRQ(ierr);
     } else if (fas->fastype ==SNES_FAS_KASKADE) {
       ierr = SNESFASCycle_Kaskade(snes, X);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
-    }
+    } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
 
     /* check for FAS cycle divergence */
     if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(0);

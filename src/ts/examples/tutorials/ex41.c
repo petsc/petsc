@@ -42,7 +42,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (nevents) {
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %f seconds\n",rank,t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %g seconds\n",rank,(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     u[0] = 1.0*rank;
     u[1] = -0.9*u[1];
@@ -126,6 +126,7 @@ int main(int argc,char **argv)
   PetscInt       n = 2,direction=-1;
   PetscScalar    *u;
   PetscBool      terminate=PETSC_FALSE;
+  TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -172,7 +173,6 @@ int main(int argc,char **argv)
   
   ierr = TSSetEventMonitor(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
-  TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in 
      the same event occuring multiple times in the same interval. A max. step 

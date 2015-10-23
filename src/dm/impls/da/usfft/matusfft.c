@@ -4,7 +4,7 @@
     Testing examples can be found in ~/src/mat/examples/tests FIX: should these be moved to dm/da/examples/tests?
 */
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 #include <petscdmda.h>                  /*I "petscdmda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
 #include <fftw3.h>
 

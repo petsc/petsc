@@ -87,7 +87,7 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
-PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode SNESReasonView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESReasonViewFromOptions(SNES);
 
@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode SNESMonitorDefaultField(SNES,PetscInt,PetscReal,void
 PETSC_EXTERN PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorFields(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSNES(KSP,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscObject**);
 PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
 PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNormDestroy(PetscObject**);
 
@@ -138,6 +138,7 @@ PETSC_EXTERN PetscErrorCode SNESGetLagJacobian(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetLagPreconditionerPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetLagJacobianPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetGridSequence(SNES,PetscInt);
+PETSC_EXTERN PetscErrorCode SNESGetGridSequence(SNES,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveIterations(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES,PetscInt*);
@@ -151,9 +152,8 @@ PETSC_EXTERN PetscErrorCode SNESKSPSetParametersEW(SNES,PetscInt,PetscReal,Petsc
 PETSC_EXTERN PetscErrorCode SNESKSPGetParametersEW(SNES,PetscInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 #include <petscdrawtypes.h>
-PETSC_EXTERN PetscErrorCode SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscObject**);
-PETSC_EXTERN PetscErrorCode SNESMonitorLGResidualNorm(SNES,PetscInt,PetscReal,PetscObject*);
-PETSC_EXTERN PetscErrorCode SNESMonitorLGDestroy(PetscObject**);
+PETSC_EXTERN PetscErrorCode SNESMonitorLGCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode SNESMonitorLGResidualNorm(SNES,PetscInt,PetscReal,void*);
 PETSC_EXTERN PetscErrorCode SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
 
 PETSC_EXTERN PetscErrorCode SNESSetApplicationContext(SNES,void *);
@@ -205,7 +205,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
    convergence criteria. SNES_CONVERGED_ITS means that SNESConvergedSkip() was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-   Developer Notes: this must match petsc-finclude/petscsnes.h
+   Developer Notes: this must match petsc/finclude/petscsnes.h
 
        The string versions of these are in SNESConvergedReason, if you change any value here you must
      also adjust that array.
@@ -324,6 +324,7 @@ PETSC_EXTERN PetscErrorCode SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,
 PETSC_EXTERN PetscErrorCode SNESConvergedDefault(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode SNESConvergedSkip(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES,SNESConvergedReason*);
+PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES,SNESConvergedReason);
 
 PETSC_DEPRECATED("Use SNESConvergedSkip()") PETSC_STATIC_INLINE void SNESSkipConverged(void) { /* never called */ }
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
@@ -434,6 +435,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
 PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);
+PETSC_EXTERN PetscErrorCode SNESSetFunctionNorm(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESGetFunctionNorm(SNES,PetscReal*);
 
 /*E
     SNESFunctionType - Type of function computed
@@ -558,8 +561,27 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetDamping(SNESLineSearch,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOrder(SNESLineSearch,PetscInt *order);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order);
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetSuccess(SNESLineSearch, PetscBool*);
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetSuccess(SNESLineSearch, PetscBool);
+/*E
+    SNESLineSearchReason - if line search has succeeded or failed and why
+
+   Level: intermediate
+
+   Developer Notes: this must match petsc/finclude/petscsnes.h
+
+   Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
+     also adjust that array.
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
+E*/
+typedef enum {SNES_LINESEARCH_SUCCEEDED,
+              SNES_LINESEARCH_FAILED_NANORINF,
+              SNES_LINESEARCH_FAILED_DOMAIN,
+              SNES_LINESEARCH_FAILED_REDUCT,       /* INSUFFICENT REDUCTION */
+              SNES_LINESEARCH_FAILED_USER,
+              SNES_LINESEARCH_FAILED_FUNCTION} SNESLineSearchReason;
+
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetReason(SNESLineSearch, SNESLineSearchReason*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetReason(SNESLineSearch, SNESLineSearchReason);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch,Vec*,Vec*,Vec*,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch,Vec,Vec,Vec,Vec,Vec);
@@ -642,6 +664,7 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode 
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFEM(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGradientDM(DM,PetscFV,DM*);
+PETSC_EXTERN PetscErrorCode DMPlexReconstructGradientsFVM(DM,Vec,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscScalar **, PetscScalar **);
@@ -697,6 +720,8 @@ PETSC_EXTERN const char *const SNESNGMRESSelectTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType);
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
+PETSC_EXTERN PetscErrorCode SNESNGMRESSetRestartFmRise(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool*);
 
 /* routines for NCG solver */
 
@@ -812,5 +837,7 @@ PETSC_EXTERN PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
+
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

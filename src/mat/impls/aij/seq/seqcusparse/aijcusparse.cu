@@ -2,12 +2,13 @@
   Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format using the CUSPARSE library,
 */
+#define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 
@@ -144,8 +145,7 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPARSEFormatOperation. MAT_CUSPARSE_MULT and MAT_CUSPARSE_ALL are currently supported.",op);
   }
 #else
-  if (format==MAT_CUSPARSE_ELL || format==MAT_CUSPARSE_HYB) 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format require CUDA 4.2 or later.");
+  if (format==MAT_CUSPARSE_ELL || format==MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format require CUDA 4.2 or later.");
 #endif
   PetscFunctionReturn(0);
 }

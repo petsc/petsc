@@ -1,4 +1,4 @@
-#include <petsc-private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
+#include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "FillClosureArray_Static"
@@ -616,7 +616,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDACnvertToCell"
+#define __FUNCT__ "DMDAConvertToCell"
 /*@
   DMDAConvertToCell - Convert (i,j,k) to local cell number
 

@@ -7,7 +7,7 @@ static const char help[] = "Solves PDE optimization problem using full-space met
 #include <petscdmcomposite.h>
 #include <petscpf.h>
 #include <petscsnes.h>
-#include <petsc-private/dmimpl.h>
+#include <petsc/private/dmimpl.h>
 
 /*
 
@@ -56,7 +56,7 @@ extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 */
 char common_options[] = "-ksp_type fgmres\
-                         -snes_grid_sequence 4 \
+                         -snes_grid_sequence 2 \
                          -pc_type mg\
                          -mg_levels_pc_type none \
                          -mg_coarse_pc_type none \

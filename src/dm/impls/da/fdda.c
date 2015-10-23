@@ -1,7 +1,7 @@
 
-#include <petsc-private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
+#include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 
 extern PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring*);
 extern PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring*);
@@ -601,7 +601,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 
   /* Do permutation and replace header */
   ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
-  ierr = MatHeaderReplace(A,Aapp);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(A,&Aapp);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -923,7 +923,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(col*col*nc*nc,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(col*col*nc,&cols);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);  

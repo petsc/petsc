@@ -71,7 +71,7 @@ class Configure(config.base.Configure):
     for (name, (petscDir, petscArch)) in self.getLocations():
       petscPythonDir = os.path.join(petscDir, 'config')
       sys.path.append(petscPythonDir)
-      confPath = os.path.join(petscDir, petscArch,'lib','petsc-conf')
+      confPath = os.path.join(petscDir, petscArch,'lib','petsc','conf')
       petscConf = framework.loadFramework(confPath)
       if petscConf:
         self.logPrint('Loaded PETSc-AS configuration ('+name+') from '+confPath)
@@ -304,7 +304,7 @@ class Configure(config.base.Configure):
 
   def checkSharedLibrary(self, libraries):
     '''Check that the libraries for PETSc are shared libraries'''
-    if config.setCompilers.Configure.isDarwin():
+    if config.setCompilers.Configure.isDarwin(self.log):
       # on Apple if you list the MPI libraries again you will generate multiply defined errors
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])

@@ -3,11 +3,12 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.3-p1.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.3-p2.tar.gz']
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
     self.needsMath         = 1
+    self.hastests          = 1
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
@@ -27,6 +28,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
     if self.sharedLibraries.useShared:
       args.append('-DSHARED=1')
+      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
     if self.indexTypes.integerSize == 64:

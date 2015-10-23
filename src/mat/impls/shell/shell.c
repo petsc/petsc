@@ -5,8 +5,8 @@
   much of anything.
 */
 
-#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>
+#include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h>
 
 typedef struct {
   PetscErrorCode (*destroy)(Mat);
@@ -185,9 +185,8 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 
     Level: advanced
 
-    Notes:
-    This routine is intended for use within various shell matrix routines,
-    as set with MatShellSetOperation().
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .keywords: matrix, shell, get, context
 
@@ -233,13 +232,20 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
 #define __FUNCT__ "MatMult_Shell"
 PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
-  Mat_Shell      *shell = (Mat_Shell*)A->data;
-  PetscErrorCode ierr;
-  Vec            xx;
+  Mat_Shell        *shell = (Mat_Shell*)A->data;
+  PetscErrorCode   ierr;
+  Vec              xx;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   ierr = MatShellPreScaleRight(A,x,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   ierr = (*shell->mult)(A,xx,y);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleLeft(A,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -268,13 +274,20 @@ PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 #define __FUNCT__ "MatMultTranspose_Shell"
 PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
-  Mat_Shell      *shell = (Mat_Shell*)A->data;
-  PetscErrorCode ierr;
-  Vec            xx;
+  Mat_Shell        *shell = (Mat_Shell*)A->data;
+  PetscErrorCode   ierr;
+  Vec              xx;
+  PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
   ierr = MatShellPreScaleLeft(A,x,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
   ierr = (*shell->multtranspose)(A,xx,y);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleRight(A,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -418,6 +431,15 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 
 extern PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_Shell"
+static PetscErrorCode MatMissingDiagonal_Shell(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
@@ -531,7 +553,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatMissingDiagonal_Shell,
                                /*114*/ 0,
                                        0,
                                        0,
@@ -632,8 +654,9 @@ $    MatDestroy(mat);
    with KSP (such as, for use with matrix-free methods). You should not
    use the shell type if you plan to define a complete matrix class.
 
-   Fortran Notes: The context can only be an integer or a PetscObject
-      unfortunately it cannot be a Fortran array or derived type.
+   Fortran Notes: To use this from Fortran with a ctx you must write an interface definition for this
+    function and for MatShellGetContext() that tells Fortran the Fortran derived data type you are passing
+    in as the ctx argument.
 
    PETSc requires that matrices and vectors being used for certain
    operations are partitioned accordingly.  For example, when
@@ -691,8 +714,8 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
    Level: advanced
 
-   Fortran Notes: The context can only be an integer or a PetscObject
-      unfortunately it cannot be a Fortran array or derived type.
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
