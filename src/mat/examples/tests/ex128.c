@@ -22,7 +22,7 @@ int main(int argc,char **args)
   IS             row,col;
   MatFactorInfo  info;
   Vec            x,y,b,ytmp;
-  PetscReal      norm2;
+  PetscReal      norm2,tol = 100*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
   PetscMPIInt    size;
 
@@ -98,7 +98,7 @@ int main(int argc,char **args)
       ierr = MatBackwardSolve(sA,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (norm2 > 1.e-14) {
+      if (norm2 > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g\n",(double)norm2);CHKERRQ(ierr);
       }
     }
@@ -109,7 +109,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&sA);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  if (lf == -1 && norm2 > 1.e-14) {
+  if (lf == -1 && norm2 > tol) {
     PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %D, residual %g\n",lf,(double)norm2);CHKERRQ(ierr);
   }
 

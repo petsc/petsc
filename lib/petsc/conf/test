@@ -44,6 +44,7 @@ testexamples_MUMPS: ${TESTEXAMPLES_MUMPS}
 testexamples_MUMPS_DATAFILESPATH: ${TESTEXAMPLES_MUMPS_DATAFILESPATH}
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU}
 testexamples_SUPERLU_DATAFILESPATH: ${TESTEXAMPLES_SUPERLU_DATAFILESPATH}
+testexamples_PARMETIS_DATAFILESPATH: ${TESTEXAMPLES_PARMETIS_DATAFILESPATH}
 testexamples_ELEMENTAL: ${TESTEXAMPLES_ELEMENTAL}
 testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
 testexamples_SUITESPARSE: ${TESTEXAMPLES_SUITESPARSE}
@@ -215,7 +216,7 @@ TESTMODE = testexamples
 alltests:
 	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
+	-@${OMAKE} alltest DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
 
 alltest:
 	-@date

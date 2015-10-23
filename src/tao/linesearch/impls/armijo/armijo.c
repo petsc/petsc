@@ -31,9 +31,7 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (armP->memory != NULL) {
-    ierr = PetscFree(armP->memory);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(armP->memory);CHKERRQ(ierr);
   armP->memorySetup = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

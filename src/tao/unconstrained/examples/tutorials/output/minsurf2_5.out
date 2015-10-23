@@ -2,7 +2,7 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 8   
 
-iter =   0, Function value 1.45591, Residual: 1 
+iter =   0, Function value 1.45591, Residual: 1. 
 iter =   1, Function value 1.53418, Residual: 0.0182909 
 iter =   2, Function value 1.5314, Residual: 0.0103471 
 iter =   3, Function value 1.52832, Residual: 0.00487195 
@@ -30,7 +30,7 @@ iter =  24, Function value 1.52715, Residual: < 1.0e-6
 Tao Object: 2 MPI processes
   type: bmrm
   convergence tolerances: fatol=1e-12,   frtol=1e-12
-  convergence tolerances: gatol=1e-12,   steptol=0,   gttol=0
+  convergence tolerances: gatol=1e-12,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=9.96718e-07
   Objective value=1.52715
   total number of iterations=24,                          (max: 2000)

@@ -7,7 +7,7 @@ iter =   1, Function value -0.427745, Residual: < 1.0e-6
 KSP Object: 1 MPI processes
   type: stcg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes

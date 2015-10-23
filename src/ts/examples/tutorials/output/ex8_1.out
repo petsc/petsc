@@ -8,5 +8,5 @@ step    6 t=1.59828874e+00 h= 4.07e+00  |x|= 7.61e-02  |x_e|= 7.18e-02  |x-x_e|=
 step    7 t=4.67458203e+00 h= 3.16e+00  |x|= 1.55e-01  |x_e|= 1.36e-01  |x-x_e|= 1.84e-02
 step    8 t=7.83373000e+00 h= 3.28e+00  |x|= 1.39e-01  |x_e|= 1.19e-01  |x-x_e|= 1.96e-02
 step    9 t=1.00000000e+01 h= 3.02e+00  |x|= 9.32e-01  |x_e|= 8.85e-01  |x-x_e|= 4.70e-02
-steps 9 (1 rejected, 0 SNES fails), ftime 10, nonlinits 30, linits 30
+steps 9 (1 rejected, 0 SNES fails), ftime 10., nonlinits 30, linits 30
 step    9 t=1.00000000e+01 h= 3.02e+00  |x|= 9.32e-01  |x_e|= 8.85e-01  |x-x_e|= 4.70e-02

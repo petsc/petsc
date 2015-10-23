@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend,N,m = 4,n = 4,its,k;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscReal      err_norm,res_norm,err_tol=1.e-7,res_tol=1.e-6;
+  PetscReal      err_norm,res_norm;
   Vec            x,b,u,u_tmp;
   PC             pc;
   KSP            ksp;
@@ -104,12 +104,8 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    if (res_norm > res_tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g;",(double)res_norm);CHKERRQ(ierr);
-    }
-    if (err_norm > err_tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %g.\n",(double)err_norm);CHKERRQ(ierr);
-    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g;",(double)res_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %g.\n",(double)err_norm);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }
 

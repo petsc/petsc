@@ -67,13 +67,13 @@ runplate2_7:
         ${RM} -f plate2_7.tmp
 
 runplate2f:
-	-@${MPIEXEC} -n 1 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm > plate2f_1.tmp 2>&1;\
-	${DIFF} output/plate2f_1.out plate2f_1.tmp || printf '${PWD}\nPossible problem with plate2f_1 stdout, diffs above \n=========================================\n';\
+	-@${MPIEXEC} -n 1 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm | sort -b  > plate2f_1.tmp 2>&1;\
+	sort -b output/plate2f_1.out | ${DIFF} - plate2f_1.tmp || printf '${PWD}\nPossible problem with plate2f_1 stdout, diffs above \n=========================================\n';\
 	${RM} -f plate2f_1.tmp
 
 runplate2f_2:
-	-@${MPIEXEC} -n 2 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm > plate2f_2.tmp 2>&1;\
-	${DIFF} output/plate2f_2.out plate2f_2.tmp || printf '${PWD}\nPossible problem with plate2f_2 stdout, diffs above \n=========================================\n';\
+	-@${MPIEXEC} -n 2 ./plate2f -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm | sort -b  > plate2f_2.tmp 2>&1;\
+	sort -b  output/plate2f_2.out | ${DIFF} - plate2f_2.tmp || printf '${PWD}\nPossible problem with plate2f_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f plate2f_2.tmp
 
 runjbearing2:

@@ -116,9 +116,7 @@ static PetscErrorCode MatMumpsResetSchur_Private(Mat_MUMPS* mumps)
   ierr = PetscFree(mumps->schur_sol);CHKERRQ(ierr);
   ierr = PetscFree(mumps->schur_pivots);CHKERRQ(ierr);
   ierr = PetscFree(mumps->schur_work);CHKERRQ(ierr);
-  if (!mumps->schur_restored) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
-  }
+  if (!mumps->schur_restored) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Schur matrix has not been restored using MatMumpsRestoreSchurComplement");
   mumps->id.size_schur = 0;
   mumps->id.ICNTL(19) = 0;
   PetscFunctionReturn(0);
@@ -1161,15 +1159,12 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) {
     if (mumps->id.INFO(1) == -13) {
-      if (mumps->id.INFO(2) < 0) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",-mumps->id.INFO(2));
-      } else {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d bytes\n",mumps->id.INFO(2));
-      }
+      if (mumps->id.INFO(2) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",-mumps->id.INFO(2));
+      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d bytes\n",mumps->id.INFO(2));
     } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",mumps->id.INFO(1),mumps->id.INFO(2));
   }
   if (!mumps->myid && mumps->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d\n",mumps->id.INFOG(16));
-  
+
   (F)->assembled        = PETSC_TRUE;
   mumps->matstruc       = SAME_NONZERO_PATTERN;
   mumps->schur_factored = PETSC_FALSE;
@@ -1279,9 +1274,8 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     ierr = PetscMalloc1(ninfo,&mumps->info);CHKERRQ(ierr);
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
-      if (info[i] < 0 || info[i]>40) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 40\n",ninfo);
-      } else {
+      if (info[i] < 0 || info[i]>40) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 40\n",ninfo);
+      else {
         mumps->info[i] = info[i];
       }
     }

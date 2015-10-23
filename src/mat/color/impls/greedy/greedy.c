@@ -69,9 +69,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     md_j = dseq->j;
     mo_i = NULL;
     mo_j = NULL;
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
   if (mo) {
     ierr = VecGetSize(aij->lvec,&no);CHKERRQ(ierr);
@@ -251,9 +249,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     rmd_j = dseq->j;
     rmo_i = NULL;
     rmo_j = NULL;
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   if (!gr->symmetric) {
     ierr = MatTranspose(m, MAT_INITIAL_MATRIX, &mt);CHKERRQ(ierr);
     if (isSEQAIJ) {
@@ -585,9 +581,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
     ierr = GreedyColoringLocalDistanceOne_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
   } else if (mc->dist == 2) {
     ierr = GreedyColoringLocalDistanceTwo_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_OUTOFRANGE,"Only distance 1 and distance 2 supported by MatColoringGreedy");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_OUTOFRANGE,"Only distance 1 and distance 2 supported by MatColoringGreedy");
   finalcolor=0;
   for (i=0;i<ncols;i++) {
     if (colors[i] > finalcolor) finalcolor=colors[i];

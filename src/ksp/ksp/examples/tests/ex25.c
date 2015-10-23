@@ -69,8 +69,6 @@ int main(int argc,char **args)
 
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    /* ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr); */
-    ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
     /*
     Set runtime options, e.g.,

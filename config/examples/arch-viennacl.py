@@ -6,7 +6,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--download-viennacl',
-    '--with-opencl-include=/usr/local/cuda-5.0/include',
+    '--with-opencl-include=/home/balay/soft/cuda-5.5/include',
     '--with-opencl-lib=-lOpenCL'
   ]
   configure.petsc_configure(configure_options)

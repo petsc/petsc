@@ -662,7 +662,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       }
 
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"Solver terminated: %D",tao->reason);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Solver terminated: %d",tao->reason);CHKERRQ(ierr);
       switch (tao->reason) {
       case TAO_DIVERGED_MAXITS:
         ierr = PetscViewerASCIIPrintf(viewer," Maximum Iterations\n");CHKERRQ(ierr);

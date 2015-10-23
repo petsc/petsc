@@ -121,7 +121,8 @@ endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
 if ( "${GCOV}" != "" ) then
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR gcov  >>& examples.log
+  rm -f gcov.log
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR gcov  >& gcov.log
 endif
 
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& $nPETSC_DIR/examples.log
