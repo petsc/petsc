@@ -1792,9 +1792,9 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   Mat_TransMatMultDense *atb = c->atbdense;
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscMPIInt    rank,size;
+  PetscMPIInt    rank,size,*recvcounts=atb->recvcounts;
   PetscScalar    *carray,*atbarray=atb->atbarray,*sendbuf=atb->sendbuf;
-  PetscInt       i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j,*recvcounts=atb->recvcounts;
+  PetscInt       i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j;
   PetscScalar    _DOne=1.0,_DZero=0.0;
   PetscBLASInt   am,an,bn,aN;
   const PetscInt *ranges;
@@ -1823,7 +1823,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   }
   /* sum all atbarray to local values of C */
   ierr = MatDenseGetArray(c->A,&carray);CHKERRQ(ierr);
-  ierr = MPI_Reduce_scatter(sendbuf,carray,(const PetscInt *)recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce_scatter(sendbuf,carray,(const PetscMPIInt *)recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(c->A,&carray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
