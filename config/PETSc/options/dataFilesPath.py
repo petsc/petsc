@@ -28,19 +28,22 @@ class Configure(config.base.Configure):
 
   def getDatafilespath(self):
     '''Checks what DATAFILESPATH should be'''
+    homeloc = os.path.join(os.getenv('HOME'),'datafiles')
+    parentloc =  os.path.join(self.petscdir.dir,'..','datafiles')
     self.datafilespath = None
+
     if self.framework.argDB.has_key('DATAFILESPATH'):
-      if os.path.isdir(self.framework.argDB['DATAFILESPATH']) & os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'], 'matrices')):
+      if os.path.isdir(self.framework.argDB['DATAFILESPATH']) and os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'], 'matrices')):
         self.datafilespath = str(self.framework.argDB['DATAFILESPATH'])
       else:
         raise RuntimeError('Path given with option -DATAFILES='+self.framework.argDB['DATAFILESPATH']+' is not a valid datafiles directory')
-    elif os.path.isdir(os.path.join('/home','petsc','datafiles')) & os.path.isdir(os.path.join('/home','petsc','datafiles','matrices')):
-      self.datafilespath = os.path.join('/home','petsc','datafiles')
-    elif os.path.isdir(os.path.join(self.petscdir.dir, '..', 'datafiles')) &  os.path.isdir(os.path.join(self.petscdir.dir, '..', 'datafiles', 'matrices')):
-      self.datafilespath = os.path.join(self.petscdir.dir, '..', 'datafiles')
+    elif os.path.isdir(homeloc) and os.path.isdir(os.path.join(homeloc,'matrices')):
+      self.datafilespath = homeloc
+    elif os.path.isdir(parentloc) and  os.path.isdir(os.path.join(parentloc,'matrices')):
+      self.datafilespath = parentloc
     elif os.path.isdir(os.path.join(self.petscdir.dir, '..', '..','Datafiles')) &  os.path.isdir(os.path.join(self.petscdir.dir, '..','..', 'Datafiles', 'Matrices')):
       self.datafilespath = os.path.join(self.petscdir.dir, '..','..', 'Datafiles')
-    if self.datafilespath is not None:
+    if self.datafilespath:
       self.addMakeMacro('DATAFILESPATH',self.datafilespath)
     return
 
