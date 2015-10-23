@@ -447,7 +447,7 @@ runex24_2:
            else printf "${PWD}\nPossible problem with ex24_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_2.tmp
 runex24_3:
-	-@${MPIEXEC} -n 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular > ex24_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular -ksp_max_it 8 > ex24_3.tmp 2>&1; \
            if (${DIFF} output/ex24_3.out ex24_3.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex24_3, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_3.tmp
@@ -507,7 +507,7 @@ runex28_2:
 	   ${RM} -f ex28.tmp
 runex28_3:
 	-@${MPIEXEC} -n 5 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
-	if (${DIFF} output/ex28.out ex28.tmp) then true; \
+	if (${DIFF} output/ex28_3.out ex28.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex28_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex29:
