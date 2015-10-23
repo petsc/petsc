@@ -1032,22 +1032,22 @@ runex35_2:
 	   ${RM} -f ex35_2.tmp
 
 runex43:
-	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_1.out ex43_1.tmp || printf "${PWD}\nPossible problem with ex43_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_1.tmp
 
 runex43_2:
-	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_fieldsplit_u_ksp_type preonly -stokes_fieldsplit_u_pc_type lu -stokes_fieldsplit_p_ksp_type preonly -stokes_fieldsplit_p_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_fieldsplit_u_ksp_type preonly -stokes_fieldsplit_u_pc_type lu -stokes_fieldsplit_p_ksp_type preonly -stokes_fieldsplit_p_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_1.out ex43_2.tmp || printf "${PWD}\nPossible problem with ex43_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebyshev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1.e-2 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebyshev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_3.out ex43_3.tmp || printf "${PWD}\nPossible problem with ex43_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_3.tmp
 
 runex43_bjacobi:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 runex43_bjacobi_baij:
@@ -1055,7 +1055,7 @@ runex43_bjacobi_baij:
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi_baij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 runex43_nested_gmg:
-	-@${MPIEXEC} -n 4 ./ex43 -mx 16 -my 16 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_fieldsplit_u_pc_type mg -stokes_fieldsplit_u_pc_mg_levels 5 -stokes_fieldsplit_u_pc_mg_galerkin -stokes_fieldsplit_u_ksp_type cg -stokes_fieldsplit_u_ksp_rtol 1.0e-4 -stokes_fieldsplit_u_mg_levels_pc_type jacobi -solcx_eta0 1.0e4 -stokes_fieldsplit_u_ksp_converged_reason -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -mx 16 -my 16 -stokes_ksp_type fgmres  -stokes_pc_type fieldsplit -stokes_fieldsplit_u_pc_type mg -stokes_fieldsplit_u_pc_mg_levels 5 -stokes_fieldsplit_u_pc_mg_galerkin -stokes_fieldsplit_u_ksp_type cg -stokes_fieldsplit_u_ksp_rtol 1.0e-4 -stokes_fieldsplit_u_mg_levels_pc_type jacobi -solcx_eta0 1.0e4 -stokes_fieldsplit_u_ksp_converged_reason -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_nested_gmg.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_nested_gmg, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 
