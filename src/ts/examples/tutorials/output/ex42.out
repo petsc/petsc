@@ -7,21 +7,21 @@ D_a:       0
 rho_h:     2
 mu_h:      3
 D_h:      30
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time     0
- ** Domain Error at time 0.1558
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.
+ ** Domain Error at time 0.155804
  ** Domain Error at time 1.1442
  ** Domain Error at time 1.1442
-Number of time steps = 11, final time: 2.07e+16
+Number of time steps = 11, final time: 2.45e+16
 Result:
 
 Activator,Inhibitor
