@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   Mat            A,A_tmp,P,C,C1,C2;
   PetscScalar    *array,none = -1.0,alpha;
   Vec            x,v1,v2,v3,v4;
-  PetscReal      norm,norm_tmp,norm_tmp1,tol=1.e-12;
+  PetscReal      norm,norm_tmp,norm_tmp1,tol=100.*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
 
