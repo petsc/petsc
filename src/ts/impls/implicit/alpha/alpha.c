@@ -73,7 +73,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     if (!th->adapt) break;
     else {
       PetscReal t1     = ts->ptime + ts->time_step;
-      PetscBool stepok = accept && ((reject==0) ? PETSC_TRUE : PETSC_FALSE);
+      PetscBool stepok = (accept && !reject) ? PETSC_TRUE : PETSC_FALSE;
       ierr = th->adapt(ts,t1,th->X1,th->V1,&next_time_step,&stepok,th->adaptctx);CHKERRQ(ierr);
       ierr = PetscInfo5(ts,"Step %D (t=%g,dt=%g) %s, next dt=%g\n",ts->steps,(double)ts->ptime,(double)ts->time_step,stepok?"accepted":"rejected",(double)next_time_step);CHKERRQ(ierr);
       if (stepok) break;
