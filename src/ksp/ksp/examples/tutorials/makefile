@@ -1086,17 +1086,17 @@ runex46_aijcusparse:
 		${RM} ex46_aijcusparse.tmp
 
 runex49:
-	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_rtol 5e-3 -elas_ksp_view  > ex49_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex49_1.out ex49_1.tmp || printf "${PWD}\nPossible problem with ex49_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_1.tmp
 
 runex49_2:
-	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu > ex49_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3 > ex49_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex49_2.out ex49_2.tmp || printf "${PWD}\nPossible problem with ex49_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_2.tmp
 
 runex49_3:
-	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu > ex49_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3  > ex49_3.tmp 2>&1; \
 	   ${DIFF} output/ex49_3.out ex49_3.tmp || printf "${PWD}\nPossible problem with ex49_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_3.tmp
 
