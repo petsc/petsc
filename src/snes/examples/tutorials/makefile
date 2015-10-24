@@ -602,17 +602,17 @@ runex15_nleqerr:
 	   ${DIFF} output/ex15_nleqerr.out ex15_nleqerr.tmp || printf "${PWD}\nPossible problem with ex15_nleqerr, diffs above\n=========================================\n"; \
            ${RM} -f ex15_nleqerr.tmp
 runex16:
-	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
+	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short -snes_max_it 9\
 	   > ex16_1.tmp 2>&1; ${DIFF} output/ex16_1.out ex16_1.tmp || printf "${PWD}\nPossible problem with ex16, diffs above\n=========================================\n"; \
            ${RM} -f ex16_1.tmp
 runex16_2:
 	-@${MPIEXEC} -n 1 ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
-           -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short \
+           -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short -snes_max_it 2 \
 	   > ex16_2.tmp 2>&1; ${DIFF} output/ex16_2.out ex16_2.tmp || printf "${PWD}\nPossible problem with ex16_2, diffs above\n=========================================\n"; \
            ${RM} -f ex16_2.tmp
 runex16_3:
 	-@${MPIEXEC} -n 1 ./ex16 -da_refine 1 -da_overlap 3 -da_local_subdomains 4 -snes_type aspin -rad 10.0 -young 10. -ploading 0.0 -loading -0.5 -snes_monitor_short -ksp_monitor_short \
-        -npc_sub_snes_rtol 1e-2 -ksp_rtol 1e-3 \
+        -npc_sub_snes_rtol 1e-2 -ksp_rtol 1e-2  \
 	> ex16_3.tmp 2>&1; ${DIFF} output/ex16_3.out ex16_3.tmp || printf "${PWD}\nPossible problem with ex16_3, diffs above\n=========================================\n"; \
         ${RM} -f ex16_3.tmp
 runex19:
@@ -1137,7 +1137,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm \
                                  ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm \
-                                 ex16.PETSc runex16 runex16_2 runex16_3 ex16.rm \
+                                 ex16.PETSc runex16 runex16_2 ex16.rm \
                                  ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
                                  runex19_fdcoloring_wp_bcols1 runex19_fdcoloring_ds_bcols1 \
@@ -1154,6 +1154,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
+TESTEXAMPLES_DOUBLEINT32       = ex16.PETSc runex16_3 ex16.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm ex73f90t.PETSc runex73f90t  ex73f90t.rm
