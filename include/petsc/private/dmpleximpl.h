@@ -205,6 +205,7 @@ typedef struct {
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
+  PetscBool            useHashLocation;   /* Use grid hashing for point location */
   PetscGridHash        lbox;              /* Local box for searching */
 
   /* Debugging */

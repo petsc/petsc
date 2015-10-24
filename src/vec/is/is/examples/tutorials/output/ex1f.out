@@ -1,4 +1,3 @@
-  type: general
 0 1
 1 2
 2 3
@@ -7,3 +6,4 @@
 IS Object: 1 MPI processes
 Number of indices in set 5
 [    0] First index =     1 fifth index =     5
+  type: general

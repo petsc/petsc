@@ -25,6 +25,7 @@
 PetscBool   PetscBeganMPI         = PETSC_FALSE;
 PetscBool   PetscInitializeCalled = PETSC_FALSE;
 PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
+PetscBool   PetscCUDAInitialized  = PETSC_FALSE;
 
 PetscMPIInt PetscGlobalRank       = -1;
 PetscMPIInt PetscGlobalSize       = -1;
@@ -544,7 +545,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
     }
   }
-  {
+  if (!PetscCUDAInitialized) {
     int size;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size>1) {
@@ -590,6 +591,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       err = cudaSetDeviceFlags(cudaDeviceMapHost);
       if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
     }
+
+    PetscCUDAInitialized = PETSC_TRUE;
   }
 #endif
 

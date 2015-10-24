@@ -2,7 +2,7 @@
 ---- Journal Bearing Problem SHB-----
 mx: 10,  my: 16,  ecc: 0.9 
 
-iter =   0, Function value 0, Residual: 800.442 
+iter =   0, Function value 0., Residual: 800.442 
 iter =   1, Function value -0.0013045, Residual: 405.913 
 iter =   2, Function value 357.43, Residual: 137.807 
 iter =   3, Function value 90.9645, Residual: 33.762 

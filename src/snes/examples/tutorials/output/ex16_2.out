@@ -11,31 +11,11 @@ lambda: 2.777778 mu: 4.166667
   1 SNES Function norm 0.221209 
     0 SNES Function norm 0.221209 
     1 SNES Function norm 0.0448074 
-    0 KSP Residual norm 0.312532 
-    1 KSP Residual norm 0.00542729 
-    2 KSP Residual norm 0.00201827 
-    3 KSP Residual norm 6.56869e-05 
-    4 KSP Residual norm 2.72307e-05 
-    5 KSP Residual norm 1.31394e-06 
+    0 KSP Residual norm 0.312519 
+    1 KSP Residual norm 0.00542938 
+    2 KSP Residual norm 0.00201955 
+    3 KSP Residual norm 6.57469e-05 
+    4 KSP Residual norm 2.72392e-05 
+    5 KSP Residual norm 1.31503e-06 
   2 SNES Function norm 0.000251186 
-    0 SNES Function norm 0.000251186 
-    1 SNES Function norm 0.000115426 
-    0 KSP Residual norm 0.000169684 
-    1 KSP Residual norm 7.16941e-06 
-    2 KSP Residual norm 2.04868e-06 
-    3 KSP Residual norm 7.71801e-08 
-    4 KSP Residual norm 2.50788e-08 
-    5 KSP Residual norm 2.34149e-09 
-    6 KSP Residual norm 1.523e-10 
-  3 SNES Function norm 5.75099e-09 
-    0 SNES Function norm 5.75099e-09 
-    1 SNES Function norm 1.62036e-09 
-    0 KSP Residual norm 1.7293e-09 
-    1 KSP Residual norm 1.813e-11 
-    2 KSP Residual norm < 1.e-11
-    3 KSP Residual norm < 1.e-11
-    4 KSP Residual norm < 1.e-11
-    5 KSP Residual norm < 1.e-11
-    6 KSP Residual norm < 1.e-11
-  4 SNES Function norm < 1.e-11
-Number of SNES iterations = 4
+Number of SNES iterations = 2

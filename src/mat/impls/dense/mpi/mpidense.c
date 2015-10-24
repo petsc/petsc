@@ -925,7 +925,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       for (j=0; j<A->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
-      ierr = PetscFree2(tmp,tmp);CHKERRQ(ierr);
+      ierr = PetscFree2(tmp,tmp2);CHKERRQ(ierr);
       ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp;
@@ -972,7 +972,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
-    ierr = MatHeaderMerge(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1091,6 +1091,15 @@ static PetscErrorCode  MatSetRandom_MPIDense(Mat x,PetscRandom rctx)
 
 extern PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat,Mat);
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_MPIDense"
+static PetscErrorCode MatMissingDiagonal_MPIDense(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatGetRow_MPIDense,
@@ -1206,7 +1215,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
-                                        0,
+                                        MatMissingDiagonal_MPIDense,
                                 /*114*/ 0,
                                         0,
                                         0,
@@ -1300,7 +1309,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
   ierr = PetscFree3(v_rowwise,rows,cols);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
   }

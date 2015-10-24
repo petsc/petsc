@@ -514,7 +514,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   i       = j    = 0;
   lastidx = -1;
   space   = stash->space_head;
-  while (space != NULL) {
+  while (space) {
     space_next = space->next;
     sp_idx     = space->idx;
     for (l=0; l<space->local_used; l++) {
@@ -566,7 +566,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
 
   i     = 0;
   space = stash->space_head;
-  while (space != NULL) {
+  while (space) {
     space_next = space->next;
     sp_idx     = space->idx;
     sp_idy     = space->idy;

@@ -213,9 +213,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   /* Record the event in the event recorder */
   ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
   ctr = event->recorder.ctr;
-  if (ctr == MAXEVENTRECORDERS) {
-    SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
-  }
+  if (ctr == MAXEVENTRECORDERS) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
   event->recorder.time[ctr] = t;
   event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = nevents_zero;

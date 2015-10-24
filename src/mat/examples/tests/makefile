@@ -1018,8 +1018,8 @@ runex16:
 	   else printf "${PWD}\nPossible problem with ex16_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex16_1.tmp
 runex16f90:
-	-@${MPIEXEC} -n 2 ./ex16f90 | sort  > ex16f90_1.tmp 2>&1;	\
-	   if (${DIFF} output/ex16f90_1.out ex16f90_1.tmp) then true; \
+	-@${MPIEXEC} -n 2 ./ex16f90 | sort -b  > ex16f90_1.tmp 2>&1;	\
+	   if (sort -b output/ex16f90_1.out | ${DIFF} -  ex16f90_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex16f90_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex16f90_1.tmp
 runex17:
@@ -2358,33 +2358,33 @@ runex181_2:
 	   ${RM} -f ex181.tmp
 
 runex182:
-	-@${MPIEXEC} -n 1 ./ex182 -info | grep malloc | sort  > ex182.tmp 2>&1; \
-	   ${DIFF} output/ex182_1.out ex182.tmp || printf "${PWD}\nPossible problem with ex182, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 1 ./ex182 -info | grep malloc | sort -b  > ex182.tmp 2>&1; \
+	   sort -b output/ex182_1.out | ${DIFF}  - ex182.tmp || printf "${PWD}\nPossible problem with ex182, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp
 
 runex182_2:
-	-@${MPIEXEC} -n 2 ./ex182 -info | grep malloc | sort  > ex182.tmp 2>&1; \
-	   ${DIFF} output/ex182_2.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_2, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 2 ./ex182 -info | grep malloc | sort -b  > ex182.tmp 2>&1; \
+	   sort -b output/ex182_2.out | ${DIFF} - ex182.tmp || printf "${PWD}\nPossible problem with ex182_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp
 
 runex182_3:
-	-@${MPIEXEC} -n 1 ./ex182 -info -mat_type baij | grep malloc | sort  > ex182.tmp 2>&1; \
-	   ${DIFF} output/ex182_3.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_3, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 1 ./ex182 -info -mat_type baij | grep malloc | sort -b > ex182.tmp 2>&1; \
+	   sort -b output/ex182_3.out | ${DIFF} -  ex182.tmp || printf "${PWD}\nPossible problem with ex182_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp
 
 runex182_4:
-	-@${MPIEXEC} -n 2 ./ex182 -info -mat_type baij | grep malloc | sort  > ex182.tmp 2>&1; \
-	   ${DIFF} output/ex182_4.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_4, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 2 ./ex182 -info -mat_type baij | grep malloc | sort -b > ex182.tmp 2>&1; \
+	   sort -b output/ex182_4.out | ${DIFF} - ex182.tmp || printf "${PWD}\nPossible problem with ex182_4, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp
 
 runex182_5:
-	-@${MPIEXEC} -n 1 ./ex182 -info -mat_type sbaij | grep malloc | sort  > ex182.tmp 2>&1; \
-	   ${DIFF} output/ex182_5.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_5, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 1 ./ex182 -info -mat_type sbaij | grep malloc | sort  -b > ex182.tmp 2>&1; \
+	   sort  -b output/ex182_5.out | ${DIFF} - ex182.tmp || printf "${PWD}\nPossible problem with ex182_5, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp
 
 runex182_6:
-	-@${MPIEXEC} -n 2 ./ex182 -info -mat_type sbaij | grep malloc | sort  > ex182.tmp 2>&1; \
-	   ${DIFF} output/ex182_6.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_6, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 2 ./ex182 -info -mat_type sbaij | grep malloc | sort -b  > ex182.tmp 2>&1; \
+	    sort -b output/ex182_6.out | ${DIFF} - ex182.tmp || printf "${PWD}\nPossible problem with ex182_6, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp
 
 
@@ -2396,7 +2396,7 @@ runex190:
 	   ${RM} -f ex190.tmp
 
 runex191:
-	  -@${MPIEXEC} -n 2 ./ex191   > ex191.tmp 2>&1; \
+	  -@${MPIEXEC} -n 2 ./ex191  | grep -v alloced > ex191.tmp 2>&1; \
 	   ${DIFF} output/ex191_1.out ex191.tmp || printf "${PWD}\nPossible problem with ex191, diffs above\n=========================================\n"; \
 	   ${RM} -f ex191.tmp
 
@@ -2425,7 +2425,7 @@ runex195:
 	   ${DIFF} output/ex195.out ex195.tmp || printf "${PWD}\nPossible problem with ex195, diffs above\n=========================================\n"; \
 	   ${RM} -f ex195.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
+TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij runex9_4_baij runex9_4_sbaij ex9.rm \
                                  ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -2458,8 +2458,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 runex181_2 ex181.rm\
                                  ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm \
                                  ex183.PETSc runex183_2_1 runex183_3_2 runex183_4_2 runex183_6_2 ex183.rm\
-                                 ex191.PETSc runex191 ex191.rm ex194.PETSc runex194 ex194.rm
-TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
+                                 ex191.PETSc runex191 ex191.rm ex194.PETSc runex194 ex194.rm  ex101.PETSc runex101 ex101.rm
+TESTEXAMPLES_C_X	       = ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
                                  ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
@@ -2475,7 +2475,7 @@ TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
 TESTEXAMPLES_FORTRAN	       = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm ex67f.PETSc ex67f.rm \
                                  ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm ex126f.PETSc runex126f ex126f.rm ex171f.PETSc runex171f ex171f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex5.PETSc runex5 \
+TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex5.PETSc runex5 \
                                  ex5.rm ex6.PETSc runex6 ex6.rm ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm \
                                  ex15.PETSc runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex35.PETSc \
                                  runex35 ex35.rm  ex48.PETSc runex48 ex48.rm ex71.PETSc ex71.rm \
@@ -2499,7 +2499,8 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm
 TESTEXAMPLES_DOUBLEINT32       = ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
-TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm ex152.PETSc runex152 runex152_2 ex152.rm
+TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
+TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex152.PETSc runex152 runex152_2 ex152.rm
 TESTEXAMPLES_FFTW              = ex142.PETSc runex142 ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex148.PETsc runex148 runex148_2 ex148.rm ex158.PETsc runex158 runex158_2 ex158.rm
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \

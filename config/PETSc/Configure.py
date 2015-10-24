@@ -471,7 +471,7 @@ prepend-path PATH %s
 
   def dumpCMakeConfig(self):
     '''
-    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc/conf/PETScConfig.cmake.
+    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc/conf/PETScBuildInternal.cmake.
     This file is private to PETSc and should not be included by third parties
     (a suitable file can be produced later by CMake, but this is not it).
     '''
@@ -581,7 +581,7 @@ prepend-path PATH %s
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
       includes = filter(notstandardinclude,includes)
       fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
-    fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScConfig.cmake'), 'w')
+    fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScBuildInternal.cmake'), 'w')
     writeMacroDefinitions(fd)
     writeBuildFlags(fd)
     fd.close()

@@ -320,7 +320,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   const PetscScalar *coords;
   PetscInt          *dboxes, *boxes;
   PetscInt           n[3] = {10, 10, 10};
-  PetscInt           dim, N, cStart, cEnd, c, i;
+  PetscInt           dim, N, cStart, cEnd, cMax, c, i;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -342,23 +342,26 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   /* Should we compute all overlaps of local boxes? We could do this with a rendevouz scheme partitioning the global box */
   /* Create label */
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMLabelCreate("cells", &lbox->cellsSparse);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd);CHKERRQ(ierr);
   /* Compute boxes which overlap each cell: http://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscCalloc2((dim+1) * dim, &dboxes, dim+1, &boxes);CHKERRQ(ierr);
+  ierr = PetscCalloc2(16 * dim, &dboxes, 16, &boxes);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscReal *h       = lbox->h;
     PetscScalar     *ccoords = NULL;
+    PetscInt         csize   = 0;
     PetscScalar      point[3];
     PetscInt         dlim[6], d, e, i, j, k;
 
     /* Find boxes enclosing each vertex */
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
-    ierr = PetscGridHashGetEnclosingBox(lbox, dim+1, ccoords, dboxes, boxes);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, &csize, &ccoords);CHKERRQ(ierr);
+    ierr = PetscGridHashGetEnclosingBox(lbox, csize/dim, ccoords, dboxes, boxes);CHKERRQ(ierr);
     /* Mark cells containing the vertices */
-    for (e = 0; e < dim+1; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
+    for (e = 0; e < csize/dim; ++e) {ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);}
     /* Get grid of boxes containing these */
     for (d = 0;   d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
     for (d = dim; d < 3;   ++d) {dlim[d*2+0] = dlim[d*2+1] = 0;}
@@ -422,12 +425,10 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints_Plex"
-/*
- Need to implement using the guess
-*/
 PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 {
   DM_Plex        *mesh = (DM_Plex *) dm->data;
+  PetscBool       hash = mesh->useHashLocation;
   PetscInt        bs, numPoints, p;
   PetscInt        dim, cStart, cEnd, cMax, numCells, c;
   const PetscInt *boxCells;
@@ -436,7 +437,6 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!mesh->lbox) {ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
   if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
@@ -446,28 +446,38 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   ierr = VecGetLocalSize(v, &numPoints);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   numPoints /= bs;
-  ierr       = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
-  /* Designate the local box for each point */
-  /* Send points to correct process */
-  /* Search cells that lie in each subbox */
-  /*   Should we bin points before doing search? */
-  ierr = ISGetIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
+  if (hash) {
+    if (!mesh->lbox) {ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
+    /* Designate the local box for each point */
+    /* Send points to correct process */
+    /* Search cells that lie in each subbox */
+    /*   Should we bin points before doing search? */
+    ierr = ISGetIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
+  }
   for (p = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
-    PetscInt           dbin[3], bin, cell, cellOffset;
+    PetscInt           dbin[3], bin, cell = -1, cellOffset;
 
-    ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
-    /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
-    ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
-    for (c = cellOffset; c < cellOffset + numCells; ++c) {
-      ierr = DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell);CHKERRQ(ierr);
-      if (cell >= 0) break;
+    if (hash) {
+      ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
+      /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
+      ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
+      for (c = cellOffset; c < cellOffset + numCells; ++c) {
+        ierr = DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell);CHKERRQ(ierr);
+        if (cell >= 0) break;
+      }
+      if (cell < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in mesh", p);
+    } else {
+      for (c = cStart; c < cEnd; ++c) {
+        ierr = DMPlexLocatePoint_Internal(dm, dim, point, c, &cell);CHKERRQ(ierr);
+        if (cell >= 0) break;
+      }
     }
-    if (cell < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in mesh", p);
     cells[p] = cell;
   }
-  ierr = ISRestoreIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
+  if (hash) {ierr = ISRestoreIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);}
   /* Check for highest numbered proc that claims a point (do we care?) */
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints, cells, PETSC_OWN_POINTER, cellIS);CHKERRQ(ierr);

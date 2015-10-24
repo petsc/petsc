@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   PetscReal    xtol = 1.e-8;          /* step convergence tolerance */
   PetscReal    ttol;                  /* convergence tolerance */
   PetscReal    fnorm,ynorm,xnorm;     /* various vector norms */
-  PetscInt     max_nonlin_its = 10;   /* maximum number of iterations for nonlinear solver */
+  PetscInt     max_nonlin_its = 3;   /* maximum number of iterations for nonlinear solver */
   PetscInt     max_functions  = 50;   /* maximum number of function evaluations */
   PetscInt     lin_its;               /* number of linear solver iterations for each step */
   PetscInt     i;                     /* nonlinear solve iteration number */
@@ -266,7 +266,7 @@ int main(int argc,char **argv)
       break;
     }
   }
-  ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n",i+1);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Number of nonlinear iterations = %D\n",i);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

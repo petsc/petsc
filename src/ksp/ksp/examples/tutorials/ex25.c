@@ -114,7 +114,7 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   for (i=xs; i<xs+xm; i++) {
     row.i = i;
     if (i==0 || i==mx-1) {
-      v[0] = 2.0;
+      v[0] = 2.0/h;
       ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {
       xlow  = h*(PetscReal)i - .5*h;

@@ -1,0 +1,34 @@
+#! /bin/sh -f
+#
+#  Replaces floating point numbers with XXX and then does a diff
+#
+export RM="`grep 'RM =' ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | sed s/'RM ='//g`"
+export SED="`grep 'SED =' ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | sed s/'SED ='//g`"
+export DIFF="`grep 'DIFF =' ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | sed s/'DIFF ='//g`"
+
+export f=$1
+if [ "JOE${f}" = "JOE-" ]; then
+    export f=`mktemp -t tmp.XXXXX`  ;
+    $(cat /dev/stdin > ${f})
+fi
+
+${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $f | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g"  > tmpA
+
+${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $2 | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > tmpB
+${DIFF} tmpA tmpB > /dev/null
+if [ $? -ne 0 ]; then
+  ${DIFF}  ${f} $2 
+  ${RM} -f tmpA tmpB
+  if [ "JOE${1}" = "JOE-" ]; then
+    ${RM} -f ${f}
+  fi
+  exit 1;
+else
+  ${RM} -f tmpA tmpB
+  if [ "JOE${1}" = "JOE-" ]; then
+    ${RM} -f ${f}
+  fi
+  exit 0;
+fi
+
+

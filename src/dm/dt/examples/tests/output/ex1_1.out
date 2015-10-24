@@ -1,7 +1,7 @@
 User-provided points
 degree 1 at            0: B=           0  D=           1  D2=           0
 degree 2 at            0: B=        -0.5  D=           0  D2=           3
-degree 3 at            0: B=          -0  D=        -1.5  D2=           0
+degree 3 at            0: B=           0  D=        -1.5  D2=           0
 degree 4 at            0: B=       0.375  D=           0  D2=        -7.5
 degree 5 at            0: B=           0  D=       1.875  D2=           0
 degree 1 at          0.2: B=         0.2  D=           1  D2=           0
@@ -26,7 +26,7 @@ degree 4 at            1: B=           1  D=          10  D2=          45
 degree 5 at            1: B=           1  D=          15  D2=         105
 Quadrature weights
  0:   1.7770e-01   3.5897e-01   4.2667e-01   3.5897e-01   1.7770e-01
-Moment error: zeroth=-0, first=-0, second=-0
+Moment error: zeroth=-0., first=-0., second=-0.
 Gauss points
 degree 1 at      -0.4296: B=     -0.4296  D=           1  D2=           0
 degree 2 at      -0.4296: B=     -0.2231  D=      -1.289  D2=           3
