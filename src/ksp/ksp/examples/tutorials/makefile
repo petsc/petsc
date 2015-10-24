@@ -1216,7 +1216,7 @@ runex55_NC:
         ${RM} -f ex.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_esteig_ksp_type gmres -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex.tmp 2>&1; \
          ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
          ${RM} -f ex.tmp
 
