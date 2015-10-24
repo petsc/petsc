@@ -12,7 +12,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool  
   PetscErrorCode ierr;
   Vec            x,s1,s2,s3;
   PetscRandom    rctx;
-  PetscReal      r1,r2,tol=1.e-14;
+  PetscReal      r1,r2,tol=1.e-10;
   PetscInt       am,an,bm,bn,cm,cn,k;
   PetscScalar    none = -1.0;
 
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
     ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D*x != A^T*A");
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
 
     /* Test D = A^T* C * A, where C is in AIJ format */
