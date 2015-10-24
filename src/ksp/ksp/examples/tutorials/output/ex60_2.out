@@ -34,9 +34,4 @@
  33 KSP Residual norm 0.0139441 
  34 KSP Residual norm 0.00874895 
  35 KSP Residual norm 0.0054218 
- 36 KSP Residual norm 0.00333941 
- 37 KSP Residual norm 0.00203496 
- 38 KSP Residual norm 0.00126722 
- 39 KSP Residual norm 0.000803382 
- 40 KSP Residual norm 0.000494425 
-Norm of error 0.000180295, Iterations 40
+Norm of error 0.00217707, Iterations 35

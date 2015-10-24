@@ -1261,7 +1261,7 @@ runex60:
 	   else printf "${PWD}\nPossible problem with with ex60_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex60_1.tmp
 runex60_2:
-	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0.3333 > ex60_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0.3333 > ex60_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex60_2.out ex60_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex60_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex60_2.tmp
