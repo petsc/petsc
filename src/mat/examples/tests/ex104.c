@@ -120,7 +120,7 @@ int main(int argc,char **argv)
       ierr = MatMatMultNumeric(B,A,D);CHKERRQ(ierr);
     }
     ierr = MatMultEqual(C,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"C != D");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
     ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"D*x != A^T*A*x");
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
 
     /* Test D = A^T* C * A, where C is in AIJ format */
@@ -159,7 +159,7 @@ int main(int argc,char **argv)
     ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
     ierr = MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatTransposeMatMultEqual(A,B,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D*x != A^T*A");
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
 
     ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
