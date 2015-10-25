@@ -53,4 +53,6 @@
 #define KSPLCD 'lcd'
 #define KSPPYTHON 'python'
 #define KSPGCR 'gcr'
+#define KSPTSIRM 'tsirm'
+#define KSPCGLS 'cgls'
 #endif
