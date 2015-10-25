@@ -1,6 +1,6 @@
 #! /bin/csh
 #
-set MACH=el6
+set MACH=cg
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-4
+set LOC=/sandbox/petsc/${RNAME}
 set CONF=arch-linux-opt-cxx-quad
