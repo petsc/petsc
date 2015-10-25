@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatXAIJSetPreallocation(C,1,d_nnz,o_nnz,NULL,NULL);CHKERRQ(ierr);
 
   v = 2;
-  //Assembly on the diagonal:
+  /* Assembly on the diagonal: */
   for (i=0; i<m; i++) {
      ierr = MatSetValues(C,1,&i,1,&i,&v,ADD_VALUES);CHKERRQ(ierr);
   }
