@@ -19,8 +19,4 @@
     1 KSP Residual norm 0.000212559 
     2 KSP Residual norm < 1.e-11
   5 SNES Function norm 1.43559e-07 
-    0 KSP Residual norm 1.43559e-07 
-    1 KSP Residual norm 2.58827e-08 
-    2 KSP Residual norm < 1.e-11
-  6 SNES Function norm < 1.e-11
-Number of SNES iterations = 6
+Number of SNES iterations = 5
