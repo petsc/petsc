@@ -1818,6 +1818,11 @@ runex104:
 	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex104, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex104.tmp
+runex104_2:
+	-@${MPIEXEC} -n 4 ./ex104 -M 200 -N 50 > ex104.tmp 2>&1; \
+	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex104_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex104.tmp
 runex104_elemental:
 	-@${MPIEXEC} -n 1 ./ex104 -mat_type elemental > ex104.tmp 2>&1; \
 	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
@@ -2444,7 +2449,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
                                  ex93.PETSc runex93 runex93_scalable runex93_scalable_fast runex93_heap runex93_btheap runex93_llcondensed \
                                  runex93_2 runex93_rap runex93_ptap ex93.rm \
-                                 ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
+                                 ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 runex104_2 ex104.rm \
                                  ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm \
                                  ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
