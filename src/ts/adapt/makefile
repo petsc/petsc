@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH  = ../../../include/petsc/private/tsimpl.h ../../../include/petscts.h
+SOURCEH  = 
 DIRS     = interface impls
 LOCDIR   = src/ts/adapt/
 MANSEC   = TS

@@ -181,8 +181,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
   PetscFunctionBegin;
   try {
     err = cudaStreamDestroy(cuspStruct->stream);
-    if (err!=cudaSuccess)
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
+    if (err!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
     delete cuspStruct;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", ex);
@@ -214,8 +213,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
   cuspStruct->diagGPUMatFormat    = MAT_CUSP_CSR;
   cuspStruct->offdiagGPUMatFormat = MAT_CUSP_CSR;
   err = cudaStreamCreate(&(cuspStruct->stream));
-  if (err!=cudaSuccess)
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
+  if (err!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
 
   A->ops->mult           = MatMult_MPIAIJCUSP;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;

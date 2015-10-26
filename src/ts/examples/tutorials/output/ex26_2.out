@@ -1,5 +1,5 @@
-13x13 grid, lid velocity = 100, prandtl # = 1, grashof # = 1000
-0 TS dt 0.0384615 time 0
+13x13 grid, lid velocity = 100., prandtl # = 1., grashof # = 1000.
+0 TS dt 0.0384615 time 0.
     0 SNES Function norm 340.346 
     1 SNES Function norm 67.5933 
     2 SNES Function norm 3.37568 

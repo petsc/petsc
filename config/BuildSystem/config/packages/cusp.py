@@ -4,9 +4,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = 'bogus'
+    self.download        = ['git://https://github.com/cusplibrary/cusplibrary.git']
     self.gitcommit       = '6ef9eca83df5b8774321cda07148023ae7458deb'
-    self.giturls         = ['https://github.com/cusplibrary/cusplibrary.git']
     self.includes        = ['cusp/version.h']
     self.includedir      = ['','include']
     self.libdir          = ''

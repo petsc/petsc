@@ -50,7 +50,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(oldmat,mat);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(oldmat,&mat);CHKERRQ(ierr);
   } else {
     *newmat = mat;
   }

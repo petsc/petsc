@@ -1,4 +1,4 @@
-lid velocity = 200, prandtl # = 1, grashof # = 10000
+lid velocity = 200, prandtl # = 1., grashof # = 10000.
       0 SNES Function norm 2240.15 
       1 SNES Function norm 2074.86 
       2 SNES Function norm 1437.65 
@@ -41,7 +41,7 @@ lid velocity = 200, prandtl # = 1, grashof # = 10000
               KSP Object:              (npc_fas_coarse_)               2 MPI processes
                 type: preonly
                 maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
                 using NONE norm type for convergence test
               PC Object:              (npc_fas_coarse_)               2 MPI processes
@@ -51,7 +51,7 @@ lid velocity = 200, prandtl # = 1, grashof # = 10000
                 KSP Object:                (npc_fas_coarse_sub_)                 1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using NONE norm type for convergence test
                 PC Object:                (npc_fas_coarse_sub_)                 1 MPI processes
@@ -60,7 +60,7 @@ lid velocity = 200, prandtl # = 1, grashof # = 10000
                     0 levels of fill
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: natural
-                    factor fill ratio given 1, needed 1
+                    factor fill ratio given 1., needed 1.
                       Factored matrix follows:
                         Mat Object:                         1 MPI processes
                           type: seqaij
@@ -147,7 +147,7 @@ lid velocity = 200, prandtl # = 1, grashof # = 10000
             KSP Object:            (npc_fas_)             2 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object:            (npc_fas_)             2 MPI processes
@@ -175,7 +175,7 @@ lid velocity = 200, prandtl # = 1, grashof # = 10000
             KSP Object:            (npc_fas_)             2 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object:            (npc_fas_)             2 MPI processes
@@ -256,7 +256,7 @@ SNES Object: 2 MPI processes
           KSP Object:          (npc_fas_)           2 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object:          (npc_fas_)           2 MPI processes
@@ -284,7 +284,7 @@ SNES Object: 2 MPI processes
           KSP Object:          (npc_fas_)           2 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object:          (npc_fas_)           2 MPI processes

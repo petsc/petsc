@@ -176,7 +176,7 @@ static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL],PetscScalar GNx[][
     GNx[1][i] = GNi[0][i]*iJ10+GNi[1][i]*iJ11;
   }
 
-  if (det_J != NULL) *det_J = J;
+  if (det_J) *det_J = J;
 }
 
 static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscScalar gp_weight[])
@@ -206,15 +206,15 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
 
-  if (mxl != NULL) {
+  if (mxl) {
     *mxl = m;
     if ((sx+m) == M) *mxl = m-1;    /* last proc */
   }
-  if (myl != NULL) {
+  if (myl) {
     *myl = n;
     if ((sy+n) == N) *myl = n-1;  /* last proc */
   }
-  if (mzl != NULL) {
+  if (mzl) {
     *mzl = p;
     if ((sz+p) == P) *mzl = p-1;  /* last proc */
   }

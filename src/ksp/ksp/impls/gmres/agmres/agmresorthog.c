@@ -31,8 +31,8 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   ierr = PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&rank, &First, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&rank, &Last, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&rank, &First, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&rank, &Last, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
 
   if ((rank != Last) && (!rank)) {
     agmres->Ileft  = rank - 1;

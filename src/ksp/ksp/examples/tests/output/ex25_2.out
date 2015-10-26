@@ -6,9 +6,9 @@ Number of iterations =   2
 Residual norm: 482.026;  Error norm: 11.7481.
 
  MINRES: 
-Number of iterations =  65
-Residual norm: 4.22791e-05;  Error norm: 0.471895.
+Number of iterations =  12
+Residual norm: 1.43381;  Error norm: 2.01976.
 
  SYMMLQ: 
-Number of iterations =  72
-Residual norm: 1.44234e-06;  Error norm: 4.67032e-07.
+Number of iterations =  40
+Residual norm: 0.0357377;  Error norm: 1.53365.

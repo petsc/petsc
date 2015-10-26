@@ -35,7 +35,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
-   we do not recomment every using PetscTime()
+   we do not recommend ever using PetscTime()
    The options database command  -log_summary activate
    PETSc library timing. See Users-Manual: ch_profiling for more details.
 

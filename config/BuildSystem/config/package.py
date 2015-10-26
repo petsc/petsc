@@ -31,9 +31,7 @@ class Package(config.base.Configure):
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
-    self.giturls          = []   # list of Git repository URLs to be used for downloads
     self.download         = []   # list of URLs where repository or tarballs may be found
-    self.downloadURLSetByUser = False # user overrode package file by providing download location
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
@@ -110,8 +108,9 @@ class Package(config.base.Configure):
       help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
-    if self.download or self.giturls:
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+    if self.download:
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build'+self.name))
     return
 
   def setNames(self):
@@ -120,7 +119,7 @@ class Package(config.base.Configure):
     package:      The lowercase name
     PACKAGE:      The uppercase name
     downloadname:     Name for download option (usually name)
-    downloadfilename: name for downloaded file (first part of string) (usually downloadname)
+    downloadfilename: name for downloaded file (first part of string) (usually downloadname), this actually seems to be a directory name not a file name
     '''
     import sys
     if hasattr(sys.modules.get(self.__module__), '__file__'):
@@ -517,22 +516,11 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
-      for giturl in self.giturls: # First try to fetch using Git
-        self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
-        try:
-          gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
-          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo], log = self.log)
-          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo, log = self.log)
-          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
-          return
-        except RuntimeError, e:
-          self.logPrint('ERROR: '+str(e))
-          err += str(e)
     for url in download_urls:
+      if url.startswith('git://') and not self.gitPreReqCheck(): continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname,self.gitcommit)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
@@ -666,7 +654,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
-    if not (self.download or self.giturls) and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
+    if not self.download and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 
@@ -676,7 +664,8 @@ class Package(config.base.Configure):
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):
         self.download = [downloadPackageVal]
-        self.downloadURLSetByUser = True
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-commit']:
+      self.gitcommit = self.argDB['download-'+self.downloadname.lower()+'-commit']
     if not 'with-'+self.package in self.argDB:
       self.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.argDB or 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
@@ -975,7 +964,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   The main contribution is in the implementation of a generic Install method, which attempts
   to automate the building of a package based on the mostly standard instance variables.
 
-  
+
   Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
   a GNU configure arguments stamp to perform the check in the future, etc.
@@ -1034,6 +1023,8 @@ class GNUPackage(Package):
     args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
+    if self.setCompilers.LDFLAGS:
+      args.append('LDFLAGS="'+self.setCompilers.LDFLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
@@ -1138,7 +1129,7 @@ class CMakePackage(Package):
   def formCMakeConfigureArgs(self):
     import os
     import shlex
- 
+
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     self.framework.pushLanguage('C')
@@ -1160,6 +1151,12 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
+
+    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+      args.append('-DBUILD_SHARED_LIBS=on')
+    else:
+      args.append('-DBUILD_SHARED_LIBS=off')
+
     return args
 
   def Install(self):

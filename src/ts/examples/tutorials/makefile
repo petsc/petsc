@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex28.c ex31.c ex34.c ex35.cxx extchem.c\
                 ex16adj.c ex16opt_p.c ex16opt_ic.c  \
                 ex20adj.c ex20opt_p.c ex20opt_ic.c  \
-                ex40.c ex41.c
+                ex40.c ex41.c ex42.c
 EXAMPLESF       = ex1f.F ex22f.F # ex22f_mf.F90
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
@@ -217,6 +217,11 @@ ex40: ex40.o chkopts
 ex41: ex41.o chkopts
 	-${CLINKER} -o ex41 ex41.o ${PETSC_TS_LIB}
 	${RM} ex41.o
+
+ex42: ex42.o chkopts
+	-${CLINKER} -o ex42 ex42.o ${PETSC_TS_LIB}
+	${RM} ex42.o
+
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -559,6 +564,11 @@ runex35_2:
 	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 > ex35_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
+
+runex42:
+	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 11  > ex42.tmp 2>&1;	  \
+	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
+	   ${RM} -f ex42.tmp
 
 runex40:
 	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1;	  \

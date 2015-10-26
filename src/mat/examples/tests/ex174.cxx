@@ -98,9 +98,7 @@ int main(int argc,char **args)
         printf(" Convert AIJ matrices A and B into Elemental matrix... \n");
       } else if (isSbaij) {
         printf(" Convert SBAIJ matrices A and B into Elemental matrix... \n");
-      } else {
-        SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
-      }
+      } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
     }
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);
     ierr = MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be);CHKERRQ(ierr);

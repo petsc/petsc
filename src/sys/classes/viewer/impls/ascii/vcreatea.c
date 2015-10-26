@@ -36,7 +36,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stdout_keyval,(void*)*viewer);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
-  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -120,7 +120,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stderr_keyval,(void*)*viewer);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
-  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -241,7 +241,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
     ierr = PetscObjectReference((PetscObject)*lab);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockLock(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
@@ -263,7 +263,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
         ierr = PetscObjectReference((PetscObject)vlink->viewer);CHKERRQ(ierr);
         *lab = vlink->viewer;
         ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
-        ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+        ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       vlink = vlink->next;
@@ -289,7 +289,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
     }
   }
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
-  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLock);CHKERRQ(ierr);
+  ierr = PetscSpinlockUnlock(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

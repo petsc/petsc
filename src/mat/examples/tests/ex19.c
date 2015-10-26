@@ -86,7 +86,7 @@ int main(int argc,char **args)
   /* Check error */
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-10 || norm < -1.e-10) {
+  if (norm > PETSC_SQRT_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",(double)norm);CHKERRQ(ierr);
   }
 

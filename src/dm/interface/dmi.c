@@ -24,7 +24,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
     }
   }
   if (blockSize < 0) blockSize = PETSC_MAX_INT;
-  ierr = MPI_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   if (blockSize == PETSC_MAX_INT) blockSize = 1; /* Everyone was empty */
   ierr = PetscSectionGetConstrainedStorageSize(gSection, &localSize);CHKERRQ(ierr);
   if (localSize%blockSize) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);

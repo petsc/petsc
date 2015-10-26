@@ -29,7 +29,7 @@ const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWi
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFWindowOpTranslate"
-/* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPI_Allreduce) */
+/* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPIU_Allreduce) */
 static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
 {
 

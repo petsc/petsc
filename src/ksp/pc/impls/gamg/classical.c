@@ -191,12 +191,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   MPI_Comm         fcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-
-
-  /* construct the graph if necessary */
-  if (!G) {
-    SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
-  }
+  if (!G) SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
 
   ierr = MatCoarsenCreate(fcomm,&crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);

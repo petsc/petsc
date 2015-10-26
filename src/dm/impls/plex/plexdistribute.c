@@ -765,7 +765,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &ldepth);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   if ((ldepth >= 0) && (depth != ldepth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
 
   /* Before building the migration SF we need to know the new stratum offsets */
@@ -1096,7 +1096,7 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
   if (depth) {ierr = DMLabelGetState(depth, &depthState);CHKERRQ(ierr);}
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPI_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
   if (sendDepth) {
     ierr = DMPlexRemoveLabel(dmParallel, "depth", &depth);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&depth);CHKERRQ(ierr);

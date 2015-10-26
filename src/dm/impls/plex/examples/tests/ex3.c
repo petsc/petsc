@@ -527,7 +527,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   if (size > 1) {
     ierr = DMPlexDistributeOverlap(dm,1,NULL,&dmRedist);CHKERRQ(ierr);
   }
-  if (dmRedist == NULL) {
+  if (!dmRedist) {
     dmRedist = dm;
     ierr = PetscObjectReference((PetscObject)dmRedist);CHKERRQ(ierr);
   }
