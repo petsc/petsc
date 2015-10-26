@@ -1183,6 +1183,8 @@ static PetscErrorCode GetTrajRMS(TS ts,Stack *s,PetscInt stepnum)
 #ifdef PETSC_HAVE_REVOLVE
   PetscInt       whattodo,shift;
 #endif
+  PetscInt       restart;
+  PetscBool      ondisk;
   PetscReal      stepsize;
   StackElement   e;
   PetscErrorCode ierr;
@@ -1204,11 +1206,13 @@ static PetscErrorCode GetTrajRMS(TS ts,Stack *s,PetscInt stepnum)
   printwhattodo(whattodo,s->rctx,shift);
 #endif
   /* restore a checkpoint */
+  restart = s->rctx->capo;
   if (!s->rctx->where) {
-    printf("restore disk check %d",s->rctx->check);
+    ondisk = PETSC_TRUE;
     ierr = LoadSingle(ts,s,s->rctx->check);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,ts->ptime_prev-ts->ptime);CHKERRQ(ierr);
   } else {
+    ondisk = PETSC_FALSE;
     ierr = StackTop(s,&e);CHKERRQ(ierr);
     ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   }
@@ -1224,13 +1228,14 @@ static PetscErrorCode GetTrajRMS(TS ts,Stack *s,PetscInt stepnum)
       s->rctx->stepsleft--;
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mSkip the step from %D to %D (already checkpointed)\033[0m\n",s->rctx->oldcapo,s->rctx->oldcapo+1);
     }
+    restart++; /* skip one step */
   }
 #endif
-  if (s->solution_only || (!s->solution_only && ts->steps < stepnum)) {
+  if (s->solution_only || (!s->solution_only && restart < stepnum)) {
     s->recompute = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
+    ierr = ReCompute(ts,s,restart,stepnum);CHKERRQ(ierr);
   }
-  if ((s->solution_only && e->stepnum+1 == stepnum) || (!s->solution_only && e->stepnum == stepnum)) {
+  if (!ondisk && ( (s->solution_only && e->stepnum+1 == stepnum) || (!s->solution_only && e->stepnum == stepnum) )) {
     ierr = StackPop(s,&e);CHKERRQ(ierr);
     ierr = ElementDestroy(s,e);CHKERRQ(ierr);
   }
