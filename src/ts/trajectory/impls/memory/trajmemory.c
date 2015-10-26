@@ -901,13 +901,17 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
   localstepnum = stepnum%s->stride;
   id           = stepnum/s->stride; /* stride index */
   if (stepnum == s->total_steps) PetscFunctionReturn(0);
+
+  /* (stride size-1) checkpoints are saved in each stride */
   if (s->solution_only) {
+    laststridesize = s->total_steps%s->stride;
+    if (!laststridesize) laststridesize = s->stride;
     if (s->save_stack) {
-      if (localstepnum == 0 && stepnum != 0) { /* no stack at point 0 */
+      if (localstepnum == s->stride-1 && stepnum < s->total_steps-laststridesize) {
 #ifdef PETSC_HAVE_REVOLVE
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
 #endif
-        ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
+        ierr = StackDumpAll(ts,s,id+1);CHKERRQ(ierr);
         /* create new revolve object */
 #ifdef PETSC_HAVE_REVOLVE
         revolve_reset();
@@ -918,15 +922,20 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
         rctx->fine  = s->stride;
 #endif
       }
-    } else { /* (stride size -1) checkpoints are saved in each stride */
-      if (localstepnum == s->stride-1) PetscFunctionReturn(0); /* skip last point in each stride */
-      laststridesize = s->total_steps%s->stride;
-      if (!laststridesize) laststridesize = s->stride;
-      if (localstepnum == 0 && s->total_steps-stepnum >= laststridesize ) { /* skip last stride */
-        PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump a single point to file\033[0m\n");
-        ierr = DumpSingle(ts,s,id);CHKERRQ(ierr);
+      if (localstepnum != s->stride-1 && !s->recompute) {
+        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
+        ierr = StackPush(s,e);CHKERRQ(ierr);
       }
-      if (s->total_steps-stepnum > laststridesize && !s->recompute) PetscFunctionReturn(0); /* no need to checkpoint except last stride in the first sweep */
+    } else {
+      if (localstepnum == 0 && stepnum < s->total_steps-laststridesize ) {
+        PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump a single point to file\033[0m\n");
+        ierr = DumpSingle(ts,s,id+1);CHKERRQ(ierr);
+      }
+      if (stepnum < s->total_steps-laststridesize && !s->recompute) PetscFunctionReturn(0); /* no need to checkpoint except last stride in the first sweep */
+      if (localstepnum != s->stride-1 && ((stepnum >= s->total_steps-laststridesize) || s->recompute)) {
+        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
+        ierr = StackPush(s,e);CHKERRQ(ierr);
+      }
     }
     ierr = ApplyRevolve(s,stepnum,localstepnum,&store);CHKERRQ(ierr);
     if (store == 1){
@@ -934,6 +943,45 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
       ierr = ElementCreate(ts,s,&e,localstepnum,time,X);CHKERRQ(ierr);
       ierr = StackPush(s,e);CHKERRQ(ierr);
     }
+
+  } else {
+    if (stepnum == 0) PetscFunctionReturn(0);
+    if (s->save_stack) {
+      if (localstepnum == 0 && stepnum != 0) { /* no stack at point 0 */
+        ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
+      }
+      if (!s->recompute && localstepnum !=0) {
+        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
+        ierr = StackPush(s,e);CHKERRQ(ierr);
+      }
+    } else {
+      if (localstepnum == 0) PetscFunctionReturn(0); /* skip last point in each stride */
+      laststridesize = s->total_steps%s->stride;
+      if (!laststridesize) laststridesize = s->stride;
+      if (localstepnum == 1 && s->total_steps-stepnum >= laststridesize ) { /* skip last stride */
+        ierr = DumpSingle(ts,s,id);CHKERRQ(ierr);
+      }
+      if ((s->total_steps-stepnum < laststridesize && !s->recompute) || s->recompute) {
+        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
+        ierr = StackPush(s,e);CHKERRQ(ierr);
+      }
+    }
+  }
+
+
+  if (s->solution_only) {
+    if (s->save_stack) {
+
+    } else { /* (stride size -1) checkpoints are saved in each stride */
+      if (localstepnum == s->stride-1) PetscFunctionReturn(0); /* skip last point in each stride */
+      laststridesize = s->total_steps%s->stride;
+      if (!laststridesize) laststridesize = s->stride;
+      if (localstepnum == 0 && s->total_steps-stepnum >= laststridesize ) { /* skip last stride */
+
+        ierr = DumpSingle(ts,s,id);CHKERRQ(ierr);
+      }
+    }
+
   } else {
     if (stepnum == 0) PetscFunctionReturn(0);
     if (s->save_stack) { /* (stride size) checkpoints are saved in each stride except last stride */
@@ -1104,49 +1152,41 @@ static PetscErrorCode SetTrajTLNR(TS ts,Stack *s,PetscInt stepnum,PetscReal time
   if (stepnum == s->total_steps) PetscFunctionReturn(0);
 
   /* (stride size-1) checkpoints are saved in each stride */
+  laststridesize = s->total_steps%s->stride;
+  if (!laststridesize) laststridesize = s->stride;
   if (s->solution_only) {
-    laststridesize = s->total_steps%s->stride;
-    if (!laststridesize) laststridesize = s->stride;
     if (s->save_stack) {
+      if (s->recompute) PetscFunctionReturn(0);
       if (localstepnum == s->stride-1 && stepnum < s->total_steps-laststridesize) { /* dump when stack is full */
         ierr = StackDumpAll(ts,s,id+1);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
       }
-      if (localstepnum != s->stride-1 && !s->recompute) {
-        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
-        ierr = StackPush(s,e);CHKERRQ(ierr);
-      }
+      if (stepnum == s->total_steps-1) PetscFunctionReturn(0); /* do not checkpoint s->total_steps-1 */
     } else {
-      if (localstepnum == 0 && stepnum < s->total_steps-laststridesize ) {
+      if (localstepnum == s->stride-1) PetscFunctionReturn(0);
+      if (!s->recompute && localstepnum == 0 && stepnum < s->total_steps-laststridesize ) {
         ierr = DumpSingle(ts,s,id+1);CHKERRQ(ierr);
       }
-      if (localstepnum != s->stride-1 && ((stepnum >= s->total_steps-laststridesize) || s->recompute)) {
-        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
-        ierr = StackPush(s,e);CHKERRQ(ierr);
-      }
+      if (stepnum < s->total_steps-laststridesize && !s->recompute) PetscFunctionReturn(0);
     }
   } else {
     if (stepnum == 0) PetscFunctionReturn(0);
     if (s->save_stack) {
+      if (s->recompute) PetscFunctionReturn(0);
       if (localstepnum == 0 && stepnum != 0) { /* no stack at point 0 */
         ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
-      }
-      if (!s->recompute && localstepnum !=0) {
-        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
-        ierr = StackPush(s,e);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
       }
     } else {
       if (localstepnum == 0) PetscFunctionReturn(0); /* skip last point in each stride */
-      laststridesize = s->total_steps%s->stride;
-      if (!laststridesize) laststridesize = s->stride;
-      if (localstepnum == 1 && s->total_steps-stepnum >= laststridesize ) { /* skip last stride */
+      if (!s->recompute && localstepnum == 1 && stepnum < s->total_steps-laststridesize ) { /* skip last stride */
         ierr = DumpSingle(ts,s,id);CHKERRQ(ierr);
       }
-      if ((s->total_steps-stepnum < laststridesize && !s->recompute) || s->recompute) {
-        ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
-        ierr = StackPush(s,e);CHKERRQ(ierr);
-      }
+      if (stepnum <= s->total_steps-laststridesize && !s->recompute) PetscFunctionReturn(0);
     }
   }
+  ierr = ElementCreate(ts,s,&e,stepnum,time,X);CHKERRQ(ierr);
+  ierr = StackPush(s,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
