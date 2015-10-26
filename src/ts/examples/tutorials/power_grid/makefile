@@ -36,15 +36,19 @@ ex3: ex3.o  chkopts
 
 ex3adj: ex3adj.o  chkopts
 	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
+	${RM} ex3adj.o
 
 ex3adj_events: ex3adj_events.o  chkopts
 	-${CLINKER} -o ex3adj_events ex3adj_events.o  ${PETSC_TS_LIB}
+	${RM} ex3adj_events.o
 
 ex3opt: ex3opt.o  chkopts
 	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_LIB}
+	${RM} ex3opt.o
 
 ex3opt_fd: ex3opt_fd.o  chkopts
 	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_LIB}
+	${RM} ex3opt_fd.o
 
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}
@@ -72,9 +76,11 @@ ex9: ex9.o  chkopts
 
 ex9adj: ex9adj.o  chkopts
 	-${CLINKER} -o ex9adj ex9adj.o  ${PETSC_TS_LIB}
+	${RM} ex9adj.o
 
 ex9opt: ex9opt.o  chkopts
 	-${CLINKER} -o ex9opt ex9opt.o  ${PETSC_LIB}
+	${RM} ex9opt.o
 
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_TS_LIB}
@@ -279,7 +285,7 @@ runex9adj:
 	   ${RM} -f ex9adj_1.tmp
 
 runex9opt:
-	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_fatol 0.0 -tao_frtol 0.0 -tao_gatol 0.0 -tao_converged_reason > ex9opt_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_fatol 0.0 -tao_frtol 0.0 -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason > ex9opt_1.tmp 2>&1; \
 	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_1.tmp
 
