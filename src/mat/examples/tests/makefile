@@ -22,7 +22,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
-                ex181.c ex182.c ex183.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c
+                ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c
 
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
@@ -723,6 +723,10 @@ ex182: ex182.o chkopts
 ex183: ex183.o chkopts
 	-${CLINKER} -o ex183 ex183.o ${PETSC_MAT_LIB}
 	${RM} ex183.o
+
+ex300: ex300.o chkopts
+	-${CLINKER} -o ex300 ex300.o ${PETSC_MAT_LIB}
+	${RM} ex300.o
 
 ex190: ex190.o chkopts
 	-${CLINKER} -o ex190 ex190.o ${PETSC_MAT_LIB}
@@ -2266,6 +2270,11 @@ runex183_6_2:
 	   ${DIFF} output/ex183_6_2.out ex183.tmp || printf "${PWD}\nPossible problem with ex183_6_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex183.tmp
 
+runex300:
+	-@${MPIEXEC} -n 2 ./ex300   > ex300.tmp 2>&1; \
+	   ${DIFF} output/ex300_1.out ex300.tmp || printf "${PWD}\nPossible problem with ex300, diffs above\n=========================================\n"; \
+	   ${RM} -f ex300.tmp
+
 runex171f:
 	-@${MPIEXEC} -n 1 ./ex171f
 
@@ -2462,7 +2471,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex164.PETSc runex164 ex164.rm ex172.PETSc runex172 runex172_2 runex172_3 runex172_4 \
                                  runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 runex181_2 ex181.rm\
                                  ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm \
-                                 ex183.PETSc runex183_2_1 runex183_3_2 runex183_4_2 runex183_6_2 ex183.rm\
+                                 ex183.PETSc runex183_2_1 runex183_3_2 runex183_4_2 runex183_6_2 ex183.rm ex300.PETSc runex300 ex300.rm\
                                  ex191.PETSc runex191 ex191.rm ex194.PETSc runex194 ex194.rm  ex101.PETSc runex101 ex101.rm
 TESTEXAMPLES_C_X	       = ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \

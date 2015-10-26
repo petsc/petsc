@@ -3296,7 +3296,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
   if (!gvalid) {
     ierr = DMView(dm, NULL);CHKERRQ(ierr);
     SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");

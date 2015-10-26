@@ -40,7 +40,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     PetscMPIInt b1[2],b2[2];
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
-    ierr  = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
     if (-b2[0] != b2[1]) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
 #endif

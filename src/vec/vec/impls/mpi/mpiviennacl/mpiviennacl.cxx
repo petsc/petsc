@@ -36,24 +36,24 @@ PetscErrorCode VecNorm_MPIViennaCL(Vec xin,NormType type,PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr  = VecNorm_SeqViennaCL(xin,NORM_2,&work);
     work *= work;
-    ierr  = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     *z    = PetscSqrtReal(sum);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_SeqViennaCL(xin,NORM_1,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     ierr = VecNorm_SeqViennaCL(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     ierr = VecNorm_SeqViennaCL(xin,NORM_1,temp);CHKERRQ(ierr);
     ierr = VecNorm_SeqViennaCL(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
-    ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     z[1] = PetscSqrtReal(z[1]);
   }
   PetscFunctionReturn(0);
@@ -68,7 +68,7 @@ PetscErrorCode VecDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecDot_SeqViennaCL(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -82,7 +82,7 @@ PetscErrorCode VecTDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecTDot_SeqViennaCL(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -99,7 +99,7 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
     ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_SeqViennaCL(xin,nv,y,work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
   }
@@ -170,7 +170,7 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
 
   PetscFunctionBegin;
   ierr = VecDotNorm2_SeqViennaCL(s,t,work,work+1);CHKERRQ(ierr);
-  ierr = MPI_Allreduce((void*)&work,(void*)&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce((void*)&work,(void*)&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
   *dp  = sum[0];
   *nm  = sum[1];
   PetscFunctionReturn(0);

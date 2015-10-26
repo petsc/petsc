@@ -361,7 +361,7 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
     }
     if (an != A->cmap->rstart+n) isFullCol = PETSC_FALSE;
   }
-  ierr = MPI_Allreduce(&isFullCol,&isFullColGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)iscol));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&isFullCol,&isFullColGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)iscol));CHKERRQ(ierr);
 
   if (isFullColGlobal) {
     PetscInt row;

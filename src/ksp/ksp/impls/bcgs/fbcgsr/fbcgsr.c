@@ -116,7 +116,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
       insums[0] = tau;
       insums[1] = sigma;
       ierr      = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-      ierr      = MPI_Allreduce(insums,outsums,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+      ierr      = MPIU_Allreduce(insums,outsums,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
       ierr      = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
       tau       = outsums[0];
       sigma     = outsums[1];
@@ -150,7 +150,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     insums[3] = xi4;
 
     ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-    ierr = MPI_Allreduce(insums,outsums,4,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(insums,outsums,4,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     xi1  = outsums[0];
     xi2  = outsums[1];
