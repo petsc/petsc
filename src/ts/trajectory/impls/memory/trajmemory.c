@@ -635,12 +635,14 @@ static PetscErrorCode UpdateTS(TS ts,Stack *s,StackElement e)
     }
   }
   ierr = TSSetTimeStep(ts,e->timeprev-e->time);CHKERRQ(ierr); /* stepsize will be negative */
+  ts->ptime      = e->time;
+  ts->ptime_prev = e->timeprev;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ReCompute"
-static PetscErrorCode ReCompute(TS ts,Stack *s,StackElement e,PetscInt stepnum)
+static PetscErrorCode ReCompute(TS ts,Stack *s,PetscInt stepnumbegin,PetscInt stepnumend)
 {
   PetscInt       i,adjsteps;
   PetscReal      stepsize;
@@ -651,10 +653,8 @@ static PetscErrorCode ReCompute(TS ts,Stack *s,StackElement e,PetscInt stepnum)
   /* reset ts context */
   ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
-  ts->steps      = e->stepnum; /* global stepnum */
-  ts->ptime      = e->time;
-  ts->ptime_prev = e->timeprev;
-  for (i=ts->steps;i<stepnum;i++) { /* assume fixed step size */
+  ts->steps = stepnumbegin; /* global step number */
+  for (i=ts->steps;i<stepnumend;i++) { /* assume fixed step size */
     if (s->solution_only && !s->skip_trajectory) { /* revolve online need this */
       ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
@@ -673,7 +673,7 @@ static PetscErrorCode ReCompute(TS ts,Stack *s,StackElement e,PetscInt stepnum)
   ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
   ts->steps = adjsteps;
-  ts->total_steps = stepnum;
+  ts->total_steps = stepnumend;
   PetscFunctionReturn(0);
 }
 
@@ -717,7 +717,7 @@ static PetscErrorCode GetTrajN(TS ts,Stack *s,PetscInt stepnum)
   ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   if (s->solution_only) {/* recompute one step */
     s->recompute = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
+    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
   }
   ierr = StackPop(s,&e);CHKERRQ(ierr);
   ierr = ElementDestroy(s,e);CHKERRQ(ierr);
@@ -784,7 +784,7 @@ static PetscErrorCode GetTrajROF(TS ts,Stack *s,PetscInt stepnum)
 #endif
   if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) {
     s->recompute = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
+    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
   }
   if ((s->solution_only && e->stepnum+1 == stepnum) || (!s->solution_only && e->stepnum == stepnum)) {
     ierr = StackPop(s,&e);CHKERRQ(ierr);
@@ -880,7 +880,7 @@ static PetscErrorCode GetTrajRON(TS ts,Stack *s,PetscInt stepnum)
 #endif
   if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) {
     s->recompute = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
+    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
   }
 #ifdef PETSC_HAVE_REVOLVE
     if (s->rctx->reverseonestep) s->rctx->reverseonestep = PETSC_FALSE;
@@ -1019,7 +1019,7 @@ static PetscErrorCode GetTrajTLR(TS ts,Stack *s,PetscInt stepnum)
   ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) { /* must recompute */
     s->recompute = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
+    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_REVOLVE
       s->rctx->reverseonestep = PETSC_FALSE;
 #endif
@@ -1118,7 +1118,7 @@ static PetscErrorCode GetTrajTLNR(TS ts,Stack *s,PetscInt stepnum)
         ierr = ElementCreate(ts,s,&e,(id-1)*s->stride,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(s,e);CHKERRQ(ierr);
         s->recompute = PETSC_TRUE;
-        ierr = ReCompute(ts,s,e,id*s->stride);CHKERRQ(ierr);
+        ierr = ReCompute(ts,s,e->stepnum,id*s->stride);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
     }
@@ -1127,7 +1127,7 @@ static PetscErrorCode GetTrajTLNR(TS ts,Stack *s,PetscInt stepnum)
     ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
     s->recompute = PETSC_TRUE;
     s->skip_trajectory = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
+    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
     s->skip_trajectory = PETSC_FALSE;
     ierr = ElementDestroy(s,e);CHKERRQ(ierr);
   } else {
@@ -1143,7 +1143,7 @@ static PetscErrorCode GetTrajTLNR(TS ts,Stack *s,PetscInt stepnum)
         ierr = ElementCreate(ts,s,&e,(id-1)*s->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(s,e);CHKERRQ(ierr);
         s->recompute = PETSC_TRUE;
-        ierr = ReCompute(ts,s,e,id*s->stride);CHKERRQ(ierr);
+        ierr = ReCompute(ts,s,e->stepnum,id*s->stride);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
     }
@@ -1164,6 +1164,7 @@ static PetscErrorCode SetTrajRMS(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!s->solution_only && stepnum == 0) PetscFunctionReturn(0);
   ierr = ApplyRevolve(s,stepnum,stepnum,&store);CHKERRQ(ierr);
   if (store == 1){
     if (stepnum < s->top) SETERRQ(s->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
@@ -1187,48 +1188,55 @@ static PetscErrorCode GetTrajRMS(TS ts,Stack *s,PetscInt stepnum)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (stepnum == 0 || stepnum == s->total_steps) {
+    ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_REVOLVE
-  if ( s->rctx->reverseonestep) { /* ready for the reverse step */
-    ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
-    s->rctx->reverseonestep = PETSC_FALSE;
-    PetscFunctionReturn(0);
-  }
+    if (s->rctx->reverseonestep) s->rctx->reverseonestep = PETSC_FALSE;
 #endif
-  if ((!s->solution_only && stepnum == 0) || stepnum == s->total_steps) {
-    ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-
 #ifdef PETSC_HAVE_REVOLVE
   s->rctx->capo = stepnum;
+  s->rctx->oldcapo = s->rctx->capo;
   shift = 0;
-  whattodo = revolve_action(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,s->rctx->snaps_in,&s->rctx->info,&s->rctx->where);
+  whattodo = revolve_action(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,s->rctx->snaps_in,&s->rctx->info,&s->rctx->where); /* whattodo=restore */
   printwhattodo(whattodo,s->rctx,shift);
 #endif
-
   /* restore a checkpoint */
   if (!s->rctx->where) {
-    ierr = LoadSingle(ts,s,stepnum);CHKERRQ(ierr);
+    printf("restore disk check %d",s->rctx->check);
+    ierr = LoadSingle(ts,s,s->rctx->check);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,ts->ptime_prev-ts->ptime);CHKERRQ(ierr);
   } else {
     ierr = StackTop(s,&e);CHKERRQ(ierr);
-    if (e && e->stepnum >= stepnum) {
-      SETERRQ2(s->comm,PETSC_ERR_ARG_OUTOFRANGE,"The current step no. is %D, but the step number at top of the stack is %D",stepnum,e->stepnum);
-    }
     ierr = UpdateTS(ts,s,e);CHKERRQ(ierr);
   }
-
-  if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) { /* must recompute */
+#ifdef PETSC_HAVE_REVOLVE
+  if (!s->solution_only) { /* whattodo must be 5 or 8 */
+    /* ask Revolve what to do next */
+    s->rctx->oldcapo = s->rctx->capo;
+    whattodo = revolve_action(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,s->rctx->snaps_in,&s->rctx->info,&s->rctx->where); /* must return 1 or 3 or 4*/
+    printwhattodo(whattodo,s->rctx,shift);
+    if (whattodo == 3 || whattodo == 4) s->rctx->reverseonestep = PETSC_TRUE;
+    if (whattodo == 1) s->rctx->stepsleft = s->rctx->capo-s->rctx->oldcapo;
+    if (!s->rctx->reverseonestep && s->rctx->stepsleft > 0) {
+      s->rctx->stepsleft--;
+      PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mSkip the step from %D to %D (already checkpointed)\033[0m\n",s->rctx->oldcapo,s->rctx->oldcapo+1);
+    }
+  }
+#endif
+  if (s->solution_only || (!s->solution_only && ts->steps < stepnum)) {
     s->recompute = PETSC_TRUE;
-    ierr = ReCompute(ts,s,e,stepnum);CHKERRQ(ierr);
-    #ifdef PETSC_HAVE_REVOLVE
-      s->rctx->reverseonestep = PETSC_FALSE;
-    #endif
-  } else {
+    ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
+  }
+  if ((s->solution_only && e->stepnum+1 == stepnum) || (!s->solution_only && e->stepnum == stepnum)) {
     ierr = StackPop(s,&e);CHKERRQ(ierr);
     ierr = ElementDestroy(s,e);CHKERRQ(ierr);
   }
+#ifdef PETSC_HAVE_REVOLVE
+  if (s->rctx->reverseonestep) s->rctx->reverseonestep = PETSC_FALSE;
+#endif
   PetscFunctionReturn(0);
 }
 
