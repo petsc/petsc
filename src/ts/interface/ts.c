@@ -6589,6 +6589,60 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSSetFunctionDomainError"
+/*@
+    TSSetFunctionDomainError - Set the function testing if the current state vector is valid
+
+    Input Parameters:
+    ts - the TS context
+    func - function called within TSFunctionDomainError
+
+    Level: intermediate
+
+.keywords: TS, state, domain
+.seealso: TSAdaptCheckStage(), TSFunctionDomainError()
+@*/
+
+PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscReal,Vec,PetscBool*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ts->functiondomainerror = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSFunctionDomainError"
+/*@
+    TSFunctionDomainError - Check if the current state is valid
+
+    Input Parameters:
+    ts - the TS context
+    stagetime - time of the simulation
+    Y - state vector to check.
+
+    Output Parameter:
+    accept - Set to PETSC_FALSE if the current state vector is valid.
+
+    Note:
+    This function should be used to ensure the state is in a valid part of the space.
+    For example, one can ensure here all values are positive.
+@*/
+PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* accept)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *accept = PETSC_TRUE;
+  if (ts->functiondomainerror) {
+    PetscStackCallStandard((*ts->functiondomainerror),(ts,stagetime,Y,accept));
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef  __FUNCT__
 #define __FUNCT__ "TSClone"
 /*@C
