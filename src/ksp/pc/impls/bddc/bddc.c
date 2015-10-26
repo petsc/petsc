@@ -1116,6 +1116,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     } else {
       ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      if (pcbddc->ChangeOfBasisMatrix) {
+        pcbddc->benign_original_mat = matis->A;
+        matis->A = pcbddc->local_mat;
+      }
     }
     pcbddc->rhs_change = PETSC_TRUE;
 
@@ -1156,7 +1160,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
 
     /* set current iteration matrix inside change context (change of basis has been already set into the ctx during PCSetUp) */
-    if (!(pcbddc->benign_saddle_point && pcbddc->user_ChangeOfBasisMatrix)) {
+    if (!pcbddc->benign_original_mat) {
       ierr = MatDestroy(&change_ctx->original_mat);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
       change_ctx->original_mat = pc->mat;
@@ -1264,7 +1268,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if (pcbddc->ChangeOfBasisMatrix && !(pcbddc->benign_saddle_point && pcbddc->user_ChangeOfBasisMatrix)) {
+  if (pcbddc->ChangeOfBasisMatrix && !pcbddc->benign_original_mat) {
     PCBDDCChange_ctx change_ctx;
 
     /* get change ctx */
@@ -1277,7 +1281,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* need to restore the local matrices */
-  if (pcbddc->benign_change) {
+  if (pcbddc->benign_original_mat) {
     Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
     pcbddc->local_mat = matis->A;
