@@ -4987,8 +4987,8 @@ $G(t,y)=g(t,y)$\\
 $M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
 $G(t,y)=M^{-1}g(t,y)$\\
 \hline
-$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $f(t,y,\dot{y}) = f(t,y,\dot{y})$,
-$F(t,y)=0$; the user needs to set TSSetEquationType() to
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $F(t,y,\dot{y}) = f(t,y,\dot{y})$,
+$G(t,y)=0$; the user needs to set TSSetEquationType() to
 TS\_EQ\_IMPLICIT or higher\\
 \hline
 \end{tabular}
