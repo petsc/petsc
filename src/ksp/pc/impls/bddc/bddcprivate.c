@@ -3719,6 +3719,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = MatSetUp(pcbddc->new_global_mat);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcbddc->new_global_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->new_global_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroy(&pcbddc->new_global_mat);CHKERRQ(ierr);
   }
 
   /* add pressure dofs to set of primal nodes for numbering purposes */
