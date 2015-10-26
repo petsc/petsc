@@ -6,6 +6,7 @@
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>    /*I   "petscmat.h"  I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscblaslapack.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDenseGetLocalMatrix"
@@ -1232,9 +1233,9 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                 /*129*/ 0,
-                                        0,
-                                        0,
-                                        0,
+                                        MatTransposeMatMult_MPIDense_MPIDense,
+                                        MatTransposeMatMultSymbolic_MPIDense_MPIDense,
+                                        MatTransposeMatMultNumeric_MPIDense_MPIDense,
                                         0,
                                 /*134*/ 0,
                                         0,
@@ -1776,3 +1777,116 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MatTransMatMult_MPIDense_MPIDense"
+PetscErrorCode MatDestroy_MatTransMatMult_MPIDense_MPIDense(Mat A)
+{
+  PetscErrorCode        ierr;
+  Mat_MPIDense          *a = (Mat_MPIDense*)A->data;
+  Mat_TransMatMultDense *atb = a->atbdense;
+
+  PetscFunctionBegin;
+  ierr = PetscFree3(atb->sendbuf,atb->atbarray,atb->recvcounts);CHKERRQ(ierr);
+  ierr = (atb->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(atb);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMultNumeric_MPIDense_MPIDense"
+PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
+{
+  Mat_MPIDense   *a=(Mat_MPIDense*)A->data, *b=(Mat_MPIDense*)B->data, *c=(Mat_MPIDense*)C->data;
+  Mat_SeqDense   *aseq=(Mat_SeqDense*)(a->A)->data, *bseq=(Mat_SeqDense*)(b->A)->data;
+  Mat_TransMatMultDense *atb = c->atbdense;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscMPIInt    rank,size,*recvcounts=atb->recvcounts;
+  PetscScalar    *carray,*atbarray=atb->atbarray,*sendbuf=atb->sendbuf;
+  PetscInt       i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j;
+  PetscScalar    _DOne=1.0,_DZero=0.0;
+  PetscBLASInt   am,an,bn,aN;
+  const PetscInt *ranges;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  /* compute atbarray = aseq^T * bseq */
+  ierr = PetscBLASIntCast(a->A->cmap->n,&an);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(b->A->cmap->n,&bn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(a->A->rmap->n,&am);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(A->cmap->N,&aN);CHKERRQ(ierr);
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&an,&bn,&am,&_DOne,aseq->v,&aseq->lda,bseq->v,&bseq->lda,&_DZero,atbarray,&aN));
+ 
+  ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
+  for (i=0; i<size; i++) recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
+  
+  /* arrange atbarray into sendbuf */
+  k = 0;
+  for (proc=0; proc<size; proc++) {
+    for (j=0; j<cN; j++) {
+      for (i=ranges[proc]; i<ranges[proc+1]; i++) sendbuf[k++] = atbarray[i+j*cM]; 
+    }
+  }
+  /* sum all atbarray to local values of C */
+  ierr = MatDenseGetArray(c->A,&carray);CHKERRQ(ierr);
+  ierr = MPI_Reduce_scatter(sendbuf,carray,recvcounts,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(c->A,&carray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIDense_MPIDense"
+PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode        ierr;
+  Mat                   Cdense;
+  MPI_Comm              comm;
+  PetscMPIInt           size;
+  PetscInt              cm=A->cmap->n,cM,cN=B->cmap->N;
+  Mat_MPIDense          *c;
+  Mat_TransMatMultDense *atb;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) {
+    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
+  }
+
+  /* create matrix product Cdense */
+  ierr = MatCreate(comm,&Cdense);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cdense,cm,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(Cdense,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(Cdense,NULL);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Cdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Cdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *C   = Cdense;
+
+  /* create data structure for reuse Cdense */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscNew(&atb);CHKERRQ(ierr);
+  cM = Cdense->rmap->N; 
+  ierr = PetscMalloc3(cM*cN,&atb->sendbuf,cM*cN,&atb->atbarray,size,&atb->recvcounts);CHKERRQ(ierr);
+  
+  c                    = (Mat_MPIDense*)Cdense->data;
+  c->atbdense          = atb;
+  atb->destroy         = Cdense->ops->destroy;
+  Cdense->ops->destroy = MatDestroy_MatTransMatMult_MPIDense_MPIDense;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMult_MPIDense_MPIDense"
+PetscErrorCode MatTransposeMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = MatTransposeMatMultSymbolic_MPIDense_MPIDense(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatTransposeMatMultNumeric_MPIDense_MPIDense(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
