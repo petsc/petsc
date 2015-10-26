@@ -33,7 +33,7 @@
       height = int(h)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-      call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
@@ -52,7 +52,6 @@
 
       call PetscDrawLGSetUseMarkers(lg,PETSC_TRUE,ierr)
       call PetscDrawLGDraw(lg,ierr)
-      call PetscDrawFlush(draw,ierr)
 
       call PetscSleep(10,ierr)
 

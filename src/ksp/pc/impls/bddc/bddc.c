@@ -113,20 +113,12 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change)
     PetscInt rows_c,cols_c,rows,cols;
     ierr = MatGetSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    if (rows_c != rows) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %d != %d",rows_c,rows);
-    }
-    if (cols_c != cols) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %d != %d",cols_c,cols);
-    }
+    if (rows_c != rows) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %d != %d",rows_c,rows);
+    if (cols_c != cols) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %d != %d",cols_c,cols);
     ierr = MatGetLocalSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetLocalSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    if (rows_c != rows) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %d != %d",rows_c,rows);
-    }
-    if (cols_c != cols) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %d != %d",cols_c,cols);
-    }
+    if (rows_c != rows) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %d != %d",rows_c,rows);
+    if (cols_c != cols) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %d != %d",cols_c,cols);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat),(pc,change));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -769,9 +761,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(xadj,3);
   PetscValidIntPointer(adjncy,4);
-  if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d in %s\n",copymode,__FUNCT__);
-  }
+  if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d",copymode);
   ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
   /* free arrays if PCBDDC is not the PC type */
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",&f);CHKERRQ(ierr);
@@ -1179,13 +1169,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
-  if (!ismatis) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
-  }
+  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
-  if (nrows != ncols) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
-  }
+  if (nrows != ncols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
@@ -1207,16 +1193,13 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
   }
   computeconstraintsmatrix = PETSC_FALSE;
-  if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
-  }
+  if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
   pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0 && pcbddc->use_deluxe_scaling);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
-  if (pcbddc->faster_deluxe && pcbddc->adaptive_selection && pcbddc->use_change_of_basis) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute faster deluxe if adaptivity and change of basis are both requested. Rerun with -pc_bddc_deluxe_faster false");
-  }
+  if (pcbddc->faster_deluxe && pcbddc->adaptive_selection && pcbddc->use_change_of_basis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute faster deluxe if adaptivity and change of basis are both requested. Rerun with -pc_bddc_deluxe_faster false");
+
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {

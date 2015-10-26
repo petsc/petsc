@@ -387,7 +387,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
-  ierr = PetscLogBegin();CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_SELF, &user, &dm);CHKERRQ(ierr);
   ierr = TestCone(dm, &user);CHKERRQ(ierr);
   ierr = TestTransitiveClosure(dm, &user);CHKERRQ(ierr);

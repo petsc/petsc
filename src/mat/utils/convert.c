@@ -60,7 +60,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(mat,M);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(mat,&M);CHKERRQ(ierr);
   } else {
     *newmat = M;
   }

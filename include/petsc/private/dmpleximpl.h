@@ -65,7 +65,8 @@ typedef struct {
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
 struct _n_DMLabel {
-  PetscInt    refct;
+  PetscInt         refct;
+  PetscObjectState state;
   char       *name;           /* Label name */
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt   *stratumValues;  /* Value of each stratum */
@@ -167,7 +168,8 @@ typedef struct {
 
   /* Labels and numbering */
   PlexLabel            labels;            /* Linked list of labels */
-  DMLabel              depthLabel;
+  DMLabel              depthLabel;        /* Optimized access to depth label */
+  PetscObjectState     depthState;        /* State of depth label, so that we can determine if a user changes it */
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
@@ -203,6 +205,7 @@ typedef struct {
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
+  PetscBool            useHashLocation;   /* Use grid hashing for point location */
   PetscGridHash        lbox;              /* Local box for searching */
 
   /* Debugging */

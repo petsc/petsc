@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np <proc> minsurf2 [-help] [all TAO options] */
+/* Program usage: mpiexec -n <proc> minsurf2 [-help] [all TAO options] */
 
 /*
   Include "petsctao.h" so we can use TAO solvers.

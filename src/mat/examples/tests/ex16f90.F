@@ -50,7 +50,7 @@
         iar(1) = i
         do 20, j=0,n-1
           jar(1) = j
-          v(1)   = 9.d0/(i+j+1)
+          v(1)   = 9.0/(i+j+1)
           call MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr)
  20     continue
  10   continue

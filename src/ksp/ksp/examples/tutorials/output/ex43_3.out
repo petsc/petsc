@@ -21,37 +21,12 @@
  19 KSP Residual norm 5.5701e-05 
  20 KSP Residual norm 4.66091e-05 
  21 KSP Residual norm 3.71995e-05 
- 22 KSP Residual norm 2.7738e-05 
- 23 KSP Residual norm 1.86099e-05 
- 24 KSP Residual norm 1.06587e-05 
- 25 KSP Residual norm 6.85761e-06 
- 26 KSP Residual norm 4.19329e-06 
- 27 KSP Residual norm 2.75756e-06 
- 28 KSP Residual norm 1.96824e-06 
- 29 KSP Residual norm 1.37233e-06 
- 30 KSP Residual norm 8.19111e-07 
- 31 KSP Residual norm 5.24862e-07 
- 32 KSP Residual norm 3.22582e-07 
- 33 KSP Residual norm 1.59243e-07 
- 34 KSP Residual norm 8.86739e-08 
- 35 KSP Residual norm 4.71489e-08 
- 36 KSP Residual norm 2.43005e-08 
- 37 KSP Residual norm 1.43272e-08 
- 38 KSP Residual norm 7.93965e-09 
- 39 KSP Residual norm 3.6909e-09 
- 40 KSP Residual norm 2.04559e-09 
- 41 KSP Residual norm 9.942e-10 
- 42 KSP Residual norm 4.624e-10 
- 43 KSP Residual norm 2.500e-10 
- 44 KSP Residual norm 1.179e-10 
- 45 KSP Residual norm 5.340e-11 
- 46 KSP Residual norm 2.444e-11 
 KSP Object:(stokes_) 4 MPI processes
   type: gcr
     GCR: restart = 60 
     GCR: restarts performed = 1 
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object:(stokes_) 4 MPI processes

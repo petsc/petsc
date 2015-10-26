@@ -310,7 +310,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
-  ierr = MPI_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   if (nc > ncolors) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %D is less then the actual number of colors in array %D",ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = 0;
@@ -367,16 +367,11 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    PetscErrorCode        ierr;
 
    PetscFunctionBegin;
-   /*communicator*/
    ierr = PetscObjectGetComm((PetscObject)ito,&comm);CHKERRQ(ierr);
-   /* size */
    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-   /* destination information */
    ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
-   /* why we do not have ISGetLayout?*/
-   /* get Layout */
+   /* why we do not have ISGetLayout? */
    isrmap = ito->map;
-   /*get local start */
    ierr = PetscLayoutGetRange(isrmap,&rstart,PETSC_NULL);CHKERRQ(ierr);
    ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
@@ -387,20 +382,18 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 #endif
      tosizes_tmp[ito_indices[i]]++;
    }
-   /*offsets*/
    nto = 0;
    for(i=0; i<size; i++){
 	 tooffsets_tmp[i+1] = tooffsets_tmp[i]+tosizes_tmp[i];
      if(tosizes_tmp[i]>0) nto++;
     }
    ierr = PetscCalloc2(nto,&toranks,2*nto,&tosizes);CHKERRQ(ierr);
-   /*toranks, tosizes*/
    nto = 0;
    for(i=0; i<size; i++){
      if(tosizes_tmp[i]>0){
         toranks[nto]      = i;
-        tosizes[2*nto]    = tosizes_tmp[i];/*size */
-        tosizes[2*nto+1]  = tooffsets_tmp[i];/*offset */
+        tosizes[2*nto]    = tosizes_tmp[i];/* size */
+        tosizes[2*nto+1]  = tooffsets_tmp[i];/* offset */
         nto++;
      }
    }
@@ -426,7 +419,6 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    for(i=0; i<nfrom; i++){
 	 fromperm_newtoold[i] = i;
    }
-   /*sort ranks */
    ierr = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold);CHKERRQ(ierr);
    nrecvs   = 0;
    for(i=0; i<nfrom; i++){
@@ -441,8 +433,6 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
        iremote[nrecvs++].index = fromsizes[2*fromperm_newtoold[i]+1]+j;
      }
    }
-
-   /*create a sf to exchange indices */
    ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
    ierr = PetscSFSetGraph(sf,nsends,nrecvs,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
    ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
@@ -456,7 +446,6 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = PetscFree(fromperm_newtoold);CHKERRQ(ierr);
    ierr = PetscFree(send_indices);CHKERRQ(ierr);
    if(rows){
-	 /*sort indices */
 	 ierr = PetscSortInt(nrecvs,recv_indices);CHKERRQ(ierr);
      ierr = ISCreateGeneral(comm, nrecvs,recv_indices,PETSC_OWN_POINTER,rows);CHKERRQ(ierr);
    }else{
@@ -503,7 +492,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
   np   = 0;
   for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
-  ierr = MPI_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   np   = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*
@@ -514,7 +503,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   ierr = PetscMalloc3(np,&lsizes,np,&starts,np,&sums);CHKERRQ(ierr);
   ierr = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
-  ierr = MPI_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   for (i=0; i<np; i++) starts[i] -= lsizes[i];
   for (i=1; i<np; i++) {
@@ -588,7 +577,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   {
     PetscInt np = 0,npt;
     for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
-    ierr = MPI_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
     np   = npt+1; /* so that it looks like a MPI_Comm_size output */
     if (np > len) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %D is less than number of partitions %D",len,np);
   }
@@ -603,7 +592,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(len,&npp);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = PetscFree(lsizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

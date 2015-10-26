@@ -200,7 +200,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,&stageok);CHKERRQ(ierr);
+    ierr = TSAdaptCheckStage(adapt,ts,th->stage_time,th->X,&stageok);CHKERRQ(ierr);
     if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
     ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,NULL);CHKERRQ(ierr);
@@ -604,7 +604,6 @@ static PetscErrorCode TSSetFromOptions_Theta(PetscOptions *PetscOptionsObject,TS
     ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_adapt","Use time-step adaptivity with the Theta method","",th->adapt,&th->adapt,NULL);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

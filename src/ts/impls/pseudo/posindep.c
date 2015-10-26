@@ -129,9 +129,12 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pseudo->verify) {*flag = PETSC_TRUE; PetscFunctionReturn(0);}
 
-  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
+  *flag = PETSC_TRUE;
+  ierr = TSFunctionDomainError(ts,ts->ptime,update,flag);CHKERRQ(ierr);
+  if(*flag && pseudo->verify) {
+    ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -356,8 +359,6 @@ static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,T
   }
   ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,NULL);CHKERRQ(ierr);
-
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

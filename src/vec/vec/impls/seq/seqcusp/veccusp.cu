@@ -1872,7 +1872,7 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec w)
   ierr = VecGetType(w,&t);CHKERRQ(ierr);
   ierr = PetscStrcmp(t,VECSEQCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUSP);
-  
+
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) PetscFree(((Vec_Seq*)w->data)->array_allocated);
     ((Vec_Seq*)w->data)->array = 0;
@@ -1884,9 +1884,10 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec w)
     err = cudaStreamDestroy(((Vec_CUSP*)w->spptr)->stream);CHKERRCUSP(err);
     delete (Vec_CUSP*)w->spptr;
     w->spptr = 0;
-  } 
+  }
 
   if (v->petscnative) {
+    ierr = PetscFree(w->data);CHKERRQ(ierr);
     w->data = v->data;
     w->valid_GPU_array = v->valid_GPU_array;
     w->spptr = v->spptr;

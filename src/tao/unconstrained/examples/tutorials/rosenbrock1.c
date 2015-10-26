@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np 1 rosenbrock1 [-help] [all TAO options] */
+/* Program usage: mpiexec -n 1 rosenbrock1 [-help] [all TAO options] */
 
 /*  Include "petsctao.h" so we can use TAO solvers.  */
 #include <petsctao.h>

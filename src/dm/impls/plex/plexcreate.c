@@ -1115,6 +1115,8 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", mesh->printTol, &mesh->printTol, NULL);CHKERRQ(ierr);
+  /* Point Location */
+  ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
   /* Projection behavior */
   ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1351,6 +1353,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->regularRefinement   = PETSC_FALSE;
   mesh->labels              = NULL;
   mesh->depthLabel          = NULL;
+  mesh->depthState          = -1;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   mesh->anchorSection       = NULL;

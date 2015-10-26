@@ -1159,7 +1159,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 #if defined(PETSC_USE_COMPLEX)
         SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g+ig at matrix entry (%D,%D)",(double)PetscRealPart(v[i*n+j]),(double)PetscImaginaryPart(v[i*n+j]),idxm[i],idxn[j]);
 #else
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g at matrix entry (%D,%D)",(double)v[i*n+j],idxm[i],idxn[j]);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g at matrix entry (%D,%D)",(double)v[i*n+j],idxm[i],idxn[j]);
 #endif
     }
   }
@@ -6310,7 +6310,7 @@ PetscErrorCode  MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt *n)
 .  mat - the matrix
 
    Output Parameters:
-.  ranges - start of each processors portion plus one more then the total length at the end
+.  ranges - start of each processors portion plus one more than the total length at the end
 
    Level: beginner
 
@@ -7660,7 +7660,7 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
         }
       }
     }
-    ierr = MPI_Allreduce(&grabentirematrix,&grab,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&grabentirematrix,&grab,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
     if (grab) {
       ierr = PetscInfo(mat,"Getting entire matrix as submatrix\n");CHKERRQ(ierr);
       if (cll == MAT_INITIAL_MATRIX) {
@@ -8989,7 +8989,7 @@ PetscErrorCode  MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
 
    Notes:
    C must have been created by calling MatRARtSymbolic and must be destroyed by
-   the user using MatDeatroy().
+   the user using MatDestroy().
 
    This routine is currently only implemented for pairs of AIJ matrices and classes
    which inherit from AIJ.  C will be of type MATAIJ.

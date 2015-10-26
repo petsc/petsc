@@ -7,7 +7,7 @@
       3 SNES Function norm 6.92417e-09 
       Linear solve converged due to CONVERGED_RTOL iterations 2
       4 SNES Function norm < 1.e-11
-    Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 4
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
     0 SNES Function norm 0.937398 
     Linear solve converged due to CONVERGED_RTOL iterations 4
     1 SNES Function norm 0.00645541 
@@ -27,7 +27,7 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  tolerances: relative=1e-08, absolute=-1., solution=1e-08
   total number of linear solver iterations=29
   total number of function evaluations=13
   norm schedule ALWAYS
@@ -44,7 +44,7 @@ SNES Object: 2 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances:  relative=1e-05, absolute=-1., divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object:   2 MPI processes

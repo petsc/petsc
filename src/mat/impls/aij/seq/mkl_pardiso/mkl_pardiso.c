@@ -695,7 +695,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to us this direct solver
 
   Options Database Keys:
-+ -mat_mkl_pardiso_65 - Number of thrads to use
++ -mat_mkl_pardiso_65 - Number of threads to use
 . -mat_mkl_pardiso_66 - Maximum number of factors with identical sparsity structure that must be kept in memory at the same time
 . -mat_mkl_pardiso_67 - Indicates the actual matrix for the solution phase
 . -mat_mkl_pardiso_68 - Message level information

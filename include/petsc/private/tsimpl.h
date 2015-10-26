@@ -84,6 +84,7 @@ struct _p_TS {
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
+  PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
@@ -193,7 +194,7 @@ struct _TSAdaptOps {
 struct _p_TSAdapt {
   PETSCHEADER(struct _TSAdaptOps);
   void *data;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
+  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscReal,Vec,PetscBool*);
   struct {
     PetscInt   n;                /* number of candidate schemes, including the one currently in use */
     PetscBool  inuse_set;        /* the current scheme has been set */

@@ -593,7 +593,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (name) {ierr = PetscViewerASCIIPrintf(viewer, "%s in %D dimensions:\n", name, dim);CHKERRQ(ierr);}
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, &pMax[1], &pMax[0]);CHKERRQ(ierr);
     ierr = PetscMalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
@@ -834,9 +834,9 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
         }
         /* Must have same blocksize on all procs (some might have no points) */
         bsLocal = bs;
-        ierr = MPI_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+        ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
         bsLocal = bs < 0 ? bsMax : bs;
-        ierr = MPI_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+        ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
         if (bsMin != bsMax) {
           bs = 1;
         } else {
@@ -1901,6 +1901,7 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscInt       numRoots = 0, numLeaves = 0;
@@ -1970,6 +1971,7 @@ PetscErrorCode DMPlexStratify(DM dm)
     }
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
+  ierr = DMLabelGetState(label, &mesh->depthState);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

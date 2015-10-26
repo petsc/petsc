@@ -11,11 +11,23 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 0
     self.downloadfilename  = 'ck'
 
+  def setupDependencies(self, framework):
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.languages      = framework.require('PETSc.options.languages',   self)
+
   def formGNUConfigureArgs(self):
-    # onfigure errors out on certain standard configure arguments
+    if not self.languages.clanguage == 'C':
+      raise RuntimeError('Concurrencykit cannot be used with --with-clanguage=cxx since it cannot be included in C++ code\nUse --with-clanguage=c but you can still compile your application with C++')
+
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
+
+    # CK configure is buggy and ignores --disable-shared; you must turn off PIC to turn off shared libraries
+    if not ((self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']):
+      args.append('--without-pic')
+
+    # configure errors out on certain standard configure arguments
     rejects = ['--disable-cxx','--disable-fortran', '--disable-fc','--disable-f77','--disable-f90']
-    self.logPrint('MPICH is rejecting configure arguments '+str(rejects))
+    self.logPrint('ConcurrencyKit is rejecting configure arguments '+str(rejects))
     return [arg for arg in args if not arg in rejects]
 
   def checkForCorrectness(self):

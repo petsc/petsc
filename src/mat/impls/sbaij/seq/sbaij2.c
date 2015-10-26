@@ -186,8 +186,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
   if (isrow != iscol) {
     PetscBool isequal;
     ierr = ISEqual(isrow,iscol,&isequal);CHKERRQ(ierr);
-    if (!isequal)
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+    if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
   }
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);

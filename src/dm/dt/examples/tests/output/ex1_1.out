@@ -1,7 +1,7 @@
 User-provided points
 degree 1 at            0: B=           0  D=           1  D2=           0
 degree 2 at            0: B=        -0.5  D=           0  D2=           3
-degree 3 at            0: B=          -0  D=        -1.5  D2=           0
+degree 3 at            0: B=           0  D=        -1.5  D2=           0
 degree 4 at            0: B=       0.375  D=           0  D2=        -7.5
 degree 5 at            0: B=           0  D=       1.875  D2=           0
 degree 1 at          0.2: B=         0.2  D=           1  D2=           0

@@ -301,7 +301,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         break;
       }
     }
-    ierr = MPI_Allreduce(&adapt_interface,&adapt_interface_reduced,1,MPIU_BOOL,MPI_LOR,interface_comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&adapt_interface,&adapt_interface_reduced,1,MPIU_BOOL,MPI_LOR,interface_comm);CHKERRQ(ierr);
   }
 
   if (graph->n_subsets && adapt_interface_reduced) {
@@ -561,7 +561,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       }
     }
   }
-  ierr = MPI_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -845,9 +845,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
       field1 = (PetscInt)PetscRealPart(array[i]);
       field2 = (PetscInt)PetscRealPart(array2[i]);
-      if (field1 != field2) {
-        SETERRQ3(comm,PETSC_ERR_USER,"Local node %d have been assigned two different field ids %d and %d at the same time\n",i,field1,field2);
-      }
+      if (field1 != field2) SETERRQ3(comm,PETSC_ERR_USER,"Local node %D have been assigned two different field ids %D and %D at the same time\n",i,field1,field2);
     }
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
     ierr = VecRestoreArray(local_vec2,&array2);CHKERRQ(ierr);
@@ -892,9 +890,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
           k = is_indices[i];
           if (graph->count[k] && !PetscBTLookup(graph->touched,k)) {
-            if (PetscRealPart(array[k]) > 0.1) {
-              SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong\n",k);
-            }
+            if (PetscRealPart(array[k]) > 0.1) SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %D is wrong\n",k);
             array2[k] = 1.0;
           }
         }
@@ -1093,9 +1089,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = PCBDDCSubsetNumbering(subset,NULL,NULL,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
   ierr = ISGetLocalSize(subset_n,&k);CHKERRQ(ierr);
-  if (k != graph->ncc) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %d != %d",k,graph->ncc);
-  }
+  if (k != graph->ncc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);
   ierr = ISGetIndices(subset_n,&is_indices);CHKERRQ(ierr);
   ierr = PetscMemcpy(graph->subset_ref_node,is_indices,graph->ncc*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISRestoreIndices(subset_n,&is_indices);CHKERRQ(ierr);
@@ -1172,9 +1166,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscValidHeaderSpecific(l2gmap,IS_LTOGM_CLASSID,2);
   PetscValidLogicalCollectiveInt(l2gmap,N,3);
   /* raise an error if already allocated */
-  if (graph->nvtxs_global) {
-    SETERRQ(PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
-  }
+  if (graph->nvtxs_global) SETERRQ(PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   /* set number of vertices */
   ierr = PetscObjectReference((PetscObject)l2gmap);CHKERRQ(ierr);
   graph->l2gmap = l2gmap;

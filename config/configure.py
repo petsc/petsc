@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import os, sys
-import commands
-# to load ~/.pythonrc.py before inserting correct BuildSystem to path
-import user
+
 extraLogs = []
 petsc_arch = ''
 
@@ -10,13 +8,10 @@ petsc_arch = ''
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
-if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 4:
-  print '*** You must have Python2 version 2.4 or higher to run ./configure        *****'
-  print '*          Python is easy to install for end users or sys-admin.              *'
-  print '*                  http://www.python.org/download/                            *'
-  print '*                                                                             *'
-  print '*           You CANNOT configure PETSc without Python                         *'
-  print '*   http://www.mcs.anl.gov/petsc/documentation/installation.html     *'
+if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 6:
+  print '*******************************************************************************'
+  print '*       Python2 version 2.6 or higher is required to run ./configure          *'
+  print '*          Try: "python2.7 ./configure" or "python2.6 ./configure"            *'
   print '*******************************************************************************'
   sys.exit(4)
 
@@ -35,6 +30,10 @@ def check_for_option_mistakes(opts):
       if optval == 'ifneeded':
         raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
   return
+
+def check_for_unsupported_combinations(opts):
+  if '--with-precision=single' in opts and '--with-clanguage=cxx' in opts and '--with-scalar-type=complex' in opts:
+    sys.exit(ValueError('PETSc does not support single precision complex with C++ clanguage, run with --with-clanguage=c'))
 
 def check_for_option_changed(opts):
 # Document changes in command line options here.
@@ -326,6 +325,7 @@ def petsc_configure(configure_options):
     +emsg+'*******************************************************************************\n'
     sys.exit(msg)
   # check PETSC_ARCH
+  check_for_unsupported_combinations(sys.argv)
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
 

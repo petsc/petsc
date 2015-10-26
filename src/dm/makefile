@@ -1,7 +1,13 @@
 
 ALL: lib
 
-SOURCEH  = ../../include/petscdm.h ../../include/petscdmtypes.h
+SOURCEH  = ../../include/petscdm.h ../../include/petscdmtypes.h \
+        ../../include/petsc/private/dmimpl.h ../../include/petsc/private/dmmbimpl.h \
+        ../../include/petsc/private/dmnetworkimpl.h ../../include/petsc/private/dmpatchimpl.h \
+        ../../include/petsc/private/dmpleximpl.h ../../include/petsc/private/dtimpl.h \
+        ../../include/petsc/private/petscdsimpl.h ../../include/petsc/private/petscfeimpl.h \
+        ../../include/petscdmcomposite.h ../../include/petscdmmoab.h ../../include/petscdmnetwork.h \
+        ../../include/petscdmpatch.h ../../include/petscdmplex.h
 DIRS     = impls f90-mod interface examples dt
 LOCDIR   = src/dm/
 MANSEC   = DM

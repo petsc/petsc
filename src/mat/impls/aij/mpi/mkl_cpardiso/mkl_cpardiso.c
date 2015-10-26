@@ -420,7 +420,7 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mkl_cpardiso_65",
-    "Number of thrads to use",
+    "Number of threads to use",
     "None",
     threads,
     &threads,

@@ -68,44 +68,12 @@
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     8 KSP Residual norm 0.104728 
   3 KSP Residual norm 2.074e-10 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 34
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 34
-    Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 5194.26 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 32
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    1 KSP Residual norm 3861.35 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    2 KSP Residual norm 1370.21 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    3 KSP Residual norm 765.344 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    4 KSP Residual norm 121.878 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    5 KSP Residual norm 26.3236 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    6 KSP Residual norm 1.96948 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    7 KSP Residual norm 0.330997 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    8 KSP Residual norm 0.0602789 
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
-    Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    9 KSP Residual norm 0.00881013 
-  4 KSP Residual norm < 1.e-11
 KSP Object:(fc_) 1 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
-  tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   diagonally scaled system
   using UNPRECONDITIONED norm type for convergence test

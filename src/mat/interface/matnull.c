@@ -256,6 +256,32 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
+#if defined(PETSC_USE_DEBUG)
+  if (n) {
+    PetscScalar *dots;
+    for (i=0; i<n; i++) {
+      PetscReal norm;
+      ierr = VecNorm(vecs[i],NORM_2,&norm);CHKERRQ(ierr);
+      if (PetscAbsReal(norm - 1.0) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
+    }
+    if (has_cnst) {
+      for (i=0; i<n; i++) {
+        PetscScalar sum;
+        ierr = VecSum(vecs[i],&sum);CHKERRQ(ierr);
+        if (PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
+      }
+    }
+    ierr = PetscMalloc1(n-1,&dots);CHKERRQ(ierr);
+    for (i=0; i<n-1; i++) {
+      PetscInt j;
+      ierr = VecMDot(vecs[i],n-i-1,vecs+i+1,dots);CHKERRQ(ierr);
+      for (j=0;j<n-i-1;j++) {
+        if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
+      }
+    }
+    PetscFree(dots);CHKERRQ(ierr);
+  }
+#endif
 
   *SP = NULL;
   ierr = MatInitializePackage();CHKERRQ(ierr);

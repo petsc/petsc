@@ -8,7 +8,7 @@ foreach matrix (medium arco1)
 
     foreach bs (4 5)
 
-      mpirun ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type ilu -mat_order natural -ksp_monitor $mode -matload_ignore_info -matload_block_size $bs -optionsleft -mat_seqbdiag -ksp_gmres_restart 200
+      mpiexec ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type ilu -mat_order natural -ksp_monitor $mode -matload_ignore_info -matload_block_size $bs -optionsleft -mat_seqbdiag -ksp_gmres_restart 200
 
     end
 

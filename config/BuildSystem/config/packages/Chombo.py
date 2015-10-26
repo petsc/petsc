@@ -4,8 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit        = 'master'
-    self.giturls          = ['https://bitbucket.org/petsc/pkg-chombo-3.2.git']
-    self.download         = ['https://bitbucket.org/petsc/pkg-chombo-3.2/get/master.tar.gz']
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-chombo-3.2.git','https://bitbucket.org/petsc/pkg-chombo-3.2/get/master.tar.gz']
     self.functionsCxx     = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
     self.includedir       = 'include'
     self.includes         = ['CH_config.H']
@@ -110,7 +109,7 @@ class Configure(config.package.Package):
           raise RuntimeError('Error running make on Chombo: config value not found')
         config_value=poutput.split('=')[1]
         self.logPrint('Chombo installed using config=%s\n'%config_value)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make clean && make all', timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make clean && make lib', timeout=2500, log = self.log)
         output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+self.installSudo+'&& cp -f lib/lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f lib/include/*.H '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Chombo: '+str(e))

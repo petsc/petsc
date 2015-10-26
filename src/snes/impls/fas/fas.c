@@ -922,9 +922,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
 
   PetscFunctionBegin;
 
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   maxits       = snes->max_its;      /* maximum number of iterations */
@@ -982,9 +980,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
       ierr = SNESFASCycle_Full(snes, X);CHKERRQ(ierr);
     } else if (fas->fastype ==SNES_FAS_KASKADE) {
       ierr = SNESFASCycle_Kaskade(snes, X);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
-    }
+    } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
 
     /* check for FAS cycle divergence */
     if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np <proc> plate2f [all TAO options]
+!  Program usage: mpiexec -n <proc> plate2f [all TAO options]
 !
 !  This example demonstrates use of the TAO package to solve a bound constrained
 !  minimization problem.  This example is based on a problem from the

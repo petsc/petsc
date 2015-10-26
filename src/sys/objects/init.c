@@ -25,6 +25,7 @@
 PetscBool   PetscBeganMPI         = PETSC_FALSE;
 PetscBool   PetscInitializeCalled = PETSC_FALSE;
 PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
+PetscBool   PetscCUDAInitialized  = PETSC_FALSE;
 
 PetscMPIInt PetscGlobalRank       = -1;
 PetscMPIInt PetscGlobalSize       = -1;
@@ -256,20 +257,23 @@ extern PetscBool   PetscObjectsLog;
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
-  char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
-  MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
-  PetscErrorCode ierr;
-  PetscReal      si;
-  PetscInt       intensity;
-  int            i;
-  PetscMPIInt    rank;
-  char           version[256];
+  char              string[64],mname[PETSC_MAX_PATH_LEN],*f;
+  MPI_Comm          comm = PETSC_COMM_WORLD;
+  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
+  PetscErrorCode    ierr;
+  PetscReal         si;
+  PetscInt          intensity;
+  int               i;
+  PetscMPIInt       rank;
+  char              version[256];
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  PetscReal      logthreshold;
-  PetscBool      flg4 = PETSC_FALSE;
+  PetscReal         logthreshold;
 #endif
-
+#if defined(PETSC_USE_LOG)
+  PetscViewerFormat format;
+  PetscBool         flg4 = PETSC_FALSE;
+#endif
+  
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -494,14 +498,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1) {ierr = PetscLogMPEBegin();CHKERRQ(ierr);}
 #endif
   flg1 = PETSC_FALSE;
-  flg2 = PETSC_FALSE;
   flg3 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-log_all",&flg1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-log",&flg2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-log_view",&flg4);CHKERRQ(ierr);
   if (flg1)                      { ierr = PetscLogAllBegin();CHKERRQ(ierr); }
-  else if (flg2 || flg3 || flg4) { ierr = PetscLogBegin();CHKERRQ(ierr);}
+  else if (flg3)                 { ierr = PetscLogDefaultBegin();CHKERRQ(ierr);}
 
   ierr = PetscOptionsGetString(NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -513,8 +514,16 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       file = fopen(fname,"w");
       if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
     } else file = PETSC_STDOUT;
-
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
+  }
+
+  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
+  if (flg4) {
+    if (format == PETSC_VIEWER_ASCII_XML){
+      ierr = PetscLogNestedBegin();CHKERRQ(ierr);
+    } else {
+      ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
+    }
   }
 #endif
 
@@ -536,7 +545,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
     }
   }
-  {
+  if (!PetscCUDAInitialized) {
     int size;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size>1) {
@@ -582,6 +591,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       err = cudaSetDeviceFlags(cudaDeviceMapHost);
       if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDeviceFlags %s",cudaGetErrorString(err));
     }
+
+    PetscCUDAInitialized = PETSC_TRUE;
   }
 #endif
 

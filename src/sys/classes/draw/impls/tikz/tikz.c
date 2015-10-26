@@ -86,6 +86,17 @@ PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawSynchronizedClear_TikZ"
+PetscErrorCode PetscDrawSynchronizedClear_TikZ(PetscDraw draw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawClear_TikZ(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawLine_TikZ"
 PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
@@ -180,7 +191,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       0,
                                       0,
-                                      0,
+                                      PetscDrawSynchronizedClear_TikZ,
                                       0,
                                       0,
                                       0,

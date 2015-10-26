@@ -30,6 +30,10 @@ typedef struct {
   PetscBool  sort_indices;        /* flag to sort subdomain indices */
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
+  /* For multiplicative solve */
+  Mat       *lmat;                /* submatrix for overlapping multiplicative (process) subdomain */
+  Vec        lx, ly;              /* work vectors */
+  IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
 
 #undef __FUNCT__
@@ -224,7 +228,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       struct {PetscInt max,sum;} inwork,outwork;
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
-      ierr         = MPI_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
     }
@@ -353,6 +357,15 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscFree(domain_dm);CHKERRQ(ierr);
       }
     }
+    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+      PetscInt m;
+
+      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
+      ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
+      ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
+    }
     scall = MAT_INITIAL_MATRIX;
   } else {
     /*
@@ -374,6 +387,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     }
+  }
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+    ierr = MatGetSubMatrices(pc->pmat, 1, &osm->lis, &osm->lis, scall, &osm->lmat);CHKERRQ(ierr);
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -461,11 +477,9 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     /* do the local solves */
     for (i = 0; i < n_local_true; ++i) {
       if (i > 0) {
-        /* Update initial guess */
-        ierr = VecScatterBegin(osm->restriction[i], y, osm->y[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = VecScatterEnd(osm->restriction[i], y, osm->y[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = MatMult(osm->pmat[i], osm->y[i], osm->x[i]);CHKERRQ(ierr);
-        ierr = VecScale(osm->x[i], -1.0);CHKERRQ(ierr);
+        /* Update rhs */
+        ierr = VecScatterBegin(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
       } else {
         ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
       }
@@ -478,6 +492,13 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       }
       ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
       ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
+      if (i < n_local_true-1) {
+        ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
+        ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScale(osm->ly, -1.0);CHKERRQ(ierr);
+        ierr = MatMult(osm->lmat[0], osm->ly, osm->lx);CHKERRQ(ierr);
+      }
     }
     /* handle the rest of the scatters that do not have local solves */
     for (i = n_local_true; i < n_local; ++i) {
@@ -579,6 +600,12 @@ static PetscErrorCode PCReset_ASM(PC pc)
     ierr = PetscFree(osm->y_local);CHKERRQ(ierr);
   }
   ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+    ierr = ISDestroy(&osm->lis);CHKERRQ(ierr);
+    ierr = MatDestroyMatrices(1, &osm->lmat);CHKERRQ(ierr);
+    ierr = VecDestroy(&osm->lx);CHKERRQ(ierr);
+    ierr = VecDestroy(&osm->ly);CHKERRQ(ierr);
+  }
 
   osm->is       = 0;
   osm->is_local = 0;

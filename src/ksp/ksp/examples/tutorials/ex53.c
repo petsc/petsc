@@ -13,14 +13,15 @@ int main(int argc,char **args)
   Mat            A;            /* linear system matrix */
   KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
-  PetscReal      norm,tol=1.e-14; /* norm of solution error */
+  PetscReal      norm,tol=100.*PETSC_MACHINE_EPSILON; /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* Create vectors.*/
@@ -65,7 +66,9 @@ int main(int argc,char **args)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+  if (size > 1) {
+    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+  }
 #endif
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 

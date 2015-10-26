@@ -30,8 +30,6 @@ struct pUserCtx {
   PetscInt  n,npts;       /* Number of mesh points */
   PetscInt  ntsteps;    /* Number of time steps */
   PetscInt nvars;       /* Number of variables in the equation system */
-  PetscInt ftype;       /* The type of function assembly routine to use in residual calculation
-                           0 (default) = MOAB-Ops, 1 = Block-Ops, 2 = Ghosted-Ops  */
   PetscBool io;
 };
 typedef pUserCtx* UserCtx;
@@ -58,7 +56,6 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     user->rightbc.v = 3;
     user->n      = 10;
     user->ntsteps = 10000;
-    user->ftype = 0;
     user->io = PETSC_FALSE;
     ierr = PetscOptionsReal("-A","Reaction rate","ex35.cxx",user->A,&user->A,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-B","Reaction rate","ex35.cxx",user->B,&user->B,NULL);CHKERRQ(ierr);
@@ -69,7 +66,6 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     ierr = PetscOptionsScalar("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-n","Number of 1-D elements","ex35.cxx",user->n,&user->n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ndt","Number of time steps","ex35.cxx",user->ntsteps,&user->ntsteps,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","ex35.cxx",user->ftype,&user->ftype,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-io","Write the mesh and solution output to a file.","ex35.cxx",user->io,&user->io,NULL);CHKERRQ(ierr);
     user->npts   = user->n+1;
   }
@@ -93,9 +89,7 @@ PetscErrorCode Destroy_AppContext(UserCtx *user)
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 
-static PetscErrorCode FormIFunctionGhosted(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIFunctionGlobalBlocked(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIFunctionMOAB(TS,PetscReal,Vec,Vec,Vec,void*);
+static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 /****************
@@ -146,14 +140,10 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
+  ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
+  ierr = TSARKIMEXSetFullyImplicit(ts, PETSC_TRUE);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,user);CHKERRQ(ierr);
-  if (user->ftype == 1) {
-    ierr = TSSetIFunction(ts,NULL,FormIFunctionGlobalBlocked,user);CHKERRQ(ierr);
-  } else if(user->ftype == 2) {
-    ierr = TSSetIFunction(ts,NULL,FormIFunctionGhosted,user);CHKERRQ(ierr);
-  } else {
-    ierr = TSSetIFunction(ts,NULL,FormIFunctionMOAB,user);CHKERRQ(ierr);
-  }
+  ierr = TSSetIFunction(ts,NULL,FormIFunction,user);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,user);CHKERRQ(ierr);
 
@@ -401,8 +391,8 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormIFunctionMOAB"
-static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
+#define __FUNCT__ "FormIFunction"
+static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   UserCtx         user = (UserCtx)ctx;
   DM              dm;
@@ -478,251 +468,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   ierr = DMMoabVecRestoreArrayRead(dm, X, &x);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArrayRead(dm, Xdot, &xdot);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArray(dm, F, &f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunctionGlobalBlocked"
-static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
-{
-  UserCtx             user = (UserCtx)ptr;
-  Field               *x,*xdot;
-  Vec                 xltmp, xdtmp, xlocal,xdotlocal,flocal;
-  PetscReal           hx;
-  PetscErrorCode      ierr;
-  DM                  dm;
-  PetscBool           elem_on_boundary;
-
-  PetscInt            dof_indices[2],gdof[2];
-  PetscInt            i,vpere=2;
-  const moab::EntityHandle *connect;
-  moab::Interface*  mbImpl;
-  const moab::Range   *elocal;
-  PetscInt           *dofs;
-  const int& idl = dof_indices[0];
-  const int& idr = dof_indices[1];
-
-  PetscFunctionBegin;
-  hx = 1.0/user->n;
-
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-
-  /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
-  ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
-
-  // reset the residual vector before assembly
-  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-
-  /* get the local representation of the arrays from Vectors */
-  ierr = DMGetLocalVector(dm,&xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(xlocal,&xltmp);CHKERRQ(ierr);
-  ierr = VecGhostUpdateBegin(xlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(xlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&xdotlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,Xdot,INSERT_VALUES,xdotlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,Xdot,INSERT_VALUES,xdotlocal);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(xdotlocal,&xdtmp);CHKERRQ(ierr);
-  ierr = VecGhostUpdateBegin(xdotlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(xdotlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  ierr = VecGetArrayRead(xltmp, (const PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xdtmp, (const PetscScalar**)&xdot);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&flocal);CHKERRQ(ierr);
-  ierr = VecSet(flocal, 0.0);CHKERRQ(ierr);
-
-  ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
-
-  /* Compute function over the locally owned part of the grid 
-     Assemble the operator by looping over edges and computing
-     contribution for each vertex dof                         */
-
-  /* loop over local elements */
-  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
-    const moab::EntityHandle ehandle = *iter;
-
-    // Get connectivity information in canonical order
-    ierr = DMMoabGetElementConnectivity(dm, ehandle, &vpere, &connect);CHKERRQ(ierr);
-    if (vpere != 2) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only EDGE2 element bases are supported in the current example. Connectivity=%D.\n", vpere);
-    
-    ierr = DMMoabGetDofsBlockedLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
-    for (i=0; i<2; i++)
-      gdof[i] = dofs[connect[i]];
-
-    /* check if element is on the boundary */
-    ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
-
-    if (elem_on_boundary) {
-      if (gdof[0] == 0) {
-        const PetscScalar vals[4] = { hx * (x[idl].u - user->leftbc.u),
-                                 hx * (x[idl].v - user->leftbc.v),
-                                 hx/2 * xdot[idr].u + user->alpha * ( x[idr].u - x[idl].u ) / hx,
-                                 hx/2 * xdot[idr].v + user->alpha * ( x[idr].v - x[idl].v ) / hx};
-
-        ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
-      }
-      else {
-        const PetscScalar vals[4] = { hx/2 * xdot[idl].u + user->alpha * ( x[idl].u - x[idr].u ) / hx,
-                                 hx/2 * xdot[idl].v + user->alpha * ( x[idl].v - x[idr].v ) / hx,
-                                 hx * (x[idr].u - user->rightbc.u),
-                                 hx * (x[idr].v - user->rightbc.v) };
-
-        ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
-      }
-    }
-    else {
-      const PetscScalar vals[4] = { hx/2 * xdot[idl].u + user->alpha * (x[idl].u - x[idr].u)/ hx,
-                               hx/2 * xdot[idl].v + user->alpha * (x[idl].v - x[idr].v)/ hx,
-                               hx/2 * xdot[idr].u + user->alpha * (x[idr].u - x[idl].u)/ hx,
-                               hx/2 * xdot[idr].v + user->alpha * (x[idr].v - x[idl].v)/ hx };
-
-      ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
-    }
-  }
-
-  // Restore all the local vector data array references
-  ierr = VecRestoreArrayRead(xltmp, (const PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xdtmp, (const PetscScalar**)&xdot);CHKERRQ(ierr);
-
-  ierr = VecGhostRestoreLocalForm(xlocal, &xltmp);CHKERRQ(ierr);
-  ierr = VecGhostRestoreLocalForm(xdotlocal, &xdtmp);CHKERRQ(ierr);
-
-  ierr = DMRestoreLocalVector(dm, &xlocal);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &xdotlocal);CHKERRQ(ierr);
-
-  ierr = VecAssemblyBegin(flocal);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(flocal);CHKERRQ(ierr);
-
-  ierr = DMLocalToGlobalBegin(dm,flocal,ADD_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,flocal,ADD_VALUES,F);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &flocal);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunctionGhosted"
-static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
-{
-  UserCtx             user = (UserCtx)ptr;
-  Field               *x,*xdot;
-  Field               *f;
-  Vec                 xltmp, xdtmp, xlocal,xdotlocal, flocal,fltmp;
-  PetscReal           hx;
-  PetscErrorCode      ierr;
-  DM                  dm;
-  PetscInt           *dofs;
-
-  PetscBool           elem_on_boundary;
-  PetscInt            vpere=2;  
-  const moab::EntityHandle  *connect;
-  PetscInt            dof_indices[2];
-
-  moab::Interface*  mbImpl;
-  const moab::Range *elocal;
-
-  PetscFunctionBegin;
-  hx = 1.0/user->n;
-
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-
-  /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
-  ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(xlocal,&xltmp);CHKERRQ(ierr);
-  ierr = VecGhostUpdateBegin(xlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(xlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&xdotlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,Xdot,INSERT_VALUES,xdotlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,Xdot,INSERT_VALUES,xdotlocal);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(xdotlocal,&xdtmp);CHKERRQ(ierr);
-  ierr = VecGhostUpdateBegin(xdotlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(xdotlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&flocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,F,INSERT_VALUES,flocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,F,INSERT_VALUES,flocal);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(flocal,&fltmp);CHKERRQ(ierr);
-
-  // reset the residual vector before assembly
-  ierr = VecSet(fltmp, 0.0);CHKERRQ(ierr);
-
-  ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
-
-  ierr = VecGetArrayRead(xltmp, (const PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xdtmp, (const PetscScalar**)&xdot);CHKERRQ(ierr);
-  ierr = VecGetArray(fltmp, (PetscScalar**)&f);CHKERRQ(ierr);
-
-  /* Compute function over the locally owned part of the grid 
-     Assemble the operator by looping over edges and computing
-     contribution for each vertex dof                         */
-
-  const int& idl = dof_indices[0];
-  const int& idr = dof_indices[1];
-
-  /* loop over local elements */
-  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
-    const moab::EntityHandle ehandle = *iter;
-
-    // Get connectivity information in canonical order
-    ierr = DMMoabGetElementConnectivity(dm, ehandle, &vpere, &connect);CHKERRQ(ierr);
-    if (vpere != 2) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only EDGE2 element bases are supported in the current example. Connectivity=%D.\n", vpere);
-    
-    ierr = DMMoabGetDofsBlockedLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
-
-    /* check if element is on the boundary */
-    ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
-
-    if (elem_on_boundary) {
-      if (dofs[connect[0]] == 0) {
-        f[idl].u = hx * (x[idl].u - user->leftbc.u);
-        f[idl].v = hx * (x[idl].v - user->leftbc.v);
-        f[idr].u += hx/2 * xdot[idr].u + user->alpha * ( x[idr].u - x[idl].u ) / hx;
-        f[idr].v += hx/2 * xdot[idr].v + user->alpha * ( x[idr].v - x[idl].v ) / hx;
-      }
-      else {
-        f[idr].u = hx * (x[idr].u - user->rightbc.u);
-        f[idr].v = hx * (x[idr].v - user->rightbc.v);
-        f[idl].u += hx/2 * xdot[idl].u + user->alpha * ( x[idl].u - x[idr].u ) / hx;
-        f[idl].v += hx/2 * xdot[idl].v + user->alpha * ( x[idl].v - x[idr].v ) / hx;
-      }
-    }
-    else {
-      f[idl].u += hx/2 * xdot[idl].u + user->alpha * (x[idl].u - x[idr].u)/ hx;
-      f[idl].v += hx/2 * xdot[idl].v + user->alpha * (x[idl].v - x[idr].v)/ hx;
-      f[idr].u += hx/2 * xdot[idr].u + user->alpha * (x[idr].u - x[idl].u)/ hx;
-      f[idr].v += hx/2 * xdot[idr].v + user->alpha * (x[idr].v - x[idl].v)/ hx;
-    }
-  }
-
-  // Restore all the local vector data array references
-  ierr = VecRestoreArrayRead(xltmp, (const PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xdtmp, (const PetscScalar**)&xdot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(fltmp, (PetscScalar**)&f);CHKERRQ(ierr);
-
-  ierr = VecGhostUpdateBegin(flocal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(flocal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-
-  ierr = VecGhostRestoreLocalForm(xlocal, &xltmp);CHKERRQ(ierr);
-  ierr = VecGhostRestoreLocalForm(xdotlocal, &xdtmp);CHKERRQ(ierr);
-  ierr = VecGhostRestoreLocalForm(flocal,&fltmp);CHKERRQ(ierr);
-
-  ierr = DMLocalToGlobalBegin(dm,flocal,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,flocal,INSERT_VALUES,F);CHKERRQ(ierr);
-
-  ierr = DMRestoreLocalVector(dm, &xlocal);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &xdotlocal);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &flocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

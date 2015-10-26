@@ -19,8 +19,8 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
-  ierr  = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawBarCreate(draw,&bar);CHKERRQ(ierr);
   ierr = PetscDrawBarGetAxis(bar,&axis);CHKERRQ(ierr);
@@ -31,7 +31,6 @@ int main(int argc,char **argv)
   ierr = PetscDrawBarSetData(bar,4,values,labels);CHKERRQ(ierr);
   ierr = PetscDrawBarSetFromOptions(bar);CHKERRQ(ierr);
   ierr = PetscDrawBarDraw(bar);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawBarDestroy(&bar);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
