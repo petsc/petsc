@@ -62,7 +62,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool  
 int main(int argc,char **argv)
 {
   Mat            A,B,C,D;
-  PetscInt       i,M=10,N=5,j,nrows,ncols;
+  PetscInt       i,M=10,N=5,j,nrows,ncols,am,an,rstart,rend;
   PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      equal,iselemental;
@@ -106,7 +106,6 @@ int main(int argc,char **argv)
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
 
   /* Test MatMatMult() */
@@ -137,8 +136,6 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&D);CHKERRQ(ierr);
 
     /* Test D = A^T* C * A, where C is in AIJ format */
-    PetscInt    am,an,rstart,rend;
-    PetscScalar v = 1.0;
     ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
     if (size == 1) {
@@ -149,8 +146,9 @@ int main(int argc,char **argv)
     ierr = MatSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatSetUp(C);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+    v[0] = 1.0;
     for (i=rstart; i<rend; i++) {
-      ierr = MatSetValues(C,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(C,1,&i,1,&i,v,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -167,6 +165,7 @@ int main(int argc,char **argv)
   }
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFinalize();
   return(0);
 }
