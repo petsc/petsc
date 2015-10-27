@@ -431,7 +431,9 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObjec
 PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 {
   Stack          *s = (Stack*)tj->data;
+#ifdef PETSC_HAVE_REVOLVE
   RevolveCTX     *rctx;
+#endif
   PetscInt       numY;
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -506,8 +508,8 @@ static PetscErrorCode ApplyRevolve(Stack *s,PetscInt stepnum,PetscInt localstepn
 {
 #ifdef PETSC_HAVE_REVOLVE
   PetscInt       shift,whattodo;
-#endif
   RevolveCTX     *rctx;
+#endif
 
   PetscFunctionBegin;
   *store = 0;
@@ -746,9 +748,8 @@ static PetscErrorCode SetTrajROF(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
 static PetscErrorCode GetTrajROF(TS ts,Stack *s,PetscInt stepnum)
 {
 #ifdef PETSC_HAVE_REVOLVE
-  PetscInt       whattodo,shift;
+  PetscInt       whattodo,shift,store;
 #endif
-  PetscInt       store;
   PetscReal      stepsize;
   StackElement   e;
   PetscErrorCode ierr;
@@ -892,8 +893,11 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
 {
   PetscInt       store,localstepnum,id,laststridesize;
   StackElement   e;
+#ifdef PETSC_HAVE_REVOLVE
   RevolveCTX     *rctx = s->rctx;
   PetscBool      resetrevolve = PETSC_FALSE;
+#endif
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -909,9 +913,9 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
       if (!s->recompute && localstepnum == s->stride-1 && stepnum < s->total_steps-laststridesize) {
 #ifdef PETSC_HAVE_REVOLVE
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
+        resetrevolve = PETSC_TRUE;
 #endif
         ierr = StackDumpAll(ts,s,id+1);CHKERRQ(ierr);
-        resetrevolve = PETSC_TRUE;
       }
     } else {
       if (!s->recompute && localstepnum == 0 && stepnum < s->total_steps-laststridesize ) {
@@ -926,9 +930,9 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
       if (!s->recompute && localstepnum == 0 && stepnum != s->total_steps) { /* do not dump stack for last stride */
 #ifdef PETSC_HAVE_REVOLVE
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
+        resetrevolve = PETSC_TRUE;
 #endif
         ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
-        resetrevolve = PETSC_TRUE;
       }
     } else {
       if (!s->recompute && localstepnum == 1 && stepnum <  s->total_steps-laststridesize ) { /* skip last stride */
@@ -953,7 +957,7 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
     rctx->check = 0;
     rctx->capo  = 0;
     rctx->fine  = s->stride;
-    if ( s->rctx->reverseonestep) s->rctx->reverseonestep = PETSC_FALSE;
+    if (s->rctx->reverseonestep) s->rctx->reverseonestep = PETSC_FALSE;
   }
 #endif
   PetscFunctionReturn(0);
