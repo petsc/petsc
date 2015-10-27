@@ -77,7 +77,6 @@ static void printwhattodo(PetscInt whattodo,RevolveCTX *rctx,PetscInt shift)
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mError!");
       break;
   }
-  //PetscPrintf(PETSC_COMM_WORLD,"oldcapo=%D,capo=%D,fine=%D\n",rctx->oldcapo,rctx->capo,rctx->fine);
 }
 #endif
 
@@ -478,7 +477,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     if (s->stype == TWO_LEVEL_REVOLVE) revolve_create_offline(s->stride,s->max_cps_ram);
     else if (s->stype == REVOLVE_OFFLINE) revolve_create_offline(s->total_steps,s->max_cps_ram);
     else if (s->stype == REVOLVE_ONLINE) revolve_create_online(s->max_cps_ram);
-    else if (s->stype ==REVOLVE_MULTISTAGE) revolve_create_multistage(s->total_steps,s->max_cps_ram+s->max_cps_disk,s->max_cps_ram);
+    else if (s->stype == REVOLVE_MULTISTAGE) revolve_create_multistage(s->total_steps,s->max_cps_ram+s->max_cps_disk,s->max_cps_ram);
 
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     rctx->snaps_in       = s->max_cps_ram; /* for theta methods snaps_in=2*max_cps_ram */
@@ -781,7 +780,7 @@ static PetscErrorCode GetTrajROF(TS ts,Stack *s,PetscInt stepnum)
     }
   }
 #endif
-  if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) {
+  if (s->solution_only || (!s->solution_only && e->stepnum < stepnum)) {
     s->recompute = PETSC_TRUE;
     ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
   }
@@ -877,7 +876,7 @@ static PetscErrorCode GetTrajRON(TS ts,Stack *s,PetscInt stepnum)
     }
   }
 #endif
-  if (s->solution_only || (!s->solution_only && e->stepnum<stepnum)) {
+  if (s->solution_only || (!s->solution_only && e->stepnum < stepnum)) {
     s->recompute = PETSC_TRUE;
     ierr = ReCompute(ts,s,e->stepnum,stepnum);CHKERRQ(ierr);
   }
@@ -913,7 +912,6 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
 #endif
         ierr = StackDumpAll(ts,s,id+1);CHKERRQ(ierr);
         resetrevolve = PETSC_TRUE;
-        //PetscFunctionReturn(0);
       }
     } else {
       if (!s->recompute && localstepnum == 0 && stepnum < s->total_steps-laststridesize ) {
@@ -931,10 +929,8 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
 #endif
         ierr = StackDumpAll(ts,s,id);CHKERRQ(ierr);
         resetrevolve = PETSC_TRUE;
-        //PetscFunctionReturn(0);
       }
     } else {
-      //if (localstepnum == 0) PetscFunctionReturn(0); /* skip last point in each stride */
       if (!s->recompute && localstepnum == 1 && stepnum <  s->total_steps-laststridesize ) { /* skip last stride */
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump a single point to file\033[0m\n");
         ierr = DumpSingle(ts,s,id);CHKERRQ(ierr);
@@ -958,7 +954,6 @@ static PetscErrorCode SetTrajTLR(TS ts,Stack *s,PetscInt stepnum,PetscReal time,
     rctx->capo  = 0;
     rctx->fine  = s->stride;
     if ( s->rctx->reverseonestep) s->rctx->reverseonestep = PETSC_FALSE;
-
   }
 #endif
   PetscFunctionReturn(0);
@@ -1079,12 +1074,12 @@ static PetscErrorCode GetTrajTLR(TS ts,Stack *s,PetscInt stepnum)
         shift = stepnum-localstepnum;
         whattodo = revolve_action(&s->rctx->check,&s->rctx->capo,&s->rctx->fine,s->rctx->snaps_in,&s->rctx->info,&s->rctx->where);
         printwhattodo(whattodo,s->rctx,shift);
- #endif
+#endif
         ierr = ElementCreate(ts,s,&e,(id-1)*s->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(s,e);CHKERRQ(ierr);
         s->recompute = PETSC_TRUE;
         ierr = ReCompute(ts,s,e->stepnum,id*s->stride);CHKERRQ(ierr);
-        #ifdef PETSC_HAVE_REVOLVE
+#ifdef PETSC_HAVE_REVOLVE
         if ( s->rctx->reverseonestep) { /* ready for the reverse step */
           ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
           ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
