@@ -463,82 +463,82 @@ runex20adj:
 runex20adj_1:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_solution_only > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_1, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp 
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_2:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_solution_only 0 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_2, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp 
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_3:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only -tstrajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_3, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp 
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_4:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only 0 -tstrajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_4, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
- 
+	  ${RM} -f ex20adj.tmp SA-data/*
+
 runex20adj_5:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_revolve_online -tstrajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only -tstrajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_5, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_6:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_revolve_online -tstrajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only 0 -tstrajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_6, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_7:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only -tstrajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_7, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/* 
 
 runex20adj_8:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only 0 -tstrajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_8, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
-
+	  ${RM} -f ex20adj.tmp SA-data/*
+ 
 runex20adj_9:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only -tstrajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_revolve_online -tstrajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_9, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_10:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_stride 5 -tstrajectory_solution_only 0 -tstrajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 5 -tstrajectory_revolve_online -tstrajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_10, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_11:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 3 -tstrajectory_max_cps_disk 2 -tstrajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_11, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_12:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 3 -tstrajectory_max_cps_disk 2 -tstrajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_12, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_13:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 3 -tstrajectory_stride 5 -tstrajectory_solution_only -tstrajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_13, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_14:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 3 -tstrajectory_stride 5 -tstrajectory_solution_only -tstrajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_14, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_15:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 3 -tstrajectory_stride 5 -tstrajectory_solution_only 0 -tstrajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_15, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_16:
 	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -tstrajectory_type memory -tstrajectory_max_cps_ram 3 -tstrajectory_stride 5 -tstrajectory_solution_only 0 -tstrajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_16, diffs above\n=========================================\n"; \
-	  ${RM} -f ex20adj.tmp
+	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20opt_ic:`
 	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view -mu 100000 > ex20opt_ic_1.tmp 2>&1; \
@@ -681,4 +681,6 @@ TESTEXAMPLES_MOAB         = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
+TESTEXAMPLES_REVOLVE      = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 ex20adj.rm
+ 
 include ${PETSC_DIR}/lib/petsc/conf/test
