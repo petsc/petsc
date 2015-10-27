@@ -465,17 +465,20 @@ PETSC_EXTERN PetscErrorCode MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowSum(Mat,Vec);
 PETSC_EXTERN PetscErrorCode MatTranspose(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatHermitianTranspose(Mat,MatReuse,Mat*);
-PETSC_EXTERN PetscErrorCode MatPermute(Mat,IS,IS,Mat *);
+PETSC_EXTERN PetscErrorCode MatPermute(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatDiagonalScale(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatDiagonalSet(Mat,Vec,InsertMode);
-PETSC_EXTERN PetscErrorCode MatEqual(Mat,Mat,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool *);
 
-PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal *);
-PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal *);
+PETSC_EXTERN PetscErrorCode MatEqual(Mat,Mat,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+
+PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatZeroEntries(Mat);
 PETSC_EXTERN PetscErrorCode MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
