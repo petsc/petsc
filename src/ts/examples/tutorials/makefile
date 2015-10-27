@@ -580,7 +580,7 @@ runex41:
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc runex8 runex8_2 runex8_3 ex8.rm \
@@ -596,6 +596,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex31.PETSc ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm
+TESTEXAMPLES_DOUBLEINT32  = ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
