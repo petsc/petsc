@@ -85,9 +85,11 @@ static PetscErrorCode StackDestroy(Stack **stack)
     }
   }
   ierr = PetscFree(s->stack);CHKERRQ(ierr);
-  if (s->stype) {
+#ifdef PETSC_HAVE_REVOLVE
+  if (s->stype > TWO_LEVEL_NOREVOLVE) {
     ierr = PetscFree(s->rctx);CHKERRQ(ierr);
   }
+#endif
   ierr = PetscFree(*stack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -121,6 +123,7 @@ static PetscErrorCode StackTop(Stack *s,StackElement *e)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_REVOLVE
 #undef __FUNCT__
 #define __FUNCT__ "StackFind"
 static PetscErrorCode StackFind(Stack *s,StackElement *e,PetscInt index)
@@ -129,6 +132,7 @@ static PetscErrorCode StackFind(Stack *s,StackElement *e,PetscInt index)
   *e = s->stack[index];
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputBIN"
@@ -1209,6 +1213,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,TS ts,PetscInt m
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_REVOLVE
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetRevolveOnline"
 PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online)
@@ -1219,6 +1224,7 @@ PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online
   s->use_online = use_online;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetSaveStack"
@@ -1255,7 +1261,9 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObjec
     ierr = PetscOptionsInt("-tstrajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM_Memory",s->max_cps_ram,&s->max_cps_ram,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-tstrajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk_Memory",s->max_cps_disk,&s->max_cps_disk,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-tstrajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride_Memory",s->stride,&s->stride,NULL);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_REVOLVE
     ierr = PetscOptionsBool("-tstrajectory_revolve_online","Trick TS trajectory into using online mode of revolve","TSTrajectorySetRevolveOnline",s->use_online,&s->use_online,NULL);CHKERRQ(ierr);
+#endif
     ierr = PetscOptionsBool("-tstrajectory_save_stack","Save all stack to disk","TSTrajectorySetSaveStack",s->save_stack,&s->save_stack,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-tstrajectory_solution_only","Checkpoint solution only","TSTrajectorySetSolutionOnly",s->solution_only,&s->solution_only,NULL);CHKERRQ(ierr);
   }
@@ -1303,10 +1311,12 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     } else { /* adaptive time step */
       s->stype = REVOLVE_ONLINE;
     }
+#ifdef PETSC_HAVE_REVOLVE
     if (s->use_online) { /* trick into online */
       s->stype     = REVOLVE_ONLINE;
       s->stacksize = s->max_cps_ram;
     }
+#endif
   }
 
   if (s->stype > TWO_LEVEL_NOREVOLVE) {
