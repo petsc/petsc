@@ -137,12 +137,12 @@ runex5_2:
 	   ${RM} -f ex5.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -ts_exact_final_time INTERPOLATE > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex25 -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3 > ex25_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex25_1.tmp
 
 runex25_2:
-	-@${MPIEXEC} -n 2 ./ex25 -ts_exact_final_time INTERPOLATE > ex25_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex25 -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3 > ex25_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex25_2.out ex25_2.tmp || printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex25_2.tmp
 
