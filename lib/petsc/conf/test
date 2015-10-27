@@ -8,18 +8,22 @@
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
 testexamples_C: ${TESTEXAMPLES_C}
+testexamples_C_NotSingle: ${TESTEXAMPLES_C_NOTSINGLE}
 testexamples_Cxx: ${TESTEXAMPLES_CXX}
 testexamples_C_X: ${TESTEXAMPLES_C_X}
 testexamples_Fortran: ${TESTEXAMPLES_FORTRAN}
+testexamples_Fortran_NotSingle: ${TESTEXAMPLES_FORTRAN_NOTSINGLE}
 testexamples_C_X_MPIUni: ${TESTEXAMPLES_C_X_MPIUNI}
 testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX}
 testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX}
+testexamples_C_NoComplex_NotSingle: ${TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE}
 testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH}
 testexamples_Cxx_DATAFILESPATH: ${TESTEXAMPLES_CXX_DATAFILESPATH}
 testexamples_DOUBLEINT32: ${TESTEXAMPLES_DOUBLEINT32}
 
 testexamples_F90_DataTypes: ${TESTEXAMPLES_F90_DATATYPES}
 testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX}
+testexamples_Fortran_NoComplex_NotSingle: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX_NOTSINGLE}
 testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI}
 testexamples_Fortran_Complex: ${TESTEXAMPLES_FORTRAN_COMPLEX}
 testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}

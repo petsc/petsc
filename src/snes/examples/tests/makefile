@@ -264,8 +264,9 @@ runex69_8:
 	   ${DIFF} output/ex69_8.out ex69_8.tmp || printf "${PWD}\nPossible problem with ex69_8, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_8.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm \
+TESTEXAMPLES_C		       = ex1.PETSc  runex1_3 ex1.rm  ex68.PETSc ex68.rm \
                                  ex69.PETSc runex69  runex69_2 runex69_3 runex69_4 runex69_5 runex69_6 runex69_7 ex69.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_X	       = ex7.PETSc runex7 runex7_2 ex7.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
