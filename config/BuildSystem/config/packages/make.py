@@ -93,7 +93,7 @@ class Configure(config.package.GNUPackage):
         minor = int(gver.group(2))
         if ((major > 3) or (major == 3 and minor > 80)):
           self.haveGNUMake = 1
-        if (major > 3) and not self.setCompilers.isDarwin(self.log):
+        if (major > 3) and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
           self.paroutflg = "--output-sync=recurse"
     except RuntimeError, e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')

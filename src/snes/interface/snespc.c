@@ -114,9 +114,7 @@ PetscErrorCode SNESGetNPCFunction(SNES snes,Vec F,PetscReal *fnorm)
       if (FPC) {
         if (fnorm) {ierr = VecNorm(FPC,NORM_2,fnorm);CHKERRQ(ierr);}
         ierr = VecCopy(FPC,F);CHKERRQ(ierr);
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no function");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no function");
     } else {
       ierr = SNESGetSolution(snes->pc,&XPC);CHKERRQ(ierr);
       if (XPC) {

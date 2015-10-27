@@ -494,6 +494,8 @@ class ArgDownload(Arg):
       if not urlparse.urlparse(value)[0]: # how do we check if the URL is invalid?
         if os.path.isfile(value):
           value = 'file://'+os.path.abspath(value)
+        elif os.path.isdir(value):
+          value = 'dir://'+os.path.abspath(value)
         else:
           raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
     self.value = value

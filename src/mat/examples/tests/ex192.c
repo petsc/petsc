@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       icntl19,size_schur,*idxs_schur,i,m,n,nfact,nsolve,nrhs;
-  PetscReal      norm,tol=1.e-12;
+  PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
   PetscBool      flg,herm,symm;
   PetscReal      sratio = 5.1/12.;
@@ -114,9 +114,7 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetReal(NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
-  if (sratio < 0. || sratio > 1.) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
-  }
+  if (sratio < 0. || sratio > 1.) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
   size_schur = (PetscInt)(sratio*m);
   ierr = PetscMalloc1(size_schur,&idxs_schur);CHKERRQ(ierr);
   for (i=0;i<size_schur;i++) {
@@ -178,9 +176,9 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
         ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
         if (nsolve) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatSolve: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatSolve: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatSolveTranspose: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatSolveTranspose: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
         }
       }
       if (icntl19) {
@@ -206,9 +204,9 @@ int main(int argc,char **args)
           ierr = VecAXPY(uschur,-1.0,bschur);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(uschur,NORM_2,&resi);CHKERRQ(ierr);
           if (nsolve) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatMumpsSolveSchurComplement: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatMumpsSolveSchurComplement: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
           } else {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatMumpsSolveSchurComplementTranspose: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatMumpsSolveSchurComplementTranspose: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
           }
         }
       }
@@ -226,7 +224,7 @@ int main(int argc,char **args)
       ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
       if (norm > tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
       }
     }
     if (icntl19) {

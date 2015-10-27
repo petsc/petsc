@@ -5002,7 +5002,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  *has_npc = (PetscBool) (snes->pc != NULL);
+  *has_npc = (PetscBool) (snes->pc ? PETSC_TRUE : PETSC_FALSE);
   PetscFunctionReturn(0);
 }
 

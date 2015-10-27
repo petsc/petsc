@@ -8,49 +8,34 @@
   6 KSP Residual norm 0.0144307 
   7 KSP Residual norm 0.00933562 
   8 KSP Residual norm 0.00894835 
-  9 KSP Residual norm 0.00891011 
- 10 KSP Residual norm 0.00856667 
- 11 KSP Residual norm 0.00673218 
- 12 KSP Residual norm 0.00308017 
- 13 KSP Residual norm 0.00262782 
- 14 KSP Residual norm 0.00253251 
- 15 KSP Residual norm 0.00252651 
- 16 KSP Residual norm 0.00208709 
- 17 KSP Residual norm 0.00187323 
- 18 KSP Residual norm 0.00185707 
- 19 KSP Residual norm 0.0018242 
- 20 KSP Residual norm 0.00172381 
- 21 KSP Residual norm 0.00136942 
- 22 KSP Residual norm 0.00102876 
- 23 KSP Residual norm 0.00102155 
- 24 KSP Residual norm 0.00101139 
- 25 KSP Residual norm 0.00094452 
- 26 KSP Residual norm 0.000648584 
- 27 KSP Residual norm 0.000366336 
- 28 KSP Residual norm 0.000350714 
- 29 KSP Residual norm 0.000345605 
- 30 KSP Residual norm 0.000290812 
- 31 KSP Residual norm 0.000251505 
- 32 KSP Residual norm 0.000239617 
- 33 KSP Residual norm 0.000238956 
- 34 KSP Residual norm 0.000199598 
- 35 KSP Residual norm 0.000127323 
- 36 KSP Residual norm 0.000105863 
- 37 KSP Residual norm 0.000102799 
- 38 KSP Residual norm 0.00010024 
- 39 KSP Residual norm 9.38532e-05 
- 40 KSP Residual norm 7.37753e-05 
- 41 KSP Residual norm 5.55157e-05 
- 42 KSP Residual norm 5.39851e-05 
- 43 KSP Residual norm 5.39266e-05 
- 44 KSP Residual norm 5.15089e-05 
- 45 KSP Residual norm 4.20415e-05 
- 46 KSP Residual norm 4.01987e-05 
- 47 KSP Residual norm 3.9612e-05 
- 48 KSP Residual norm 3.78963e-05 
- 49 KSP Residual norm 2.97805e-05 
- 50 KSP Residual norm 2.33451e-05 
- 51 KSP Residual norm 2.27441e-05 
- 52 KSP Residual norm 2.20106e-05 
- 53 KSP Residual norm 2.14473e-05 
- 54 KSP Residual norm 1.67309e-05 
+KSP Object:(elas_) 1 MPI processes
+  type: gmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=0.005, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object:(elas_) 1 MPI processes
+  type: ilu
+    ILU: out-of-place factorization
+    0 levels of fill
+    tolerance for zero pivot 2.22045e-14
+    matrix ordering: natural
+    factor fill ratio given 1., needed 1.
+      Factored matrix follows:
+        Mat Object:         1 MPI processes
+          type: seqaij
+          rows=1178, cols=1178, bs=2
+          package used to perform factorization: petsc
+          total: nonzeros=20020, allocated nonzeros=20020
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 589 nodes, limit used is 5
+  linear system matrix = precond matrix:
+  Mat Object:   1 MPI processes
+    type: seqaij
+    rows=1178, cols=1178, bs=2
+    total: nonzeros=20020, allocated nonzeros=20020
+    total number of mallocs used during MatSetValues calls =0
+      has attached near null space
+      using I-node routines: found 589 nodes, limit used is 5

@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,m = 8,n,rstart,rend,vstart,vend;
   PetscScalar    one = 1.0,negone = -1.0,v,alpha=0.1;
-  PetscReal      norm;
+  PetscReal      norm, tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,one,z);CHKERRQ(ierr);
   ierr = VecAXPY(x,negone,w);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-8) {
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm);CHKERRQ(ierr);
   }
 
@@ -117,7 +117,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,one,u);CHKERRQ(ierr);
   ierr = VecAXPY(y,negone,s);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-8) {
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm);CHKERRQ(ierr);
   }
 

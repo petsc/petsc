@@ -4,8 +4,8 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     #self.gitcommit        = '5dc20f1424206f2a09b001e2585fe5c794e60dbf'
-    #self.giturls          = ['https://github.com/elemental/Elemental']
     #self.download         = ['http://libelemental.org/pub/releases/Elemental-0.85.tgz']
+    #self.download         = ['git://https://github.com/elemental/Elemental','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Elemental-0.85-p1.tar.gz']
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Elemental-0.85-p1.tar.gz']
     self.liblist          = [['libEl.a','libpmrrr.a']]
     self.includes         = ['El.hpp']

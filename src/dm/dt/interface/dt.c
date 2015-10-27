@@ -469,6 +469,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   for (i=0; i<(npoints+1)/2; i++) {
     PetscReal y = 0.5 * (-x[i] + x[npoints-i-1]); /* enforces symmetry */
     x[i]           = (a+b)/2 - y*(b-a)/2;
+    if (x[i] == -0.0) x[i] = 0.0;
     x[npoints-i-1] = (a+b)/2 + y*(b-a)/2;
 
     w[i] = w[npoints-1-i] = 0.5*(b-a)*(PetscSqr(PetscAbsScalar(Z[i*npoints])) + PetscSqr(PetscAbsScalar(Z[(npoints-i-1)*npoints])));

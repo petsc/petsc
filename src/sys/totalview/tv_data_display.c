@@ -58,9 +58,9 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
   /* Called at the wrong time */
   if (TV_data_format_control == TV_FORMAT_INACTIVE) return EPERM;
 
-  if (strpbrk(field_name, "\n\t") != NULL) return EINVAL;
+  if (strpbrk(field_name, "\n\t")) return EINVAL;
 
-  if (strpbrk(type_name, "\n\t") != NULL) return EINVAL;
+  if (strpbrk(type_name, "\n\t")) return EINVAL;
 
   if (TV_data_format_control == TV_FORMAT_FIRST_CALL) {
     /* Zero out the buffer to avoid confusion, and set the write point

@@ -109,9 +109,8 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_VIENNACL_UNALLOCATED) {
     try {
-      if (a->compressedrow.use) {
-        SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
-      } else {
+      if (a->compressedrow.use) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
+      else {
 
         if ((PetscInt)Agpu->size1() != m) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", Agpu->size1(), m);
         a->nz           = Agpu->nnz();
@@ -166,9 +165,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     A->valid_GPU_matrix = PETSC_VIENNACL_BOTH;
-  } else {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "ViennaCL error: Only valid for unallocated GPU matrices");
-  }
+  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "ViennaCL error: Only valid for unallocated GPU matrices");
   PetscFunctionReturn(0);
 }
 

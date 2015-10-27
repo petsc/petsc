@@ -1520,18 +1520,16 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   /*ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
-  if(timeread!=time) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the current time from file");
-  } else {
+  if(timeread!=time) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the current time from file");
+  else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for PetscReal\n");CHKERRQ(ierr);
   }
 
   for (i=0;i<ns && stepnum >1;i++) {
     ierr = VecLoad(stagesol,viewer);CHKERRQ(ierr);
     VecEqual(Y[i],stagesol,&equal);
-    if(!equal) {
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the %2d-th stage value from file",i);
-    } else {
+    if(!equal) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the %2d-th stage value from file",i);
+    else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Stage values\n");CHKERRQ(ierr);
     }
   }

@@ -13,17 +13,21 @@ if [ "JOE${f}" = "JOE-" ]; then
 fi
 
 ${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $f | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g"  > tmpA
-if [ "JOE${1}" = "JOE-" ]; then
-    ${RM} -f ${f}
-fi
+
 ${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" $2 | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > tmpB
 ${DIFF} tmpA tmpB > /dev/null
 if [ $? -ne 0 ]; then
-  ${DIFF}  $1 $2 
+  ${DIFF}  ${f} $2 
   ${RM} -f tmpA tmpB
+  if [ "JOE${1}" = "JOE-" ]; then
+    ${RM} -f ${f}
+  fi
   exit 1;
 else
   ${RM} -f tmpA tmpB
+  if [ "JOE${1}" = "JOE-" ]; then
+    ${RM} -f ${f}
+  fi
   exit 0;
 fi
 
