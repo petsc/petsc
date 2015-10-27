@@ -225,16 +225,16 @@ ex42: ex42.o chkopts
 
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -snes_atol 1.e-7 -ts_pseudo_frtol 1.e-5 > ex1_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -ts_monitor_pseudo > ex1_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -ts_monitor_pseudo -ts_pseudo_frtol 1.e-5 > ex1_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_2.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  > ex1f_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1f_1.tmp
 
@@ -566,7 +566,7 @@ runex35_2:
 	   ${RM} -f ex35_2.tmp
 
 runex42:
-	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 11  > ex42.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 8  > ex42.tmp 2>&1;	  \
 	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
 	   ${RM} -f ex42.tmp
 

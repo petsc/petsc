@@ -97,6 +97,8 @@ typedef enum {
   TS_CONVERGED_ITS            = 2,
   TS_CONVERGED_USER           = 3,
   TS_CONVERGED_EVENT          = 4,
+  TS_CONVERGED_PSEUDO_FATOL   = 5,
+  TS_CONVERGED_PSEUDO_FRTOL   = 6,
   TS_DIVERGED_NONLINEAR_SOLVE = -1,
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
@@ -140,6 +142,28 @@ M*/
    Level: beginner
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+M*/
+
+/*MC
+   TS_CONVERGED_PSEUDO_FRTOL - stops when function norm decreased by a set amount, used only for TSPSEUDO
+
+   Level: beginner
+
+   Options Database:
+.   -ts_pseudo_frtol <rtol>
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration(), TS_CONVERGED_PSEUDO_FATOL
+M*/
+
+/*MC
+   TS_CONVERGED_PSEUDO_FATOL - stops when function norm decreases below a set amount, used only for TSPSEUDO
+
+   Level: beginner
+
+   Options Database:
+.   -ts_pseudo_fatol <atol>
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration(), TS_CONVERGED_PSEUDO_FRTOL
 M*/
 
 /*MC
