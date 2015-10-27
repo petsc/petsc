@@ -1191,9 +1191,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
-                                /* 89*/
-                                        0,
-                                        0,
+                                /* 89*/ MatMatMult_MPIDense_MPIDense,
+                                        MatMatMultSymbolic_MPIDense_MPIDense,
                                         MatMatMultNumeric_MPIDense,
                                         0,
                                         0,
@@ -1884,9 +1883,116 @@ PetscErrorCode MatTransposeMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
+  if (scall == MAT_INITIAL_MATRIX) { 
     ierr = MatTransposeMatMultSymbolic_MPIDense_MPIDense(A,B,fill,C);CHKERRQ(ierr);
-  }
+  } 
   ierr = MatTransposeMatMultNumeric_MPIDense_MPIDense(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MatMatMult_MPIDense_MPIDense"
+PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(Mat A)
+{
+  PetscErrorCode   ierr;
+  Mat_MPIDense     *a = (Mat_MPIDense*)A->data;
+  Mat_MatMultDense *ab = a->abdense;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&ab->Ce);CHKERRQ(ierr);
+  ierr = MatDestroy(&ab->Ae);CHKERRQ(ierr);
+  ierr = MatDestroy(&ab->Be);CHKERRQ(ierr);
+
+  ierr = (ab->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(ab);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIDense"
+PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode   ierr;
+  Mat              Cnew;
+  Mat_MPIDense     *c=(Mat_MPIDense*)C->data;
+  Mat_MatMultDense *ab=c->abdense;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&ab->Ae);CHKERRQ(ierr);
+  ierr = MatDestroy(&ab->Be);CHKERRQ(ierr);
+
+  ierr = MatConvert(A,MATELEMENTAL,MAT_INITIAL_MATRIX, &ab->Ae);CHKERRQ(ierr);
+  ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX, &ab->Be);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric(ab->Ae,ab->Be,ab->Ce);CHKERRQ(ierr);
+ 
+  
+  ierr = MatConvert(ab->Ce,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cnew);CHKERRQ(ierr);
+ 
+  C->ops->destroy = ab->destroy; /* prevent struct ab being destroyeed by MatHeaderReplace() */
+  ierr = MatHeaderReplace(C,&Cnew);CHKERRQ(ierr); 
+  C->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIDense;
+  C->ops->destroy        = MatDestroy_MatMatMult_MPIDense_MPIDense;
+  c                      = (Mat_MPIDense*)C->data;
+  c->abdense             = ab;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIDense"
+PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode   ierr;
+  MPI_Comm         comm;
+  Mat              Ae,Be,Ce;
+  Mat_MPIDense     *c;
+  Mat_MatMultDense *ab;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) {
+    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
+  }
+
+  /* convert A and B to Elemental matrices Ae and Be */
+  ierr = MatConvert(A,MATELEMENTAL,MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);
+  ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX, &Be);CHKERRQ(ierr);
+
+  /* Ce = Ae*Be */
+  ierr = MatMatMultSymbolic(Ae,Be,fill,&Ce);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric(Ae,Be,Ce);CHKERRQ(ierr);
+ 
+  /* convert Ce to C */
+  ierr = MatConvert(Ce,MATMPIDENSE,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr);
+ 
+  //ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  //ierr = MatDestroy(&Be);CHKERRQ(ierr);
+  //ierr = MatDestroy(&Ce);CHKERRQ(ierr);
+
+  /* create data structure for reuse Cdense */
+  ierr = PetscNew(&ab);CHKERRQ(ierr);
+  c                  = (Mat_MPIDense*)(*C)->data;
+  c->abdense         = ab;
+
+  ab->Ae             = Ae;
+  ab->Be             = Be;
+  ab->Ce             = Ce;
+  ab->destroy        = (*C)->ops->destroy;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIDense;
+  (*C)->ops->destroy = MatDestroy_MatMatMult_MPIDense_MPIDense;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_MPIDense_MPIDense"
+PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX) { /* simbolic product includes numeric product */
+    ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,fill,C);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatMultNumeric_MPIDense_MPIDense(A,B,*C);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
