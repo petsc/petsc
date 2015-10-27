@@ -404,7 +404,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'num': 'tet_conv_p1_r2', 'numProcs': 1, 'args': '-run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu'},
                                                                {'num': 'tet_conv_p1_r3', 'numProcs': 1, 'args': '-run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu'},
                                                                {'num': 'tet_conv_p2_r0', 'numProcs': 1, 'args': '-run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason -pc_type lu'},
-                                                               {'num': 'tet_conv_p1_r2', 'numProcs': 1, 'args': '-run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason -pc_type lu'},
+                                                               {'num': 'tet_conv_p2_r2', 'numProcs': 1, 'args': '-run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason -pc_type lu'},
                                                                ],
                         'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
                         'src/snes/examples/tutorials/ex36':   [# 2D serial P2/P1 tests 0-1
