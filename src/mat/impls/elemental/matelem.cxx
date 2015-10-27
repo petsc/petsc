@@ -101,13 +101,9 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);
-
-  /* if (!rank) printf("          .........MatGetInfo_Elemental ...\n"); */
-  info->block_size     = 1.0;
+  info->block_size = 1.0;
 
   if (flag == MAT_LOCAL) {
     info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
@@ -138,17 +134,12 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNCT__ "MatSetValues_Elemental"
 static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscScalar *vals,InsertMode imode)
 {
-  PetscErrorCode ierr;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscMPIInt    rank;
-  PetscInt       i,j,rrank,ridx,crank,cidx;
+  PetscInt       i,j,rrank,ridx,crank,cidx,erow,ecol,elrow,elcol;
+  const El::Grid &grid = a->emat->Grid();
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
-
-  const El::Grid &grid = a->emat->Grid();
   for (i=0; i<nr; i++) {
-    PetscInt erow,ecol,elrow,elcol;
     if (rows[i] < 0) continue;
     P2RO(A,0,rows[i],&rrank,&ridx);
     RO2E(A,0,rrank,ridx,&erow);
@@ -835,6 +826,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+
   ierr = PetscStrcmp(newtype,MATDENSE,&s1);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,MATSEQDENSE,&s2);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,MATMPIDENSE,&s3);CHKERRQ(ierr);
@@ -843,7 +835,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr); /* global nrows and ncols */
   for (i=0; i<nrows; i++) {
     PetscInt erow,ecol;
     P2RO(A,0,i,&rrank,&ridx);
@@ -854,6 +846,10 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
       v = a->emat->Get(erow,ecol);
+#if 0
+      PetscMPIInt rank;
+      printf("[%d] Ae(%d, %d, %g) -> B(%d, %d)\n",rank,erow,ecol,v,i,j);
+#endif
       ierr = MatSetValues(Bmpi,1,&i,1,&j,(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -1029,10 +1025,10 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
-  /* printf("commgrid->grid_refct = %d, grid=%p\n",commgrid->grid_refct,commgrid->grid); -- memory leak revealed by valgrind? */
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
+    ierr = MPI_Keyval_free(&Petsc_Elemental_keyval);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
@@ -1378,6 +1374,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);
+    /* ierr = MPI_Comm_create_Keyval(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); -- new version? */
   }
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
