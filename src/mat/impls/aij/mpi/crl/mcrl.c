@@ -210,7 +210,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_MPIAIJ_MPIAIJCRL(A,MATMPIAIJCRL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_MPIAIJ_MPIAIJCRL(A,MATMPIAIJCRL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

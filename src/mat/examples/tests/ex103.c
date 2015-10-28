@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     ierr = MatDestroy(&Aexplicit);CHKERRQ(ierr); 
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-    ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
+    ierr = MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A);CHKERRQ(ierr);
     ierr = MatMultEqual(A_elemental,A,5,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A_elemental != A.");
     ierr = MatDestroy(&A_elemental);CHKERRQ(ierr);
