@@ -96,10 +96,10 @@ runjbearing2_3:
 
 
 
-TESTEXAMPLES_C                  = plate2.PETSc runplate2 runplate2_2 runplate2_3 runplate2_4 runplate2_5 runplate2_6 runplate2_7 plate2.rm \
+TESTEXAMPLES_C_NOTSINGLE        = plate2.PETSc runplate2 runplate2_2 runplate2_3 runplate2_4 runplate2_5 runplate2_6 runplate2_7 plate2.rm \
 	                          jbearing2.PETSc runjbearing2 runjbearing2_2 runjbearing2_3 jbearing2.rm 
 TESTEXAMPLES_C_X_MPIUNI         = plate2.PETSc runplate2 plate2.rm jbearing2.PETSc runjbearing2 jbearing2.rm
-TESTEXAMPLES_FORTRAN            = plate2f.PETSc runplate2f runplate2f_2 plate2f.rm
+TESTEXAMPLES_FORTRAN_NOTSINGLE  = plate2f.PETSc runplate2f runplate2f_2 plate2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI     = plate2f.PETSc runplate2f plate2f.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
