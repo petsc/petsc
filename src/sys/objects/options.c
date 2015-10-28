@@ -134,7 +134,11 @@ PetscErrorCode  PetscOptionsStringToReal(const char name[],PetscReal *a)
   else if (decide) *a = PETSC_DECIDE;
   else {
     if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+#if defined(PETSC_USE___FLOAT128)
+    *a = atoq(name);
+#else
     *a = atof(name);
+#endif
   }
   PetscFunctionReturn(0);
 }
