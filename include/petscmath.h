@@ -499,8 +499,10 @@ M*/
 #define PETSC_NINFINITY              -PETSC_INFINITY
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
+PETSC_EXTERN PetscErrorCode PetscIsNanReal(PetscReal);
 PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscErrorCode PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
 /* ----------------------------------------------------------------------------*/
