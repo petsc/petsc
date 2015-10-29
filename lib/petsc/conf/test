@@ -28,6 +28,7 @@ testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI}
 testexamples_Fortran_Complex: ${TESTEXAMPLES_FORTRAN_COMPLEX}
 testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}
 testexamples_F90: ${TESTEXAMPLES_F90}
+testexamples_F90_NotSingle: ${TESTEXAMPLES_F90_NOTSINGLE}
 testexamples_F90_Complex: ${TESTEXAMPLES_F90_COMPLEX}
 testexamples_F90_NoComplex: ${TESTEXAMPLES_F90_NOCOMPLEX}
 testexamples_F2003: ${TESTEXAMPLES_F2003}
