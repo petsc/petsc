@@ -99,6 +99,9 @@
       <h4>General:</h4>
          PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view
       <h4>Configure/Build:</h4>
+      <ul>
+        <li>--download-package for externalpackage with a gitrepo will never be stale. Each time configure is invoked - it will do a 'git fetch' and 'git checkout commit-id'. And if the commit-id changes from the previous build - the package will be rebuilt. To prevent this sync [and use previous snapshot] - one can use --download-package-commit=HEAD</li>
+      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
