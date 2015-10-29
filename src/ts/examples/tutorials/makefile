@@ -476,15 +476,15 @@ runex20opt_p:
 	  ${RM} -f ex20opt_p_1.tmp 
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none -ts_dt .005 -ts_final_time .1  > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
-	-@${MPIEXEC} -n 2 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none > ex22_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none -ts_dt .005 -ts_final_time .1 > ex22_2.tmp 2>&1; \
 	   ${DIFF} output/ex22_2.out ex22_2.tmp || printf "${PWD}\nPossible problem with ex22_2, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_2.tmp
 runex22_3:
-	-@${MPIEXEC} -n 2 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_adapt_type none > ex22_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_final_time .1  -ts_adapt_type none > ex22_3.tmp 2>&1; \
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || printf "${PWD}\nPossible problem with ex22_3, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
