@@ -1191,8 +1191,13 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
+#if defined(PETSC_HAVE_ELEMENTAL)
                                 /* 89*/ MatMatMult_MPIDense_MPIDense,
                                         MatMatMultSymbolic_MPIDense_MPIDense,
+#else
+                                /* 89*/ 0,
+                                        0,
+#endif
                                         MatMatMultNumeric_MPIDense,
                                         0,
                                         0,
@@ -1973,8 +1978,8 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
   ab->Be             = Be;
   ab->Ce             = Ce;
   ab->destroy        = (*C)->ops->destroy;
+  (*C)->ops->destroy        = MatDestroy_MatMatMult_MPIDense_MPIDense;
   (*C)->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIDense;
-  (*C)->ops->destroy = MatDestroy_MatMatMult_MPIDense_MPIDense;
   PetscFunctionReturn(0);
 }
 
