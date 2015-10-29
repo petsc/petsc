@@ -97,7 +97,8 @@
       </div>
 
       <h4>General:</h4>
-         PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view
+      PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view
+      PetscOptionsSetValue() may now be called BEFORE PetscInitialize() and any options set then will be used in the initialization process. These options are overwritten by command line options.
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
