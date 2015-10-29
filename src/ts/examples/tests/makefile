@@ -122,7 +122,7 @@ runex4_6:
 	   ${RM} -f ex4.tmp
 
 runex4_7:
-	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler -test_PostStep > ex4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler -test_PostStep -ts_dt .1 > ex4.tmp 2>&1;	  \
 	   ${DIFF} output/ex4_7.out ex4.tmp || printf "${PWD}\nPossible problem with ex4_7, diffs above\n=========================================\n"; \
 	   ${RM} -f ex4.tmp
 
