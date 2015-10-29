@@ -243,12 +243,12 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 /*
   In 3D for Dirichlet conditions we use exact solution:
 
-    u = x^2 + y^2 + z^2
-    f = 6
+    u = 2/3 (x^2 + y^2 + z^2)
+    f = 4
 
   so that
 
-    -\Delta u + f = -6 + 6 = 0
+    -\Delta u + f = -2/3 * 6 + 4 = 0
 
   For Neumann conditions, we have
 
@@ -265,7 +265,7 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 */
 PetscErrorCode quadratic_u_3d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  *u = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
+  *u = 2.0*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2])/3.0;
   return 0;
 }
 

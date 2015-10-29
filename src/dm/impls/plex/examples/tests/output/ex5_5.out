@@ -23,9 +23,9 @@ Label 'subpoint_map':
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 4 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 10
 [0]: 1 ----> 11
@@ -54,7 +54,7 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 7
 [0]: 14 ----> 8
-Max sizes cone: 5 support: 4
+[1] Max sizes cone: 5 support: 4
 [1]: 2 ----> 17
 [1]: 2 ----> 18
 [1]: 2 ----> 19
@@ -207,18 +207,18 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0 0 0.5
-  (   2) dim  3 offset   3 0 -0.5 0
-  (   3) dim  3 offset   6 1 0 0
-  (   4) dim  3 offset   9 0 0.5 0
+  (   1) dim  3 offset   0 0. 0. 0.5
+  (   2) dim  3 offset   3 0. -0.5 0.
+  (   3) dim  3 offset   6 1. 0. 0.
+  (   4) dim  3 offset   9 0. 0.5 0.
 Process 1:
-  (   2) dim  3 offset   0 0 0 -0.5
-  (   3) dim  3 offset   3 0 -0.5 0
-  (   4) dim  3 offset   6 1 0 0
-  (   5) dim  3 offset   9 0 0.5 0
-  (   6) dim  3 offset  12 0 -0.5 0
-  (   7) dim  3 offset  15 1 0 0
-  (   8) dim  3 offset  18 0 0.5 0
+  (   2) dim  3 offset   0 0. 0. -0.5
+  (   3) dim  3 offset   3 0. -0.5 0.
+  (   4) dim  3 offset   6 1. 0. 0.
+  (   5) dim  3 offset   9 0. 0.5 0.
+  (   6) dim  3 offset  12 0. -0.5 0.
+  (   7) dim  3 offset  15 1. 0. 0.
+  (   8) dim  3 offset  18 0. 0.5 0.
 Label 'marker':
 [0]: 2 (1)
 [0]: 3 (1)
@@ -267,9 +267,9 @@ PetscSF Object: 2 MPI processes
 DM Object:Hybrid Mesh 2 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 4 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 10
 [0]: 1 ----> 11
@@ -298,7 +298,7 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 7
 [0]: 14 ----> 8
-Max sizes cone: 5 support: 4
+[1] Max sizes cone: 5 support: 4
 [1]: 2 ----> 17
 [1]: 2 ----> 18
 [1]: 2 ----> 19
@@ -451,18 +451,18 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0 0 0.5
-  (   2) dim  3 offset   3 0 -0.5 0
-  (   3) dim  3 offset   6 1 0 0
-  (   4) dim  3 offset   9 0 0.5 0
+  (   1) dim  3 offset   0 0. 0. 0.5
+  (   2) dim  3 offset   3 0. -0.5 0.
+  (   3) dim  3 offset   6 1. 0. 0.
+  (   4) dim  3 offset   9 0. 0.5 0.
 Process 1:
-  (   2) dim  3 offset   0 0 0 -0.5
-  (   3) dim  3 offset   3 0 -0.5 0
-  (   4) dim  3 offset   6 1 0 0
-  (   5) dim  3 offset   9 0 0.5 0
-  (   6) dim  3 offset  12 0 -0.5 0
-  (   7) dim  3 offset  15 1 0 0
-  (   8) dim  3 offset  18 0 0.5 0
+  (   2) dim  3 offset   0 0. 0. -0.5
+  (   3) dim  3 offset   3 0. -0.5 0.
+  (   4) dim  3 offset   6 1. 0. 0.
+  (   5) dim  3 offset   9 0. 0.5 0.
+  (   6) dim  3 offset  12 0. -0.5 0.
+  (   7) dim  3 offset  15 1. 0. 0.
+  (   8) dim  3 offset  18 0. 0.5 0.
 Label 'marker':
 [0]: 2 (1)
 [0]: 3 (1)

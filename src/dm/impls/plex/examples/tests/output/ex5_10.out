@@ -63,9 +63,9 @@ Label 'subpoint_map':
 DM Object:Hybrid Mesh 1 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 6 support: 8
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 8
 [0]: 9 ----> 91
 [0]: 9 ----> 92
 [0]: 9 ----> 97
@@ -810,39 +810,39 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   9) dim  3 offset   0 -2 -2 -2
-  (  10) dim  3 offset   3 -2 -1 -2
-  (  11) dim  3 offset   6 -3 0 -2
-  (  12) dim  3 offset   9 -2 1 -2
-  (  13) dim  3 offset  12 -2 2 -2
-  (  14) dim  3 offset  15 -2 -2 0
-  (  15) dim  3 offset  18 -2 -1 0
-  (  16) dim  3 offset  21 -3 0 0
-  (  17) dim  3 offset  24 -2 1 0
-  (  18) dim  3 offset  27 -2 2 0
-  (  19) dim  3 offset  30 -2 -1 2
-  (  20) dim  3 offset  33 -3 0 2
-  (  21) dim  3 offset  36 -2 1 2
-  (  22) dim  3 offset  39 0 -2 -2
-  (  23) dim  3 offset  42 0 0 -2
-  (  24) dim  3 offset  45 0 2 -2
-  (  25) dim  3 offset  48 0 -2 0
-  (  26) dim  3 offset  51 0 0 0
-  (  27) dim  3 offset  54 0 2 0
-  (  28) dim  3 offset  57 0 0 2
-  (  29) dim  3 offset  60 2 -2 -2
-  (  30) dim  3 offset  63 2 -1 -2
-  (  31) dim  3 offset  66 3 0 -2
-  (  32) dim  3 offset  69 2 1 -2
-  (  33) dim  3 offset  72 2 2 -2
-  (  34) dim  3 offset  75 2 -2 0
-  (  35) dim  3 offset  78 2 -1 0
-  (  36) dim  3 offset  81 3 0 0
-  (  37) dim  3 offset  84 2 1 0
-  (  38) dim  3 offset  87 2 2 0
-  (  39) dim  3 offset  90 0 -2 -2
-  (  40) dim  3 offset  93 0 0 -2
-  (  41) dim  3 offset  96 0 2 -2
-  (  42) dim  3 offset  99 0 -2 0
-  (  43) dim  3 offset 102 0 0 0
-  (  44) dim  3 offset 105 0 2 0
+  (   9) dim  3 offset   0 -2. -2. -2.
+  (  10) dim  3 offset   3 -2. -1. -2.
+  (  11) dim  3 offset   6 -3. 0. -2.
+  (  12) dim  3 offset   9 -2. 1. -2.
+  (  13) dim  3 offset  12 -2. 2. -2.
+  (  14) dim  3 offset  15 -2. -2. 0.
+  (  15) dim  3 offset  18 -2. -1. 0.
+  (  16) dim  3 offset  21 -3. 0. 0.
+  (  17) dim  3 offset  24 -2. 1. 0.
+  (  18) dim  3 offset  27 -2. 2. 0.
+  (  19) dim  3 offset  30 -2. -1. 2.
+  (  20) dim  3 offset  33 -3. 0. 2.
+  (  21) dim  3 offset  36 -2. 1. 2.
+  (  22) dim  3 offset  39 0. -2. -2.
+  (  23) dim  3 offset  42 0. 0. -2.
+  (  24) dim  3 offset  45 0. 2. -2.
+  (  25) dim  3 offset  48 0. -2. 0.
+  (  26) dim  3 offset  51 0. 0. 0.
+  (  27) dim  3 offset  54 0. 2. 0.
+  (  28) dim  3 offset  57 0. 0. 2.
+  (  29) dim  3 offset  60 2. -2. -2.
+  (  30) dim  3 offset  63 2. -1. -2.
+  (  31) dim  3 offset  66 3. 0. -2.
+  (  32) dim  3 offset  69 2. 1. -2.
+  (  33) dim  3 offset  72 2. 2. -2.
+  (  34) dim  3 offset  75 2. -2. 0.
+  (  35) dim  3 offset  78 2. -1. 0.
+  (  36) dim  3 offset  81 3. 0. 0.
+  (  37) dim  3 offset  84 2. 1. 0.
+  (  38) dim  3 offset  87 2. 2. 0.
+  (  39) dim  3 offset  90 0. -2. -2.
+  (  40) dim  3 offset  93 0. 0. -2.
+  (  41) dim  3 offset  96 0. 2. -2.
+  (  42) dim  3 offset  99 0. -2. 0.
+  (  43) dim  3 offset 102 0. 0. 0.
+  (  44) dim  3 offset 105 0. 2. 0.
