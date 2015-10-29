@@ -1287,9 +1287,19 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
   PetscInt       m=A->rmap->n,N=A->cmap->N,rstart=A->rmap->rstart,i,j,k,*rows,*cols;
   
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) {
+    mat_elemental = *newmat;
+    ierr = MatZeroEntries(*newmat);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  }
+
+  /* convert column-wise array into row-wise v_rowwise, see MatSetValues_Elemental() */
   ierr = PetscMalloc3(m*N,&v_rowwise,m,&rows,N,&cols);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&array);CHKERRQ(ierr);
-  /* convert column-wise array into row-wise v_rowwise, see MatSetValues_Elemental() */
   k = 0;
   for (j=0; j<N; j++) {
     cols[j] = j;
@@ -1301,11 +1311,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
     rows[i] = rstart + i;
   }
   ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
   
   /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
   ierr = MatSetValues(mat_elemental,m,rows,N,cols,v_rowwise,ADD_VALUES);CHKERRQ(ierr);
@@ -1924,11 +1929,8 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   Mat_MatMultDense *ab=c->abdense;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&ab->Ae);CHKERRQ(ierr);
-  ierr = MatDestroy(&ab->Be);CHKERRQ(ierr);
-
-  ierr = MatConvert(A,MATELEMENTAL,MAT_INITIAL_MATRIX, &ab->Ae);CHKERRQ(ierr);
-  ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX, &ab->Be);CHKERRQ(ierr);
+  ierr = MatConvert(A,MATELEMENTAL,MAT_REUSE_MATRIX, &ab->Ae);CHKERRQ(ierr);
+  ierr = MatConvert(B,MATELEMENTAL,MAT_REUSE_MATRIX, &ab->Be);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(ab->Ae,ab->Be,ab->Ce);CHKERRQ(ierr);
  
   ierr = MatConvert(ab->Ce,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cnew);CHKERRQ(ierr);
@@ -1947,15 +1949,13 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
 PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode   ierr;
-  MPI_Comm         comm;
   Mat              Ae,Be,Ce;
   Mat_MPIDense     *c;
   Mat_MatMultDense *ab;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) {
-    SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
+    SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
   }
 
   /* convert A and B to Elemental matrices Ae and Be */
