@@ -60,9 +60,6 @@ int main(int argc,char **args)
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,mat,mat);CHKERRQ(ierr);
-  ierr = KSPGMRESSetRestart(ksp,2*m);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -70,7 +67,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg1,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Number of iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -229,7 +226,7 @@ PetscInt  rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
  */
 PetscErrorCode Elastic20Stiff(PetscReal **Ke)
 {
-  PetscReal K[60][60],x,y,z,dx,dy,dz,m,v;
+  PetscReal K[60][60],x,y,z,dx,dy,dz,v;
   PetscInt  i,j,k,l,Ii,J;
 
   paulsetup20();
@@ -264,28 +261,19 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke)
     }
   }
   Ii = 0;
-  m  = 0.0;
   for (i=0; i<20; i++) {
     J = 0;
     for (j=0; j<20; j++) {
       for (k=0; k<3; k++) {
         for (l=0; l<3; l++) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[Ii+k][J+l];
-
-          m = PetscMax(m,PetscAbsReal(v));
         }
       }
       J += 3;
     }
     Ii += 3;
   }
-  /* zero out the extremely small values */
-  m = (1.e-8)*m;
-  for (i=0; i<81; i++) {
-    for (j=0; j<81; j++) {
-      if (PetscAbsReal(Ke[i][j]) < m) Ke[i][j] = 0.0;
-    }
-  }
+
   /* force the matrix to be exactly symmetric */
   for (i=0; i<81; i++) {
     for (j=0; j<i; j++) {

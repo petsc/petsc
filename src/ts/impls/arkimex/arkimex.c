@@ -708,7 +708,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
+  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && (!ts->event || (ts->event && ts->event->status != TSEVENT_PROCESSING))) {
     PetscReal valid_time;
     PetscBool isvalid;
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
@@ -784,7 +784,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr          = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr          = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+        ierr          = TSAdaptCheckStage(adapt,ts,ark->stage_time,Y[i],&accept);CHKERRQ(ierr);
         if (!accept) {
           /* We are likely rejecting the step because of solver or function domain problems so we should not attempt to
            * use extrapolation to initialize the solves on the next attempt. */

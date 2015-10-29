@@ -35,7 +35,7 @@ chwirut2f: chwirut2f.o chkopts
 	${RM} chwirut2f.o
 
 runchwirut1:
-	-@${MPIEXEC} -n 1 ./chwirut1 -tao_smonitor -tao_fatol 0 -tao_frtol 0 -printhistory -tao_max_it 100 -tao_type pounders > chwirut1_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./chwirut1 -tao_smonitor -tao_fatol 0 -tao_frtol 0 -tao_max_it 100 -tao_type pounders > chwirut1_1.tmp 2>&1;\
 	${DIFF} output/chwirut1_1.out chwirut1_1.tmp || printf '${PWD}\nPossible problem with chwirut1_1 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut1_1.tmp
 
@@ -54,8 +54,8 @@ runchwirut2f:
 	${DIFF} output/chwirut2f_1.out chwirut2f_1.tmp || printf '${PWD}\nPossible problem with chwirut2f_1 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut2f_1.tmp
 
-TESTEXAMPLES_C             = chwirut1.PETSc runchwirut1 chwirut1.rm \
-                             chwirut2.PETSc runchwirut2 chwirut2.rm 
+TESTEXAMPLES_C             = chwirut2.PETSc runchwirut2 chwirut2.rm
+TESTEXAMPLES_DOUBLEINT32   = chwirut1.PETSc runchwirut1 chwirut1.rm
 TESTEXAMPLES_C_X_MPIUNI    = chwirut1.PETSc runchwirut1 chwirut1.rm 
 TESTEXAMPLES_FORTRAN       = chwirut1f.PETSc runchwirut1f chwirut1f.rm \
                              chwirut2f.PETSc runchwirut2f chwirut2f.rm 

@@ -256,7 +256,7 @@ runex1_2:
           ${RM} -f ex1_2.tmp ex1_2_sol.tmp ex1_2_sol.tmp2
 
 runex1_X:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short > ex1_X.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short -snes_rtol 1.e-4 > ex1_X.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_X.out ex1_X.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_X, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_X.tmp

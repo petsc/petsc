@@ -4,9 +4,8 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     import os
     config.package.CMakePackage.__init__(self, framework)
-    self.download          = ['GitOnly']
+    self.download          = ['git://https://github.com/meshadaptation/pragmatic.git']
     self.gitcommit         = '134468543d3c6052803c69fca3a714f6e2ce0275'
-    self.giturls           = ['https://github.com/meshadaptation/pragmatic.git']
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
@@ -21,6 +20,7 @@ class Configure(config.package.CMakePackage):
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.indexTypes      = framework.require('PETSc.options.indexTypes', self)
     self.metis           = framework.require('config.packages.metis', self)
+    self.deps            = [self.metis]
     return
 
   def formCMakeConfigureArgs(self):
@@ -31,6 +31,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DMETIS_DIR='+self.metis.getInstallDir())
     args.append('-DENABLE_VTK=OFF')
     args.append('-DENABLE_OPENMP=OFF')
+    if self.sharedLibraries.useShared:
+      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.indexTypes.integerSize == 64:
       raise RuntimeError('Pragmatic cannot be built with 64-bit integers')
     if self.scalartypes.precision == 'single':
