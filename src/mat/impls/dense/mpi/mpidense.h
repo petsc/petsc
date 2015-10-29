@@ -50,6 +50,8 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMult_MPIDense_MPIDense(Mat,Mat,MatReu
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat,Mat,Mat);
 
+#if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat,Mat,Mat);
+#endif

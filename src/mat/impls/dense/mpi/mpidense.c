@@ -1908,6 +1908,7 @@ PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_ELEMENTAL)
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIDense"
 PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
@@ -1991,3 +1992,4 @@ PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal
   }
   PetscFunctionReturn(0);
 }
+#endif
