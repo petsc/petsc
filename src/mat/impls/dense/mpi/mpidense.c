@@ -1925,7 +1925,6 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX, &ab->Be);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(ab->Ae,ab->Be,ab->Ce);CHKERRQ(ierr);
  
-  
   ierr = MatConvert(ab->Ce,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cnew);CHKERRQ(ierr);
  
   C->ops->destroy = ab->destroy; /* prevent struct ab being destroyeed by MatHeaderReplace() */
@@ -1963,10 +1962,6 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
  
   /* convert Ce to C */
   ierr = MatConvert(Ce,MATMPIDENSE,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr);
- 
-  //ierr = MatDestroy(&Ae);CHKERRQ(ierr);
-  //ierr = MatDestroy(&Be);CHKERRQ(ierr);
-  //ierr = MatDestroy(&Ce);CHKERRQ(ierr);
 
   /* create data structure for reuse Cdense */
   ierr = PetscNew(&ab);CHKERRQ(ierr);
