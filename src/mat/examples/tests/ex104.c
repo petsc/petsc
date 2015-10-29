@@ -19,7 +19,11 @@ int main(int argc,char **argv)
   IS             isrows,iscols;
   const PetscInt *rows,*cols;
   PetscScalar    *v,rval;
+#if defined(PETSC_HAVE_ELEMENTAL)
   PetscBool      Test_MatMatMult=PETSC_TRUE;
+#else
+  PetscBool      Test_MatMatMult=PETSC_FALSE;
+#endif
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
