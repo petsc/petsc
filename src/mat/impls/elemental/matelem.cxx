@@ -822,19 +822,18 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   PetscErrorCode     ierr;
   PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j;
   PetscElemScalar    v;
-  PetscBool          s1,s2,s3;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 
-  ierr = PetscStrcmp(newtype,MATDENSE,&s1);CHKERRQ(ierr);
-  ierr = PetscStrcmp(newtype,MATSEQDENSE,&s2);CHKERRQ(ierr);
-  ierr = PetscStrcmp(newtype,MATMPIDENSE,&s3);CHKERRQ(ierr);
-  if (!s1 && !s2 && !s3) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
-  ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
-  ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    Bmpi = *B;
+  } else {
+    ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
+    ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
+  }
   ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr); /* global nrows and ncols */
   for (i=0; i<nrows; i++) {
     PetscInt erow,ecol;

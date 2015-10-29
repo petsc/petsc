@@ -1924,23 +1924,14 @@ PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(Mat A)
 PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
 {
   PetscErrorCode   ierr;
-  Mat              Cnew;
   Mat_MPIDense     *c=(Mat_MPIDense*)C->data;
   Mat_MatMultDense *ab=c->abdense;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATELEMENTAL,MAT_REUSE_MATRIX, &ab->Ae);CHKERRQ(ierr);
-  ierr = MatConvert(B,MATELEMENTAL,MAT_REUSE_MATRIX, &ab->Be);CHKERRQ(ierr);
+  ierr = MatConvert_MPIDense_Elemental(A,MATELEMENTAL,MAT_REUSE_MATRIX, &ab->Ae);CHKERRQ(ierr);
+  ierr = MatConvert_MPIDense_Elemental(B,MATELEMENTAL,MAT_REUSE_MATRIX, &ab->Be);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(ab->Ae,ab->Be,ab->Ce);CHKERRQ(ierr);
- 
-  ierr = MatConvert(ab->Ce,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cnew);CHKERRQ(ierr);
- 
-  C->ops->destroy = ab->destroy; /* prevent struct ab being destroyeed by MatHeaderReplace() */
-  ierr = MatHeaderReplace(C,&Cnew);CHKERRQ(ierr); 
-  C->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIDense;
-  C->ops->destroy        = MatDestroy_MatMatMult_MPIDense_MPIDense;
-  c                      = (Mat_MPIDense*)C->data;
-  c->abdense             = ab;
+  ierr = MatConvert(ab->Ce,MATMPIDENSE,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
