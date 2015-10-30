@@ -45,7 +45,7 @@ static PetscErrorCode TSSetUp_Euler(TS ts)
   PetscFunctionBegin;
   ierr =  TSGetIFunction(ts,NULL,&ifunction,NULL);CHKERRQ(ierr);
   ierr =  TSGetRHSFunction(ts,NULL,&rhsfunction,NULL);CHKERRQ(ierr);
-  if (!rhsfunction || ifunction!=0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must define RHSFunction() and leave IFunction() undefined in order to use -ts_type euler");
+  if (!rhsfunction || ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must define RHSFunction() and leave IFunction() undefined in order to use -ts_type euler");
   ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
