@@ -3,11 +3,9 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    #self.gitcommit        = '5dc20f1424206f2a09b001e2585fe5c794e60dbf'
-    #self.download         = ['http://libelemental.org/pub/releases/Elemental-0.85.tgz']
-    #self.download         = ['git://https://github.com/elemental/Elemental','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Elemental-0.85-p1.tar.gz']
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Elemental-0.85-p1.tar.gz']
-    self.liblist          = [['libEl.a','libpmrrr.a']]
+    self.gitcommit        = 'master'
+    self.download          = ['git://https://github.com/elemental/Elemental']
+    self.liblist          = [['libEl.a','libElSuiteSparse.a','libpmrrr.a']]
     self.includes         = ['El.hpp']
     self.cxx              = 1
     self.requirescxx11    = 1
@@ -22,21 +20,29 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.deps            = [self.mpi,self.blasLapack]
+    self.metis           = framework.require('config.packages.metis',self)
+    self.deps            = [self.mpi,self.blasLapack,self.metis]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
   def formCMakeConfigureArgs(self):
     if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build Elemental')
+      raise RuntimeError('CMake > 2.8.12 is needed to build Elemental')
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    if self.compilerFlags.debugging:
+      args.append('-DEL_ZERO_INIT=ON')
+    args.append('-DEL_DISABLE_VALGRIND=ON')
     args.append('-DEL_USE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
     args.append('-DBUILD_KISSFFT=OFF')
-    args.append('-DBUILD_METIS=OFF')
-    args.append('-DBUILD_PARMETIS=OFF')
+    args.append('-DEL_BUILD_METIS=OFF')
+    args.append('-DEL_BUILD_PARMETIS=OFF')
+    args.append('-DEL_DISABLE_PARMETIS=ON')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
+    args.append('-DEL_DISABLE_SCALAPACK=ON')
+    args.append('-DMETIS_INCLUDE_DIRS:STRING="'+self.metis.include[0]+'"')
+    args.append('-DMETIS_LIBRARIES:STRING="'+self.libraries.toString(self.metis.lib)+'"')
+    args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
       args.append('-DBUILD_SHARED_LIBS=off')
