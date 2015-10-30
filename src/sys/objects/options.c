@@ -16,6 +16,12 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>             /* strstr */
+#endif
+#if defined(PETSC_HAVE_STRINGS_H)
+#  include <strings.h>          /* strcasecmp */
+#endif
 #if defined(PETSC_HAVE_YAML)
 #include <yaml.h>
 #endif
@@ -1048,6 +1054,8 @@ PetscErrorCode  PetscOptionsDestroyDefault(void)
    Level: intermediate
 
    Note:
+   This function can be called BEFORE PetscInitialize()
+
    Only some options have values associated with them, such as
    -ksp_rtol tol.  Other options stand alone, such as -ksp_monitor.
 
@@ -1065,28 +1073,33 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
   char           **names;
   char           fullname[2048];
   const char     *name = iname;
-  PetscBool      gt,match;
   PetscOptions   options = defaultoptions;
+  int            gt,match;
 
-  PetscFunctionBegin;
-  if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
+  if (!options) {ierr = PetscOptionsCreate(); if (ierr) return ierr;}
 
-  /* this is so that -h and -hel\p are equivalent (p4 does not like -help)*/
-  ierr = PetscStrcasecmp(name,"-h",&match);CHKERRQ(ierr);
-  if (match) name = "-help";
+  /* this is so that -h and -help are equivalent (p4 does not like -help)*/
+  match = strcmp(name,"-h");
+  if (!match) name = "-help";
 
   name++; /* skip starting hyphen */
   if (options->prefixind > 0) {
-    ierr = PetscStrncpy(fullname,options->prefix,sizeof(fullname));CHKERRQ(ierr);
-    ierr = PetscStrncat(fullname,name,sizeof(fullname));CHKERRQ(ierr);
+    strncpy(fullname,options->prefix,sizeof(fullname));
+    strncat(fullname,name,sizeof(fullname)-1);
     name = fullname;
   }
 
   /* check against aliases */
   N = options->Naliases;
   for (i=0; i<N; i++) {
-    ierr = PetscStrcasecmp(options->aliases1[i],name,&match);CHKERRQ(ierr);
-    if (match) {
+#if defined(PETSC_HAVE_STRCASECMP)
+    match = strcasecmp(options->aliases1[i],name);
+#elif defined(PETSC_HAVE_STRICMP)
+    match = stricmp(options->aliases1[i],name);
+#else
+    badnews bears in breaking training
+#endif
+    if (!match) {
       name = options->aliases2[i];
       break;
     }
@@ -1097,23 +1110,22 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
   names = options->names;
 
   for (i=0; i<N; i++) {
-    ierr = PetscStrcasecmp(names[i],name,&match);CHKERRQ(ierr);
-    ierr = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
-    if (match) {
+    gt = strcasecmp(names[i],name);
+    if (!gt) {
       if (options->values[i]) free(options->values[i]);
-      ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
+      len = value ? strlen(value) : 0;
       if (len) {
         options->values[i] = (char*)malloc((len+1)*sizeof(char));
-        ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
+        if (!options->values[i]) return PETSC_ERR_MEM;
+        strcpy(options->values[i],value);
       } else options->values[i] = 0;
-      PetscOptionsMonitor(name,value);
-      PetscFunctionReturn(0);
-    } else if (gt) {
+      return 0;
+    } else if (gt > 0) {
       n = i;
       break;
     }
   }
-  if (N >= MAXOPTIONS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in option table, limit %d recompile \n src/sys/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
+  if (N >= MAXOPTIONS) abort();
 
   /* shift remaining values down 1 */
   for (i=N; i>n; i--) {
@@ -1122,18 +1134,19 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
     options->used[i]   = options->used[i-1];
   }
   /* insert new name and value */
-  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+  len = name ? strlen(name) : 0;
   options->names[n] = (char*)malloc((len+1)*sizeof(char));
-  ierr = PetscStrcpy(options->names[n],name);CHKERRQ(ierr);
-  ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
+  if (!options->names[n]) return PETSC_ERR_MEM;
+  strcpy(options->names[n],name);
+  len = value ? strlen(value) : 0;
   if (len) {
     options->values[n] = (char*)malloc((len+1)*sizeof(char));
-    ierr = PetscStrcpy(options->values[n],value);CHKERRQ(ierr);
+    if (!options->values[n]) return PETSC_ERR_MEM;
+    strcpy(options->values[n],value);
   } else options->values[n] = 0;
   options->used[n] = PETSC_FALSE;
   options->N++;
-  PetscOptionsMonitor(name,value);
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
