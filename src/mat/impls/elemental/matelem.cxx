@@ -820,12 +820,15 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   Mat_Elemental      *a = (Mat_Elemental*)A->data;
   MPI_Comm           comm;
   PetscErrorCode     ierr;
-  PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j;
+  IS                 isrows,iscols;
+  PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j,erow,ecol,elrow,elcol;
+  const PetscInt     *rows,*cols;
   PetscElemScalar    v;
+  const El::Grid     &grid = a->emat->Grid();
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-
+  
   if (reuse == MAT_REUSE_MATRIX) {
     Bmpi = *B;
   } else {
@@ -834,22 +837,27 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
     ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
   }
-  ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr); /* global nrows and ncols */
+
+  /* Get local entries of A */
+  ierr = MatGetOwnershipIS(A,&isrows,&iscols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
+
   for (i=0; i<nrows; i++) {
-    PetscInt erow,ecol;
-    P2RO(A,0,i,&rrank,&ridx);
+    P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
     RO2E(A,0,rrank,ridx,&erow);
     if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
     for (j=0; j<ncols; j++) {
-      P2RO(A,1,j,&crank,&cidx);
+      P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
-      v = a->emat->Get(erow,ecol);
-#if 0
-      PetscMPIInt rank;
-      printf("[%d] Ae(%d, %d, %g) -> B(%d, %d)\n",rank,erow,ecol,v,i,j);
-#endif
-      ierr = MatSetValues(Bmpi,1,&i,1,&j,(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+
+      elrow = erow / grid.MCSize(); /* Elemental local row index */
+      elcol = ecol / grid.MRSize(); /* Elemental local column index */
+      v = a->emat->GetLocal(elrow,elcol);
+      ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -859,6 +867,8 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   } else {
     *B = Bmpi;
   }
+  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
