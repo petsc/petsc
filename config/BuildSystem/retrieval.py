@@ -43,7 +43,7 @@ class Retriever(logger.Logger):
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(authUrl)
     return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location)
 
-  def genericRetrieve(self, url, root, name, gitcommit = None):
+  def genericRetrieve(self, url, root, package):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
 
@@ -66,18 +66,12 @@ class Retriever(logger.Logger):
       if os.path.isdir(dir):
         if not os.path.isdir(os.path.join(dir,'.git')): raise RuntimeError('Url begins with git:// and is a directory but but does not have a .git subdirectory')
 
-      newgitrepo = os.path.join(root,name)
+      newgitrepo = os.path.join(root,'git.'+package)
       if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
 
       config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo)
-      if gitcommit:
-        try:
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit], cwd=newgitrepo, log = self.log)
-        except:
-          raise RuntimeError('Unable to checkout commit id '+gitcommit+' in repository '+newgitrepo)
       return
-
     # get the tarball file name from the URL
     filename = os.path.basename(urlparse.urlparse(url)[2])
     localFile = os.path.join(root,'_d_'+filename)
@@ -103,7 +97,7 @@ Unable to download package %s from: %s
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (name, url, filename, name.lower(), filename)
+''' % (package.upper(), url, filename, package, filename)
       raise RuntimeError(failureMessage)
 
     self.logPrint('Extracting '+localFile)
@@ -120,7 +114,7 @@ Downloaded package %s from: %s is not a tarball.
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (name, url, filename, name.lower(), filename)
+''' % (package.upper(), url, filename, package, filename)
       import tarfile
       try:
         tf  = tarfile.open(os.path.join(root, localFile))
