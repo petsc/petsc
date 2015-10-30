@@ -21,7 +21,6 @@ Tao Object: 3 MPI processes
   TaoLineSearch Object:   3 MPI processes
     type: more-thuente
   Active Set subset type: matrixfree
-  convergence tolerances: fatol=0.0001,   frtol=0.0001
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=0.00948284
   Objective value=1.49412

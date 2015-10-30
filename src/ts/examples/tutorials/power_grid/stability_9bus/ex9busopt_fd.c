@@ -839,8 +839,8 @@ int main(int argc,char **argv)
   TaoConvergedReason reason;
   Vec                lowerb,upperb;
 
-  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   PetscFunctionBeginUser;
+  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
@@ -942,7 +942,10 @@ int main(int argc,char **argv)
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-
+  ierr = VecDestroy(&user.vec_q);CHKERRQ(ierr);
+  ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
+  ierr = VecDestroy(&upperb);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmnet);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);

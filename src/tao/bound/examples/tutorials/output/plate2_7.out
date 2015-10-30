@@ -22,7 +22,6 @@ Tao Object: 3 MPI processes
     type: nash
   total KSP iterations: 64
   Active Set subset type: matrixfree
-  convergence tolerances: fatol=1e-12,   frtol=1e-12
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.51702e-07
   Objective value=1.46694
