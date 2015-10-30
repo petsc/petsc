@@ -71,7 +71,7 @@
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetTolerances(tao,1.0d-12,0,0,0,0,ierr)
+      call TaoSetTolerances(tao,0,0,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetFromOptions(tao,ierr)
@@ -99,7 +99,7 @@
       call KSPSetFromOptions(ksp,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetTolerances(tao,1.0d-12,0.0d0,0.0d0,0.0d0,0.0d0,ierr)
+      call TaoSetTolerances(tao,0.0d0,0.0d0,0.0d0,ierr)
       CHKERRQ(ierr)
 
       ! Solve

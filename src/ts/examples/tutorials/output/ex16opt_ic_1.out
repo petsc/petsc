@@ -103,7 +103,6 @@ Tao Object: 1 MPI processes
       Reset steps: 0
   TaoLineSearch Object:   1 MPI processes
     type: more-thuente
-  convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-10,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=9.9553e-06
   Objective value=4.68544e-10

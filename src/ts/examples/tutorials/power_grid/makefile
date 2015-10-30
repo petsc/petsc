@@ -276,7 +276,7 @@ runex9adj:
 	   ${RM} -f ex9adj_1.tmp
 
 runex9opt:
-	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_fatol 0.0 -tao_frtol 0.0 -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason > ex9opt_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason > ex9opt_1.tmp 2>&1; \
 	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_1.tmp
 

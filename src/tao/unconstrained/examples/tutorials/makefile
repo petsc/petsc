@@ -87,7 +87,7 @@ runminsurf2:
 	${RM} -f minsurf2_1.tmp
 
 runminsurf2_2:
-	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_type nls -ksp_max_it 15 -tao_fatol 1.e-5 | grep -v "nls ksp" > minsurf2_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_type nls -ksp_max_it 15 | grep -v "nls ksp" > minsurf2_2.tmp 2>&1;\
 	${DIFF} output/minsurf2_2.out minsurf2_2.tmp || printf '${PWD}\nPossible problem with minsurf2_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f minsurf2_2.tmp
 

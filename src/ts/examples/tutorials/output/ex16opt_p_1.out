@@ -157,7 +157,6 @@ Tao Object: 1 MPI processes
   TaoLineSearch Object:   1 MPI processes
     type: more-thuente
   Active Set subset type: subvec
-  convergence tolerances: fatol=1e-13,   frtol=1e-13
   convergence tolerances: gatol=1e-13,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.22256e-07
   Objective value=1.4339e-12
