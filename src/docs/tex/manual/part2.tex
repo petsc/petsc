@@ -4966,13 +4966,13 @@ Table \ref{tab:IMEX:RK:PETSc}.
 as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
 implicitly and $G()$ explicitly. An IMEX formulation such as
 $M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
-solve  $g(t,y) - M x=0$ in place of $g(t,u)$. General cases such as
-$f(t,y,\dot{y})=g(t,y)$ are
+solve  $g(t,y) - M x=0$ in place of $G(t,u)$. General cases such as
+$F(t,y,\dot{y})=G(t,y)$ are
 not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
 %
-\begin{tabular}{|l|c|p{3in}|}
+\begin{tabular}{|l|p{1.7in}|p{2.8in}|}
 \hline
-$\dot{y}=g(t,y)$ & nonstiff ODE & $f(t,y,\dot{y}) = \dot{y}$,
+$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
 $G(t,y)=g(t,y)$\\
 \hline
 $\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
@@ -4981,14 +4981,16 @@ $G(t,y)=0$\\
 $M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
 $G(t,y)=0$\\
 \hline
+$M \dot{y} = g(t,y)$& nonstiff ODE w/ mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
+\hline
 $\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$,
 $G(t,y)=g(t,y)$\\
 \hline
 $M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
 $G(t,y)=M^{-1}g(t,y)$\\
 \hline
-$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $F(t,y,\dot{y}) = f(t,y,\dot{y})$,
-$G(t,y)=0$; the user needs to set TSSetEquationType() to
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE &
+$F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set TSSetEquationType() to
 TS\_EQ\_IMPLICIT or higher\\
 \hline
 \end{tabular}
@@ -4999,15 +5001,16 @@ TS\_EQ\_IMPLICIT or higher\\
 \begin{table}
 \centering
 \caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
-IMEX Runge-Kutta schemes.  For each method we listed the reference, the
+IMEX Runge-Kutta schemes.  For each method we listed the -ts\_arkimex\_type
+  name, the reference, the
   total number
   of stages/implicit stages, the order/stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, and dense output.}
 \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
-{\bf TS}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
-{\bf Name} &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+ &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
 \hline
 a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
 \hline
