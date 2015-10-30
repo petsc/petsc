@@ -23,11 +23,7 @@ PetscErrorCode PetscElementalInitializePackage(void)
 
   PetscFunctionBegin;
   if (El::Initialized()) PetscFunctionReturn(0);
-  { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Elemental) through the interface that needs references */
-    int zero = 0;
-    char **nothing = 0;
-    El::Initialize(zero,nothing);   /* called by the 1st call of MatCreate_Elemental */
-  }
+  El::Initialize();   /* called by the 1st call of MatCreate_Elemental */
   ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
