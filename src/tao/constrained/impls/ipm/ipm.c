@@ -530,7 +530,7 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_IPM"
-static PetscErrorCode TaoSetFromOptions_IPM(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_IPM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
   PetscErrorCode ierr;

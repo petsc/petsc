@@ -445,7 +445,7 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;

@@ -371,7 +371,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetFromOptions_MPI"
-static PetscErrorCode VecSetFromOptions_MPI(PetscOptions *PetscOptionsObject,Vec X)
+static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,Vec X)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE,set;

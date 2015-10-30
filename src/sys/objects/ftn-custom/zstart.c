@@ -278,7 +278,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 
-  *ierr = PetscOptionsCreate();
+  *ierr = PetscOptionsCreateDefault();
   if (*ierr) return;
   i = 0;
 #if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */

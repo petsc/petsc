@@ -715,7 +715,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GASM"
-static PetscErrorCode PCSetFromOptions_GASM(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;

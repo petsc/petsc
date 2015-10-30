@@ -746,7 +746,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 
-  ierr = PetscOptionsCreate();CHKERRQ(ierr);
+  ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
 
   /*
      We initialize the program name here (before MPI_Init()) because MPICH has a bug in
@@ -1320,7 +1320,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   /* Can be destroyed only after all the options are used */
-  ierr = PetscOptionsDestroy();CHKERRQ(ierr);
+  ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
 
   PetscGlobalArgc = 0;
   PetscGlobalArgs = 0;

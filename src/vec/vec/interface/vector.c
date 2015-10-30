@@ -1283,7 +1283,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
-static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,Vec vec)
+static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,Vec vec)
 {
   PetscBool      opt;
   VecType        defaultType;

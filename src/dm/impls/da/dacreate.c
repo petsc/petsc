@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_DA"
-PetscErrorCode  DMSetFromOptions_DA(PetscOptions *PetscOptionsObject,DM da)
+PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd    = (DM_DA*)da->data;

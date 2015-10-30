@@ -143,7 +143,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_TFS"
-static PetscErrorCode PCSetFromOptions_TFS(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_TFS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

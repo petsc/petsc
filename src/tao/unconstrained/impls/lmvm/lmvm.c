@@ -245,7 +245,7 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LMVM"
-static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
 

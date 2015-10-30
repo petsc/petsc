@@ -59,7 +59,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NRichardson"
-static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;

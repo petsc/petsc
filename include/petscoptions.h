@@ -31,14 +31,14 @@ PETSC_EXTERN PetscErrorCode PetscOptionsUsed(const char *,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsLeft(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsView(PetscViewer);
 
-PETSC_EXTERN PetscErrorCode PetscOptionsCreate(void);
+PETSC_EXTERN PetscErrorCode PetscOptionsCreateDefault(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsInsert(int*,char ***,const char[]);
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertFile(MPI_Comm,const char[],PetscBool );
 #if defined(PETSC_HAVE_YAML)
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm,const char[],PetscBool);
 #endif
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertString(const char[]);
-PETSC_EXTERN PetscErrorCode PetscOptionsDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscOptionsDestroyDefault(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsClear(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsPrefixPush(const char[]);
 PETSC_EXTERN PetscErrorCode PetscOptionsPrefixPop(void);
@@ -60,10 +60,14 @@ PETSC_EXTERN PetscBool PetscOptionsPublish;
 
 /*
     See manual page for PetscOptionsBegin()
+
+    PetscOptionsItem and PetscOptionsItems are a single option (such as ksp_type) and a collection of such single
+  options being handled with a PetscOptionsBegin/End()
+
 */
 typedef enum {OPTION_INT,OPTION_BOOL,OPTION_REAL,OPTION_FLIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_SCALAR_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY,OPTION_ELIST,OPTION_BOOL_ARRAY,OPTION_STRING_ARRAY} PetscOptionType;
-typedef struct _n_PetscOption* PetscOption;
-struct _n_PetscOption{
+typedef struct _n_PetscOptionItem* PetscOptionItem;
+struct _n_PetscOptionItem{
   char              *option;
   char              *text;
   void              *data;         /* used to hold the default value and then any value it is changed to by GUI */
@@ -74,20 +78,20 @@ struct _n_PetscOption{
   size_t            arraylength;   /* number of entries in data in the case that it is an array (of PetscInt etc) */
   PetscBool         set;           /* the user has changed this value in the GUI */
   PetscOptionType   type;
-  PetscOption       next;
+  PetscOptionItem   next;
   char              *pman;
   void              *edata;
 };
 
-typedef struct _p_PetscOptions {
+typedef struct _p_PetscOptionItems {
   PetscInt         count;
-  PetscOption      next;
+  PetscOptionItem  next;
   char             *prefix,*pprefix;
   char             *title;
   MPI_Comm         comm;
   PetscBool        printhelp,changedmethod,alreadyprinted;
   PetscObject      object;
-} PetscOptions;
+} PetscOptionItems;
 
 
 /*MC
@@ -136,9 +140,9 @@ $           currently set.
 
 M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
-             PetscOptions PetscOptionsObjectBase;\
-             PetscOptions *PetscOptionsObject = &PetscOptionsObjectBase; \
-             PetscMemzero(PetscOptionsObject,sizeof(PetscOptions)); \
+             PetscOptionItems PetscOptionsObjectBase;\
+             PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
+             PetscMemzero(PetscOptionsObject,sizeof(PetscOptionItems)); \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
@@ -170,8 +174,8 @@ M*/
 
 M*/
 #define PetscObjectOptionsBegin(obj) 0; do {                            \
-             PetscOptions PetscOptionsObjectBase;\
-             PetscOptions *PetscOptionsObject = &PetscOptionsObjectBase; \
+             PetscOptionItems PetscOptionsObjectBase;\
+             PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
              PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(PetscOptionsObject,obj);CHKERRQ(_5_ierr);
 
@@ -200,10 +204,10 @@ M*/
 M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private(PetscOptionsObject);CHKERRQ(_5_ierr);}} while (0)
 
-PETSC_EXTERN PetscErrorCode PetscOptionsBegin_Private(PetscOptions *,MPI_Comm,const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptions *,PetscObject);
-PETSC_EXTERN PetscErrorCode PetscOptionsEnd_Private(PetscOptions *);
-PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptions *,const char[]);
+PETSC_EXTERN PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *,MPI_Comm,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *);
+PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptionItems *,const char[]);
 
 /*MC
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
@@ -258,24 +262,24 @@ M*/
 #define PetscOptionsEnumArray(a,b,c,d,e,f,g) PetscOptionsEnumArray_Private(PetscOptionsObject,a,b,c,d,e,f,g)
 
 
-PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptions *,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptions *,const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsReal_Private(PetscOptions *,const char[],const char[],const char[],PetscReal,PetscReal*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsScalar_Private(PetscOptions *,const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsName_Private(PetscOptions *,const char[],const char[],const char[],PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsString_Private(PetscOptions *,const char[],const char[],const char[],const char[],char*,size_t,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsBool_Private(PetscOptions *,const char[],const char[],const char[],PetscBool ,PetscBool *,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptions *,const char[],const char[],const char[],PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptions *,const char[],const char[],const char[],PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptions *,const char[],const char[],const char[],PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsFList_Private(PetscOptions *,const char[],const char[],const char[],PetscFunctionList,const char[],char[],size_t,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsEList_Private(PetscOptions *,const char[],const char[],const char[],const char*const*,PetscInt,const char[],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsRealArray_Private(PetscOptions *,const char[],const char[],const char[],PetscReal[],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsScalarArray_Private(PetscOptions *,const char[],const char[],const char[],PetscScalar[],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsIntArray_Private(PetscOptions *,const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsStringArray_Private(PetscOptions *,const char[],const char[],const char[],char*[],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray_Private(PetscOptions *,const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptions *,const char[],const char[],const char[],const char *const*,PetscEnum[],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptionItems*,const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsReal_Private(PetscOptionItems*,const char[],const char[],const char[],PetscReal,PetscReal*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems*,const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsName_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsString_Private(PetscOptionItems*,const char[],const char[],const char[],const char[],char*,size_t,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsBool_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool ,PetscBool *,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsFList_Private(PetscOptionItems*,const char[],const char[],const char[],PetscFunctionList,const char[],char[],size_t,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsEList_Private(PetscOptionItems*,const char[],const char[],const char[],const char*const*,PetscInt,const char[],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems*,const char[],const char[],const char[],PetscReal[],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems*,const char[],const char[],const char[],PetscScalar[],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems*,const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems*,const char[],const char[],const char[],char*[],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum[],PetscInt*,PetscBool *);
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(void);

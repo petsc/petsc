@@ -1194,7 +1194,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_GL"
-static PetscErrorCode TSSetFromOptions_GL(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_GL(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_GL          *gl        = (TS_GL*)ts->data;
   char           tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";

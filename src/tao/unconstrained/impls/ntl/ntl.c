@@ -836,7 +836,7 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTL"
-static PetscErrorCode TaoSetFromOptions_NTL(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscErrorCode ierr;

@@ -657,7 +657,7 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTR"
-static PetscErrorCode TaoSetFromOptions_NTR(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;

@@ -307,7 +307,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_Pilut"
-static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -412,7 +412,7 @@ static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct",
                                                   "ext+i-cc", "standard", "standard-wts", "", "", "FF", "FF1"};
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
-static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -771,7 +771,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_ParaSails"
-static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -837,7 +837,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_AMS"
-static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -939,7 +939,7 @@ static PetscErrorCode PCView_HYPRE_AMS(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_ADS"
-static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -1626,7 +1626,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
-static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx;
@@ -1848,7 +1848,7 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_PFMG"
-PetscErrorCode PCSetFromOptions_PFMG(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
@@ -2065,7 +2065,7 @@ PetscErrorCode PCView_SysPFMG(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SysPFMG"
-PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_SysPFMG     *ex = (PC_SysPFMG*) pc->data;

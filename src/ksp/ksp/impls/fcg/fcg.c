@@ -513,7 +513,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FCG"
-PetscErrorCode KSPSetFromOptions_FCG(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;

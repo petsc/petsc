@@ -33,7 +33,7 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_GPCG"
-static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode ierr;

@@ -226,7 +226,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_PTScotch"
-PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptions *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode           ierr;
   PetscBool                flag;

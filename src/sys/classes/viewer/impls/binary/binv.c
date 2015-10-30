@@ -1390,7 +1390,7 @@ static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Binary"
-static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptions *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *binary = (PetscViewer_Binary*)v->data;

@@ -354,7 +354,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_MG"
-PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       m,levels = 1,cycles;

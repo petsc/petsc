@@ -444,7 +444,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceSetFromOptions_Polynomial"
-PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptions *PetscOptionsObject,PetscSpace sp)
+PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscErrorCode   ierr;
@@ -895,7 +895,7 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceSetFromOptions_DG"
-PetscErrorCode PetscSpaceSetFromOptions_DG(PetscOptions *PetscOptionsObject,PetscSpace sp)
+PetscErrorCode PetscSpaceSetFromOptions_DG(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
   PetscErrorCode ierr;
@@ -1921,7 +1921,7 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
-PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptions *PetscOptionsObject,PetscDualSpace sp)
+PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscBool      continuous, flg;
   PetscErrorCode ierr;
@@ -2183,7 +2183,7 @@ PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetFromOptions_Simple"
-PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscOptions *PetscOptionsObject,PetscDualSpace sp)
+PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -64,7 +64,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LCL"
-static PetscErrorCode TaoSetFromOptions_LCL(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscErrorCode ierr;

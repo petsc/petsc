@@ -1103,7 +1103,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_POUNDERS"
-static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;

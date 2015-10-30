@@ -32,7 +32,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_TRON"
-static PetscErrorCode TaoSetFromOptions_TRON(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;

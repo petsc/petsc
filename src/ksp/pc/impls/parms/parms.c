@@ -276,7 +276,7 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_PARMS"
-static PetscErrorCode PCSetFromOptions_PARMS(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_PARMS          *parms = (PC_PARMS*)pc->data;
   PetscBool         flag;

@@ -634,7 +634,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ASM"
-static PetscErrorCode PCSetFromOptions_ASM(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;

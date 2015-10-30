@@ -705,7 +705,7 @@ PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_AGMRES"
-PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       neig;

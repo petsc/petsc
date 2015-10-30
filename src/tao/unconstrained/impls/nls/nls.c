@@ -943,7 +943,7 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NLS"
-static PetscErrorCode TaoSetFromOptions_NLS(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;

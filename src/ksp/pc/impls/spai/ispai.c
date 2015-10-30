@@ -522,7 +522,7 @@ PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SPAI"
-static PetscErrorCode PCSetFromOptions_SPAI(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;

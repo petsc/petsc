@@ -444,7 +444,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Composite"
-static PetscErrorCode SNESSetFromOptions_Composite(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
   PetscErrorCode     ierr;

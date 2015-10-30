@@ -28,7 +28,8 @@
 #define MAXOPTIONSMONITORS 5
 #define MAXPREFIXES 25
 
-typedef struct {
+typedef struct _n_PetscOptions* PetscOptions;
+struct  _n_PetscOptions {
   int            N,argc,Naliases;
   char           **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
   char           *aliases1[MAXALIASES],*aliases2[MAXALIASES];
@@ -45,10 +46,10 @@ typedef struct {
   /* Prefixes */
   PetscInt prefixind,prefixstack[MAXPREFIXES];
   char     prefix[2048];
-} PetscOptionsTable;
+};
 
 
-static PetscOptionsTable      *options = 0;
+static PetscOptions      defaultoptions = NULL;
 
 /*
     Options events monitor
@@ -284,6 +285,7 @@ PetscErrorCode  PetscOptionsStringToBool(const char value[], PetscBool  *a)
 PetscErrorCode  PetscGetProgramName(char name[],size_t len)
 {
   PetscErrorCode ierr;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscInitialize() first");
@@ -297,10 +299,10 @@ PetscErrorCode  PetscGetProgramName(char name[],size_t len)
 PetscErrorCode  PetscSetProgramName(const char name[])
 {
   PetscErrorCode ierr;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   options->namegiven = PETSC_TRUE;
-
   ierr  = PetscStrncpy(options->programname,name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -690,6 +692,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
   PetscBool      flag = PETSC_FALSE;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) {
@@ -781,6 +784,7 @@ PetscErrorCode  PetscOptionsView(PetscViewer viewer)
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      isascii;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
@@ -814,6 +818,7 @@ PetscErrorCode  PetscOptionsView(PetscViewer viewer)
 PetscErrorCode  PetscOptionsViewError(void)
 {
   PetscInt       i;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (options->N) {
@@ -855,6 +860,7 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
   PetscInt       i;
   size_t         len       = 1,lent = 0;
   char           *coptions = NULL;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -915,6 +921,7 @@ PetscErrorCode  PetscOptionsPrefixPush(const char prefix[])
   PetscInt       start;
   char           buf[2048];
   PetscBool      key;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   PetscValidCharPointer(prefix,1);
@@ -949,6 +956,7 @@ PetscErrorCode  PetscOptionsPrefixPush(const char prefix[])
 PetscErrorCode  PetscOptionsPrefixPop(void)
 {
   PetscInt offset;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (options->prefixind < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"More prefixes popped than pushed");
@@ -969,7 +977,8 @@ PetscErrorCode  PetscOptionsPrefixPop(void)
 @*/
 PetscErrorCode  PetscOptionsClear(void)
 {
-  PetscInt i;
+  PetscInt     i;
+  PetscOptions options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) PetscFunctionReturn(0);
@@ -991,27 +1000,37 @@ PetscErrorCode  PetscOptionsClear(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsDestroy"
 /*@C
-    PetscOptionsDestroy - Destroys the option database.
+    PetscOptionsDestroy - Destroys an option database.
 
-    Note:
-    Since PetscOptionsDestroy() is called by PetscFinalize(), the user
-    typically does not need to call this routine.
+  Input Parameter:
+.  options - the PetscOptions object
 
    Level: developer
 
 .seealso: PetscOptionsInsert()
 @*/
-PetscErrorCode  PetscOptionsDestroy(void)
+PetscErrorCode  PetscOptionsDestroy(PetscOptions *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!options) PetscFunctionReturn(0);
   ierr = PetscOptionsClear();CHKERRQ(ierr);
-  free(options);
-  options = 0;
+  free(*options);
+  *options = NULL;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsDestroyDefault"
+PetscErrorCode  PetscOptionsDestroyDefault(void)
+{
+  PetscErrorCode ierr;
+
+  ierr = PetscOptionsDestroy(&defaultoptions);if (ierr) return ierr;
+  return 0;
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsSetValue"
@@ -1047,6 +1066,7 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
   char           fullname[2048];
   const char     *name = iname;
   PetscBool      gt,match;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -1139,6 +1159,7 @@ PetscErrorCode  PetscOptionsClearValue(const char iname[])
   PetscInt       N,n,i;
   char           **names,*name=(char*)iname;
   PetscBool      gt,match;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with -: Instead %s",name);
@@ -1197,6 +1218,7 @@ PetscErrorCode  PetscOptionsClearValue(const char iname[])
 PetscErrorCode  PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 {
   PetscErrorCode ierr;
+  PetscOptions   options = defaultoptions;
   PetscInt       n = options->Naliases;
   size_t         len;
   char           *newname = (char*)inewname,*oldname = (char*)ioldname;
@@ -1226,6 +1248,7 @@ PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],c
   size_t         len;
   char           **names,tmp[256];
   PetscBool      match;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -1313,6 +1336,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[],
   size_t         len;
   char           **names,tmp[256];
   PetscBool      match;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -2341,6 +2365,7 @@ PetscErrorCode  PetscOptionsUsed(const char *option,PetscBool *used)
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   *used = PETSC_FALSE;
@@ -2371,7 +2396,8 @@ PetscErrorCode  PetscOptionsUsed(const char *option,PetscBool *used)
 @*/
 PetscErrorCode  PetscOptionsAllUsed(PetscInt *N)
 {
-  PetscInt i,n = 0;
+  PetscInt     i,n = 0;
+  PetscOptions options = defaultoptions;
 
   PetscFunctionBegin;
   for (i=0; i<options->N; i++) {
@@ -2399,6 +2425,7 @@ PetscErrorCode  PetscOptionsLeft(void)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   for (i=0; i<options->N; i++) {
@@ -2413,27 +2440,42 @@ PetscErrorCode  PetscOptionsLeft(void)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCreate"
-/*
+/*@
     PetscOptionsCreate - Creates the empty options database.
 
+  Output Parameter:
+.   options - Options database object
+
+
+@*/
+PetscErrorCode  PetscOptionsCreate(PetscOptions *options)
+{
+  *options = (PetscOptions)malloc(sizeof(struct _n_PetscOptions));
+  if (!options) return PETSC_ERR_MEM;
+  memset(*options,0,sizeof(struct _n_PetscOptions));
+  (*options)->namegiven      = PETSC_FALSE;
+  (*options)->N              = 0;
+  (*options)->Naliases       = 0;
+  (*options)->numbermonitors = 0;
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsCreateDefault"
+/*
+    PetscOptionsCreateDefault - Creates the default global options database
+
 */
-PetscErrorCode  PetscOptionsCreate(void)
+PetscErrorCode  PetscOptionsCreateDefault(void)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  options = (PetscOptionsTable*)malloc(sizeof(PetscOptionsTable));
-  ierr    = PetscMemzero(options,sizeof(PetscOptionsTable));CHKERRQ(ierr);
-
-  options->namegiven      = PETSC_FALSE;
-  options->N              = 0;
-  options->Naliases       = 0;
-  options->numbermonitors = 0;
-
-  PetscFunctionReturn(0);
+  if (!defaultoptions) {
+    ierr = PetscOptionsCreate(&defaultoptions);if (ierr) return ierr;
+  }
+  return 0;
 }
 
 #undef __FUNCT__
@@ -2553,6 +2595,8 @@ $     monitor (const char name[], const char value[], void *mctx)
 @*/
 PetscErrorCode  PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
+  PetscOptions options = defaultoptions;
+
   PetscFunctionBegin;
   if (options->numbermonitors >= MAXOPTIONSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
   options->monitor[options->numbermonitors]          = monitor;
@@ -2583,6 +2627,7 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscOptions   options = defaultoptions;
 
   PetscFunctionBegin;
   for (i=0; i<options->numbermonitors; i++) {

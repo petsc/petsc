@@ -143,7 +143,7 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Test"
-static PetscErrorCode SNESSetFromOptions_Test(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Test(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Test      *ls = (SNES_Test*)snes->data;
   PetscErrorCode ierr;

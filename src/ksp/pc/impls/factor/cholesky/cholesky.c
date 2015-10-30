@@ -39,7 +39,7 @@ static PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
-static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 

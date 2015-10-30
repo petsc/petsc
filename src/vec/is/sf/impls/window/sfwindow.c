@@ -383,7 +383,7 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Window"
-static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptions *PetscOptionsObject,PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
