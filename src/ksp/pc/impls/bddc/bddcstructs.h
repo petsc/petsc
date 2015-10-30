@@ -69,11 +69,15 @@ struct _PCBDDCReuseMumps {
   PC         interior_solver;
   PC         correction_solver;
   IS         is_R;
-  /* objects to hanlde Schur complement solution */
+  /* objects to handle Schur complement solution */
   Vec        rhs_B;
   Vec        sol_B;
   IS         is_B;
   VecScatter correction_scatter_B;
+  /* handle benign trick without change of basis on pressures */
+  PetscInt    benign_n;
+  IS          *benign_zerodiag_subs;
+  PetscScalar *benign_save_vals;
 };
 typedef struct _PCBDDCReuseMumps *PCBDDCReuseMumps;
 

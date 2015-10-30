@@ -64,7 +64,7 @@ PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
 PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,IS*);
-PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag);
+PetscErrorCode PCBDDCBenignCheck(PC,IS);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
@@ -85,7 +85,7 @@ PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
 PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping);
 PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
 PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscBool,PetscInt[],PetscInt[],PetscInt,PetscBool,PetscBool,PetscBool,PetscBool);
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscBool,PetscInt[],PetscInt[],PetscInt,PetscBool,PetscBool,PetscBool,PetscBool,PetscInt,PetscInt[],IS[]);
 
 #endif
 
