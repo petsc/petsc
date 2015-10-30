@@ -54,10 +54,9 @@ runchwirut2f:
 	${DIFF} output/chwirut2f_1.out chwirut2f_1.tmp || printf '${PWD}\nPossible problem with chwirut2f_1 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut2f_1.tmp
 
-TESTEXAMPLES_C             = chwirut2.PETSc runchwirut2 chwirut2.rm
-TESTEXAMPLES_DOUBLEINT32   = chwirut1.PETSc runchwirut1 chwirut1.rm
+TESTEXAMPLES_C_NOTSINGLE   = chwirut1.PETSc runchwirut1 chwirut1.rm chwirut2.PETSc runchwirut2 chwirut2.rm
 TESTEXAMPLES_C_X_MPIUNI    = chwirut1.PETSc runchwirut1 chwirut1.rm 
-TESTEXAMPLES_FORTRAN       = chwirut1f.PETSc runchwirut1f chwirut1f.rm \
+TESTEXAMPLES_FORTRAN_NOTSINGLE = chwirut1f.PETSc runchwirut1f chwirut1f.rm \
                              chwirut2f.PETSc runchwirut2f chwirut2f.rm 
 TESTEXAMPLES_FORTRAN_MPIUNI= chwirut1f.PETSc runchwirut1f chwirut1f.rm 
 

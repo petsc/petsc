@@ -1128,17 +1128,21 @@ runex73f90t:
 	   ${RM} -f ex73f90t.tmp
 
 # This is way too slow  ex30.PETSc runex30 ex30.rm
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
-                                 runex3_2 runex3_3 runex3_4 ex3.rm  ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
+TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
+                                 runex3_2 runex3_3 runex3_4 ex3.rm  ex5.PETSc runex5  \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
-                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden runex5_5_ls \
-                                 runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
-                                 runex5_5_nasm runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda \
-                                 runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
+                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden \
+                                 runex5_5_ngmres_fas runex5_5_fas_additive \
+                                 runex5_5_nasm   \
+                                 ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm \
-                                 ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm \
                                  ex16.PETSc runex16 runex16_2 ex16.rm \
-                                 ex18.PETSc runex18 ex18.rm \
+                                 ex25.PETSc runex25 runex25_2 ex25.rm \
+                                 ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
+                                 ex35.PETSc runex35_3 runex35_4 runex35_5 runex35_6 runex35_8 ex35.rm \
+                                 ex70.PETSc ex70.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc runex5_2 runex5_3 runex5_4 runex5_5_ls runex5_5_fas runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda runex5_6  ex5.rm \
+                                 ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm ex16.PETSc runex16_3 ex16.rm ex18.PETSc runex18 ex18.rm ex21.PETSc runex21 ex21.rm \
                                  ex19.PETSc runex19 runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
                                  runex19_fdcoloring_wp_bcols1 runex19_fdcoloring_ds_bcols1 \
                                  runex19_fdcoloring_wp_baij runex19_fdcoloring_ds_baij runex19_5 \
@@ -1146,23 +1150,20 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 runex19_greedy_coloring \
                                  runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton ex19.rm \
-                                 ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
-                                 ex25.PETSc runex25 runex25_2 ex25.rm \
-                                 ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
-                                 ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
+                                 ex20.PETSc runex20 ex20.rm ex22.PETSc runex22 ex22.rm \
+                                 ex35.PETSc runex35 runex35_2  runex35_7 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
-                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
-                                 ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
-TESTEXAMPLES_DOUBLEINT32       = ex16.PETSc runex16_3 ex16.rm
+                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm ex58.PETSc runex58 runex58_2 ex58.rm 
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
-TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm ex73f90t.PETSc runex73f90t  ex73f90t.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_6 ex9.rm
-TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
+TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_6 ex9.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX_NOTSINGLE = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm
-TESTEXAMPLES_F90	       = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
+TESTEXAMPLES_F90_NOTSINGLE     = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
 TESTEXAMPLES_13		       =
 TESTEXAMPLES_MATLAB_ENGINE     =
 TESTEXAMPLES_SAWS	       =

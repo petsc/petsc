@@ -41,6 +41,8 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
+      if not self.scalartypes.precision == 'single':
+        jobs.append('C_NotSingle')
       if hasattr(self.compilers, 'CXX'):
         rjobs.append('Cxx')
       if self.x.found:
@@ -49,8 +51,12 @@ class Configure(config.base.Configure):
         jobs.append('F90_DataTypes')
       elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
+        if not self.scalartypes.precision == 'single':
+          jobs.append('Fortran_NotSingle')
         if self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if not self.scalartypes.precision == 'single':
+            jobs.append('F90_NotSingle')
           if self.scalartypes.scalartype.lower() == 'complex':
             rjobs.append('F90_Complex')
           else:
@@ -61,10 +67,14 @@ class Configure(config.base.Configure):
           rjobs.append('Fortran_Complex')
         else:
           rjobs.append('Fortran_NoComplex')
+          if not self.scalartypes.precision == 'single':
+            jobs.append('Fortran_NoComplex_NotSingle')
       if self.scalartypes.scalartype.lower() == 'complex':
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
+        if not self.scalartypes.precision == 'single':
+          jobs.append('C_NoComplex_NotSingle')
         if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
