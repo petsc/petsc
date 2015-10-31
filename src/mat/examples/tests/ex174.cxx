@@ -28,7 +28,7 @@ int main(int argc,char **args)
   El::UpperOrLower uplo    = El::UPPER;
   El::SortType     sort    = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
   El::HermitianEigSubset<PetscElemScalar>       subset;
-  const El::HermitianEigCtrl<PetscElemScalar>   ctrl;
+  El::HermitianEigCtrl<PetscElemScalar>   ctrl;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
