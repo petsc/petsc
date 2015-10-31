@@ -460,7 +460,7 @@ M*/
      Basic constants
 */
 #if defined(PETSC_USE_REAL___FLOAT128)
-#define PETSC_PI                 M_PIq
+#define PETSC_PI                 M_PI
 #elif defined(M_PI)
 #define PETSC_PI                 M_PI
 #else
