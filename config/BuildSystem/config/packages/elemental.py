@@ -40,8 +40,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DEL_DISABLE_PARMETIS=ON')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
     args.append('-DEL_DISABLE_SCALAPACK=ON')
-    args.append('-DMETIS_INCLUDE_DIRS:STRING="'+self.metis.include[0]+'"')
-    args.append('-DMETIS_LIBRARIES:STRING="'+self.libraries.toString(self.metis.lib)+'"')
+    args.append('-DMETIS_INCLUDE_DIR:STRING="'+self.metis.include[0]+'"')
+    args.append('-DMETIS_LIBRARY:STRING="'+self.libraries.toString(self.metis.lib)+'"')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
