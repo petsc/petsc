@@ -74,8 +74,10 @@
       m       = 8
       n       = 7
       five    = 5
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,8 +189,8 @@
 !
 !  Set a user-defined shell preconditioner if desired
 !
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-user_defined_pc',      &
-     &                    user_defined_pc,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                         '-user_defined_pc',user_defined_pc,ierr)
 
       if (user_defined_pc) then
 

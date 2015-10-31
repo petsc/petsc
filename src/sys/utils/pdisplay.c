@@ -50,7 +50,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
   }
   ierr = PetscStrtolower(work);CHKERRQ(ierr);
   if (env) {
-    ierr = PetscOptionsGetString(NULL,work,env,len,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,work,env,len,&flg);CHKERRQ(ierr);
     if (flg) {
       if (flag) *flag = PETSC_TRUE;
     } else { /* now check environment */
@@ -67,7 +67,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
       if (flag) *flag = flg;
     }
   } else {
-    ierr = PetscOptionsHasName(NULL,work,flag);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,work,flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -114,7 +114,7 @@ PetscErrorCode  PetscSetDisplay(void)
   const char     *str;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode  PetscSetDisplay(void)
   if (!str) str = ":0.0";
 #if defined(PETSC_HAVE_X)
   flag = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flag,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-x_virtual",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     /*  this is a crude hack, but better than nothing */
     ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL);CHKERRQ(ierr);

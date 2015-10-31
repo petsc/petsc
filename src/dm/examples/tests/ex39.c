@@ -17,8 +17,8 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsGetInt(0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,0,"-dof",&dof,0);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xstart,0,0,&m,0,0);CHKERRQ(ierr);

@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscInt       ridx[2],cidx[2];
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&loadmat);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -33,7 +33,7 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a sbaij mat with bs>1  */
     mbs  =8;
-    ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
     m    = mbs*bs;
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);

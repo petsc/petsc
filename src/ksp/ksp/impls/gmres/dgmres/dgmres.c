@@ -552,7 +552,7 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
   if (iascii) {
     if (dgmres->force) PetscViewerASCIIPrintf(viewer, "   DGMRES: Adaptive strategy is used: FALSE\n");
     else PetscViewerASCIIPrintf(viewer, "   DGMRES: Adaptive strategy is used: TRUE\n");
-    ierr = PetscOptionsHasName(NULL, "-ksp_dgmres_harmonic_ritz", &isharmonic);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &isharmonic);CHKERRQ(ierr);
     if (isharmonic) {
       ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig);CHKERRQ(ierr);
     } else {
@@ -841,7 +841,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
   /* copy the Hessenberg matrix to work space */
   ierr = PetscMemcpy(A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
   if (flag) {
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     /* Transpose the Hessenberg matrix */

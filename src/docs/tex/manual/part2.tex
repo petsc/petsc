@@ -5890,7 +5890,7 @@ be used.  For example, when no options prefix is desired in the
 routine PetscOptionsGetInt(), one must use the following command in
 Fortran:
 \begin{tabbing}
-    call PetscOptionsGetInt(PETSC\_NULL\_CHARACTER,'-name',N,flg,ierr)
+    call PetscOptionsGetInt(PETSC\_NULL\_OBJECT,PETSC\_NULL\_CHARACTER,'-name',N,flg,ierr)
 \end{tabbing}
 
 This Fortran requirement is inconsistent with C, where the
@@ -7050,7 +7050,7 @@ To locate options in the database, one should use the
 commands
 \begin{tabbing}
   PetscOptionsHasName(char *pre,char *name,PetscBool  *flg);\\
-  PetscOptionsGetInt(char *pre,char *name,int *value,PetscBool  *flg);\\
+  PetscOptionsGetInt(PetscOptions options,char *pre,char *name,int *value,PetscBool  *flg);\\
   PetscOptionsGetReal(char *pre,char *name,double *value,PetscBool  *flg);\\
   PetscOptionsGetString(char *pre,char *name,char *value,int maxlen,PetscBool  *flg);\\
   PetscOptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,PetscBool  *flg);\\

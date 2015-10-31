@@ -28,33 +28,33 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
 
   /* Readoptions */
-  ierr = PetscOptionsGetInt(NULL,"-NX",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-NY",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-w",&w,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-NX",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-NY",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-w",&w,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-xperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DM_BOUNDARY_PERIODIC;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-xperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-yperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) by = DM_BOUNDARY_PERIODIC;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-yperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) by = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-xghosted",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DM_BOUNDARY_GHOSTED;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-xghosted",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-yghosted",&flg,NULL);CHKERRQ(ierr); if (flg) by = DM_BOUNDARY_GHOSTED;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-yghosted",&flg,NULL);CHKERRQ(ierr); if (flg) by = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-star",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-star",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-box",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_BOX;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-box",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_BOX;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-testorder",&testorder,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-testorder",&testorder,NULL);CHKERRQ(ierr);
   /*
       Test putting two nodes in x and y on each processor, exact last processor
       in x and y gets the rest.
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
     ierr = PetscMalloc1(m,&lx);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer sviewer;
 

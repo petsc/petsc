@@ -73,11 +73,11 @@ int main(int argc,char **argv)
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
-  PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);
-  PetscOptionsGetInt(NULL,"-my",&user.my,NULL);
+  PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL);
+  PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);
   N  = user.mx*user.my;
   dt = .5/PetscMax(user.mx,user.my);
-  PetscOptionsGetReal(NULL,"-param",&user.param,NULL);
+  PetscOptionsGetReal(NULL,NULL,"-param",&user.param,NULL);
   if (user.param >= param_max || user.param <= param_min) SETERRQ(PETSC_COMM_SELF,1,"Parameter is out of range");
 
   /*

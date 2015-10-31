@@ -213,14 +213,14 @@ int main(int argc,char **argv)
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ctx.k = .9;
-  ierr  = PetscOptionsGetScalar(NULL,"-k",&ctx.k,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetScalar(NULL,NULL,"-k",&ctx.k,NULL);CHKERRQ(ierr);
   ierr  = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
   ierr  = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
   u[0]  = 1;
   u[1]  = .7;
   u[2]  = 0;
   ierr  = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetVec(NULL,"-initial",ctx.initialsolution,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetVec(NULL,NULL,"-initial",ctx.initialsolution,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

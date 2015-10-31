@@ -65,10 +65,10 @@ int main(int argc,char **argv)
   ierr          = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   appctx.a      = 1.0;
   appctx.d      = 0.0;
-  ierr          = PetscOptionsGetScalar(NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
-  ierr          = PetscOptionsGetScalar(NULL,"-d",&appctx.d,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetScalar(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetScalar(NULL,NULL,"-d",&appctx.d,NULL);CHKERRQ(ierr);
   appctx.upwind = PETSC_TRUE;
-  ierr          = PetscOptionsGetBool(NULL,"-upwind",&appctx.upwind,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetBool(NULL,NULL,"-upwind",&appctx.upwind,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -60, 1, 1,NULL,&da);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -382,7 +382,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 {
   PetscErrorCode ierr;
   const TaoType  default_type = TAOLMVM;
-  const char     *prefix;
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
   PetscBool      flg;
@@ -391,9 +390,8 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-  ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
   /* So no warnings are given about unused options */
-  ierr = PetscOptionsHasName(prefix,"-tao_ls_type",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_ls_type",&flg);CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   {

@@ -131,23 +131,23 @@ int main(int argc,char **argv)
   user.width       = 1.;
   user.ploading    = -5e3;
 
-  ierr = PetscOptionsGetReal(NULL,"-arc",&user.arc,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,&muflg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-lambda",&user.lambda,&lambdaflg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-rad",&user.rad,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-height",&user.height,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-width",&user.width,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-loading",&user.loading,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-ploading",&user.ploading,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-poisson",&poisson,&poissonflg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-young",&young,&youngflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-arc",&user.arc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,&muflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lambda",&user.lambda,&lambdaflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-rad",&user.rad,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-height",&user.height,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-width",&user.width,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-loading",&user.loading,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-ploading",&user.ploading,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-poisson",&poisson,&poissonflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-young",&young,&youngflg);CHKERRQ(ierr);
   if ((youngflg || poissonflg) || !(muflg || lambdaflg)) {
     /* set the lame' parameters based upon the poisson ratio and young's modulus */
     user.lambda = poisson*young / ((1. + poisson)*(1. - 2.*poisson));
     user.mu     = young/(2.*(1. + poisson));
   }
-  ierr = PetscOptionsGetBool(NULL,"-view",&view,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-view_line",&viewline,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view",&view,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view_line",&viewline,NULL);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x_disp");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_disp");CHKERRQ(ierr);

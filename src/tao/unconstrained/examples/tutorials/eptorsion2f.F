@@ -76,10 +76,12 @@
       Ny = PETSC_DECIDE
 
 !     Check for any command line arguments that might override defaults
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-mx",mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-my",my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-par",              &
-     &                         param,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-my',my,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-par',param,flg,ierr)
 
 
 !     Set up distributed array and vectors
@@ -113,15 +115,15 @@
       call FormInitialGuess(x,ierr)
       call TaoSetInitialVector(tao,x,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testmonitor",flg, &
-     &     ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-testmonitor',flg,ierr)
       if (flg) then
          call TaoSetMonitor(tao,Monitor,dummy,PETSC_NULL_FUNCTION,      &
      &        ierr)
       endif
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testconvergence", &
-     &     flg, ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,  &
+     &                         '-testconvergence',flg, ierr)
       if (flg) then
          call TaoSetConvergenceTest(tao,ConvergenceTest,dummy,          &
      &        ierr)
@@ -509,7 +511,7 @@
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,             &
      &     reason,ierr)
       if (mod(its,5) .ne. 0) then
-         call PetscPrintf(PETSC_COMM_WORLD,"iteration multiple of 5\n",  &
+         call PetscPrintf(PETSC_COMM_WORLD,'iteration multiple of 5\n',  &
      &        ierr)
       endif
 

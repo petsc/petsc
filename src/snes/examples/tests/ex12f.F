@@ -50,7 +50,8 @@
       i0 = 0
       i3 = 3
       N  = 10
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                        '-n',N,flg,ierr)
       h = 1.0/(N-1.0)
       ctx(6) = N
       ctx(4) = PETSC_COMM_WORLD

@@ -212,8 +212,8 @@
       user%lambda = 6.0
       ione = 1
       nfour = -4
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',             &
-     &     user%lambda,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+     &                        '-par',user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
      &     then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
@@ -303,8 +303,8 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
-     &     matrix_free,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+     &                         '-snes_mf',matrix_free,ierr)
       if (.not. matrix_free) then
         call DMSetMatType(da,MATAIJ,ierr)
         call DMCreateMatrix(da,J,ierr)

@@ -18,7 +18,8 @@
       list1(6) = ''
 
       print*, list1(1)
-      call PetscOptionsGetEnum('joe_','-jeff',list1,opt,set,ierr)
+      call PetscOptionsGetEnum(PETSC_NULL_OBJECT,'joe_','-jeff',             &
+     &                         list1,opt,set,ierr)
       write(*,*) 'opt is ', opt
       write(*,*) 'set is ', set
 

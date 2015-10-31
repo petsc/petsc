@@ -251,7 +251,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   PetscViewer    viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_check_jacobian_view",&complete_print);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_check_jacobian_view",&complete_print);CHKERRQ(ierr);
   if (A != snes->jacobian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot check Jacobian with alternative preconditioner");
 
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);

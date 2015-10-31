@@ -147,7 +147,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->port_yr = 1.0;
   draw->popup   = NULL;
 
-  ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
   draw->savefilename  = NULL;
   draw->savefilemovie = PETSC_FALSE;
@@ -206,7 +206,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   if (match) PetscFunctionReturn(0);
 
   /*  User requests no graphics */
-  ierr = PetscOptionsHasName(NULL,"-nox",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)draw)->options,NULL,"-nox",&flg);CHKERRQ(ierr);
 
   /*
      This is not ideal, but it allows codes to continue to run if X graphics
@@ -350,7 +350,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
   if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;
   else {
-    ierr = PetscOptionsHasName(NULL,"-nox",&nox);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)draw)->options,NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
     if (!nox) def = PETSC_DRAW_WIN32;

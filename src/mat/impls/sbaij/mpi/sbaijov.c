@@ -32,7 +32,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
 
   /* ----- previous non-scalable implementation ----- */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsHasName(NULL, "-IncreaseOverlap_old", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-IncreaseOverlap_old", &flg);CHKERRQ(ierr);
   if (flg) { /* previous non-scalable implementation */
     printf("use previous non-scalable implementation...\n");
     for (i=0; i<ov; ++i) {

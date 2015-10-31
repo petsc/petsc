@@ -38,7 +38,8 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n = 50
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+     &                        '-n',n,flg,ierr)
 
 !  Create a vector, specifying only its global dimension.
 !  When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
