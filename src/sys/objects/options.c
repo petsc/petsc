@@ -1077,7 +1077,7 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
 #elif defined(PETSC_HAVE_STRICMP)
     match = stricmp(options->aliases1[i],name);
 #else
-    badnews bears in breaking training
+    Error
 #endif
     if (!match) {
       name = options->aliases2[i];
@@ -1090,7 +1090,13 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
   names = options->names;
 
   for (i=0; i<N; i++) {
+#if defined(PETSC_HAVE_STRCASECMP)
     gt = strcasecmp(names[i],name);
+#elif defined(PETSC_HAVE_STRICMP)
+    gt = stricmp(names[i],name);
+#else
+    Error
+#endif
     if (!gt) {
       if (options->values[i]) free(options->values[i]);
       len = value ? strlen(value) : 0;
