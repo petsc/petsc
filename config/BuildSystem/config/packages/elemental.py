@@ -21,7 +21,8 @@ class Configure(config.package.CMakePackage):
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis',self)
-    self.deps            = [self.mpi,self.blasLapack,self.metis]
+    self.parmetis        = framework.require('config.packages.parmetis',self)
+    self.deps            = [self.mpi,self.blasLapack,self.metis,self.parmetis]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -37,11 +38,13 @@ class Configure(config.package.CMakePackage):
     args.append('-DBUILD_KISSFFT=OFF')
     args.append('-DEL_BUILD_METIS=OFF')
     args.append('-DEL_BUILD_PARMETIS=OFF')
-    args.append('-DEL_DISABLE_PARMETIS=ON')
+    #args.append('-DEL_DISABLE_PARMETIS=ON')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
     args.append('-DEL_DISABLE_SCALAPACK=ON')
     args.append('-DMETIS_INCLUDE_DIR:STRING="'+self.metis.include[0]+'"')
     args.append('-DMETIS_LIBRARY:STRING="'+self.libraries.toString(self.metis.lib)+'"')
+    args.append('-DPARMETIS_INCLUDE_DIR:STRING="'+self.parmetis.include[0]+'"')
+    args.append('-DPARMETIS_LIBRARY:STRING="'+self.libraries.toString(self.parmetis.lib)+'"')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
