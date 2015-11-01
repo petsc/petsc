@@ -95,6 +95,7 @@ PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetErrorIfNotConverged(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetErrorIfNotConverged(KSP,PetscBool  *);
 PETSC_EXTERN PetscErrorCode KSPSetComputeEigenvalues(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPSetComputeRitz(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetComputeEigenvalues(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetComputeSingularValues(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetComputeSingularValues(KSP,PetscBool *);
@@ -148,6 +149,7 @@ PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP,KSP*);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal[],PetscReal[],PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal[],PetscReal[]);
+PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP,PetscBool,PetscBool,PetscInt *,Vec[],PetscReal[],PetscReal[]);
 
 /*E
 
