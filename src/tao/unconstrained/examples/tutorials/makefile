@@ -72,12 +72,12 @@ runminsurf1:
 	${RM} -f minsurf1_1.tmp
 
 runminsurf1_2:
-	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_type bmrm -mx 10 -my 8 > minsurf1_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_type bmrm -mx 10 -my 8 -tao_gttol 1.e-5 > minsurf1_2.tmp 2>&1;\
 	${DIFF} output/minsurf1_2.out minsurf1_2.tmp || printf '${PWD}\nPossible problem with minsurf1_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f minsurf1_2.tmp
 
 runminsurf1_3:
-	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_type lmvm -mx 10 -my 8 > minsurf1_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_type lmvm -mx 10 -my 8 -tao_gttol 1.e-5 > minsurf1_3.tmp 2>&1;\
 	${DIFF} output/minsurf1_3.out minsurf1_3.tmp || printf '${PWD}\nPossible problem with minsurf1_3 stdout, diffs above \n=========================================\n';\
 	${RM} -f minsurf1_3.tmp
 

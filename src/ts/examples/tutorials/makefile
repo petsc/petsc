@@ -434,13 +434,13 @@ runex16adj:
 	   ${RM} -f ex16adj_1.tmp
 
 runex16opt_p:
-	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor > ex16opt_p_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  -tao_gttol 1.e-5 > ex16opt_p_1.tmp 2>&1; \
 	   ${DIFF} output/ex16opt_p_1.out ex16opt_p_1.tmp || printf "${PWD}\nPossible problem with ex16opt_p_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex16opt_p_1.tmp
 
 
 runex16opt_ic:
-	-@${MPIEXEC} -n 1 ./ex16opt_ic -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  > ex16opt_ic_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex16opt_ic -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  -tao_gttol 1.e-5 > ex16opt_ic_1.tmp 2>&1; \
 	   ${DIFF} output/ex16opt_ic_1.out ex16opt_ic_1.tmp || printf "${PWD}\nPossible problem with ex16opt_ic_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex16opt_ic_1.tmp
 
