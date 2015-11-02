@@ -1,12 +1,20 @@
+  0 KSP Residual norm 1.888789530506e+02 
+  1 KSP Residual norm 2.450121288569e+01 
+  2 KSP Residual norm 2.093125048465e-01 
+  3 KSP Residual norm 1.152316110901e-02 
 ---------------------BDDC stats-------------------------------
-Number of degrees of freedom               :       42 
-Number of iterations                       :        2 
-Eigenvalues preconditioned operator        : 1.00e+00 1.03e+00
-Error betweeen exact and computed solution : 1.95e-03
---------------------------------------------------------------
-------------------FETI-DP stats-------------------------------
-Number of degrees of freedom               :        6 
+Number of degrees of freedom               :      342 
 Number of iterations                       :        3 
-Eigenvalues preconditioned operator        : 1.00e+00 1.04e+00
-Error betweeen exact and computed solution : 6.39e-14
+Eigenvalues preconditioned operator        : 1.00e+00 1.26e+00
+Error betweeen exact and computed solution : 1.76e-03
+--------------------------------------------------------------
+  0 KSP Residual norm 2.331837546480e+01 
+  1 KSP Residual norm 6.276419143764e-01 
+  2 KSP Residual norm 8.569570964028e-03 
+  3 KSP Residual norm 2.093131537284e-04 
+------------------FETI-DP stats-------------------------------
+Number of degrees of freedom               :       31 
+Number of iterations                       :        3 
+Eigenvalues preconditioned operator        : 1.01e+00 1.26e+00
+Error betweeen exact and computed solution : 6.02e-05
 --------------------------------------------------------------
