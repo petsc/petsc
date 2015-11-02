@@ -65,6 +65,7 @@ typedef struct {
   PetscInt      *benign_p0_lidx;
   PetscInt      *benign_p0_gidx;
   PetscBool     benign_null;
+  PetscBool     benign_change_explicit;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
   PetscBool     use_vertices;

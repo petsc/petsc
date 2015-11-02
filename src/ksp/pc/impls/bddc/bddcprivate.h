@@ -59,12 +59,14 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 PetscErrorCode MatDetectDisconnectedComponents(Mat,PetscBool,PetscInt*,IS*[]);
 PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
+PetscErrorCode PCBDDCReuseSolversChangeInterior(PCBDDCReuseMumps,Vec,Vec,PetscBool);
 
 /* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
 PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,IS*);
 PetscErrorCode PCBDDCBenignCheck(PC,IS);
+PetscErrorCode PCBDDCBenignShellMat(PC,PetscBool);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);

@@ -28,7 +28,7 @@ PETSC_STATIC_INLINE PetscErrorCode SparseRankOneUpdate(PetscScalar *S,PetscInt n
 /* if v2 is not present, correction is done in-place */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCReuseSolversChangeInterior"
-static PetscErrorCode PCBDDCReuseSolversChangeInterior(PCBDDCReuseMumps ctx, Vec v, Vec v2, PetscBool sol)
+PetscErrorCode PCBDDCReuseSolversChangeInterior(PCBDDCReuseMumps ctx, Vec v, Vec v2, PetscBool sol)
 {
   PetscScalar    *array;
   PetscScalar    *array2;
@@ -957,6 +957,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
       ierr = PetscFree(cs_AIB);CHKERRQ(ierr);
       ierr = VecDestroyVecs(benign_n,&benign_AIIm1_ones);CHKERRQ(ierr);
+      if (!reuse_solvers) {
+        for (i=0;i<benign_n;i++) {
+          ierr = ISDestroy(&is_p_r[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(is_p_r);CHKERRQ(ierr);
+      }
     } else { /* we can't use MUMPS when size_schur == size_of_the_problem */
       ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&S_all);CHKERRQ(ierr);
       reuse_solvers = PETSC_FALSE; /* TODO: why we can't reuse the solvers here? */

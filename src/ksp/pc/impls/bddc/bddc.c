@@ -1000,7 +1000,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   Vec            used_vec;
   PetscBool      copy_rhs = PETSC_TRUE;
   PetscBool      benign_correction_is_zero = PETSC_FALSE;
-  PetscBool      iscg;
+  PetscBool      iscg = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
@@ -1110,9 +1110,14 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       /* swap local iteration matrix (with the benign trick, amat == pmat) */
-      ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
-      pcbddc->benign_original_mat = matis->A;
-      matis->A = pcbddc->local_mat;
+      if (pcbddc->benign_n && !pcbddc->benign_change_explicit) {
+        /* benign shell mat mult for matis->A and pcis->A_IB*/
+        ierr = PCBDDCBenignShellMat(pc,PETSC_FALSE);CHKERRQ(ierr);
+      } else {
+        ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_FALSE);CHKERRQ(ierr);
+        pcbddc->benign_original_mat = matis->A;
+        matis->A = pcbddc->local_mat;
+      }
     } else {
       ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1284,9 +1289,13 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (pcbddc->benign_original_mat) {
     Mat_IS *matis = (Mat_IS*)pc->mat->data;
 
-    pcbddc->local_mat = matis->A;
-    matis->A = pcbddc->benign_original_mat;
-    pcbddc->benign_original_mat = NULL;
+    if (pcbddc->benign_n && !pcbddc->benign_change_explicit) {
+      ierr = PCBDDCBenignShellMat(pc,PETSC_TRUE);CHKERRQ(ierr);
+    } else {
+      pcbddc->local_mat = matis->A;
+      matis->A = pcbddc->benign_original_mat;
+      pcbddc->benign_original_mat = NULL;
+    }
   }
 
   /* get solution in original basis */
@@ -1452,14 +1461,18 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->benign_saddle_point) {
     PC_IS* pcis = (PC_IS*)pc->data;
 
+    if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->use_change_of_basis) pcbddc->benign_change_explicit = PETSC_TRUE;
     /* detect local saddle point and change the basis in pcbddc->local_mat */
     ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
-    /* pop B0 mat from pcbddc->local_mat */
+    /* pop B0 mat from local mat */
     ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
     /* set flag in pcis to not reuse submatrices during PCISCreate */
-    pcis->reusesubmatrices = PETSC_FALSE;
+    if (pc->flag == SAME_NONZERO_PATTERN && pcbddc->benign_n && !pcbddc->benign_change_explicit && !pcbddc->dbg_flag) {
+      pcis->reusesubmatrices = PETSC_TRUE;
+    } else {
+      pcis->reusesubmatrices = PETSC_FALSE;
+    }
   }
-
   /* propagate relevant information */
 #if !defined(PETSC_USE_COMPLEX) /* workaround for reals */
   if (matis->A->symmetric_set) {

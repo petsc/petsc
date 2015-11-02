@@ -152,6 +152,18 @@ struct _PCBDDCChange_ctx {
 };
 typedef struct _PCBDDCChange_ctx *PCBDDCChange_ctx;
 
+/* MatShell context for benign mat mults */
+struct _PCBDDCBenignMatMult_ctx {
+  Mat         A;
+  PetscInt    benign_n;
+  IS          *benign_zerodiag_subs;
+  PetscScalar *work;
+  PetscBool   apply_left;
+  PetscBool   apply_right;
+  PetscBool   apply_p0;
+};
+typedef struct _PCBDDCBenignMatMult_ctx *PCBDDCBenignMatMult_ctx;
+
 /* feti-dp mat */
 struct _FETIDPMat_ctx {
   PetscInt   n_lambda;
