@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '391680107b43bc5387d4817eb176097b9ccd3b43'
+    self.gitcommit        = '2c0b801169ef43ff8bee0e99c4799cfe28033fcc'
     self.download          = ['git://https://github.com/elemental/Elemental']
     self.liblist          = [['libEl.a','libElSuiteSparse.a','libpmrrr.a']]
     self.includes         = ['El.hpp']
