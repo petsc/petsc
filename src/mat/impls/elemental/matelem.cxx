@@ -131,10 +131,13 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscScalar *vals,InsertMode imode)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscInt       i,j,rrank,ridx,crank,cidx,erow,ecol,elrow,elcol;
-  const El::Grid &grid = a->emat->Grid();
+  PetscInt       i,j,rrank,ridx,crank,cidx,erow,ecol,numQueues=0;
 
   PetscFunctionBegin;
+
+  // TODO: Initialize matrix to all zeros?
+
+  // Count the number of queues from this process
   for (i=0; i<nr; i++) {
     if (rows[i] < 0) continue;
     P2RO(A,0,rows[i],&rrank,&ridx);
@@ -145,19 +148,34 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
-      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){ /* off-proc entry */
+      if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+        /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
         if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
-        /* PetscPrintf(PETSC_COMM_SELF,"[%D] add off-proc entry (%D,%D, %g) (%D %D)\n",rank,rows[i],cols[j],*(vals+i*nc),erow,ecol); */
-        a->esubmat->Set(0,0, (PetscElemScalar)vals[i*nc+j]);
-        a->interface->Axpy(1.0,*(a->esubmat),erow,ecol);
+        ++numQueues;
         continue;
       }
-      elrow = erow / grid.MCSize();
-      elcol = ecol / grid.MRSize();
+      /* printf("Locally updating (%d,%d)\n",erow,ecol); */
       switch (imode) {
-      case INSERT_VALUES: a->emat->SetLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
-      case ADD_VALUES: a->emat->UpdateLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
+      case INSERT_VALUES: a->emat->Set(erow,ecol,(PetscElemScalar)vals[i*nc+j]); break;
+      case ADD_VALUES: a->emat->Update(erow,ecol,(PetscElemScalar)vals[i*nc+j]); break;
       default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+      }
+    }
+  }
+
+  /* printf("numQueues=%d\n",numQueues); */
+  a->emat->Reserve( numQueues );
+  for (i=0; i<nr; i++) {
+    if (rows[i] < 0) continue;
+    P2RO(A,0,rows[i],&rrank,&ridx);
+    RO2E(A,0,rrank,ridx,&erow);
+    for (j=0; j<nc; j++) {
+      if (cols[j] < 0) continue;
+      P2RO(A,1,cols[j],&crank,&cidx);
+      RO2E(A,1,crank,cidx,&ecol);
+      if( !a->emat->IsLocal(erow,ecol) ){ /*off-proc entry*/
+        /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
+        a->emat->QueueUpdate( erow, ecol, vals[i*nc+j] );
       }
     }
   }
@@ -1021,9 +1039,6 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   MPI_Comm           icomm;
 
   PetscFunctionBegin;
-  a->interface->Detach();
-  delete a->interface;
-  delete a->esubmat;
   delete a->emat;
   delete a->pivot;
 
@@ -1076,8 +1091,9 @@ PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType type)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  a->interface->Detach();
-  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
+  /* printf("Calling ProcessQueues\n"); */
+  a->emat->ProcessQueues();
+  /* printf("Finished ProcessQueues\n"); */
   PetscFunctionReturn(0);
 }
 
@@ -1407,12 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
   a->emat      = new El::DistMatrix<PetscElemScalar>(*a->grid);
-  a->esubmat   = new El::Matrix<PetscElemScalar>(1,1);
-  a->interface = new El::AxpyInterface<PetscElemScalar>;
   a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>;
-
-  /* build cache for off array entries formed */
-  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefEig_C",MatElementalHermitianGenDefEig_Elemental);CHKERRQ(ierr);
