@@ -215,7 +215,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBSTRM(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_MPISBAIJ_MPISBSTRM(A,MATMPISBSTRM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_MPISBAIJ_MPISBSTRM(A,MATMPISBSTRM,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
