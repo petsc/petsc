@@ -119,8 +119,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const P
 
   PetscFunctionBegin;
   ierr = MatMPIAIJSetPreallocation_MPIAIJ(B,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->A, MATSEQAIJPERM, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->B, MATSEQAIJPERM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->A, MATSEQAIJPERM, MAT_INPLACE_MATRIX, &b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->B, MATSEQAIJPERM, MAT_INPLACE_MATRIX, &b->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,7 +150,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_MPIAIJ_MPIAIJPERM(A,MATMPIAIJPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_MPIAIJ_MPIAIJPERM(A,MATMPIAIJPERM,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

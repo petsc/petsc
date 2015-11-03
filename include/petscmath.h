@@ -491,8 +491,8 @@ M*/
 #  define PETSC_MAX_REAL                FLT128_MAX
 #  define PETSC_MIN_REAL                -FLT128_MAX
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
-#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
-#  define PETSC_SMALL                   1.e-20
+#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17q
+#  define PETSC_SMALL                   1.e-20q
 #endif
 
 #define PETSC_INFINITY                PETSC_MAX_REAL/4.0

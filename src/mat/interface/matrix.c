@@ -3805,9 +3805,9 @@ PetscErrorCode  MatCopy(Mat A,Mat B,MatStructure str)
 +  mat - the matrix
 .  newtype - new matrix type.  Use MATSAME to create a new matrix of the
    same type as the original matrix.
--  reuse - denotes if the destination matrix is to be created or reused.  Currently
-   MAT_REUSE_MATRIX is only supported for inplace conversion, otherwise use
-   MAT_INITIAL_MATRIX.
+-  reuse - denotes if the destination matrix is to be created or reused.
+   Use MAT_INPLACE_MATRIX for inplace conversion, otherwise use
+   MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX.
 
    Output Parameter:
 .  M - pointer to place new matrix
@@ -3849,9 +3849,9 @@ PetscErrorCode  MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   }
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
-  if ((reuse == MAT_REUSE_MATRIX) && (mat != *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for in-place conversion currently");
+  if ((reuse == MAT_INPLACE_MATRIX) && (mat != *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires same input and output matrix");
 
-  if ((reuse == MAT_REUSE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
+  if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
 
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
