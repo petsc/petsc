@@ -1119,7 +1119,8 @@ PetscErrorCode MatGetInfo_MKL_PARDISO(Mat A, MatInfoType flag, MatInfo *info)
 
   PetscFunctionBegin;
   info->block_size        = 1.0;
-  info->nz_allocated      = mat_mkl_pardiso->nz + 0.0;
+  info->nz_used           = mat_mkl_pardiso->nz;
+  info->nz_allocated      = mat_mkl_pardiso->nz;
   info->nz_unneeded       = 0.0;
   info->assemblies        = 0.0;
   info->mallocs           = 0.0;
