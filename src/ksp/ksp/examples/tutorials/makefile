@@ -1350,7 +1350,7 @@ runex63_2:
 	   ${RM} -f ex63_2.tmp
 	   
 runex64:
-	-@${MPIEXEC} -n 4 ./ex64  -ksp_monitor -ksp_view -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist    -pc_gasm_total_subdomains 2 > ex64.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex64  -ksp_monitor -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist    -pc_gasm_total_subdomains 2 > ex64.tmp 2>&1;	  \
 	   if (${DIFF} output/ex64.out ex64.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex64, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex64.tmp	   

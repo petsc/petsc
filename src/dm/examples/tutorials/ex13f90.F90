@@ -156,6 +156,7 @@ program main
   ! Deallocate and finalize
   call DMRestoreLocalVector(SolScal,Lvec,ierr)
   call DMDestroy(SolScal,ierr)
+  deallocate(f,grid)
   call PetscFinalize(ierr)
 
   ! Format for writing output to screen
