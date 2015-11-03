@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       isolver=0,size_schur,m,n,nfact,nsolve,nrhs;
-  PetscReal      norm,tol=1.e-12;
+  PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
   PetscBool      flg,herm,symm;
   PetscReal      sratio = 5.1/12.;
@@ -246,7 +246,7 @@ int main(int argc,char **args)
       ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
       if (norm > tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
       }
     }
     ierr = MatDestroy(&S);CHKERRQ(ierr);

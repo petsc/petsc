@@ -1,4 +1,4 @@
-Timestep 0: time = 0, 2-norm error = 0.0000, max norm error = 0.0000
+Timestep 0: time = 0., 2-norm error = 0.0000, max norm error = 0.0000
 Timestep 1: time = 0.00617284, 2-norm error = 0.2211, max norm error = 0.2870
 Timestep 2: time = 0.0123457, 2-norm error = 0.0353, max norm error = 0.0649
 Timestep 3: time = 0.0185185, 2-norm error = 0.0350, max norm error = 0.0421

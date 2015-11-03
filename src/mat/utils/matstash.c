@@ -499,7 +499,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   PetscFunctionBegin;
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    ierr = MPI_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
@@ -514,7 +514,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   i       = j    = 0;
   lastidx = -1;
   space   = stash->space_head;
-  while (space != NULL) {
+  while (space) {
     space_next = space->next;
     sp_idx     = space->idx;
     for (l=0; l<space->local_used; l++) {
@@ -566,7 +566,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
 
   i     = 0;
   space = stash->space_head;
-  while (space != NULL) {
+  while (space) {
     space_next = space->next;
     sp_idx     = space->idx;
     sp_idy     = space->idy;
@@ -872,7 +872,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
 #if defined(PETSC_USE_DEBUG)
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    ierr = MPI_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
   }
 #endif

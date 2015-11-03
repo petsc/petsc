@@ -2755,6 +2755,18 @@ PETSC_EXTERN PetscErrorCode PetscTextBelt(MPI_Comm,const char[],const char[],Pet
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],size_t,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
 
+
+#if defined(PETSC_USE_DEBUG)
+
+/*
+   Verify that all processes in the communicator have called this from the same line of code
+ */
+PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,const char*,const char *);
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,__FUNCT__,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
+#else
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
+#endif
+
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"

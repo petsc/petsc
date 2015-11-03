@@ -111,10 +111,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
      Ideally we would use the PetscDrawAxis object to manage displaying the coordinate limits 
      but that may require some refactoring.
   */
-  ierr = MPI_Allreduce(&xmin,&xminf,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&xmax,&xmaxf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&ymin,&yminf,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&ymax,&ymaxf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&xmin,&xminf,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&xmax,&xmaxf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ymin,&yminf,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ymax,&ymaxf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   ierr = PetscSNPrintf(value,16,"%f",xminf);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,xminf,yminf - .05*(ymaxf - yminf),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
   ierr = PetscSNPrintf(value,16,"%f",xmaxf);CHKERRQ(ierr);
@@ -852,9 +852,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
     else if (dd->w != (PetscInt) dims[dofInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Number of dofs in file is %D, not %D as expected",(PetscInt)dims[dofInd],dd->w);
 
   /* Other cases where rdim != dim cannot be handled currently */
-  } else if (rdim != dim) {
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
-  }
+  } else if (rdim != dim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
 
   /* Set up the hyperslab size */
   dim = 0;

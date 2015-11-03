@@ -6,7 +6,7 @@
 # but it can also be run as a stand-alone program. The library paths and
 # flags should have been written to
 #
-#     $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/PETScConfig.cmake
+#     $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/PETScBuildInternal.cmake
 #
 # by configure before running this script.
 
@@ -77,7 +77,7 @@ class PETScMaker(script.Script):
 
    output,error,retcode = self.executeShellCommand([self.cmake.cmake, '--version'], checkCommand=noCheck, log=log)
    import re
-   m = re.match(r'cmake version (.+)$', output)
+   m = re.match(r'cmake version (.+)', output)
    if not m:
        self.logPrint('Could not parse CMake version: %s, disabling cmake build option' % output)
        return False

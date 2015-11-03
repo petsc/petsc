@@ -113,14 +113,14 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
     info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used        = info->nz_allocated;
   } else if (flag == MAT_GLOBAL_MAX) {
-    //ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin));CHKERRQ(ierr);
+    //ierr = MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin));CHKERRQ(ierr);
     /* see MatGetInfo_MPIAIJ() for getting global info->nz_allocated! */
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_MAX not written yet");
   } else if (flag == MAT_GLOBAL_SUM) {
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_SUM not written yet");
     info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used        = info->nz_allocated; /* assume Elemental does accurate allocation */
-    //ierr = MPI_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    //ierr = MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
     //PetscPrintf(PETSC_COMM_SELF,"    ... [%d] locally allocated %g\n",rank,info->nz_allocated);
   }
 
@@ -860,7 +860,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,Bmpi);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&Bmpi);CHKERRQ(ierr);
   } else {
     *B = Bmpi;
   }
@@ -892,7 +892,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,M
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
   }
@@ -926,7 +926,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
   }
@@ -964,7 +964,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
   }
@@ -1002,7 +1002,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
   }
@@ -1104,7 +1104,7 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
   ierr = MatLoad(Adense,viewer);CHKERRQ(ierr);
   ierr = MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae);CHKERRQ(ierr);
   ierr = MatDestroy(&Adense);CHKERRQ(ierr);
-  ierr = MatHeaderReplace(newMat,Ae);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(newMat,&Ae);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

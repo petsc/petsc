@@ -3,6 +3,19 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelCreate"
+/*@C
+  DMLabelCreate - Create a DMLabel object, which is a multimap
+
+  Input parameter:
+. name - The label name
+
+  Output parameter:
+. label - The DMLabel
+
+  Level: beginner
+
+.seealso: DMLabelDestroy()
+@*/
 PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
 {
   PetscErrorCode ierr;
@@ -27,6 +40,20 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelMakeValid_Private"
+/*
+  DMLabelMakeValid_Private - Transfer stratum data from the hash format to the sorted list format
+
+  Input parameter:
++ label - The DMLabel
+- v - The stratum value
+
+  Output parameter:
+. label - The DMLabel with stratum in sorted list format
+
+  Level: developer
+
+.seealso: DMLabelCreate()
+*/
 static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 {
   PetscInt       off;
@@ -60,6 +87,19 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelMakeAllValid_Private"
+/*
+  DMLabelMakeAllValid_Private - Transfer all strata from the hash format to the sorted list format
+
+  Input parameter:
+. label - The DMLabel
+
+  Output parameter:
+. label - The DMLabel with all strata in sorted list format
+
+  Level: developer
+
+.seealso: DMLabelCreate()
+*/
 static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 {
   PetscInt       v;
@@ -74,6 +114,20 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelMakeInvalid_Private"
+/*
+  DMLabelMakeInvalid_Private - Transfer stratum data from the sorted list format to the hash format
+
+  Input parameter:
++ label - The DMLabel
+- v - The stratum value
+
+  Output parameter:
+. label - The DMLabel with stratum in hash format
+
+  Level: developer
+
+.seealso: DMLabelCreate()
+*/
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
   PETSC_UNUSED PetscHashIIter ret, iter;
@@ -143,6 +197,19 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelGetName"
+/*@C
+  DMLabelGetName - Return the name of a DMLabel object
+
+  Input parameter:
+. label - The DMLabel
+
+  Output parameter:
+. name - The label name
+
+  Level: beginner
+
+.seealso: DMLabelCreate()
+@*/
 PetscErrorCode DMLabelGetName(DMLabel label, const char **name)
 {
   PetscFunctionBegin;
@@ -651,9 +718,7 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
       if (label->arrayValid[v]) {
         ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], &label->points[v][0], PETSC_COPY_VALUES, points);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject) *points, "indices");CHKERRQ(ierr);
-      } else {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to implement this to speedup Stratify");
-      }
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to implement this to speedup Stratify");
       break;
     }
   }

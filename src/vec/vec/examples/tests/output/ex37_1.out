@@ -15,15 +15,15 @@ Vec Object: 1 MPI processes
       (0) : type=seq, rows=3 
         Vec Object:         1 MPI processes
           type: seq
-        1
-        1
-        1
+        1.
+        1.
+        1.
       (1) : type=seq, rows=3 
         Vec Object:         1 MPI processes
           type: seq
-        2
-        2
-        2
+        2.
+        2.
+        2.
   (1) : type=nest, rows=6 
     Vec Object:     1 MPI processes
       type: nest
@@ -31,9 +31,9 @@ Vec Object: 1 MPI processes
       (0) : type=seq, rows=3 
         Vec Object:         1 MPI processes
           type: seq
-        3
-        3
-        3
+        3.
+        3.
+        3.
       (1) : type=seq, rows=3 
         Vec Object:         1 MPI processes
           type: seq
@@ -47,35 +47,35 @@ VecAXPY
 (1) y1 = 
 Vec Object: 1 MPI processes
   type: seq
-4
-8
-12
-16
+4.
+8.
+12.
+16.
 (1) y2 = 
 Vec Object: 1 MPI processes
   type: seq
-15
-18
-21
-24
-27
+15.
+18.
+21.
+24.
+27.
 X.Y = 1610.000000 + 0.000000i 
 X.Y = 1610.000000 + 0.000000i     norm2(Y) = 2775.000000
 (2) y1 = 
 Vec Object: 1 MPI processes
   type: seq
-4
-9
-14
-19
+4.
+9.
+14.
+19.
 (2) y2 = 
 Vec Object: 1 MPI processes
   type: seq
-25
-30
-35
-40
-45
+25.
+30.
+35.
+40.
+45.
 X.Y = 2644.000000 + 0.000000i 
 X.Y = 2644.000000 + 0.000000i     norm2(Y) = 7029.000000
 (max-X) = 18.000000 : index = 8 

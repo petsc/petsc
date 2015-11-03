@@ -228,7 +228,9 @@ extern PetscFPT PetscFPTData;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-PetscSpinlock PetscViewerASCIISpinLock;
+PetscSpinlock PetscViewerASCIISpinLockOpen;
+PetscSpinlock PetscViewerASCIISpinLockStdout;
+PetscSpinlock PetscViewerASCIISpinLockStderr;
 PetscSpinlock PetscCommSpinLock;
 #endif
 
@@ -327,7 +329,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   else PETSC_COMM_WORLD = MPI_COMM_WORLD;
   PetscInitializeCalled = PETSC_TRUE;
 
-  *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLock);
+  *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockOpen);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
+  *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockStdout);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
+  *ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockStderr);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}
   *ierr = PetscSpinlockCreate(&PetscCommSpinLock);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Creating global spin lock\n");return;}

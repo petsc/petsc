@@ -107,12 +107,6 @@
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
 
-! Write results if first processor
-      if (ctx(4) .eq. 0) then
-        write(6,100) its
-      endif
-  100 format('Number of SNES iterations = ',i5)
-
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
       call VecDestroy(x,ierr)

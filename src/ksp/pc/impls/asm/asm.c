@@ -228,7 +228,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       struct {PetscInt max,sum;} inwork,outwork;
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
-      ierr         = MPI_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
     }

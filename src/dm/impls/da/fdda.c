@@ -601,7 +601,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 
   /* Do permutation and replace header */
   ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
-  ierr = MatHeaderReplace(A,Aapp);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(A,&Aapp);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -670,7 +670,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
         }
         /* Must have same blocksize on all procs (some might have no points) */
         bsLocal = bs;
-        ierr    = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+        ierr    = MPIU_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
       }
       ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
       /* ierr = DMPlexPreallocateOperator(dm, bs, section, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr); */

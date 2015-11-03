@@ -39,7 +39,7 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *spa
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  while ((*space) != NULL) {
+  while ((*space)) {
     a    = (*space)->next;
     ierr = PetscMemcpy(val,(*space)->val,((*space)->local_used*bs2)*sizeof(PetscScalar));CHKERRQ(ierr);
     val += bs2*(*space)->local_used;

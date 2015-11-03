@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscScalar    value[3];
   PCType         pcname;
   KSPType        kspname;
-  PetscReal      norm,tol=1.e-14;
+  PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 

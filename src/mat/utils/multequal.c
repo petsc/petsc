@@ -25,7 +25,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscErrorCode ierr;
   Vec            x,s1,s2;
   PetscRandom    rctx;
-  PetscReal      r1,r2,tol=1.e-10;
+  PetscReal      r1,r2,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
 
@@ -37,9 +37,6 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   if (am != bm || an != bn) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
 
-#if defined(PETSC_USE_REAL_SINGLE)
-  tol = 1.e-5;
-#endif
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&x,&s1);CHKERRQ(ierr);
@@ -95,7 +92,7 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;
   PetscRandom    rctx;
-  PetscReal      r1,r2,tol=1.e-10;
+  PetscReal      r1,r2,tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
 
@@ -162,7 +159,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscErrorCode ierr;
   Vec            x,s1,s2;
   PetscRandom    rctx;
-  PetscReal      r1,r2,tol=1.e-10;
+  PetscReal      r1,r2,tol= PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
 
@@ -226,7 +223,7 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;
   PetscRandom    rctx;
-  PetscReal      r1,r2,tol=1.e-10;
+  PetscReal      r1,r2,tol = PETSC_SQRT_MACHINE_EPSILON; 
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
 

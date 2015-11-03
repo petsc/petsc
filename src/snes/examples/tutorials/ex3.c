@@ -4,7 +4,8 @@ This example employs a user-defined monitoring routine and optionally a user-def
 routine to check candidate iterates produced by line search routines.  This code also\n\
 demonstrates use of the macro __FUNCT__ to define routine names for use in error handling.\n\
 The command line options include:\n\
-  -check_iterates : activate checking of iterates\n\
+  -pre_check_iterates : activate checking of iterates\n\
+  -post_check_iterates : activate checking of iterates\n\
   -check_tol <tol>: set tolerance for iterate checking\n\n";
 
 /*T
@@ -585,7 +586,6 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   check = (StepCheckCtx*)ctx;
   user  = check->user;
   ierr  = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-  ierr  = SNESLineSearchGetPreCheck(linesearch, NULL, (void**)&check);CHKERRQ(ierr);
 
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {
