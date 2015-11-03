@@ -1423,7 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
   a->emat      = new El::DistMatrix<PetscElemScalar>(*a->grid);
-  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>;
+  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>(*a->grid);
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefEig_C",MatElementalHermitianGenDefEig_Elemental);CHKERRQ(ierr);
