@@ -1520,7 +1520,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (computesubschurs && computetopography) {
       ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
     }
-    if (sub_schurs->use_mumps) {
+    if (sub_schurs->schur_explicit) {
       if (computesubschurs) {
         ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
       }
@@ -2177,7 +2177,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    The PETSc implementation also supports multilevel BDDC [3]. Coarse grids are partitioned using a MatPartitioning object.
 
-   Adaptive selection of primal constraints [4] is supported for SPD systems with high-contrast in the coefficients if MUMPS is present. Future versions of the code will also consider using MKL_PARDISO or PASTIX.
+   Adaptive selection of primal constraints [4] is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present. Future versions of the code will also consider using PASTIX.
 
    An experimental interface to the FETI-DP method is available. FETI-DP operators could be created using PCBDDCCreateFETIDPOperators(). A stand-alone class for the FETI-DP method will be provided in the next releases.
    Deluxe scaling is not supported yet for FETI-DP.
@@ -2196,7 +2196,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 .    -pc_bddc_redistribute <0> - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
 .    -pc_bddc_use_deluxe_scaling <false> - use deluxe scaling
 .    -pc_bddc_schur_layers <-1> - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
-.    -pc_bddc_adaptive_threshold <0.0> - when a value greater than one is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS installed)
+.    -pc_bddc_adaptive_threshold <0.0> - when a value greater than one is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
 -    -pc_bddc_check_level <0> - set verbosity level of debugging output
 
    Options for Dirichlet, Neumann or coarse solver can be set with

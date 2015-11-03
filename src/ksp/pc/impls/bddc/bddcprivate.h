@@ -59,7 +59,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 PetscErrorCode MatDetectDisconnectedComponents(Mat,PetscBool,PetscInt*,IS*[]);
 PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
-PetscErrorCode PCBDDCReuseSolversChangeInterior(PCBDDCReuseMumps,Vec,Vec,PetscBool);
+PetscErrorCode PCBDDCReuseSolversChangeInterior(PCBDDCReuseSolvers,Vec,Vec,PetscBool);
 
 /* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);

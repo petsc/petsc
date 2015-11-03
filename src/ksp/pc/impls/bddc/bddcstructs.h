@@ -52,20 +52,20 @@ struct _PCBDDCGraph {
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
-/* Temporary wrap to MUMPS solver in Schur complement mode. Provides
+/* Wrap to MatFactor solver in Schur complement mode. Provides
    - standalone solver for interior variables
    - forward and backward substitutions for correction solver
 */
 /* It assumes that interior variables are a contiguous set starting from 0 */
-struct _PCBDDCReuseMumps {
-  /* the factored matrix obtained from MatGetFactor(...,MAT_SOLVER_MUMPS...) */
+struct _PCBDDCReuseSolvers {
+  /* the factored matrix obtained from MatGetFactor(...,solver_package,...) */
   Mat        F;
   /* placeholders for the solution and rhs on the whole set of dofs of A (size local_dofs - local_vertices)*/
   Vec        sol;
   Vec        rhs;
   /* */
   PetscBool  has_vertices;
-  /* shell PCs to handle MUMPS interior/correction solvers */
+  /* shell PCs to handle interior/correction solvers */
   PC         interior_solver;
   PC         correction_solver;
   IS         is_R;
@@ -79,7 +79,7 @@ struct _PCBDDCReuseMumps {
   IS          *benign_zerodiag_subs;
   PetscScalar *benign_save_vals;
 };
-typedef struct _PCBDDCReuseMumps *PCBDDCReuseMumps;
+typedef struct _PCBDDCReuseSolvers *PCBDDCReuseSolvers;
 
 /* structure to handle Schur complements on subsets */
 struct _PCBDDCSubSchurs {
@@ -90,8 +90,8 @@ struct _PCBDDCSubSchurs {
   /* index sets */
   IS  is_I;
   IS  is_B;
-  /* whether Schur complements are computed with MUMPS or not */
-  PetscBool use_mumps;
+  /* whether Schur complements are explicitly computed with or not */
+  PetscBool schur_explicit;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
   Mat S_Ej_all;
@@ -112,8 +112,8 @@ struct _PCBDDCSubSchurs {
   /* mat flags */
   PetscBool is_hermitian;
   PetscBool is_posdef;
-  /* data structure to reuse MUMPS Schur solver */
-  PCBDDCReuseMumps reuse_mumps;
+  /* data structure to reuse MatFactor with Schur solver */
+  PCBDDCReuseSolvers reuse_solver;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
