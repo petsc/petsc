@@ -2422,14 +2422,14 @@ not for timing. These monitors may be accessed with the command line options
 To employ the default graphical monitor, one should use the
 commands
 \begin{tabbing}
-   PetscDrawLG lg;\\
-  KSPMonitorLGResidualNormCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
+  PetscDrawLG lg;\\
+  KSPMonitorLGResidualNormCreate(MPI\_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
   KSPMonitorSet(KSP ksp,KSPMonitorLGResidualNorm,lg,0);
 \end{tabbing}
 When no longer needed, the line graph should be destroyed
 with the command
 \begin{tabbing}
-  KSPMonitorLGResidualNormDestroy(PetscDrawLG *lg);
+  PetscDrawLGDestroy(PetscDrawLG *lg);
 \end{tabbing}
 The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and
 \trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}
@@ -2925,6 +2925,10 @@ convergence rates.
 \trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
 this is not obvious) and is recommended if poor convergence rates are
 observed, at least until the source of the problem is discovered.
+Optimizing parameters for AMG is tricky; we can help.
+To get help with your problem, first tell us the PDE that you are solving and any other useful information like discretizations, stretched grids, high contrast media, etc.
+Run with \trl{-info} and pipe the output, which will be large, to \trl{grep GAMG}, and send us the output (about 20 lines).
+This will give us useful high level information that will often give us a direction to start optimizing parameters.
 
 Finally, there are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
@@ -4983,8 +4987,8 @@ $G(t,y)=g(t,y)$\\
 $M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
 $G(t,y)=M^{-1}g(t,y)$\\
 \hline
-$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $f(t,y,\dot{y}) = f(t,y,\dot{y})$,
-$F(t,y)=0$; the user needs to set TSSetEquationType() to
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $F(t,y,\dot{y}) = f(t,y,\dot{y})$,
+$G(t,y)=0$; the user needs to set TSSetEquationType() to
 TS\_EQ\_IMPLICIT or higher\\
 \hline
 \end{tabular}

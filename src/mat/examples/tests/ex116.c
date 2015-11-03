@@ -80,7 +80,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr        = PetscBLASIntCast(m,&iu);CHKERRQ(ierr);
   } else { /* test syevx()  */
     il   = 1;
-    ierr = PetscBLASIntCast((0.2*m,&iu));CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(0.2*m,&iu);CHKERRQ(ierr);
     printf(" LAPACKsyevx: compute %D to %D-th eigensolutions...\n",il,iu);
     ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
@@ -110,7 +110,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecPlaceArray(evecs[i],evecs_array+i*n);CHKERRQ(ierr);
   }
 
-  tols[0] = 1.e-8;  tols[1] = 1.e-8;
+  tols[0] = tols[1] = PETSC_SQRT_MACHINE_EPSILON;
   ierr    = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
 
   /* Free work space. */

@@ -1705,10 +1705,11 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
 #define __FUNCT__ "PCMGSetupViaCoarsen"
 static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
 {
-  PetscInt       nlevels,k,PETSC_UNUSED finest;
-  DM             *da_list,*daclist;
-  Mat            R;
-  PetscErrorCode ierr;
+  PetscInt              nlevels,k;
+  PETSC_UNUSED PetscInt finest;
+  DM                    *da_list,*daclist;
+  Mat                   R;
+  PetscErrorCode        ierr;
 
   PetscFunctionBeginUser;
   nlevels = 1;

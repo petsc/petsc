@@ -64,6 +64,7 @@ class Configure(config.base.Configure):
     try:
       mod     = __import__(self.argDB['optionsModule'], locals(), globals(), ['CompilerOptions'])
       options = mod.CompilerOptions(self.framework)
+      options.setup()
     except ImportError:
       self.logPrint('ERROR: Failed to load user options module '+str(self.argDB['optionsModule']))
     return options
@@ -79,6 +80,8 @@ class Configure(config.base.Configure):
     options = self.getOptionsObject()
     if not options:
       return
+    self.setCompilers.saveLog()
+    options.saveLog()
     for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC')]:
       if not hasattr(self.setCompilers, compiler):
         continue
@@ -116,6 +119,8 @@ class Configure(config.base.Configure):
       except RuntimeError:
         pass
       self.setCompilers.popLanguage()
+    self.logWrite(self.setCompilers.restoreLog())
+    self.logWrite(options.restoreLog())
     return
 
   def configure(self):

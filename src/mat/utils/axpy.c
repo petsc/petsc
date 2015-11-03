@@ -398,7 +398,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
   }
   numRows = rEnd - rStart;
-  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr    = MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   ierr    = PetscMalloc2(colMax,&newCols,colMax,&newVals);CHKERRQ(ierr);
   for (r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;

@@ -52,9 +52,11 @@ def createTags(flist,etagfile,ctagfile):
   if ctagfile:
     (status,output) = commands.getstatusoutput('ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(frlist))
     if status:
-      (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(frlist))
+      (status,output) = commands.getstatusoutput('/usr/local/bin/ctags -a -f '+ctagfile+' '+' '.join(frlist))
       if status:
-        raise RuntimeError("Error running ctags "+output)
+        (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(frlist))
+        if status:
+          raise RuntimeError("Error running ctags "+output)
   return
 
 def endsWithSuffix(file,suffixes):

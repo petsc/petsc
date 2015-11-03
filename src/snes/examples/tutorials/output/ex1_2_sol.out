@@ -1,6 +1,4 @@
-%Vec Object:Vec_0x84000000_0 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 -5.9920090150357294e-09
 3.1073484590513650e-08
 ];
@@ -30,37 +28,26 @@ Vec Object: 1 MPI processes
 3.10735e-08
 %Vec Object: 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 -4.9999999999999967e-01
 -3.5000000000000000e+00
 ];
-%Vec Object:Vec_0x84000000_0 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 -5.7340034285073371e-01
 -1.4002845222158016e+00
 ];
-%Vec Object:Vec_0x84000000_0 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 1.4136956727611397e-01
 4.0101544353848906e-01
 ];
-%Vec Object:Vec_0x84000000_0 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 9.1794842276608085e-03
 3.9068568234465403e-02
 ];
-%Vec Object:Vec_0x84000000_0 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 1.8316366451971285e-05
 3.6961256175126032e-04
 ];
-%Vec Object:Vec_0x84000000_0 1 MPI processes
 %  type: seq
-Vec_0x84000000_0 = [
 -5.9920090150357294e-09
 3.1073484590513650e-08
 ];

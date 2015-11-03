@@ -123,8 +123,10 @@ int main(int argc, char **argv)
   PetscInt           lo,hi,hi2,lo2,ksp_old;
   PetscInt           ntests = 1;
   PetscInt           i;
-  int                stages[1];
-
+#if defined(PETSC_USE_LOG)
+  PetscLogStage      stages[1];
+#endif
+  
   PetscInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 32;

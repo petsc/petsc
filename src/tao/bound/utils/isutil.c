@@ -71,7 +71,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
     case TAO_SUBSET_MATRIXFREE:
       /* vr[i] = vf[i]   if i in is
        vr[i] = 0       otherwise */
-      if (*vreduced == NULL) {
+      if (!*vreduced) {
         ierr = VecDuplicate(vfull,vreduced);CHKERRQ(ierr);
       }
 

@@ -43,6 +43,15 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+/* ========================================================================== */
+/*
+   Since PETSc manages its own extern "C" handling users should never include PETSc include
+   files within extern "C"
+*/
+#if defined(__cplusplus)
+void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_put_petsc_headers_inside_an_extern_c(double);
+#endif
+
 #if defined(__cplusplus)
 #  define PETSC_RESTRICT PETSC_CXX_RESTRICT
 #else
@@ -105,6 +114,9 @@
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
+#if !defined(OMPI_WANT_MPI_INTERFACE_WARNING)
+#  define OMPI_WANT_MPI_INTERFACE_WARNING 0
+#endif
 #include <mpi.h>
 
 /*
@@ -143,7 +155,7 @@
 #endif
 
 /* Support for Clang (>=3.2) matching type tag arguments with void* buffer types */
-#if defined(__has_attribute)
+#if defined(__has_attribute) && defined(works_with_const_which_is_not_true)
 #  if __has_attribute(argument_with_type_tag) && __has_attribute(pointer_with_type_tag) && __has_attribute(type_tag_for_datatype)
 #    define PetscAttrMPIPointerWithType(bufno,typeno) __attribute__((pointer_with_type_tag(MPI,bufno,typeno)))
 #    define PetscAttrMPITypeTag(type)                 __attribute__((type_tag_for_datatype(MPI,type)))
@@ -233,7 +245,7 @@ typedef unknown64bit Petsc64bitInt
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
 #  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-#    define MPIU_INT MPI_INT64_T
+#    define MPIU_INT MPI_LONG_LONG_INT
 #  else
 #    define MPIU_INT MPI_LONG_LONG_INT
 #  endif
@@ -1639,7 +1651,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt
 #include <petscviewertypes.h>
 #include <petscoptions.h>
 
-PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscMemoryView(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 #define PetscObjectQueryFunction(obj,name,fptr) PetscObjectQueryFunction_Private((obj),(name),(PetscVoidFunction*)(fptr))
@@ -2417,6 +2429,7 @@ PETSC_EXTERN PetscErrorCode PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],Pet
 PETSC_EXTERN PetscErrorCode PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeIntArrayPair(PetscInt,const PetscInt*,const PetscInt*,PetscInt,const PetscInt*,const PetscInt*,PetscInt*,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeIntArray(PetscInt,const PetscInt*,PetscInt,const PetscInt*,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscMergeMPIIntArray(PetscInt,const PetscMPIInt[],PetscInt,const PetscMPIInt[],PetscInt*,PetscMPIInt**);
 
 PETSC_EXTERN PetscErrorCode PetscSetDisplay(void);
 PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
@@ -2435,6 +2448,7 @@ typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"
 #define PETSCSPRNG      "sprng"
+#define PETSCRANDER48   "rander48"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
@@ -2479,6 +2493,8 @@ PETSC_EXTERN PetscErrorCode PetscGetRealPath(const char[],char[]);
 PETSC_EXTERN PetscErrorCode PetscGetHomeDirectory(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscTestFile(const char[],char,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
+PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
@@ -2530,7 +2546,17 @@ PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths(MPI_Comm,PetscMPIInt,Petsc
 PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths2(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscMPIInt**,PetscMPIInt**,PetscMPIInt**);
 PETSC_EXTERN PetscErrorCode PetscPostIrecvInt(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscInt***,MPI_Request**);
 PETSC_EXTERN PetscErrorCode PetscPostIrecvScalar(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscScalar***,MPI_Request**);
-PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSided(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscInt,const PetscMPIInt*,const void*,PetscInt*,PetscMPIInt**,void*) PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSided(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt*,const void*,PetscMPIInt*,PetscMPIInt**,void*)
+  PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,
+                                                    PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                    PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+  PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,
+                                                       MPI_Request**,MPI_Request**,
+                                                       PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                       PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+  PetscAttrMPIPointerWithType(6,3);
 
 /*E
     PetscBuildTwoSidedType - algorithm for setting up two-sided communication
@@ -2540,6 +2566,8 @@ $      a buffer of length equal to the communicator size. Not memory-scalable du
 $      the large reduction size. Requires only MPI-1.
 $  PETSC_BUILDTWOSIDED_IBARRIER - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
 $      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires MPI-3.
+$  PETSC_BUILDTWOSIDED_REDSCATTER - similar to above, but use more optimized function
+$      that only communicates the part of the reduction that is necessary.  Requires MPI-2.
 
    Level: developer
 
@@ -2548,8 +2576,9 @@ E*/
 typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
   PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
-  PETSC_BUILDTWOSIDED_IBARRIER = 1
-  /* Updates here must be accompanied by updates in petsc/finclude/petscsys.h and the string array in mpits.c */
+  PETSC_BUILDTWOSIDED_IBARRIER = 1,
+  PETSC_BUILDTWOSIDED_REDSCATTER = 2
+  /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);
@@ -2651,6 +2680,7 @@ struct _n_PetscSubcomm {
   PetscSubcommType type;
 };
 
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
@@ -2727,6 +2757,18 @@ PETSC_EXTERN PetscErrorCode PetscTextBelt(MPI_Comm,const char[],const char[],Pet
 
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],size_t,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
+
+
+#if defined(PETSC_USE_DEBUG)
+
+/*
+   Verify that all processes in the communicator have called this from the same line of code
+ */
+PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,const char*,const char *);
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,__FUNCT__,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
+#else
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
+#endif
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

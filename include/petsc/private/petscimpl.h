@@ -310,7 +310,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscInt b1[2],b2[2];                                               \
     b1[0] = -b; b1[1] = b;                                              \
-    _7_ierr = MPI_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
   } while (0)
 
@@ -321,7 +321,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b1[2],b2[2];                                            \
     b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
-    _7_ierr = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
   } while (0)
 
@@ -330,7 +330,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b1[2],b2[2];                                            \
     b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
-    _7_ierr = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",c); \
   } while (0)
 
@@ -791,5 +791,80 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
+
+#if !defined(PETSC_SKIP_SPINLOCK)
+#if defined(PETSC_HAVE_THREADSAFETY)
+#  if defined(PETSC_HAVE_CONCURRENCYKIT)
+#if defined(__cplusplus)
+/*  CK does not have extern "C" protection in their include files */
+extern "C" {
+#endif
+#include <ck_spinlock.h>
+#if defined(__cplusplus)
+}
+#endif
+typedef ck_spinlock_t PetscSpinlock;
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_init(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_lock(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
+{
+  ck_spinlock_unlock(ck_spinlock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
+{
+  return 0;
+}
+#  elif defined(PETSC_HAVE_OPENMP)
+
+#include <omp.h>
+typedef omp_lock_t PetscSpinlock;
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
+{
+  omp_init_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
+{
+  omp_set_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
+{
+  omp_unset_lock(omp_lock);
+  return 0;
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
+{
+  omp_destroy_lock(omp_lock);
+  return 0;
+}
+#else
+Thread safety requires either --with-openmp or --download-concurrencykit
+#endif
+
+#else
+typedef int PetscSpinlock;
+#define PetscSpinlockCreate(a)  0
+#define PetscSpinlockLock(a)    0
+#define PetscSpinlockUnlock(a)  0
+#define PetscSpinlockDestroy(a) 0
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+extern PetscSpinlock PetscViewerASCIISpinLockOpen;
+extern PetscSpinlock PetscViewerASCIISpinLockStdout;
+extern PetscSpinlock PetscViewerASCIISpinLockStderr;
+extern PetscSpinlock PetscCommSpinLock;
+#endif
+#endif
 
 #endif /* _PETSCHEAD_H */

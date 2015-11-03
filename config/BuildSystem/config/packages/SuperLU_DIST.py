@@ -3,15 +3,16 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit  = '1e387bb0c07bec2b746fd388e6c40892b608a8ef' # v4.1 jul-30-2015
-    self.giturls    = ['https://bitbucket.org/petsc/pkg-superlu_dist.git']
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.1.tar.gz']
-    self.functions  = ['set_default_options_dist']
-    self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_4.1.a']]
+    self.gitcommit        = '1e387bb0c07bec2b746fd388e6c40892b608a8ef' # v4.1 jul-30-2015
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-superlu_dist.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.1.tar.gz']
+    self.functions        = ['set_default_options_dist']
+    self.includes         = ['superlu_ddefs.h']
+    self.liblist          = [['libsuperlu_dist_4.1.a']]
     # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1
+    self.hastests         = 1
+    self.hastestsdatafiles= 1
     return
 
   def setupHelp(self, help):

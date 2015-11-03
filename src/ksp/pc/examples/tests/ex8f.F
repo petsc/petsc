@@ -46,7 +46,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      pfive = .5d0
+      pfive = .5
       n      = 6
       dim    = n*n
       one    = 1

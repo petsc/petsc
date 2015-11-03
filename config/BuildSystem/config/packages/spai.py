@@ -8,6 +8,7 @@ class Configure(config.package.Package):
     self.includes  = ['spai.h']
     self.liblist   = [['libspai.a']]
     # SPAI include files are in the lib directory
+    self.hastests  = 1
     return
 
   def setupDependencies(self, framework):

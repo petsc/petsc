@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://ftp.gnu.org/gnu/make/make-3.82.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-3.82.tar.gz']
+    self.download          = ['http://ftp.gnu.org/gnu/make/make-4.1.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.1.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.downloadonWindows = 1
@@ -12,6 +12,7 @@ class Configure(config.package.GNUPackage):
 
     self.printdirflag      = ''
     self.noprintdirflag    = ''
+    self.paroutflg         = ''
     self.haveGNUMake       = 0
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
@@ -56,8 +57,7 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.framework.\
-log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error building or installing make '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1, conffile)
@@ -93,6 +93,8 @@ log)
         minor = int(gver.group(2))
         if ((major > 3) or (major == 3 and minor > 80)):
           self.haveGNUMake = 1
+        if (major > 3) and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
+          self.paroutflg = "--output-sync=recurse"
     except RuntimeError, e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
 
@@ -157,4 +159,5 @@ log)
     self.executeTest(self.configureMakeNP)
     self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
     self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
+    self.addMakeMacro('MAKE_PAR_OUT_FLG', self.paroutflg)
     return

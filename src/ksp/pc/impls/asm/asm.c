@@ -30,6 +30,10 @@ typedef struct {
   PetscBool  sort_indices;        /* flag to sort subdomain indices */
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
+  /* For multiplicative solve */
+  Mat       *lmat;                /* submatrix for overlapping multiplicative (process) subdomain */
+  Vec        lx, ly;              /* work vectors */
+  IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
 
 #undef __FUNCT__
@@ -57,38 +61,38 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
     if (osm->same_local_solves) {
       if (osm->ksp) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
-        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         if (!rank) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = KSPView(osm->ksp[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
-        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n_local_true);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
-      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       for (i=0; i<osm->n_local_true; i++) {
         ierr = ISGetLocalSize(osm->is[i],&bsz);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
         ierr = KSPView(osm->ksp[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blocks=%D, overlap=%D, type=%s",osm->n,osm->overlap,PCASMTypes[osm->type]);CHKERRQ(ierr);
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (osm->ksp) {ierr = KSPView(osm->ksp[0],sviewer);CHKERRQ(ierr);}
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -128,10 +132,10 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = ISRestoreIndices(osm->is[i],&idx);CHKERRQ(ierr);
       ierr = PetscViewerStringSPrintf(sviewer,"\n");CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, s);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscFree(s);CHKERRQ(ierr);
       if (osm->is_local) {
         /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
@@ -146,22 +150,22 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
         ierr = ISRestoreIndices(osm->is_local[i],&idx);CHKERRQ(ierr);
         ierr = PetscViewerStringSPrintf(sviewer,"\n");CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, s);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
         ierr = PetscFree(s);CHKERRQ(ierr);
       }
     } else {
       /* Participate in collective viewer calls. */
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       /* Assume either all ranks have is_local or none do. */
       if (osm->is_local) {
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       }
     }
   }
@@ -224,7 +228,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       struct {PetscInt max,sum;} inwork,outwork;
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
-      ierr         = MPI_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
     }
@@ -353,6 +357,15 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscFree(domain_dm);CHKERRQ(ierr);
       }
     }
+    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+      PetscInt m;
+
+      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
+      ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
+      ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
+    }
     scall = MAT_INITIAL_MATRIX;
   } else {
     /*
@@ -374,6 +387,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     }
+  }
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+    ierr = MatGetSubMatrices(pc->pmat, 1, &osm->lis, &osm->lis, scall, &osm->lmat);CHKERRQ(ierr);
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -461,11 +477,9 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     /* do the local solves */
     for (i = 0; i < n_local_true; ++i) {
       if (i > 0) {
-        /* Update initial guess */
-        ierr = VecScatterBegin(osm->restriction[i], y, osm->y[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = VecScatterEnd(osm->restriction[i], y, osm->y[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = MatMult(osm->pmat[i], osm->y[i], osm->x[i]);CHKERRQ(ierr);
-        ierr = VecScale(osm->x[i], -1.0);CHKERRQ(ierr);
+        /* Update rhs */
+        ierr = VecScatterBegin(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
       } else {
         ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
       }
@@ -478,6 +492,13 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       }
       ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
       ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
+      if (i < n_local_true-1) {
+        ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
+        ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScale(osm->ly, -1.0);CHKERRQ(ierr);
+        ierr = MatMult(osm->lmat[0], osm->ly, osm->lx);CHKERRQ(ierr);
+      }
     }
     /* handle the rest of the scatters that do not have local solves */
     for (i = n_local_true; i < n_local; ++i) {
@@ -579,6 +600,12 @@ static PetscErrorCode PCReset_ASM(PC pc)
     ierr = PetscFree(osm->y_local);CHKERRQ(ierr);
   }
   ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+    ierr = ISDestroy(&osm->lis);CHKERRQ(ierr);
+    ierr = MatDestroyMatrices(1, &osm->lmat);CHKERRQ(ierr);
+    ierr = VecDestroy(&osm->lx);CHKERRQ(ierr);
+    ierr = VecDestroy(&osm->ly);CHKERRQ(ierr);
+  }
 
   osm->is       = 0;
   osm->is_local = 0;
@@ -915,7 +942,8 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
-    PC communicator must call this routine.
+    PC communicator must call this routine. If MatIncreaseOverlap is used,
+    use option -mat_increase_overlap when the problem size large.
 
     Logically Collective on PC
 

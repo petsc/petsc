@@ -3232,7 +3232,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 
   PetscFunctionBegin;
   /* MatPtAPSymbolic_MPIAIJ_MPIMAIJ() is not implemented yet. Convert PP to mpiaij format */
-  ierr = MatConvert(PP,MATMPIAIJ,MAT_REUSE_MATRIX,&PP);CHKERRQ(ierr);
+  ierr = MatConvert(PP,MATMPIAIJ,MAT_INPLACE_MATRIX,&PP);CHKERRQ(ierr);
   ierr =(*PP->ops->ptapsymbolic)(A,PP,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3300,8 +3300,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
   } else {
     *newmat = B;
   }
@@ -3368,11 +3368,11 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     PetscInt refct = ((PetscObject)A)->refct; /* save ((PetscObject)A)->refct */
     ((PetscObject)A)->refct = 1;
 
-    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
 
     ((PetscObject)A)->refct = refct; /* restore ((PetscObject)A)->refct */
   } else {

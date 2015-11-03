@@ -71,7 +71,7 @@ runminsurf1_2:
 	${DIFF} output/minsurf1_2.out minsurf1_2.tmp || printf '${PWD}\nPossible problem with minsurf1_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f minsurf1_2.tmp
 
-TESTEXAMPLES_C           = blackscholes.PETSc runblackscholes runblackscholes_2\
+TESTEXAMPLES_C_NOTSINGLE = blackscholes.PETSc runblackscholes runblackscholes_2\
 	                   runblackscholes_3 runblackscholes_4 \
 	                   runblackscholes_5 runblackscholes_6 \
 	                   runblackscholes_7 blackscholes.rm \

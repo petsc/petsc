@@ -1,4 +1,4 @@
-! Program usage: mpirun -np 1 toyf[-help] [all TAO options]
+! Program usage: mpiexec -n 1 toyf[-help] [all TAO options]
 
 !
 !min f=(x1-x2)^2 + (x2-2)^2 -2*x1-2*x2
@@ -71,7 +71,7 @@
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetTolerances(tao,1.0d-12,0,0,0,0,ierr)
+      call TaoSetTolerances(tao,0,0,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetFromOptions(tao,ierr)
@@ -99,7 +99,7 @@
       call KSPSetFromOptions(ksp,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetTolerances(tao,1.0d-12,0.0d0,0.0d0,0.0d0,0.0d0,ierr)
+      call TaoSetTolerances(tao,0.0d0,0.0d0,0.0d0,ierr)
       CHKERRQ(ierr)
 
       ! Solve

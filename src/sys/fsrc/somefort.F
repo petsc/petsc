@@ -81,3 +81,20 @@
       data   PETSC_COMM_WORLD /0/
       data   PETSC_COMM_SELF /0/
       end
+
+#if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
+      integer function PetscCommandArgumentCount()
+      implicit none
+      PetscCommandArgumentCount= command_argument_count()
+      return
+      end
+
+      subroutine PetscGetCommandArgument(n,val)
+      implicit none
+      integer n
+      character(*) val
+      call get_command_argument(n,val)
+      return
+      end
+
+#endif

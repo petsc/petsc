@@ -1,9 +1,12 @@
 
  CG: 
 Number of iterations =   4
+Residual norm 4.42492e-08;  Error norm 1.31774e-08.
 
  MINRES: 
 Number of iterations =   4
+Residual norm 4.43614e-08;  Error norm 1.31371e-08.
 
  SYMMLQ: 
 Number of iterations =   4
+Residual norm 4.42492e-08;  Error norm 1.31774e-08.

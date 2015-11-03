@@ -714,7 +714,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,const MatFactorInfo *info
   A->ops->solve          = C->ops->solve;
   A->ops->solvetranspose = C->ops->solvetranspose;
 
-  ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)((Mat_SeqBAIJ*)(A->data))->icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

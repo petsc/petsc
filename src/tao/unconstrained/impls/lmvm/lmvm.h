@@ -21,6 +21,7 @@ typedef struct {
   PetscInt bfgs;
   PetscInt sgrad;
   PetscInt grad;
+  Mat      H0;
 } TAO_LMVM;
 
 #endif /* ifndef __TAO_LMVM_H */

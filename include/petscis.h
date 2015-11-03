@@ -168,7 +168,7 @@ PETSC_EXTERN PetscErrorCode ISColoringSetType(ISColoring,ISColoringType);
 
 
 /* --------------------------------------------------------------------------*/
-
+PETSC_EXTERN PetscErrorCode ISBuildTwoSided(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISPartitioningToNumbering(IS,IS*);
 PETSC_EXTERN PetscErrorCode ISPartitioningCount(IS,PetscInt,PetscInt[]);
 
@@ -188,7 +188,6 @@ struct _n_PetscLayout{
                                        * positive. Do NOT multiply above numbers by bs */
   PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatCreateVecs() reuse map of input object */
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
-  PetscInt               *trstarts;   /* local start for each thread */
 };
 
 #undef __FUNCT__
@@ -332,7 +331,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscBool, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection, PetscSF, PetscBool, PetscInt, const PetscInt [], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, PetscInt [], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, PetscSection *);

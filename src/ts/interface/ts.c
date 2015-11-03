@@ -57,7 +57,9 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 .  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
 .  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
--  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
+.  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
+.  -ts_adjoint_monitor - print information at each adjoint time step
+-  -ts_adjoint_monitor_draw_sensi - monitor the sensitivity of the first cost function wrt initial conditions (lambda[0]) graphically
 
    Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
@@ -148,7 +150,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt       howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
   ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
@@ -175,7 +177,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt       howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGSNESIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
   ierr = PetscOptionsName("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",&opt);CHKERRQ(ierr);
@@ -184,7 +186,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt       howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGKSPIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
   ierr = PetscOptionsName("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",&opt);CHKERRQ(ierr);
@@ -205,6 +207,16 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsName("-ts_adjoint_monitor_draw_sensi","Monitor adjoint sensitivities (lambda only) graphically","TSAdjointMonitorDrawSensi",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorDrawCtx ctx;
+    PetscInt         howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_adjoint_monitor_draw_sensi","Monitor adjoint sensitivities (lambda only) graphically","TSAdjointMonitorDrawSensi",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSAdjointMonitorSet(ts,TSAdjointMonitorDrawSensi,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
   ierr = PetscOptionsName("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",&opt);CHKERRQ(ierr);
@@ -334,6 +346,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
+  ierr = PetscOptionsString("-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = TSAdjointMonitorSet(ts,TSAdjointMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+
   /*
      This code is all wrong. One is creating objects inside the TSSetFromOptions() so if run with the options gui
      will bleed memory. Also one is using a PetscOptionsBegin() inside a PetscOptionsBegin()
@@ -388,6 +406,7 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
     ierr = TSTrajectorySetType(ts->trajectory,TSTRAJECTORYBASIC);CHKERRQ(ierr);
+    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -462,14 +481,20 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   }
 
   if (rhsjacobianfunc) {
+    PetscBool missing;
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
     PetscStackPush("TS user Jacobian function");
     ierr = (*rhsjacobianfunc)(ts,t,U,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
-    /* make sure user returned a correct Jacobian and preconditioner */
-    PetscValidHeaderSpecific(A,MAT_CLASSID,4);
-    PetscValidHeaderSpecific(B,MAT_CLASSID,5);
+    if (A) {
+      ierr = MatMissingDiagonal(A,&missing,NULL);CHKERRQ(ierr);
+      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Amat passed to TSSetRHSJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
+    }
+    if (B && B != A) {
+      ierr = MatMissingDiagonal(B,&missing,NULL);CHKERRQ(ierr);
+      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Bmat passed to TSSetRHSJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
+    } 
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
     if (A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
@@ -807,12 +832,18 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
   if (ijacobian) {
+    PetscBool missing;
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
-    /* make sure user returned a correct Jacobian and preconditioner */
-    PetscValidHeaderSpecific(A,MAT_CLASSID,4);
-    PetscValidHeaderSpecific(B,MAT_CLASSID,5);
+    if (A) {
+      ierr = MatMissingDiagonal(A,&missing,NULL);CHKERRQ(ierr);
+      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Amat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
+    }
+    if (B && B != A) {
+      ierr = MatMissingDiagonal(B,&missing,NULL);CHKERRQ(ierr);
+      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Bmat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
+    }
   }
   if (imex) {
     if (!ijacobian) {  /* system was written as Udot = G(t,U) */
@@ -1030,6 +1061,11 @@ $     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 .  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
+   Notes:
+   You must set all the diagonal entries of the matrices, if they are zero you must still set them with a zero value
+
+   The TS solver may modify the nonzero structure and the entries of the matrices Amat and Pmat between the calls to f()
+   You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
    Level: beginner
 
@@ -1244,6 +1280,11 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
    a and vector W depend on the integration method, step size, and past states. For example with
    the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
    W + a*U = a*(U - U(previous timestep)) = (U - U(previous timestep))/dt
+
+   You must set all the diagonal entries of the matrices, if they are zero you must still set them with a zero value
+
+   The TS solver may modify the nonzero structure and the entries of the matrices Amat and Pmat between the calls to f()
+   You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
    Level: beginner
 
@@ -1515,6 +1556,9 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 +  ts - the TS context obtained from TSCreate()
 -  usrP - optional user context
 
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+
    Level: intermediate
 
 .keywords: TS, timestep, set, application, context
@@ -1542,6 +1586,9 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 
     Output Parameter:
 .   usrP - user context
+
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
     Level: intermediate
 
@@ -2049,6 +2096,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
+  ierr = TSAdjointMonitorCancel((*ts));CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2973,9 +3021,121 @@ PetscErrorCode  TSMonitorCancel(TS ts)
 PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ts));
+  PetscViewer    viewer =  (PetscViewer) dummy;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitorSet"
+/*@C
+   TSAdjointMonitorSet - Sets an ADDITIONAL function that is to be used at every
+   timestep to display the iteration's  progress.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  adjointmonitor - monitoring routine
+.  adjointmctx - [optional] user-defined context for private data for the
+             monitor routine (use NULL if no context is desired)
+-  adjointmonitordestroy - [optional] routine that frees monitor context
+          (may be NULL)
+
+   Calling sequence of monitor:
+$    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numcost,Vec *lambda, Vec *mu,void *adjointmctx)
+
++    ts - the TS context
+.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have
+                               been interpolated to)
+.    time - current time
+.    u - current iterate
+.    numcost - number of cost functionos
+.    lambda - sensitivities to initial conditions
+.    mu - sensitivities to parameters
+-    adjointmctx - [optional] adjoint monitoring context
+
+   Notes:
+   This routine adds an additional monitor to the list of monitors that
+   already has been loaded.
+
+   Fortran notes: Only a single monitor function can be set for each TS object
+
+   Level: intermediate
+
+.keywords: TS, timestep, set, adjoint, monitor
+
+.seealso: TSAdjointMonitorCancel()
+@*/
+PetscErrorCode  TSAdjointMonitorSet(TS ts,PetscErrorCode (*adjointmonitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *adjointmctx,PetscErrorCode (*adjointmdestroy)(void**))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->numberadjointmonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many adjoint monitors set");
+  ts->adjointmonitor[ts->numberadjointmonitors]          = adjointmonitor;
+  ts->adjointmonitordestroy[ts->numberadjointmonitors]   = adjointmdestroy;
+  ts->adjointmonitorcontext[ts->numberadjointmonitors++] = (void*)adjointmctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitorCancel"
+/*@C
+   TSAdjointMonitorCancel - Clears all the adjoint monitors that have been set on a time-step object.
+
+   Logically Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Notes:
+   There is no way to remove a single, specific monitor.
+
+   Level: intermediate
+
+.keywords: TS, timestep, set, adjoint, monitor
+
+.seealso: TSAdjointMonitorSet()
+@*/
+PetscErrorCode  TSAdjointMonitorCancel(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  for (i=0; i<ts->numberadjointmonitors; i++) {
+    if (ts->adjointmonitordestroy[i]) {
+      ierr = (*ts->adjointmonitordestroy[i])(&ts->adjointmonitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
+  ts->numberadjointmonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitorDefault"
+/*@
+   TSAdjointMonitorDefault - Sets the Default monitor
+
+   Level: intermediate
+
+.keywords: TS, set, monitor
+
+.seealso: TSAdjointMonitorSet()
+@*/
+PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer =  (PetscViewer) dummy;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
@@ -3159,11 +3319,9 @@ PetscErrorCode  TSAdjointStep(TS ts)
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
-      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) {
-        SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      } else if (ts->reason == TS_DIVERGED_STEP_REJECTED) {
-        SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_reject or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
+      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      else if (ts->reason == TS_DIVERGED_STEP_REJECTED) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_reject or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
     if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
@@ -3357,12 +3515,14 @@ PetscErrorCode TSAdjointSolve(TS ts)
   if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
     ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
     }
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
   }
+  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
+  ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
   ts->solvetime = ts->ptime;
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3370,7 +3530,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitor"
-/*@
+/*@C
    TSMonitor - Runs all user-provided monitor routines set using TSMonitorSet()
 
    Collective on TS
@@ -3382,10 +3542,10 @@ PetscErrorCode TSAdjointSolve(TS ts)
 -  u - state at the current model time
 
    Notes:
-   TSMonitor() is typically used within the time stepping implementations.
-   Users might call this function when using the TSStep() interface instead of TSSolve().
+   TSMonitor() is typically used automatically within the time stepping implementations.
+   Users would almost never call this routine directly.
 
-   Level: advanced
+   Level: developer
 
 .keywords: TS, timestep
 @*/
@@ -3405,11 +3565,51 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitor"
+/*@C
+   TSAdjointMonitor - Runs all user-provided adjoint monitor routines set using TSAdjointMonitorSet()
+
+   Collective on TS
+
+   Input Parameters:
++  ts - time stepping context obtained from TSCreate()
+.  step - step number that has just completed
+.  ptime - model time of the state
+.  u - state at the current model time
+.  numcost - number of cost functions (dimension of lambda  or mu)
+.  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
+-  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
+
+   Notes:
+   TSAdjointMonitor() is typically used automatically within the time stepping implementations.
+   Users would almost never call this routine directly.
+
+   Level: developer
+
+.keywords: TS, timestep
+@*/
+PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscInt numcost,Vec *lambda, Vec *mu)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n = ts->numberadjointmonitors;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,4);
+  ierr = VecLockPush(u);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = (*ts->adjointmonitor[i])(ts,step,ptime,u,numcost,lambda,mu,ts->adjointmonitorcontext[i]);CHKERRQ(ierr);
+  }
+  ierr = VecLockPop(u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGCtxCreate"
 /*@C
-   TSMonitorLGCtxCreate - Creates a line graph context for use with
+   TSMonitorLGCtxCreate - Creates a TSMonitorLGCtx context for use with
    TS to monitor the solution process graphically in various ways
 
    Collective on TS
@@ -3426,35 +3626,48 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 
    Options Database Key:
 +  -ts_monitor_lg_timestep - automatically sets line graph monitor
-.  -ts_monitor_lg_solution -
-.  -ts_monitor_lg_error -
-.  -ts_monitor_lg_ksp_iterations -
-.  -ts_monitor_lg_snes_iterations -
+.  -ts_monitor_lg_solution - monitor the solution (or certain values of the solution by calling TSMonitorLGSetDisplayVariables() or TSMonitorLGCtxSetDisplayVariables())
+.  -ts_monitor_lg_error -  monitor the error
+.  -ts_monitor_lg_ksp_iterations - monitor the number of KSP iterations needed for each timestep
+.  -ts_monitor_lg_snes_iterations - monitor the number of SNES iterations needed for each timestep
 -  -lg_use_markers <true,false> - mark the data points (at each time step) on the plot; default is true
 
    Notes:
    Use TSMonitorLGCtxDestroy() to destroy.
 
+   One can provide a function that transforms the solution before plotting it with TSMonitorLGCtxSetTransform() or TSMonitorLGSetTransform()
+
+   Many of the functions that control the monitoring have two forms: TSMonitorLGSet/GetXXXX() and TSMonitorLGCtxSet/GetXXXX() the first take a TS object as the
+   first argument (if that TS object does not have a TSMonitorLGCtx associated with it the function call is ignored) and the second takes a TSMonitorLGCtx object
+   as the first argument.
+
+   One can control the names displayed for each solution or error variable with TSMonitorLGCtxSetVariableNames() or TSMonitorLGSetVariableNames()
+
+
    Level: intermediate
 
-.keywords: TS, monitor, line graph, residual, seealso
+.keywords: TS, monitor, line graph, residual
 
-.seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError()
+.seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError(), TSMonitorDefault(), VecView(), 
+           TSMonitorLGCtxCreate(), TSMonitorLGCtxSetVariableNames(), TSMonitorLGCtxGetVariableNames(),
+           TSMonitorLGSetVariableNames(), TSMonitorLGGetVariableNames(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetDisplayVariables(),
+           TSMonitorLGCtxSetTransform(), TSMonitorLGSetTransform(), TSMonitorLGError(), TSMonitorLGSNESIterations(), TSMonitorLGKSPIterations(),
+           TSMonitorEnvelopeCtxCreate(), TSMonitorEnvelopeGetBounds(), TSMonitorEnvelopeCtxDestroy(), TSMonitorEnvelop()
 
 @*/
 PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorLGCtx *ctx)
 {
-  PetscDraw      win;
+  PetscDraw      draw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(ctx);CHKERRQ(ierr);
-  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)(*ctx)->lg,(PetscObject)win);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(draw,1,&(*ctx)->lg);CHKERRQ(ierr);
   ierr = PetscDrawLGSetUseMarkers((*ctx)->lg,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscDrawLGSetFromOptions((*ctx)->lg);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -3501,15 +3714,12 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
 @*/
 PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 {
-  PetscDraw      draw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((*ctx)->transformdestroy) {
     ierr = ((*ctx)->transformdestroy)((*ctx)->transformctx);CHKERRQ(ierr);
   }
-  ierr = PetscDrawLGGetDraw((*ctx)->lg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&(*ctx)->lg);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*ctx)->names);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*ctx)->displaynames);CHKERRQ(ierr);
@@ -3861,6 +4071,52 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitorDrawSensi"
+/*@C
+   TSAdjointMonitorDrawSensi - Monitors progress of the adjoint TS solvers by calling
+   VecView() for the sensitivities to initial states at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  u - current state
+.  numcost - number of cost functions
+.  lambda - sensitivities to initial conditions
+.  mu - sensitivities to parameters
+-  dummy - either a viewer or NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, adjoint, monitor, view
+
+.seealso: TSAdjointMonitorSet(), TSAdjointMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscInt numcost,Vec *lambda,Vec *mu,void *dummy)
+{
+  PetscErrorCode   ierr;
+  TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
+  PetscDraw        draw;
+  PetscReal        xl,yl,xr,yr,h;
+  char             time[32];
+
+  PetscFunctionBegin;
+  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
+
+  ierr = VecView(lambda[0],ictx->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
+  ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+  h    = yl + .95*(yr - yl);
+  ierr = PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorDrawSolutionPhase"
 /*@C
    TSMonitorDrawSolutionPhase - Monitors progress of the TS solvers by plotting the solution as a phase diagram
@@ -4183,7 +4439,7 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSFunctionLinear"
 /*@C
-   TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems only
+   TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems Udot = A U only
 
    Collective on TS
 
@@ -4272,7 +4528,9 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec U,Mat A,Mat B,
    This function is intended to be passed to TSSetIFunction() to evaluate the left hand side for linear problems.
    The matrix (and optionally the evaluation context) should be passed to TSSetIJacobian().
 
-.seealso: TSSetIFunction(), TSSetIJacobian(), TSComputeIJacobianConstant()
+   Note that using this function is NOT equivalent to using TSComputeRHSFunctionLinear() since that solves Udot = A U
+
+.seealso: TSSetIFunction(), TSSetIJacobian(), TSComputeIJacobianConstant(), TSComputeRHSFunctionLinear()
 @*/
 PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
@@ -5019,7 +5277,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm)
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
 
-  ierr  = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   *norm = PetscSqrtReal(gsum / N);
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
@@ -5115,7 +5373,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm)
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
 
-  ierr  = MPI_Allreduce(&max,&gmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(&max,&gmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   *norm = gmax;
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
@@ -5209,7 +5467,7 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
 
   PetscFunctionBegin;
   if (ts->cfltime < 0) {
-    ierr = MPI_Allreduce(&ts->cfltime_local,&ts->cfltime,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&ts->cfltime_local,&ts->cfltime,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   }
   *cfltime = ts->cfltime;
   PetscFunctionReturn(0);
@@ -5552,7 +5810,8 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 +  ts - the TS context
 .  step - current time-step
 .  ptime - current time
--  lg - a line graph object
+.  u - current solution
+-  dctx - the TSMonitorLGCtx object that contains all the options for the monitoring, this is created with TSMonitorLGCtxCreate()
 
    Options Database:
 .   -ts_monitor_lg_solution_variables
@@ -5563,12 +5822,15 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGCtxCreate(), TSMonitorLGCtxSetVariableNames(), TSMonitorLGCtxGetVariableNames(),
+           TSMonitorLGSetVariableNames(), TSMonitorLGGetVariableNames(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetDisplayVariables(),
+           TSMonitorLGCtxSetTransform(), TSMonitorLGSetTransform(), TSMonitorLGError(), TSMonitorLGSNESIterations(), TSMonitorLGKSPIterations(),
+           TSMonitorEnvelopeCtxCreate(), TSMonitorEnvelopeGetBounds(), TSMonitorEnvelopeCtxDestroy(), TSMonitorEnvelop()
 @*/
-PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
   PetscErrorCode    ierr;
-  TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;
+  TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dctx;
   const PetscScalar *yy;
   PetscInt          dim;
   Vec               v;
@@ -5652,6 +5914,8 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
    Level: intermediate
 
+   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+
 .keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetVariableNames()
@@ -5712,6 +5976,8 @@ PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * c
 .  names - the names of the components, final string must be NULL
 
    Level: intermediate
+
+   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
 .keywords: TS,  vector, monitor, view
 
@@ -5792,6 +6058,8 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
 +  ts - the TS context
 .  displaynames - the names of the components, final string must be NULL
 
+   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+
    Level: intermediate
 
 .keywords: TS,  vector, monitor, view
@@ -5825,6 +6093,8 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 .  transform - the transform function
 .  destroy - function to destroy the optional context
 -  ctx - optional context used by transform function
+
+   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -5886,7 +6156,8 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 +  ts - the TS context
 .  step - current time-step
 .  ptime - current time
--  lg - a line graph object
+.  u - current solution
+-  dctx - TSMonitorLGCtx object created with TSMonitorLGCtxCreate()
 
    Level: intermediate
 
@@ -6074,7 +6345,8 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 +  ts - the TS context
 .  step - current time-step
 .  ptime - current time
--  ctx - the envelope context
+.  u  - current solution
+-  dctx - the envelope context
 
    Options Database:
 .  -ts_monitor_envelope
@@ -6085,12 +6357,12 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorEnvelopeGetBounds()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorEnvelopeGetBounds(), TSMonitorEnvelopeCtxCreate()
 @*/
-PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
   PetscErrorCode       ierr;
-  TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)dummy;
+  TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)dctx;
 
   PetscFunctionBegin;
   if (!ctx->max) {
@@ -6119,6 +6391,8 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
    Output Parameter:
 +  max - the maximum values
 -  min - the minimum values
+
+   Notes: If the TS does not have a TSMonitorEnvelopeCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -6158,7 +6432,7 @@ PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
 
 .keywords: TS, monitor, line graph, destroy
 
-.seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorLGTimeStep();
+.seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorLGTimeStep()
 @*/
 PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 {
@@ -6313,6 +6587,60 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
   if (J != B) {
     ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetFunctionDomainError"
+/*@
+    TSSetFunctionDomainError - Set the function testing if the current state vector is valid
+
+    Input Parameters:
+    ts - the TS context
+    func - function called within TSFunctionDomainError
+
+    Level: intermediate
+
+.keywords: TS, state, domain
+.seealso: TSAdaptCheckStage(), TSFunctionDomainError()
+@*/
+
+PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscReal,Vec,PetscBool*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ts->functiondomainerror = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSFunctionDomainError"
+/*@
+    TSFunctionDomainError - Check if the current state is valid
+
+    Input Parameters:
+    ts - the TS context
+    stagetime - time of the simulation
+    Y - state vector to check.
+
+    Output Parameter:
+    accept - Set to PETSC_FALSE if the current state vector is valid.
+
+    Note:
+    This function should be used to ensure the state is in a valid part of the space.
+    For example, one can ensure here all values are positive.
+@*/
+PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* accept)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *accept = PETSC_TRUE;
+  if (ts->functiondomainerror) {
+    PetscStackCallStandard((*ts->functiondomainerror),(ts,stagetime,Y,accept));
   }
   PetscFunctionReturn(0);
 }

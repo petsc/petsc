@@ -41,6 +41,8 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
+      if not self.scalartypes.precision == 'single':
+        jobs.append('C_NotSingle')
       if hasattr(self.compilers, 'CXX'):
         rjobs.append('Cxx')
       if self.x.found:
@@ -49,8 +51,12 @@ class Configure(config.base.Configure):
         jobs.append('F90_DataTypes')
       elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
+        if not self.scalartypes.precision == 'single':
+          jobs.append('Fortran_NotSingle')
         if self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if not self.scalartypes.precision == 'single':
+            jobs.append('F90_NotSingle')
           if self.scalartypes.scalartype.lower() == 'complex':
             rjobs.append('F90_Complex')
           else:
@@ -61,19 +67,28 @@ class Configure(config.base.Configure):
           rjobs.append('Fortran_Complex')
         else:
           rjobs.append('Fortran_NoComplex')
+          if not self.scalartypes.precision == 'single':
+            jobs.append('Fortran_NoComplex_NotSingle')
       if self.scalartypes.scalartype.lower() == 'complex':
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
+        if not self.scalartypes.precision == 'single':
+          jobs.append('C_NoComplex_NotSingle')
         if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
+          for j in self.framework.packages:
+            if j.hastestsdatafiles:
+                ejobs.append(j.name.upper()+'_DATAFILESPATH')
+        if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+          rjobs.append('DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
-          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','MAKE','MPICH','MATLABENGINE','HWLOC']:
+          if i.hastests:
             ejobs.append(i.name.upper())
           # horrible python here
           if i.name.upper() == 'MOAB':

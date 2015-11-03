@@ -491,8 +491,8 @@ M*/
 #  define PETSC_MAX_REAL                FLT128_MAX
 #  define PETSC_MIN_REAL                -FLT128_MAX
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
-#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
-#  define PETSC_SMALL                   1.e-20
+#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17q
+#  define PETSC_SMALL                   1.e-20q
 #endif
 
 #define PETSC_INFINITY                PETSC_MAX_REAL/4.0
@@ -542,7 +542,7 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
   PetscReal result = 1;
   if (power < 0) {
     power = -power;
-    if (base != 0.0) base  = 1./base;
+    if (base != (PetscReal)0.0) base  = ((PetscReal)1.)/base;
   }
   while (power) {
     if (power & 1) result *= base;
@@ -557,7 +557,7 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt powe
   PetscScalar result = 1;
   if (power < 0) {
     power = -power;
-    if (base != 0.0) base  = 1./base;
+    if (base != (PetscScalar)0.0) base  = ((PetscScalar)1.)/base;
   }
   while (power) {
     if (power & 1) result *= base;

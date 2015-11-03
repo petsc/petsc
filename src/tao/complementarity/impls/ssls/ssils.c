@@ -139,8 +139,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  if (!tao->fatol_changed) tao->fatol = 0;
-  if (!tao->frtol_changed) tao->frtol = 0;
   if (!tao->gttol_changed) tao->gttol = 0;
   if (!tao->grtol_changed) tao->grtol = 0;
 #if defined(PETSC_USE_REAL_SINGLE)

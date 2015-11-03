@@ -5,7 +5,7 @@ foreach matrix (arco1)
     foreach overlap (0 1 2) 
       foreach np (1 2 3 4 )
         echo "matrix $matrix blocksize $blocks overlap $overlap np $np"
-        mpirun -np $np ../ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type asm -mat_baij -matload_block_size $blocks -pc_asm_overlap $overlap -ksp_monitor 
+        mpiexec -n $np ../ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type asm -mat_baij -matload_block_size $blocks -pc_asm_overlap $overlap -ksp_monitor 
       end
     end
   end

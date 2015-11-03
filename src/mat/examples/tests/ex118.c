@@ -22,7 +22,7 @@ int main(int argc,char **args)
   Vec            *evecs;
   PetscScalar    *evecs_array,*D,*E,*evals;
   Mat            T;
-  PetscReal      vl=0.0,vu=4.0,tol=1.e-10;
+  PetscReal      vl=0.0,vu=4.0,tol= 1000*PETSC_MACHINE_EPSILON;
   PetscBLASInt   nsplit,info;
 
 

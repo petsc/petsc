@@ -4,9 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.giturls           = ['https://bitbucket.org/petsc/pkg-sowing.git']
-    self.gitcommit         = '1974716'
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.17-p2.tar.gz']
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.20-pre1.tar.gz']
+    self.gitcommit         = 'v1.1.20-pre1'
     self.complex           = 1
     self.double            = 0
     self.downloadonWindows = 1

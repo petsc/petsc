@@ -868,6 +868,9 @@ extern PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt*,PetscInt,co
 
 #define VecScatterOptimizedBS(mbs) (2 <= mbs)
 
+#undef __FUNCT__
+#define __FUNCT__ "VecScatterCreateEmpty"
+
 PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 {
   VecScatter     ctx;
@@ -1274,6 +1277,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetMinMax(ix,&min,&max);CHKERRQ(ierr);
       if (min >= start && max < end) islocal = PETSC_TRUE;
       else islocal = PETSC_FALSE;
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
       ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
       if (cando) {
         ierr               = PetscMalloc2(1,&to12,1,&from12);CHKERRQ(ierr);
@@ -1316,6 +1320,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (nx != N) totalv = PETSC_FALSE;
       else if (from_first == 0 && from_step == 1 && from_first == to_first && from_step == to_step) totalv = PETSC_TRUE;
       else totalv = PETSC_FALSE;
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
       ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -1374,6 +1379,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         if (!nx) totalv = PETSC_TRUE;
         else     totalv = PETSC_FALSE;
       }
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
       ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -1491,6 +1497,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetMinMax(iy,&min,&max);CHKERRQ(ierr);
       if (min >= start && max < end) islocal = PETSC_TRUE;
       else islocal = PETSC_FALSE;
+      /* cannot use MPIU_Allreduce() since this call matches with the MPI_Allreduce() in the else statement below */
       ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)yin));CHKERRQ(ierr);
       if (cando) {
         ierr              = PetscMalloc2(1,&to,1,&from);CHKERRQ(ierr);

@@ -709,7 +709,8 @@ PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt
     }
   }
   ierr = PetscBTMemzero(pEnd-pStart, isLeaf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nleaves,&localPoints,nleaves,&remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&localPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remotePoints);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {
@@ -1392,7 +1393,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
   }
   ierr  = PetscFree5(funcVal,coords,v0,J,invJ);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }
@@ -1505,7 +1506,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscIn
   }
   ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }

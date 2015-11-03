@@ -1,1 +1,1 @@
-Linear solve did not converge due to DIVERGED_INDEFINITE_PC iterations 7
+Linear solve converged due to CONVERGED_RTOL iterations 10

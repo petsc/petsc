@@ -16,13 +16,13 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4D) dim %2D offset %3D", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for (i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
@@ -39,11 +39,11 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, " constrained");CHKERRQ(ierr);
       for (b = 0; b < s->bc->atlasDof[p]; ++b) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %d", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %D", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4d) dim %2d offset %3d", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4D) dim %2D offset %3D", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for (i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
@@ -62,6 +62,7 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -84,9 +85,9 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 
     ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
     if (s->numFields) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%s with %d fields\n", name, s->numFields);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%s with %D fields\n", name, s->numFields);CHKERRQ(ierr);
       for (f = 0; f < s->numFields; ++f) {
-        ierr = PetscViewerASCIIPrintf(viewer, "  field %d with %d components\n", f, s->numFieldComponents[f]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "  field %D with %D components\n", f, s->numFieldComponents[f]);CHKERRQ(ierr);
         ierr = PetscSectionVecView_ASCII(s->field[f], v, viewer);CHKERRQ(ierr);
       }
     } else {

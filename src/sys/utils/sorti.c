@@ -663,7 +663,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
    Output Parameters:
 +  n   - number of values in the merged array
--  I   - merged sorted array, this is allocated if an array is not provided 
+-  I   - merged sorted array, this is allocated if an array is not provided
 
    Level: intermediate
 
@@ -728,7 +728,7 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, 
 
    Output Parameters:
 +  n   - number of values in the merged array (== an + bn)
-.  I   - merged sorted array
+.  L   - merged sorted array
 -  J   - merged additional array
 
    Level: intermediate
@@ -742,6 +742,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   PetscErrorCode ierr;
   PetscInt       n_, *L_ = *L, *J_= *J, ak, bk, k;
 
+  PetscFunctionBegin;
   n_ = an + bn;
   *n = n_;
   if (!L_) {
@@ -778,6 +779,46 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscMergeMPIIntArray"
+/*@
+   PetscMergeMPIIntArray -     Merges two SORTED integer arrays.
+
+   Not Collective
+
+   Input Parameters:
++  an  - number of values in the first array
+.  aI  - first sorted array of integers
+.  bn  - number of values in the second array
+-  bI  - second array of integers
+
+   Output Parameters:
++  n   - number of values in the merged array (<= an + bn)
+-  L   - merged sorted array, allocated if address of NULL pointer is passed
+
+   Level: intermediate
+
+   Concepts: merging^arrays
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt bn,const PetscMPIInt bI[],PetscInt *n,PetscMPIInt **L)
+{
+  PetscErrorCode ierr;
+  PetscInt       ai,bi,k;
+
+  PetscFunctionBegin;
+  if (!*L) {ierr = PetscMalloc1((an+bn),L);CHKERRQ(ierr);}
+  for (ai=0,bi=0,k=0; ai<an || bi<bn; ) {
+    PetscInt t = -1;
+    for ( ; ai<an && (!bn || aI[ai] <= bI[bi]); ai++) (*L)[k++] = t = aI[ai];
+    for ( ; bi<bn && bI[bi] == t; bi++);
+    for ( ; bi<bn && (!an || bI[bi] <= aI[ai]); bi++) (*L)[k++] = t = bI[bi];
+    for ( ; ai<an && aI[ai] == t; ai++);
+  }
+  *n = k;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscProcessTree"

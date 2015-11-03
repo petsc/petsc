@@ -4,93 +4,51 @@ iter =   2, Function value 4575.71, Residual: 4838.21
 iter =   3, Function value 4575.71, Residual: 1404.45 
 iter =   4, Function value 3627.39, Residual: 11279.7 
 iter =   5, Function value 2584.92, Residual: 16120.5 
-iter =   6, Function value 2584.92, Residual: 1144 
+iter =   6, Function value 2584.92, Residual: 1144. 
 iter =   7, Function value 2524.69, Residual: 257.614 
 iter =   8, Function value 2500.24, Residual: 1072.25 
 iter =   9, Function value 2418.14, Residual: 16.9207 
-iter =  10, Function value 2416.67, Residual: 178.849 
-iter =  11, Function value 2416.67, Residual: 3.77357 
-iter =  12, Function value 2415.51, Residual: 10.0153 
-iter =  13, Function value 2411.15, Residual: 391.763 
-iter =  14, Function value 2411.15, Residual: 311.476 
-iter =  15, Function value 2411.15, Residual: 24.0925 
-iter =  16, Function value 2410.86, Residual: 141.568 
-iter =  17, Function value 2410.86, Residual: 9.82914 
-iter =  18, Function value 2409.03, Residual: 19.0147 
-iter =  19, Function value 2405.37, Residual: 187.39 
-iter =  20, Function value 2405.37, Residual: 36.1224 
-iter =  21, Function value 2403.96, Residual: 461.641 
-iter =  22, Function value 2403.96, Residual: 88.53 
-iter =  23, Function value 2401.43, Residual: 125.36 
-iter =  24, Function value 2400.63, Residual: 71.9882 
-iter =  25, Function value 2396.47, Residual: 153.581 
-iter =  26, Function value 2388.32, Residual: 693.398 
-iter =  27, Function value 2384.75, Residual: 149.291 
-iter =  28, Function value 2384.75, Residual: 156.177 
-iter =  29, Function value 2384.74, Residual: 21.6924 
-iter =  30, Function value 2384.74, Residual: 3.76519 
-iter =  31, Function value 2384.5, Residual: 0.0942887 
-iter =  32, Function value 2384.48, Residual: 0.762227 
-iter =  33, Function value 2384.48, Residual: 0.287334 
-iter =  34, Function value 2384.48, Residual: 0.221261 
-iter =  35, Function value 2384.48, Residual: 0.0183731 
-iter =  36, Function value 2384.48, Residual: 0.0155648 
-iter =  37, Function value 2384.48, Residual: 0.0473363 
-iter =  38, Function value 2384.48, Residual: 0.00108368 
-iter =  39, Function value 2384.48, Residual: 0.00487713 
-iter =  40, Function value 2384.48, Residual: 0.000172856 
-iter =  41, Function value 2384.48, Residual: 5.48164e-06 
-   4575.7085175608709        4.4942328371557893E+307
-   4575.7085175608709        1815.2985516599065     
-   4575.7085175608709        4838.2083666605959     
-   4575.7085175608709        1404.4509372826872     
-   3627.3927583129494        11279.715346421122     
-   2584.9214240354881        16120.497699152949     
-   2584.9214240354881        1143.9964691546586     
-   2524.6912329226511        257.61363944306333     
-   2500.2432503157597        1072.2480219597619     
-   2418.1438534115305        16.920666223362254     
-   2416.6681259821662        178.84868221303151     
-   2416.6681259821662        3.7735723004899953     
-   2415.5103186576657        10.015315131908833     
-   2411.1478828901513        391.76278493043350     
-   2411.1478828901513        311.47645419742167     
-   2411.1478828901513        24.092477935507905     
-   2410.8560348505721        141.56770482743312     
-   2410.8560348505721        9.8291448260766465     
-   2409.0324456803005        19.014689846065945     
-   2405.3739964265242        187.39038474373950     
-   2405.3739964265242        36.122443687575149     
-   2403.9568709863192        461.64120477249253     
-   2403.9568709863192        88.529967780196770     
-   2401.4334252131084        125.35992515000555     
-   2400.6257885667246        71.988183117061809     
-   2396.4652276331276        153.58121719436181     
-   2388.3184558101684        693.39843432256225     
-   2384.7468187163477        149.29114901422918     
-   2384.7463243759134        156.17731464402209     
-   2384.7444039122361        21.692395955680837     
-   2384.7444039122361        3.7651902219828197     
-   2384.5019577079884        9.4288701695413590E-002
-   2384.4811654195523       0.76222743780397162     
-   2384.4775172870586       0.28733366291505030     
-   2384.4774835782791       0.22126089137917193     
-   2384.4774835782791        1.8373137553614825E-002
-   2384.4770104266977        1.5564772320028585E-002
-   2384.4770104266977        4.7336288381090962E-002
-   2384.4770104266977        1.0836785323014985E-003
-   2384.4769959665418        4.8771273138846754E-003
-   2384.4769959665418        1.7285550186436704E-004
-   2384.4769950856239        5.4816440789146458E-006
+iter =  10, Function value 2416.67, Residual: 178.848 
+iter =  11, Function value 2416.67, Residual: 3.77354 
+iter =  12, Function value 2415.51, Residual: 10.0152 
+iter =  13, Function value 2411.15, Residual: 391.762 
+iter =  14, Function value 2411.15, Residual: 311.485 
+iter =  15, Function value 2411.15, Residual: 24.0923 
+iter =  16, Function value 2410.86, Residual: 141.566 
+iter =  17, Function value 2410.86, Residual: 9.82925 
+iter =  18, Function value 2409.03, Residual: 19.0148 
+iter =  19, Function value 2405.37, Residual: 187.386 
+iter =  20, Function value 2405.37, Residual: 36.1251 
+iter =  21, Function value 2403.96, Residual: 461.668 
+iter =  22, Function value 2403.96, Residual: 88.5331 
+iter =  23, Function value 2401.43, Residual: 125.336 
+iter =  24, Function value 2400.63, Residual: 71.9888 
+iter =  25, Function value 2396.47, Residual: 153.517 
+iter =  26, Function value 2388.32, Residual: 693.48 
+iter =  27, Function value 2384.75, Residual: 149.213 
+iter =  28, Function value 2384.75, Residual: 155.989 
+iter =  29, Function value 2384.74, Residual: 21.693 
+iter =  30, Function value 2384.74, Residual: 3.76568 
+iter =  31, Function value 2384.5, Residual: 0.0944167 
+iter =  32, Function value 2384.48, Residual: 0.762795 
+iter =  33, Function value 2384.48, Residual: 0.287315 
+iter =  34, Function value 2384.48, Residual: 0.221088 
+iter =  35, Function value 2384.48, Residual: 0.0183952 
+iter =  36, Function value 2384.48, Residual: 0.0156461 
+iter =  37, Function value 2384.48, Residual: 0.0474809 
+iter =  38, Function value 2384.48, Residual: 0.00108917 
+iter =  39, Function value 2384.48, Residual: 0.00487701 
+iter =  40, Function value 2384.48, Residual: 0.000172575 
+iter =  41, Function value 2384.48, Residual: 5.48376e-06 
 Tao Object: 1 MPI processes
   type: pounders
       initial delta: 0.1
       final delta: 0.0015625
       model points: 7
       subproblem solver: tron
-  convergence tolerances: fatol=0,   frtol=0
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=5.48164e-06
+      total subproblem iterations: 91
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=5.48376e-06
   Objective value=2384.48
   total number of iterations=41,                          (max: 100)
   total number of function evaluations=44,                  max: 4000

@@ -1,9 +1,9 @@
-0 TS dt 0.0001 time 0
+0 TS dt 0.0001 time 0.
 1 TS dt 0.001 time 0.0001
 2 TS dt 0.01 time 0.0011
 3 TS dt 0.1 time 0.0111
-4 TS dt 1 time 0.1111
-5 TS dt 10 time 1.1111
+4 TS dt 1. time 0.1111
+5 TS dt 10. time 1.1111
 6 TS dt 10.0561 time 11.1111
 7 TS dt 11.8335 time 21.1672
 8 TS dt 11.1992 time 33.0007

@@ -5,7 +5,7 @@ KSP Object: 1 MPI processes
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
@@ -13,7 +13,7 @@ PC Object: 1 MPI processes
     Cholesky: out-of-place factorization
     tolerance for zero pivot 2.22045e-14
     matrix ordering: natural
-    factor fill ratio given 0, needed 0
+    factor fill ratio given 0., needed 0.
       Factored matrix follows:
         Mat Object:         1 MPI processes
           type: seqaij
@@ -24,12 +24,12 @@ PC Object: 1 MPI processes
               block size is -1
             CHOLMOD run parameters:
               Pack factors after symbolic factorization: TRUE
-              Common.dbound            0  (Smallest absolute value of diagonal entries of D)
+              Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
               Common.grow0             1.2
               Common.grow1             1.2
               Common.grow2             5
               Common.maxrank           8
-              Common.supernodal_switch 40
+              Common.supernodal_switch 40.
               Common.supernodal        1
               Common.final_asis        1
               Common.final_super       1
@@ -43,18 +43,18 @@ PC Object: 1 MPI processes
               Common.print             3
               Common.postorder         1
               Common.default_nesdis    0 (use NESDIS instead of METIS for nested dissection)
-              Common.fl                485069 (flop count from most recent analysis)
-              Common.lnz               11331 (fundamental nz in L)
-              Common.anz               1856
-              Common.modfl             -1 (flop count from most recent update)
-              Common.malloc_count      12 (number of live objects)
-              Common.memory_usage      270692 (peak memory usage in bytes)
-              Common.memory_inuse      219312 (current memory usage in bytes)
-              Common.nrealloc_col      0 (number of column reallocations)
-              Common.nrealloc_factor   0 (number of factor reallocations due to column reallocations)
-              Common.ndbounds_hit      0 (number of times diagonal was modified by dbound)
-              Common.rowfacfl          0 (number of flops in last call to cholmod_rowfac)
-              Common.aatfl             0 (number of flops to compute A(:,f)*A(:,f)')
+              Common.fl                485069. (flop count from most recent analysis)
+              Common.lnz               11331. (fundamental nz in L)
+              Common.anz               1856.
+              Common.modfl             -1. (flop count from most recent update)
+              Common.malloc_count      12. (number of live objects)
+              Common.memory_usage      270692. (peak memory usage in bytes)
+              Common.memory_inuse      219312. (current memory usage in bytes)
+              Common.nrealloc_col      0. (number of column reallocations)
+              Common.nrealloc_factor   0. (number of factor reallocations due to column reallocations)
+              Common.ndbounds_hit      0. (number of times diagonal was modified by dbound)
+              Common.rowfacfl          0. (number of flops in last call to cholmod_rowfac)
+              Common.aatfl             0. (number of flops to compute A(:,f)*A(:,f)')
   linear system matrix = precond matrix:
   Mat Object:   1 MPI processes
     type: seqaij

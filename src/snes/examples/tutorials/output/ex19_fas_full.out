@@ -1,4 +1,4 @@
-lid velocity = 100, prandtl # = 1, grashof # = 40000
+lid velocity = 100., prandtl # = 1., grashof # = 40000.
   0 SNES Function norm 1065.74 
   1 SNES Function norm 72.3855 
   2 SNES Function norm 21.7121 

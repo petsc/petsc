@@ -234,6 +234,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->smoothd,(PetscObject)pc,levels-i);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, i ? mg->default_smoothd : 1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mglevels[i]->smoothd,prefix);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetInt((PetscObject) mglevels[i]->smoothd, PetscMGLevelId, mglevels[i]->level);CHKERRQ(ierr);
 
     /* do special stuff for coarse grid */
     if (!i && levels > 1) {
@@ -549,7 +550,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mglevels[0]->levels;
   PC             cpc;
-  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
+  PetscBool      dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
@@ -792,20 +793,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mglevels[i]->smoothu);CHKERRQ(ierr);
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
-    }
-  }
-
-  /*
-      If coarse solver is not direct method then DO NOT USE preonly
-  */
-  ierr = PetscObjectTypeCompare((PetscObject)mglevels[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
-  if (preonly) {
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)cpc,PCSVD,&svd);CHKERRQ(ierr);
-    if (!lu && !redundant && !cholesky && !svd) {
-      ierr = KSPSetType(mglevels[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
     }
   }
 

@@ -75,11 +75,16 @@ struct _p_TS {
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void**);
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
+  PetscErrorCode (*adjointmonitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
+  PetscErrorCode (*adjointmonitordestroy[MAXTSMONITORS])(void**);
+  void *adjointmonitorcontext[MAXTSMONITORS];
+  PetscInt  numberadjointmonitors;
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
+  PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
@@ -189,7 +194,7 @@ struct _TSAdaptOps {
 struct _p_TSAdapt {
   PETSCHEADER(struct _TSAdaptOps);
   void *data;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
+  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscReal,Vec,PetscBool*);
   struct {
     PetscInt   n;                /* number of candidate schemes, including the one currently in use */
     PetscBool  inuse_set;        /* the current scheme has been set */

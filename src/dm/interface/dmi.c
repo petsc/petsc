@@ -24,7 +24,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
     }
   }
   if (blockSize < 0) blockSize = PETSC_MAX_INT;
-  ierr = MPI_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   if (blockSize == PETSC_MAX_INT) blockSize = 1; /* Everyone was empty */
   ierr = PetscSectionGetConstrainedStorageSize(gSection, &localSize);CHKERRQ(ierr);
   if (localSize%blockSize) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);
@@ -174,5 +174,18 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       }
     }
   }
+#if 0
+  /* We need a way to filter the original SF for given fields:
+       - Keeping the original section around it too much I think
+       - We could keep the distributed section, and subset it
+   */
+  if (dm->sfNatural) {
+    PetscSF sfNatural;
+
+    ierr = PetscSectionCreateSubsection(dm->originalSection, numFields, fields, &(*subdm)->originalSection);CHKERRQ(ierr);
+    ierr = DMPlexCreateGlobalToNaturalPetscSF(*subdm, &sfNatural);CHKERRQ(ierr);
+    ierr = DMPlexSetGlobalToNaturalPetscSF(*subdm, sfNatural);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }

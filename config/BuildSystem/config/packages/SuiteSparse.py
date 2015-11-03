@@ -3,15 +3,17 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
-    self.download = ['http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz',
-                     'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuiteSparse-4.4.3.tar.gz']
-    self.liblist  = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
-                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
-                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
-                     ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a','librt.a']]
-    self.functions = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve']
-    self.includes  = ['umfpack.h','cholmod.h','klu.h']
-    self.needsMath = 1
+    self.download          = ['http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuiteSparse-4.4.3.tar.gz']
+    self.liblist           = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
+                             ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
+                             ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
+                             ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a','librt.a']]
+    self.functions        = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve']
+    self.includes         = ['umfpack.h','cholmod.h','klu.h']
+    self.needsMath        = 1
+    self.hastests         = 1
+    self.hastestsdatafiles= 1
     return
 
   def setupHelp(self, help):

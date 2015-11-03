@@ -13,6 +13,11 @@ class Configure(config.package.GNUPackage):
     self.isMPI = 1
     return
 
+  def setupDependencies(self, framework):
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    return
+
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
@@ -21,8 +26,8 @@ class Configure(config.package.GNUPackage):
     return
 
   def checkDownload(self):
-    if config.setCompilers.Configure.isCygwin():
-      if config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+    if config.setCompilers.Configure.isCygwin(self.log):
+      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
         self.download = self.download_cygwin
       else:
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
@@ -34,9 +39,11 @@ class Configure(config.package.GNUPackage):
     if 'download-mpich-device' in self.argDB:
       args.append('--with-device='+self.argDB['download-mpich-device'])
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
+    # make sure MPICH does not build with optimization for debug version of PETSc, so we can debug through MPICH
+    if self.compilerFlags.debugging:
+      args.append("--enable-fast=no")
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
-    args.append('--enable-fast')
     # MPICH configure errors out on certain standard configure arguments
     rejects = ['--disable-f90','--enable-f90']
     rejects.extend([arg for arg in args if arg.startswith('F90=') or arg.startswith('F90FLAGS=')])

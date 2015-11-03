@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr   = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-3,1,1,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-128,1,1,0,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   for (i=xs; i<xs+xm; i++) {
     row.i = i;
     if (i==0 || i==mx-1) {
-      v[0] = 2.0;
+      v[0] = 2.0/h;
       ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {
       xlow  = h*(PetscReal)i - .5*h;

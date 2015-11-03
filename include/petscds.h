@@ -201,5 +201,6 @@ PETSC_EXTERN PetscErrorCode PetscDSGetBdTabulation(PetscDS, PetscReal ***, Petsc
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetRefCoordArrays(PetscDS, PetscReal **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
 
 #endif

@@ -41,7 +41,7 @@ PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
   if ((network->nEdges >= 0 || network->NEdges >= 0) && (network->nEdges != nE || network->NEdges != NE)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset edge sizes to %D local %D global after previously setting them to %D local %D global",nE,NE,network->nEdges,network->NEdges);
   if (NE < 0 || NV < 0) {
     a[0] = nV; a[1] = nE;
-    ierr = MPI_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     NV = b[0]; NE = b[1];
   }
   network->nNodes = nV;
@@ -437,7 +437,35 @@ PetscErrorCode DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMNetworkAddNumVariables"
+#define __FUNCT__ "DMNetworkGetNumVariables"
+/*@ 
+  DMNetworkGetNumVariables - Gets number of variables for a vertex/edge point.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMNetworkObject
+- p    - the vertex/edge point
+
+  Output Parameters:
+. nvar - number of variables
+
+  Level: intermediate
+
+.seealso: DMNetworkAddNumVariables, DMNetworkSddNumVariables
+@*/
+PetscErrorCode DMNetworkGetNumVariables(DM dm,PetscInt p,PetscInt *nvar)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetDof(network->DofSection,p,nvar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMNetworkSetNumVariables"
 /*@ 
   DMNetworkSetNumVariables - Sets number of variables for a vertex/edge point.
 
@@ -554,7 +582,7 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
   Notes:
   This routine should be called only when using multiple processors.
 
-  Distributes the network with a non-overlapping partitioning of the edges.
+  Distributes the network with <overlap>-overlapping partitioning of the edges.
 
   Level: intermediate
 

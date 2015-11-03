@@ -106,6 +106,10 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_REAL___FLOAT128)
+#include <quadmath.h>
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsStringToReal"
 /*
@@ -134,7 +138,11 @@ PetscErrorCode  PetscOptionsStringToReal(const char name[],PetscReal *a)
   else if (decide) *a = PETSC_DECIDE;
   else {
     if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+#if defined(PETSC_USE_REAL___FLOAT128)
+    *a = strtoflt128(name,NULL);
+#else
     *a = atof(name);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -2488,7 +2496,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
    Input Parameters:
 +  name  - option name string
 .  value - option value string
--  dummy - unused monitor context
+-  dummy - an ASCII viewer
 
    Level: intermediate
 
@@ -2502,9 +2510,6 @@ PetscErrorCode  PetscOptionsMonitorDefault(const char name[], const char value[]
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-  }
   ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

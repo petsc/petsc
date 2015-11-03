@@ -27,7 +27,8 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
 
   /*  Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
-  ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
   ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
@@ -162,8 +163,10 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       reason = TAO_DIVERGED_LS_FAILURE;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
     }
+
     /*  Check for termination */
-    ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+    ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+
     tao->niter++;
     ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
   }
@@ -177,6 +180,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
+  KSP            H0ksp;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetUp() */
@@ -191,6 +195,25 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
   ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&lmP->M);CHKERRQ(ierr);
   ierr = MatLMVMAllocateVectors(lmP->M,tao->solution);CHKERRQ(ierr);
+
+  /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
+  if (lmP->H0) {
+    const char *prefix;
+    PC H0pc;
+
+    ierr = MatLMVMSetH0(lmP->M, lmP->H0);CHKERRQ(ierr);
+    ierr = MatLMVMGetH0KSP(lmP->M, &H0ksp);CHKERRQ(ierr);
+
+    ierr = TaoGetOptionsPrefix(tao, &prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(H0ksp, prefix);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0ksp, "tao_h0_");CHKERRQ(ierr);
+    ierr = KSPGetPC(H0ksp, &H0pc);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0pc,  "tao_h0_");CHKERRQ(ierr);
+
+    ierr = KSPSetFromOptions(H0ksp);CHKERRQ(ierr);
+    ierr = KSPSetUp(H0ksp);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -209,7 +232,13 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
     ierr = VecDestroy(&lmP->D);CHKERRQ(ierr);
     ierr = MatDestroy(&lmP->M);CHKERRQ(ierr);
   }
+
+  if (lmP->H0) {
+    ierr = PetscObjectDereference((PetscObject)lmP->H0);CHKERRQ(ierr);
+  }
+
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -299,13 +328,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   lmP->M = 0;
   lmP->Xold = 0;
   lmP->Gold = 0;
+  lmP->H0   = NULL;
 
   tao->data = (void*)lmP;
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
@@ -313,4 +341,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

@@ -9,6 +9,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=10
   total number of function evaluations=4
+  norm schedule ALWAYS
   SNESLineSearch Object:   1 MPI processes
     type: bt
       interpolation: cubic
@@ -21,7 +22,7 @@ SNES Object: 1 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object:   1 MPI processes

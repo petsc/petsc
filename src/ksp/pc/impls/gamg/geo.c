@@ -51,13 +51,13 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
   pc_gamg->data_cell_rows = 1;
-  if (coords==0 && nloc > 0) SETERRQ(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
+  if (!coords && nloc > 0) SETERRQ(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
   pc_gamg->data_cell_cols = ndm; /* coordinates */
 
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
 
   /* create data - syntactic sugar that should be refactored at some point */
-  if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
+  if (!pc_gamg->data || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
     ierr = PetscMalloc1(arrsz+1, &pc_gamg->data);CHKERRQ(ierr);
   }
@@ -159,7 +159,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
   } else *a_worst_best = 0.0;
-  ierr = MPI_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRQ(ierr);
   if (tm > 0.0) {
     *a_worst_best = 100.0;
     PetscFunctionReturn(0);
@@ -608,14 +608,17 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
     }
     ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0);CHKERRQ(ierr);
   }
-  /* randomize */
-  srand(1); /* make deterministic */
   if (PETSC_TRUE) {
-    PetscBool *bIndexSet;
-    ierr = PetscMalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
-    for (Ii = 0; Ii < nloc; Ii++) bIndexSet[Ii] = PETSC_FALSE;
+    PetscRandom  rand;
+    PetscBool    *bIndexSet;
+    PetscReal    rr;
+    PetscInt     iSwapIndex;
+
+    ierr = PetscRandomCreate(comm,&rand);CHKERRQ(ierr);
+    ierr = PetscCalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
     for (Ii = 0; Ii < nloc; Ii++) {
-      PetscInt iSwapIndex = rand()%nloc;
+      ierr = PetscRandomGetValueReal(rand,&rr);CHKERRQ(ierr);
+      iSwapIndex = (PetscInt) (rr*nloc);
       if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
         GAMGNode iTemp = gnodes[iSwapIndex];
         gnodes[iSwapIndex]    = gnodes[Ii];
@@ -624,6 +627,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
         bIndexSet[iSwapIndex] = PETSC_TRUE;
       }
     }
+    ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
     ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
   }
   /* only sort locals */
@@ -686,7 +690,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
-  nloc = (Iend-Istart)/bs; my0 = Istart/bs; 
+  nloc = (Iend-Istart)/bs; my0 = Istart/bs;
   if ((Iend-Istart) % bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %D - Istart %D) % bs %D",Iend,Istart,bs);
 
   /* get 'nLocalSelected' */
@@ -716,7 +720,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
   /* can get all points "removed" - but not on geomg */
   ierr =  MatGetSize(Prol, &kk, &jj);CHKERRQ(ierr);
-  if (jj==0) {
+  if (!jj) {
     ierr = PetscInfo(pc,"ERROE: no selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = PetscFree(clid_flid);CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
@@ -765,7 +769,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
       /* clean up and create coordinates for coarse grid (output) */
       if (size > 1) ierr = PetscFree(coords);CHKERRQ(ierr);
 
-      ierr = MPI_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRQ(ierr);
       if (tm > 1.) { /* needs to be globalized - should not happen */
         ierr = PetscInfo1(pc," failed metric for coarse grid %e\n",(double)tm);CHKERRQ(ierr);
         ierr = MatDestroy(&Prol);CHKERRQ(ierr);

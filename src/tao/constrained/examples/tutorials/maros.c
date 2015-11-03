@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np 1 maros1 [-help] [all TAO options] */
+/* Program usage: mpiexec -n 1 maros1 [-help] [all TAO options] */
 
 /* ----------------------------------------------------------------------
 TODO Explain maros example
@@ -112,7 +112,7 @@ PetscErrorCode main(int argc,char **argv)
   }
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-  ierr = TaoSetTolerances(tao,1e-12,0,0,0,0);CHKERRQ(ierr);
+  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 

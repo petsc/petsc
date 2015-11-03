@@ -1,101 +1,76 @@
   0 KSP Residual norm 0.0527344 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.264171 
-      1 KSP Residual norm 1.08061 
-      2 KSP Residual norm 0.279295 
+      0 KSP Residual norm 1.41731 
+      1 KSP Residual norm 0.355015 
+      2 KSP Residual norm 0.231886 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.045851 
-      1 KSP Residual norm 0.133392 
-      2 KSP Residual norm 0.0450789 
+      0 KSP Residual norm 0.122494 
+      1 KSP Residual norm 0.0736045 
+      2 KSP Residual norm 0.0357347 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 1.14074 
-    1 KSP Residual norm 0.263319 
-    2 KSP Residual norm 0.218452 
+    0 KSP Residual norm 1.15469 
+    1 KSP Residual norm 0.28425 
+    2 KSP Residual norm 0.20165 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0237711 
-      1 KSP Residual norm 0.0795626 
-      2 KSP Residual norm 0.0243924 
+      0 KSP Residual norm 0.0962812 
+      1 KSP Residual norm 0.0380543 
+      2 KSP Residual norm 0.0173204 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00388848 
-      1 KSP Residual norm 0.00970834 
-      2 KSP Residual norm 0.00376785 
+      0 KSP Residual norm 0.0102272 
+      1 KSP Residual norm 0.00449811 
+      2 KSP Residual norm 0.00180261 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.121727 
-    1 KSP Residual norm 0.062903 
-    2 KSP Residual norm 0.0472274 
-  1 KSP Residual norm 0.0011364 
+    0 KSP Residual norm 0.114348 
+    1 KSP Residual norm 0.0580765 
+    2 KSP Residual norm 0.0427119 
+  1 KSP Residual norm 0.001022 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.168273 
-      1 KSP Residual norm 0.598685 
-      2 KSP Residual norm 0.164121 
+      0 KSP Residual norm 0.604097 
+      1 KSP Residual norm 0.316214 
+      2 KSP Residual norm 0.188422 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00809131 
-      1 KSP Residual norm 0.0391612 
-      2 KSP Residual norm 0.00854376 
+      0 KSP Residual norm 0.103169 
+      1 KSP Residual norm 0.0291455 
+      2 KSP Residual norm 0.0365981 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.756342 
-    1 KSP Residual norm 0.211536 
-    2 KSP Residual norm 0.305534 
+    0 KSP Residual norm 0.772986 
+    1 KSP Residual norm 0.232246 
+    2 KSP Residual norm 0.319421 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0153807 
-      1 KSP Residual norm 0.0356206 
-      2 KSP Residual norm 0.0147631 
+      0 KSP Residual norm 0.0345544 
+      1 KSP Residual norm 0.0338866 
+      2 KSP Residual norm 0.0111074 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00139432 
-      1 KSP Residual norm 0.00516223 
-      2 KSP Residual norm 0.0014134 
+      0 KSP Residual norm 0.00410901 
+      1 KSP Residual norm 0.00112358 
+      2 KSP Residual norm 0.0013697 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.146118 
-    1 KSP Residual norm 0.0594567 
-    2 KSP Residual norm 0.0712604 
-  2 KSP Residual norm 2.46921e-05 
+    0 KSP Residual norm 0.151637 
+    1 KSP Residual norm 0.0623917 
+    2 KSP Residual norm 0.0733209 
+  2 KSP Residual norm 2.32267e-05 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.164769 
-      1 KSP Residual norm 0.47959 
-      2 KSP Residual norm 0.158359 
+      0 KSP Residual norm 0.433073 
+      1 KSP Residual norm 0.32797 
+      2 KSP Residual norm 0.142299 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00747944 
-      1 KSP Residual norm 0.0324501 
-      2 KSP Residual norm 0.00774169 
+      0 KSP Residual norm 0.073676 
+      1 KSP Residual norm 0.024613 
+      2 KSP Residual norm 0.0258133 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.708769 
-    1 KSP Residual norm 0.408689 
-    2 KSP Residual norm 0.393936 
+    0 KSP Residual norm 0.690491 
+    1 KSP Residual norm 0.415155 
+    2 KSP Residual norm 0.386522 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0128153 
-      1 KSP Residual norm 0.048511 
-      2 KSP Residual norm 0.0128061 
+      0 KSP Residual norm 0.0525937 
+      1 KSP Residual norm 0.0206427 
+      2 KSP Residual norm 0.0126036 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00117158 
-      1 KSP Residual norm 0.00496037 
-      2 KSP Residual norm 0.0012265 
+      0 KSP Residual norm 0.00636749 
+      1 KSP Residual norm 0.00251057 
+      2 KSP Residual norm 0.00255129 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.180198 
-    1 KSP Residual norm 0.0818284 
-    2 KSP Residual norm 0.0959497 
-  3 KSP Residual norm 5.47693e-07 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0927584 
-      1 KSP Residual norm 0.283989 
-      2 KSP Residual norm 0.089694 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00470445 
-      1 KSP Residual norm 0.0198961 
-      2 KSP Residual norm 0.0049114 
-    Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.812595 
-    1 KSP Residual norm 0.327226 
-    2 KSP Residual norm 0.401124 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.016817 
-      1 KSP Residual norm 0.0431294 
-      2 KSP Residual norm 0.0160678 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00102948 
-      1 KSP Residual norm 0.00392133 
-      2 KSP Residual norm 0.00105939 
-    Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.187845 
-    1 KSP Residual norm 0.0788444 
-    2 KSP Residual norm 0.100797 
-  4 KSP Residual norm 1.00072e-08 
+    0 KSP Residual norm 0.175736 
+    1 KSP Residual norm 0.0830556 
+    2 KSP Residual norm 0.0951625 
+  3 KSP Residual norm 5.2283e-07 
