@@ -216,6 +216,8 @@ void pardiso_64init(void *pt, INT_TYPE *mtype, INT_TYPE iparm [])
 static PetscErrorCode MatMKLPardisoFactorSchur_Private(Mat_MKL_PARDISO* mpardiso)
 {
   PetscBLASInt   B_N,B_ierr;
+  PetscScalar    *work,val;
+  PetscBLASInt   lwork = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -235,7 +237,11 @@ static PetscErrorCode MatMKLPardisoFactorSchur_Private(Mat_MKL_PARDISO* mpardiso
         ierr = PetscMalloc1(B_N,&mpardiso->schur_pivots);CHKERRQ(ierr);
       }
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,mpardiso->schur_work,&mpardiso->schur_work_size,&B_ierr));
+      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,&val,&lwork,&B_ierr));
+      ierr = PetscBLASIntCast((PetscInt)val,&lwork);CHKERRQ(ierr);
+      ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
+      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,work,&lwork,&B_ierr));
+      ierr = PetscFree(work);CHKERRQ(ierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
       break;
