@@ -399,7 +399,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     Vec            vec3_N;
     PetscScalar    *vals;
     const PetscInt *idxs;
-    PetscInt       nz;
+    PetscInt       nz,*count;
 
     /* p0 */
     ierr = VecSet(pcis->vec1_N,0.);CHKERRQ(ierr);
@@ -440,6 +440,18 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     }
     ierr = PetscFree(vals);CHKERRQ(ierr);
     ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
+
+    /* there should not be any pressure dofs lying on the interface */
+    ierr = PetscCalloc1(pcis->n,&count);CHKERRQ(ierr);
+    ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
+    for (i=0;i<pcis->n_B;i++) count[idxs[i]]++;
+    ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
+    ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
+    if (count[idxs[i]]) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %d is an interface dof",idxs[i]);
+    }
+    ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
+    ierr = PetscFree(count);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
 
@@ -501,7 +513,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
   /* pcis has not been setup yet, so get the local size from the subdomain matrix */
   ierr = MatGetLocalSize(pcbddc->local_mat,&n,NULL);CHKERRQ(ierr);
-  /* TODO: add check for shared dofs and raise error */
   ierr = MatFindZeroDiagonals(pcbddc->local_mat,&zerodiag);CHKERRQ(ierr);
   ierr = ISSorted(zerodiag,&sorted);CHKERRQ(ierr);
   if (!sorted) {
@@ -6143,6 +6154,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     }
     ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&S_j);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {
