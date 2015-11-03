@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   = ${MKL_PARDISO_INCLUDE}
 FFLAGS   =
-SOURCEC	 = mkl_pardiso.c
+SOURCEC	 = mkl_pardiso.c mkl_utils.c
 SOURCEF	 =
 SOURCEH	 =
 LIBBASE	 = libpetscmat

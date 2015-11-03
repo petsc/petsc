@@ -12,6 +12,8 @@
 #include <math.h>
 #include <mkl_pardiso.h>
 
+PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
+
 /*
  *  Possible mkl_pardiso phases that controls the execution of the solver.
  *  For more information check mkl_pardiso manual.
@@ -854,11 +856,14 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->spptr;
   PetscErrorCode      ierr;
-  PetscInt            icntl;
+  PetscInt            icntl,threads=1;
   PetscBool           flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");CHKERRQ(ierr);
+
+  ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of threads to use within PARDISO","None",threads,&threads,&flg);CHKERRQ(ierr);
+  if (flg) PetscSetMKL_PARDISOThreads((int)threads);
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_pardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_pardiso->maxfct = icntl;
@@ -1141,7 +1146,9 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
   if(icntl <= 64){
     mat_mkl_pardiso->iparm[icntl - 1] = ival;
   } else {
-    if(icntl == 66)
+    if(icntl == 65)
+      PetscSetMKL_PARDISOThreads(ival);
+    else if(icntl == 66)
       mat_mkl_pardiso->maxfct = ival;
     else if(icntl == 67)
       mat_mkl_pardiso->mnum = ival;
@@ -1203,16 +1210,17 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to us this direct solver
 
   Options Database Keys:
++ -mat_mkl_pardiso_65 - Number of threads to use within MKL_PARDISO
 . -mat_mkl_pardiso_66 - Maximum number of factors with identical sparsity structure that must be kept in memory at the same time
 . -mat_mkl_pardiso_67 - Indicates the actual matrix for the solution phase
 . -mat_mkl_pardiso_68 - Message level information
 . -mat_mkl_pardiso_69 - Defines the matrix type. IMPORTANT: When you set this flag, iparm parameters are going to be set to the default ones for the matrix type
-. -mat_mkl_pardiso_1 - Use default values
-. -mat_mkl_pardiso_2 - Fill-in reducing ordering for the input matrix
-. -mat_mkl_pardiso_4 - Preconditioned CGS/CG
-. -mat_mkl_pardiso_5 - User permutation
-. -mat_mkl_pardiso_6 - Write solution on x
-. -mat_mkl_pardiso_8 - Iterative refinement step
+. -mat_mkl_pardiso_1  - Use default values
+. -mat_mkl_pardiso_2  - Fill-in reducing ordering for the input matrix
+. -mat_mkl_pardiso_4  - Preconditioned CGS/CG
+. -mat_mkl_pardiso_5  - User permutation
+. -mat_mkl_pardiso_6  - Write solution on x
+. -mat_mkl_pardiso_8  - Iterative refinement step
 . -mat_mkl_pardiso_10 - Pivoting perturbation
 . -mat_mkl_pardiso_11 - Scaling vectors
 . -mat_mkl_pardiso_12 - Solve with transposed or conjugate transposed matrix A
