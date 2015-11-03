@@ -108,9 +108,6 @@
       CHKERRQ(ierr)
       call TaoGetConvergenceHistory(tao,nhist,ierr)
       CHKERRQ(ierr)
-      do i=1,nhist
-         print *,hist(i),resid(i)
-      enddo
       call TaoGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'

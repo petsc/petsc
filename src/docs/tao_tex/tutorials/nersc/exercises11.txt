@@ -108,9 +108,6 @@ Try different solvers using the option -tao_method followed by
 How many iterations do the different solvers require to solve the problem?
 
 
-Set the tolerances to increase the precision of the solution by adding the
-command line options -tao_frtol 0 -tao_fatol 1e-8
-
 Now how many iterations does each solver take?
 
 Execute the programs from the last step again, but this time use the command line option -log_summary to get detailed performance information.

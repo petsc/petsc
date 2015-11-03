@@ -609,15 +609,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 200;
-  
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
-#else
-  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
-#endif
-
   if (!tao->catol_changed) tao->catol = 1.0e-4;
   if (!tao->gatol_changed) tao->gttol = 1.0e-4;
   if (!tao->grtol_changed) tao->gttol = 1.0e-4;

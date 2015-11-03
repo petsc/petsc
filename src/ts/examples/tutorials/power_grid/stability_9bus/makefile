@@ -36,12 +36,12 @@ runex9busadj:
 	   ${RM} -f ex9busadj_1.tmp
 
 runex9busopt:
-	-@${MPIEXEC} -n 1 ./ex9busopt -viewer_binary_skip_info -tao_monitor > ex9busopt_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex9busopt -viewer_binary_skip_info -tao_monitor -tao_gttol .2 > ex9busopt_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex9busopt_1.out ex9busopt_1.tmp || printf "${PWD}\nPossible problem with ex9busopt_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9busopt_1.tmp
 
 runex9busopt_fd:
-	-@${MPIEXEC} -n 1 ./ex9busopt_fd -viewer_binary_skip_info -tao_monitor > ex9busopt_fd_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex9busopt_fd -viewer_binary_skip_info -tao_monitor -tao_gttol .2 > ex9busopt_fd_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex9busopt_fd_1.out ex9busopt_fd_1.tmp || printf "${PWD}\nPossible problem with ex9busopt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9busopt_fd_1.tmp
 

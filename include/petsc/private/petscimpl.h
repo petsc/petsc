@@ -288,19 +288,21 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidLogicalCollectiveScalar(a,b,c)                        \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
-    PetscReal b1[2],b2[2];                                              \
-    b1[0] = -PetscRealPart(b); b1[1] = PetscRealPart(b);                \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",c); \
+    PetscReal b1[6],b2[6];                                              \
+    if (PetscIsNanScalar(b)) {b1[4] = -1; b1[5] = 1;} else b1[4] = b1[5] = 0; \
+    b1[0] = -PetscRealPart(b); b1[1] = PetscRealPart(b);b1[2] = -PetscImaginaryPart(b); b1[3] = PetscImaginaryPart(b);         \
+    _7_ierr = MPI_Allreduce(b1,b2,6,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
+    if (!(b2[4] == -1 && b2[5] == 1) && (-b2[0] != b2[1] || -b2[2] != b2[3])) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveReal(a,b,c)                          \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
-    PetscReal b1[2],b2[2];                                              \
-    b1[0] = -b; b1[1] = b;                                              \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
+    PetscReal b1[4],b2[4];                                              \
+    if (PetscIsNanReal(b)) {b1[2] = -1; b1[3] = 1;} else b1[2] = b1[3] = 0; \
+    b1[0] = -b; b1[1] = b;                                                  \
+    _7_ierr = MPI_Allreduce(b1,b2,4,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)a));CHKERRQ(_7_ierr); \
+    if (!(b2[2] == -1 && b2[3] == 1) && -b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)a),PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveInt(a,b,c)                           \

@@ -149,6 +149,20 @@ Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost functio
 mu 1.00001, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
 iter =  21, Function value: 1.4339e-12,  Residual: 2.22256e-07 
+mu 1.00001, steps 7, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
+mu 1.00001, steps 7, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
+mu 1.00001, steps 7, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
+iter =  22, Function value: 5.81557e-13,  Residual: 1.41543e-07 
+mu 1.00001, steps 7, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
+mu 1.00001, steps 7, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
+mu 1.00001, steps 7, ftime 0.5
+Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
+iter =  23, Function value: 2.35866e-13,  Residual: 9.01415e-08 
 Tao Object: 1 MPI processes
   type: cg
       CG Type: prp
@@ -157,13 +171,12 @@ Tao Object: 1 MPI processes
   TaoLineSearch Object:   1 MPI processes
     type: more-thuente
   Active Set subset type: subvec
-  convergence tolerances: fatol=1e-13,   frtol=1e-13
-  convergence tolerances: gatol=1e-13,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=2.22256e-07
-  Objective value=1.4339e-12
-  total number of iterations=21,                          (max: 2000)
-  total number of function/gradient evaluations=63,      (max: 4000)
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  convergence tolerances: gatol=1e-13,   steptol=0.,   gttol=1e-05
+  Residual in Function/Gradient:=9.01415e-08
+  Objective value=2.35866e-13
+  total number of iterations=23,                          (max: 2000)
+  total number of function/gradient evaluations=69,      (max: 4000)
+  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
 Vec Object: 1 MPI processes
   type: seq
 1.00001

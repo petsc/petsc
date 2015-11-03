@@ -75,9 +75,6 @@ lambda: 2.777778 mu: 4.166667
    12 KSP Residual norm 2.85006e-08 
    13 KSP Residual norm 2.2627e-08 
    14 KSP Residual norm 1.84108e-08 
-   15 KSP Residual norm 1.63634e-08 
-   16 KSP Residual norm 1.37996e-08 
-   17 KSP Residual norm 1.08248e-08 
-   18 KSP Residual norm 4.54564e-09 
-  6 SNES Function norm 4.54564e-09 
+  6 SNES Function norm 1.84108e-08 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 6
 Number of SNES iterations = 6

@@ -71,8 +71,6 @@ PETSC_EXTERN PetscFunctionList TaoList;
     include/petsc/finclude/petsctao.h
 */
 typedef enum {/* converged */
-  TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */
-  TAO_CONVERGED_FRTOL          =  2, /* |F(X) - f(X*)|/|f(X)| < frtol */
   TAO_CONVERGED_GATOL          =  3, /* ||g(X)|| < gatol */
   TAO_CONVERGED_GRTOL          =  4, /* ||g(X)|| / f(X)  < grtol */
   TAO_CONVERGED_GTTOL          =  5, /* ||g(X)|| / ||g(X0)|| < gttol */
@@ -170,8 +168,8 @@ PETSC_EXTERN PetscErrorCode TaoGetInequalityBounds(Tao, Vec*, Vec*);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBoundsRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoComputeVariableBounds(Tao);
 
-PETSC_EXTERN PetscErrorCode TaoGetTolerances(Tao, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoSetTolerances(Tao, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+PETSC_EXTERN PetscErrorCode TaoGetTolerances(Tao, PetscReal*, PetscReal*, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoSetTolerances(Tao, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode TaoGetConstraintTolerances(Tao, PetscReal*, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoSetConstraintTolerances(Tao, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode TaoSetFunctionLowerBound(Tao, PetscReal);

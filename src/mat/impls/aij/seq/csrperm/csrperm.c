@@ -667,7 +667,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJPERM(A,MATSEQAIJPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJPERM(A,MATSEQAIJPERM,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
