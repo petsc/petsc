@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'cba81bf5bf9550630d4cb7b3042a5cc643efb808'
+    self.gitcommit        = 'e81005dc3af9b331d43e16e4d221e889378e2c49'
     self.download          = ['git://https://github.com/elemental/Elemental']
     self.liblist          = [['libEl.a','libElSuiteSparse.a','libpmrrr.a']]
     self.includes         = ['El.hpp']
@@ -40,6 +40,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DEL_USE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
     args.append('-DEL_FORCE_METIS_BUILD=OFF')
     args.append('-DEL_FORCE_PARMETIS_BUILD=OFF')
+    args.append('-DEL_PREVENT_METIS_DOWNLOAD=ON')
+    args.append('-DEL_PREVENT_PARMETIS_DOWNLOAD=ON')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
     args.append('-DEL_DISABLE_SCALAPACK=ON')
     args.append('-DMETIS_INCLUDE_DIR:STRING="'+self.metis.include[0]+'"')
