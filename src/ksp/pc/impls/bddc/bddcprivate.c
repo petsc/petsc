@@ -286,6 +286,11 @@ PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  if (!A->rmap->N || !A->cmap->N) {
+    *ncc = 0;
+    *cc = NULL;
+    PetscFunctionReturn(0);
+  }
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   if (!isseqaij && filter) {
     PetscBool isseqdense;
@@ -5181,9 +5186,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = KSPGetPC(pcbddc->coarse_ksp,&pc);CHKERRQ(ierr);
         ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
         if (isbddc) {
-          ierr = PCDestroy(&pc);CHKERRQ(ierr);
+          ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
+        } else {
+          ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
         }
-        ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
         coarse_reuse = PETSC_FALSE;
       } else { /* we can safely reuse already computed coarse matrix */
         coarse_reuse = PETSC_TRUE;
