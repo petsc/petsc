@@ -26,8 +26,6 @@ cdef extern from * nogil:
         #iterating
         TAO_CONTINUE_ITERATING
         # converged
-        TAO_CONVERGED_FATOL
-        TAO_CONVERGED_FRTOL
         TAO_CONVERGED_GATOL
         TAO_CONVERGED_GRTOL
         TAO_CONVERGED_GTTOL
@@ -54,8 +52,8 @@ cdef extern from * nogil:
     int TaoSetUp(PetscTAO)
     int TaoSolve(PetscTAO)
 
-    int TaoSetTolerances(PetscTAO,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
-    int TaoGetTolerances(PetscTAO,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*)
+    int TaoSetTolerances(PetscTAO,PetscReal,PetscReal,PetscReal)
+    int TaoGetTolerances(PetscTAO,PetscReal*,PetscReal*,PetscReal*)
     int TaoSetConstraintTolerances(PetscTAO,PetscReal,PetscReal)
     int TaoGetConstraintTolerances(PetscTAO,PetscReal*,PetscReal*)
 

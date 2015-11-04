@@ -34,8 +34,6 @@ class TAOConvergedReason:
     CONVERGED_ITERATING   = TAO_CONTINUE_ITERATING    # iterating
     ITERATING             = TAO_CONTINUE_ITERATING    # iterating
     # converged
-    CONVERGED_FATOL       = TAO_CONVERGED_FATOL       # f(X)-f(X*) <= fatol
-    CONVERGED_FRTOL       = TAO_CONVERGED_FRTOL       # |F(X)-f(X*)|/|f(X)| < frtol
     CONVERGED_GATOL       = TAO_CONVERGED_GATOL       # ||g(X)|| < gatol
     CONVERGED_GRTOL       = TAO_CONVERGED_GRTOL       # ||g(X)||/f(X)  < grtol
     CONVERGED_GTTOL       = TAO_CONVERGED_GTTOL       # ||g(X)||/||g(X0)|| < gttol
@@ -347,65 +345,20 @@ cdef class TAO(Object):
 
     #
 
-    def setTolerances(self,
-                      fatol=None, frtol=None,
-                      gatol=None, grtol=None, gttol=None):
+    def setTolerances(self, gatol=None, grtol=None, gttol=None):
         """
         """
-        cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
-        if fatol is not None: _fatol = asReal(fatol)
-        if frtol is not None: _frtol = asReal(frtol)
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
         if gatol is not None: _gatol = asReal(gatol)
         if grtol is not None: _grtol = asReal(grtol)
         if gttol is not None: _gttol = asReal(gttol)
-        CHKERR( TaoSetTolerances(self.tao, _fatol, _frtol, _gatol, _grtol, _gttol) )
+        CHKERR( TaoSetTolerances(self.tao, _gatol, _grtol, _gttol) )
 
     def getTolerances(self):
         """
         """
-        cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        CHKERR( TaoGetTolerances(self.tao, &_fatol, &_frtol, &_gatol, &_grtol, &_gttol) )
-        return (toReal(_fatol), toReal(_frtol),
-                toReal(_gatol), toReal(_grtol), toReal(_gttol))
-
-    def setObjectiveTolerances(self, fatol=None, frtol=None):
-        """
-        """
-        cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
-        cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        if fatol is not None: _fatol = asReal(fatol)
-        if frtol is not None: _frtol = asReal(frtol)
-        CHKERR( TaoSetTolerances(self.tao, _fatol, _frtol, _gatol, _grtol, _gttol) )
-
-    def getObjectiveTolerances(self):
-        """
-        """
-        cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
-        cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        CHKERR( TaoGetTolerances(self.tao, &_fatol, &_frtol, &_gatol, &_grtol, &_gttol) )
-        return (toReal(_fatol), toReal(_frtol))
-
-    setFunctionTolerances = setObjectiveTolerances
-    getFunctionTolerances = getObjectiveTolerances
-
-    def setGradientTolerances(self, gatol=None, grtol=None, gttol=None):
-        """
-        """
-        cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
-        cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        if gatol is not None: _gatol = asReal(gatol)
-        if grtol is not None: _grtol = asReal(grtol)
-        if gttol is not None: _gttol = asReal(gttol)
-        CHKERR( TaoSetTolerances(self.tao, _fatol, _frtol, _gatol, _grtol, _gttol) )
-
-    def getGradientTolerances(self):
-        """
-        """
-        cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
-        cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        CHKERR( TaoGetTolerances(self.tao, &_fatol, &_frtol, &_gatol, &_grtol, &_gttol) )
+        CHKERR( TaoGetTolerances(self.tao, &_gatol, &_grtol, &_gttol) )
         return (toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
     def setConstraintTolerances(self, catol=None, crtol=None):
