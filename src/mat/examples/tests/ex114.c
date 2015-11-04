@@ -88,7 +88,7 @@ int main(int argc,char **args)
   }
 
   if (size == 1) {
-    ierr = MatConvert(A,MATDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
 
     ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
     ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);

@@ -247,8 +247,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
 
   tao->max_it = 2000;
   tao->max_funcs = 4000;
-  tao->fatol = 1e-4;
-  tao->frtol = 1e-4;
 
   tao->ops->setup = TaoSetUp_CG;
   tao->ops->solve = TaoSolve_CG;

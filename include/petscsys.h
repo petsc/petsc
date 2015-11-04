@@ -114,6 +114,9 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
+#if !defined(OMPI_WANT_MPI_INTERFACE_WARNING)
+#  define OMPI_WANT_MPI_INTERFACE_WARNING 0
+#endif
 #include <mpi.h>
 
 /*

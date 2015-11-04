@@ -25,7 +25,7 @@ static char help[] = "Reduced formulation of the mother problem of PDE-constrain
   Contributed by: Patrick Farrell <patrick.farrell@maths.ox.ac.uk>
 
   Run with e.g.:
-  ./ex3 -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_fatol 0.0 -tao_frtol 0.0 -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f meshes/mesh-1.h5
+  ./ex3 -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f meshes/mesh-1.h5
 
   and visualise in paraview with ../../../../petsc_gen_xdmf.py solution.h5.
 

@@ -122,7 +122,7 @@ runex4_6:
 	   ${RM} -f ex4.tmp
 
 runex4_7:
-	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler -test_PostStep > ex4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler -test_PostStep -ts_dt .1 > ex4.tmp 2>&1;	  \
 	   ${DIFF} output/ex4_7.out ex4.tmp || printf "${PWD}\nPossible problem with ex4_7, diffs above\n=========================================\n"; \
 	   ${RM} -f ex4.tmp
 
@@ -147,9 +147,10 @@ runex25_2:
 	   ${RM} -f ex25_2.tmp
 
 TESTEXAMPLES_C		  = ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            runex4_7 ex4.rm ex25.PETSc runex25 runex25_2 ex25.rm
-
-TESTEXAMPLES_C_NOCOMPLEX  = ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
+                            ex4.rm ex25.PETSc runex25 runex25_2 ex25.rm
+TESTEXAMPLES_C_NOTSINGLE  = ex4.PETSc runex4_7 ex4.rm
+TESTEXAMPLES_C_NOCOMPLEX  = ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI =
