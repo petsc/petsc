@@ -447,8 +447,10 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     for (i=0;i<pcis->n_B;i++) count[idxs[i]]++;
     ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
     ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-    if (count[idxs[i]]) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %d is an interface dof",idxs[i]);
+    for (i=0;i<nz;i++) {
+      if (count[idxs[i]]) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %d is an interface dof",idxs[i]);
+      }
     }
     ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
     ierr = PetscFree(count);CHKERRQ(ierr);
@@ -4235,105 +4237,17 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   }
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
-  if (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) {
+  if ( (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) && pcbddc->use_local_adj) {
     PetscInt  *xadj,*adjncy;
     PetscInt  nvtxs;
     PetscBool flg_row=PETSC_FALSE;
 
-    if (pcbddc->use_local_adj) {
-
-      ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-      if (flg_row) {
-        ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
-        pcbddc->computed_rowadj = PETSC_TRUE;
-      }
-      ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-    } else if (pcbddc->current_level && pcis->n_B) { /* just compute subdomain's connected components for coarser levels when the local boundary is not empty */
-      IS                     is_dummy;
-      ISLocalToGlobalMapping l2gmap_dummy;
-      PetscInt               j,sum;
-      PetscInt               *cxadj,*cadjncy;
-      const PetscInt         *idxs;
-      PCBDDCGraph            graph;
-      PetscBT                is_on_boundary;
-
-      ierr = ISCreateStride(PETSC_COMM_SELF,pcis->n,0,1,&is_dummy);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreateIS(is_dummy,&l2gmap_dummy);CHKERRQ(ierr);
-      ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
-      ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
-      ierr = PCBDDCGraphInit(graph,l2gmap_dummy,pcis->n);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&l2gmap_dummy);CHKERRQ(ierr);
-      ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-      if (flg_row) {
-        graph->xadj = xadj;
-        graph->adjncy = adjncy;
-      }
-      ierr = PCBDDCGraphSetUp(graph,1,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
-      ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
-      ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-
-      if (pcbddc->dbg_flag) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] Found %d subdomains (local size %d)\n",PetscGlobalRank,graph->ncc,pcis->n);CHKERRQ(ierr);
-        for (i=0;i<graph->ncc;i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] %d cc size %d\n",PetscGlobalRank,i,graph->cptr[i+1]-graph->cptr[i]);CHKERRQ(ierr);
-        }
-      }
-
-      ierr = PetscBTCreate(pcis->n,&is_on_boundary);CHKERRQ(ierr);
-      ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-      for (i=0;i<pcis->n_B;i++) {
-        ierr = PetscBTSet(is_on_boundary,idxs[i]);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
-
-      ierr = PetscCalloc1(pcis->n+1,&cxadj);CHKERRQ(ierr);
-      sum = 0;
-      for (i=0;i<graph->ncc;i++) {
-        PetscInt sizecc = 0;
-        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-          if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
-            sizecc++;
-          }
-        }
-        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-          if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
-            cxadj[graph->queue[j]] = sizecc;
-          }
-        }
-        sum += sizecc*sizecc;
-      }
-      ierr = PetscMalloc1(sum,&cadjncy);CHKERRQ(ierr);
-      sum = 0;
-      for (i=0;i<pcis->n;i++) {
-        PetscInt temp = cxadj[i];
-        cxadj[i] = sum;
-        sum += temp;
-      }
-      cxadj[pcis->n] = sum;
-      for (i=0;i<graph->ncc;i++) {
-        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-          if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
-            PetscInt k,sizecc = 0;
-            for (k=graph->cptr[i];k<graph->cptr[i+1];k++) {
-              if (PetscBTLookup(is_on_boundary,graph->queue[k])) {
-                cadjncy[cxadj[graph->queue[j]]+sizecc]=graph->queue[k];
-                sizecc++;
-              }
-            }
-          }
-        }
-      }
-      if (sum) {
-        ierr = PCBDDCSetLocalAdjacencyGraph(pc,pcis->n,cxadj,cadjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
-      } else {
-        ierr = PetscFree(cxadj);CHKERRQ(ierr);
-        ierr = PetscFree(cadjncy);CHKERRQ(ierr);
-      }
-      graph->xadj = 0;
-      graph->adjncy = 0;
-      ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
-      ierr = PetscBTDestroy(&is_on_boundary);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+    if (flg_row) {
+      ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
+      pcbddc->computed_rowadj = PETSC_TRUE;
     }
+    ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
   }
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -5653,6 +5567,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       coarse_mat_reuse = MAT_INITIAL_MATRIX;
     }
     if (isbddc || isnn) {
+      if (isbddc) { /* currently there's no API for this */
+        PC_BDDC* pcbddc = (PC_BDDC*)pc_temp->data;
+        pcbddc->detect_disconnected = PETSC_TRUE;
+      }
       if (pcbddc->coarsening_ratio > 1) {
         if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
           ierr = MatISGetSubassemblingPattern(coarse_mat_is,active_procs/pcbddc->coarsening_ratio,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
@@ -5760,7 +5678,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (CoarseNullSpace) {
       PetscBool isnull;
       ierr = MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull);CHKERRQ(ierr);
-      if (isnull) {
+      if (0) {
         if (isbddc && !pcbddc->benign_saddle_point) {
           ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
         } else {

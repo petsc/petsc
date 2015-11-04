@@ -1235,7 +1235,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecDestroy(&nullv);CHKERRQ(ierr);
   }
 
-
   /* remove nullspace if present */
   if (ksp && x && pcbddc->NullSpace) {
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,x);CHKERRQ(ierr);
