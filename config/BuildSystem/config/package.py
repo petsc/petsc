@@ -565,7 +565,13 @@ class Package(config.base.Configure):
     # now attempt to download each url until any one succeeds.
     err =''
     for url in download_urls:
-      if url.startswith('git://') and not self.gitPreReqCheck(): continue
+      if url.startswith('git://'):
+        if not hasattr(self.sourceControl, 'git'):
+          err += 'Git not found - required for url: '+url+'\n'
+          continue
+        elif not self.gitPreReqCheck():
+          err += 'Git prerequisite check failed for url: '+url+'\n'
+        continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
@@ -577,7 +583,7 @@ class Package(config.base.Configure):
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
-    raise RuntimeError(err)
+    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
