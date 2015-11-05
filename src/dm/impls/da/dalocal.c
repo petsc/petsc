@@ -1303,6 +1303,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscReal time, PetscErrorCode (**func
 
   Input Parameters:
 + dm    - The DM
+. time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - X     - The coefficient vector u_h
@@ -1314,7 +1315,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscReal time, PetscErrorCode (**func
 
 .seealso: DMDAProjectFunction(), DMDAComputeL2GradientDiff()
 @*/
-PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+PetscErrorCode DMDAComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscDS    prob;
@@ -1373,7 +1374,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
             coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
           }
         }
-        ierr = (*funcs[field])(dim, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
+        ierr = (*funcs[field])(dim, time, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
         for (fc = 0; fc < numBasisComps; ++fc) {
           PetscScalar interpolant = 0.0;
 
@@ -1406,6 +1407,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
 
   Input Parameters:
 + dm    - The DM
+. time  - The time
 . funcs - The gradient functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 . X     - The coefficient vector u_h
@@ -1418,7 +1420,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
 
 .seealso: DMDAProjectFunction(), DMPlexComputeL2Diff()
 @*/
-PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscDS    prob;
@@ -1477,7 +1479,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscIn
             coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
           }
         }
-        ierr = (*funcs[field])(dim, coords, n, numFields, funcVal, ctx);CHKERRQ(ierr);
+        ierr = (*funcs[field])(dim, time, coords, n, numFields, funcVal, ctx);CHKERRQ(ierr);
         for (fc = 0; fc < Nc; ++fc) {
           PetscScalar interpolant = 0.0;
 
