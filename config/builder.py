@@ -284,7 +284,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/dm/impls/plex/examples/tests/ex15': [{'numProcs': 2, 'args': '-verbose -globaltonatural_sf_view'},
                                                                   {'numProcs': 2, 'args': '-verbose -global_vec_view hdf5:V.h5:native -test_read'},
                                                                   ],
-                        'src/dm/impls/plex/examples/tests/ex16': [{'numProcs': 1, 'args': '-dm_view ascii::ascii_info_detail -dmlabel_view'},
+                        'src/dm/impls/plex/examples/tests/ex16': [{'numProcs': 1, 'args': '-dm_view ascii::ascii_info_detail'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex17': [{'numProcs': 1, 'args': '-test_partition 0 -dm_view ascii::ascii_info_detail'},
                                                                   ],
@@ -300,7 +300,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                      # Gmsh meshes 2-4
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1'},
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/square.msh -interpolate 1'},
-                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -binary 1'},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1'},
                                                                      # Exodus meshes 5-9
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/sevenside-quad.exo -interpolate 1', 'requires': ['exodusii']},
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/sevenside-quad-15.exo -interpolate 1', 'requires': ['exodusii']},
