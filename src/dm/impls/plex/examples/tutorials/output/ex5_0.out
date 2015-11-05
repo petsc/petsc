@@ -1,9 +1,9 @@
 DM Object:cubit(Rect-tri3.gen): 08/26/2013: 13:00:28 1 MPI processes
   type: plex
 Mesh 'cubit(Rect-tri3.gen): 08/26/2013: 13:00:28':
-Max sizes cone: 3 support: 7
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 7
 [0]: 60 ----> 0
 [0]: 60 ----> 1
 [0]: 60 ----> 2
@@ -344,38 +344,38 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  60) dim  2 offset   0 -0.666667 1
+  (  60) dim  2 offset   0 -0.666667 1.
   (  61) dim  2 offset   2 -0.426084 0.543999
-  (  62) dim  2 offset   4 0 1
-  (  63) dim  2 offset   6 -1.33333 1
+  (  62) dim  2 offset   4 0. 1.
+  (  63) dim  2 offset   6 -1.33333 1.
   (  64) dim  2 offset   8 -0.993855 0.386707
   (  65) dim  2 offset  10 -1.56981 -0.543667
-  (  66) dim  2 offset  12 -1.33333 -1
+  (  66) dim  2 offset  12 -1.33333 -1.
   (  67) dim  2 offset  14 -0.996391 -0.385656
   (  68) dim  2 offset  16 -1.5693 0.544138
-  (  69) dim  2 offset  18 -2 0.333333
-  (  70) dim  2 offset  20 -2 1
-  (  71) dim  2 offset  22 -0.666667 -1
-  (  72) dim  2 offset  24 -2 -1
+  (  69) dim  2 offset  18 -2. 0.333333
+  (  70) dim  2 offset  20 -2. 1.
+  (  71) dim  2 offset  22 -0.666667 -1.
+  (  72) dim  2 offset  24 -2. -1.
   (  73) dim  2 offset  26 -0.469897 -4.3257e-05
-  (  74) dim  2 offset  28 0 -0.333333
-  (  75) dim  2 offset  30 0 0.333333
-  (  76) dim  2 offset  32 0 -1
+  (  74) dim  2 offset  28 0. -0.333333
+  (  75) dim  2 offset  30 0. 0.333333
+  (  76) dim  2 offset  32 0. -1.
   (  77) dim  2 offset  34 -0.426591 -0.543806
   (  78) dim  2 offset  36 -1.51932 0.000651568
-  (  79) dim  2 offset  38 -2 -0.333333
-  (  80) dim  2 offset  40 0.666667 -1
-  (  81) dim  2 offset  42 1.33333 -1
+  (  79) dim  2 offset  38 -2. -0.333333
+  (  80) dim  2 offset  40 0.666667 -1.
+  (  81) dim  2 offset  42 1.33333 -1.
   (  82) dim  2 offset  44 1.01667 -0.53219
-  (  83) dim  2 offset  46 0.666667 1
+  (  83) dim  2 offset  46 0.666667 1.
   (  84) dim  2 offset  48 0.679796 0.0425353
-  (  85) dim  2 offset  50 2 -0.333333
+  (  85) dim  2 offset  50 2. -0.333333
   (  86) dim  2 offset  52 1.55199 -0.593653
-  (  87) dim  2 offset  54 2 -1
+  (  87) dim  2 offset  54 2. -1.
   (  88) dim  2 offset  56 0.472626 -0.564598
   (  89) dim  2 offset  58 1.40994 -0.102742
-  (  90) dim  2 offset  60 2 0.333333
+  (  90) dim  2 offset  60 2. 0.333333
   (  91) dim  2 offset  62 1.21795 0.454625
-  (  92) dim  2 offset  64 2 1
-  (  93) dim  2 offset  66 1.33333 1
+  (  92) dim  2 offset  64 2. 1.
+  (  93) dim  2 offset  66 1.33333 1.
 DMs equal

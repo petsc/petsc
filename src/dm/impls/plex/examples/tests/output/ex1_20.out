@@ -217,9 +217,9 @@ PetscSF Object: 8 MPI processes
 DM Object:Simplicial Mesh 8 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
-Max sizes cone: 3 support: 4
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 4
 [0]: 4 ----> 10
 [0]: 4 ----> 15
 [0]: 5 ----> 11
@@ -250,7 +250,7 @@ cap --> base:
 [0]: 17 ----> 3
 [0]: 18 ----> 0
 [0]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[1] Max sizes cone: 3 support: 4
 [1]: 4 ----> 13
 [1]: 4 ----> 14
 [1]: 5 ----> 10
@@ -281,7 +281,7 @@ Max sizes cone: 3 support: 4
 [1]: 17 ----> 3
 [1]: 18 ----> 0
 [1]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[2] Max sizes cone: 3 support: 4
 [2]: 4 ----> 10
 [2]: 4 ----> 14
 [2]: 5 ----> 11
@@ -312,7 +312,7 @@ Max sizes cone: 3 support: 4
 [2]: 17 ----> 3
 [2]: 18 ----> 0
 [2]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[3] Max sizes cone: 3 support: 4
 [3]: 4 ----> 11
 [3]: 4 ----> 12
 [3]: 5 ----> 10
@@ -343,7 +343,7 @@ Max sizes cone: 3 support: 4
 [3]: 17 ----> 3
 [3]: 18 ----> 0
 [3]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[4] Max sizes cone: 3 support: 4
 [4]: 4 ----> 10
 [4]: 4 ----> 14
 [4]: 5 ----> 13
@@ -374,7 +374,7 @@ Max sizes cone: 3 support: 4
 [4]: 17 ----> 3
 [4]: 18 ----> 0
 [4]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[5] Max sizes cone: 3 support: 4
 [5]: 4 ----> 11
 [5]: 4 ----> 12
 [5]: 5 ----> 10
@@ -405,7 +405,7 @@ Max sizes cone: 3 support: 4
 [5]: 17 ----> 3
 [5]: 18 ----> 0
 [5]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[6] Max sizes cone: 3 support: 4
 [6]: 4 ----> 11
 [6]: 4 ----> 15
 [6]: 5 ----> 10
@@ -436,7 +436,7 @@ Max sizes cone: 3 support: 4
 [6]: 17 ----> 3
 [6]: 18 ----> 0
 [6]: 18 ----> 3
-Max sizes cone: 3 support: 4
+[7] Max sizes cone: 3 support: 4
 [7]: 4 ----> 10
 [7]: 4 ----> 13
 [7]: 5 ----> 11
@@ -711,61 +711,61 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   4) dim  2 offset   0 0 0
-  (   5) dim  2 offset   2 0.5 0
-  (   6) dim  2 offset   4 0 0.5
-  (   7) dim  2 offset   6 0.25 0
+  (   4) dim  2 offset   0 0. 0.
+  (   5) dim  2 offset   2 0.5 0.
+  (   6) dim  2 offset   4 0. 0.5
+  (   7) dim  2 offset   6 0.25 0.
   (   8) dim  2 offset   8 0.25 0.25
-  (   9) dim  2 offset  10 0 0.25
+  (   9) dim  2 offset  10 0. 0.25
 Process 1:
-  (   4) dim  2 offset   0 0 0.5
+  (   4) dim  2 offset   0 0. 0.5
   (   5) dim  2 offset   2 0.5 0.5
-  (   6) dim  2 offset   4 0 1
+  (   6) dim  2 offset   4 0. 1.
   (   7) dim  2 offset   6 0.25 0.75
-  (   8) dim  2 offset   8 0 0.75
+  (   8) dim  2 offset   8 0. 0.75
   (   9) dim  2 offset  10 0.25 0.5
 Process 2:
-  (   4) dim  2 offset   0 0.5 0
-  (   5) dim  2 offset   2 0 0.5
+  (   4) dim  2 offset   0 0.5 0.
+  (   5) dim  2 offset   2 0. 0.5
   (   6) dim  2 offset   4 0.5 0.5
   (   7) dim  2 offset   6 0.25 0.25
   (   8) dim  2 offset   8 0.25 0.5
   (   9) dim  2 offset  10 0.5 0.25
 Process 3:
-  (   4) dim  2 offset   0 1 0
+  (   4) dim  2 offset   0 1. 0.
   (   5) dim  2 offset   2 0.5 0.5
-  (   6) dim  2 offset   4 1 0.5
+  (   6) dim  2 offset   4 1. 0.5
   (   7) dim  2 offset   6 0.75 0.25
-  (   8) dim  2 offset   8 1 0.25
+  (   8) dim  2 offset   8 1. 0.25
   (   9) dim  2 offset  10 0.75 0.5
 Process 4:
-  (   4) dim  2 offset   0 0.5 0
-  (   5) dim  2 offset   2 1 0
+  (   4) dim  2 offset   0 0.5 0.
+  (   5) dim  2 offset   2 1. 0.
   (   6) dim  2 offset   4 0.5 0.5
   (   7) dim  2 offset   6 0.5 0.25
   (   8) dim  2 offset   8 0.75 0.25
-  (   9) dim  2 offset  10 0.75 0
+  (   9) dim  2 offset  10 0.75 0.
 Process 5:
-  (   4) dim  2 offset   0 1 0.5
-  (   5) dim  2 offset   2 0.5 1
-  (   6) dim  2 offset   4 1 1
+  (   4) dim  2 offset   0 1. 0.5
+  (   5) dim  2 offset   2 0.5 1.
+  (   6) dim  2 offset   4 1. 1.
   (   7) dim  2 offset   6 0.75 0.75
-  (   8) dim  2 offset   8 1 0.75
-  (   9) dim  2 offset  10 0.75 1
+  (   8) dim  2 offset   8 1. 0.75
+  (   9) dim  2 offset  10 0.75 1.
 Process 6:
   (   4) dim  2 offset   0 0.5 0.5
-  (   5) dim  2 offset   2 1 0.5
-  (   6) dim  2 offset   4 0.5 1
+  (   5) dim  2 offset   2 1. 0.5
+  (   6) dim  2 offset   4 0.5 1.
   (   7) dim  2 offset   6 0.75 0.5
   (   8) dim  2 offset   8 0.75 0.75
   (   9) dim  2 offset  10 0.5 0.75
 Process 7:
   (   4) dim  2 offset   0 0.5 0.5
-  (   5) dim  2 offset   2 0 1
-  (   6) dim  2 offset   4 0.5 1
+  (   5) dim  2 offset   2 0. 1.
+  (   6) dim  2 offset   4 0.5 1.
   (   7) dim  2 offset   6 0.25 0.75
   (   8) dim  2 offset   8 0.5 0.75
-  (   9) dim  2 offset  10 0.25 1
+  (   9) dim  2 offset  10 0.25 1.
 Label 'marker':
 [0]: 4 (1)
 [0]: 5 (1)

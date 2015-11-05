@@ -395,6 +395,9 @@ static PetscErrorCode MatGetSubMatrix_Nest(Mat A,IS isrow,IS iscol,MatReuse reus
     break;
   case MAT_IGNORE_MATRIX:       /* Nothing to do */
     break;
+  case MAT_INPLACE_MATRIX:       /* Nothing to do */
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX is not supported yet");
+    break;
   }
   PetscFunctionReturn(0);
 }
