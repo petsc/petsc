@@ -1647,9 +1647,7 @@ PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 #include <petscviewertypes.h>
 #include <petscoptions.h>
 
-PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscOptions*,PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
-PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscOptions*,PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
+
 PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);

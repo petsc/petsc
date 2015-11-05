@@ -437,7 +437,7 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectProcessOptionsHandlers(), PetscObjectDestroyOptionsHandlers()
 
 @*/
-PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscOptions*,PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
+PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -464,7 +464,7 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectDestroyOptionsHandlers()
 
 @*/
-PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptions *PetscOptionsObject,PetscObject obj)
+PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptionsObject,PetscObject obj)
 {
   PetscInt       i;
   PetscErrorCode ierr;

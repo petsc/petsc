@@ -101,7 +101,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode       (*python_destroy)(void*);
 
   PetscInt             noptionhandler;
-  PetscErrorCode       (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscOptions*,PetscObject,void*);
+  PetscErrorCode       (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscOptionItems*,PetscObject,void*);
   PetscErrorCode       (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   void                 *optionctx[PETSC_MAX_OPTIONS_HANDLER];
   PetscPrecision       precision;

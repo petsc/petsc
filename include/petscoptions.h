@@ -291,4 +291,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems*,cons
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(PetscOptions);
 PETSC_EXTERN PetscErrorCode PetscOptionsSAWsDestroy(void);
 
+PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
+PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscOptionItems*,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
+
 #endif
