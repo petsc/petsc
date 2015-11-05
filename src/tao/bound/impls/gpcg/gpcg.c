@@ -349,13 +349,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   if (!tao->max_it_changed) tao->max_it=500;
   if (!tao->max_funcs_changed) tao->max_funcs = 100000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol=1e-6;
-  if (!tao->frtol_changed) tao->frtol=1e-6;
   if (!tao->gatol_changed) tao->grtol=1e-6;
   if (!tao->grtol_changed) tao->grtol=1e-6;
 #else
-  if (!tao->fatol_changed) tao->fatol=1e-12;
-  if (!tao->frtol_changed) tao->frtol=1e-12;
   if (!tao->gatol_changed) tao->grtol=1e-12;
   if (!tao->grtol_changed) tao->grtol=1e-12;
 #endif

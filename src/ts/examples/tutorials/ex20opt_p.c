@@ -270,7 +270,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  ierr = TaoSetTolerances(tao,1e-7,1e-7,1e-7,1e-7,1e-7);
+  ierr = TaoSetTolerances(tao,1e-7,1e-7,1e-7);CHKERRQ(ierr);
 
   ierr = TaoSolve(tao); CHKERRQ(ierr);
   /* Get information on termination */

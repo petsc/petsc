@@ -271,7 +271,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
   
-  ierr = TaoSetTolerances(tao,1e-13,1e-13,1e-13,PETSC_DEFAULT,PETSC_DEFAULT);
+  ierr = TaoSetTolerances(tao,1e-13,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);

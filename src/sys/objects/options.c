@@ -112,6 +112,10 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_REAL___FLOAT128)
+#include <quadmath.h>
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsStringToReal"
 /*
@@ -140,7 +144,11 @@ PetscErrorCode  PetscOptionsStringToReal(const char name[],PetscReal *a)
   else if (decide) *a = PETSC_DECIDE;
   else {
     if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+#if defined(PETSC_USE_REAL___FLOAT128)
+    *a = strtoflt128(name,NULL);
+#else
     *a = atof(name);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -1104,7 +1112,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
 #elif defined(PETSC_HAVE_STRICMP)
     match = stricmp(options->aliases1[i],name);
 #else
-    badnews bears in breaking training
+    Error
 #endif
     if (!match) {
       name = options->aliases2[i];
@@ -1117,7 +1125,13 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
   names = options->names;
 
   for (i=0; i<N; i++) {
+#if defined(PETSC_HAVE_STRCASECMP)
     gt = strcasecmp(names[i],name);
+#elif defined(PETSC_HAVE_STRICMP)
+    gt = stricmp(names[i],name);
+#else
+    Error
+#endif
     if (!gt) {
       if (options->values[i]) free(options->values[i]);
       len = value ? strlen(value) : 0;

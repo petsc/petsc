@@ -66,7 +66,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = TaoResetStatistics(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoSetTolerances(mfqP->subtao,PETSC_DEFAULT,PETSC_DEFAULT,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr);
+    ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr);
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
       ierr = VecCopy(tao->XU,mfqP->subxu);CHKERRQ(ierr);
@@ -1178,15 +1178,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
-  mfqP->deltamin=1e-3;
-#else
-  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
-  mfqP->deltamin=1e-6;
-#endif
   mfqP->delta0 = 0.1;
   mfqP->delta = 0.1;
   mfqP->deltamax=1e3;

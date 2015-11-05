@@ -143,7 +143,7 @@ int main(int argc,char **args)
     if (size == 1) { /* size > 1 is not working yet! */
       j = (i+1)%ntypes;
       /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
-      ierr = MatConvert(A,type[j],MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+      ierr = MatConvert(A,type[j],MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
     }
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);

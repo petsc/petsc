@@ -1,9 +1,9 @@
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 4 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 10
 [0]: 1 ----> 11
@@ -32,7 +32,7 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 6
 [0]: 14 ----> 8
-Max sizes cone: 5 support: 4
+[1] Max sizes cone: 5 support: 4
 [1]: 2 ----> 20
 [1]: 2 ----> 21
 [1]: 2 ----> 22
@@ -185,18 +185,18 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 1 0 0
-  (   2) dim  3 offset   3 0 -1 0
-  (   3) dim  3 offset   6 0 0 1
-  (   4) dim  3 offset   9 0 1 0
+  (   1) dim  3 offset   0 1. 0. 0.
+  (   2) dim  3 offset   3 0. -1. 0.
+  (   3) dim  3 offset   6 0. 0. 1.
+  (   4) dim  3 offset   9 0. 1. 0.
 Process 1:
-  (   2) dim  3 offset   0 -1 0 0
-  (   3) dim  3 offset   3 0 -1 0
-  (   4) dim  3 offset   6 0 0 1
-  (   5) dim  3 offset   9 0 1 0
-  (   6) dim  3 offset  12 0 -1 0
-  (   7) dim  3 offset  15 0 0 1
-  (   8) dim  3 offset  18 0 1 0
+  (   2) dim  3 offset   0 -1. 0. 0.
+  (   3) dim  3 offset   3 0. -1. 0.
+  (   4) dim  3 offset   6 0. 0. 1.
+  (   5) dim  3 offset   9 0. 1. 0.
+  (   6) dim  3 offset  12 0. -1. 0.
+  (   7) dim  3 offset  15 0. 0. 1.
+  (   8) dim  3 offset  18 0. 1. 0.
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -222,9 +222,9 @@ PetscSF Object: 2 MPI processes
 DM Object:Hybrid Mesh 2 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 4 support: 7
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 7
 [0]: 8 ----> 43
 [0]: 8 ----> 44
 [0]: 8 ----> 47
@@ -379,7 +379,7 @@ cap --> base:
 [0]: 66 ----> 39
 [0]: 66 ----> 40
 [0]: 66 ----> 41
-Max sizes cone: 5 support: 8
+[1] Max sizes cone: 5 support: 8
 [1]: 12 ----> 72
 [1]: 12 ----> 73
 [1]: 12 ----> 76
@@ -1042,33 +1042,33 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   8) dim  3 offset   0 1 0 0
-  (   9) dim  3 offset   3 0 -1 0
-  (  10) dim  3 offset   6 0 0 1
-  (  11) dim  3 offset   9 0 1 0
-  (  12) dim  3 offset  12 0.5 0.5 0
-  (  13) dim  3 offset  15 0.5 -0.5 0
-  (  14) dim  3 offset  18 0.5 0 0.5
-  (  15) dim  3 offset  21 0 -0.5 0.5
-  (  16) dim  3 offset  24 0 0 0
-  (  17) dim  3 offset  27 0 0.5 0.5
+  (   8) dim  3 offset   0 1. 0. 0.
+  (   9) dim  3 offset   3 0. -1. 0.
+  (  10) dim  3 offset   6 0. 0. 1.
+  (  11) dim  3 offset   9 0. 1. 0.
+  (  12) dim  3 offset  12 0.5 0.5 0.
+  (  13) dim  3 offset  15 0.5 -0.5 0.
+  (  14) dim  3 offset  18 0.5 0. 0.5
+  (  15) dim  3 offset  21 0. -0.5 0.5
+  (  16) dim  3 offset  24 0. 0. 0.
+  (  17) dim  3 offset  27 0. 0.5 0.5
 Process 1:
-  (  12) dim  3 offset   0 -1 0 0
-  (  13) dim  3 offset   3 0 -1 0
-  (  14) dim  3 offset   6 0 0 1
-  (  15) dim  3 offset   9 0 1 0
-  (  16) dim  3 offset  12 0 -1 0
-  (  17) dim  3 offset  15 0 0 1
-  (  18) dim  3 offset  18 0 1 0
-  (  19) dim  3 offset  21 0 -0.5 0.5
-  (  20) dim  3 offset  24 0 0 0
-  (  21) dim  3 offset  27 0 0.5 0.5
-  (  22) dim  3 offset  30 -0.5 0 0.5
-  (  23) dim  3 offset  33 -0.5 -0.5 0
-  (  24) dim  3 offset  36 -0.5 0.5 0
-  (  25) dim  3 offset  39 0 -0.5 0.5
-  (  26) dim  3 offset  42 0 0 0
-  (  27) dim  3 offset  45 0 0.5 0.5
+  (  12) dim  3 offset   0 -1. 0. 0.
+  (  13) dim  3 offset   3 0. -1. 0.
+  (  14) dim  3 offset   6 0. 0. 1.
+  (  15) dim  3 offset   9 0. 1. 0.
+  (  16) dim  3 offset  12 0. -1. 0.
+  (  17) dim  3 offset  15 0. 0. 1.
+  (  18) dim  3 offset  18 0. 1. 0.
+  (  19) dim  3 offset  21 0. -0.5 0.5
+  (  20) dim  3 offset  24 0. 0. 0.
+  (  21) dim  3 offset  27 0. 0.5 0.5
+  (  22) dim  3 offset  30 -0.5 0. 0.5
+  (  23) dim  3 offset  33 -0.5 -0.5 0.
+  (  24) dim  3 offset  36 -0.5 0.5 0.
+  (  25) dim  3 offset  39 0. -0.5 0.5
+  (  26) dim  3 offset  42 0. 0. 0.
+  (  27) dim  3 offset  45 0. 0.5 0.5
 PetscSF Object: 2 MPI processes
   type not yet set
   [0] Number of roots=67, leaves=19, remote ranks=1
