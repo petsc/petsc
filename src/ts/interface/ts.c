@@ -363,10 +363,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   if (ts->ops->setfromoptions) {
     ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (ts->trajectory) {
     ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
