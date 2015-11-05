@@ -710,9 +710,10 @@ static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
    Level: beginner
 
    Options Database:
-      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
-      -ts_theta_extrapolate <flg> Extrapolate stage solution from previous solution (sometimes unstable)
-      -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
++      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
+.      -ts_theta_extrapolate <flg> - Extrapolate stage solution from previous solution (sometimes unstable)
+.      -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
+-     -ts_theta_adapt <flg> - Use time-step adaptivity with the Theta method
 
    Notes:
 $  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
