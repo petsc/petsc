@@ -822,7 +822,6 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool flg)
     break;
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
-
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_NEW_DIAGONALS:
@@ -1283,8 +1282,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
 {
   Mat            mat_elemental;
   PetscErrorCode ierr;
-  PetscScalar    *array,*v_rowwise;
-  PetscInt       m=A->rmap->n,N=A->cmap->N,rstart=A->rmap->rstart,i,j,k,*rows,*cols;
+  PetscScalar    *v;
+  PetscInt       m=A->rmap->n,N=A->cmap->N,rstart=A->rmap->rstart,i,*rows,*cols;
   
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
@@ -1295,28 +1294,20 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
     ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
     ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetOption(mat_elemental,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   }
 
-  /* convert column-wise array into row-wise v_rowwise, see MatSetValues_Elemental() */
-  ierr = PetscMalloc3(m*N,&v_rowwise,m,&rows,N,&cols);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(A,&array);CHKERRQ(ierr);
-  k = 0;
-  for (j=0; j<N; j++) {
-    cols[j] = j;
-    for (i=0; i<m; i++) {
-      v_rowwise[i*N+j] = array[k++];
-    }
-  }
-  for (i=0; i<m; i++) {
-    rows[i] = rstart + i;
-  }
-  ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&rows,N,&cols);CHKERRQ(ierr);
+  for (i=0; i<N; i++) cols[i] = i;
+  for (i=0; i<m; i++) rows[i] = rstart + i;
   
   /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-  ierr = MatSetValues(mat_elemental,m,rows,N,cols,v_rowwise,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
+  ierr = MatSetValues(mat_elemental,m,rows,N,cols,v,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree3(v_rowwise,rows,cols);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
+  ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);

@@ -15,6 +15,7 @@ typedef struct {
   El::Grid                                     *grid;
   El::DistMatrix<PetscElemScalar>              *emat;
   El::DistMatrix<PetscInt,El::VC,El::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
+  PetscBool roworiented;               /* if true, row oriented input (default) */
 } Mat_Elemental;
 
 typedef struct {
