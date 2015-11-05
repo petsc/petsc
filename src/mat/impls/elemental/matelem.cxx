@@ -923,19 +923,37 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
 
-  for (i=0; i<nrows; i++) {
-    P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
-    RO2E(A,0,rrank,ridx,&erow);
-    if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+  if (a->roworiented) {  
+    for (i=0; i<nrows; i++) {
+      P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
+      RO2E(A,0,rrank,ridx,&erow);
+      if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+      for (j=0; j<ncols; j++) {
+        P2RO(A,1,cols[j],&crank,&cidx);
+        RO2E(A,1,crank,cidx,&ecol);
+        if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+
+        elrow = erow / grid.MCSize(); /* Elemental local row index */
+        elcol = ecol / grid.MRSize(); /* Elemental local column index */
+        v = a->emat->GetLocal(elrow,elcol);
+        ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  } else { /* column-oriented */
     for (j=0; j<ncols; j++) {
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+      for (i=0; i<nrows; i++) {
+        P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
+        RO2E(A,0,rrank,ridx,&erow);
+        if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
 
-      elrow = erow / grid.MCSize(); /* Elemental local row index */
-      elcol = ecol / grid.MRSize(); /* Elemental local column index */
-      v = a->emat->GetLocal(elrow,elcol);
-      ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+        elrow = erow / grid.MCSize(); /* Elemental local row index */
+        elcol = ecol / grid.MRSize(); /* Elemental local column index */
+        v = a->emat->GetLocal(elrow,elcol);
+        ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
