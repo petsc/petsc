@@ -1,34 +1,34 @@
 0 SNES Function norm 8.32828 
-    0 KSP Residual norm 3.64287 
-    1 KSP Residual norm 1.1715 
-    2 KSP Residual norm 0.633186 
-    3 KSP Residual norm 0.411606 
-    4 KSP Residual norm 0.282889 
-    5 KSP Residual norm 0.216524 
-    6 KSP Residual norm 0.140977 
-    7 KSP Residual norm 0.0940535 
-    8 KSP Residual norm 0.0631454 
-    9 KSP Residual norm 0.0364899 
-   10 KSP Residual norm 0.0144042 
-   11 KSP Residual norm 0.00423636 
-   12 KSP Residual norm 0.00175829 
-   13 KSP Residual norm 0.000608431 
-   14 KSP Residual norm 0.000270221 
-   15 KSP Residual norm 0.0001743 
-   16 KSP Residual norm 8.93849e-05 
-   17 KSP Residual norm 3.95701e-05 
-   18 KSP Residual norm 2.31962e-05 
-   19 KSP Residual norm 1.06331e-05 
-   20 KSP Residual norm 4.41491e-06 
-   21 KSP Residual norm 1.49796e-06 
-   22 KSP Residual norm 6.45348e-07 
-   23 KSP Residual norm 2.91595e-07 
-   24 KSP Residual norm 7.96203e-08 
-   25 KSP Residual norm 2.41337e-08 
-   26 KSP Residual norm 7.91498e-09 
-   27 KSP Residual norm 2.71054e-09 
+    0 KSP Residual norm 3.64606 
+    1 KSP Residual norm 1.17275 
+    2 KSP Residual norm 0.635054 
+    3 KSP Residual norm 0.415351 
+    4 KSP Residual norm 0.284123 
+    5 KSP Residual norm 0.213511 
+    6 KSP Residual norm 0.145115 
+    7 KSP Residual norm 0.100106 
+    8 KSP Residual norm 0.0683842 
+    9 KSP Residual norm 0.040557 
+   10 KSP Residual norm 0.0173133 
+   11 KSP Residual norm 0.00528495 
+   12 KSP Residual norm 0.00249424 
+   13 KSP Residual norm 0.00104154 
+   14 KSP Residual norm 0.000640914 
+   15 KSP Residual norm 0.000389467 
+   16 KSP Residual norm 0.000168351 
+   17 KSP Residual norm 6.14605e-05 
+   18 KSP Residual norm 3.25874e-05 
+   19 KSP Residual norm 1.4846e-05 
+   20 KSP Residual norm 5.93364e-06 
+   21 KSP Residual norm 2.19152e-06 
+   22 KSP Residual norm 1.08836e-06 
+   23 KSP Residual norm 4.39238e-07 
+   24 KSP Residual norm 1.19811e-07 
+   25 KSP Residual norm 3.51396e-08 
+   26 KSP Residual norm 1.0458e-08 
+   27 KSP Residual norm 3.59199e-09 
   Linear solve converged due to CONVERGED_RTOL iterations 27
-  1 SNES Function norm 8.95601e-09 
+  1 SNES Function norm 1.15092e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls

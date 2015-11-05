@@ -1,9 +1,9 @@
 DM Object:Simplicial Mesh 2 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
-Max sizes cone: 3 support: 6
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 6
 [0]: 8 ----> 17
 [0]: 8 ----> 18
 [0]: 8 ----> 19
@@ -60,7 +60,7 @@ cap --> base:
 [0]: 30 ----> 6
 [0]: 31 ----> 6
 [0]: 32 ----> 7
-Max sizes cone: 3 support: 6
+[1] Max sizes cone: 3 support: 6
 [1]: 8 ----> 17
 [1]: 8 ----> 20
 [1]: 8 ----> 23
@@ -233,25 +233,25 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   8) dim  2 offset   0 1 0
-  (   9) dim  2 offset   2 1 0.5
-  (  10) dim  2 offset   4 1 1
-  (  11) dim  2 offset   6 0.5 0
-  (  12) dim  2 offset   8 0 0.5
+  (   8) dim  2 offset   0 1. 0.
+  (   9) dim  2 offset   2 1. 0.5
+  (  10) dim  2 offset   4 1. 1.
+  (  11) dim  2 offset   6 0.5 0.
+  (  12) dim  2 offset   8 0. 0.5
   (  13) dim  2 offset  10 0.5 0.5
-  (  14) dim  2 offset  12 0 1
-  (  15) dim  2 offset  14 0.5 1
-  (  16) dim  2 offset  16 0 0
+  (  14) dim  2 offset  12 0. 1.
+  (  15) dim  2 offset  14 0.5 1.
+  (  16) dim  2 offset  16 0. 0.
 Process 1:
-  (   8) dim  2 offset   0 0.5 0
-  (   9) dim  2 offset   2 0 0.5
+  (   8) dim  2 offset   0 0.5 0.
+  (   9) dim  2 offset   2 0. 0.5
   (  10) dim  2 offset   4 0.5 0.5
-  (  11) dim  2 offset   6 0 1
-  (  12) dim  2 offset   8 0.5 1
-  (  13) dim  2 offset  10 0 0
-  (  14) dim  2 offset  12 1 0
-  (  15) dim  2 offset  14 1 0.5
-  (  16) dim  2 offset  16 1 1
+  (  11) dim  2 offset   6 0. 1.
+  (  12) dim  2 offset   8 0.5 1.
+  (  13) dim  2 offset  10 0. 0.
+  (  14) dim  2 offset  12 1. 0.
+  (  15) dim  2 offset  14 1. 0.5
+  (  16) dim  2 offset  16 1. 1.
 Label 'marker':
 [0]: 8 (1)
 [0]: 9 (1)

@@ -32,6 +32,8 @@
       CHKERRQ(ierr)
       call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
       CHKERRQ(ierr)
+      call PetscObjectSetName(dm, 'Mesh', ierr)
+      CHKERRQ(ierr)
       dim = 2
       call DMSetDimension(dm, dim, ierr)
       CHKERRQ(ierr)
