@@ -131,7 +131,6 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 PetscErrorCode MatSetOption_Elemental(Mat A,MatOption op,PetscBool flg)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
