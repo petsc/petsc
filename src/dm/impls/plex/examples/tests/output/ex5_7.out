@@ -29,9 +29,9 @@ Label 'subpoint_map':
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 6 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 3
 [0]: 1 ----> 16
 [0]: 1 ----> 17
 [0]: 1 ----> 21
@@ -86,7 +86,7 @@ cap --> base:
 [0]: 25 ----> 14
 [0]: 26 ----> 12
 [0]: 26 ----> 14
-Max sizes cone: 6 support: 4
+[1] Max sizes cone: 6 support: 4
 [1]: 2 ----> 25
 [1]: 2 ----> 28
 [1]: 2 ----> 34
@@ -337,27 +337,27 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0.5 0 0
-  (   2) dim  3 offset   3 0.5 1 0
-  (   3) dim  3 offset   6 0.5 0 1
-  (   4) dim  3 offset   9 0.5 1 1
-  (   5) dim  3 offset  12 0 0 0
-  (   6) dim  3 offset  15 0 1 0
-  (   7) dim  3 offset  18 0 0 1
-  (   8) dim  3 offset  21 0 1 1
+  (   1) dim  3 offset   0 0.5 0. 0.
+  (   2) dim  3 offset   3 0.5 1. 0.
+  (   3) dim  3 offset   6 0.5 0. 1.
+  (   4) dim  3 offset   9 0.5 1. 1.
+  (   5) dim  3 offset  12 0. 0. 0.
+  (   6) dim  3 offset  15 0. 1. 0.
+  (   7) dim  3 offset  18 0. 0. 1.
+  (   8) dim  3 offset  21 0. 1. 1.
 Process 1:
-  (   2) dim  3 offset   0 -0.5 0 0
-  (   3) dim  3 offset   3 0 0 0
-  (   4) dim  3 offset   6 0 1 0
-  (   5) dim  3 offset   9 -0.5 1 0
-  (   6) dim  3 offset  12 -0.5 0 1
-  (   7) dim  3 offset  15 0 0 1
-  (   8) dim  3 offset  18 0 1 1
-  (   9) dim  3 offset  21 -0.5 1 1
-  (  10) dim  3 offset  24 0 0 0
-  (  11) dim  3 offset  27 0 1 0
-  (  12) dim  3 offset  30 0 0 1
-  (  13) dim  3 offset  33 0 1 1
+  (   2) dim  3 offset   0 -0.5 0. 0.
+  (   3) dim  3 offset   3 0. 0. 0.
+  (   4) dim  3 offset   6 0. 1. 0.
+  (   5) dim  3 offset   9 -0.5 1. 0.
+  (   6) dim  3 offset  12 -0.5 0. 1.
+  (   7) dim  3 offset  15 0. 0. 1.
+  (   8) dim  3 offset  18 0. 1. 1.
+  (   9) dim  3 offset  21 -0.5 1. 1.
+  (  10) dim  3 offset  24 0. 0. 0.
+  (  11) dim  3 offset  27 0. 1. 0.
+  (  12) dim  3 offset  30 0. 0. 1.
+  (  13) dim  3 offset  33 0. 1. 1.
 Label 'marker':
 [0]: 5 (1)
 [0]: 6 (1)
@@ -404,9 +404,9 @@ PetscSF Object: 2 MPI processes
 DM Object:Hybrid Mesh 2 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 6 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 3
 [0]: 1 ----> 16
 [0]: 1 ----> 17
 [0]: 1 ----> 21
@@ -461,7 +461,7 @@ cap --> base:
 [0]: 25 ----> 14
 [0]: 26 ----> 12
 [0]: 26 ----> 14
-Max sizes cone: 6 support: 4
+[1] Max sizes cone: 6 support: 4
 [1]: 2 ----> 25
 [1]: 2 ----> 28
 [1]: 2 ----> 34
@@ -712,27 +712,27 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0.5 0 0
-  (   2) dim  3 offset   3 0.5 1 0
-  (   3) dim  3 offset   6 0.5 0 1
-  (   4) dim  3 offset   9 0.5 1 1
-  (   5) dim  3 offset  12 0 0 0
-  (   6) dim  3 offset  15 0 1 0
-  (   7) dim  3 offset  18 0 0 1
-  (   8) dim  3 offset  21 0 1 1
+  (   1) dim  3 offset   0 0.5 0. 0.
+  (   2) dim  3 offset   3 0.5 1. 0.
+  (   3) dim  3 offset   6 0.5 0. 1.
+  (   4) dim  3 offset   9 0.5 1. 1.
+  (   5) dim  3 offset  12 0. 0. 0.
+  (   6) dim  3 offset  15 0. 1. 0.
+  (   7) dim  3 offset  18 0. 0. 1.
+  (   8) dim  3 offset  21 0. 1. 1.
 Process 1:
-  (   2) dim  3 offset   0 -0.5 0 0
-  (   3) dim  3 offset   3 0 0 0
-  (   4) dim  3 offset   6 0 1 0
-  (   5) dim  3 offset   9 -0.5 1 0
-  (   6) dim  3 offset  12 -0.5 0 1
-  (   7) dim  3 offset  15 0 0 1
-  (   8) dim  3 offset  18 0 1 1
-  (   9) dim  3 offset  21 -0.5 1 1
-  (  10) dim  3 offset  24 0 0 0
-  (  11) dim  3 offset  27 0 1 0
-  (  12) dim  3 offset  30 0 0 1
-  (  13) dim  3 offset  33 0 1 1
+  (   2) dim  3 offset   0 -0.5 0. 0.
+  (   3) dim  3 offset   3 0. 0. 0.
+  (   4) dim  3 offset   6 0. 1. 0.
+  (   5) dim  3 offset   9 -0.5 1. 0.
+  (   6) dim  3 offset  12 -0.5 0. 1.
+  (   7) dim  3 offset  15 0. 0. 1.
+  (   8) dim  3 offset  18 0. 1. 1.
+  (   9) dim  3 offset  21 -0.5 1. 1.
+  (  10) dim  3 offset  24 0. 0. 0.
+  (  11) dim  3 offset  27 0. 1. 0.
+  (  12) dim  3 offset  30 0. 0. 1.
+  (  13) dim  3 offset  33 0. 1. 1.
 Label 'marker':
 [0]: 5 (1)
 [0]: 6 (1)

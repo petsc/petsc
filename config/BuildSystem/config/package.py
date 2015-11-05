@@ -487,16 +487,32 @@ class Package(config.base.Configure):
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
-      if self.gitcommit != 'HEAD':
+      prefetch = 0
+      gitcommit_hash = None
+      if self.gitcommit.startswith('origin/'):
+        prefetch = 1
+      else:
+        try:
+          gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+        except:
+          prefetch = 1
+      if prefetch:
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=self.packageDir, log = self.log)
         except:
-          raise RuntimeError('Unable to checkout commit id '+self.gitcommit+' in repository '+self.packageDir)
+          raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
+                             '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
+      try:
+        if not gitcommit_hash:
+          gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+        if self.gitcommit != 'HEAD':
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+      except:
+        raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
+                           '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
       # write a commit-tag file
-      l,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
       fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
-      fd.write(l)
+      fd.write(gitcommit_hash)
       fd.close()
     return
 
@@ -549,7 +565,13 @@ class Package(config.base.Configure):
     # now attempt to download each url until any one succeeds.
     err =''
     for url in download_urls:
-      if url.startswith('git://') and not self.gitPreReqCheck(): continue
+      if url.startswith('git://'):
+        if not hasattr(self.sourceControl, 'git'):
+          err += 'Git not found - required for url: '+url+'\n'
+          continue
+        elif not self.gitPreReqCheck():
+          err += 'Git prerequisite check failed for url: '+url+'\n'
+          continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
@@ -561,7 +583,7 @@ class Package(config.base.Configure):
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
-    raise RuntimeError(err)
+    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')

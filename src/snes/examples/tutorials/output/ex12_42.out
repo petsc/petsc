@@ -98,7 +98,7 @@ SNES Object: 1 MPI processes
     SNES Object:    (fas_levels_1_)     1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
-      tolerances: relative=0, absolute=0, solution=0
+      tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
       total number of function evaluations=2
       norm schedule FINALONLY
@@ -131,7 +131,7 @@ SNES Object: 1 MPI processes
     SNES Object:    (fas_levels_2_)     1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
-      tolerances: relative=0, absolute=0, solution=0
+      tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
       total number of function evaluations=2
       norm schedule FINALONLY

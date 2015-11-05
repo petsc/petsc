@@ -1,9 +1,9 @@
 DM Object:Hybrid Mesh 1 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 2 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 2 support: 2
 [0]: 64 ----> 0
 [0]: 65 ----> 31
 [0]: 65 ----> 32
@@ -264,9 +264,9 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 1 components
 Process 0:
-  (  64) dim  1 offset   0 -1
-  (  65) dim  1 offset   1 0
-  (  66) dim  1 offset   2 1
+  (  64) dim  1 offset   0 -1.
+  (  65) dim  1 offset   1 0.
+  (  66) dim  1 offset   2 1.
   (  67) dim  1 offset   3 -0.5
   (  68) dim  1 offset   4 0.5
   (  69) dim  1 offset   5 -0.75

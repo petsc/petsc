@@ -10,9 +10,9 @@ Labels:
 DM Object:Simplicial Mesh 2 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
-Max sizes cone: 3 support: 6
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 6
 [0]: 23 ----> 43
 [0]: 23 ----> 44
 [0]: 23 ----> 47
@@ -164,7 +164,7 @@ cap --> base:
 [0]: 81 ----> 22
 [0]: 82 ----> 20
 [0]: 82 ----> 22
-Max sizes cone: 3 support: 6
+[1] Max sizes cone: 3 support: 6
 [1]: 23 ----> 42
 [1]: 23 ----> 47
 [1]: 24 ----> 43
@@ -622,45 +622,45 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  23) dim  2 offset   0 1 0.5
-  (  24) dim  2 offset   2 0.5 1
-  (  25) dim  2 offset   4 1 1
-  (  26) dim  2 offset   6 1 0.25
+  (  23) dim  2 offset   0 1. 0.5
+  (  24) dim  2 offset   2 0.5 1.
+  (  25) dim  2 offset   4 1. 1.
+  (  26) dim  2 offset   6 1. 0.25
   (  27) dim  2 offset   8 0.75 0.5
   (  28) dim  2 offset  10 0.75 0.75
-  (  29) dim  2 offset  12 1 0.75
-  (  30) dim  2 offset  14 0.75 1
+  (  29) dim  2 offset  12 1. 0.75
+  (  30) dim  2 offset  14 0.75 1.
   (  31) dim  2 offset  16 0.5 0.75
-  (  32) dim  2 offset  18 0.25 1
-  (  33) dim  2 offset  20 1 0
+  (  32) dim  2 offset  18 0.25 1.
+  (  33) dim  2 offset  20 1. 0.
   (  34) dim  2 offset  22 0.5 0.5
-  (  35) dim  2 offset  24 0 1
+  (  35) dim  2 offset  24 0. 1.
   (  36) dim  2 offset  26 0.25 0.75
-  (  37) dim  2 offset  28 0 0.75
+  (  37) dim  2 offset  28 0. 0.75
   (  38) dim  2 offset  30 0.25 0.5
   (  39) dim  2 offset  32 0.5 0.25
   (  40) dim  2 offset  34 0.75 0.25
-  (  41) dim  2 offset  36 0.75 0
+  (  41) dim  2 offset  36 0.75 0.
 Process 1:
-  (  23) dim  2 offset   0 0 0
-  (  24) dim  2 offset   2 0.5 0
-  (  25) dim  2 offset   4 1 0
-  (  26) dim  2 offset   6 0 0.5
+  (  23) dim  2 offset   0 0. 0.
+  (  24) dim  2 offset   2 0.5 0.
+  (  25) dim  2 offset   4 1. 0.
+  (  26) dim  2 offset   6 0. 0.5
   (  27) dim  2 offset   8 0.5 0.5
-  (  28) dim  2 offset  10 0 1
-  (  29) dim  2 offset  12 0.25 0
+  (  28) dim  2 offset  10 0. 1.
+  (  29) dim  2 offset  12 0.25 0.
   (  30) dim  2 offset  14 0.25 0.25
-  (  31) dim  2 offset  16 0 0.25
+  (  31) dim  2 offset  16 0. 0.25
   (  32) dim  2 offset  18 0.25 0.75
-  (  33) dim  2 offset  20 0 0.75
+  (  33) dim  2 offset  20 0. 0.75
   (  34) dim  2 offset  22 0.25 0.5
   (  35) dim  2 offset  24 0.5 0.25
   (  36) dim  2 offset  26 0.75 0.25
-  (  37) dim  2 offset  28 0.75 0
-  (  38) dim  2 offset  30 1 0.25
+  (  37) dim  2 offset  28 0.75 0.
+  (  38) dim  2 offset  30 1. 0.25
   (  39) dim  2 offset  32 0.75 0.5
   (  40) dim  2 offset  34 0.5 0.75
-  (  41) dim  2 offset  36 0.25 1
+  (  41) dim  2 offset  36 0.25 1.
 Label 'marker':
 [0]: 23 (1)
 [0]: 24 (1)

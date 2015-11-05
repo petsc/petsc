@@ -53,7 +53,6 @@ SNES Object: 2 MPI processes
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
-    has attached null space
     using PRECONDITIONED norm type for convergence test
   PC Object:   2 MPI processes
     type: jacobi
@@ -71,21 +70,21 @@ Solution
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]
--1
+-1.
 -0.5
-0
+0.
 0.125
-0
+0.
 -0.5
 0.625
 0.75
-0
+0.
 0.03125
-0
+0.
 0.15625
 -0.0625
 0.28125
-0
+0.
 0.78125
 1.3125
 0.90625
@@ -101,17 +100,17 @@ Process [0]
 Process [1]
 -0.5
 0.5
-0
-0
+0.
+0.
 0.5
-0
+0.
 0.5
-1
+1.
 0.625
 -0.25
-0
+0.
 1.125
-0
+0.
 0.5
 0.78125
 -0.1875
@@ -122,9 +121,9 @@ Process [1]
 1.15625
 0.4375
 1.53125
-0
+0.
 0.78125
-0
+0.
 0.8125
 0.375
 0.90625

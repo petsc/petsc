@@ -1,9 +1,9 @@
 DM Object:Input Mesh 1 MPI processes
   type: plex
 Mesh 'Input Mesh':
-Max sizes cone: 8 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 8 support: 2
 [0]: 3 ----> 0
 [0]: 4 ----> 0
 [0]: 5 ----> 0

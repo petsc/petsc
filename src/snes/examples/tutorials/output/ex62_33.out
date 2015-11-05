@@ -27,7 +27,6 @@ SNES Object: 1 MPI processes
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
-    has attached null space
     using UNPRECONDITIONED norm type for convergence test
   PC Object:   1 MPI processes
     type: fieldsplit
@@ -74,7 +73,6 @@ SNES Object: 1 MPI processes
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
           left preconditioning
-          has attached null space
           using PRECONDITIONED norm type for convergence test
         PC Object:        (fieldsplit_pressure_)         1 MPI processes
           type: jacobi
