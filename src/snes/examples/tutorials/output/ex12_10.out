@@ -12,17 +12,17 @@ Local function:
 Vec Object: 1 MPI processes
   type: seq
 0.
-1.
-1.
+0.666667
+0.666667
+1.33333
+0.666667
+1.33333
+1.33333
 2.
-1.
-2.
-2.
-3.
 Initial guess
 Vec Object:potential 1 MPI processes
   type: seq
-L_2 Error: 0.625
+L_2 Error: 0.416667
 Residual:
 Vec Object: 1 MPI processes
   type: seq
