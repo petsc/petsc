@@ -571,7 +571,7 @@ class Package(config.base.Configure):
           continue
         elif not self.gitPreReqCheck():
           err += 'Git prerequisite check failed for url: '+url+'\n'
-        continue
+          continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
