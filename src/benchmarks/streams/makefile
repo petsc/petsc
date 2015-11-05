@@ -38,8 +38,9 @@ PthreadVersion: PthreadVersion.o  chkopts
 stream:  MPIVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NPMAX=<integer number of MPI processes to use>"; exit 1 ; fi
 	-@printf "" > scaling.log
+	-@echo "Running streams with ${MPIEXEC} ${MPI_BINDING} "
 	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
-	  ${MPIEXEC} -n $${i} ./MPIVersion | tee -a scaling.log; \
+	  ${MPIEXEC} ${MPI_BINDING} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
 	-@${PYTHON} process.py createfile
