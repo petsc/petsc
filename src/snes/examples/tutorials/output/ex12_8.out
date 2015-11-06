@@ -1,9 +1,9 @@
 DM Object:Mesh 1 MPI processes
   type: plex
 Mesh 'Mesh':
-Max sizes cone: 3 support: 8
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 8
 [0]: 16 ----> 29
 [0]: 16 ----> 31
 [0]: 16 ----> 51
