@@ -381,6 +381,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   /* Must have boundary marker for Dirichlet conditions */
   {
+    char      convType[256];
+    PetscBool flg;
+
+    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      DM dmConv;
+
+      ierr = DMConvert(*dm,convType,&dmConv);CHKERRQ(ierr);
+      if (dmConv) {
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm  = dmConv;
+      }
+    }
+    ierr = PetscOptionsEnd();
+  }
+  {
     DM cdm = *dm;
 
     while (cdm) {
@@ -398,7 +415,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
     }
   }
-
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (user->viewHierarchy) {
     DM       cdm = *dm;
