@@ -89,64 +89,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetPointGlobalField(DM,PetscInt,PetscInt,Petsc
 PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRef(DM,PetscInt,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,const PetscScalar*,const void*);
 
-/*S
-  DMLabel - Object which encapsulates a subset of the mesh from this DM
-
-  Level: developer
-
-  Concepts: grids, grid refinement
-
-.seealso:  DM, DMPlexCreate(), DMPlexCreateLabel()
-S*/
-typedef struct _n_DMLabel *DMLabel;
-PETSC_EXTERN PetscErrorCode DMLabelCreate(const char [], DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelGetState(DMLabel, PetscObjectState *);
-PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelGetName(DMLabel, const char **);
-PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelAddStratum(DMLabel, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelInsertIS(DMLabel, IS, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelGetNumValues(DMLabel, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMLabelGetStratumBounds(DMLabel, PetscInt, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMLabelGetValueIS(DMLabel, IS *);
-PETSC_EXTERN PetscErrorCode DMLabelStratumHasPoint(DMLabel, PetscInt, PetscInt, PetscBool *);
-PETSC_EXTERN PetscErrorCode DMLabelGetStratumSize(DMLabel, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMLabelGetStratumIS(DMLabel, PetscInt, IS *);
-PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelCreateIndex(DMLabel, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelDestroyIndex(DMLabel);
-PETSC_EXTERN PetscErrorCode DMLabelHasValue(DMLabel, PetscInt, PetscBool *);
-PETSC_EXTERN PetscErrorCode DMLabelHasPoint(DMLabel, PetscInt, PetscBool *);
-PETSC_EXTERN PetscErrorCode DMLabelFilter(DMLabel, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelPermute(DMLabel, IS, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelConvertToSection(DMLabel, PetscSection *, IS *);
-
 PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateLabel(DM, const char []);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexSetLabelValue(DM, const char[], PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexClearLabelValue(DM, const char[], PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabelSize(DM, const char[], PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabelIdIS(DM, const char[], IS *);
-PETSC_EXTERN PetscErrorCode DMPlexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexGetStratumIS(DM, const char [], PetscInt, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexClearLabelStratum(DM, const char[], PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabelOutput(DM, const char[], PetscBool *);
-PETSC_EXTERN PetscErrorCode DMPlexSetLabelOutput(DM, const char[], PetscBool);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
-
-PETSC_EXTERN PetscErrorCode DMPlexGetNumLabels(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabelName(DM, PetscInt, const char **);
-PETSC_EXTERN PetscErrorCode DMPlexHasLabel(DM, const char [], PetscBool *);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabel(DM, const char *, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMPlexGetLabelByNum(DM, PetscInt, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMPlexAddLabel(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetVertexNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePointNumbering(DM, IS *);
@@ -169,7 +112,6 @@ PETSC_EXTERN PetscErrorCode DMPlexRestoreTransitiveClosure(DM, PetscInt, PetscBo
 /* Mesh Generation */
 PETSC_EXTERN PetscErrorCode DMPlexGenerate(DM, const char [], PetscBool , DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCopyCoordinates(DM, DM);
-PETSC_EXTERN PetscErrorCode DMPlexCopyLabels(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexCreateDoublet(MPI_Comm, PetscInt, PetscBool, PetscBool, PetscBool, PetscReal, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSquareBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
@@ -229,7 +171,6 @@ PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);
 PETSC_EXTERN PetscErrorCode DMPlexSetSubpointMap(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
 
-PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddCells(DM, DMLabel);
@@ -313,6 +254,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetNumBoundary(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
 PETSC_EXTERN PetscErrorCode DMPlexIsBoundaryPoint(DM, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexCopyBoundary(DM, DM);
+PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 
 typedef struct {
   DM    dm;

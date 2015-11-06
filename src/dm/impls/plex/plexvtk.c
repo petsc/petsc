@@ -95,8 +95,8 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  ierr = DMPlexGetLabel(dm, "vtk", &label);CHKERRQ(ierr);
-  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "vtk", &label);CHKERRQ(ierr);
+  ierr = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
   if (!maxLabelCells) label = NULL;
   for (c = cStart; c < cEnd; ++c) {
@@ -253,13 +253,13 @@ PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
     if (hasLabel) {
       PetscInt value;
 
-      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
     ++numCells;
@@ -309,8 +309,8 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
   if (vMax >= 0) vEnd = PetscMin(vEnd, vMax);
   pStart   = PetscMax(PetscMin(cStart, vStart), pStart);
   pEnd     = PetscMin(PetscMax(cEnd,   vEnd),   pEnd);
-  ierr     = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
-  ierr     = DMPlexGetStratumSize(dm, "vtk", 2, &numLabelVertices);CHKERRQ(ierr);
+  ierr     = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr     = DMGetStratumSize(dm, "vtk", 2, &numLabelVertices);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 || numLabelVertices > 0 ? PETSC_TRUE : PETSC_FALSE;
   for (p = pStart; p < pEnd; ++p) {
     /* Reject points not either cells or vertices */
@@ -320,7 +320,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
 
       if (((p >= cStart) && (p < cEnd) && numLabelCells) ||
           ((p >= vStart) && (p < vEnd) && numLabelVertices)) {
-        ierr = DMPlexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
+        ierr = DMGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
     }
@@ -345,7 +345,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
 
         if (((p >= cStart) && (p < cEnd) && numLabelCells) ||
             ((p >= vStart) && (p < vEnd) && numLabelVertices)) {
-          ierr = DMPlexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
+          ierr = DMGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
           if (value != 1) continue;
         }
       }
@@ -403,7 +403,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
 
         if (((p >= cStart) && (p < cEnd) && numLabelCells) ||
             ((p >= vStart) && (p < vEnd) && numLabelVertices)) {
-          ierr = DMPlexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
+          ierr = DMGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
           if (value != 1) continue;
         }
       }

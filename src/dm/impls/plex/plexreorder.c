@@ -229,11 +229,11 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscInt numLabels, l;
     DMLabel  label, labelNew;
 
-    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     for (l = numLabels-1; l >= 0; --l) {
-      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
-      ierr = DMPlexAddLabel(*pdm, labelNew);CHKERRQ(ierr);
+      ierr = DMAddLabel(*pdm, labelNew);CHKERRQ(ierr);
     }
     if (plex->subpointMap) {ierr = DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap);CHKERRQ(ierr);}
   }

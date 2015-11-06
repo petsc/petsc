@@ -90,7 +90,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 4; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -117,7 +117,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 5; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -144,7 +144,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 6; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -173,7 +173,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for(p = 0; p < 12; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);

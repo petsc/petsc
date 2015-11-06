@@ -373,13 +373,13 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         cells[0] = cl; cells[1] = cr;
         ierr = DMPlexGetMeet(*dm, 2, cells, &meetSize, &meet);CHKERRQ(ierr);
         if (meetSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
-        ierr = DMPlexSetLabelValue(*dm, "Face Sets", meet[0], faceZoneIDs[f]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(*dm, "Face Sets", meet[0], faceZoneIDs[f]);CHKERRQ(ierr);
         ierr = DMPlexRestoreMeet(*dm, numFaceVertices, fverts, &meetSize, &meet);CHKERRQ(ierr);
       } else {
         for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f*numFaceEntries + fi] + numCells - 1;
         ierr = DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
         if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
-        ierr = DMPlexSetLabelValue(*dm, "Face Sets", join[0], faceZoneIDs[f]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(*dm, "Face Sets", join[0], faceZoneIDs[f]);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
       }
     }
