@@ -30,7 +30,7 @@ class Package(config.base.Configure):
                                  # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
-    self.gitcommit        = 'HEAD' # Git commit to use for downloads (used in preference to tarball downloads)
+    self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.download         = []   # list of URLs where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
@@ -566,6 +566,7 @@ class Package(config.base.Configure):
     err =''
     for url in download_urls:
       if url.startswith('git://'):
+        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
         if not hasattr(self.sourceControl, 'git'):
           err += 'Git not found - required for url: '+url+'\n'
           continue
