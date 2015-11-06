@@ -283,7 +283,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
+static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Advect *advect;
   PetscErrorCode ierr;
@@ -293,7 +293,7 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
   phys->riemann = (RiemannFunction) PhysicsRiemann_Advect;
   ierr = PetscNew(&advect);CHKERRQ(ierr);
   phys->data = advect;
-  ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
     advect->soltype = ADVECT_SOL_TILTED;
@@ -327,8 +327,8 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
   {
     const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
     /* Register "canned" boundary conditions and defaults for where to apply. */
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 0, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
     /* Initial/transient solution with default boundary conditions */
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
     /* Register "canned" functionals */
@@ -450,7 +450,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
+static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_SW     *sw;
   PetscErrorCode ierr;
@@ -460,7 +460,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
   phys->riemann = (RiemannFunction) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
-  ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
+  ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
     ierr = PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,NULL);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
 
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
@@ -632,7 +632,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Euler"
-static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
+static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Euler   *eu;
   PetscErrorCode  ierr;
@@ -642,7 +642,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
   phys->riemann = (RiemannFunction) PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
-  ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
   {
     eu->pars[0] = 3.0;
     eu->pars[1] = 1.67;
@@ -655,7 +655,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
   phys->maxspeed = 1.0;
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
@@ -1021,7 +1021,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometry(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
   ierr = VecGetArrayRead(facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
@@ -1030,7 +1030,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     const PetscInt    *faces;
-    const FaceGeom    *fgA, *fgB, *cg;
+    const PetscFVFaceGeom    *fgA, *fgB, *cg;
     const PetscScalar *vertex;
     PetscInt          numFaces, sides[2], f, g;
 
@@ -1180,7 +1180,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelFunctionalSetFromOptions"
-static PetscErrorCode ModelFunctionalSetFromOptions(Model mod)
+static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -1257,13 +1257,13 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometry(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecGetArray(X, &x);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; ++c) {
-    const CellGeom *cg;
+    const PetscFVCellGeom *cg;
     PetscScalar    *xc;
 
     ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
@@ -1304,7 +1304,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscFunctionBeginUser;
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometry(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
   if (stepnum >= 0) {           /* No summary for final time */
@@ -1326,7 +1326,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
-      const CellGeom    *cg;
+      const PetscFVCellGeom    *cg;
       const PetscScalar *cx;
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
@@ -1433,7 +1433,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   }
   /*Nr   = 1;
    ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);*/
-  ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&timeread,1,NULL,PETSC_REAL);CHKERRQ(ierr);
 
   if(timeread!=time) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
   else {
@@ -1460,7 +1460,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscSNPrintf(filename,sizeof filename,"ex11-SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(dm,filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
-  ierr = PetscRealView(1,&time,PETSC_TRUE,viewer);CHKERRQ(ierr);
+  ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);
   /* ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);*/
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); 
   ierr = TestMonitor(dm,filename,X,time);
@@ -1542,7 +1542,7 @@ int main(int argc, char **argv)
 
     if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
+    ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   {
@@ -1550,7 +1550,7 @@ int main(int argc, char **argv)
 
     ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, "chaco", overlap, NULL, &dmDist);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = dmDist;
@@ -1584,8 +1584,7 @@ int main(int argc, char **argv)
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   /* ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr); */
   ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
-  ierr = DMPlexTSSetRHSFunctionLocal(dm, user->model->physics->riemann, user->model->physics);CHKERRQ(ierr);
-
+  ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
@@ -1593,7 +1592,7 @@ int main(int argc, char **argv)
     DM  dmCell;
     Vec cellgeom, partition;
 
-    ierr = DMPlexTSGetGeometry(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
+    ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
     ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
     ierr = VecView(cellgeom, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -1605,7 +1604,7 @@ int main(int argc, char **argv)
     ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   }
 
-  ierr = DMPlexTSGetGeometry(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
   dt   = cfl * minRadius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
