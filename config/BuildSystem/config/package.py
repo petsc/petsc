@@ -488,12 +488,11 @@ class Package(config.base.Configure):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
       prefetch = 0
-      gitcommit_hash = None
       if self.gitcommit.startswith('origin/'):
         prefetch = 1
       else:
         try:
-          gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', self.gitcommit+'^{commit}'], cwd=self.packageDir, log = self.log)
         except:
           prefetch = 1
       if prefetch:
@@ -503,8 +502,7 @@ class Package(config.base.Configure):
           raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
                              '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
       try:
-        if not gitcommit_hash:
-          gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+        gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
         if self.gitcommit != 'HEAD':
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
       except:
