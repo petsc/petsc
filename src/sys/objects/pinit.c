@@ -588,7 +588,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
       ierr = PetscSNPrintf(appline,applinelen,"%s.c.html",programname);CHKERRQ(ierr);
       ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsGetAll(NULL,NULL,&options);CHKERRQ(ierr);
+    ierr = PetscOptionsGetAll(NULL,&options);CHKERRQ(ierr);
     if (rootlocal && help) {
       ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
     } else if (help) {

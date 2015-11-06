@@ -102,7 +102,7 @@ PetscErrorCode PetscStackCreate(void)
 #if defined(PETSC_HAVE_SAWS)
   {
   PetscBool flg = PETSC_FALSE;
-  PetscOptionsHasName(NULL,"-stack_view",&flg);
+  PetscOptionsHasName(NULL,NULL,"-stack_view",&flg);
   if (flg) PetscStackViewSAWs();
   }
 #endif

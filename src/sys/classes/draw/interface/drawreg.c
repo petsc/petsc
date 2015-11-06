@@ -219,7 +219,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     if (match) {
       PetscBool dontwarn = PETSC_TRUE;
       flg  = PETSC_TRUE;
-      ierr = PetscOptionsHasName(NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
       if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     }
   }
@@ -361,7 +361,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #elif defined(PETSC_HAVE_OPENGLES)
     if (!nox) def = PETSC_DRAW_OPENGLES;
 #else
-    ierr = PetscOptionsHasName(NULL,"-nox_warning",&warn);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&warn);CHKERRQ(ierr);
     if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, OpenGL ES, or GLUT/OpenGL on this machine\nproceeding without graphics\n");
 #endif
   }
