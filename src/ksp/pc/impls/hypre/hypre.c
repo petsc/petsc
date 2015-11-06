@@ -269,9 +269,9 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
 #define __FUNCT__ "PCDestroy_HYPRE"
 static PetscErrorCode PCDestroy_HYPRE(PC pc)
 {
-  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
-  PetscScalar    *petscvecarray;
+  PC_HYPRE                 *jac = (PC_HYPRE*)pc->data;
+  PetscErrorCode           ierr;
+  PETSC_UNUSED PetscScalar *petscvecarray;
 
   PetscFunctionBegin;
   if (jac->ij) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->ij));
