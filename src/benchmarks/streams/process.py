@@ -14,6 +14,12 @@ def process(fileoutput = 1):
   data = ff.read()
   ff.close()
 
+  s = data.split('\n')
+  ss = []
+  for i in s:
+    if not i.startswith('MPI rank'):
+      ss.append(i)
+  data = '\n'.join(ss)
   hosts  = {}
   triads = {}
   speedups = {}

@@ -3,7 +3,7 @@
 #
 #    Uses PETSC_ARCH and PETSC_DIR plus the MPIEXEC command in
 #  packages to run mpiexec
-#    Also use PETSCVALGRIND_OPTIONS from env
+#    Use PETSCVALGRIND_OPTIONS and MPI_BINDING from environment
 #
 if ($1 == '-h' | $1 == '--help') then
   echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
@@ -66,6 +66,6 @@ if ( ${valgrind} == "1" ) then
     rm -rf ${PETSC_DIR}/${PETSC_ARCH}/lib/lib*.dSYM
   endif
 else
-  $qrun -n $np $*
+  $qrun -n $np ${MPI_BINDING} $*
 endif
 

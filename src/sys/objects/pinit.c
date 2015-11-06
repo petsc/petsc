@@ -720,6 +720,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_HAVE_CUDA)
   cublasStatus_t cberr;
 #endif
+#if defined(PETSC_HAVE_HWLOC)
+  PetscViewer    viewer;
+#endif
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -996,6 +999,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
 
+#if defined(PETSC_HAVE_HWLOC)
+  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+  }
+#endif
 
   /*
       Once we are completedly initialized then we can set this variables
