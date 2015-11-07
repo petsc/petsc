@@ -44,4 +44,5 @@ lambda: 2.777778 mu: 4.166667
    10 KSP Residual norm 0.000224688 
    11 KSP Residual norm 8.95624e-05 
   4 SNES Function norm 9.22338e-05 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 4
 Number of SNES iterations = 4
