@@ -2510,7 +2510,7 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A,PetscBool sc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJ"
-PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   PetscErrorCode       ierr;
   PetscBool            sc = PETSC_FALSE,flg;

@@ -67,7 +67,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
   /*
      Extremely inefficient but will compute entire Jacobian for testing
   */
-  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_dense_jacobian",&dense,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->options,((PetscObject)dm)->prefix,"-dmcomposite_dense_jacobian",&dense,NULL);CHKERRQ(ierr);
   if (dense) {
     PetscInt    rstart,rend,*indices;
     PetscScalar *values;

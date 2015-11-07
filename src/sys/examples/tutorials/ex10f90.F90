@@ -8,7 +8,7 @@
       PetscBool                                 :: flg
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call PetscOptionsGetString(PETSC_NULL_CHARACTER,"-f",filename,flg,ierr)
+      call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',filename,flg,ierr)
       if (flg) then
          call PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,filename,PETSC_TRUE,ierr);
       end if

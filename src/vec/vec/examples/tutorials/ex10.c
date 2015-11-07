@@ -27,15 +27,15 @@ int main(int argc,char **args)
   isbinary  = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-hdf5",&ishdf5,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-mpiio",&mpiio_use,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-sizes_set",&vstage2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-type_set",&vstage3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&ishdf5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-mpiio",&mpiio_use,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-sizes_set",&vstage2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-type_set",&vstage3,NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   /* PART 1:  Generate vector, then write it in the given data format */
 
@@ -69,7 +69,6 @@ int main(int argc,char **args)
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  /*  ierr = PetscOptionsClear();CHKERRQ(ierr); */
 
 
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
@@ -81,7 +80,7 @@ int main(int argc,char **args)
   ierr = PetscLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   if (mpiio_use) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Using MPI IO for reading the vector\n");CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL,"-viewer_binary_mpiio","");CHKERRQ(ierr);
   }
   if (isbinary) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);

@@ -29,12 +29,12 @@ int main(int argc,char **args)
   /* Determine which type of solver we want to test for */
   herm = PETSC_FALSE;
   symm = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-symmetric_solve",&symm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-hermitian_solve",&herm,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric_solve",&symm,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-hermitian_solve",&herm,NULL);CHKERRQ(ierr);
   if (herm) symm = PETSC_TRUE;
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) { /* get matrices from PETSc distribution */
     sprintf(file,PETSC_DIR);
     ierr = PetscStrcat(file,"/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **args)
 
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
-  ierr = PetscOptionsGetInt(NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);

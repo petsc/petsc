@@ -150,11 +150,12 @@
 
       call SNESSetFromOptions(snes,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-setls',setls,ierr)
 
       if (setls) then
         call SNESGetLineSearch(snes, linesearch, ierr)
-        call SNESLineSearchSetType(linesearch, "shell", ierr)
+        call SNESLineSearchSetType(linesearch, 'shell', ierr)
         call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
      &PETSC_NULL_OBJECT, ierr)
       endif

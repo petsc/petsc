@@ -36,14 +36,14 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
   x1   = (m+1)/2;
   x2   = x1;
-  ierr = PetscOptionsGetInt(NULL,"-x1",&x1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-x2",&x2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-x1",&x1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-x2",&x2,NULL);CHKERRQ(ierr);
   /* create stiffness matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,NULL,&C);CHKERRQ(ierr);
 

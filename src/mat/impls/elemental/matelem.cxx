@@ -23,11 +23,7 @@ PetscErrorCode PetscElementalInitializePackage(void)
 
   PetscFunctionBegin;
   if (El::Initialized()) PetscFunctionReturn(0);
-  { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Elemental) through the interface that needs references */
-    int zero = 0;
-    char **nothing = 0;
-    El::Initialize(zero,nothing);   /* called by the 1st call of MatCreate_Elemental */
-  }
+  El::Initialize();   /* called by the 1st call of MatCreate_Elemental */
   ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -101,13 +97,9 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);
-
-  /* if (!rank) printf("          .........MatGetInfo_Elemental ...\n"); */
-  info->block_size     = 1.0;
+  info->block_size = 1.0;
 
   if (flag == MAT_LOCAL) {
     info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
@@ -138,17 +130,15 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNCT__ "MatSetValues_Elemental"
 static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscScalar *vals,InsertMode imode)
 {
-  PetscErrorCode ierr;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscMPIInt    rank;
-  PetscInt       i,j,rrank,ridx,crank,cidx;
+  PetscInt       i,j,rrank,ridx,crank,cidx,erow,ecol,numQueues=0;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
 
-  const El::Grid &grid = a->emat->Grid();
+  // TODO: Initialize matrix to all zeros?
+
+  // Count the number of queues from this process
   for (i=0; i<nr; i++) {
-    PetscInt erow,ecol,elrow,elcol;
     if (rows[i] < 0) continue;
     P2RO(A,0,rows[i],&rrank,&ridx);
     RO2E(A,0,rrank,ridx,&erow);
@@ -158,19 +148,34 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
-      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){ /* off-proc entry */
+      if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+        /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
         if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
-        /* PetscPrintf(PETSC_COMM_SELF,"[%D] add off-proc entry (%D,%D, %g) (%D %D)\n",rank,rows[i],cols[j],*(vals+i*nc),erow,ecol); */
-        a->esubmat->Set(0,0, (PetscElemScalar)vals[i*nc+j]);
-        a->interface->Axpy(1.0,*(a->esubmat),erow,ecol);
+        ++numQueues;
         continue;
       }
-      elrow = erow / grid.MCSize();
-      elcol = ecol / grid.MRSize();
+      /* printf("Locally updating (%d,%d)\n",erow,ecol); */
       switch (imode) {
-      case INSERT_VALUES: a->emat->SetLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
-      case ADD_VALUES: a->emat->UpdateLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
+      case INSERT_VALUES: a->emat->Set(erow,ecol,(PetscElemScalar)vals[i*nc+j]); break;
+      case ADD_VALUES: a->emat->Update(erow,ecol,(PetscElemScalar)vals[i*nc+j]); break;
       default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+      }
+    }
+  }
+
+  /* printf("numQueues=%d\n",numQueues); */
+  a->emat->Reserve( numQueues );
+  for (i=0; i<nr; i++) {
+    if (rows[i] < 0) continue;
+    P2RO(A,0,rows[i],&rrank,&ridx);
+    RO2E(A,0,rrank,ridx,&erow);
+    for (j=0; j<nc; j++) {
+      if (cols[j] < 0) continue;
+      P2RO(A,1,cols[j],&crank,&cidx);
+      RO2E(A,1,crank,cidx,&ecol);
+      if( !a->emat->IsLocal(erow,ecol) ){ /*off-proc entry*/
+        /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
+        a->emat->QueueUpdate( erow, ecol, vals[i*nc+j] );
       }
     }
   }
@@ -829,41 +834,55 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   Mat_Elemental      *a = (Mat_Elemental*)A->data;
   MPI_Comm           comm;
   PetscErrorCode     ierr;
-  PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j;
+  IS                 isrows,iscols;
+  PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j,erow,ecol,elrow,elcol;
+  const PetscInt     *rows,*cols;
   PetscElemScalar    v;
-  PetscBool          s1,s2,s3;
+  const El::Grid     &grid = a->emat->Grid();
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscStrcmp(newtype,MATDENSE,&s1);CHKERRQ(ierr);
-  ierr = PetscStrcmp(newtype,MATSEQDENSE,&s2);CHKERRQ(ierr);
-  ierr = PetscStrcmp(newtype,MATMPIDENSE,&s3);CHKERRQ(ierr);
-  if (!s1 && !s2 && !s3) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
-  ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
-  ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
+  
+  if (reuse == MAT_REUSE_MATRIX) {
+    Bmpi = *B;
+  } else {
+    ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
+    ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
+  }
+
+  /* Get local entries of A */
+  ierr = MatGetOwnershipIS(A,&isrows,&iscols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
+
   for (i=0; i<nrows; i++) {
-    PetscInt erow,ecol;
-    P2RO(A,0,i,&rrank,&ridx);
+    P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
     RO2E(A,0,rrank,ridx,&erow);
     if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
     for (j=0; j<ncols; j++) {
-      P2RO(A,1,j,&crank,&cidx);
+      P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
-      v = a->emat->Get(erow,ecol);
-      ierr = MatSetValues(Bmpi,1,&i,1,&j,(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+
+      elrow = erow / grid.MCSize(); /* Elemental local row index */
+      elcol = ecol / grid.MRSize(); /* Elemental local column index */
+      v = a->emat->GetLocal(elrow,elcol);
+      ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&Bmpi);CHKERRQ(ierr);
   } else {
     *B = Bmpi;
   }
+  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -891,7 +910,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,M
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
@@ -925,7 +944,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
@@ -963,7 +982,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
@@ -1001,7 +1020,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&mat_elemental);CHKERRQ(ierr);
   } else {
     *newmat = mat_elemental;
@@ -1020,19 +1039,16 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   MPI_Comm           icomm;
 
   PetscFunctionBegin;
-  a->interface->Detach();
-  delete a->interface;
-  delete a->esubmat;
   delete a->emat;
   delete a->pivot;
 
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
-  /* printf("commgrid->grid_refct = %d, grid=%p\n",commgrid->grid_refct,commgrid->grid); -- memory leak revealed by valgrind? */
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
+    ierr = MPI_Keyval_free(&Petsc_Elemental_keyval);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
@@ -1075,8 +1091,9 @@ PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType type)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  a->interface->Detach();
-  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
+  /* printf("Calling ProcessQueues\n"); */
+  a->emat->ProcessQueues();
+  /* printf("Finished ProcessQueues\n"); */
   PetscFunctionReturn(0);
 }
 
@@ -1378,6 +1395,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);
+    /* ierr = MPI_Comm_create_Keyval(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); -- new version? */
   }
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
@@ -1405,12 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
   a->emat      = new El::DistMatrix<PetscElemScalar>(*a->grid);
-  a->esubmat   = new El::Matrix<PetscElemScalar>(1,1);
-  a->interface = new El::AxpyInterface<PetscElemScalar>;
-  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>;
-
-  /* build cache for off array entries formed */
-  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
+  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>(*a->grid);
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefEig_C",MatElementalHermitianGenDefEig_Elemental);CHKERRQ(ierr);

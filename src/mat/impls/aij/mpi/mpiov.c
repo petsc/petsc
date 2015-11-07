@@ -1141,7 +1141,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     if (rowflag && colflag && nrow == C->rmap->N && ncol == C->cmap->N) {
       wantallmatrix = PETSC_TRUE;
 
-      ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)C)->options,((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
     }
   }
   ierr = MPIU_Allreduce(&wantallmatrix,&twantallmatrix,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
@@ -2157,7 +2157,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 {
   PetscErrorCode ierr;
   PetscMPIInt    isize,flag;
-  PetscInt       i,ii,cismax,ispar;
+  PetscInt       i,ii,cismax,ispar,ciscol_localsize;
   Mat            *A,*B;
   IS             *isrow_p,*iscol_p,*cisrow,*ciscol,*ciscol_p;
 
@@ -2310,6 +2310,19 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
   }
   /* Now obtain the sequential A and B submatrices separately. */
   ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,&A);CHKERRQ(ierr);
+  /* I did not figure out a good way to fix it right now.
+   * Local column size of B[i] is different from the size of ciscol[i].
+   * B[i]'s size is finally determined by MatAssembly, while
+   * ciscol[i] is computed as the complement of iscol[i].
+   * It is better to keep only nonzero indices when computing
+   * the complement ciscol[i].
+   * */
+  if(scall==MAT_REUSE_MATRIX){
+	for(i=0; i<cismax; i++){
+	  ierr = ISGetLocalSize(ciscol[i],&ciscol_localsize);CHKERRQ(ierr);
+	  B[i]->cmap->n = ciscol_localsize;
+	}
+  }
   ierr = (*getsubmats_seq)(C,cismax,cisrow,ciscol,scall,&B);CHKERRQ(ierr);
   /*
     If scall == MAT_REUSE_MATRIX AND the permutations are NULL, we are done, since the sequential

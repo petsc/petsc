@@ -161,15 +161,15 @@ int main(int argc, char **argv)
   user.es = 100.0;
 
   /* Read in alternative values for the American option to price */
-  ierr = PetscOptionsGetReal(NULL, "-alpha", &user.alpha, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-delta", &user.delta, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-es", &user.es, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-expiry", &user.expiry, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-ms", &user.ms, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-mt", &user.mt, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-rate", &user.rate, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-sigma", &user.sigma, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-strike", &user.strike, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-alpha", &user.alpha, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-delta", &user.delta, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-es", &user.es, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-expiry", &user.expiry, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-ms", &user.ms, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-mt", &user.mt, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-rate", &user.rate, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-sigma", &user.sigma, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL, "-strike", &user.strike, &flg);CHKERRQ(ierr);
 
   /* Check that the options set are allowable (needs to be done) */
 

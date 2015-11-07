@@ -247,7 +247,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
 
-  ierr = PetscOptionsGetBool(NULL,"-usempiio",&usempiio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-usempiio",&usempiio,NULL);CHKERRQ(ierr);
   if (!usempiio) {
     ierr = TestDMDAVec(PETSC_FALSE);CHKERRQ(ierr);
   } else {

@@ -23,7 +23,7 @@ PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_JP"
-PetscErrorCode MatColoringSetFromOptions_JP(PetscOptions *PetscOptionsObject,MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOptionsObject,MatColoring mc)
 {
   PetscErrorCode ierr;
   MC_JP          *jp = (MC_JP*)mc->data;

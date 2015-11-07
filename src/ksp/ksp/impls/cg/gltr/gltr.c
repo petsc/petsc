@@ -1424,7 +1424,7 @@ static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GLTR"
-PetscErrorCode KSPSetFromOptions_GLTR(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg = (KSP_GLTR*)ksp->data;

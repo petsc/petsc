@@ -34,7 +34,7 @@ struct _TaoOps {
     PetscErrorCode (*setup)(Tao);
     PetscErrorCode (*solve)(Tao);
     PetscErrorCode (*view)(Tao, PetscViewer);
-    PetscErrorCode (*setfromoptions)(PetscOptions*,Tao);
+    PetscErrorCode (*setfromoptions)(PetscOptionItems*,Tao);
     PetscErrorCode (*destroy)(Tao);
 };
 
@@ -134,8 +134,6 @@ struct _p_Tao {
     PetscReal trust0; /* initial trust region radius */
     PetscReal trust;  /* Current trust region */
 
-    PetscReal fatol;
-    PetscReal frtol;
     PetscReal gatol;
     PetscReal grtol;
     PetscReal gttol;
@@ -145,8 +143,6 @@ struct _p_Tao {
     PetscReal fmin;
     PetscBool max_funcs_changed;
     PetscBool max_it_changed;
-    PetscBool fatol_changed;
-    PetscBool frtol_changed;
     PetscBool gatol_changed;
     PetscBool grtol_changed;
     PetscBool gttol_changed;

@@ -136,7 +136,7 @@ int main(int argc,char **argv)
     u[0] = 1;
     u[1] = .7;
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsGetVec(NULL,"-initial",U,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetVec(NULL,NULL,"-initial",U,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

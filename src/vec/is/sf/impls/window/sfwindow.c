@@ -383,7 +383,7 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Window"
-static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptions *PetscOptionsObject,PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
@@ -619,7 +619,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
 #if defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6))
   {
     PetscBool ackbug = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-acknowledge_ompi_onesided_bug",&ackbug,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-acknowledge_ompi_onesided_bug",&ackbug,NULL);CHKERRQ(ierr);
     if (ackbug) {
       ierr = PetscInfo(sf,"Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.\n");CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_LIB,"Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");

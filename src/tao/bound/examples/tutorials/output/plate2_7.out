@@ -22,11 +22,10 @@ Tao Object: 3 MPI processes
     type: nash
   total KSP iterations: 64
   Active Set subset type: matrixfree
-  convergence tolerances: fatol=1e-12,   frtol=1e-12
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
   Residual in Function/Gradient:=2.51702e-07
   Objective value=1.46694
   total number of iterations=2,                          (max: 500)
   total number of function/gradient evaluations=1,      (max: 100000)
   total number of Hessian evaluations=1
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  Solution converged:    ||g(X)||/||g(X0)|| <= gttol

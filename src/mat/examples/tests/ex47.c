@@ -28,7 +28,7 @@ int main(int argc,char **args)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
 
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* Load the matrix as AIJ format */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&va);CHKERRQ(ierr);

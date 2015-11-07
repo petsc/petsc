@@ -433,8 +433,6 @@ the error in the constraints is less than $\epsilon_{crtol}$
 and either
 \[
 \begin{array}{lcl}
-f(X) - f(X^*)  &\leq& \epsilon_{fatol}, \\
-|f(X) - f(X^*)| / |f(X^*)| &\leq& \epsilon_{frtol},\\
 ||g(X)|| &\leq& \epsilon_{gatol}, \\
 ||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, \quad \mbox{or} \\
 ||g(X)||/|g(X_0)| &\leq& \epsilon_{gttol},
@@ -464,8 +462,6 @@ Similarly, a maximum number of function evaluations can be set
 with the command 
 \findex{TaoSetMaximumFunctionEvaluations()}
 {\tt Tao\-Set\-Max\-imum\-Func\-tion\-Evaluations()}.
-The stopping criteria can
-also be set by using command line options such as \texttt{-tao\_fatol}, 
 \texttt{-tao\_max\_it}, and \texttt{-tao\_max\_funcs}.
 
 \subsection{Viewing Status}

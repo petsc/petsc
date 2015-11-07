@@ -15,7 +15,7 @@ struct _PetscViewerOps {
    PetscErrorCode (*getsubviewer)(PetscViewer,MPI_Comm,PetscViewer*);
    PetscErrorCode (*restoresubviewer)(PetscViewer,MPI_Comm,PetscViewer*);
    PetscErrorCode (*read)(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
-   PetscErrorCode (*setfromoptions)(PetscOptions*,PetscViewer);
+   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscViewer);
    PetscErrorCode (*setup)(PetscViewer);
 };
 

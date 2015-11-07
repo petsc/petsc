@@ -112,13 +112,9 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->max_it     = 10000;
   tao->max_funcs   = 10000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->fatol       = 1e-5;
-  tao->frtol       = 1e-5;
   tao->gatol       = 1e-5;
   tao->grtol       = 1e-5;
 #else
-  tao->fatol       = 1e-8;
-  tao->frtol       = 1e-8;
   tao->gatol       = 1e-8;
   tao->grtol       = 1e-8;
 #endif
@@ -147,8 +143,6 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   /* These flags prevents algorithms from overriding user options */
   tao->max_it_changed   =PETSC_FALSE;
   tao->max_funcs_changed=PETSC_FALSE;
-  tao->fatol_changed    =PETSC_FALSE;
-  tao->frtol_changed    =PETSC_FALSE;
   tao->gatol_changed    =PETSC_FALSE;
   tao->grtol_changed    =PETSC_FALSE;
   tao->gttol_changed    =PETSC_FALSE;
@@ -347,8 +341,6 @@ PetscErrorCode TaoDestroy(Tao *tao)
 
   options Database Keys:
 + -tao_type <type> - The algorithm that TAO uses (lmvm, nls, etc.)
-. -tao_fatol <fatol> - absolute error tolerance in function value
-. -tao_frtol <frtol> - relative error tolerance in function value
 . -tao_gatol <gatol> - absolute error tolerance for ||gradient||
 . -tao_grtol <grtol> - relative error tolerance for ||gradient||
 . -tao_gttol <gttol> - reduction of ||gradient|| relative to initial gradient
@@ -382,7 +374,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 {
   PetscErrorCode ierr;
   const TaoType  default_type = TAOLMVM;
-  const char     *prefix;
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
   PetscBool      flg;
@@ -391,9 +382,8 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-  ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
   /* So no warnings are given about unused options */
-  ierr = PetscOptionsHasName(prefix,"-tao_ls_type",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_ls_type",&flg);CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   {
@@ -409,10 +399,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetType(tao,default_type);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
-    if (flg) tao->fatol_changed=PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
-    if (flg) tao->frtol_changed=PETSC_TRUE;
     ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
     if (flg) tao->catol_changed=PETSC_TRUE;
     ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
@@ -575,9 +561,6 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TaoSubSetTypes[tao->subset_type]);CHKERRQ(ierr);
     }
 
-    ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: fatol=%g,",(double)tao->fatol);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(viewer," frtol=%g\n",(double)tao->frtol);CHKERRQ(ierr);
-
     ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: gatol=%g,",(double)tao->gatol);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(viewer," steptol=%g,",(double)tao->steptol);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(viewer," gttol=%g\n",(double)tao->gttol);CHKERRQ(ierr);
@@ -632,12 +615,6 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
     if (tao->reason>0){
       ierr = PetscViewerASCIIPrintf(viewer,    "Solution converged: ");CHKERRQ(ierr);
       switch (tao->reason) {
-      case TAO_CONVERGED_FATOL:
-        ierr = PetscViewerASCIIPrintf(viewer,"estimated f(x)-f(X*) <= fatol\n");CHKERRQ(ierr);
-        break;
-      case TAO_CONVERGED_FRTOL:
-        ierr = PetscViewerASCIIPrintf(viewer,"estimated |f(x)-f(X*)|/|f(X*)| <= frtol\n");CHKERRQ(ierr);
-        break;
       case TAO_CONVERGED_GATOL:
         ierr = PetscViewerASCIIPrintf(viewer," ||g(X)|| <= gatol\n");CHKERRQ(ierr);
         break;
@@ -704,22 +681,16 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 
   Input Parameters:
 + tao - the Tao context
-. fatol - absolute convergence tolerance
-. frtol - relative convergence tolerance
 . gatol - stop if norm of gradient is less than this
 . grtol - stop if relative norm of gradient is less than this
 - gttol - stop if norm of gradient is reduced by this factor
 
   Options Database Keys:
-+ -tao_fatol <fatol> - Sets fatol
-. -tao_frtol <frtol> - Sets frtol
-. -tao_gatol <gatol> - Sets gatol
++ -tao_gatol <gatol> - Sets gatol
 . -tao_grtol <grtol> - Sets grtol
 - -tao_gttol <gttol> - Sets gttol
 
   Stopping Criteria:
-$ f(X) - f(X*) (estimated)            <= fatol
-$ |f(X) - f(X*)| (estimated) / |f(X)| <= frtol
 $ ||g(X)||                            <= gatol
 $ ||g(X)|| / |f(X)|                   <= grtol
 $ ||g(X)|| / ||g(X0)||                <= gttol
@@ -732,29 +703,12 @@ $ ||g(X)|| / ||g(X0)||                <= gttol
 .seealso: TaoGetTolerances()
 
 @*/
-PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
+PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-
-  if (fatol != PETSC_DEFAULT) {
-    if (fatol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.\n");CHKERRQ(ierr);
-    } else {
-      tao->fatol = PetscMax(0,fatol);
-      tao->fatol_changed=PETSC_TRUE;
-    }
-  }
-  if (frtol != PETSC_DEFAULT) {
-    if (frtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.\n");CHKERRQ(ierr);
-    } else {
-      tao->frtol = PetscMax(0,frtol);
-      tao->frtol_changed=PETSC_TRUE;
-    }
-  }
 
   if (gatol != PETSC_DEFAULT) {
     if (gatol<0) {
@@ -794,8 +748,8 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   Input Parameters:
 + tao - the Tao context
-. catol - absolute constraint tolerance, constraint norm must be less than catol for used for fatol, gatol convergence criteria
-- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for fatol, gatol, gttol convergence criteria
+. catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
+- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
 
   Options Database Keys:
 + -tao_catol <catol> - Sets catol
@@ -847,8 +801,8 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 . tao - the Tao context
 
   Output Parameter:
-+ catol - absolute constraint tolerance, constraint norm must be less than catol for used for fatol, gatol convergence criteria
-- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for fatol, gatol, gttol convergence criteria
++ catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
+- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
 
   Level: intermediate
 
@@ -1143,9 +1097,7 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 . tao - the Tao context
 
   Output Parameters:
-+ fatol - absolute convergence tolerance
-. frtol - relative convergence tolerance
-. gatol - stop if norm of gradient is less than this
++ gatol - stop if norm of gradient is less than this
 . grtol - stop if relative norm of gradient is less than this
 - gttol - stop if norm of gradient is reduced by a this factor
 
@@ -1155,12 +1107,10 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 
   Level: intermediate
 @*/
-PetscErrorCode TaoGetTolerances(Tao tao, PetscReal *fatol, PetscReal *frtol, PetscReal *gatol, PetscReal *grtol, PetscReal *gttol)
+PetscErrorCode TaoGetTolerances(Tao tao, PetscReal *gatol, PetscReal *grtol, PetscReal *gttol)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (fatol) *fatol=tao->fatol;
-  if (frtol) *frtol=tao->frtol;
   if (gatol) *gatol=tao->gatol;
   if (grtol) *grtol=tao->grtol;
   if (gttol) *gttol=tao->gttol;
@@ -1892,9 +1842,8 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   PetscReal          gnorm=tao->residual, gnorm0=tao->gnorm0;
   PetscReal          f=tao->fc, steptol=tao->steptol,trradius=tao->step;
   PetscReal          gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
-  PetscReal          fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
-  PetscReal          fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
-  PetscReal          gnorm2;
+  PetscReal          catol=tao->catol,crtol=tao->crtol;
+  PetscReal          fmin=tao->fmin, cnorm=tao->cnorm;
   TaoConvergedReason reason=tao->reason;
   PetscErrorCode     ierr;
 
@@ -1903,11 +1852,6 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
-  if (gnorm >= PETSC_INFINITY) {
-    gnorm2 = gnorm;
-  } else {
-    gnorm2=gnorm*gnorm;
-  }
 
   if (PetscIsInfOrNanReal(f)) {
     ierr = PetscInfo(tao,"Failed to converged, function value is Inf or NaN\n");CHKERRQ(ierr);
@@ -1915,12 +1859,6 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   } else if (f <= fmin && cnorm <=catol) {
     ierr = PetscInfo2(tao,"Converged due to function value %g < minimum function value %g\n", (double)f,(double)fmin);CHKERRQ(ierr);
     reason = TAO_CONVERGED_MINF;
-  } else if (gnorm2 <= fatol && cnorm <=catol) {
-    ierr = PetscInfo2(tao,"Converged due to estimated f(X) - f(X*) = %g < %g\n",(double)gnorm2,(double)fatol);CHKERRQ(ierr);
-    reason = TAO_CONVERGED_FATOL;
-  } else if (f != 0 && gnorm2 / PetscAbsReal(f)<= frtol && cnorm/PetscMax(cnorm0,1.0) <= crtol) {
-    ierr = PetscInfo2(tao,"Converged due to estimated |f(X)-f(X*)|/f(X) = %g < %g\n",(double)(gnorm2/PetscAbsReal(f)),(double)frtol);CHKERRQ(ierr);
-    reason = TAO_CONVERGED_FRTOL;
   } else if (gnorm<= gatol && cnorm <=catol) {
     ierr = PetscInfo2(tao,"Converged due to residual norm ||g(X)||=%g < %g\n",(double)gnorm,(double)gatol);CHKERRQ(ierr);
     reason = TAO_CONVERGED_GATOL;
@@ -2364,8 +2302,6 @@ PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
 
    Output Parameter:
 .  reason - one of
-$  TAO_CONVERGED_FATOL (1)           f(X)-f(X*) <= fatol
-$  TAO_CONVERGED_FRTOL (2)           |f(X) - f(X*)|/|f(X)| < frtol
 $  TAO_CONVERGED_GATOL (3)           ||g(X)|| < gatol
 $  TAO_CONVERGED_GRTOL (4)           ||g(X)|| / f(X)  < grtol
 $  TAO_CONVERGED_GTTOL (5)           ||g(X)|| / ||g(X0)|| < gttol
@@ -2509,7 +2445,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   tao->residual = res;
   tao->cnorm = cnorm;
   tao->step = steplength;
-  if (its == 0) {
+  if (!its) {
     tao->cnorm0 = cnorm; tao->gnorm0 = res;
   }
   TaoLogConvergenceHistory(tao,f,res,cnorm,tao->ksp_its);

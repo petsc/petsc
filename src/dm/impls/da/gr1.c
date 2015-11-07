@@ -185,14 +185,14 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
   ierr = PetscMalloc1(step,&displayfields);CHKERRQ(ierr);
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;
-  ierr           = PetscOptionsGetIntArray(NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetIntArray(NULL,NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
   if (!ndisplayfields) ndisplayfields = step;
   if (!flg) {
     char       **fields;
     const char *fieldname;
     PetscInt   nfields = step;
     ierr = PetscMalloc1(step,&fields);CHKERRQ(ierr);
-    ierr = PetscOptionsGetStringArray(NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(NULL,NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
     if (flg) {
       ndisplayfields = 0;
       for (k=0; k<nfields;k++) {
@@ -259,7 +259,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
-  ierr = PetscOptionsGetBool(NULL,"-draw_vec_use_markers",&showmarkers,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_vec_use_markers",&showmarkers,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);

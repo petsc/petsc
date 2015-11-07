@@ -114,6 +114,9 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
+#if !defined(OMPI_WANT_MPI_INTERFACE_WARNING)
+#  define OMPI_WANT_MPI_INTERFACE_WARNING 0
+#endif
 #include <mpi.h>
 
 /*
@@ -1640,14 +1643,14 @@ PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
-PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
-PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
 #include <petscviewertypes.h>
 #include <petscoptions.h>
 
+
+PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscMemoryView(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);

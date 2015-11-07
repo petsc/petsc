@@ -72,7 +72,7 @@
 
 #include <petsc/finclude/petsc.h90>
 
-!$    integer, external :: omp_get_num_threads
+!$   integer, external :: omp_get_num_threads
 
       Mat, target :: Mcol_f_mat(MAXTHREADS)
       Vec, target :: Mcol_f_vecb(MAXTHREADS)

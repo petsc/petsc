@@ -31,9 +31,9 @@ int main(int argc,char **argv)
   PetscBool      flg,trans=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMSetDimension(da,3);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
 
   /* Test sbaij matrix */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-test_sbaij1", &flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-test_sbaij1", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat       sA;
     PetscBool issymm;
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
 
   /* check final residual */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-check_final_residual", &flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-check_final_residual", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Vec       b1;
     PetscReal norm;

@@ -25,12 +25,12 @@
    23 KSP Residual norm 0.00228274 
    24 KSP Residual norm 0.000332991 
    25 KSP Residual norm 0.000118315 
-   26 KSP Residual norm 2.77092e-05 
-   27 KSP Residual norm 2.72926e-05 
-   28 KSP Residual norm 4.59451e-06 
-   29 KSP Residual norm 3.991e-10 
+   26 KSP Residual norm 2.77106e-05 
+   27 KSP Residual norm 2.73117e-05 
+   28 KSP Residual norm 2.5595e-05 
+   29 KSP Residual norm 4.152e-10 
   Linear solve converged due to CONVERGED_RTOL iterations 29
-  1 SNES Function norm 1.93632e-09 
+  1 SNES Function norm 2.02233e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
   type: newtonls
@@ -53,7 +53,6 @@ SNES Object: 3 MPI processes
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
-    has attached null space
     using PRECONDITIONED norm type for convergence test
   PC Object:   3 MPI processes
     type: jacobi
@@ -66,33 +65,33 @@ SNES Object: 3 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 7 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 9.82e-11 [2.32e-11, 9.55e-11]
+L_2 Error: 7.36e-11 [2.38e-11, 6.97e-11]
 Solution
 Vec Object: 3 MPI processes
   type: mpi
 Process [0]
--1
+-1.
 0.125
-0
+0.
 -0.5
 0.03125
-0
+0.
 0.15625
 -0.0625
 0.28125
-0
+0.
 0.3125
 0.25
 0.15625
 0.1875
 Process [1]
 -0.5
-0
+0.
 0.5
-1
+1.
 0.625
 0.75
-0
+0.
 0.78125
 1.3125
 0.90625
@@ -102,7 +101,7 @@ Process [1]
 1.15625
 0.4375
 1.53125
-0
+0.
 0.8125
 0.375
 0.53125
@@ -110,15 +109,15 @@ Process [1]
 Process [2]
 -0.5
 0.5
-0
-0
-0
+0.
+0.
+0.
 0.5
 0.625
 -0.25
-0
+0.
 1.125
-0
+0.
 0.5
 0.78125
 -0.1875
@@ -127,7 +126,7 @@ Process [2]
 0.3125
 -0.125
 0.78125
-0
+0.
 0.90625
 -0.375
 0.8125

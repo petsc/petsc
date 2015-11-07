@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGS"
-PetscErrorCode KSPSetFromOptions_BCGS(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_BCGS(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
 

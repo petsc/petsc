@@ -44,7 +44,7 @@ PetscErrorCode  PCFactorSetReuseFill_LU(PC pc,PetscBool flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LU"
-static PetscErrorCode PCSetFromOptions_LU(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_LU          *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;

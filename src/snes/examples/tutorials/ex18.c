@@ -73,9 +73,9 @@ int main(int argc,char **argv)
   user.tleft  = 1.0;
   user.tright = 0.1;
   user.beta   = 2.5;
-  ierr        = PetscOptionsGetReal(NULL,"-tleft",&user.tleft,NULL);CHKERRQ(ierr);
-  ierr        = PetscOptionsGetReal(NULL,"-tright",&user.tright,NULL);CHKERRQ(ierr);
-  ierr        = PetscOptionsGetReal(NULL,"-beta",&user.beta,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,NULL,"-tleft",&user.tleft,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,NULL,"-tright",&user.tright,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,NULL,"-beta",&user.beta,NULL);CHKERRQ(ierr);
   user.bm1    = user.beta - 1.0;
   user.coef   = user.beta/2.0;
 

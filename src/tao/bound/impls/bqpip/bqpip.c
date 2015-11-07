@@ -519,7 +519,7 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BQPIP"
-static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
@@ -574,12 +574,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   if (!tao->max_it_changed) tao->max_it=100;
   if (!tao->max_funcs_changed) tao->max_funcs = 500;
 #if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol=1e-6;
-  if (!tao->frtol_changed) tao->frtol=1e-6;
   if (!tao->catol_changed) tao->catol=1e-6;
 #else
-  if (!tao->fatol_changed) tao->fatol=1e-12;
-  if (!tao->frtol_changed) tao->frtol=1e-12;
   if (!tao->catol_changed) tao->catol=1e-12;
 #endif
 

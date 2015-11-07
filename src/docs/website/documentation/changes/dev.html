@@ -97,35 +97,84 @@
       </div>
 
       <h4>General:</h4>
-         PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view
+      PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view
+      PetscOptionsSetValue() may now be called BEFORE PetscInitialize() and any options set then will be used in the initialization process. These options are overwritten by command line options.
+
+      The routines
+      PetscOptionsHasName(PetscOptions,const char[],const char[],PetscBool *);
+      PetscOptionsGetInt(PetscOptions,const char[],const char [],PetscInt *,PetscBool *);
+PetscOptionsGetBool(PetscOptions,const char[],const char [],PetscBool  *,PetscBool *);
+PetscOptionsGetReal(PetscOptions,const char[],const char[],PetscReal *,PetscBool *);
+PetscOptionsGetScalar(PetscOptions,const char[],const char[],PetscScalar *,PetscBool *);
+PetscOptionsGetIntArray(PetscOptions,const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
+PetscOptionsGetRealArray(PetscOptions,const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
+PetscOptionsGetScalarArray(PetscOptions,const char[],const char[],PetscScalar[],PetscInt *,PetscBool *);
+PetscOptionsGetBoolArray(PetscOptions,const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
+PetscOptionsGetString(PetscOptions,const char[],const char[],char[],size_t,PetscBool *);
+PetscOptionsGetStringArray(PetscOptions,const char[],const char[],char*[],PetscInt*,PetscBool *);
+PetscOptionsGetEList(PetscOptions,const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
+PetscOptionsGetEnum(PetscOptions,const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
+PetscOptionsGetEnumArray(PetscOptions,const char[],const char[],const char*const*,PetscEnum*,PetscInt *,PetscBool *);
+PetscOptionsSetAlias(PetscOptions,const char[],const char[]);
+PetscOptionsSetValue(PetscOptions,const char[],const char[]);
+PetscOptionsClearValue(PetscOptions,const char[]);
+PetscOptionsAllUsed(PetscOptions,PetscInt*);
+PetscOptionsUsed(PetscOptions,const char *,PetscBool*);
+PetscOptionsView(PetscOptions,PetscViewer);
+PetscOptionsInsert(PetscOptions,int*,char ***,const char[]);
+PetscOptionsInsertFile(MPI_Comm,PetscOptions,const char[],PetscBool );
+PetscOptionsInsertString(PetscOptions,const char[]);
+PetscOptionsPrefixPush(PetscOptions,const char[]);
+PetscOptionsReject(PetscOptions,const char[],const char[]);
+      PetscOptionsGetAll(PetscOptions,char*[]);
+
+      now take an optional PetscOptions object as the first argument, use NULL to get the previous behavior.
+      
       <h4>Configure/Build:</h4>
+      <ul>
+        <li>--download-package for externalpackage with a gitrepo will never be stale. Each time configure is invoked - it will do a 'git fetch' and 'git checkout commit-id'. And if the commit-id changes from the previous build - the package will be rebuilt. To prevent this sync [and use previous snapshot] - one can use --download-package-commit=HEAD</li>
+      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
-      For complex numbers VecNorm(v,NORM_1,) will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1 norm of the absolutely values of the complex entries. Previously it returned the 1 norm of the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most people expect the former.
+      <ul>
+        <li>For complex numbers VecNorm(v,NORM_1,) will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1 norm of the absolutely values of the complex entries. Previously it returned the 1 norm of the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most people expect the former.</li>
+      </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <h4>PC:</h4>
-         Added 
-         -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
-         -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())
-          see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG
-         Added PCTelescope which supports running solvers on sub-communicators. This PC allows re-partitioning of coarse levels solves within PCMG when using Galerkin coarse level operators.
+      <ul>
+        <li>Added -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())</li>
+        <li>Added -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())</li>
+        <li>see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG</li>
+        <li>Added PCTelescope which supports running solvers on sub-communicators. This PC allows re-partitioning of coarse levels solves within PCMG when using Galerkin coarse level operators.</li>
+      </ul>
       <h4>KSP:</h4>
-         KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
+      <ul>
+        <li>KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+      </ul>
       <h4>SNES:</h4>
-         SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
+      <ul>
+        <li>SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-         TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)    
+      <ul>
+        <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+      </ul>
       <h4>DM/DA:</h4>
-      Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()
+      <ul>
+        <li>Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()</li>
+      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
-        Replaced PetscViewerASCIISynchronizedAllow() with PetscViewerASCIIPushSynchronized() PetscViewerASCIIPopSynchronized()
+      <ul>
+        <li>Replaced PetscViewerASCIISynchronizedAllow() with PetscViewerASCIIPushSynchronized() PetscViewerASCIIPopSynchronized()</li>
+      </ul>
       <h4>SYS:</h4>
+      <h4>Tao:</h4> Removed convergence tolerances -tao_fatol and tao_frtol also remove these two parameters from TAOSetTolerance() and TaoGetTolerance()
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>

@@ -30,7 +30,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   /* Load the matrix */
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
@@ -55,8 +55,8 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* Test MatGetMultiProcBlock() */
-  ierr = PetscOptionsGetInt(NULL,"-nsubcomm",&nsubcomm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-subcomm_type",&type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nsubcomm",&nsubcomm,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-subcomm_type",&type,NULL);CHKERRQ(ierr);
 
   ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ int main(int argc,char **args)
   ierr = VecResetArray(subx);CHKERRQ(ierr);
   ierr = VecResetArray(subu);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
   if (flg && rank == id) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);

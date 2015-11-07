@@ -31,8 +31,8 @@ int main(int argc, char** argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Creat a matrix */
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
       if (size == 1) {
         v[i*ncols+j] = (PetscScalar)(i+j);  
       } else {
-        v[i*ncols+j] = (PetscScalar)rank;
+        v[i*ncols+j] = (PetscScalar)rank+j*0.1;
       }
     }
   }
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] local nrows %D, ncols %D\n",rank,nrows,ncols);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Test MatSetValues() by converting A to A_elemental */
   ierr = MatGetType(A,&type);CHKERRQ(ierr);
@@ -73,19 +73,18 @@ int main(int argc, char** argv)
   }
 
   if (isDense || isAIJ) {
+    Mat Aexplicit;
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &A_elemental);CHKERRQ(ierr);
-    //if (!rank) printf("\n Outplace MatConvert, A_elemental:\n");
-    //ierr = MatView(A_elemental,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(A_elemental,&Aexplicit);CHKERRQ(ierr);
+    ierr = MatMultEqual(Aexplicit,A_elemental,5,&flg);CHKERRQ(ierr); 
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Aexplicit != A_elemental.");
+    ierr = MatDestroy(&Aexplicit);CHKERRQ(ierr); 
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-    ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
-    //if (!rank) printf("\n Inplace MatConvert:\n");
-    //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-    /* Test accuracy */
-    ierr = MatMultEqual(A,A_elemental,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_elemental.");
-    ierr = MatDestroy(&A_elemental);CHKERRQ(ierr); 
+    ierr = MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A);CHKERRQ(ierr);
+    ierr = MatMultEqual(A_elemental,A,5,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A_elemental != A.");
+    ierr = MatDestroy(&A_elemental);CHKERRQ(ierr);
   }
 
   ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);

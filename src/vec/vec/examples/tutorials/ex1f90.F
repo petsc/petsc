@@ -60,7 +60,8 @@
       n     = 20
       ithree = 3
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+     &                        '-n',n,flg,ierr)
       nfloat = n
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -121,71 +122,71 @@
 #endif
          write(6,120)
       endif
- 100  format ("Vector length ",i6)
- 110  format ("Vector length ",3(i6))
- 120  format ("All other values should be near zero")
+ 100  format ('Vector length ',i6)
+ 110  format ('Vector length ',3(i6))
+ 120  format ('All other values should be near zero')
 
       call VecScale(x,two,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       v = abs(norm-2.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,130) v
- 130  format ("VecScale ",1pe8.2)
+ 130  format ('VecScale ',1pe8.2)
 
       call VecCopy(x,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-2.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,140) v
- 140  format ("VecCopy ",1pe8.2)
+ 140  format ('VecCopy ',1pe8.2)
 
       call VecAXPY(y,three,x,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = abs(norm-8.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,150) v
- 150  format ("VecAXPY ",1pe8.2)
+ 150  format ('VecAXPY ',1pe8.2)
 
       call VecAYPX(y,two,x,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = abs(norm-18.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,160) v
- 160  format ("VecAYXP ",1pe8.2)
+ 160  format ('VecAYXP ',1pe8.2)
 
       call VecSwap(x,y,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = abs(norm-2.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,170) v
- 170  format ("VecSwap ",1pe8.2)
+ 170  format ('VecSwap ',1pe8.2)
 
       call VecNorm(x,NORM_2,norm,ierr)
       v = abs(norm-18.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,180) v
- 180  format ("VecSwap ",1pe8.2)
+ 180  format ('VecSwap ',1pe8.2)
 
       call VecWAXPY(w,two,x,y,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-38.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,190) v
- 190  format ("VecWAXPY ",1pe8.2)
+ 190  format ('VecWAXPY ',1pe8.2)
 
       call VecPointwiseMult(w,y,x,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-36.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,200) v
- 200  format ("VecPointwiseMult ",1pe8.2)
+ 200  format ('VecPointwiseMult ',1pe8.2)
 
       call VecPointwiseDivide(w,x,y,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = abs(norm-9.0*sqrt(nfloat))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
       if (rank .eq. 0) write(6,210) v
- 210  format ("VecPointwiseDivide ",1pe8.2)
+ 210  format ('VecPointwiseDivide ',1pe8.2)
 
 
       dots(1) = one
@@ -203,7 +204,7 @@
       v2 = abs(norm-3.0*sqrt(nfloat))
       if (v2 .gt. -1.d-10 .and. v2 .lt. 1.d-10) v2 = 0.0
       if (rank .eq. 0) write(6,220) v,v1,v2
- 220  format ("VecMAXPY ",3(1pe8.2))
+ 220  format ('VecMAXPY ',3(1pe8.2))
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

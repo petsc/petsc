@@ -55,7 +55,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);
 PETSC_INTERN PetscErrorCode PCDestroy_MG(PC);
-PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC);
+PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_MG(PC,PetscViewer);
 PETSC_DEPRECATED("Use PCMGResidualDefault()") PETSC_STATIC_INLINE PetscErrorCode PCMGResidual_Default(Mat A,Vec b,Vec x,Vec r) {
   return PCMGResidualDefault(A,b,x,r);
