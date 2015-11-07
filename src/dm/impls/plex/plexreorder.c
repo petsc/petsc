@@ -194,12 +194,15 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscScalar    *coords, *coordsNew;
     const PetscInt *pperm;
     PetscInt        pStart, pEnd, p;
+    const char     *name;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(cdm, &csection);CHKERRQ(ierr);
     ierr = PetscSectionPermute(csection, perm, &csectionNew);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = VecDuplicate(coordinates, &coordinatesNew);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)coordinates,&name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)coordinatesNew,name);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(csectionNew, &pStart, &pEnd);CHKERRQ(ierr);
