@@ -140,6 +140,8 @@ PetscErrorCode MatSetOption_Elemental(Mat A,MatOption op,PetscBool flg)
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     break;
+  case MAT_SYMMETRIC:
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %s",MatOptions[op]);
   }
