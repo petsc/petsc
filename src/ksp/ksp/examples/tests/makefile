@@ -11,6 +11,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c  ex8.c ex10.c ex11.c ex14.c \
                 ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F90 ex52f.F ex54f.F
+DIRS            = benchmarkscatters
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

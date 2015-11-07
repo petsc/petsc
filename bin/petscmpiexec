@@ -47,6 +47,10 @@ set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 
 #echo $qrun $*
 
+if ! $?MPI_BINDING then
+  set MPI_BINDING=
+endif
+
 if ( ${valgrind} == "1" ) then
   if ! $?PETSCVALGRIND_OPTIONS then
     set PETSCVALGRIND_OPTIONS=
