@@ -3110,6 +3110,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
+  ierr = PetscObjectSetName(*dm,"Mesh");CHKERRQ(ierr);
   /* Setup test partitioning */
   if (user->testPartition) {
     PetscInt         triSizes_n2[2]       = {4, 4};
@@ -3155,6 +3156,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
+    ierr = PetscObjectSetName((PetscObject)dmDist,"Distributed Mesh");CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = dmDist;
   }
