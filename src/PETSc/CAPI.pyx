@@ -208,6 +208,19 @@ cdef api PetscTS PyPetscTS_Get(object arg) except ? NULL:
     retv = ob.ts
     return retv
 
+# -- TAO --
+
+cdef api object PyPetscTAO_New(PetscTAO arg):
+    cdef TAO retv = TAO()
+    setref(&retv.tao, arg)
+    return retv
+
+cdef api PetscTAO PyPetscTAO_Get(object arg) except ? NULL:
+    cdef PetscTAO retv = NULL
+    cdef TAO ob = <TAO?> arg
+    retv = ob.tao
+    return retv
+
 # -- AO --
 
 cdef api object PyPetscAO_New(PetscAO arg):
