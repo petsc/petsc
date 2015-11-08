@@ -1,10 +1,4 @@
 m = 1, N=81
-Mat Object: 1 MPI processes
-  type: seqaij
-  rows=36, cols=36
-  total: nonzeros=1296, allocated nonzeros=1296
-  total number of mallocs used during MatSetValues calls =0
-    using I-node routines: found 8 nodes, limit used is 5
 matrix 1 norm = 34.0627
   0 KSP Residual norm 85.383 
   1 KSP Residual norm 34.5131 
@@ -21,21 +15,4 @@ matrix 1 norm = 34.0627
  12 KSP Residual norm 0.976343 
  13 KSP Residual norm 0.869917 
  14 KSP Residual norm 0.443911 
-KSP Object: 1 MPI processes
-  type: gmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
-  maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
-  left preconditioning
-  using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
-  type: jacobi
-  linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes
-    type: seqaij
-    rows=36, cols=36
-    total: nonzeros=1296, allocated nonzeros=1296
-    total number of mallocs used during MatSetValues calls =0
-      using I-node routines: found 8 nodes, limit used is 5
 Norm of residual 8.8499 Number of iterations 14

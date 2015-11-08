@@ -51,6 +51,7 @@
 !     information.
 
       call PetscFinalize(ierr)
+      call MPI_Comm_free(PETSC_COMM_WORLD,ierr)
 
       call MPI_Comm_free(PETSC_COMM_WORLD,ierr)
 
