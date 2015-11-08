@@ -1101,35 +1101,36 @@ cdef class Mat(Object):
                                 reuse, &submat.mat) )
         return submat
 
-    def getSubMatrices(self, list isrows not None, list iscols not None, list submats=None):
+    def getSubMatrices(self, isrows not None, iscols=None, submats=None):
+        if iscols is None: iscols = isrows
+        isrows = [isrows] if isinstance(isrows, IS) else list(isrows)
+        iscols = [iscols] if isinstance(iscols, IS) else list(iscols)
         assert len(isrows) == len(iscols)
         cdef Py_ssize_t i, n = len(isrows)
-        cdef PetscInt cn = asInt(n)
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
-        cdef PetscMat *cmats   = NULL
         cdef PetscIS  *cisrows = NULL
         cdef PetscIS  *ciscols = NULL
-        cdef object tmp1, tmp2, tmp3
+        cdef PetscMat *cmats   = NULL
+        cdef object tmp1, tmp2
         cdef Mat mat
-        if submats:
-            submats = list(submats)
-            assert len(submats) == len(isrows)
-            reuse = MAT_REUSE_MATRIX
-            CHKERR( PetscMalloc(cn*sizeof(PetscMat), &cmats) )
         tmp1 = oarray_p(empty_p(n), NULL, <void**>&cisrows)
         for i from 0 <= i < n: cisrows[i] = (<IS?>isrows[i]).iset
         tmp2 = oarray_p(empty_p(n), NULL, <void**>&ciscols)
         for i from 0 <= i < n: ciscols[i] = (<IS?>iscols[i]).iset
-        tmp3 = oarray_p(empty_p(n), NULL, <void**>&cmats)
-        CHKERR( MatGetSubMatrices(self.mat, cn, cisrows, ciscols, reuse, &cmats) )
-        if submats is None:
-            submats = [None for _ in range(n)]
+        if submats is not None:
+            reuse = MAT_REUSE_MATRIX
+            submats = list(submats)
+            assert len(submats) == len(isrows)
+            CHKERR( PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats) )
+            for i from 0 <= i < n: cmats[i] = (<Mat?>submats[i]).mat
+        CHKERR( MatGetSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats) )
+        for i from 0 <= i < n: PetscINCREF(<PetscObject*>&cmats[i])
+        if reuse == MAT_INITIAL_MATRIX:
+            submats = [None] * n
             for i from 0 <= i < n:
-                mat = Mat()
+                submats[i] = mat = Mat()
                 mat.mat = cmats[i]
-                PetscINCREF(mat.obj)
-                submats[i] = mat
-        CHKERR( MatDestroyMatrices(cn, &cmats) )
+        CHKERR( MatDestroyMatrices(<PetscInt>n, &cmats) )
         return submats
 
     #
