@@ -999,13 +999,13 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)newmat)->options,((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetOption(newmat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_spd",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)newmat)->options,((PetscObject)newmat)->prefix,"-matload_spd",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -3843,7 +3843,7 @@ PetscErrorCode  MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   MatCheckPreallocated(mat,1);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)mat)->options,((PetscObject)mat)->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     newtype = mtype;
   }
@@ -8725,8 +8725,8 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscBool      viatranspose=PETSC_FALSE,viamatmatmatmult=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,NULL);CHKERRQ(ierr);
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);

@@ -292,7 +292,7 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_OWLQN"
-static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
   PetscErrorCode ierr;

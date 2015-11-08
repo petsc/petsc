@@ -70,7 +70,7 @@ int main(int argc, char **argv)
    Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
+   ierr = PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
    */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
 
   eimex_rowcol[0] = 0; eimex_rowcol[1] = 0; two = 2;
-  ierr = PetscOptionsGetIntArray(NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1");CHKERRQ(ierr);
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1]));CHKERRQ(ierr);

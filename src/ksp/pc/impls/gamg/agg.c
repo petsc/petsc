@@ -148,7 +148,7 @@ PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscInt n)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
-PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;

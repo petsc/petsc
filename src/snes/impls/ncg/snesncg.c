@@ -65,7 +65,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NCG"
-static PetscErrorCode SNESSetFromOptions_NCG(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NCG       *ncg = (SNES_NCG*)snes->data;
   PetscErrorCode ierr;

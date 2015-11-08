@@ -76,8 +76,8 @@ int main( int argc, char **argv )
   user.mx = 10; user.my = 10;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(MPI_COMM_WORLD,"\n---- Minimum Surface Area Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(MPI_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);
@@ -115,8 +115,8 @@ int main( int argc, char **argv )
      provided function FormHessian, or the default finite-difference driven Hessian
      functions
   */
-  ierr = PetscOptionsHasName(NULL,"-tao_fddefault",&fddefault);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-tao_fdcoloring",&fdcoloring);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-tao_fddefault",&fddefault);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-tao_fdcoloring",&fdcoloring);CHKERRQ(ierr);
 
 
   /*
@@ -153,7 +153,7 @@ int main( int argc, char **argv )
      If my_monitor option is in command line, then use the user-provided
      monitoring function
   */
-  ierr = PetscOptionsHasName(NULL,"-my_monitor",&viewmat);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-my_monitor",&viewmat);CHKERRQ(ierr);
   if (viewmat){
     ierr = TaoSetMonitor(tao,My_Monitor,NULL,NULL);CHKERRQ(ierr);
   }
@@ -717,25 +717,25 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   if (1==1){
     PetscReal scl = 1.0;
 
-    ierr = PetscOptionsGetReal(NULL,"-bottom",&scl,&flg);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-bottom",&scl,&flg);
    CHKERRQ(ierr);
     if (flg){
       for (i=0;i<bsize;i++) user->bottom[i]*=scl;
     }
 
-    ierr = PetscOptionsGetReal(NULL,"-top",&scl,&flg);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-top",&scl,&flg);
    CHKERRQ(ierr);
     if (flg){
       for (i=0;i<tsize;i++) user->top[i]*=scl;
     }
 
-    ierr = PetscOptionsGetReal(NULL,"-right",&scl,&flg);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-right",&scl,&flg);
    CHKERRQ(ierr);
     if (flg){
       for (i=0;i<rsize;i++) user->right[i]*=scl;
     }
 
-    ierr = PetscOptionsGetReal(NULL,"-left",&scl,&flg);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-left",&scl,&flg);
    CHKERRQ(ierr);
     if (flg){
       for (i=0;i<lsize;i++) user->left[i]*=scl;
@@ -766,8 +766,8 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool flg1,flg2;
   PetscFunctionBegin;
 
-  ierr = PetscOptionsGetReal(NULL,"-start",&start1,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-random",&start2,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-start",&start1,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-random",&start2,&flg2);CHKERRQ(ierr);
 
   if (flg1){ /* The zero vector is reasonable */
 

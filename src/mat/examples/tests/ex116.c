@@ -34,13 +34,13 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
-  ierr = PetscOptionsHasName(NULL, "-test_syev", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_syev", &flg);CHKERRQ(ierr);
   if (flg) {
     TestSYEVX = PETSC_FALSE;
   }
 
   /* Determine files from which we read the two matrices */
-  ierr = PetscOptionsGetString(NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
 
   /* Check whether A is symmetric */
-  ierr = PetscOptionsHasName(NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
@@ -95,7 +95,7 @@ PetscInt main(PetscInt argc,char **args)
   if (nevs <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%D, no eigensolution has found", nevs);
 
   /* View eigenvalues */
-  ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     printf(" %D evals: \n",nevs);
     for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)evals[i]);

@@ -84,7 +84,7 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Kaczmarz"
-PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
   PetscErrorCode ierr;

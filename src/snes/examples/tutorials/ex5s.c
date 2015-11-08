@@ -125,9 +125,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
   if (flg) fnc = FormFunctionFortran;
   else     fnc = FormFunction;
 

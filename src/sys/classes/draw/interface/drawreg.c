@@ -147,7 +147,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->port_yr = 1.0;
   draw->popup   = NULL;
 
-  ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
   draw->savefilename  = NULL;
   draw->savefilemovie = PETSC_FALSE;
@@ -206,7 +206,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   if (match) PetscFunctionReturn(0);
 
   /*  User requests no graphics */
-  ierr = PetscOptionsHasName(NULL,"-nox",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)draw)->options,NULL,"-nox",&flg);CHKERRQ(ierr);
 
   /*
      This is not ideal, but it allows codes to continue to run if X graphics
@@ -219,7 +219,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     if (match) {
       PetscBool dontwarn = PETSC_TRUE;
       flg  = PETSC_TRUE;
-      ierr = PetscOptionsHasName(NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
       if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     }
   }
@@ -350,7 +350,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
   if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;
   else {
-    ierr = PetscOptionsHasName(NULL,"-nox",&nox);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)draw)->options,NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
     if (!nox) def = PETSC_DRAW_WIN32;
@@ -361,7 +361,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #elif defined(PETSC_HAVE_OPENGLES)
     if (!nox) def = PETSC_DRAW_OPENGLES;
 #else
-    ierr = PetscOptionsHasName(NULL,"-nox_warning",&warn);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&warn);CHKERRQ(ierr);
     if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, OpenGL ES, or GLUT/OpenGL on this machine\nproceeding without graphics\n");
 #endif
   }
@@ -394,7 +394,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   ierr = PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL);CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)draw);CHKERRQ(ierr);
 
   ierr = PetscDrawViewFromOptions(draw,NULL,"-draw_view");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

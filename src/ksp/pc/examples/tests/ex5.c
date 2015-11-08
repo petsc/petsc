@@ -43,16 +43,16 @@ int main(int Argc,char **Args)
 
   PetscInitialize(&Argc,&Args,(char*)0,help);
 
-  ierr = PetscOptionsGetInt(NULL,"-x",&x_mesh,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-l",&levels,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-c",&cycles,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-smooths",&smooths,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-a",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-x",&x_mesh,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-l",&levels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-c",&cycles,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-smooths",&smooths,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-a",&flg);CHKERRQ(ierr);
 
   if (flg) am = PC_MG_ADDITIVE;
-  ierr = PetscOptionsHasName(NULL,"-f",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-f",&flg);CHKERRQ(ierr);
   if (flg) am = PC_MG_FULL;
-  ierr = PetscOptionsHasName(NULL,"-j",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) use_jacobi = 1;
 
   ierr = PetscMalloc1(levels,&N);CHKERRQ(ierr);

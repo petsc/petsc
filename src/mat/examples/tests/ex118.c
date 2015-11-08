@@ -57,7 +57,7 @@ int main(int argc,char **args)
   LAPACKstein_(&n,(PetscReal*)D,(PetscReal*)E,&nevs,(PetscReal*)evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info);
   /* View evals */
-  ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);CHKERRQ(ierr);
     for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i,(double)evals[i]);CHKERRQ(ierr);}

@@ -192,9 +192,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (user->constraints || user->tree || !user->useDA) {
       PetscInt cells[3] = {2, 2, 2};
 
-      ierr = PetscOptionsGetInt(NULL,"-da_grid_x",&cells[0],NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetInt(NULL,"-da_grid_y",&cells[1],NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetInt(NULL,"-da_grid_z",&cells[2],NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_x",&cells[0],NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_y",&cells[1],NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_z",&cells[2],NULL);CHKERRQ(ierr);
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
     } else {
       switch (user->dim) {
@@ -328,8 +328,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = PetscSectionSetChart(aSec,PetscMin(fStart,vStart),PetscMax(fEnd,vEnd));CHKERRQ(ierr);
 
     /* define the constraints */
-    ierr = PetscOptionsGetInt(NULL,"-da_grid_x",&edgesx,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-da_grid_y",&edgesy,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_x",&edgesx,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_y",&edgesy,NULL);CHKERRQ(ierr);
     vertsx = edgesx + 1;
     vertsy = edgesy + 1;
     numConst = vertsy + edgesy;

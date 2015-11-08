@@ -122,10 +122,12 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,      &
-     &     flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                        '-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                        '-my',my,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,  &
+     &                         '-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -164,8 +166,8 @@
 !  for the Jacobian.  See the users manual for a discussion of better
 !  techniques for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
-     &     matrix_free,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+     &                         '-snes_mf',matrix_free,ierr)
       if (.not. matrix_free) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER, &
      &        J,ierr)
@@ -176,8 +178,8 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = .false.
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_fd_coloring',     &
-     &                    fd_coloring,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                         '-snes_fd_coloring',fd_coloring,ierr)
       if (fd_coloring) then
 
 !

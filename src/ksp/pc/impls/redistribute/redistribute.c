@@ -275,7 +275,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redistribute"
-static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red = (PC_Redistribute*)pc->data;

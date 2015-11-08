@@ -29,10 +29,10 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-set_option_negidx", &set_option_negidx, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-set_values_negidx", &set_values_negidx, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-get_values_negidx", &get_values_negidx, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-set_option_negidx", &set_option_negidx, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-set_values_negidx", &set_values_negidx, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-get_values_negidx", &get_values_negidx, NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);

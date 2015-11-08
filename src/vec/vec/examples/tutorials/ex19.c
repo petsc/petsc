@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
   PetscInitialize(&argc, &argv, (char*) 0, help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-n", &n, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD, &x1);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x1, "TestVec");CHKERRQ(ierr);

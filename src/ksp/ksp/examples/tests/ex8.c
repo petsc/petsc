@@ -27,8 +27,8 @@ int main(int argc,char **args)
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -72,7 +72,7 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetBool(NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int main(int argc,char **args)
      must use runtime option '-mat_mumps_icntl_13 1' (turn off scaLAPACK for
      matrix inertia), currently there is no better way of setting this in program
   */
-  ierr = PetscOptionsInsertString("-mat_mumps_icntl_13 1");CHKERRQ(ierr);
+  ierr = PetscOptionsInsertString(NULL,"-mat_mumps_icntl_13 1");CHKERRQ(ierr);
 #else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Configure with MUMPS if you want to run this example in parallel");
@@ -115,8 +115,8 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* get inertia */
-  ierr = PetscOptionsGetBool(NULL,"-solve",&solve,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-sameA",&sameA,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-solve",&solve,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-sameA",&sameA,NULL);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
   ierr = MatGetInertia(F,&in,NULL,NULL);CHKERRQ(ierr);

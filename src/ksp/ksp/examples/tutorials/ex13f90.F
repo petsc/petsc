@@ -91,8 +91,10 @@
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+     &                        '-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+     &                        '-n',n,flg,ierr)
 
 !  Create the empty sparse matrix and linear solver data structures
 

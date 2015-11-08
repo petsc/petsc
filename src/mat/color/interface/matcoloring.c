@@ -226,7 +226,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   }
   ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)mc);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)mc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

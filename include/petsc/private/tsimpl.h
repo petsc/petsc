@@ -31,7 +31,7 @@ struct _TSOps {
   PetscErrorCode (*solve)(TS);
   PetscErrorCode (*interpolate)(TS,PetscReal,Vec);
   PetscErrorCode (*evaluatestep)(TS,PetscInt,Vec,PetscBool*);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,TS);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
   PetscErrorCode (*reset)(TS);
@@ -187,7 +187,7 @@ struct _TSAdaptOps {
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,TSAdapt);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSAdapt);
   PetscErrorCode (*load)(TSAdapt,PetscViewer);
 };
 

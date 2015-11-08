@@ -35,8 +35,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Only runs on one processor");
 
-  ierr = PetscOptionsGetString(NULL,"-fin",bfile,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",bfile,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,FILE_MODE_READ,&fd);CHKERRQ(ierr);

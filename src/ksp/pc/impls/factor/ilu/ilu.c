@@ -95,7 +95,7 @@ PetscErrorCode  PCFactorGetUseInPlace_ILU(PC pc,PetscBool *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ILU"
-static PetscErrorCode PCSetFromOptions_ILU(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       itmp;

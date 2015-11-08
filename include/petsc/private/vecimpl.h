@@ -66,7 +66,7 @@ struct _VecOps {
   PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode);
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-  PetscErrorCode (*setfromoptions)(PetscOptions*,Vec);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);

@@ -105,8 +105,10 @@
       one  = 1.0
       neg_one = -1.0
       ione    = 1
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
@@ -196,8 +198,8 @@
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
-     &             "-random_exact_sol",flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+     &             '-random_exact_sol',flg,ierr)
       if (flg) then
          call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
@@ -210,8 +212,8 @@
 
 !  View the exact solution vector if desired
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
-     &             "-view_exact_sol",flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+     &             '-view_exact_sol',flg,ierr)
       if (flg) then
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
@@ -250,8 +252,8 @@
 
 !  Set user-defined monitoring routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',  &
-     &                    flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                         '-my_ksp_monitor',flg,ierr)
       if (flg) then
         call KSPMonitorSet(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
      &                     PETSC_NULL_FUNCTION,ierr)
@@ -268,8 +270,8 @@
 
 !  Set convergence test routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
-     &     '-my_ksp_convergence',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                         '-my_ksp_convergence',flg,ierr)
       if (flg) then
         call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
      &          PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,ierr)

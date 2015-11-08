@@ -335,7 +335,7 @@ runex18:
 	   else printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex18_1.tmp
 runex19f:
-	-@${MPIEXEC} -n 1 ./ex19f -n 25 > ex19_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex19f  > ex19_1.tmp 2>&1;\
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex19f_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex19_1.tmp

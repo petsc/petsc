@@ -19,9 +19,9 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   bs   = size;
 
-  ierr = PetscOptionsGetInt(NULL,"-repeat",&repeat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-subset",&subset,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-repeat",&repeat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-subset",&subset,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n*bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);

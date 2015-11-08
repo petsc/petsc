@@ -25,12 +25,12 @@ int main(int argc,char **argv)
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-periodic_x",&wrap,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-periodic_y",&wrap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic_x",&wrap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic_y",&wrap,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMBoundaryType)bx,(DMBoundaryType)by,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,

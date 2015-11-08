@@ -1145,7 +1145,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   PetscFunctionBeginUser;
 
-  ierr = PetscOptionsGetBool(NULL,"-gnuplot",&output_gnuplot,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-gnuplot",&output_gnuplot,NULL);CHKERRQ(ierr);
     
   /* Generate the da for velocity and pressure */
   /*
@@ -1189,7 +1189,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = DMDASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,0.,0);CHKERRQ(ierr);
 
   /* define coefficients */
-  ierr = PetscOptionsGetInt(NULL,"-c_str",&coefficient_structure,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-c_str",&coefficient_structure,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
@@ -1237,7 +1237,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   }
 
   /* define the coefficients */
-  ierr = PetscOptionsGetBool(NULL,"-use_gp_coords",&use_gp_coords,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_gp_coords",&use_gp_coords,NULL);CHKERRQ(ierr);
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
@@ -1254,10 +1254,10 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_xc   = 0.5;
         opts_nz   = 1;
 
-        ierr = PetscOptionsGetReal(NULL,"-solcx_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-solcx_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-solcx_xc",&opts_xc,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetInt(NULL,"-solcx_nz",&opts_nz,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&opts_xc,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetInt(NULL,NULL,"-solcx_nz",&opts_nz,NULL);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -1281,10 +1281,10 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_dx   = 0.50;
         opts_dy   = 0.50;
 
-        ierr = PetscOptionsGetReal(NULL,"-sinker_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-sinker_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-sinker_dx",&opts_dx,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-sinker_dy",&opts_dy,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_dx",&opts_dx,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_dy",&opts_dy,NULL);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -1313,9 +1313,9 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_eta1 = 1.0;
         opts_r    = 0.25;
 
-        ierr = PetscOptionsGetReal(NULL,"-sinker_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-sinker_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(NULL,"-sinker_r",&opts_r,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-sinker_r",&opts_r,NULL);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -1350,16 +1350,16 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_dy   = 0.25;
         opts_phi  = 25;
 
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_r",&opts_r,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_c0x",&opts_c0x,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_c0y",&opts_c0y,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_s0x",&opts_s0x,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_s0y",&opts_s0y,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_dx",&opts_dx,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_dy",&opts_dy,NULL);CHKERRQ(ierr);
-        ierr      = PetscOptionsGetReal(NULL,"-sinker_phi",&opts_phi,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_r",&opts_r,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_c0x",&opts_c0x,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_c0y",&opts_c0y,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_s0x",&opts_s0x,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_s0y",&opts_s0y,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_dx",&opts_dx,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_dy",&opts_dy,NULL);CHKERRQ(ierr);
+        ierr      = PetscOptionsGetReal(NULL,NULL,"-sinker_phi",&opts_phi,NULL);CHKERRQ(ierr);
         opts_phi *= PETSC_PI / 180;
 
         for (p = 0; p < GAUSS_POINTS; p++) {
@@ -1465,7 +1465,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(NULL,"-o",filename,sizeof(filename),&set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-o",filename,sizeof(filename),&set);CHKERRQ(ierr);
   if (set) {
     char        *ext;
     PetscViewer viewer;
@@ -1501,10 +1501,10 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     opts_xc   = 0.5;
     opts_nz   = 1;
 
-    ierr = PetscOptionsGetReal(NULL,"-solcx_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(NULL,"-solcx_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(NULL,"-solcx_xc",&opts_xc,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-solcx_nz",&opts_nz,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&opts_eta1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&opts_xc,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-solcx_nz",&opts_nz,NULL);CHKERRQ(ierr);
 
     ierr = DMDACreateSolCx(opts_eta0,opts_eta1,opts_xc,opts_nz,mx,my,&da_Stokes_analytic,&X_analytic);CHKERRQ(ierr);
     if (output_gnuplot) {
@@ -1556,8 +1556,8 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 
   mx   = my = 10;
-  ierr = PetscOptionsGetInt(NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
 
   ierr = solve_stokes_2d_coupled(mx,my);CHKERRQ(ierr);
 

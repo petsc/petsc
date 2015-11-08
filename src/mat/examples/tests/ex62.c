@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Can only run on one processor");
 
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
   /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
@@ -35,7 +35,7 @@ int main(int argc,char **args)
      See the manpage for MatLoad() for available formats.
   */
   ierr = PetscStrcpy(type,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-mat_type",type,256,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-mat_type",type,256,NULL);CHKERRQ(ierr);
 
   /*
      Load the matrix and vector; then destroy the viewer.

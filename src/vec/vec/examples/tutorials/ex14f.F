@@ -81,8 +81,8 @@
 !     the local vector (lx) and the global vector (gx) share the same
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,    &
-     &                         ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-allocate',flag,ierr)
       if (flag) then
         call VecCreateGhostBlockWithArray(PETSC_COMM_WORLD,bs,nlocal,    &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)

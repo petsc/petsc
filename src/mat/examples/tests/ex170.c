@@ -147,7 +147,7 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   /* Use matrix to encode a graph */
-  ierr = PetscOptionsGetInt(NULL, "-testnum", &testnum, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL);CHKERRQ(ierr);
   ierr = CreateGraph(comm, testnum, &A);CHKERRQ(ierr);
   ierr = MatGetSize(A, &V, NULL);CHKERRQ(ierr);
   /* Replace matrix-vector multiplication with one that calculates the minimum rather than the sum */

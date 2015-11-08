@@ -16,7 +16,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
   PetscFunctionBegin;
   /* get the path for the Python interpreter executable */
   ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-python",pythonexe,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-python",pythonexe,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
   if (!flag || pythonexe[0]==0) {
     ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   }

@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */

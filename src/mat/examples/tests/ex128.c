@@ -29,9 +29,9 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m*n,m*n,m*n,m*n);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int main(int argc,char **args)
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
 
-  ierr = PetscOptionsHasName(NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
   if (CHOLESKY) {
     printf("Test CHOLESKY...\n");
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ int main(int argc,char **args)
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
   if (CHOLESKY) {
-    ierr = PetscOptionsHasName(NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
     if (TRIANGULAR) {
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(sA,b,ytmp);CHKERRQ(ierr);

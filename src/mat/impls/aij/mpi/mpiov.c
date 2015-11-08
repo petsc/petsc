@@ -1141,7 +1141,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     if (rowflag && colflag && nrow == C->rmap->N && ncol == C->cmap->N) {
       wantallmatrix = PETSC_TRUE;
 
-      ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)C)->options,((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
     }
   }
   ierr = MPIU_Allreduce(&wantallmatrix,&twantallmatrix,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);

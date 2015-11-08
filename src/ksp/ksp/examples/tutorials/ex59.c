@@ -940,9 +940,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->npy = 0;
   dd->npz = 0;
   dd->dim = 1;
-  ierr    = PetscOptionsGetInt (NULL,"-npx",&dd->npx,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-npy",&dd->npy,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-npz",&dd->npz,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-npx",&dd->npx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-npy",&dd->npy,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-npz",&dd->npz,NULL);CHKERRQ(ierr);
   if (dd->npy) dd->dim++;
   if (dd->npz) dd->dim++;
   /* Number of elements per dimension */
@@ -950,9 +950,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->nex = dd->npx;
   dd->ney = dd->npy;
   dd->nez = dd->npz;
-  ierr    = PetscOptionsGetInt (NULL,"-nex",&dd->nex,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-ney",&dd->ney,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-nez",&dd->nez,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-nex",&dd->nex,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-ney",&dd->ney,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-nez",&dd->nez,NULL);CHKERRQ(ierr);
   if (!dd->npy) {
     dd->ney=0;
     dd->nez=0;
@@ -960,20 +960,20 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   if (!dd->npz) dd->nez=0;
   /* Spectral degree */
   dd->p = 3;
-  ierr  = PetscOptionsGetInt (NULL,"-p",&dd->p,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-p",&dd->p,NULL);CHKERRQ(ierr);
   /* pure neumann problem? */
   dd->pure_neumann = PETSC_FALSE;
-  ierr             = PetscOptionsGetBool(NULL,"-pureneumann",&dd->pure_neumann,NULL);CHKERRQ(ierr);
+  ierr             = PetscOptionsGetBool(NULL,NULL,"-pureneumann",&dd->pure_neumann,NULL);CHKERRQ(ierr);
 
   /* How to enforce dirichlet boundary conditions (in case pureneumann has not been requested explicitly) */
   dd->DBC_zerorows = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL,"-usezerorows",&dd->DBC_zerorows,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-usezerorows",&dd->DBC_zerorows,NULL);CHKERRQ(ierr);
   if (dd->pure_neumann) dd->DBC_zerorows = PETSC_FALSE;
   dd->scalingfactor = 1.0;
 
   factor = 0.0;
-  ierr   = PetscOptionsGetInt(NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
   /* checkerboard pattern */
   dd->scalingfactor = PetscPowScalar(10.0,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */

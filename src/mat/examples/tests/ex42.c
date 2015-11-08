@@ -31,10 +31,10 @@ int main(int argc,char **args)
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-test_unsorted",&test_unsorted,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_unsorted",&test_unsorted,NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);

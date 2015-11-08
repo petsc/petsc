@@ -18,13 +18,13 @@ int main(int argc,char **argv)
   MatInfo        info;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsHasName(NULL,"-rect1",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-rect1",&flg);CHKERRQ(ierr);
   if (flg) {n += 2; rect = 1;}
-  ierr = PetscOptionsHasName(NULL,"-rect2",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-rect2",&flg);CHKERRQ(ierr);
   if (flg) {n -= 2; rect = 1;}
 
   /* Create and assemble matrix */
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Form matrix transpose */
-  ierr = PetscOptionsHasName(NULL,"-in_place",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
     ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   /* Test MatAXPY */
   if (mat && !rect) {
     PetscScalar alpha = 1.0;
-    ierr = PetscOptionsGetScalar(NULL,"-alpha",&alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetScalar(NULL,NULL,"-alpha",&alpha,NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
     ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

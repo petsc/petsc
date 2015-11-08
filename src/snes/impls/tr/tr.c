@@ -129,7 +129,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Set the stopping criteria to use the More' trick. */
-  ierr = PetscOptionsGetBool(NULL,"-snes_tr_ksp_regular_convergence_test",&conv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_tr_ksp_regular_convergence_test",&conv,NULL);CHKERRQ(ierr);
   if (!conv) {
     SNES_TR_KSPConverged_Ctx *ctx;
     ierr      = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -270,7 +270,7 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NEWTONTR"
-static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NEWTONTR  *ctx = (SNES_NEWTONTR*)snes->data;
   PetscErrorCode ierr;
