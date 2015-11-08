@@ -451,6 +451,7 @@ SWIG_From_dec(Type)(Type v) {
 %define SWIG_TYPECHECK_PETSC_PC            531 %enddef
 %define SWIG_TYPECHECK_PETSC_SNES          532 %enddef
 %define SWIG_TYPECHECK_PETSC_TS            533 %enddef
+%define SWIG_TYPECHECK_PETSC_TAO           534 %enddef
 
 %define SWIG_TYPECHECK_PETSC_AO            540 %enddef
 %define SWIG_TYPECHECK_PETSC_DM            541 %enddef
@@ -567,6 +568,7 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , PC          , PC                     , PETSC_PC            )
 %petsc4py_objt( Petsc , SNES        , SNES                   , PETSC_SNES          )
 %petsc4py_objt( Petsc , TS          , TS                     , PETSC_TS            )
+%petsc4py_objt( Petsc , TAO         , Tao                    , PETSC_TAO           )
 %petsc4py_objt( Petsc , AO          , AO                     , PETSC_AO            )
 %petsc4py_objt( Petsc , DM          , DM                     , PETSC_DM            )
 %petsc4py_objt( Petsc , Partitioner , PetscPartitioner       , PETSC_PARTITIONER   )
