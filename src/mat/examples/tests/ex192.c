@@ -129,7 +129,7 @@ int main(int argc,char **args)
 
   if (herm) { /* test also conversion routines inside the solver packages */
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatConvert(A,MATSEQSBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   }
 
   /* Test LU/Cholesky Factorization */
