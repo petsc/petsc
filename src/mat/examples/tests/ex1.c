@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscInt       m = 10,n = 10,i,j,rstart,rend,nrhs=2;
   PetscScalar    value = 1.0;
   Vec            x,y,b,ytmp;
-  PetscReal      norm,tol=1.e-15;
+  PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;
   PetscMPIInt    size;
   PetscScalar    *rhs_array,*solu_array;
   PetscRandom    rand;

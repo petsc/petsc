@@ -297,7 +297,9 @@ for dir in dirs:
     if os.path.splitext(dst)[1] == '.'+self.arLibSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
-      installName = dst.replace(self.destDir, self.installDir)
+      [output,err,flg] = self.executeShellCommand("otool -D "+src)
+      oldname = output[output.find("\n")+1:]
+      installName = oldname.replace(self.destDir, self.installDir)
       self.executeShellCommand('/usr/bin/install_name_tool -id ' + installName + ' ' + dst)
     # preserve the original timestamps - so that the .a vs .so time order is preserved
     shutil.copystat(src,dst)

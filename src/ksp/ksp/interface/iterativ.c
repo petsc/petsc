@@ -345,7 +345,7 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
   for (i=0; i<n; i++) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   ierr = VecRestoreArrayRead(resid,&r);CHKERRQ(ierr);
   ierr = VecDestroy(&resid);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
   *per = *per/N;
   PetscFunctionReturn(0);
 }
@@ -1206,6 +1206,9 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 +  ksp - the KSP context
 -  usrP - optional user context
 
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+
    Level: intermediate
 
 .keywords: KSP, set, application, context
@@ -1237,6 +1240,9 @@ PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
 
    Output Parameter:
 .  usrP - user context
+
+   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
 

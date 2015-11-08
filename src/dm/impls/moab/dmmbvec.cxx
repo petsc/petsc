@@ -458,7 +458,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
 //  lnative_vec=1; /* NOTE: Testing PETSc vector: will force to create native vector all the time */
 //  lnative_vec=0; /* NOTE: Testing MOAB vector: will force to create MOAB tag_iterate based vector all the time */
 #endif
-  ierr = MPI_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRQ(ierr);
 
   /* Create the MOAB internal data object */
   ierr = PetscNew(&vmoab);CHKERRQ(ierr);
@@ -598,7 +598,7 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,char** 
   ++n;
 
   /* Make sure that n is consistent across all processes */
-  ierr = MPI_Allreduce(&n,&global_n,1,MPI_INT,MPI_MAX,pcomm->comm());CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n,&global_n,1,MPI_INT,MPI_MAX,pcomm->comm());CHKERRQ(ierr);
 
   /* Set the new name accordingly and return */
   ierr = PetscSNPrintf(*tag_name, PETSC_MAX_PATH_LEN-1, "%s_%D", PVEC_PREFIX, global_n);CHKERRQ(ierr);

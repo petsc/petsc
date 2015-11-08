@@ -1,9 +1,9 @@
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 3 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -13,7 +13,7 @@ cap --> base:
 [0]: 4 ----> 0
 [0]: 5 ----> 0
 [0]: 6 ----> 0
-Max sizes cone: 3 support: 2
+[1] Max sizes cone: 3 support: 2
 [1]: 1 ----> 4
 [1]: 1 ----> 5
 [1]: 2 ----> 4
@@ -45,13 +45,13 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 -0.5 0
-  (   2) dim  2 offset   2 0 -0.5
-  (   3) dim  2 offset   4 0 0.5
+  (   1) dim  2 offset   0 -0.5 0.
+  (   2) dim  2 offset   2 0. -0.5
+  (   3) dim  2 offset   4 0. 0.5
 Process 1:
-  (   1) dim  2 offset   0 0 -0.5
-  (   2) dim  2 offset   2 0 0.5
-  (   3) dim  2 offset   4 0.5 0
+  (   1) dim  2 offset   0 0. -0.5
+  (   2) dim  2 offset   2 0. 0.5
+  (   3) dim  2 offset   4 0.5 0.
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -69,9 +69,9 @@ PetscSF Object: 2 MPI processes
 DM Object:Hybrid Mesh 2 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 3 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -81,7 +81,7 @@ cap --> base:
 [0]: 4 ----> 0
 [0]: 5 ----> 0
 [0]: 6 ----> 0
-Max sizes cone: 3 support: 2
+[1] Max sizes cone: 3 support: 2
 [1]: 1 ----> 4
 [1]: 1 ----> 5
 [1]: 2 ----> 4
@@ -113,13 +113,13 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 -0.5 0
-  (   2) dim  2 offset   2 0 -0.5
-  (   3) dim  2 offset   4 0 0.5
+  (   1) dim  2 offset   0 -0.5 0.
+  (   2) dim  2 offset   2 0. -0.5
+  (   3) dim  2 offset   4 0. 0.5
 Process 1:
-  (   1) dim  2 offset   0 0 -0.5
-  (   2) dim  2 offset   2 0 0.5
-  (   3) dim  2 offset   4 0.5 0
+  (   1) dim  2 offset   0 0. -0.5
+  (   2) dim  2 offset   2 0. 0.5
+  (   3) dim  2 offset   4 0.5 0.
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order

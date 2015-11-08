@@ -62,36 +62,6 @@ typedef struct {
   PetscInt dummy;
 } PetscPartitioner_Gather;
 
-/* This is an integer map, in addition it is also a container class
-   Design points:
-     - Low storage is the most important design point
-     - We want flexible insertion and deletion
-     - We can live with O(log) query, but we need O(1) iteration over strata
-*/
-struct _n_DMLabel {
-  PetscInt         refct;
-  PetscObjectState state;
-  char       *name;           /* Label name */
-  PetscInt    numStrata;      /* Number of integer values */
-  PetscInt   *stratumValues;  /* Value of each stratum */
-  /* Basic sorted array storage */
-  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
-  PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt  **points;         /* Points for each stratum, always sorted */
-  /* Hashtable for fast insertion */
-  PetscHashI *ht;             /* Hash table for fast insertion */
-  /* Index for fast search */
-  PetscInt    pStart, pEnd;   /* Bounds for index lookup */
-  PetscBT     bt;             /* A bit-wise index */
-};
-
-struct _n_PlexLabel {
-  DMLabel              label;
-  PetscBool            output;
-  struct _n_PlexLabel *next;
-};
-typedef struct _n_PlexLabel *PlexLabel;
-
 /* Utility struct to store the contents of a Gmsh file in memory */
 typedef struct {
   PetscInt dim;      /* Entity dimension */
@@ -171,8 +141,6 @@ typedef struct {
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
 
   /* Labels and numbering */
-  PlexLabel            labels;            /* Linked list of labels */
-  DMLabel              depthLabel;        /* Optimized access to depth label */
   PetscObjectState     depthState;        /* State of depth label, so that we can determine if a user changes it */
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
@@ -209,6 +177,7 @@ typedef struct {
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
+  PetscBool            useHashLocation;   /* Use grid hashing for point location */
   PetscGridHash        lbox;              /* Local box for searching */
 
   /* Debugging */
@@ -364,6 +333,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm, PetscInt 
   {
     PetscInt       dof;
     PetscErrorCode ierr;
+    *start = *end = 0; /* Silence overzealous compiler warning */
     if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
     ierr = PetscSectionGetOffset(dm->defaultSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(dm->defaultSection, point, &dof);CHKERRQ(ierr);
@@ -388,6 +358,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm, Pets
   {
     PetscInt       dof;
     PetscErrorCode ierr;
+    *start = *end = 0; /* Silence overzealous compiler warning */
     if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
     ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, start);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &dof);CHKERRQ(ierr);
@@ -412,6 +383,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
   {
     PetscErrorCode ierr;
     PetscInt       dof,cdof;
+    *start = *end = 0; /* Silence overzealous compiler warning */
     if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
     if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be crated automatically by DMGetDefaultGlobalSection()");
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
@@ -440,7 +412,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, Pet
   {
     PetscInt       loff, lfoff, fdof, fcdof, ffcdof, f;
     PetscErrorCode ierr;
-
+    *start = *end = 0; /* Silence overzealous compiler warning */
     if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
     if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be crated automatically by DMGetDefaultGlobalSection()");
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);

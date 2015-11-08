@@ -458,7 +458,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
           } else {            /* I'm stealing this local, owned by a ghost */
-            if (sgid != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold 0.0' if the matrix is structurally symmetric.");
+            if (sgid != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold -1.0' if the matrix is structurally symmetric.");
             ierr = PetscCDAppendID(aggs_2, lid, lidj+my0);CHKERRQ(ierr);
           }
         }
@@ -843,9 +843,9 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
   ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-/* ierr = MPI_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, comm); */
+/* ierr = MPIU_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, comm); */
 /* MatGetSize(a_Prol, &kk, &jj); */
-/* ierr = MPI_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, comm); */
+/* ierr = MPIU_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, comm); */
 /* PetscPrintf(comm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",rank,__FUNCT__,ii,kk/bs,ndone,jj); */
 
 #if defined(OUT_AGGS)

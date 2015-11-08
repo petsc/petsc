@@ -218,8 +218,8 @@ runex6:
 	-@${RM} -f ex6_1.tmp input.dat input.dat.info
 runex7:
 	-@${RM} -f input.dat input.dat.info
-	-@${MPIEXEC} -n 3 ./ex7 | sort |grep -v "MPI processes" > ex7_1.tmp 2>&1;\
-	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+	-@${MPIEXEC} -n 3 ./ex7 | sort -b |grep -v "MPI processes" > ex7_1.tmp 2>&1;\
+	   if (sort -b output/ex7_1.out | ${DIFF} - ex7_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi
 	-@${RM} -f ex7_1.tmp input.dat input.dat.info
 runex8:

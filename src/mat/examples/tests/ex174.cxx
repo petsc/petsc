@@ -28,7 +28,7 @@ int main(int argc,char **args)
   El::UpperOrLower uplo    = El::UPPER;
   El::SortType     sort    = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
   El::HermitianEigSubset<PetscElemScalar>       subset;
-  const El::HermitianEigCtrl<PetscElemScalar>   ctrl;
+  El::HermitianEigCtrl<PetscElemScalar>   ctrl;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -98,9 +98,7 @@ int main(int argc,char **args)
         printf(" Convert AIJ matrices A and B into Elemental matrix... \n");
       } else if (isSbaij) {
         printf(" Convert SBAIJ matrices A and B into Elemental matrix... \n");
-      } else {
-        SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
-      }
+      } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
     }
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);
     ierr = MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be);CHKERRQ(ierr);
@@ -159,7 +157,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&Be);CHKERRQ(ierr);
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-    ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
+    ierr = MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A);CHKERRQ(ierr);
     //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 

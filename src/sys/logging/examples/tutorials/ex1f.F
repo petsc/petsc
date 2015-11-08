@@ -105,7 +105,8 @@
          call  MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                             &
      &                       mod(rank-1+size,size),                                         &
      &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
-     &                       status, ierr)
+     &        status, ierr)
+         call MPI_Wait(req,MPI_STATUS_IGNORE,ierr)
          call PetscLogEventEnd(Lessons,ierr)
 
          if (role==TEACHER) then
@@ -220,6 +221,7 @@
      &                  mod(rank-1+size,size),                                              &
      &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
      &                   status, ierr)
+         call MPI_Wait(req,MPI_STATUS_IGNORE,ierr)
          call PetscLogEventEnd(Lessons,ierr)
 
          if (role==TEACHER) then
@@ -243,6 +245,8 @@
          call PetscLogEventEnd(Lessons,ierr)
 
       call PetscLogEventEnd(Morning,ierr)
+
+      deallocate(message)
 
       call PetscFinalize(ierr)
 

@@ -69,3 +69,43 @@ PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 }
 #endif
 
+/*@C
+      PetscIsNanReal - Returns an error code if the input double has a Not-a-number (Nan) value, otherwise 0.
+
+    Input Parameter:
+.     a - the floating point number
+
+     Notes: uses the C99 standard isinf() and isnan() on systems where they exist.
+      Otherwises uses ((a - a) != 0.0), note that some optimizing compiles compile
+      out this form, thus removing the check.
+
+     Level: beginner
+@*/
+#if defined(PETSC_USE_REAL___FLOAT128)
+PetscErrorCode PetscIsNanReal(PetscReal a)
+{
+  return isnanq(a);
+}
+#elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
+PetscErrorCode PetscIsNanReal(PetscReal a)
+{
+  return isnan(a);
+}
+#elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
+#if defined(PETSC_HAVE_FLOAT_H)
+#include <float.h>  /* Microsoft Windows defines _finite() in float.h */
+#endif
+#if defined(PETSC_HAVE_IEEEFP_H)
+#include <ieeefp.h>  /* Solaris prototypes these here */
+#endif
+PetscErrorCode PetscIsNanReal(PetscReal a)
+{
+  return _isnan(a);
+}
+#else
+PetscErrorCode PetscIsNanReal(PetscReal a)
+{
+  return ((a - a) != 0);
+}
+#endif
+

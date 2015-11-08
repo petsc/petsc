@@ -1,9 +1,9 @@
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 3 support: 7
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 7
 [0]: 30 ----> 3
 [0]: 30 ----> 29
 [0]: 31 ----> 0
@@ -88,7 +88,7 @@ cap --> base:
 [0]: 49 ----> 19
 [0]: 49 ----> 27
 [0]: 49 ----> 28
-Max sizes cone: 3 support: 7
+[1] Max sizes cone: 3 support: 7
 [1]: 30 ----> 0
 [1]: 30 ----> 1
 [1]: 30 ----> 2
@@ -345,47 +345,47 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  30) dim  2 offset   0 0 1
+  (  30) dim  2 offset   0 0. 1.
   (  31) dim  2 offset   2 -0.469897 -4.3257e-05
-  (  32) dim  2 offset   4 0 -0.333333
-  (  33) dim  2 offset   6 0 0.333333
-  (  34) dim  2 offset   8 0 -1
+  (  32) dim  2 offset   4 0. -0.333333
+  (  33) dim  2 offset   6 0. 0.333333
+  (  34) dim  2 offset   8 0. -1.
   (  35) dim  2 offset  10 -0.426591 -0.543806
-  (  36) dim  2 offset  12 0.666667 -1
-  (  37) dim  2 offset  14 1.33333 -1
+  (  36) dim  2 offset  12 0.666667 -1.
+  (  37) dim  2 offset  14 1.33333 -1.
   (  38) dim  2 offset  16 1.01667 -0.53219
-  (  39) dim  2 offset  18 0.666667 1
+  (  39) dim  2 offset  18 0.666667 1.
   (  40) dim  2 offset  20 0.679796 0.0425353
-  (  41) dim  2 offset  22 2 -0.333333
+  (  41) dim  2 offset  22 2. -0.333333
   (  42) dim  2 offset  24 1.55199 -0.593653
-  (  43) dim  2 offset  26 2 -1
+  (  43) dim  2 offset  26 2. -1.
   (  44) dim  2 offset  28 0.472626 -0.564598
   (  45) dim  2 offset  30 1.40994 -0.102742
-  (  46) dim  2 offset  32 2 0.333333
+  (  46) dim  2 offset  32 2. 0.333333
   (  47) dim  2 offset  34 1.21795 0.454625
-  (  48) dim  2 offset  36 2 1
-  (  49) dim  2 offset  38 1.33333 1
+  (  48) dim  2 offset  36 2. 1.
+  (  49) dim  2 offset  38 1.33333 1.
 Process 1:
-  (  30) dim  2 offset   0 -0.666667 1
+  (  30) dim  2 offset   0 -0.666667 1.
   (  31) dim  2 offset   2 -0.426084 0.543999
-  (  32) dim  2 offset   4 0 1
-  (  33) dim  2 offset   6 -1.33333 1
+  (  32) dim  2 offset   4 0. 1.
+  (  33) dim  2 offset   6 -1.33333 1.
   (  34) dim  2 offset   8 -0.993855 0.386707
   (  35) dim  2 offset  10 -1.56981 -0.543667
-  (  36) dim  2 offset  12 -1.33333 -1
+  (  36) dim  2 offset  12 -1.33333 -1.
   (  37) dim  2 offset  14 -0.996391 -0.385656
   (  38) dim  2 offset  16 -1.5693 0.544138
-  (  39) dim  2 offset  18 -2 0.333333
-  (  40) dim  2 offset  20 -2 1
-  (  41) dim  2 offset  22 -0.666667 -1
-  (  42) dim  2 offset  24 -2 -1
+  (  39) dim  2 offset  18 -2. 0.333333
+  (  40) dim  2 offset  20 -2. 1.
+  (  41) dim  2 offset  22 -0.666667 -1.
+  (  42) dim  2 offset  24 -2. -1.
   (  43) dim  2 offset  26 -0.469897 -4.3257e-05
-  (  44) dim  2 offset  28 0 -0.333333
-  (  45) dim  2 offset  30 0 0.333333
-  (  46) dim  2 offset  32 0 -1
+  (  44) dim  2 offset  28 0. -0.333333
+  (  45) dim  2 offset  30 0. 0.333333
+  (  46) dim  2 offset  32 0. -1.
   (  47) dim  2 offset  34 -0.426591 -0.543806
   (  48) dim  2 offset  36 -1.51932 0.000651568
-  (  49) dim  2 offset  38 -2 -0.333333
+  (  49) dim  2 offset  38 -2. -0.333333
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -407,239 +407,3 @@ PetscSF Object: 2 MPI processes
   [0]    35 <- 47
   [1] Roots referenced by my leaves, by rank
 DMs are not equal
-[0]Total space allocated 4800 bytes
-[ 0]16 bytes PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]400 bytes PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]800 bytes PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]288 bytes PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]208 bytes PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]400 bytes PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]288 bytes PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]400 bytes PetscSFSetUp_Basic() line 557 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFSetUp_Basic() line 557 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscSFSetUp_Basic() line 557 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFSetUp_Basic() line 557 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscSegBufferExtractAlloc() line 208 in /PETSc3/petsc/petsc-dev/src/sys/utils/segbuffer.c
-      [0]  PetscSegBufferExtractAlloc() line 208 in /PETSc3/petsc/petsc-dev/src/sys/utils/segbuffer.c
-      [0]  PetscCommBuildTwoSided_Ibarrier() line 99 in /PETSc3/petsc/petsc-dev/src/sys/utils/mpits.c
-      [0]  PetscCommBuildTwoSided() line 226 in /PETSc3/petsc/petsc-dev/src/sys/utils/mpits.c
-      [0]  PetscSFSetUp_Basic() line 541 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]64 bytes PetscSFCreate_Basic() line 1096 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFCreate_Basic() line 1096 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [0]  PetscSFSetType() line 124 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [0]  PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [0]  PetscObjectChangeTypeName() line 150 in /PETSc3/petsc/petsc-dev/src/sys/objects/pname.c
-      [0]  PetscSFSetType() line 124 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [0]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]208 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]208 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]400 bytes PetscSFSetGraph() line 329 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFSetGraph() line 329 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [0]  PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [0]  PetscObjectSetName() line 28 in /PETSc3/petsc/petsc-dev/src/sys/objects/pname.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]784 bytes PetscSFCreate() line 44 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  PetscSFCreate() line 44 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [0]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]208 bytes DMPlexStratifyMigrationSF() line 791 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexStratifyMigrationSF() line 791 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [0]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 0]16 bytes PetscCommDuplicate() line 148 in /PETSc3/petsc/petsc-dev/src/sys/objects/tagm.c
-      [0]  PetscCommDuplicate() line 148 in /PETSc3/petsc/petsc-dev/src/sys/objects/tagm.c
-      [0]  PetscHeaderCreate_Private() line 36 in /PETSc3/petsc/petsc-dev/src/sys/objects/inherit.c
-      [0]  DMCreate() line 35 in /PETSc3/petsc/petsc-dev/src/dm/interface/dm.c
-      [0]  DMPlexCreateExodus() line 89 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexexodusii.c
-      [0]  DMPlexCreateExodusFromFile() line 38 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexexodusii.c
-      [0]  DMPlexCreateFromFile() line 1646 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexcreate.c
-[1]Total space allocated 3184 bytes
-[ 1]16 bytes PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]400 bytes PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]288 bytes PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFReduceBegin_Basic() line 970 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFReduceBegin() line 1030 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexCreatePointSF() line 1315 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBasicGetPack() line 780 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [1]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]208 bytes PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBasicGetPack() line 779 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [1]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]288 bytes PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBasicGetPack() line 777 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBcastBegin_Basic() line 911 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [1]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscSFSetUp_Basic() line 557 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFSetUp_Basic() line 557 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [1]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]64 bytes PetscSFCreate_Basic() line 1096 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFCreate_Basic() line 1096 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/impls/basic/sfbasic.c
-      [1]  PetscSFSetType() line 124 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [1]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [1]  PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [1]  PetscObjectChangeTypeName() line 150 in /PETSc3/petsc/petsc-dev/src/sys/objects/pname.c
-      [1]  PetscSFSetType() line 124 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetUp() line 189 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFBcastBegin() line 963 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  ISLocalToGlobalMappingCreateSF() line 183 in /PETSc3/petsc/petsc-dev/src/vec/is/utils/isltog.c
-      [1]  DMPlexMigrate() line 1392 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]208 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]208 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetGraph() line 350 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]400 bytes PetscSFSetGraph() line 329 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFSetGraph() line 329 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [1]  PetscStrallocpy() line 188 in /PETSc3/petsc/petsc-dev/src/sys/utils/str.c
-      [1]  PetscObjectSetName() line 28 in /PETSc3/petsc/petsc-dev/src/sys/objects/pname.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]784 bytes PetscSFCreate() line 44 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  PetscSFCreate() line 44 in /PETSc3/petsc/petsc-dev/src/vec/is/sf/interface/sf.c
-      [1]  DMPlexStratifyMigrationSF() line 762 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]208 bytes DMPlexStratifyMigrationSF() line 791 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexStratifyMigrationSF() line 791 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-      [1]  DMPlexDistribute() line 1488 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexdistribute.c
-[ 1]16 bytes PetscCommDuplicate() line 148 in /PETSc3/petsc/petsc-dev/src/sys/objects/tagm.c
-      [1]  PetscCommDuplicate() line 148 in /PETSc3/petsc/petsc-dev/src/sys/objects/tagm.c
-      [1]  PetscHeaderCreate_Private() line 36 in /PETSc3/petsc/petsc-dev/src/sys/objects/inherit.c
-      [1]  DMCreate() line 35 in /PETSc3/petsc/petsc-dev/src/dm/interface/dm.c
-      [1]  DMPlexCreateExodus() line 89 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexexodusii.c
-      [1]  DMPlexCreateExodusFromFile() line 38 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexexodusii.c
-      [1]  DMPlexCreateFromFile() line 1646 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexcreate.c

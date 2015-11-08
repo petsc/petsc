@@ -436,7 +436,7 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mc,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Weight type: %s\n",MatColoringWeightTypes[mc->weight_type]);CHKERRQ(ierr);
     if (mc->maxcolors > 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d, Max. Colors %d\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %D, Max. Colors %D\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d\n",mc->dist);CHKERRQ(ierr);
     }

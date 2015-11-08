@@ -77,7 +77,7 @@ runex1f90:
 	   ${RM} -f ex1f90_0.tmp
 
 runex2f90:
-	-@${MPIEXEC} -n 1 ./ex2f90 > ex2f90_0.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex2f90 |grep -v DM_ > ex2f90_0.tmp 2>&1;\
 	   if (${DIFF} output/ex2f90_0.out ex2f90_0.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with runex2f90, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex2f90_0.tmp

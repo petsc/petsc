@@ -126,7 +126,7 @@
 !  Insert values into global vector
 
       call DMRestoreLocalVector(da,localX,ierr)
-      call PetscLogFlops(11.0*user%ym*user%xm,ierr)
+      call PetscLogFlops(11.0d0*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)

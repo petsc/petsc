@@ -661,22 +661,22 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /* sum7 += rho; */
 
   /* Output */
-  if (nu != NULL) {
+  if (nu) {
     *nu = Z;
   }
-  if (vel != NULL) {
+  if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (p != NULL) {
+  if (p) {
     (*p) = sum5;
   }
-  if (s != NULL) {
+  if (s) {
     s[0] = sum3;
     s[1] = sum4;
     s[2] = sum6;
   }
-  if (gamma != NULL) {
+  if (gamma) {
     /* sigma = tau - p, tau = sigma + p, tau[] = 2*eta*gamma[] */
     gamma[0] = (sum3+sum5)/(2.0*Z);
     gamma[1] = (sum4)/(2.0*Z);
@@ -2973,22 +2973,22 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   sum4 += u4;
 
   /* Output */
-  if (nu != NULL) {
+  if (nu) {
     *nu = Z;
   }
-  if (vel != NULL) {
+  if (vel) {
     vel[0] = sum1;
     vel[1] = sum2;
   }
-  if (p != NULL) {
+  if (p) {
     (*p) = sum5;
   }
-  if (s != NULL) {
+  if (s) {
     s[0] = sum3;
     s[1] = sum4;
     s[2] = sum6;
   }
-  if (gamma != NULL) {
+  if (gamma) {
     /* sigma = tau - p, tau = sigma + p, tau[] = 2*eta*gamma[] */
     gamma[0] = (sum3+sum5)/(2.0*Z);
     gamma[1] = (sum4)/(2.0*Z);
@@ -3103,13 +3103,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt    f;
 
     for (f = 0; f < 4; ++f) {
-      ierr = DMPlexGetStratumIS(*dm, "marker", ids[f],  &is);CHKERRQ(ierr);
-      ierr = DMPlexCreateLabel(*dm, names[f]);CHKERRQ(ierr);
-      ierr = DMPlexGetLabel(*dm, names[f], &label);CHKERRQ(ierr);
+      ierr = DMGetStratumIS(*dm, "marker", ids[f],  &is);CHKERRQ(ierr);
+      ierr = DMCreateLabel(*dm, names[f]);CHKERRQ(ierr);
+      ierr = DMGetLabel(*dm, names[f], &label);CHKERRQ(ierr);
       ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
+  ierr = PetscObjectSetName(*dm,"Mesh");CHKERRQ(ierr);
   /* Setup test partitioning */
   if (user->testPartition) {
     PetscInt         triSizes_n2[2]       = {4, 4};
@@ -3155,6 +3156,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
+    ierr = PetscObjectSetName((PetscObject)dmDist,"Distributed Mesh");CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = dmDist;
   }

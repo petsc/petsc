@@ -114,6 +114,9 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
+#if !defined(OMPI_WANT_MPI_INTERFACE_WARNING)
+#  define OMPI_WANT_MPI_INTERFACE_WARNING 0
+#endif
 #include <mpi.h>
 
 /*
@@ -2754,6 +2757,18 @@ PETSC_EXTERN PetscErrorCode PetscTextBelt(MPI_Comm,const char[],const char[],Pet
 
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],size_t,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
+
+
+#if defined(PETSC_USE_DEBUG)
+
+/*
+   Verify that all processes in the communicator have called this from the same line of code
+ */
+PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,const char*,const char *);
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,__FUNCT__,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
+#else
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
+#endif
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

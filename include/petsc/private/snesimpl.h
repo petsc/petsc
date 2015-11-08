@@ -262,7 +262,7 @@ extern const char SNESCitation[];
     if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
     else {\
       PetscBool domainerror;\
-      PetscErrorCode ierr = MPI_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
+      PetscErrorCode ierr = MPIU_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
       if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
       else              snes->reason = SNES_DIVERGED_FNORM_NAN;\
       PetscFunctionReturn(0);\
@@ -276,7 +276,7 @@ extern const char SNESCitation[];
     if (kspreason < 0) {\
       if (kspreason == KSP_DIVERGED_NANORINF) {\
         PetscBool domainerror;\
-        ierr = MPI_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr); \
+        ierr = MPIU_Allreduce((int*)&snes->domainerror,(int*)&domainerror,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr); \
         if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
         else              snes->reason = SNES_DIVERGED_LINEAR_SOLVE;                  \
         PetscFunctionReturn(0);\

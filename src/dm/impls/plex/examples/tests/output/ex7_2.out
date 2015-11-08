@@ -1,9 +1,9 @@
 DM Object:Interpolated Mesh 1 MPI processes
   type: plex
 Mesh 'Interpolated Mesh':
-Max sizes cone: 4 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 3
 [0]: 2 ----> 8
 [0]: 2 ----> 11
 [0]: 3 ----> 8
@@ -52,9 +52,9 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   2) dim  2 offset   0 -0.5 0
-  (   3) dim  2 offset   2 0 0
-  (   4) dim  2 offset   4 0 1
-  (   5) dim  2 offset   6 -0.5 1
-  (   6) dim  2 offset   8 0.5 0
-  (   7) dim  2 offset  10 0.5 1
+  (   2) dim  2 offset   0 -0.5 0.
+  (   3) dim  2 offset   2 0. 0.
+  (   4) dim  2 offset   4 0. 1.
+  (   5) dim  2 offset   6 -0.5 1.
+  (   6) dim  2 offset   8 0.5 0.
+  (   7) dim  2 offset  10 0.5 1.

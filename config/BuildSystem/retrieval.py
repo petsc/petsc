@@ -43,10 +43,35 @@ class Retriever(logger.Logger):
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(authUrl)
     return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location)
 
-  def genericRetrieve(self, url, root, name):
+  def genericRetrieve(self, url, root, package):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
 
+    # copy a directory
+    if url.startswith('dir://'):
+      import shutil
+      dir = url[6:]
+      if not os.path.isdir(dir): raise RuntimeError('Url begins with dir:// but is not a directory')
+
+      if os.path.isdir(os.path.join(root,os.path.basename(dir))): shutil.rmtree(os.path.join(root,os.path.basename(dir)))
+      if os.path.isfile(os.path.join(root,os.path.basename(dir))): os.unlink(os.path.join(root,os.path.basename(dir)))
+
+      shutil.copytree(dir,os.path.join(root,os.path.basename(dir)))
+      return
+
+    if url.startswith('git://'):
+      if not hasattr(self.sourceControl, 'git'): return
+      import shutil
+      dir = url[6:]
+      if os.path.isdir(dir):
+        if not os.path.isdir(os.path.join(dir,'.git')): raise RuntimeError('Url begins with git:// and is a directory but but does not have a .git subdirectory')
+
+      newgitrepo = os.path.join(root,'git.'+package)
+      if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
+      if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
+
+      config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo)
+      return
     # get the tarball file name from the URL
     filename = os.path.basename(urlparse.urlparse(url)[2])
     localFile = os.path.join(root,'_d_'+filename)
@@ -72,7 +97,7 @@ Unable to download package %s from: %s
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (name, url, filename, name.lower(), filename)
+''' % (package.upper(), url, filename, package, filename)
       raise RuntimeError(failureMessage)
 
     self.logPrint('Extracting '+localFile)
@@ -89,7 +114,7 @@ Downloaded package %s from: %s is not a tarball.
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (name, url, filename, name.lower(), filename)
+''' % (package.upper(), url, filename, package, filename)
       import tarfile
       try:
         tf  = tarfile.open(os.path.join(root, localFile))
@@ -148,154 +173,3 @@ Downloaded package %s from: %s is not a tarball.
       pass
 
 
-  # This is the old code for updating a BK repository
-  # Stamp used to be stored with a url
-  def bkUpdate(self):
-    if not self.stamp is None and url in self.stamp:
-      if not self.stamp[url] == self.bkHeadRevision(root):
-        raise RuntimeError('Existing stamp for '+url+' does not match revision of repository in '+root)
-    (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
-    if not wasAuth:
-      self.debugPrint('Changing parent from '+url+' --> '+authUrl, 1, 'install')
-      output = self.executeShellCommand('cd '+root+'; bk parent '+authUrl)
-    try:
-      self.testAuthorizedUrl(authUrl)
-      output = self.executeShellCommand('cd '+root+'; bk pull')
-    except RuntimeError, e:
-      (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
-      if wasAuth:
-        self.debugPrint('Changing parent from '+authUrl+' --> '+url, 1, 'install')
-        output = self.executeShellCommand('cd '+root+'; bk parent '+url)
-        output = self.executeShellCommand('cd '+root+'; bk pull')
-      else:
-        raise e
-    return
-
-  def bkClone(self, url, root, name):
-    '''Clone a Bitkeeper repository located at url into root/name
-       - If self.stamp exists, clone only up to that revision'''
-    failureMessage = '''\
-Unable to bk clone %s
-You may be off the network. Connect to the internet and run ./configure again
-or from the directory %s try:
-  bk clone %s
-and if that succeeds then rerun ./configure
-''' % (name, root, url, name)
-    try:
-      if not self.stamp is None and url in self.stamp:
-        (output, error, status) = self.executeShellCommand('bk clone -r'+self.stamp[url]+' '+url+' '+os.path.join(root, name))
-      else:
-        (output, error, status) = self.executeShellCommand('bk clone '+url+' '+os.path.join(root, name))
-    except RuntimeError, e:
-      status = 1
-      output = str(e)
-      error  = ''
-    if status:
-      if output.find('ommand not found') >= 0:
-        failureMessage = 'Unable to locate bk (Bitkeeper) to download repository; make sure bk is in your path'
-      elif output.find('Cannot resolve host') >= 0:
-        failureMessage = output+'\n'+error+'\n'+failureMessage
-      else:
-        (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-        try:
-          self.bkClone(urlparse.urlunparse(('http', location, path, parameters, query, fragment)), root, name)
-        except RuntimeError, e:
-          failureMessage += '\n'+str(e)
-        else:
-          return
-      raise RuntimeError(failureMessage)
-    return
-
-  def bkRetrieve(self, url, root, name):
-    if not hasattr(self.sourceControl, 'bk'):
-      raise RuntimeError('Cannot retrieve a BitKeeper repository since BK was not found')
-    self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via bk', 3, 'install')
-    (url, authUrl, wasAuth) = self.getAuthorizedUrl(url)
-    try:
-      self.testAuthorizedUrl(authUrl)
-      self.bkClone(authUrl, root, name)
-    except RuntimeError:
-      pass
-    else:
-      return
-    return self.bkClone(url, root, name)
-
-  def retrieve(self, url, root = None, canExist = 0, force = 0):
-    '''Retrieve the project corresponding to url
-    - If root is None, the local root directory is automatically determined. If the project
-      was already installed, this root is used. Otherwise a guess is made based upon the url.
-    - If canExist is True and the root exists, an update is done instead of a full download.
-      The canExist is automatically true if the project has been installed. The retrievalCanExist
-      flag can also be used to set this.
-    - If force is True, a full download is mandated.
-    Providing the root is an easy way to make a copy, for instance when making tarballs.
-    '''
-    if root is None:
-      root = self.getInstallRoot(url)
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    if hasattr(self,scheme+'Retrieve'):
-      getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist, force)
-    else:
-      raise RuntimeError('Invalid transport for retrieval: '+scheme)
-    return
-
-  ##############################################
-  # This is the old shit
-  ##############################################
-  def removeRoot(self, root, canExist, force = 0):
-    '''Returns 1 if removes root'''
-    if os.path.exists(root):
-      if canExist:
-        if force:
-          import shutil
-          shutil.rmtree(root)
-          return 1
-        else:
-          return 0
-      else:
-        raise RuntimeError('Root directory '+root+' already exists')
-    return 1
-
-  def getBKParentURL(self, root):
-    '''Return the parent URL for the BK repository at "root"'''
-    return self.executeShellCommand('cd '+root+'; bk parent')[21:]
-
-  def bkHeadRevision(self, root):
-    '''Return the last change set revision in the repository'''
-    return self.executeShellCommand('cd '+root+'; bk changes -and:REV: | head -1')
-
-  def bkfileRetrieve(self, url, root, canExist = 0, force = 0):
-    self.debugPrint('Retrieving '+url+' --> '+root+' via local bk', 3, 'install')
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    return self.bkRetrieve(urlparse.urlunparse(('file', location, path, parameters, query, fragment)), root, canExist, force)
-
-  def sshRetrieve(self, url, root, canExist = 0, force = 0):
-    command = 'hg clone '+url+' '+os.path.join(root,os.path.basename(url))
-    output  = config.base.Configure.executeShellCommand(command)
-    return root
-
-  def oldRetrieve(self, url, root = None, canExist = 0, force = 0):
-    '''Retrieve the project corresponding to url
-    - If root is None, the local root directory is automatically determined. If the project
-      was already installed, this root is used. Otherwise a guess is made based upon the url.
-    - If canExist is True and the root exists, an update is done instead of a full download.
-      The canExist is automatically true if the project has been installed. The retrievalCanExist
-      flag can also be used to set this.
-    - If force is True, a full download is mandated.
-    Providing the root is an easy way to make a copy, for instance when making tarballs.
-    '''
-    origUrl = url
-    url     = self.getMappedUrl(origUrl)
-    project = self.getInstalledProject(url)
-    if not project is None and root is None:
-      root     = project.getRoot()
-      canExist = 1
-    if root is None:
-      root = self.getInstallRoot(origUrl)
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    try:
-      if self.argDB['retrievalCanExist']:
-        canExist = 1
-      return getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist, force)
-    except AttributeError:
-      raise RuntimeError('Invalid transport for retrieval: '+scheme)

@@ -70,8 +70,8 @@ PetscErrorCode CreateSubmesh(DM dm, PetscBool start, DM *subdm)
 
   PetscFunctionBegin;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexCreateLabel(dm, "cells");CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(dm, "cells", &label);CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm, "cells");CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "cells", &label);CHKERRQ(ierr);
   ierr = DMLabelClearStratum(label, 1);CHKERRQ(ierr);
   if (start) {cStartSub = cStart; cEndSub = cEnd/2;}
   else       {cStartSub = cEnd/2; cEndSub = cEnd;}

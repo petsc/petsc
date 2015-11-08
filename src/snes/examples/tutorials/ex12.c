@@ -243,12 +243,12 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 /*
   In 3D for Dirichlet conditions we use exact solution:
 
-    u = x^2 + y^2 + z^2
-    f = 6
+    u = 2/3 (x^2 + y^2 + z^2)
+    f = 4
 
   so that
 
-    -\Delta u + f = -6 + 6 = 0
+    -\Delta u + f = -2/3 * 6 + 4 = 0
 
   For Neumann conditions, we have
 
@@ -265,7 +265,7 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 */
 PetscErrorCode quadratic_u_3d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  *u = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
+  *u = 2.0*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2])/3.0;
   return 0;
 }
 
@@ -374,8 +374,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (user->bcType == NEUMANN) {
     DMLabel label;
 
-    ierr = DMPlexCreateLabel(*dm, "boundary");CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
+    ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -403,12 +403,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     while (cdm) {
       PetscBool hasBdLabel;
 
-      ierr = DMPlexHasLabel(cdm, "marker", &hasBdLabel);CHKERRQ(ierr);
+      ierr = DMHasLabel(cdm, "marker", &hasBdLabel);CHKERRQ(ierr);
       if (!hasBdLabel) {
         DMLabel label;
 
-        ierr = DMPlexCreateLabel(cdm, "marker");CHKERRQ(ierr);
-        ierr = DMPlexGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
+        ierr = DMCreateLabel(cdm, "marker");CHKERRQ(ierr);
+        ierr = DMGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
         ierr = DMPlexMarkBoundaryFaces(cdm, label);CHKERRQ(ierr);
         ierr = DMPlexLabelComplete(cdm, label);CHKERRQ(ierr);
       }

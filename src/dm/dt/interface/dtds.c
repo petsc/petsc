@@ -1978,6 +1978,60 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSCopyEquations"
+/*@
+  PetscDSCopyEquations - Copy all pointwise function pointers to the new problem
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. newprob - The PetscDS copy
+
+  Level: intermediate
+
+.seealso: PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
+{
+  PetscInt       Nf, Ng, f, g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(newprob, &Ng);CHKERRQ(ierr);
+  if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    PetscPointFunc   obj;
+    PetscPointFunc   f0, f1;
+    PetscPointJac    g0, g1, g2, g3;
+    PetscBdPointFunc f0Bd, f1Bd;
+    PetscBdPointJac  g0Bd, g1Bd, g2Bd, g3Bd;
+    PetscRiemannFunc r;
+
+    ierr = PetscDSGetObjective(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetResidual(prob, f, &f0, &f1);CHKERRQ(ierr);
+    ierr = PetscDSGetBdResidual(prob, f, &f0Bd, &f1Bd);CHKERRQ(ierr);
+    ierr = PetscDSGetRiemannSolver(prob, f, &r);CHKERRQ(ierr);
+    ierr = PetscDSSetObjective(newprob, f, obj);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(newprob, f, f0, f1);CHKERRQ(ierr);
+    ierr = PetscDSSetBdResidual(newprob, f, f0Bd, f1Bd);CHKERRQ(ierr);
+    ierr = PetscDSSetRiemannSolver(newprob, f, r);CHKERRQ(ierr);
+    for (g = 0; g < Nf; ++g) {
+      ierr = PetscDSGetJacobian(prob, f, g, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
+      ierr = PetscDSGetBdJacobian(prob, f, g, &g0Bd, &g1Bd, &g2Bd, &g3Bd);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(newprob, f, g, g0, g1, g2, g3);CHKERRQ(ierr);
+      ierr = PetscDSSetBdJacobian(newprob, f, g, g0Bd, g1Bd, g2Bd, g3Bd);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSDestroy_Basic"
 static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {

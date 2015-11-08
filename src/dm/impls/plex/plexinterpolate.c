@@ -418,49 +418,6 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexCopyLabels"
-/*@
-  DMPlexCopyLabels - Copy labels from one mesh to another with a superset of the points
-
-  Collective on DM
-
-  Input Parameter:
-. dmA - The DMPlex object with initial labels
-
-  Output Parameter:
-. dmB - The DMPlex object with copied labels
-
-  Level: intermediate
-
-  Note: This is typically used when interpolating or otherwise adding to a mesh
-
-.keywords: mesh
-.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
-@*/
-PetscErrorCode DMPlexCopyLabels(DM dmA, DM dmB)
-{
-  PetscInt       numLabels, l;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (dmA == dmB) PetscFunctionReturn(0);
-  ierr = DMPlexGetNumLabels(dmA, &numLabels);CHKERRQ(ierr);
-  for (l = 0; l < numLabels; ++l) {
-    DMLabel     label, labelNew;
-    const char *name;
-    PetscBool   flg;
-
-    ierr = DMPlexGetLabelName(dmA, l, &name);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
-    if (flg) continue;
-    ierr = DMPlexGetLabel(dmA, name, &label);CHKERRQ(ierr);
-    ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
-    ierr = DMPlexAddLabel(dmB, labelNew);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexUninterpolate"
 /*@
   DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh

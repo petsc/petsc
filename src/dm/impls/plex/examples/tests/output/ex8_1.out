@@ -1,9 +1,9 @@
 DM Object:triangle 1 MPI processes
   type: plex
 Mesh 'triangle':
-Max sizes cone: 3 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -26,15 +26,15 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 -1 -1
-  (   2) dim  2 offset   2 1 -1
-  (   3) dim  2 offset   4 -1 1
+  (   1) dim  2 offset   0 -1. -1.
+  (   2) dim  2 offset   2 1. -1.
+  (   3) dim  2 offset   4 -1. 1.
 DM Object:triangle 1 MPI processes
   type: plex
 Mesh 'triangle':
-Max sizes cone: 3 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -57,15 +57,15 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 -1 -1 0
-  (   2) dim  3 offset   3 1 -1 0
-  (   3) dim  3 offset   6 -1 1 0
+  (   1) dim  3 offset   0 -1. -1. 0.
+  (   2) dim  3 offset   3 1. -1. 0.
+  (   3) dim  3 offset   6 -1. 1. 0.
 DM Object:triangle 1 MPI processes
   type: plex
 Mesh 'triangle':
-Max sizes cone: 3 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -88,15 +88,15 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0 -1 -1
-  (   2) dim  3 offset   3 0 1 -1
-  (   3) dim  3 offset   6 0 -1 1
+  (   1) dim  3 offset   0 0. -1. -1.
+  (   2) dim  3 offset   3 0. 1. -1.
+  (   3) dim  3 offset   6 0. -1. 1.
 DM Object:quadrilateral 1 MPI processes
   type: plex
 Mesh 'quadrilateral':
-Max sizes cone: 4 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 2
 [0]: 1 ----> 5
 [0]: 1 ----> 8
 [0]: 2 ----> 5
@@ -125,16 +125,16 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 -1 -1
-  (   2) dim  2 offset   2 1 -1
-  (   3) dim  2 offset   4 1 1
-  (   4) dim  2 offset   6 -1 1
+  (   1) dim  2 offset   0 -1. -1.
+  (   2) dim  2 offset   2 1. -1.
+  (   3) dim  2 offset   4 1. 1.
+  (   4) dim  2 offset   6 -1. 1.
 DM Object:quadrilateral 1 MPI processes
   type: plex
 Mesh 'quadrilateral':
-Max sizes cone: 4 support: 2
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 2
 [0]: 1 ----> 5
 [0]: 1 ----> 8
 [0]: 2 ----> 5
@@ -163,16 +163,16 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 -1 -1 0
-  (   2) dim  3 offset   3 1 -1 0
-  (   3) dim  3 offset   6 1 1 0
-  (   4) dim  3 offset   9 -1 1 0
+  (   1) dim  3 offset   0 -1. -1. 0.
+  (   2) dim  3 offset   3 1. -1. 0.
+  (   3) dim  3 offset   6 1. 1. 0.
+  (   4) dim  3 offset   9 -1. 1. 0.
 DM Object:tetrahedron 1 MPI processes
   type: plex
 Mesh 'tetrahedron':
-Max sizes cone: 4 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 11
 [0]: 1 ----> 12
@@ -233,16 +233,16 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 -1 -1 -1
-  (   2) dim  3 offset   3 -1 1 -1
-  (   3) dim  3 offset   6 1 -1 -1
-  (   4) dim  3 offset   9 -1 -1 1
+  (   1) dim  3 offset   0 -1. -1. -1.
+  (   2) dim  3 offset   3 -1. 1. -1.
+  (   3) dim  3 offset   6 1. -1. -1.
+  (   4) dim  3 offset   9 -1. -1. 1.
 DM Object:hexahedron 1 MPI processes
   type: plex
 Mesh 'hexahedron':
-Max sizes cone: 6 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 3
 [0]: 1 ----> 15
 [0]: 1 ----> 18
 [0]: 1 ----> 24
@@ -355,11 +355,11 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 -1 -1 -1
-  (   2) dim  3 offset   3 -1 1 -1
-  (   3) dim  3 offset   6 1 1 -1
-  (   4) dim  3 offset   9 1 -1 -1
-  (   5) dim  3 offset  12 -1 -1 1
-  (   6) dim  3 offset  15 1 -1 1
-  (   7) dim  3 offset  18 1 1 1
-  (   8) dim  3 offset  21 -1 1 1
+  (   1) dim  3 offset   0 -1. -1. -1.
+  (   2) dim  3 offset   3 -1. 1. -1.
+  (   3) dim  3 offset   6 1. 1. -1.
+  (   4) dim  3 offset   9 1. -1. -1.
+  (   5) dim  3 offset  12 -1. -1. 1.
+  (   6) dim  3 offset  15 1. -1. 1.
+  (   7) dim  3 offset  18 1. 1. 1.
+  (   8) dim  3 offset  21 -1. 1. 1.

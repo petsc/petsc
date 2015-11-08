@@ -1,9 +1,9 @@
 DM Object:Interpolated Mesh 1 MPI processes
   type: plex
 Mesh 'Interpolated Mesh':
-Max sizes cone: 6 support: 6
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 6
 [0]: 56 ----> 407
 [0]: 56 ----> 410
 [0]: 56 ----> 416
@@ -3670,126 +3670,126 @@ coordinates with 1 fields
 Process 0:
   (  56) dim  3 offset   0 -0.25 0.433013 0.5
   (  57) dim  3 offset   3 0.25 0.433013 0.5
-  (  58) dim  3 offset   6 0 1 0.5
-  (  59) dim  3 offset   9 -0.5 1 0.5
-  (  60) dim  3 offset  12 -0.25 0.433013 1
-  (  61) dim  3 offset  15 0.25 0.433013 1
-  (  62) dim  3 offset  18 0 1 1
-  (  63) dim  3 offset  21 -0.5 1 1
+  (  58) dim  3 offset   6 0. 1. 0.5
+  (  59) dim  3 offset   9 -0.5 1. 0.5
+  (  60) dim  3 offset  12 -0.25 0.433013 1.
+  (  61) dim  3 offset  15 0.25 0.433013 1.
+  (  62) dim  3 offset  18 0. 1. 1.
+  (  63) dim  3 offset  21 -0.5 1. 1.
   (  64) dim  3 offset  24 0.625878 0.519886 0.5
-  (  65) dim  3 offset  27 0.5 1 0.5
-  (  66) dim  3 offset  30 0.625878 0.519886 1
-  (  67) dim  3 offset  33 0.5 1 1
-  (  68) dim  3 offset  36 0.5 0 0.5
+  (  65) dim  3 offset  27 0.5 1. 0.5
+  (  66) dim  3 offset  30 0.625878 0.519886 1.
+  (  67) dim  3 offset  33 0.5 1. 1.
+  (  68) dim  3 offset  36 0.5 0. 0.5
   (  69) dim  3 offset  39 0.708626 0.173295 0.5
-  (  70) dim  3 offset  42 0.5 0 1
-  (  71) dim  3 offset  45 0.708626 0.173295 1
-  (  72) dim  3 offset  48 1 -0.5 0.5
-  (  73) dim  3 offset  51 1 0 0.5
-  (  74) dim  3 offset  54 1 -0.5 1
-  (  75) dim  3 offset  57 1 0 1
+  (  70) dim  3 offset  42 0.5 0. 1.
+  (  71) dim  3 offset  45 0.708626 0.173295 1.
+  (  72) dim  3 offset  48 1. -0.5 0.5
+  (  73) dim  3 offset  51 1. 0. 0.5
+  (  74) dim  3 offset  54 1. -0.5 1.
+  (  75) dim  3 offset  57 1. 0. 1.
   (  76) dim  3 offset  60 0.25 -0.433013 0.5
   (  77) dim  3 offset  63 0.583333 -0.644338 0.5
-  (  78) dim  3 offset  66 0.25 -0.433013 1
-  (  79) dim  3 offset  69 0.583333 -0.644338 1
-  (  80) dim  3 offset  72 0.5 -1 0.5
-  (  81) dim  3 offset  75 1 -1 0.5
-  (  82) dim  3 offset  78 0.5 -1 1
-  (  83) dim  3 offset  81 1 -1 1
-  (  84) dim  3 offset  84 0 -1 0.5
-  (  85) dim  3 offset  87 0 -1 1
-  (  86) dim  3 offset  90 -1 1 0.5
-  (  87) dim  3 offset  93 -1 0.5 0.5
-  (  88) dim  3 offset  96 -1 1 1
-  (  89) dim  3 offset  99 -1 0.5 1
-  (  90) dim  3 offset 102 -1 0 0.5
+  (  78) dim  3 offset  66 0.25 -0.433013 1.
+  (  79) dim  3 offset  69 0.583333 -0.644338 1.
+  (  80) dim  3 offset  72 0.5 -1. 0.5
+  (  81) dim  3 offset  75 1. -1. 0.5
+  (  82) dim  3 offset  78 0.5 -1. 1.
+  (  83) dim  3 offset  81 1. -1. 1.
+  (  84) dim  3 offset  84 0. -1. 0.5
+  (  85) dim  3 offset  87 0. -1. 1.
+  (  86) dim  3 offset  90 -1. 1. 0.5
+  (  87) dim  3 offset  93 -1. 0.5 0.5
+  (  88) dim  3 offset  96 -1. 1. 1.
+  (  89) dim  3 offset  99 -1. 0.5 1.
+  (  90) dim  3 offset 102 -1. 0. 0.5
   (  91) dim  3 offset 105 -0.5 -3.06162e-17 0.5
-  (  92) dim  3 offset 108 -1 0 1
-  (  93) dim  3 offset 111 -0.5 -6.12323e-17 1
-  (  94) dim  3 offset 114 -1 -0.5 0.5
-  (  95) dim  3 offset 117 -1 -1 0.5
-  (  96) dim  3 offset 120 -0.5 -1 0.5
+  (  92) dim  3 offset 108 -1. 0. 1.
+  (  93) dim  3 offset 111 -0.5 -6.12323e-17 1.
+  (  94) dim  3 offset 114 -1. -0.5 0.5
+  (  95) dim  3 offset 117 -1. -1. 0.5
+  (  96) dim  3 offset 120 -0.5 -1. 0.5
   (  97) dim  3 offset 123 -0.25 -0.433013 0.5
-  (  98) dim  3 offset 126 -1 -0.5 1
-  (  99) dim  3 offset 129 -1 -1 1
-  ( 100) dim  3 offset 132 -0.5 -1 1
-  ( 101) dim  3 offset 135 -0.25 -0.433013 1
-  ( 102) dim  3 offset 138 1 0.5 0.5
-  ( 103) dim  3 offset 141 1 0.5 1
-  ( 104) dim  3 offset 144 1 1 0.5
-  ( 105) dim  3 offset 147 1 1 1
-  ( 106) dim  3 offset 150 -0.25 0.433013 0
+  (  98) dim  3 offset 126 -1. -0.5 1.
+  (  99) dim  3 offset 129 -1. -1. 1.
+  ( 100) dim  3 offset 132 -0.5 -1. 1.
+  ( 101) dim  3 offset 135 -0.25 -0.433013 1.
+  ( 102) dim  3 offset 138 1. 0.5 0.5
+  ( 103) dim  3 offset 141 1. 0.5 1.
+  ( 104) dim  3 offset 144 1. 1. 0.5
+  ( 105) dim  3 offset 147 1. 1. 1.
+  ( 106) dim  3 offset 150 -0.25 0.433013 0.
   ( 107) dim  3 offset 153 0.25 0.433013 1.38778e-17
-  ( 108) dim  3 offset 156 0 1 0
-  ( 109) dim  3 offset 159 -0.5 1 0
+  ( 108) dim  3 offset 156 0. 1. 0.
+  ( 109) dim  3 offset 159 -0.5 1. 0.
   ( 110) dim  3 offset 162 0.625878 0.519886 2.71653e-18
-  ( 111) dim  3 offset 165 0.5 1 0
-  ( 112) dim  3 offset 168 0.5 0 0
+  ( 111) dim  3 offset 165 0.5 1. 0.
+  ( 112) dim  3 offset 168 0.5 0. 0.
   ( 113) dim  3 offset 171 0.708626 0.173295 2.00929e-18
-  ( 114) dim  3 offset 174 1 -0.5 0
-  ( 115) dim  3 offset 177 1 0 0
-  ( 116) dim  3 offset 180 0.25 -0.433013 0
+  ( 114) dim  3 offset 174 1. -0.5 0.
+  ( 115) dim  3 offset 177 1. 0. 0.
+  ( 116) dim  3 offset 180 0.25 -0.433013 0.
   ( 117) dim  3 offset 183 0.583333 -0.644338 -9.71055e-20
-  ( 118) dim  3 offset 186 0.5 -1 0
-  ( 119) dim  3 offset 189 1 -1 0
-  ( 120) dim  3 offset 192 0 -1 0
-  ( 121) dim  3 offset 195 -1 1 0
-  ( 122) dim  3 offset 198 -1 0.5 0
-  ( 123) dim  3 offset 201 -1 0 0
-  ( 124) dim  3 offset 204 -0.5 0 0
-  ( 125) dim  3 offset 207 -1 -0.5 0
-  ( 126) dim  3 offset 210 -1 -1 0
-  ( 127) dim  3 offset 213 -0.5 -1 0
-  ( 128) dim  3 offset 216 -0.25 -0.433013 0
-  ( 129) dim  3 offset 219 1 0.5 0
-  ( 130) dim  3 offset 222 1 1 0
+  ( 118) dim  3 offset 186 0.5 -1. 0.
+  ( 119) dim  3 offset 189 1. -1. 0.
+  ( 120) dim  3 offset 192 0. -1. 0.
+  ( 121) dim  3 offset 195 -1. 1. 0.
+  ( 122) dim  3 offset 198 -1. 0.5 0.
+  ( 123) dim  3 offset 201 -1. 0. 0.
+  ( 124) dim  3 offset 204 -0.5 0. 0.
+  ( 125) dim  3 offset 207 -1. -0.5 0.
+  ( 126) dim  3 offset 210 -1. -1. 0.
+  ( 127) dim  3 offset 213 -0.5 -1. 0.
+  ( 128) dim  3 offset 216 -0.25 -0.433013 0.
+  ( 129) dim  3 offset 219 1. 0.5 0.
+  ( 130) dim  3 offset 222 1. 1. 0.
   ( 131) dim  3 offset 225 -0.25 0.433013 -0.5
   ( 132) dim  3 offset 228 0.25 0.433013 -0.5
-  ( 133) dim  3 offset 231 0 1 -0.5
-  ( 134) dim  3 offset 234 -0.5 1 -0.5
+  ( 133) dim  3 offset 231 0. 1. -0.5
+  ( 134) dim  3 offset 234 -0.5 1. -0.5
   ( 135) dim  3 offset 237 0.625878 0.519886 -0.5
-  ( 136) dim  3 offset 240 0.5 1 -0.5
-  ( 137) dim  3 offset 243 0.5 0 -0.5
+  ( 136) dim  3 offset 240 0.5 1. -0.5
+  ( 137) dim  3 offset 243 0.5 0. -0.5
   ( 138) dim  3 offset 246 0.708626 0.173295 -0.5
-  ( 139) dim  3 offset 249 1 -0.5 -0.5
-  ( 140) dim  3 offset 252 1 0 -0.5
+  ( 139) dim  3 offset 249 1. -0.5 -0.5
+  ( 140) dim  3 offset 252 1. 0. -0.5
   ( 141) dim  3 offset 255 0.25 -0.433013 -0.5
   ( 142) dim  3 offset 258 0.583333 -0.644338 -0.5
-  ( 143) dim  3 offset 261 0.5 -1 -0.5
-  ( 144) dim  3 offset 264 1 -1 -0.5
-  ( 145) dim  3 offset 267 0 -1 -0.5
-  ( 146) dim  3 offset 270 -1 1 -0.5
-  ( 147) dim  3 offset 273 -1 0.5 -0.5
-  ( 148) dim  3 offset 276 -1 0 -0.5
+  ( 143) dim  3 offset 261 0.5 -1. -0.5
+  ( 144) dim  3 offset 264 1. -1. -0.5
+  ( 145) dim  3 offset 267 0. -1. -0.5
+  ( 146) dim  3 offset 270 -1. 1. -0.5
+  ( 147) dim  3 offset 273 -1. 0.5 -0.5
+  ( 148) dim  3 offset 276 -1. 0. -0.5
   ( 149) dim  3 offset 279 -0.5 3.06162e-17 -0.5
-  ( 150) dim  3 offset 282 -1 -0.5 -0.5
-  ( 151) dim  3 offset 285 -1 -1 -0.5
-  ( 152) dim  3 offset 288 -0.5 -1 -0.5
+  ( 150) dim  3 offset 282 -1. -0.5 -0.5
+  ( 151) dim  3 offset 285 -1. -1. -0.5
+  ( 152) dim  3 offset 288 -0.5 -1. -0.5
   ( 153) dim  3 offset 291 -0.25 -0.433013 -0.5
-  ( 154) dim  3 offset 294 1 0.5 -0.5
-  ( 155) dim  3 offset 297 1 1 -0.5
-  ( 156) dim  3 offset 300 -0.25 0.433013 -1
-  ( 157) dim  3 offset 303 0.25 0.433013 -1
-  ( 158) dim  3 offset 306 0 1 -1
-  ( 159) dim  3 offset 309 -0.5 1 -1
-  ( 160) dim  3 offset 312 0.625701 0.51915 -1
-  ( 161) dim  3 offset 315 0.5 1 -1
-  ( 162) dim  3 offset 318 0.5 0 -1
-  ( 163) dim  3 offset 321 0.708567 0.17305 -1
-  ( 164) dim  3 offset 324 1 -0.5 -1
-  ( 165) dim  3 offset 327 1 0 -1
-  ( 166) dim  3 offset 330 0.25 -0.433013 -1
-  ( 167) dim  3 offset 333 0.583333 -0.644338 -1
-  ( 168) dim  3 offset 336 0.5 -1 -1
-  ( 169) dim  3 offset 339 1 -1 -1
-  ( 170) dim  3 offset 342 0 -1 -1
-  ( 171) dim  3 offset 345 -1 1 -1
-  ( 172) dim  3 offset 348 -1 0.5 -1
-  ( 173) dim  3 offset 351 -1 0 -1
-  ( 174) dim  3 offset 354 -0.5 6.12323e-17 -1
-  ( 175) dim  3 offset 357 -1 -0.5 -1
-  ( 176) dim  3 offset 360 -1 -1 -1
-  ( 177) dim  3 offset 363 -0.5 -1 -1
-  ( 178) dim  3 offset 366 -0.25 -0.433013 -1
-  ( 179) dim  3 offset 369 1 0.5 -1
-  ( 180) dim  3 offset 372 1 1 -1
+  ( 154) dim  3 offset 294 1. 0.5 -0.5
+  ( 155) dim  3 offset 297 1. 1. -0.5
+  ( 156) dim  3 offset 300 -0.25 0.433013 -1.
+  ( 157) dim  3 offset 303 0.25 0.433013 -1.
+  ( 158) dim  3 offset 306 0. 1. -1.
+  ( 159) dim  3 offset 309 -0.5 1. -1.
+  ( 160) dim  3 offset 312 0.625701 0.51915 -1.
+  ( 161) dim  3 offset 315 0.5 1. -1.
+  ( 162) dim  3 offset 318 0.5 0. -1.
+  ( 163) dim  3 offset 321 0.708567 0.17305 -1.
+  ( 164) dim  3 offset 324 1. -0.5 -1.
+  ( 165) dim  3 offset 327 1. 0. -1.
+  ( 166) dim  3 offset 330 0.25 -0.433013 -1.
+  ( 167) dim  3 offset 333 0.583333 -0.644338 -1.
+  ( 168) dim  3 offset 336 0.5 -1. -1.
+  ( 169) dim  3 offset 339 1. -1. -1.
+  ( 170) dim  3 offset 342 0. -1. -1.
+  ( 171) dim  3 offset 345 -1. 1. -1.
+  ( 172) dim  3 offset 348 -1. 0.5 -1.
+  ( 173) dim  3 offset 351 -1. 0. -1.
+  ( 174) dim  3 offset 354 -0.5 6.12323e-17 -1.
+  ( 175) dim  3 offset 357 -1. -0.5 -1.
+  ( 176) dim  3 offset 360 -1. -1. -1.
+  ( 177) dim  3 offset 363 -0.5 -1. -1.
+  ( 178) dim  3 offset 366 -0.25 -0.433013 -1.
+  ( 179) dim  3 offset 369 1. 0.5 -1.
+  ( 180) dim  3 offset 372 1. 1. -1.

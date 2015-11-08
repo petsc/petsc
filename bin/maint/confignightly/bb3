@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=bb-proxy
-set USR=balay
-set LOC=/sandbox/balay/${RNAME}-3
-set CONF=arch-c-exodus-dbg-builder

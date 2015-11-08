@@ -154,7 +154,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
           }
         }
         ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
-        ierr = DMPlexSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
       }
       ierr = PetscFree2(cs_connect,cone);CHKERRQ(ierr);
     }
@@ -170,8 +170,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     {
       DMLabel label;
 
-      ierr = DMPlexRemoveLabel(*dm, "Cell Sets", &label);CHKERRQ(ierr);
-      if (label) {ierr = DMPlexAddLabel(idm, label);CHKERRQ(ierr);}
+      ierr = DMRemoveLabel(*dm, "Cell Sets", &label);CHKERRQ(ierr);
+      if (label) {ierr = DMAddLabel(idm, label);CHKERRQ(ierr);}
     }
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
@@ -195,7 +195,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = PetscMalloc1(num_vertex_in_set, &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
       for (v = 0; v < num_vertex_in_set; ++v) {
-        ierr = DMPlexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
       ierr = PetscFree(vs_vertex_list);CHKERRQ(ierr);
     }
@@ -266,7 +266,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         }
         ierr = DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
         if (numFaces != 1) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %d faces", f, fs, numFaces);
-        ierr = DMPlexSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
       }
       ierr = PetscFree2(fs_vertex_count_list,fs_vertex_list);CHKERRQ(ierr);

@@ -124,7 +124,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     DMLabel  label;
     PetscInt i;
 
-    ierr = DMPlexCreateLabel(dm, "depth");CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "depth");CHKERRQ(ierr);
     ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
     for (i = 0; i < 25; ++i) {
       if (i < 2)       {ierr = DMLabelSetValue(label, i, 3);CHKERRQ(ierr);}

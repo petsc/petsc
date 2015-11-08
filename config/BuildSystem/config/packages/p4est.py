@@ -3,9 +3,8 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'petsc'
-    self.giturls           = ['https://github.com/tisaac/p4est'] # Switch to Toby's petsc branch during development: switch back to a stable release when ready
-    self.download          = ['GitOnly']
+    self.gitcommit         = 'origin/petsc'
+    self.download          = ['git://https://github.com/tisaac/p4est'] # Switch to Toby's petsc branch during development: switch back to a stable release when ready
     self.functions         = ['p4est_init']
     self.includes          = ['p4est_bits.h']
     self.liblist           = [['libp4est.a', 'libsc.a']]
@@ -32,8 +31,9 @@ class Configure(config.package.GNUPackage):
     args.append('--enable-mpi')
     return args
 
-  def getDir(self, retry = 1):
-    Dir = config.package.GNUPackage.getDir(self,retry)
+  def updateGitDir(self):
+    config.package.GNUPackage.updateGitDir(self)
+    Dir = self.getDir()
     try:
       libsc = self.libsc
     except AttributeError:
@@ -46,7 +46,7 @@ class Configure(config.package.GNUPackage):
           raise RuntimeError
       except RuntimeError:
         raise RuntimeError('Could not initialize sc submodule needed by p4est')
-    return Dir
+    return
 
   def Install(self):
     '''bootstrap, then standar GNU configure; make; make install'''

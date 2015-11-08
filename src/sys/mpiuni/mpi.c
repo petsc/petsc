@@ -24,6 +24,9 @@ int  MPIUNI_DATASIZE[10] = {sizeof(int),sizeof(float),sizeof(double),2*sizeof(do
 
 */
 #define MAX_ATTR 128
+#define MAX_COMM 128
+
+static int MaxComm = 2;
 
 typedef struct {
   void *attribute_val;
@@ -36,8 +39,9 @@ typedef struct {
 } MPI_Attr_keyval;
 
 static MPI_Attr_keyval attr_keyval[MAX_ATTR];
-static MPI_Attr        attr[4][MAX_ATTR];
+static MPI_Attr        attr[MAX_COMM][MAX_ATTR];
 static int             num_attr = 1,mpi_tag_ub = 100000000;
+static void*           MPIUNIF_mpi_in_place = 0;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -52,7 +56,8 @@ int MPIUNI_Memcpy(void *a,const void *b,int n)
   char *aa= (char*)a;
   char *bb= (char*)b;
 
-  if (b == MPI_IN_PLACE) return 0;
+  if (a == MPI_IN_PLACE || a == MPIUNIF_mpi_in_place) return 0;
+  if (b == MPI_IN_PLACE || b == MPIUNIF_mpi_in_place) return 0;
   for (i=0; i<n; i++) aa[i] = bb[i];
   return 0;
 }
@@ -90,7 +95,7 @@ int MPI_Keyval_free(int *keyval)
 
 int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 {
-  if (comm-1 < 0 || comm-1 > 3) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
   attr[comm-1][keyval].active        = 1;
   attr[comm-1][keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
@@ -98,7 +103,7 @@ int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 
 int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
-  if (comm-1 < 0 || comm-1 > 3) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
   if (attr[comm-1][keyval].active && attr_keyval[keyval].del) {
     void *save_attribute_val = attr[comm-1][keyval].attribute_val;
     attr[comm-1][keyval].active        = 0;
@@ -110,30 +115,26 @@ int MPI_Attr_delete(MPI_Comm comm,int keyval)
 
 int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
-  if (comm-1 < 0 || comm-1 > 3) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
   if (!keyval) Keyval_setup();
   *flag                  = attr[comm-1][keyval].active;
   *(void**)attribute_val = attr[comm-1][keyval].attribute_val;
   return MPI_SUCCESS;
 }
 
-static int dups[4] = {1,1,1,1};
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
-  if (comm-1 < 0 || comm-1 > 3) return 1;
-  dups[comm-1]++;
-  *newcomm =  comm;
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (MaxComm > MAX_COMM) return MPI_FAILURE;
+  *newcomm =  MaxComm++;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
-  if (comm-1 < 0 || comm-1 > 3) return 1;
-  if (comm == MPI_COMM_WORLD || comm == MPI_COMM_SELF) *out = comm + 2;
-  else {
-    *out = comm;
-    dups[comm-1]++;
-  }
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (MaxComm > MAX_COMM) return MPI_FAILURE;
+  *out = MaxComm++;
   return 0;
 }
 
@@ -141,27 +142,26 @@ int MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
 
-  if (*comm-1 < 0 || *comm-1 > 3) return 1;
-  if (dups[*comm-1] == 1) {
-    for (i=0; i<num_attr; i++) {
-      if (attr[*comm-1][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
-      attr[*comm-1][i].active        = 0;
-      attr[*comm-1][i].attribute_val = 0;
-    }
-    dups[*comm-1] = 1;
-    *comm = 0;
-  } else if (dups[*comm-1] > 1) dups[*comm-1]--;
+  if (*comm-1 < 0 || *comm-1 > MaxComm) return 1;
+  for (i=0; i<num_attr; i++) {
+    if (attr[*comm-1][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
+    attr[*comm-1][i].active        = 0;
+    attr[*comm-1][i].attribute_val = 0;
+  }
+  *comm = 0;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_size(MPI_Comm comm, int *size)
 {
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
   *size=1;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_rank(MPI_Comm comm, int *rank)
 {
+  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
   *rank=0;
   return MPI_SUCCESS;
 }
@@ -213,6 +213,8 @@ int MPI_Finalized(int *flag)
 /* -------------------     Fortran versions of several routines ------------------ */
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define mpiunisetcommonblock_ MPIUNISETCOMMONBLOCK
+#define mpiunisetfortranbasepointers_  MPIUNISETFORTRANBASEPOINTERS
 #define mpi_init_             MPI_INIT
 #define mpi_finalize_         MPI_FINALIZE
 #define mpi_comm_size_        MPI_COMM_SIZE
@@ -259,6 +261,8 @@ int MPI_Finalized(int *flag)
 #define mpi_comm_group_       MPI_COMM_GROUP
 #define mpi_exscan_           MPI_EXSCAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mpiunisetcommonblock_ mpiunisetcommonblock
+#define mpiunisetfortranbasepointers_  mpiunisetfortranbasepointers
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
 #define mpi_comm_size_        mpi_comm_size
@@ -354,12 +358,19 @@ int MPI_Finalized(int *flag)
 #define mpi_exscan_           mpi_exscan__
 #endif
 
-
 /* Do not build fortran interface if MPI namespace colision is to be avoided */
 #if !defined(MPIUNI_AVOID_MPI_NAMESPACE)
 
+PETSC_EXTERN void PETSC_STDCALL mpiunisetcommonblock_(void);
+
+PETSC_EXTERN void PETSC_STDCALL mpiunisetfortranbasepointers_(void *f_mpi_in_place)
+{
+  MPIUNIF_mpi_in_place   = f_mpi_in_place;
+}
+
 PETSC_EXTERN void PETSC_STDCALL   mpi_init_(int *ierr)
 {
+  mpiunisetcommonblock_();
   *ierr = MPI_Init((int*)0, (char***)0);
 }
 

@@ -84,6 +84,7 @@ typedef struct {
   HYPRE_ParVector *phmnull;  /* near null space passed to hypre */  
   PetscInt        n_hmnull;
   Vec             hmnull_constant;
+  PetscScalar     **hmnull_hypre_data_array;   /* this is the space in hmnull that was allocated by hypre, it is restored to hypre just before freeing the phmnull vectors */
 
   /* options for AS (Auxiliary Space preconditioners) */
   PetscInt  as_print;
@@ -119,6 +120,18 @@ PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
   PetscFunctionBegin;
   *hsolver = jac->hsolver;
   PetscFunctionReturn(0);
+}
+
+/*
+    Replaces the address where the HYPRE vector points to its data with the address of
+  PETSc's data. Saves the old address so it can be reset when we are finished with it.
+  Allows use to get the data into a HYPRE vector without the cost of memcopies
+*/
+#define HYPREReplacePointer(b,newvalue,savedvalue) { \
+    hypre_ParVector *par_vector   = (hypre_ParVector*)hypre_IJVectorObject(((hypre_IJVector*)b)); \
+    hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector); \
+    savedvalue         = local_vector->data; \
+    local_vector->data = newvalue;          \
 }
 
 #undef __FUNCT__
@@ -164,16 +177,21 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     PetscBool       has_const;
     PetscInt        nvec,i;
     const Vec       *vecs;
-
+    PetscScalar     *petscvecarray;
+    
     ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
     if (bs > 1) PetscStackCallStandard(HYPRE_BoomerAMGSetNumFunctions,(jac->hsolver,bs));
     ierr = MatGetNearNullSpace(pc->mat, &mnull);CHKERRQ(ierr);
     if (mnull) {
       ierr = MatNullSpaceGetVecs(mnull, &has_const, &nvec, &vecs);CHKERRQ(ierr);
       ierr = PetscMalloc1(nvec+1,&jac->hmnull);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nvec+1,&jac->hmnull_hypre_data_array);CHKERRQ(ierr);
       ierr = PetscMalloc1(nvec+1,&jac->phmnull);CHKERRQ(ierr);
       for (i=0; i<nvec; i++) {
         ierr = VecHYPRE_IJVectorCreate(vecs[i],&jac->hmnull[i]);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(vecs[i],(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
+        HYPREReplacePointer(jac->hmnull[i],petscvecarray,jac->hmnull_hypre_data_array[i]);
+        ierr = VecRestoreArrayRead(vecs[i],(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
         PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->hmnull[i],(void**)&jac->phmnull[i]));
       }
       if (has_const) {
@@ -181,6 +199,9 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
         ierr = VecSet(jac->hmnull_constant,1);CHKERRQ(ierr);
         ierr = VecNormalize(jac->hmnull_constant,NULL);
         ierr = VecHYPRE_IJVectorCreate(jac->hmnull_constant,&jac->hmnull[nvec]);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(jac->hmnull_constant,(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
+        HYPREReplacePointer(jac->hmnull[nvec],petscvecarray,jac->hmnull_hypre_data_array[nvec]);
+        ierr = VecRestoreArrayRead(jac->hmnull_constant,(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
         PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->hmnull[nvec],(void**)&jac->phmnull[nvec]));
         nvec++;
       }
@@ -207,18 +228,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->x,(void**)&xv));
   PetscStackCall("HYPRE_SetupXXX",ierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);CHKERRQ(ierr););
   PetscFunctionReturn(0);
-}
-
-/*
-    Replaces the address where the HYPRE vector points to its data with the address of
-  PETSc's data. Saves the old address so it can be reset when we are finished with it.
-  Allows use to get the data into a HYPRE vector without the cost of memcopies
-*/
-#define HYPREReplacePointer(b,newvalue,savedvalue) { \
-    hypre_ParVector *par_vector   = (hypre_ParVector*)hypre_IJVectorObject(((hypre_IJVector*)b)); \
-    hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector); \
-    savedvalue         = local_vector->data; \
-    local_vector->data = newvalue;          \
 }
 
 #undef __FUNCT__
@@ -260,8 +269,9 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
 #define __FUNCT__ "PCDestroy_HYPRE"
 static PetscErrorCode PCDestroy_HYPRE(PC pc)
 {
-  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
+  PC_HYPRE                 *jac = (PC_HYPRE*)pc->data;
+  PetscErrorCode           ierr;
+  PETSC_UNUSED PetscScalar *petscvecarray;
 
   PetscFunctionBegin;
   if (jac->ij) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->ij));
@@ -281,9 +291,11 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
     PetscInt i;
 
     for (i=0; i<jac->n_hmnull; i++) {
+      HYPREReplacePointer(jac->hmnull[i],jac->hmnull_hypre_data_array[i],petscvecarray);
       PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->hmnull[i]));
     }
     ierr = PetscFree(jac->hmnull);CHKERRQ(ierr);
+    ierr = PetscFree(jac->hmnull_hypre_data_array);CHKERRQ(ierr);
     ierr = PetscFree(jac->phmnull);CHKERRQ(ierr);
     ierr = VecDestroy(&jac->hmnull_constant);CHKERRQ(ierr);
   }
@@ -745,7 +757,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth type          %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Smooth num levels    %d\n",jac->smoothnumlevels);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Not using more complex smoothers.\n");CHKERRQ(ierr);
     }
     if (jac->smoothtype==3) {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Euclid ILU(k) levels %d\n",jac->eu_level);CHKERRQ(ierr);

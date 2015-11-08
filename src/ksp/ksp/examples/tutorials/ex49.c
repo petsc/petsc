@@ -176,7 +176,7 @@ static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL],PetscScalar GNx[][
     GNx[1][i] = GNi[0][i]*iJ10+GNi[1][i]*iJ11;
   }
 
-  if (det_J != NULL) *det_J = J;
+  if (det_J) *det_J = J;
 }
 
 static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscScalar gp_weight[])
@@ -206,15 +206,15 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
 
-  if (mxl != NULL) {
+  if (mxl) {
     *mxl = m;
     if ((sx+m) == M) *mxl = m-1;    /* last proc */
   }
-  if (myl != NULL) {
+  if (myl) {
     *myl = n;
     if ((sy+n) == N) *myl = n-1;  /* last proc */
   }
-  if (mzl != NULL) {
+  if (mzl) {
     *mzl = p;
     if ((sz+p) == P) *mzl = p-1;  /* last proc */
   }
@@ -1269,6 +1269,25 @@ static PetscErrorCode DMDABCApplyCompression(DM elas_da,Mat A,Vec f)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "Orthogonalize"
+static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
+{
+  PetscInt       i,j;
+  PetscScalar    dot;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+  ierr = VecNormalize(vecs[i],PETSC_NULL);CHKERRQ(ierr);
+     for (j=i+1; j<n; j++) {
+       ierr = VecDot(vecs[i],vecs[j],&dot);CHKERRQ(ierr);
+       ierr = VecAXPY(vecs[j],-dot,vecs[i]);CHKERRQ(ierr);
+     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDABCApplySymmetricCompression"
 static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff)
 {
@@ -1327,11 +1346,12 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScatterEnd(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   {                             /* Constrain near-null space */
-    PetscInt nvecs;
-    const Vec *vecs;
-    Vec *uvecs;
-    PetscBool has_const;
+    PetscInt     nvecs;
+    const        Vec *vecs;
+    Vec          *uvecs;
+    PetscBool    has_const;
     MatNullSpace mnull,unull;
+
     ierr = MatGetNearNullSpace(A,&mnull);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvecs,&vecs);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(*ff,nvecs,&uvecs);CHKERRQ(ierr);
@@ -1339,13 +1359,11 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
       ierr = VecScatterBegin(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),has_const,nvecs,uvecs,&unull);CHKERRQ(ierr);
+    ierr = Orthogonalize(nvecs,uvecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,nvecs,uvecs,&unull);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(*AA,unull);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&unull);CHKERRQ(ierr);
-    for (i=0; i<nvecs; i++) {
-      ierr = VecDestroy(&uvecs[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(uvecs);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(nvecs,&uvecs);CHKERRQ(ierr);
   }
 
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);

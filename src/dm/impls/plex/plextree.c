@@ -258,8 +258,8 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
 #endif
   /* create a reference element */
   ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
-  ierr = DMPlexCreateLabel(K, "identity");CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(K, "identity", &identity);CHKERRQ(ierr);
+  ierr = DMCreateLabel(K, "identity");CHKERRQ(ierr);
+  ierr = DMGetLabel(K, "identity", &identity);CHKERRQ(ierr);
   ierr = DMPlexGetChart(K, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
     ierr = DMLabelSetValue(identity, p, p);CHKERRQ(ierr);
@@ -269,7 +269,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
 
   /* the reference tree is the union of these two, without duplicating
    * points that appear in both */
-  ierr = DMPlexGetLabel(Kref, "identity", &identityRef);CHKERRQ(ierr);
+  ierr = DMGetLabel(Kref, "identity", &identityRef);CHKERRQ(ierr);
   ierr = DMPlexGetChart(Kref, &pRefStart, &pRefEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &unionSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(unionSection, 0, (pEnd - pStart) + (pRefEnd - pRefStart));CHKERRQ(ierr);
@@ -644,7 +644,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
     }
   }
   ierr = ISRestoreIndices(is,&vals);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
   if (!globalAnyNew) {
     ierr = PetscSectionDestroy(&secNew);CHKERRQ(ierr);
     *sectionNew = NULL;
@@ -653,7 +653,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
   else {
     PetscBool globalCompress;
 
-    ierr = MPI_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
     if (compress) {
       PetscSection secComp;
       PetscInt *valsComp = NULL;
@@ -703,7 +703,7 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(dm,"canonical",&canonLabel);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"canonical",&canonLabel);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
     PetscInt parent;
 
@@ -976,7 +976,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   if (refTree) {
     DMLabel canonLabel;
 
-    ierr = DMPlexGetLabel(refTree,"canonical",&canonLabel);CHKERRQ(ierr);
+    ierr = DMGetLabel(refTree,"canonical",&canonLabel);CHKERRQ(ierr);
     if (canonLabel) {
       PetscInt i;
 
@@ -999,7 +999,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
     /* add the canonical label */
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-    ierr = DMPlexCreateLabel(dm,"canonical");CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm,"canonical");CHKERRQ(ierr);
     for (d = 0; d <= dim; d++) {
       PetscInt p, dStart, dEnd, canon = -1, cNumChildren;
       const PetscInt *cChildren;
@@ -1020,9 +1020,9 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
         ierr = DMPlexGetTreeChildren(dm,p,&numChildren,&children);CHKERRQ(ierr);
         if (numChildren) {
           if (numChildren != cNumChildren) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %d != %d", numChildren, cNumChildren);
-          ierr = DMPlexSetLabelValue(dm,"canonical",p,canon);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm,"canonical",p,canon);CHKERRQ(ierr);
           for (i = 0; i < numChildren; i++) {
-            ierr = DMPlexSetLabelValue(dm,"canonical",children[i],cChildren[i]);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm,"canonical",children[i],cChildren[i]);CHKERRQ(ierr);
           }
         }
       }
@@ -1693,9 +1693,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
 #if defined(PETSC_USE_DEBUG)
         for (r = 0; r < cDof; r++) {
           if (cDof > 1 && r) {
-            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %d vs. %d", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
-            }
+            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
           }
         }
 #endif

@@ -13,7 +13,7 @@ KSP Object: 2 MPI processes
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
@@ -23,7 +23,7 @@ PC Object: 2 MPI processes
   KSP Object:  (sub_)   1 MPI processes
     type: preonly
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
   PC Object:  (sub_)   1 MPI processes
@@ -32,7 +32,7 @@ PC Object: 2 MPI processes
       0 levels of fill
       tolerance for zero pivot 2.22045e-14
       matrix ordering: natural
-      factor fill ratio given 1, needed 1
+      factor fill ratio given 1., needed 1.
         Factored matrix follows:
           Mat Object:           1 MPI processes
             type: seqaij

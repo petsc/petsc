@@ -1,9 +1,9 @@
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 6 support: 3
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 3
 [0]: 1 ----> 15
 [0]: 1 ----> 18
 [0]: 1 ----> 24
@@ -58,7 +58,7 @@ cap --> base:
 [0]: 25 ----> 14
 [0]: 26 ----> 12
 [0]: 26 ----> 13
-Max sizes cone: 6 support: 3
+[1] Max sizes cone: 6 support: 3
 [1]: 1 ----> 15
 [1]: 1 ----> 18
 [1]: 1 ----> 19
@@ -225,23 +225,23 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 -1 -0.5 -0.5
-  (   2) dim  3 offset   3 -1 0.5 -0.5
-  (   3) dim  3 offset   6 0 0.5 -0.5
-  (   4) dim  3 offset   9 0 -0.5 -0.5
-  (   5) dim  3 offset  12 -1 -0.5 0.5
-  (   6) dim  3 offset  15 0 -0.5 0.5
-  (   7) dim  3 offset  18 0 0.5 0.5
-  (   8) dim  3 offset  21 -1 0.5 0.5
+  (   1) dim  3 offset   0 -1. -0.5 -0.5
+  (   2) dim  3 offset   3 -1. 0.5 -0.5
+  (   3) dim  3 offset   6 0. 0.5 -0.5
+  (   4) dim  3 offset   9 0. -0.5 -0.5
+  (   5) dim  3 offset  12 -1. -0.5 0.5
+  (   6) dim  3 offset  15 0. -0.5 0.5
+  (   7) dim  3 offset  18 0. 0.5 0.5
+  (   8) dim  3 offset  21 -1. 0.5 0.5
 Process 1:
-  (   1) dim  3 offset   0 0 0.5 -0.5
-  (   2) dim  3 offset   3 0 -0.5 -0.5
-  (   3) dim  3 offset   6 0 -0.5 0.5
-  (   4) dim  3 offset   9 0 0.5 0.5
-  (   5) dim  3 offset  12 1 0.5 -0.5
-  (   6) dim  3 offset  15 1 -0.5 -0.5
-  (   7) dim  3 offset  18 1 -0.5 0.5
-  (   8) dim  3 offset  21 1 0.5 0.5
+  (   1) dim  3 offset   0 0. 0.5 -0.5
+  (   2) dim  3 offset   3 0. -0.5 -0.5
+  (   3) dim  3 offset   6 0. -0.5 0.5
+  (   4) dim  3 offset   9 0. 0.5 0.5
+  (   5) dim  3 offset  12 1. 0.5 -0.5
+  (   6) dim  3 offset  15 1. -0.5 -0.5
+  (   7) dim  3 offset  18 1. -0.5 0.5
+  (   8) dim  3 offset  21 1. 0.5 0.5
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -271,9 +271,9 @@ PetscSF Object: 2 MPI processes
 DM Object:Hybrid Mesh 2 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 6 support: 6
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 6 support: 6
 [0]: 8 ----> 71
 [0]: 8 ----> 78
 [0]: 8 ----> 90
@@ -574,7 +574,7 @@ cap --> base:
 [0]: 124 ----> 67
 [0]: 124 ----> 66
 [0]: 124 ----> 70
-Max sizes cone: 6 support: 6
+[1] Max sizes cone: 6 support: 6
 [1]: 8 ----> 71
 [1]: 8 ----> 78
 [1]: 8 ----> 79
@@ -1479,61 +1479,61 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   8) dim  3 offset   0 -1 -0.5 -0.5
-  (   9) dim  3 offset   3 -1 0.5 -0.5
-  (  10) dim  3 offset   6 0 0.5 -0.5
-  (  11) dim  3 offset   9 0 -0.5 -0.5
-  (  12) dim  3 offset  12 -1 -0.5 0.5
-  (  13) dim  3 offset  15 0 -0.5 0.5
-  (  14) dim  3 offset  18 0 0.5 0.5
-  (  15) dim  3 offset  21 -1 0.5 0.5
-  (  16) dim  3 offset  24 -1 0 -0.5
+  (   8) dim  3 offset   0 -1. -0.5 -0.5
+  (   9) dim  3 offset   3 -1. 0.5 -0.5
+  (  10) dim  3 offset   6 0. 0.5 -0.5
+  (  11) dim  3 offset   9 0. -0.5 -0.5
+  (  12) dim  3 offset  12 -1. -0.5 0.5
+  (  13) dim  3 offset  15 0. -0.5 0.5
+  (  14) dim  3 offset  18 0. 0.5 0.5
+  (  15) dim  3 offset  21 -1. 0.5 0.5
+  (  16) dim  3 offset  24 -1. 0. -0.5
   (  17) dim  3 offset  27 -0.5 0.5 -0.5
-  (  18) dim  3 offset  30 0 0 -0.5
+  (  18) dim  3 offset  30 0. 0. -0.5
   (  19) dim  3 offset  33 -0.5 -0.5 -0.5
   (  20) dim  3 offset  36 -0.5 -0.5 0.5
-  (  21) dim  3 offset  39 0 0 0.5
+  (  21) dim  3 offset  39 0. 0. 0.5
   (  22) dim  3 offset  42 -0.5 0.5 0.5
-  (  23) dim  3 offset  45 -1 0 0.5
-  (  24) dim  3 offset  48 0 -0.5 0
-  (  25) dim  3 offset  51 -1 -0.5 0
-  (  26) dim  3 offset  54 -1 0.5 0
-  (  27) dim  3 offset  57 0 0.5 0
-  (  28) dim  3 offset  60 -0.5 0 -0.5
-  (  29) dim  3 offset  63 -0.5 0 0.5
-  (  30) dim  3 offset  66 -0.5 -0.5 0
-  (  31) dim  3 offset  69 -0.5 0.5 0
-  (  32) dim  3 offset  72 0 0 0
-  (  33) dim  3 offset  75 -1 0 0
-  (  34) dim  3 offset  78 -0.5 0 0
+  (  23) dim  3 offset  45 -1. 0. 0.5
+  (  24) dim  3 offset  48 0. -0.5 0.
+  (  25) dim  3 offset  51 -1. -0.5 0.
+  (  26) dim  3 offset  54 -1. 0.5 0.
+  (  27) dim  3 offset  57 0. 0.5 0.
+  (  28) dim  3 offset  60 -0.5 0. -0.5
+  (  29) dim  3 offset  63 -0.5 0. 0.5
+  (  30) dim  3 offset  66 -0.5 -0.5 0.
+  (  31) dim  3 offset  69 -0.5 0.5 0.
+  (  32) dim  3 offset  72 0. 0. 0.
+  (  33) dim  3 offset  75 -1. 0. 0.
+  (  34) dim  3 offset  78 -0.5 0. 0.
 Process 1:
-  (   8) dim  3 offset   0 0 0.5 -0.5
-  (   9) dim  3 offset   3 0 -0.5 -0.5
-  (  10) dim  3 offset   6 0 -0.5 0.5
-  (  11) dim  3 offset   9 0 0.5 0.5
-  (  12) dim  3 offset  12 1 0.5 -0.5
-  (  13) dim  3 offset  15 1 -0.5 -0.5
-  (  14) dim  3 offset  18 1 -0.5 0.5
-  (  15) dim  3 offset  21 1 0.5 0.5
-  (  16) dim  3 offset  24 0 0 -0.5
-  (  17) dim  3 offset  27 0 0 0.5
-  (  18) dim  3 offset  30 0 -0.5 0
-  (  19) dim  3 offset  33 0 0.5 0
+  (   8) dim  3 offset   0 0. 0.5 -0.5
+  (   9) dim  3 offset   3 0. -0.5 -0.5
+  (  10) dim  3 offset   6 0. -0.5 0.5
+  (  11) dim  3 offset   9 0. 0.5 0.5
+  (  12) dim  3 offset  12 1. 0.5 -0.5
+  (  13) dim  3 offset  15 1. -0.5 -0.5
+  (  14) dim  3 offset  18 1. -0.5 0.5
+  (  15) dim  3 offset  21 1. 0.5 0.5
+  (  16) dim  3 offset  24 0. 0. -0.5
+  (  17) dim  3 offset  27 0. 0. 0.5
+  (  18) dim  3 offset  30 0. -0.5 0.
+  (  19) dim  3 offset  33 0. 0.5 0.
   (  20) dim  3 offset  36 0.5 0.5 -0.5
-  (  21) dim  3 offset  39 1 0 -0.5
+  (  21) dim  3 offset  39 1. 0. -0.5
   (  22) dim  3 offset  42 0.5 -0.5 -0.5
   (  23) dim  3 offset  45 0.5 -0.5 0.5
-  (  24) dim  3 offset  48 1 0 0.5
+  (  24) dim  3 offset  48 1. 0. 0.5
   (  25) dim  3 offset  51 0.5 0.5 0.5
-  (  26) dim  3 offset  54 1 -0.5 0
-  (  27) dim  3 offset  57 1 0.5 0
-  (  28) dim  3 offset  60 0 0 0
-  (  29) dim  3 offset  63 0.5 0 -0.5
-  (  30) dim  3 offset  66 0.5 0 0.5
-  (  31) dim  3 offset  69 0.5 -0.5 0
-  (  32) dim  3 offset  72 0.5 0.5 0
-  (  33) dim  3 offset  75 1 0 0
-  (  34) dim  3 offset  78 0.5 0 0
+  (  26) dim  3 offset  54 1. -0.5 0.
+  (  27) dim  3 offset  57 1. 0.5 0.
+  (  28) dim  3 offset  60 0. 0. 0.
+  (  29) dim  3 offset  63 0.5 0. -0.5
+  (  30) dim  3 offset  66 0.5 0. 0.5
+  (  31) dim  3 offset  69 0.5 -0.5 0.
+  (  32) dim  3 offset  72 0.5 0.5 0.
+  (  33) dim  3 offset  75 1. 0. 0.
+  (  34) dim  3 offset  78 0.5 0. 0.
 PetscSF Object: 2 MPI processes
   type not yet set
   [0] Number of roots=125, leaves=25, remote ranks=1

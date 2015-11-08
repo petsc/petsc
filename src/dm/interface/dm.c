@@ -1,4 +1,5 @@
-#include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
+#include <petsc/private/dmlabelimpl.h>      /*I      "petscdmlabel.h"     I*/
 #include <petscsf.h>
 #include <petscds.h>
 
@@ -47,6 +48,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->coloringtype             = IS_COLORING_GLOBAL;
   ierr                        = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
   ierr                        = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
+  v->labels                   = NULL;
+  v->depthLabel               = NULL;
   v->defaultSection           = NULL;
   v->defaultGlobalSection     = NULL;
   v->defaultConstraintSection = NULL;
@@ -67,6 +70,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->outputSequenceVal = 0.0;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
+  ierr = PetscCalloc1(1,&(v->labels));CHKERRQ(ierr);
+  v->labels->refct = 1;
   *dm = v;
   PetscFunctionReturn(0);
 }
@@ -100,6 +105,10 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  ierr = PetscFree((*newdm)->labels);CHKERRQ(ierr);
+  dm->labels->refct++;
+  (*newdm)->labels = dm->labels;
+  (*newdm)->depthLabel = dm->depthLabel;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*newdm, dim);CHKERRQ(ierr);
   if (dm->ops->clone) {
@@ -570,6 +579,19 @@ PetscErrorCode  DMDestroy(DM *dm)
       ierr = PetscFree(link);CHKERRQ(ierr);
     }
     (*dm)->workin = NULL;
+  }
+  if (!--((*dm)->labels->refct)) {
+    DMLabelLink next = (*dm)->labels->next;
+
+    /* destroy the labels */
+    while (next) {
+      DMLabelLink tmp = next->next;
+
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      ierr = PetscFree(next);CHKERRQ(ierr);
+      next = tmp;
+    }
+    ierr = PetscFree((*dm)->labels);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectDestroy(&(*dm)->dmksp);CHKERRQ(ierr);
@@ -3296,7 +3318,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
   if (!gvalid) {
     ierr = DMView(dm, NULL);CHKERRQ(ierr);
     SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
@@ -3767,6 +3789,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(subdm_coord,&ccoords);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(subdm_coord,&clcoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)clcoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateDomainDecompositionScatters(dm_coord,1,&subdm_coord,NULL,&scat_i,&scat_g);CHKERRQ(ierr);
     ierr = VecScatterBegin(scat_i[0],coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterBegin(scat_g[0],coords,clcoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -4506,5 +4529,717 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, useNatural, 2);
   dm->useNatural = useNatural;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLabel"
+/*@C
+  DMCreateLabel - Create a label of the given name if it does not already exist
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- name - The label name
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMLabelCreate(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMCreateLabel(DM dm, const char name[])
+{
+  DMLabelLink    next  = dm->labels->next;
+  PetscBool      flg   = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  while (next) {
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
+  if (!flg) {
+    DMLabelLink tmpLabel;
+
+    ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
+    ierr = DMLabelCreate(name, &tmpLabel->label);CHKERRQ(ierr);
+    tmpLabel->output = PETSC_TRUE;
+    tmpLabel->next   = dm->labels->next;
+    dm->labels->next = tmpLabel;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabelValue"
+/*@C
+  DMGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+. name - The label name
+- point - The mesh point
+
+  Output Parameter:
+. value - The label value for this point, or -1 if the point is not in the label
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelGetValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  if (!label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(label, point, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetLabelValue"
+/*@C
+  DMSetLabelValue - Add a point to a Sieve Label with given value
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+. name - The label name
+. point - The mesh point
+- value - The label value for this point
+
+  Output Parameter:
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelSetValue(), DMGetStratumIS(), DMClearLabelValue()
+@*/
+PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  if (!label) {
+    ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  }
+  ierr = DMLabelSetValue(label, point, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClearLabelValue"
+/*@C
+  DMClearLabelValue - Remove a point from a Sieve Label with given value
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+. name - The label name
+. point - The mesh point
+- value - The label value for this point
+
+  Output Parameter:
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelClearValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelClearValue(label, point, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabelSize"
+/*@C
+  DMGetLabelSize - Get the number of different integer ids in a Label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- name - The label name
+
+  Output Parameter:
+. size - The number of different integer ids, or 0 if the label does not exist
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabeGetNumValues(), DMSetLabelValue()
+@*/
+PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(size, 3);
+  ierr  = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  *size = 0;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelGetNumValues(label, size);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabelIdIS"
+/*@C
+  DMGetLabelIdIS - Get the integer ids in a label
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The DM object
+- name - The label name
+
+  Output Parameter:
+. ids - The integer ids, or NULL if the label does not exist
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelGetValueIS(), DMGetLabelSize()
+@*/
+PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(ids, 3);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  *ids = NULL;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetStratumSize"
+/*@C
+  DMGetStratumSize - Get the number of points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DM object
+. name - The label name
+- value - The stratum value
+
+  Output Parameter:
+. size - The stratum size
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelGetStratumSize(), DMGetLabelSize(), DMGetLabelIds()
+@*/
+PetscErrorCode DMGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(size, 4);
+  ierr  = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  *size = 0;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelGetStratumSize(label, value, size);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetStratumIS"
+/*@C
+  DMGetStratumIS - Get the points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DM object
+. name - The label name
+- value - The stratum value
+
+  Output Parameter:
+. points - The stratum points, or NULL if the label does not exist or does not have that value
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelGetStratumIS(), DMGetStratumSize()
+@*/
+PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *points)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(points, 4);
+  ierr    = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  *points = NULL;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelGetStratumIS(label, value, points);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClearLabelStratum"
+/*@C
+  DMClearLabelStratum - Remove all points from a stratum from a Sieve Label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+. name - The label name
+- value - The label value for this point
+
+  Output Parameter:
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelClearStratum(), DMSetLabelValue(), DMGetStratumIS(), DMClearLabelValue()
+@*/
+PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelClearStratum(label, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNumLabels"
+/*@
+  DMGetNumLabels - Return the number of labels defined by the mesh
+
+  Not Collective
+
+  Input Parameter:
+. dm   - The DM object
+
+  Output Parameter:
+. numLabels - the number of Labels
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
+{
+  DMLabelLink next = dm->labels->next;
+  PetscInt  n    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(numLabels, 2);
+  while (next) {++n; next = next->next;}
+  *numLabels = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabelName"
+/*@C
+  DMGetLabelName - Return the name of nth label
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DM object
+- n  - the label number
+
+  Output Parameter:
+. name - the label name
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
+{
+  DMLabelLink next = dm->labels->next;
+  PetscInt  l    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 3);
+  while (next) {
+    if (l == n) {
+      *name = next->label->name;
+      PetscFunctionReturn(0);
+    }
+    ++l;
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %D does not exist in this DM", n);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMHasLabel"
+/*@C
+  DMHasLabel - Determine whether the mesh has a label of a given name
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- name - The label name
+
+  Output Parameter:
+. hasLabel - PETSC_TRUE if the label is present
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMCreateLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
+{
+  DMLabelLink    next = dm->labels->next;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(hasLabel, 3);
+  *hasLabel = PETSC_FALSE;
+  while (next) {
+    ierr = PetscStrcmp(name, next->label->name, hasLabel);CHKERRQ(ierr);
+    if (*hasLabel) break;
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabel"
+/*@C
+  DMGetLabel - Return the label of a given name, or NULL
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- name - The label name
+
+  Output Parameter:
+. label - The DMLabel, or NULL if the label is absent
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
+{
+  DMLabelLink    next = dm->labels->next;
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(label, 3);
+  *label = NULL;
+  while (next) {
+    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
+    if (hasLabel) {
+      *label = next->label;
+      break;
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabelByNum"
+/*@C
+  DMGetLabelByNum - Return the nth label
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DM object
+- n  - the label number
+
+  Output Parameter:
+. label - the label
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
+{
+  DMLabelLink next = dm->labels->next;
+  PetscInt    l    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label, 3);
+  while (next) {
+    if (l == n) {
+      *label = next->label;
+      PetscFunctionReturn(0);
+    }
+    ++l;
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %D does not exist in this DM", n);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMAddLabel"
+/*@C
+  DMAddLabel - Add the label to this mesh
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- label - The DMLabel
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMAddLabel(DM dm, DMLabel label)
+{
+  DMLabelLink    tmpLabel;
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
+  if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
+  ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
+  tmpLabel->label  = label;
+  tmpLabel->output = PETSC_TRUE;
+  tmpLabel->next   = dm->labels->next;
+  dm->labels->next = tmpLabel;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRemoveLabel"
+/*@C
+  DMRemoveLabel - Remove the label from this mesh
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- name - The label name
+
+  Output Parameter:
+. label - The DMLabel, or NULL if the label is absent
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
+{
+  DMLabelLink    next = dm->labels->next;
+  DMLabelLink    last = NULL;
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr   = DMHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
+  *label = NULL;
+  if (!hasLabel) PetscFunctionReturn(0);
+  while (next) {
+    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
+    if (hasLabel) {
+      if (last) last->next       = next->next;
+      else      dm->labels->next = next->next;
+      next->next = NULL;
+      *label     = next->label;
+      ierr = PetscStrcmp(name, "depth", &hasLabel);CHKERRQ(ierr);
+      if (hasLabel) {
+        dm->depthLabel = NULL;
+      }
+      ierr = PetscFree(next);CHKERRQ(ierr);
+      break;
+    }
+    last = next;
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLabelOutput"
+/*@C
+  DMGetLabelOutput - Get the output flag for a given label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DM object
+- name - The label name
+
+  Output Parameter:
+. output - The flag for output
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMSetLabelOutput(), DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
+{
+  DMLabelLink    next = dm->labels->next;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(output, 3);
+  while (next) {
+    PetscBool flg;
+
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) {*output = next->output; PetscFunctionReturn(0);}
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this dm", name);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetLabelOutput"
+/*@C
+  DMSetLabelOutput - Set the output flag for a given label
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The DM object
+. name   - The label name
+- output - The flag for output
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMGetLabelOutput(), DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+@*/
+PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
+{
+  DMLabelLink    next = dm->labels->next;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  while (next) {
+    PetscBool flg;
+
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) {next->output = output; PetscFunctionReturn(0);}
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this dm", name);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCopyLabels"
+/*@
+  DMCopyLabels - Copy labels from one mesh to another with a superset of the points
+
+  Collective on DM
+
+  Input Parameter:
+. dmA - The DMPlex object with initial labels
+
+  Output Parameter:
+. dmB - The DMPlex object with copied labels
+
+  Level: intermediate
+
+  Note: This is typically used when interpolating or otherwise adding to a mesh
+
+.keywords: mesh
+.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
+@*/
+PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
+{
+  PetscInt       numLabels, l;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dmA == dmB) PetscFunctionReturn(0);
+  ierr = DMGetNumLabels(dmA, &numLabels);CHKERRQ(ierr);
+  for (l = 0; l < numLabels; ++l) {
+    DMLabel     label, labelNew;
+    const char *name;
+    PetscBool   flg;
+
+    ierr = DMGetLabelName(dmA, l, &name);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
+    if (flg) continue;
+    ierr = DMGetLabel(dmA, name, &label);CHKERRQ(ierr);
+    ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
+    ierr = DMAddLabel(dmB, labelNew);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
