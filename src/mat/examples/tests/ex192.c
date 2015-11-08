@@ -102,7 +102,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
-  ierr = PetscOptionsGetInt(NULL,"-solver",&isolver,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-solver",&isolver,NULL);CHKERRQ(ierr);
   switch (isolver) {
 #if defined(PETSC_HAVE_MUMPS)
     case 0:
@@ -119,7 +119,7 @@ int main(int argc,char **args)
       break;
   }
 
-  ierr = PetscOptionsGetReal(NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
   if (sratio < 0. || sratio > 1.) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
   }
