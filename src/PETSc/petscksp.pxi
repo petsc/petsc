@@ -79,6 +79,15 @@ cdef extern from * nogil:
                                             PetscReal,
                                             void*) except PETSC_ERR_PYTHON
 
+    ctypedef int (*PetscKSPComputeRHSFunction)(PetscKSP,
+                                               PetscVec,
+                                               void*) except PETSC_ERR_PYTHON
+
+    ctypedef int (*PetscKSPComputeOpsFunction)(PetscKSP,
+                                               PetscMat,
+                                               PetscMat,
+                                               void*) except PETSC_ERR_PYTHON
+
     int KSPCreate(MPI_Comm,PetscKSP* CREATE)
     int KSPDestroy(PetscKSP*)
     int KSPView(PetscKSP,PetscViewer OPTIONAL)
@@ -122,6 +131,8 @@ cdef extern from * nogil:
     int KSPGetComputeSingularValues(PetscKSP,PetscBool*)
     int KSPSetComputeSingularValues(PetscKSP,PetscBool)
 
+    int KSPSetComputeRHS(PetscKSP,PetscKSPComputeRHSFunction,void*)
+    int KSPSetComputeOperators(PetscKSP,PetscKSPComputeOpsFunction,void*)
     int KSPSetOperators(PetscKSP,PetscMat,PetscMat)
     int KSPGetOperators(PetscKSP,PetscMat*,PetscMat*)
     int KSPGetOperatorsSet(PetscKSP,PetscBool*,PetscBool*)
@@ -212,6 +223,38 @@ cdef int KSP_Monitor(
     if monitorlist is None: return 0
     for (monitor, args, kargs) in monitorlist:
         monitor(Ksp, toInt(its), toReal(rnm), *args, **kargs)
+    return 0
+
+# -----------------------------------------------------------------------------
+
+cdef int KSP_ComputeRHS(
+    PetscKSP ksp,
+    PetscVec rhs,
+    void*    ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef KSP Ksp = ref_KSP(ksp)
+    cdef Vec Rhs = ref_Vec(rhs)
+    cdef object context = Ksp.get_attr('__rhs__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (computerhs, args, kargs) = context
+    computerhs(Ksp, Rhs, *args, **kargs)
+    return 0
+
+cdef int KSP_ComputeOps(
+    PetscKSP ksp,
+    PetscMat A,
+    PetscMat B,
+    void*    ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef KSP Ksp  = ref_KSP(ksp)
+    cdef Mat Amat = ref_Mat(A)
+    cdef Mat Bmat = ref_Mat(B)
+    cdef object context = Ksp.get_attr('__operators__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (computeops, args, kargs) = context
+    computeops(Ksp, Amat, Bmat, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
