@@ -6726,6 +6726,13 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
 
   ierr = PetscMemcpy(t->ops,tsin->ops,sizeof(struct _TSOps));CHKERRQ(ierr);
 
+  if (((PetscObject)tsin)->fortran_func_pointers) {
+    PetscInt i;
+    ierr = PetscMalloc((10)*sizeof(void(*)(void)),&((PetscObject)t)->fortran_func_pointers);CHKERRQ(ierr);
+    for (i=0; i<10; i++) {
+      ((PetscObject)t)->fortran_func_pointers[i] = ((PetscObject)tsin)->fortran_func_pointers[i];
+    }
+  }
   *tsout = t;
   PetscFunctionReturn(0);
 }
