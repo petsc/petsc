@@ -2,10 +2,16 @@
 
 cdef class Options:
 
-    cdef object _prefix
+    cdef PetscOptions opt
+    cdef object       _prefix
 
     def __init__(self, prefix=None):
+        self.opt = NULL
         self.prefix  = prefix
+
+    def __dealloc__(self):
+        if self.opt == NULL: return
+        CHKERR( PetscOptionsDestroy(&self.opt) )
 
     def __contains__(self, item):
         return self.hasName(item)
@@ -28,18 +34,38 @@ cdef class Options:
             self._prefix = None
     #
 
+    def create(self):
+        if self.opt != NULL: return
+        CHKERR( PetscOptionsCreate(&self.opt) )
+        return self
+
+    def destroy(self):
+        if self.opt == NULL: return
+        CHKERR( PetscOptionsDestroy(&self.opt) )
+        return self
+
+    def clear(self):
+        if self.opt == NULL: return
+        CHKERR( PetscOptionsClear(self.opt) )
+        return self
+
+    def view(self, Viewer viewer=None):
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        CHKERR( PetscOptionsView(self.opt, vwr) )
+
     def setFromOptions(self):
-        CHKERR( PetscOptionsSetFromOptions() )
+        CHKERR( PetscOptionsSetFromOptions(self.opt) )
     #
 
     def prefixPush(self, prefix):
         prefix = getprefix(prefix)
         cdef const_char *cprefix = NULL
         prefix = str2bytes(prefix, &cprefix)
-        CHKERR( PetscOptionsPrefixPush(cprefix) )
+        CHKERR( PetscOptionsPrefixPush(self.opt, cprefix) )
 
     def prefixPop(self):
-        CHKERR( PetscOptionsPrefixPop() )
+        CHKERR( PetscOptionsPrefixPop(self.opt) )
     #
 
     def hasName(self, name):
@@ -47,7 +73,7 @@ cdef class Options:
         cdef const_char *nm = NULL
         tmp = getpair(self.prefix, name, &pr, &nm)
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( PetscOptionsHasName(pr, nm, &flag) )
+        CHKERR( PetscOptionsHasName(self.opt, pr, nm, &flag) )
         return <bint> flag
 
     def setValue(self, name, value):
@@ -62,11 +88,11 @@ cdef class Options:
             value = str(value).lower()
         elif value is not None : 
             value = str(value)
-        cdef const_char *opt = NULL
+        cdef const_char *key = NULL
         cdef const_char *val = NULL
-        option = str2bytes(option, &opt)
+        option = str2bytes(option, &key)
         value  = str2bytes(value,  &val)
-        CHKERR( PetscOptionsSetValue(opt, val) )
+        CHKERR( PetscOptionsSetValue(self.opt, key, val) )
 
     def delValue(self, name):
         cdef const_char *pr = NULL
@@ -76,30 +102,30 @@ cdef class Options:
             option = bytes2str(nm)
         else: 
             option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
-        cdef const_char *opt = NULL
-        option = str2bytes(option, &opt)
-        CHKERR( PetscOptionsClearValue(opt) )
+        cdef const_char *key = NULL
+        option = str2bytes(option, &key)
+        CHKERR( PetscOptionsClearValue(self.opt, key) )
 
     #
 
     def getBool(self, name, default=None):
-        return getopt(OPT_BOOL, self.prefix, name, default)
+        return getopt(self.opt, OPT_BOOL, self.prefix, name, default)
 
     def getInt(self, name, default=None):
-        return getopt(OPT_INT, self.prefix, name, default)
+        return getopt(self.opt, OPT_INT, self.prefix, name, default)
 
     def getReal(self, name, default=None):
-        return getopt(OPT_REAL, self.prefix, name, default)
+        return getopt(self.opt, OPT_REAL, self.prefix, name, default)
 
     def getScalar(self, name, default=None):
-        return getopt(OPT_SCALAR, self.prefix, name, default)
+        return getopt(self.opt, OPT_SCALAR, self.prefix, name, default)
 
     def getString(self, name, default=None):
-        return getopt(OPT_STRING, self.prefix, name, default)
+        return getopt(self.opt, OPT_STRING, self.prefix, name, default)
 
     def getAll(self):
         cdef char *allopts = NULL
-        CHKERR( PetscOptionsGetAll(&allopts) )
+        CHKERR( PetscOptionsGetAll(self.opt, &allopts) )
         options = bytes2str(allopts)
         CHKERR( PetscFree(allopts) )
         return parseopt(options, self.prefix)

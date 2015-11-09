@@ -1,34 +1,37 @@
 cdef extern from * nogil:
 
-    int PetscOptionsCreate()
-    int PetscOptionsDestroy()
-    int PetscOptionsSetFromOptions()
+    ctypedef struct _n_PetscOptions
+    ctypedef _n_PetscOptions* PetscOptions
 
-    int PetscOptionsPrefixPush(char[])
-    int PetscOptionsPrefixPop()
+    int PetscOptionsCreate(PetscOptions*)
+    int PetscOptionsDestroy(PetscOptions*)
+    int PetscOptionsView(PetscOptions,PetscViewer)
+    int PetscOptionsClear(PetscOptions)
+    int PetscOptionsSetFromOptions(PetscOptions)
 
-    int PetscOptionsHasName(char[],char[],PetscBool*)
-    int PetscOptionsSetAlias(char[],char[])
-    int PetscOptionsSetValue(char[],char[])
-    int PetscOptionsClearValue(char[])
-    int PetscOptionsClear()
+    int PetscOptionsPrefixPush(PetscOptions,char[])
+    int PetscOptionsPrefixPop(PetscOptions)
 
-    int PetscOptionsInsertString(char[])
-    int PetscOptionsInsertFile(char[])
-    int PetscOptionsGetAll(char*[])
+    int PetscOptionsHasName(PetscOptions,char[],char[],PetscBool*)
+    int PetscOptionsSetAlias(PetscOptions,char[],char[])
+    int PetscOptionsSetValue(PetscOptions,char[],char[])
+    int PetscOptionsClearValue(PetscOptions,char[])
 
-    int PetscOptionsGetBool(char[],char[],PetscBool*,PetscBool*)
-    int PetscOptionsGetInt(char[],char[],PetscInt*,PetscBool*)
-    int PetscOptionsGetReal(char[],char[],PetscReal*,PetscBool*)
-    int PetscOptionsGetScalar(char[],char[],PetscScalar*,PetscBool*)
-    int PetscOptionsGetString(char[],char[],char[],size_t,PetscBool*)
+    int PetscOptionsInsertString(PetscOptions,char[])
+    int PetscOptionsInsertFile(PetscOptions,char[])
+    int PetscOptionsGetAll(PetscOptions,char*[])
+
+    int PetscOptionsGetBool(PetscOptions,char[],char[],PetscBool*,PetscBool*)
+    int PetscOptionsGetInt(PetscOptions,char[],char[],PetscInt*,PetscBool*)
+    int PetscOptionsGetReal(PetscOptions,char[],char[],PetscReal*,PetscBool*)
+    int PetscOptionsGetScalar(PetscOptions,char[],char[],PetscScalar*,PetscBool*)
+    int PetscOptionsGetString(PetscOptions,char[],char[],char[],size_t,PetscBool*)
 
     ctypedef struct _p_PetscToken
     ctypedef _p_PetscToken* PetscToken
     int PetscTokenCreate(char[],char,PetscToken*)
     int PetscTokenDestroy(PetscToken*)
     int PetscTokenFind(PetscToken,char*[])
-
     int PetscOptionsValidKey(char[],PetscBool*)
 
 #
@@ -57,42 +60,42 @@ cdef opt2str(const_char *pre, const_char *name):
     n = bytes2str(name) if name[0]!=c'-' else bytes2str(&name[1])
     return '(prefix:%s, name:%s)' % (p, n)
 
-cdef getopt_Bool(const_char *pre, const_char *name, object deft):
+cdef getopt_Bool(PetscOptions opt, const_char *pre, const_char *name, object deft):
     cdef PetscBool value = PETSC_FALSE
     cdef PetscBool flag  = PETSC_FALSE
-    CHKERR( PetscOptionsGetBool(pre, name, &value, &flag) )
+    CHKERR( PetscOptionsGetBool(opt, pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return <bint>value
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Int(const_char *pre, const_char *name, object deft):
+cdef getopt_Int(PetscOptions opt, const_char *pre, const_char *name, object deft):
     cdef PetscInt value = 0
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetInt(pre, name, &value, &flag) )
+    CHKERR( PetscOptionsGetInt(opt, pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return toInt(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Real(const_char *pre, const_char *name, object deft):
+cdef getopt_Real(PetscOptions opt, const_char *pre, const_char *name, object deft):
     cdef PetscReal value = 0
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetReal(pre, name, &value, &flag) )
+    CHKERR( PetscOptionsGetReal(opt, pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return toReal(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Scalar(const_char *pre, const_char *name, object deft):
+cdef getopt_Scalar(PetscOptions opt, const_char *pre, const_char *name, object deft):
     cdef PetscScalar value = 0
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetScalar(pre, name, &value, &flag) )
+    CHKERR( PetscOptionsGetScalar(opt, pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return toScalar(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_String(const_char *pre, const_char *name, object deft):
+cdef getopt_String(PetscOptions opt, const_char *pre, const_char *name, object deft):
     cdef char value[1024+1]
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetString(pre, name, value, 1024, &flag) )
+    CHKERR( PetscOptionsGetString(opt, pre, name, value, 1024, &flag) )
     if flag==PETSC_TRUE: return bytes2str(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
@@ -122,15 +125,15 @@ cdef getpair(prefix, name, const_char **pr, const_char **nm):
     nm[0] = n
     return (prefix, name)
 
-cdef getopt(PetscOptType otype, prefix, name, deft):
+cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
     cdef const_char *pr = NULL
     cdef const_char *nm = NULL
     tmp = getpair(prefix, name, &pr, &nm)
-    if otype == OPT_BOOL   : return getopt_Bool   (pr, nm, deft)
-    if otype == OPT_INT    : return getopt_Int    (pr, nm, deft)
-    if otype == OPT_REAL   : return getopt_Real   (pr, nm, deft)
-    if otype == OPT_SCALAR : return getopt_Scalar (pr, nm, deft)
-    if otype == OPT_STRING : return getopt_String (pr, nm, deft)
+    if otype == OPT_BOOL   : return getopt_Bool   (opt, pr, nm, deft)
+    if otype == OPT_INT    : return getopt_Int    (opt, pr, nm, deft)
+    if otype == OPT_REAL   : return getopt_Real   (opt, pr, nm, deft)
+    if otype == OPT_SCALAR : return getopt_Scalar (opt, pr, nm, deft)
+    if otype == OPT_STRING : return getopt_String (opt, pr, nm, deft)
 
 
 # simple minded options parser
