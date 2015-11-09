@@ -150,6 +150,8 @@ struct _p_DM {
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                    *data;
+  /* Hierarchy / Submeshes */
+  DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
   DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;

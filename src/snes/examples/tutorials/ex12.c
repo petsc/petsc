@@ -414,7 +414,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt i   = 0;
     char     buf[256];
 
-    while (cdm) {ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr); ++i;}
+    while (cdm) {ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr); ++i;}
     cdm = *dm;
     while (cdm) {
       PetscViewer viewer;
@@ -424,7 +424,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-      ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+      ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
@@ -550,7 +550,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     }
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);

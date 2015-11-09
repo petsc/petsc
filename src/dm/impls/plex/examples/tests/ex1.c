@@ -225,7 +225,7 @@ static PetscErrorCode TestCellShape(DM dm)
 
   ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
 
-  ierr = DMPlexGetCoarseDM(dm,&dmCoarse);CHKERRQ(ierr);
+  ierr = DMGetCoarseDM(dm,&dmCoarse);CHKERRQ(ierr);
   if (dmCoarse) {
     ierr = TestCellShape(dmCoarse);CHKERRQ(ierr);
   }

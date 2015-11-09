@@ -66,6 +66,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   }
   ierr = PetscDSCreate(comm, &v->prob);CHKERRQ(ierr);
   v->dmBC = NULL;
+  v->coarseMesh = NULL;
   v->outputSequenceNum = -1;
   v->outputSequenceVal = 0.0;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
@@ -617,6 +618,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
 
+  ierr = DMDestroy(&(*dm)->coarseMesh);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
@@ -2206,6 +2208,8 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   ierr = PetscLogEventBegin(DM_Coarsen,dm,0,0,0);CHKERRQ(ierr);
   ierr                      = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   if (!(*dmc)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "NULL coarse mesh produced");
+  ierr = DMSetCoarseDM(dm,*dmc);CHKERRQ(ierr);
+  dm->coarseMesh            = *dmc;
   (*dmc)->ops->creatematrix = dm->ops->creatematrix;
   ierr                      = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx               = dm->ctx;
@@ -5243,3 +5247,54 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetCoarseDM"
+/*@
+  DMGetCoarseDM - Get the coarse mesh from which this was obtained by refinement
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. cdm - The coarse DM
+
+  Level: intermediate
+
+.seealso: DMSetCoarseDM()
+@*/
+PetscErrorCode DMGetCoarseDM(DM dm, DM *cdm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cdm, 2);
+  *cdm = dm->coarseMesh;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoarseDM"
+/*@
+  DMSetCoarseDM - Set the coarse mesh from which this was obtained by refinement
+
+  Input Parameters:
++ dm - The DM object
+- cdm - The coarse DM
+
+  Level: intermediate
+
+.seealso: DMGetCoarseDM()
+@*/
+PetscErrorCode DMSetCoarseDM(DM dm, DM cdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (cdm) PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject)cdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm->coarseMesh);CHKERRQ(ierr);
+  dm->coarseMesh = cdm;
+  PetscFunctionReturn(0);
+}
+

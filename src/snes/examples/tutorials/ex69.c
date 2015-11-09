@@ -3313,7 +3313,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 0;
     ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);

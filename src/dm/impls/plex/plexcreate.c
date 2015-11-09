@@ -1169,12 +1169,12 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     /* Total hack since we do not pass in a pointer */
     ierr = DMPlexSwap_Static(dm, dms[refine-1]);CHKERRQ(ierr);
     if (refine == 1) {
-      ierr = DMPlexSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = DMPlexSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dms[0], PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Free DMs */
@@ -1373,7 +1373,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
-  mesh->coarseMesh          = NULL;
   mesh->regularRefinement   = PETSC_FALSE;
   mesh->depthState          = -1;
   mesh->globalVertexNumbers = NULL;

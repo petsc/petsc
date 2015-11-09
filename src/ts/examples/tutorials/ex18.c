@@ -795,7 +795,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     else             {ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);}
 
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
 
     /* Coordinates were never localized for coarse meshes */
     if (cdm) {ierr = DMPlexLocalizeCoordinates(cdm);CHKERRQ(ierr);}

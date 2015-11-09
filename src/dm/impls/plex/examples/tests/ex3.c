@@ -763,7 +763,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
-  ierr = DMPlexSetCoarseDM(rdm, dm);CHKERRQ(ierr);
+  ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
   ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
   if (user->tree && isPlex) {
     DM refTree;

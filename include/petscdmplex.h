@@ -183,8 +183,6 @@ PETSC_EXTERN PetscErrorCode DMPlexGetRefinementUniform(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRefinementUniform(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetRefinementFunction(DM, PetscErrorCode (**)(const PetscReal [], PetscReal *));
 PETSC_EXTERN PetscErrorCode DMPlexSetRefinementFunction(DM, PetscErrorCode (*)(const PetscReal [], PetscReal *));
-PETSC_EXTERN PetscErrorCode DMPlexGetCoarseDM(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexSetCoarseDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCoarsePointIS(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetRegularRefinement(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRegularRefinement(DM, PetscBool);

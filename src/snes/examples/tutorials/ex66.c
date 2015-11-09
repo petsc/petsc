@@ -176,7 +176,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);

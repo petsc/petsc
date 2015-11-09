@@ -651,7 +651,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
       ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     }
-    ierr = DMPlexGetCoarseDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(dm, &cdm);CHKERRQ(ierr);
     if (cdm) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = DMPlexView_Ascii(cdm, viewer);CHKERRQ(ierr);
@@ -754,7 +754,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->tetgenOpts);CHKERRQ(ierr);
   ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
-  ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
@@ -5594,7 +5593,7 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
 
-  ierr = DMPlexGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
   ierr = DMPlexGetRegularRefinement(dmFine, &regular);CHKERRQ(ierr);
   if (regular && cdm == dmCoarse) {ierr = DMPlexComputeInterpolatorNested(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);}
   else                            {ierr = DMPlexComputeInterpolatorGeneral(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);}
@@ -5779,58 +5778,6 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = PetscFree3(bcFields,bcPoints,bcComps);CHKERRQ(ierr);
   ierr = PetscFree2(numComp,numDof);CHKERRQ(ierr);
   ierr = PetscFree(isFE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCoarseDM"
-/*@
-  DMPlexGetCoarseDM - Get the coarse mesh from which this was obtained by refinement
-
-  Input Parameter:
-. dm - The DMPlex object
-
-  Output Parameter:
-. cdm - The coarse DM
-
-  Level: intermediate
-
-.seealso: DMPlexSetCoarseDM()
-@*/
-PetscErrorCode DMPlexGetCoarseDM(DM dm, DM *cdm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cdm, 2);
-  *cdm = ((DM_Plex *) dm->data)->coarseMesh;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetCoarseDM"
-/*@
-  DMPlexSetCoarseDM - Set the coarse mesh from which this was obtained by refinement
-
-  Input Parameters:
-+ dm - The DMPlex object
-- cdm - The coarse DM
-
-  Level: intermediate
-
-.seealso: DMPlexGetCoarseDM()
-@*/
-PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
-{
-  DM_Plex       *mesh;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (cdm) PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
-  mesh = (DM_Plex *) dm->data;
-  ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);
-  mesh->coarseMesh = cdm;
-  ierr = PetscObjectReference((PetscObject) mesh->coarseMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
