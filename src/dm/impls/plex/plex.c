@@ -424,16 +424,16 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     numColors  = 10;
     numLColors = 10;
     ierr = PetscCalloc3(numLabels, &names, numColors, &colors, numLColors, &lcolors);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(((PetscObject) viewer)->prefix, "-dm_plex_view_scale", &scale, NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(((PetscObject) viewer)->prefix, "-dm_plex_view_numbers", &useNumbers, NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->prefix, "-dm_plex_view_labels", names, &numLabels, &useLabels);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_scale", &scale, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_numbers", &useNumbers, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_labels", names, &numLabels, &useLabels);CHKERRQ(ierr);
     if (!useLabels) numLabels = 0;
-    ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->prefix, "-dm_plex_view_colors", colors, &numColors, &useColors);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_colors", colors, &numColors, &useColors);CHKERRQ(ierr);
     if (!useColors) {
       numColors = 3;
       for (c = 0; c < numColors; ++c) {ierr = PetscStrallocpy(defcolors[c], &colors[c]);CHKERRQ(ierr);}
     }
-    ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->prefix, "-dm_plex_view_lcolors", lcolors, &numLColors, &useColors);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_lcolors", lcolors, &numLColors, &useColors);CHKERRQ(ierr);
     if (!useColors) {
       numLColors = 4;
       for (c = 0; c < numLColors; ++c) {ierr = PetscStrallocpy(deflcolors[c], &lcolors[c]);CHKERRQ(ierr);}

@@ -121,7 +121,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
   /* Default type of lagrange multipliers is non-redundant */
   fully_redundant = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-fetidp_fullyredundant",&fully_redundant,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_fullyredundant",&fully_redundant,NULL);CHKERRQ(ierr);
 
   /* Evaluate local and global number of lagrange multipliers */
   ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
@@ -368,7 +368,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = VecDuplicate(pcis->vec1_D,&fetidpmat_ctx->temp_solution_D);CHKERRQ(ierr);
 
   test_fetidp = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-fetidp_check",&test_fetidp,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_check",&test_fetidp,NULL);CHKERRQ(ierr);
 
   if (test_fetidp && !pcbddc->use_deluxe_scaling) {
 

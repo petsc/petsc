@@ -33,10 +33,10 @@ PetscInt main(PetscInt argc,char **args)
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-display_mat", &disp_mat);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-display_mat", &disp_mat);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   dim  = n*n;
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-norandom",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) use_random = 0;
   else use_random = 1;
   if (use_random) {
@@ -79,7 +79,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Check whether A is symmetric */
-  ierr = PetscOptionsHasName(NULL, "-check_symmetric", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetric", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
@@ -110,7 +110,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Check whether A is Hermitian */
-  ierr = PetscOptionsHasName(NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Hermit;
     if (disp_mat) {

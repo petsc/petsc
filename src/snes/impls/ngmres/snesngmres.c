@@ -103,7 +103,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NGMRES"
-PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;

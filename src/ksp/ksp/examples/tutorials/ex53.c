@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* Create vectors.*/
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

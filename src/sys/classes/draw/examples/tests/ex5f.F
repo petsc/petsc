@@ -25,13 +25,14 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 !  GetInt requires a PetscInt so have to do this ugly setting
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',w,          &
-     &     flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+     &                        '-width',w, flg,ierr)
       width = int(w)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',h,         &
-     &     flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+     &                        '-height',h,flg,ierr)
       height = int(h)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+     &                        '-n',n,flg,ierr)
 
       call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)

@@ -600,7 +600,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_Greedy"
-PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptions *PetscOptionsObject, MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
 {
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
   PetscErrorCode ierr;

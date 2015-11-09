@@ -308,14 +308,14 @@ PetscErrorCode GetParams(AppCtx *user)
   user->gamma     = 3.2E-4; user->theta_c = 1;
   user->implicit  = 0;
 
-  ierr = PetscOptionsGetBool(NULL,"-monitor",&user->tsmonitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-monitor",&user->tsmonitor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

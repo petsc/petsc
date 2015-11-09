@@ -39,11 +39,11 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
   M    = 2*(ne+1)*(ne+1); /* global number of equations */
   m    = (ne+1)*(ne+1)/npe;
   if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;

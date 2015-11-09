@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* create vector */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

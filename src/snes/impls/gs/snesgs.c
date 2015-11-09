@@ -190,7 +190,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NGS"
-PetscErrorCode SNESSetFromOptions_NGS(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGS       *gs = (SNES_NGS*)snes->data;
   PetscErrorCode ierr;

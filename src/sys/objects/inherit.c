@@ -437,7 +437,7 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectProcessOptionsHandlers(), PetscObjectDestroyOptionsHandlers()
 
 @*/
-PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
+PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -464,7 +464,7 @@ PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*ha
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectDestroyOptionsHandlers()
 
 @*/
-PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj)
+PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptionsObject,PetscObject obj)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -472,7 +472,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   for (i=0; i<obj->noptionhandler; i++) {
-    ierr = (*obj->optionhandler[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    ierr = (*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

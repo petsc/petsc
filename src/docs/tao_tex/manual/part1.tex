@@ -237,7 +237,7 @@ an application may have a grid discretization parameter \texttt{nx}
 that can be set with the command line option \texttt{-nx <integer>}.
 The application can read this option with the following line of code:
 \begin{verbatim}
-   PetscOptionsGetInt(NULL, "-nx", &nx, &flg);
+   PetscOptionsGetInt(NULL,NULL, "-nx", &nx, &flg);
 \end{verbatim}
 \noindent
 If the command line option is present, the variable \texttt{nx} is set

@@ -97,7 +97,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ICC"
-static PetscErrorCode PCSetFromOptions_ICC(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscBool      flg;

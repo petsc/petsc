@@ -354,7 +354,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
-static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;

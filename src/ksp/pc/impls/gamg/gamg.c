@@ -1190,7 +1190,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG"
-PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)pc->data;

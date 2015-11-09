@@ -10,7 +10,7 @@ struct _TSGLAdaptOps {
   PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool*);
   PetscErrorCode (*destroy)(TSGLAdapt);
   PetscErrorCode (*view)(TSGLAdapt,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,TSGLAdapt);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSGLAdapt);
 };
 
 struct _p_TSGLAdapt {
@@ -197,7 +197,7 @@ PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt *adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetFromOptions"
-PetscErrorCode  TSGLAdaptSetFromOptions(PetscOptions *PetscOptionsObject,TSGLAdapt adapt)
+PetscErrorCode  TSGLAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSGLAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSGLADAPT_BOTH;

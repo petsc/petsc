@@ -48,8 +48,8 @@ int main(int argc,char **args)
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-t",&ntimes,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
@@ -108,7 +108,7 @@ int main(int argc,char **args)
   /*
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = PetscOptionsGetBool(NULL,"-my_ksp_monitor",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-my_ksp_monitor",&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,NULL,0);CHKERRQ(ierr);}
 
   /*

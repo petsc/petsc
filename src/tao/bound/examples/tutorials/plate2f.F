@@ -73,20 +73,24 @@
 
 ! Check for any command line arguments that override defaults
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-mx",mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-mx',mx,flg,ierr)
       CHKERRQ(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-my",my,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-my',my,flg,ierr)
       CHKERRQ(ierr)
 
       bmx = mx/2
       bmy = my/2
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-bmx",bmx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-bmx',bmx,flg,ierr)
       CHKERRQ(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-bmy",bmy,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-bmy',bmy,flg,ierr)
       CHKERRQ(ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-bheight",bheight,   &
-     &      flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-bheight',bheight,flg,ierr)
       CHKERRQ(ierr)
 
 
@@ -870,26 +874,26 @@
 
 
 ! Scale the boundary if desired
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-bottom",            &
-     &                         scl,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+     &                         '-bottom',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
          call VecScale(scl,Bottom,ierr)
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-top",               &
-     &                         scl,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+     &                         '-top',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
          call VecScale(scl,Top,ierr)
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-right",             &
-     &                         scl,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+     &                         '-right',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
          call VecScale(scl,Right,ierr)
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-left",              &
-     &                         scl,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+     &                         '-left',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
          call VecScale(scl,Left,ierr)
       endif
@@ -1013,8 +1017,8 @@
       zero = 0.0
       np5 = -0.5
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-start",            &
-     &                        start,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                        '-start', start,flg,ierr)
 
       if ((flg .eqv. PETSC_TRUE) .and. (start .eq. 0)) then  ! the zero vector is reasonable
          call VecSet(X,zero,ierr)

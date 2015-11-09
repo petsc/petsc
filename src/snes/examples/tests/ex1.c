@@ -83,9 +83,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -123,10 +123,10 @@ int main(int argc,char **argv)
      for the Jacobian.  See the users manual for a discussion of better
      techniques for preallocating matrix memory.
   */
-  ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     PetscBool matrix_free_operator = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-snes_mf_operator",&matrix_free_operator,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-snes_mf_operator",&matrix_free_operator,NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
   if (!matrix_free) {
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = PetscOptionsGetBool(NULL,"-snes_fd_coloring",&fd_coloring,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-snes_fd_coloring",&fd_coloring,NULL);CHKERRQ(ierr);
   if (matrix_free && fd_coloring) SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
@@ -229,7 +229,7 @@ int main(int argc,char **argv)
      Print the convergence history.  This is intended just to demonstrate
      use of the data attained via SNESSetConvergenceHistory().
   */
-  ierr = PetscOptionsHasName(NULL,"-print_history",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %g\n",i,hist_its[i],(double)history[i]);CHKERRQ(ierr);

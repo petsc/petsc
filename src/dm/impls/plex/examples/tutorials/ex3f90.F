@@ -57,7 +57,7 @@
 
       call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
       CHKERRQ(ierr)
-      call PetscObjectSetName(dm, "testplex", ierr)
+      call PetscObjectSetName(dm, 'testplex', ierr)
       CHKERRQ(ierr)
       call DMSetDimension(dm, dim, ierr)
       CHKERRQ(ierr)

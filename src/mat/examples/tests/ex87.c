@@ -17,7 +17,7 @@ int main(int argc,char **args)
   IS             isrow,iscol,irow[n],icol[n];
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&BAIJ);CHKERRQ(ierr);

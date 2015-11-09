@@ -228,7 +228,7 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BMRM"
-static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;

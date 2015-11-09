@@ -29,7 +29,8 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 ! Read in matrix and RHS
-      call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
+      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,&
+     &                           '-f',f,flg,ierr)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,     &
      &     fd,ierr)
 

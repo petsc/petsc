@@ -80,7 +80,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 #else
     _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE;
 #endif
-    ierr = PetscOptionsGetEnum(NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(NULL,NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,NULL);CHKERRQ(ierr);
   }
   *twosided = _twosided_type;
   PetscFunctionReturn(0);

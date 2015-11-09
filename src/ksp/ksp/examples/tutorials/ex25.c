@@ -44,8 +44,8 @@ int main(int argc,char **argv)
 
   user.k = 1;
   user.e = .99;
-  ierr   = PetscOptionsGetInt(0,"-k",&user.k,0);CHKERRQ(ierr);
-  ierr   = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,0,"-k",&user.k,0);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetScalar(NULL,0,"-e",&user.e,0);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-128,1,1,0,&da);CHKERRQ(ierr);

@@ -22,13 +22,13 @@ int main(int argc,char **args)
 
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
 
   /* Set flag if we are doing a nonsymmetric problem; the default is symmetric. */
-  ierr = PetscOptionsGetBool(NULL,"-mat_nonsym",&mat_nonsymmetric,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-mat_nonsym",&mat_nonsymmetric,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);

@@ -192,7 +192,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
     } else {
       PetscBool set;
       char      accesstoken[4096];
-      ierr = PetscOptionsGetString(NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set);CHKERRQ(ierr);
       if (!set) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
       ierr = PetscStrcat(head,accesstoken);CHKERRQ(ierr);
     }
@@ -249,7 +249,7 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
     } else {
       PetscBool set;
       char      accesstoken[4096];
-      ierr = PetscOptionsGetString(NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set);CHKERRQ(ierr);
       if (!set) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
       ierr = PetscStrcat(head,accesstoken);CHKERRQ(ierr);
     }

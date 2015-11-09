@@ -438,7 +438,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,"-mat_factor_dump_on_error",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)A)->options,NULL,"-mat_factor_dump_on_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];

@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /*
      Create a vector, specifying only its global dimension.

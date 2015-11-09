@@ -159,7 +159,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BJacobi"
 
-static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;

@@ -57,14 +57,14 @@ int main(int argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Read in matrix, rhs and exact solution from ascii files */
-  ierr = PetscOptionsGetString(NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN,&flg_A);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-noshift",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN,&flg_A);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-noshift",&flg);CHKERRQ(ierr);
   if (flg) shift = 0;
   if (flg_A) {
     ierr   = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
     ierr   = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr);
     nsizes = 3;
-    ierr   = PetscOptionsGetIntArray(NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
+    ierr   = PetscOptionsGetIntArray(NULL,NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
     if (flg) {
       if (nsizes != 3) SETERRQ(PETSC_COMM_WORLD,1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
       m  = sizes[0];
@@ -92,7 +92,7 @@ int main(int argc,char **args)
     fclose(Afile);
   }
 
-  ierr = PetscOptionsGetString(NULL,"-rhs",rhs,PETSC_MAX_PATH_LEN,&flg_b);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",rhs,PETSC_MAX_PATH_LEN,&flg_b);CHKERRQ(ierr);
   if (flg_b) {
     ierr = VecCreate(PETSC_COMM_SELF,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **args)
     fclose(bfile);
   }
 
-  ierr = PetscOptionsGetString(NULL,"-solu",solu,PETSC_MAX_PATH_LEN,&flg_u);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-solu",solu,PETSC_MAX_PATH_LEN,&flg_u);CHKERRQ(ierr);
   if (flg_u) {
     ierr = VecCreate(PETSC_COMM_SELF,&u);CHKERRQ(ierr);
     ierr = VecSetSizes(u,PETSC_DECIDE,n);CHKERRQ(ierr);

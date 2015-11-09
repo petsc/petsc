@@ -837,7 +837,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetBool(NULL,"-islocaltoglobalmappinggetinfo_debug",&debug,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)mapping)->options,NULL,"-islocaltoglobalmappinggetinfo_debug",&debug,NULL);CHKERRQ(ierr);
 
   /*
     Notes on ISLocalToGlobalMappingGetBlockInfo

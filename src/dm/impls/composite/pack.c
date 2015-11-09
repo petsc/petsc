@@ -1337,7 +1337,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
   ierr = PetscMalloc1(n,&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
 
-  ierr = PetscOptionsGetBool(NULL,"-dmcomposite_dense_jacobian",&dense,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->options,((PetscObject)dm)->prefix,"-dmcomposite_dense_jacobian",&dense,NULL);CHKERRQ(ierr);
   if (dense) {
     for (i=0; i<n; i++) {
       colors[i] = (ISColoringValue)(com->rstart + i);

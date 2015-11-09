@@ -124,13 +124,13 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
   if (dim == 1) {

@@ -21,8 +21,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Test MatSetValues() and MatGetValues() */
-  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);

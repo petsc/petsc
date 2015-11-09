@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Vec            yy;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-col",&col,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-col",&col,NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

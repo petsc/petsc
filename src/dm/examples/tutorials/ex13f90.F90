@@ -46,9 +46,9 @@ program main
   call MPI_Comm_rank(comm,rank,ierr)
   call MPI_Comm_size(comm,size,ierr)
   if (rank == 0) then
-    write(*,*) "Hi! We're solving van der Pol using ",size," processes."
-    write(*,*) " "
-    write(*,*) "  t     x1         x2"
+    write(*,*) 'Hi! We are solving van der Pol using ',size,' processes.'
+    write(*,*) ' '
+    write(*,*) '  t     x1         x2'
   endif
 
   ! Set up the global grid

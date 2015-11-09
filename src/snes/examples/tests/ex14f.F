@@ -72,8 +72,8 @@
       type(monctx) ::   snesmonitor
       PetscErrorCode :: ierr
 
-c      write(6,*) " "
-c      write(6,*) "    its ",its,snesmonitor%its,"lag",
+c      write(6,*) ' '
+c      write(6,*) '    its ',its,snesmonitor%its,'lag',
 c     &            snesmonitor%lag
 c      call flush(6)
       if (mod(snesmonitor%its,snesmonitor%lag).eq.0)
@@ -116,7 +116,8 @@ c      call flush(6)
       i0 = 0
       i3 = 3
       N  = 10
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                        '-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
@@ -350,7 +351,7 @@ c      call flush(6)
       rank = ctx(4)
       size = ctx(5)
       if (rank .eq. 0) then
-        write(6,*)"   Jacobian is built ..."
+        write(6,*)'   Jacobian is built ...'
         call flush(6)
       endif
       i1 = 1

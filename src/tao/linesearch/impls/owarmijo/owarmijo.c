@@ -55,7 +55,7 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
-static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
   PetscErrorCode         ierr;

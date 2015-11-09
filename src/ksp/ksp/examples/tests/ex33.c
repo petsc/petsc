@@ -27,7 +27,7 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsGetString(NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&loadA);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&loadA);CHKERRQ(ierr);
   if (loadA) {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ int main(int argc,char **args)
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetString(NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&loadB);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&loadB);CHKERRQ(ierr);
     if (loadB) {
       /* load B to get A = A + sigma*B */
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -47,8 +47,8 @@ int main(int argc,char **args)
   }
 
   if (!loadA) { /* Matrix A is copied from slepc-3.0.0-p6/src/examples/ex13.c. */
-    ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-m",&m,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,&flag);CHKERRQ(ierr);
     if (!flag) m=n;
     N    = n*m;
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ int main(int argc,char **args)
   /* ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Set a shift: A = A - sigma*B */
-  ierr = PetscOptionsGetScalar(NULL,"-sigma",&sigma,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-sigma",&sigma,&flag);CHKERRQ(ierr);
   if (flag) {
     sigma = -1.0 * sigma;
     ierr  = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */

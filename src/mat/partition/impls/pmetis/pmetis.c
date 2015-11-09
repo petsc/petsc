@@ -231,7 +231,7 @@ PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis"
-PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptions *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode ierr;
   PetscBool      flag = PETSC_FALSE;

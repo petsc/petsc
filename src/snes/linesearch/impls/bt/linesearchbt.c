@@ -428,7 +428,7 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetFromOptions_BT"
-static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptions *PetscOptionsObject,SNESLineSearch linesearch)
+static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOptionsObject,SNESLineSearch linesearch)
 {
 
   PetscErrorCode    ierr;

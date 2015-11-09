@@ -23,7 +23,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 
   periodicity = 0;
 
-  ierr = PetscOptionsGetInt(NULL,"-periodic", &periodicity, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic", &periodicity, NULL);CHKERRQ(ierr);
   if (periodicity==1) {
     bx = DM_BOUNDARY_PERIODIC;
   } else if (periodicity==2) {
@@ -115,9 +115,9 @@ int main(int argc,char **argv)
   mx   = 2;
   my   = 2;
   mz   = 2;
-  ierr = PetscOptionsGetInt(NULL,"-mx", &mx, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my", &my, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mz", &mz, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my", &my, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0);CHKERRQ(ierr);
 
   ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
 
