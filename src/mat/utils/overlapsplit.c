@@ -43,12 +43,18 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   /* if the sub-communicator is the same as the global communicator,
    * user does not want to use a sub-communicator
    * */
-  if(issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT) PetscFunctionReturn(0);
+  if(issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT){
+	ierr = PetscCommDestroy(&scomm);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+  }
   /* if the sub-communicator is petsc_comm_self,
    * user also does not care the sub-communicator
    * */
   ierr = MPI_Comm_compare(scomm,PETSC_COMM_SELF,&issamecomm);CHKERRQ(ierr);
-  if(issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT){PetscFunctionReturn(0);}
+  if(issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT){
+	ierr = PetscCommDestroy(&scomm);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+  }
   ierr = MPI_Comm_rank(scomm,&srank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(scomm,&ssize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(gcomm,&grank);CHKERRQ(ierr);
