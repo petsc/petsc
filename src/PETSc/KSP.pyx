@@ -163,6 +163,20 @@ cdef class KSP(Object):
 
     # --- operators and preconditioner ---
 
+    def setComputeRHS(self, rhs, args=None, kargs=None):
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+        context = (rhs, args, kargs)
+        self.set_attr('__rhs__', context)
+        CHKERR( KSPSetComputeRHS(self.ksp, KSP_ComputeRHS, <void*>context) )
+
+    def setComputeOperators(self, operators, args=None, kargs=None):
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+        context = (operators, args, kargs)
+        self.set_attr('__operators__', context)
+        CHKERR( KSPSetComputeOperators(self.ksp, KSP_ComputeOps, <void*>context) )
+
     def setOperators(self, Mat A=None, Mat P=None):
         cdef PetscMat amat=NULL
         if A is not None: amat = A.mat
