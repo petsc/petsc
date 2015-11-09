@@ -1012,7 +1012,7 @@ extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
   PetscSF          sf;
-  DM               coordDM;
+  DM               coordDM, coarseDM;
   Vec              coords;
   const PetscReal *maxCell, *L;
   const DMBoundaryType *bd;
@@ -1046,6 +1046,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   }
   dm->labels = dmNew->labels;
   dm->depthLabel = dmNew->depthLabel;
+  ierr = DMGetCoarseDM(dmNew,&coarseDM);CHKERRQ(ierr);
+  ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1078,6 +1080,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   ierr = DMSetCoordinatesLocal(dmA, coordsB);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmB, coordsA);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject) coordsA);CHKERRQ(ierr);
+
   tmp       = dmA->data;
   dmA->data = dmB->data;
   dmB->data = tmp;
@@ -1162,8 +1165,10 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
   if (refine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
   if (refine && isHierarchy) {
-    DM *dms;
+    DM *dms, coarseDM;
 
+    ierr = DMGetCoarseDM(dm, &coarseDM);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)coarseDM);CHKERRQ(ierr);
     ierr = PetscMalloc1(refine,&dms);CHKERRQ(ierr);
     ierr = DMRefineHierarchy(dm, refine, dms);CHKERRQ(ierr);
     /* Total hack since we do not pass in a pointer */
@@ -1177,6 +1182,8 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
       ierr = DMSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dms[0], PETSC_TRUE);CHKERRQ(ierr);
     }
+    ierr = DMSetCoarseDM(dms[refine-1], coarseDM);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)coarseDM);CHKERRQ(ierr);
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);

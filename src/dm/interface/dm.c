@@ -2209,7 +2209,6 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   ierr                      = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   if (!(*dmc)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "NULL coarse mesh produced");
   ierr = DMSetCoarseDM(dm,*dmc);CHKERRQ(ierr);
-  dm->coarseMesh            = *dmc;
   (*dmc)->ops->creatematrix = dm->ops->creatematrix;
   ierr                      = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx               = dm->ctx;
