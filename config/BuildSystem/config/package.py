@@ -30,7 +30,7 @@ class Package(config.base.Configure):
                                  # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
-    self.gitcommit        = 'HEAD' # Git commit to use for downloads (used in preference to tarball downloads)
+    self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.download         = []   # list of URLs where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
@@ -487,16 +487,30 @@ class Package(config.base.Configure):
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
-      if self.gitcommit != 'HEAD':
+      prefetch = 0
+      if self.gitcommit.startswith('origin/'):
+        prefetch = 1
+      else:
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', self.gitcommit+'^{commit}'], cwd=self.packageDir, log = self.log)
+        except:
+          prefetch = 1
+      if prefetch:
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=self.packageDir, log = self.log)
         except:
-          raise RuntimeError('Unable to checkout commit id '+self.gitcommit+' in repository '+self.packageDir)
+          raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
+                             '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
+      try:
+        gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+        if self.gitcommit != 'HEAD':
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+      except:
+        raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
+                           '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
       # write a commit-tag file
-      l,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
       fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
-      fd.write(l)
+      fd.write(gitcommit_hash)
       fd.close()
     return
 
@@ -549,7 +563,14 @@ class Package(config.base.Configure):
     # now attempt to download each url until any one succeeds.
     err =''
     for url in download_urls:
-      if url.startswith('git://') and not self.gitPreReqCheck(): continue
+      if url.startswith('git://'):
+        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
+        if not hasattr(self.sourceControl, 'git'):
+          err += 'Git not found - required for url: '+url+'\n'
+          continue
+        elif not self.gitPreReqCheck():
+          err += 'Git prerequisite check failed for url: '+url+'\n'
+          continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
@@ -561,7 +582,7 @@ class Package(config.base.Configure):
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
-    raise RuntimeError(err)
+    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')

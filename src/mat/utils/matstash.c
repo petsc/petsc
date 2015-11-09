@@ -47,7 +47,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 
   nopt = stash->size;
   ierr = PetscMalloc1(nopt,&opt);CHKERRQ(ierr);
-  ierr = PetscOptionsGetIntArray(NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
@@ -80,8 +80,8 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->reproduce   = PETSC_FALSE;
   stash->blocktype   = MPI_DATATYPE_NULL;
 
-  ierr = PetscOptionsGetBool(NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-matstash_bts",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_bts",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     stash->ScatterBegin   = MatStashScatterBegin_BTS;
     stash->ScatterGetMesg = MatStashScatterGetMesg_BTS;

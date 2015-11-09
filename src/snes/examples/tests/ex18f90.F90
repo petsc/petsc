@@ -121,14 +121,14 @@ end interface
 
   ! use the base class as the context
   print *
-  print *, 'the base class will succeed by printing out "Base printout" below'
+  print *, 'the base class will succeed by printing out Base printout below'
   call SNESCreate(PETSC_COMM_WORLD,snes_base,ierr);CHKERRQ(ierr)
   call SNESSetFunction(snes_base,x,TestFunction,base,ierr);CHKERRQ(ierr)
   call SNESComputeFunction(snes_base,x,x,ierr);CHKERRQ(ierr)
   call SNESDestroy(snes_base,ierr);CHKERRQ(ierr)
 
   ! use the extended class as the context
-  print *, 'the extended class will succeed by printing out "Extended printout" below'
+  print *, 'the extended class will succeed by printing out Extended printout below'
   call SNESCreate(PETSC_COMM_WORLD,snes_extended,ierr);CHKERRQ(ierr)
   call SNESSetFunction(snes_extended,x,TestFunction,extended,ierr);CHKERRQ(ierr)
   call SNESComputeFunction(snes_extended,x,x,ierr);CHKERRQ(ierr)

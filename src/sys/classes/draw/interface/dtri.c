@@ -176,7 +176,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   if (popup) {ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);}
 
   ctx.showgrid = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)win)->options,NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);
 
   /* fill up x and y coordinates */
   if (!xi) {

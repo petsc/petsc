@@ -127,37 +127,121 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSetOption_Elemental"
+PetscErrorCode MatSetOption_Elemental(Mat A,MatOption op,PetscBool flg)
+{
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+
+  PetscFunctionBegin;
+  switch (op) {
+  case MAT_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
+  case MAT_ROW_ORIENTED:
+    a->roworiented = flg;
+    break;
+  case MAT_SYMMETRIC:
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %s",MatOptions[op]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValues_Elemental"
 static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscScalar *vals,InsertMode imode)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscInt       i,j,rrank,ridx,crank,cidx,erow,ecol,elrow,elcol;
-  const El::Grid &grid = a->emat->Grid();
+  PetscInt       i,j,rrank,ridx,crank,cidx,erow,ecol,numQueues=0;
 
   PetscFunctionBegin;
-  for (i=0; i<nr; i++) {
-    if (rows[i] < 0) continue;
-    P2RO(A,0,rows[i],&rrank,&ridx);
-    RO2E(A,0,rrank,ridx,&erow);
-    if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
+  // TODO: Initialize matrix to all zeros?
+
+  // Count the number of queues from this process
+  if (a->roworiented) {
+    for (i=0; i<nr; i++) {
+      if (rows[i] < 0) continue;
+      P2RO(A,0,rows[i],&rrank,&ridx);
+      RO2E(A,0,rrank,ridx,&erow);
+      if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
+      for (j=0; j<nc; j++) {
+        if (cols[j] < 0) continue;
+        P2RO(A,1,cols[j],&crank,&cidx);
+        RO2E(A,1,crank,cidx,&ecol);
+        if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
+        if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+          /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
+          if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+          ++numQueues;
+          continue;
+        }
+        /* printf("Locally updating (%d,%d)\n",erow,ecol); */
+        switch (imode) {
+        case INSERT_VALUES: a->emat->Set(erow,ecol,(PetscElemScalar)vals[i*nc+j]); break;
+        case ADD_VALUES: a->emat->Update(erow,ecol,(PetscElemScalar)vals[i*nc+j]); break;
+        default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+        }
+      }
+    }
+
+    /* printf("numQueues=%d\n",numQueues); */
+    a->emat->Reserve( numQueues );
+    for (i=0; i<nr; i++) {
+      if (rows[i] < 0) continue;
+      P2RO(A,0,rows[i],&rrank,&ridx);
+      RO2E(A,0,rrank,ridx,&erow);
+      for (j=0; j<nc; j++) {
+        if (cols[j] < 0) continue;
+        P2RO(A,1,cols[j],&crank,&cidx);
+        RO2E(A,1,crank,cidx,&ecol);
+        if ( !a->emat->IsLocal(erow,ecol) ) { /*off-proc entry*/
+          /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
+          a->emat->QueueUpdate( erow, ecol, vals[i*nc+j] );
+        }
+      }
+    }
+  } else { /* columnoriented */
     for (j=0; j<nc; j++) {
       if (cols[j] < 0) continue;
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
-      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){ /* off-proc entry */
-        if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
-        /* PetscPrintf(PETSC_COMM_SELF,"[%D] add off-proc entry (%D,%D, %g) (%D %D)\n",rank,rows[i],cols[j],*(vals+i*nc),erow,ecol); */
-        a->esubmat->Set(0,0, (PetscElemScalar)vals[i*nc+j]);
-        a->interface->Axpy(1.0,*(a->esubmat),erow,ecol);
-        continue;
+      for (i=0; i<nr; i++) {
+        if (rows[i] < 0) continue;
+        P2RO(A,0,rows[i],&rrank,&ridx);
+        RO2E(A,0,rrank,ridx,&erow);
+        if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
+        if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+          /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
+          if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+          ++numQueues;
+          continue;
+        }
+        /* printf("Locally updating (%d,%d)\n",erow,ecol); */
+        switch (imode) {
+        case INSERT_VALUES: a->emat->Set(erow,ecol,(PetscElemScalar)vals[i+j*nr]); break;
+        case ADD_VALUES: a->emat->Update(erow,ecol,(PetscElemScalar)vals[i+j*nr]); break;
+        default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+        }
       }
-      elrow = erow / grid.MCSize();
-      elcol = ecol / grid.MRSize();
-      switch (imode) {
-      case INSERT_VALUES: a->emat->SetLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
-      case ADD_VALUES: a->emat->UpdateLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+    }
+
+    /* printf("numQueues=%d\n",numQueues); */
+    a->emat->Reserve( numQueues );
+    for (j=0; j<nc; j++) {
+      if (cols[j] < 0) continue;
+      P2RO(A,1,cols[j],&crank,&cidx);
+      RO2E(A,1,crank,cidx,&ecol);
+
+      for (i=0; i<nr; i++) {
+        if (rows[i] < 0) continue;
+        P2RO(A,0,rows[i],&rrank,&ridx);
+        RO2E(A,0,rrank,ridx,&erow);
+        if ( !a->emat->IsLocal(erow,ecol) ) { /*off-proc entry*/
+          /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
+          a->emat->QueueUpdate( erow, ecol, vals[i+j*nr] );
+        }
       }
     }
   }
@@ -841,19 +925,37 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
 
-  for (i=0; i<nrows; i++) {
-    P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
-    RO2E(A,0,rrank,ridx,&erow);
-    if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+  if (a->roworiented) {  
+    for (i=0; i<nrows; i++) {
+      P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
+      RO2E(A,0,rrank,ridx,&erow);
+      if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+      for (j=0; j<ncols; j++) {
+        P2RO(A,1,cols[j],&crank,&cidx);
+        RO2E(A,1,crank,cidx,&ecol);
+        if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+
+        elrow = erow / grid.MCSize(); /* Elemental local row index */
+        elcol = ecol / grid.MRSize(); /* Elemental local column index */
+        v = a->emat->GetLocal(elrow,elcol);
+        ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  } else { /* column-oriented */
     for (j=0; j<ncols; j++) {
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+      for (i=0; i<nrows; i++) {
+        P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
+        RO2E(A,0,rrank,ridx,&erow);
+        if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
 
-      elrow = erow / grid.MCSize(); /* Elemental local row index */
-      elcol = ecol / grid.MRSize(); /* Elemental local column index */
-      v = a->emat->GetLocal(elrow,elcol);
-      ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+        elrow = erow / grid.MCSize(); /* Elemental local row index */
+        elcol = ecol / grid.MRSize(); /* Elemental local column index */
+        v = a->emat->GetLocal(elrow,elcol);
+        ierr = MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1021,9 +1123,6 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   MPI_Comm           icomm;
 
   PetscFunctionBegin;
-  a->interface->Detach();
-  delete a->interface;
-  delete a->esubmat;
   delete a->emat;
   delete a->pivot;
 
@@ -1076,8 +1175,9 @@ PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType type)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  a->interface->Detach();
-  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
+  /* printf("Calling ProcessQueues\n"); */
+  a->emat->ProcessQueues();
+  /* printf("Finished ProcessQueues\n"); */
   PetscFunctionReturn(0);
 }
 
@@ -1219,7 +1319,7 @@ static struct _MatOps MatOps_Values = {
        MatNorm_Elemental,
 /*20*/ MatAssemblyBegin_Elemental,
        MatAssemblyEnd_Elemental,
-       0, 
+       MatSetOption_Elemental,
        MatZeroEntries_Elemental,
 /*24*/ 0,
        MatLUFactorSymbolic_Elemental,
@@ -1407,12 +1507,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
   a->emat      = new El::DistMatrix<PetscElemScalar>(*a->grid);
-  a->esubmat   = new El::Matrix<PetscElemScalar>(1,1);
-  a->interface = new El::AxpyInterface<PetscElemScalar>;
-  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>;
-
-  /* build cache for off array entries formed */
-  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
+  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>(*a->grid);
+  a->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefEig_C",MatElementalHermitianGenDefEig_Elemental);CHKERRQ(ierr);

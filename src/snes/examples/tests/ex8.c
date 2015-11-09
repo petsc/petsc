@@ -65,8 +65,8 @@ int main(int argc, char **argv)
 #endif
 
   /* Check if lower and upper bounds are set */
-  ierr = PetscOptionsGetScalar(NULL, "-lb", &lb, &flg_l);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL, "-ub", &ub, &flg_u);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL, "-lb", &lb, &flg_l);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL, "-ub", &ub, &flg_u);CHKERRQ(ierr);
 
   /* Create distributed array to manage the 2d grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   /* Solve the application */
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-view_sol",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-view_sol",&flg);CHKERRQ(ierr);
   if (flg) { ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   /* Free memory */
@@ -528,7 +528,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
   if (flg && start==0) { /* The zero vector is reasonable */
 

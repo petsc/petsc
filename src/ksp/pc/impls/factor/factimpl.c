@@ -227,7 +227,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Factor"
-PetscErrorCode  PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Factor         *factor = (PC_Factor*)pc->data;
   PetscErrorCode    ierr;

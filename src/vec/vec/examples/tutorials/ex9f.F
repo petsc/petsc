@@ -78,8 +78,8 @@
 !     the local vector (lx) and the global vector (gx) share the same
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',         &
-     &     flag,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-allocate',flag,ierr)
       if (flag) then
         call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
@@ -98,7 +98,7 @@
 
        call VecGhostGetLocalForm(gx,lx,ierr)
 
-!     Set the values from 0 to 12 into the "global" vector
+!     Set the values from 0 to 12 into the 'global' vector
 
        call VecGetOwnershipRange(gx,rstart,rend,ierr)
 

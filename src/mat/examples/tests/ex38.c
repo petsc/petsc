@@ -19,12 +19,12 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
   /* Get local block or element size*/
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -32,10 +32,10 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-row_oriented",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-row_oriented",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = MatGetOwnershipIS(C,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-Cexp_view_ownership",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-Cexp_view_ownership",&flg);CHKERRQ(ierr);
   if (flg) { /* View ownership of explicit C */
     IS tmp;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Ownership of explicit C:\n");CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeAddEqual() fails");
 
   /* Test MatMatMult() */
-  ierr = PetscOptionsHasName(NULL,"-test_matmatmult",&Test_MatMatMult);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-test_matmatmult",&Test_MatMatMult);CHKERRQ(ierr);
   if (Test_MatMatMult) {
     Mat CCelem,CCaij;
     ierr = MatMatMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCelem);CHKERRQ(ierr);

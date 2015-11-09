@@ -1406,7 +1406,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RosW"
-static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;

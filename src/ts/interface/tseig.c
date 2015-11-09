@@ -74,7 +74,7 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   (*ctx)->howoften          = howoften;
   (*ctx)->computeexplicitly = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL);CHKERRQ(ierr);
 
   (*ctx)->comm = comm;
   (*ctx)->xmin = -2.1;

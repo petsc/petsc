@@ -170,7 +170,7 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(ts->hdr.prefix, "-dmts_check", &check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
   ierr = TSSetSolution(ts, sol);CHKERRQ(ierr);

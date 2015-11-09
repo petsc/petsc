@@ -26,12 +26,12 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-reorder",&reorder,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-testaij",&TestAIJ,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-testShift",&TestShift,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-reorder",&reorder,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-testaij",&TestAIJ,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-testShift",&TestShift,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
 
   n = mbs*bs;
   if (TestAIJ) { /* A is in aij format */
@@ -44,7 +44,7 @@ int main(int argc,char **args)
 
   /* Assemble matrix */
   if (bs == 1) {
-    ierr = PetscOptionsGetInt(NULL,"-test_problem",&prob,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-test_problem",&prob,NULL);CHKERRQ(ierr);
     if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {

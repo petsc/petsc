@@ -101,7 +101,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode       (*python_destroy)(void*);
 
   PetscInt             noptionhandler;
-  PetscErrorCode       (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
+  PetscErrorCode       (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscOptionItems*,PetscObject,void*);
   PetscErrorCode       (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   void                 *optionctx[PETSC_MAX_OPTIONS_HANDLER];
   PetscPrecision       precision;
@@ -110,6 +110,7 @@ typedef struct _p_PetscObject {
   PetscBool            amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
 #endif
+  PetscOptions         options;         /* options database used, NULL means default */
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \
@@ -168,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortr
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
-PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char**,PetscBool*);
+PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(PetscOptions,const char[],const char[],char**,PetscBool*);
 
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 

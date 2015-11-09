@@ -36,16 +36,17 @@ PthreadVersion: PthreadVersion.o  chkopts
 	@${RM} -f PthreadVersion.o
 
 stream:  MPIVersion
-	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NPMAX=<integer number of MPI processes to use>"; exit 1 ; fi
+	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NPMAX=<integer number of MPI processes to use> [MPI_BINDING='binding options']"; exit 1 ; fi
 	-@printf "" > scaling.log
+	-@echo "Running streams with ${MPIEXEC} ${MPI_BINDING} "
 	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
-	  ${MPIEXEC} -n $${i} ./MPIVersion | tee -a scaling.log; \
+	  ${MPIEXEC} ${MPI_BINDING} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
 	-@${PYTHON} process.py createfile
 
 hwloc:
-	-@if [ "${LSTOPO}foo" != "foo" ]; then ${LSTOPO} --no-icaches --no-io --ignore PU ; fi
+	-@if [ "${LSTOPO}foo" != "foo" ]; then ${MPIEXEC} ${MPI_BINDING} -n 1 ${LSTOPO} --no-icaches --no-io --ignore PU ; fi
 
 streams: stream hwloc
 	-@${PYTHON} process.py

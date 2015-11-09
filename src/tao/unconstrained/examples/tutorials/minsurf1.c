@@ -68,8 +68,8 @@ int main( int argc, char **argv )
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);
@@ -582,7 +582,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool      flg;
 
   ierr = VecSet(X, zero);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
   if (flg && start==0){ /* The zero vector is reasonable */
      ierr = VecSet(X, zero);CHKERRQ(ierr);

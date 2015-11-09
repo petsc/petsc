@@ -61,7 +61,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
@@ -69,7 +69,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
@@ -266,12 +266,12 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
     }
     ierr = PetscObjectGetOptionsPrefix((PetscObject)J, &prefix);CHKERRQ(ierr);
 
-    ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_base", &viewbase);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)J)->options,prefix, "-mat_mffd_view_base", &viewbase);CHKERRQ(ierr);
     if (viewbase) {
       ierr = PetscViewerASCIIPrintf(viewer, "Base:\n");CHKERRQ(ierr);
       ierr = VecView(ctx->current_u, viewer);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_function", &viewfunction);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)J)->options,prefix, "-mat_mffd_view_function", &viewfunction);CHKERRQ(ierr);
     if (viewfunction) {
       ierr = PetscViewerASCIIPrintf(viewer, "Function:\n");CHKERRQ(ierr);
       ierr = VecView(ctx->current_f, viewer);CHKERRQ(ierr);
@@ -592,7 +592,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MFFD"
-PetscErrorCode  MatSetFromOptions_MFFD(PetscOptions *PetscOptionsObject,Mat mat)
+PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;

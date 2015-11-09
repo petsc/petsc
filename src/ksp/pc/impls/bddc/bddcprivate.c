@@ -1746,16 +1746,14 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
     } else {
       ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_MUMPS)
   } else {
     PCBDDCReuseMumps reuse_mumps = sub_schurs->reuse_mumps;
 
     if (applytranspose) {
-      ierr = MatMumpsSolveSchurComplementTranspose(reuse_mumps->F,reuse_mumps->rhs_B,reuse_mumps->sol_B);CHKERRQ(ierr);
+      ierr = MatFactorSolveSchurComplementTranspose(reuse_mumps->F,reuse_mumps->rhs_B,reuse_mumps->sol_B);CHKERRQ(ierr);
     } else {
-      ierr = MatMumpsSolveSchurComplement(reuse_mumps->F,reuse_mumps->rhs_B,reuse_mumps->sol_B);CHKERRQ(ierr);
+      ierr = MatFactorSolveSchurComplement(reuse_mumps->F,reuse_mumps->rhs_B,reuse_mumps->sol_B);CHKERRQ(ierr);
     }
-#endif
   }
   ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
   if (!pcbddc->switch_static) {
@@ -3331,9 +3329,9 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,"-matis_partitioning_use_square",&use_square,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-matis_partitioning_use_vwgt",&use_vwgt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-matis_partitioning_threshold",&threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matis_partitioning_use_square",&use_square,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matis_partitioning_use_vwgt",&use_vwgt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-matis_partitioning_threshold",&threshold,NULL);CHKERRQ(ierr);
 
   /* Get info on mapping */
   ierr = ISLocalToGlobalMappingGetSize(mat->rmap->mapping,&local_size);CHKERRQ(ierr);

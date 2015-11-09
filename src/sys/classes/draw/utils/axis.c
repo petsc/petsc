@@ -33,7 +33,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   axis->xhigh= xmax;
   axis->ylow = ymin;
   axis->yhigh= ymax;
-  ierr = PetscOptionsHasName(((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)axis)->options,((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

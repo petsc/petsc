@@ -52,16 +52,16 @@ int main(int argc,char **args)
   ierr = PetscLogStageRegister("EigCheck",&stages[1]);
 
   /* Determine files from which we read the two matrices */
-  ierr = PetscOptionsGetString(NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = PetscOptionsGetString(NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&flgA);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&flgA);CHKERRQ(ierr);
     if (!flgA) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fA or -fB options");
-    ierr    = PetscOptionsGetString(NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
+    ierr    = PetscOptionsGetString(NULL,NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(NULL,"-fA",file[1],PETSC_MAX_PATH_LEN,&flgA);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[1],PETSC_MAX_PATH_LEN,&flgA);CHKERRQ(ierr);
     if (!flgA) preload = PETSC_FALSE; /* don't bother with second system */
-    ierr = PetscOptionsGetString(NULL,"-fB",file[2],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[2],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
   }
 
   PetscPreLoadBegin(preload,"Load system");
@@ -92,13 +92,13 @@ int main(int argc,char **args)
   }
 
   /* Add a shift to A */
-  ierr = PetscOptionsGetScalar(NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);   /* A <- sigma*B + A */
   }
 
   /* Check whether A is symmetric */
-  ierr = PetscOptionsHasName(NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
@@ -114,7 +114,7 @@ int main(int argc,char **args)
   }
 
   /* View small entries of A */
-  ierr = PetscOptionsHasName(NULL, "-Asp_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-Asp_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCreate(PETSC_COMM_SELF,&A_sp);CHKERRQ(ierr);
     ierr = MatSetSizes(A_sp,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ int main(int argc,char **args)
 
   if (nevs <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
   /* View evals */
-  ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF," %D evals: \n",nevs);CHKERRQ(ierr);
     for (i=0; i<nevs; i++) {

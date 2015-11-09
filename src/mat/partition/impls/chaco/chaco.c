@@ -683,7 +683,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Chaco"
-PetscErrorCode MatPartitioningSetFromOptions_Chaco(PetscOptions *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Chaco(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
   PetscInt              i;

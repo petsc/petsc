@@ -444,9 +444,9 @@ int main(int argc, char *argv[])
     Mat       D;
     Vec       Y;
 
-    ierr = PetscOptionsGetInt(0,"-col",&col,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(0,"-mult_dup",&mult_dup,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(0,"-view_dup",&view_dup,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,0,"-col",&col,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,0,"-mult_dup",&mult_dup,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,0,"-view_dup",&view_dup,0);CHKERRQ(ierr);
 
     ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
     /* ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */

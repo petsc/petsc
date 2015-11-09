@@ -258,7 +258,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-  ierr = PetscOptionsGetBool(NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still read in doubles from file */
   if (type == PETSC_SCALAR && readdouble) {
     m    = m/2;

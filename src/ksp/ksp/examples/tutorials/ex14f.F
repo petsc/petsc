@@ -105,13 +105,15 @@
 !
       mx = 4
       my = 4
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-my',my,flg,ierr)
       N = mx*my
 
       nooutput = .false.
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-no_output',       &
-     &     nooutput,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-no_output',nooutput,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
@@ -128,8 +130,10 @@
 !
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                        '-Nx',Nx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-Ny',Ny,flg,ierr)
       call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,         &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
@@ -171,7 +175,8 @@
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
       usemf = .false.
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                         '-mf',usemf,ierr)
       if (usemf) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
          call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)

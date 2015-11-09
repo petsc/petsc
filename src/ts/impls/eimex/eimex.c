@@ -455,7 +455,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_EIMEX"
-static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;

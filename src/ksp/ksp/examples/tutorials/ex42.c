@@ -1713,7 +1713,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
 
   PetscFunctionBeginUser;
   nlevels = 1;
-  PetscOptionsGetInt(NULL,"-levels",&nlevels,0);
+  PetscOptionsGetInt(NULL,NULL,"-levels",&nlevels,0);
 
   ierr = PetscMalloc1(nlevels,&da_list);CHKERRQ(ierr);
   for (k=0; k<nlevels; k++) da_list[k] = NULL;
@@ -1835,7 +1835,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     }
   }
 
-  ierr = PetscOptionsGetInt(NULL,"-model",&model_definition,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-model",&model_definition,NULL);CHKERRQ(ierr);
 
   switch (model_definition) {
   case 0: /* isoviscous */
@@ -1998,19 +1998,19 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 
   {
     PetscBool stokes_monitor = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0);CHKERRQ(ierr);
     if (stokes_monitor) {
       ierr = KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL);CHKERRQ(ierr);
     }
   }
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-write_pvts",&write_output,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-write_pvts",&write_output,NULL);CHKERRQ(ierr);
   if (write_output) {ierr = DAView3DPVTS(da_Stokes,X,"up");CHKERRQ(ierr);}
   {
     PetscBool flg = PETSC_FALSE;
     char      filename[PETSC_MAX_PATH_LEN];
-    ierr = PetscOptionsGetString(NULL,"-write_binary",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-write_binary",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       /* ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr); */
@@ -2059,10 +2059,10 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 
   mx   = my = mz = 10;
-  ierr = PetscOptionsGetInt(NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
   my   = mx; mz = mx;
-  ierr = PetscOptionsGetInt(NULL,"-my",&my,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mz",&mz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL);CHKERRQ(ierr);
 
   ierr = solve_stokes_3d_coupled(mx,my,mz);CHKERRQ(ierr);
 

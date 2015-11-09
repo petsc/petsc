@@ -68,6 +68,7 @@ native MatFactorInfo
 # Old PETSc types
 native PetscTruth
 #
+nativeptr PetscOptions
 nativeptr AO
 nativeptr DM
 nativeptr DMLabel

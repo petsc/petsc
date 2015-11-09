@@ -832,7 +832,7 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Basic"
-static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptions *PetscOptionsObject,PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
 

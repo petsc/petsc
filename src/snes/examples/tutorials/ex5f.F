@@ -80,8 +80,8 @@
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,                &
-     &                           flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,                        &
+     &             PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)

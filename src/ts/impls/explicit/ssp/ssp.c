@@ -413,7 +413,7 @@ PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_SSP"
-static PetscErrorCode TSSetFromOptions_SSP(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_SSP(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   char           tname[256] = TSSSPRKS2;
   TS_SSP         *ssp       = (TS_SSP*)ts->data;

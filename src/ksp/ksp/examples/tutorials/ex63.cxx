@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
   }
 
   PetscInitialize(&argc,&argv,NULL,NULL);
-  PetscErrorCode ierr = PetscOptionsSetValue("-options_left","false");CHKERRQ(ierr);
+  PetscErrorCode ierr = PetscOptionsSetValue(NULL,"-options_left","false");CHKERRQ(ierr);
   KSP ksp;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   Mat Apetsc;
