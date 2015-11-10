@@ -2015,11 +2015,11 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
   Input Parameters:
 + sf - The SF
-. rootSection - Data layout of remote points for outgoing data (this is usually the serial section), or NULL
-- remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
+. rootSection - Data layout of remote points for outgoing data (this is usually the serial section)
+. remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
+- leafSection - Data layout of local points for incoming data  (this is the distributed section)
 
   Output Parameters:
-+ leafSection - Data layout of local points for incoming data  (this is the distributed section)
 - sectionSF - The new SF
 
   Note: Either rootSection or remoteOffsets can be specified
