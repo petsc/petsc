@@ -25,7 +25,7 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
       case YAML_SCALAR_EVENT:
         if (storage) {
           ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char*)event.data.scalar.value);CHKERRQ(ierr);
-          ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
+          ierr = PetscOptionsInsertString(NULL,option);CHKERRQ(ierr);
         } else {
           ierr = PetscStrncpy(key,(char*)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
         }
