@@ -5860,6 +5860,9 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
       ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
       ierr = PetscDrawLGSetLegend(ctx->lg,(const char *const *)ctx->names);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
+      ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
     }
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
