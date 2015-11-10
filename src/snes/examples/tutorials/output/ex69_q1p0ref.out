@@ -12,7 +12,7 @@ Labels:
   marker: 4 strata of sizes (25, 25, 25, 25)
   Face Sets: 4 strata of sizes (21, 21, 21, 21)
   depth: 3 strata of sizes (169, 312, 144)
-Integral of pressure: -6.76542e-17
+Integral of pressure: 0.
   0 SNES Function norm 0.0392131 
     0 KSP Residual norm 1.16001 
     1 KSP Residual norm 2.992e-10 
@@ -164,4 +164,4 @@ SNES Object: 1 MPI processes
         using I-node routines: found 309 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 0.000721 [9.75e-05, 0.000714]
-Integral of pressure: -6.93889e-18
+Integral of pressure: 0.

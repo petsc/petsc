@@ -12,20 +12,19 @@ Labels:
   depth: 3 strata of sizes (16, 24, 9)
   marker: 4 strata of sizes (7, 7, 7, 7)
   Face Sets: 4 strata of sizes (3, 3, 3, 3)
-Integral of pressure: -1.56125e-17
+Integral of pressure: 0.
   0 SNES Function norm 0.0855847 
-    0 KSP Residual norm 0.179669 
-    1 KSP Residual norm 3.37499e-05 
-    2 KSP Residual norm 1.120e-11 
-    3 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_ATOL iterations 3
+    0 KSP Residual norm 0.17967 
+    1 KSP Residual norm < 1.e-11
+    2 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_ATOL iterations 2
   1 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=3
+  total number of linear solver iterations=2
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object:   1 MPI processes
@@ -165,4 +164,4 @@ SNES Object: 1 MPI processes
         using I-node routines: found 49 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 0.0672 [0.00264, 0.0672]
-Integral of pressure: 2.77556e-17
+Integral of pressure: 0.
