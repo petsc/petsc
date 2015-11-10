@@ -686,10 +686,10 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   {
     PetscBool isImplicit = PETSC_FALSE;
 
-    ierr = PetscOptionsHasName("", "-use_implicit", &isImplicit);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
     if (user->velocityDist == VEL_CONSTANT && !isImplicit) user->initialGuess[0] = user->exactFuncs[0];
   }
-  ierr = PetscOptionsHasName(NULL, "-dmts_check", &check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-dmts_check", &check);CHKERRQ(ierr);
   if (check) {
     user->initialGuess[0] = user->exactFuncs[0];
     user->initialGuess[1] = user->exactFuncs[1];
@@ -1070,7 +1070,7 @@ int main(int argc, char **argv)
   if (user.useFV) {
     PetscBool isImplicit = PETSC_FALSE;
 
-    ierr = PetscOptionsHasName("", "-use_implicit", &isImplicit);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
     if (isImplicit) {
       ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
     }

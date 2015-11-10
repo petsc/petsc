@@ -287,7 +287,7 @@ PetscErrorCode PCAINVCUSPUseScaling(PC pc, PetscBool scaled)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_AINVCUSP"
-static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool      flag  = PETSC_FALSE;

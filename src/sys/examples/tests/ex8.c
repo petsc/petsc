@@ -100,9 +100,9 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   verbose = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
   build_twosided_f = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-build_twosided_f",&build_twosided_f,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-build_twosided_f",&build_twosided_f,NULL);CHKERRQ(ierr);
 
   for (i=1,nto=0; i<size; i*=2) nto++;
   ierr = PetscMalloc2(nto,&todata,nto,&toranks);CHKERRQ(ierr);

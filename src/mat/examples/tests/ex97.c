@@ -41,7 +41,7 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
   ierr = VecAYPX(Y,-1.0,X[1]);CHKERRQ(ierr);
   ierr = VecNorm(Y,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
   if (norm < 1.e-12 && verbose < 1) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference < 1e-12\n",test);CHKERRQ(ierr);
   } else {
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
   ierr = VecDuplicate(left,&Y);CHKERRQ(ierr);
   ierr = VecDuplicate(left,&Y1);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-random",&random,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-random",&random,NULL);CHKERRQ(ierr);
   if (random) {
     ierr = VecSetRandom(right,NULL);CHKERRQ(ierr);
     ierr = VecSetRandom(left,NULL);CHKERRQ(ierr);

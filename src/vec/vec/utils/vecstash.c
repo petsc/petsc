@@ -35,7 +35,7 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
 
   nopt = stash->size;
   ierr = PetscMalloc1(nopt,&opt);CHKERRQ(ierr);
-  ierr = PetscOptionsGetIntArray(NULL,"-vecstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,NULL,"-vecstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];

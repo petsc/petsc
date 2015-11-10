@@ -22,7 +22,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscOptionsSetValue("-no_signal_handler","true");
+  ierr = PetscOptionsSetValue(NULL,"-no_signal_handler","true");
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

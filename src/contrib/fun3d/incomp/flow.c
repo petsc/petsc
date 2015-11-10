@@ -100,7 +100,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);}
 
   /*======================================================================*/
@@ -110,15 +110,15 @@ int main(int argc,char **args)
   tsCtx.max_steps         = 50;   tsCtx.max_time    = 1.0e+12; tsCtx.iramp   = -50;
   tsCtx.dt                = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
   tsCtx.LocalTimeStepping = 1;
-  ierr                    = PetscOptionsGetInt(NULL,"-max_st",&tsCtx.max_steps,NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetInt(NULL,NULL,"-max_st",&tsCtx.max_steps,NULL);CHKERRQ(ierr);
   ierr                    = PetscOptionsGetReal(NULL,"-ts_rtol",&tsCtx.fnorm_ratio,NULL);CHKERRQ(ierr);
   ierr                    = PetscOptionsGetReal(NULL,"-cfl_ini",&tsCtx.cfl_ini,NULL);CHKERRQ(ierr);
   ierr                    = PetscOptionsGetReal(NULL,"-cfl_max",&tsCtx.cfl_max,NULL);CHKERRQ(ierr);
   tsCtx.print_freq        = tsCtx.max_steps;
-  ierr                    = PetscOptionsGetInt(NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetString(NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetInt(NULL,NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetString(NULL,NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu);CHKERRQ(ierr);
   pvtu_base64             = PETSC_FALSE;
-  ierr                    = PetscOptionsGetBool(NULL,"-pvtu_base64",&pvtu_base64,NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetBool(NULL,NULL,"-pvtu_base64",&pvtu_base64,NULL);CHKERRQ(ierr);
 
   c_info->alpha = 3.0;
   c_info->beta  = 15.0;
@@ -139,7 +139,7 @@ int main(int argc,char **args)
 
   /*Set the maximum number of threads for OpenMP */
 #if defined(_OPENMP)
-  ierr = PetscOptionsGetInt(NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
   omp_set_num_threads(max_threads);
   ierr = PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
@@ -175,7 +175,7 @@ int main(int argc,char **args)
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
     ierr = MatCreateSNESMF(snes,&Jpc);CHKERRQ(ierr);
@@ -223,7 +223,7 @@ int main(int argc,char **args)
 
   ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
   }
@@ -237,13 +237,13 @@ int main(int argc,char **args)
   ierr = VecDestroy(&user.grid->gradLoc);CHKERRQ(ierr);
   ierr = MatDestroy(&user.grid->A);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = MatDestroy(&Jpc);CHKERRQ(ierr);}
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user.grid->scatter);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user.grid->gradScatter);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
   }
@@ -513,7 +513,7 @@ int Update(SNES snes,void *ctx)
   long long      counter0,counter1;*/
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,"-print",&print_flag,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-print",&print_flag,NULL);CHKERRQ(ierr);
   if (print_flag) {
     ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
@@ -527,8 +527,8 @@ int Update(SNES snes,void *ctx)
 #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
   /* if (!user->PreLoading) {
     PetscBool  flg = PETSC_FALSE;
-    ierr = PetscOptionsGetInt(NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
     ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
     if ((gen_start = start_counters(event0,event1)) < 0)
     SETERRQ(PETSC_COMM_SELF,1,"Error in start_counters\n");
@@ -699,7 +699,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(grid_param,&tmp);
   if (!rank) {
     PetscBool exists;
-    ierr = PetscOptionsGetString(NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
     if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
@@ -755,7 +755,7 @@ int GetLocalOrdering(GRID *grid)
       char      spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool exists;
 
-      ierr = PetscOptionsGetString(NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try appending the number of processors */
         sprintf(part_file,"part_vec.part.%d",size);
@@ -2191,7 +2191,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,"-complete_overlap",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-complete_overlap",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     *invertices = grid->nvertices; /* We did not change the number of vertices */
     *inedgeOv   = nedgeOv;

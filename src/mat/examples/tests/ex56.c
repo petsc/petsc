@@ -19,7 +19,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-test_mat_sbaij",&testsbaij);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-test_mat_sbaij",&testsbaij);CHKERRQ(ierr);
 
   if (testsbaij) {
     ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,NULL,1,NULL,&A);CHKERRQ(ierr);
@@ -29,7 +29,7 @@ int main(int argc,char **args)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   eval = 9;
 
-  ierr = PetscOptionsHasName(NULL,"-ass_extern",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-ass_extern",&flg);CHKERRQ(ierr);
   if (flg && (size != 1)) rstart = m*((rank+1)%size);
   else rstart = m*(rank);
 
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
 
-  ierr = PetscOptionsHasName(NULL,"-zero_rows",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-zero_rows",&flg);CHKERRQ(ierr);
   if (flg) {
     col[0] = rstart*bs+0;
     col[1] = rstart*bs+1;

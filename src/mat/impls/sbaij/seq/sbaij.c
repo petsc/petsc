@@ -1595,7 +1595,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   B->ops->multtranspose    = MatMult_SeqSBAIJ_N;
   B->ops->multtransposeadd = MatMultAdd_SeqSBAIJ_N;
 
-  ierr  = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)B)->options,((PetscObject)B)->prefix,"-mat_no_unroll",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
     case 1:
@@ -1764,7 +1764,7 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool natura
   PetscInt       bs  = B->rmap->bs;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->options,((PetscObject)B)->prefix,"-mat_no_unroll",&flg,NULL);CHKERRQ(ierr);
   if (flg) bs = 8;
 
   if (!natural) {
@@ -1917,11 +1917,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 
   b->ignore_ltriangular = PETSC_TRUE;
 
-  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->options,((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,NULL);CHKERRQ(ierr);
 
   b->getrow_utriangular = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->options,((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
@@ -2236,7 +2236,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   /* force binary viewer to load .info file if it has not yet done so */
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(((PetscObject)newmat)->prefix,"-matload_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)newmat)->options,((PetscObject)newmat)->prefix,"-matload_block_size",&bs,NULL);CHKERRQ(ierr);
   if (bs < 0) bs = 1;
   bs2  = bs*bs;
 

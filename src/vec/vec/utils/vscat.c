@@ -880,12 +880,12 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
   ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
     ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
   ctx->packtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-vecscatter_packtogether",&ctx->packtogether,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_packtogether",&ctx->packtogether,NULL);CHKERRQ(ierr);
   if (ctx->packtogether) {
     ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
   }
@@ -1000,12 +1000,12 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
     ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
   ctx->packtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-vecscatter_packtogether",&ctx->packtogether,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_packtogether",&ctx->packtogether,NULL);CHKERRQ(ierr);
   if (ctx->packtogether) {
     ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
   }

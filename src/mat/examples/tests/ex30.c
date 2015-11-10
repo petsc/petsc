@@ -30,9 +30,9 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2);CHKERRQ(ierr);
@@ -68,14 +68,14 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
   ierr = MatMult(C,x,b);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
   if (matordering) {
     ierr = MatGetOrdering(C,MATORDERINGRCM,&row,&col);CHKERRQ(ierr);
   } else {
     ierr = MatGetOrdering(C,MATORDERINGNATURAL,&row,&col);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
   if (MATDSPL) {
     printf("original matrix:\n");
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ int main(int argc,char **args)
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
 
-  ierr = PetscOptionsHasName(NULL,"-lu",&LU);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-lu",&LU);CHKERRQ(ierr);
   if (LU) {
     printf("Test LU...\n");
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ int main(int argc,char **args)
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
   if (lf == -1) {
-    ierr = PetscOptionsHasName(NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
     if (TRIANGULAR) {
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);

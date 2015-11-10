@@ -487,7 +487,7 @@ static PetscErrorCode PCDestroy_Telescope(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Telescope"
-static PetscErrorCode PCSetFromOptions_Telescope(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Telescope     sred = (PC_Telescope)pc->data;
   PetscErrorCode   ierr;

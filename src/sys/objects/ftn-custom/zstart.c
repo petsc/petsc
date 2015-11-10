@@ -278,7 +278,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 
-  *ierr = PetscOptionsCreate();
+  *ierr = PetscOptionsCreateDefault();
   if (*ierr) return;
   i = 0;
 #if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */
@@ -430,7 +430,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   PetscInitializeFortran();
   PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
   FIXCHAR(filename,len,t1);
-  *ierr = PetscOptionsInsert(&PetscGlobalArgc,&PetscGlobalArgs,t1);
+  *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);
   FREECHAR(filename,t1);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
   *ierr = PetscOptionsCheckInitial_Private();
@@ -474,7 +474,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
 
 #if defined(PETSC_HAVE_CUDA)
   flg2  = PETSC_TRUE;
-  *ierr = PetscOptionsGetBool(NULL,"-cublas",&flg2,NULL);
+  *ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg2,NULL);
   if (flg2) cublasInit();
 #endif
 }

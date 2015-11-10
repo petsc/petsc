@@ -296,7 +296,7 @@ runex8_2:
 	   ${RM} -f ex8_2.tmp
 
 runex10:
-	-@${MPIEXEC} -n 1 ./ex10 -matconvert_type seqaij -ksp_monitor_short -ksp_rtol 1.e-2 -ksp_view -pc_type jacobi >ex10_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -matconvert_type seqaij -ksp_monitor_short -ksp_rtol 1.e-2  -pc_type jacobi >ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_1.tmp

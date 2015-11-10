@@ -1268,7 +1268,7 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-      ierr = PetscOptionsInsertFile(PetscObjectComm((PetscObject)viewer),infoname,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFile(PetscObjectComm((PetscObject)viewer),((PetscObject)viewer)->options,infoname,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
@@ -1329,7 +1329,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-      ierr = PetscOptionsInsertFile(PetscObjectComm((PetscObject)viewer),infoname,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFile(PetscObjectComm((PetscObject)viewer),((PetscObject)viewer)->options,infoname,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
@@ -1390,7 +1390,7 @@ static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Binary"
-static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptions *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *binary = (PetscViewer_Binary*)v->data;

@@ -66,8 +66,8 @@ int main(int argc, char **argv)
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(NULL, "-mx", &user.mx, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-my", &user.my, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-mx", &user.mx, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-my", &user.my, &flg);CHKERRQ(ierr);
 
   /* Calculate any derived values from parameters */
   N = user.mx*user.my;
@@ -522,7 +522,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
   if (flg && start==0){ /* The zero vector is reasonable */
     ierr = VecSet(X, zero);CHKERRQ(ierr);

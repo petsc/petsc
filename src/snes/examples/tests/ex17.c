@@ -96,7 +96,7 @@ static PetscErrorCode assembled_system(void)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /*
     Set function evaluation routine and vector.
@@ -440,7 +440,7 @@ static int block_system(void)
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /*
     Set function evaluation routine and vector.

@@ -374,23 +374,23 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->ymax   = 2.0;
   user->st_width = 1;
 
-  ierr = PetscOptionsGetScalar(NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-Inertia",&user->H,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-D",&user->D,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-Pmax",&user->Pmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-PM_min",&user->PM_min,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-lambda",&user->lambda,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-q",&user->q,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-mux",&user->mux,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-muy",&user->muy,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-Inertia",&user->H,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-D",&user->D,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-Pmax",&user->Pmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-PM_min",&user->PM_min,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-lambda",&user->lambda,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-q",&user->q,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-mux",&user->mux,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-muy",&user->muy,&flg);CHKERRQ(ierr);
   if (flg == 0) {
     user->muy = user->ws;
   }
-  ierr = PetscOptionsGetScalar(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetEnum("","-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetEnum("","-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);

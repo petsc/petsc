@@ -83,13 +83,13 @@ int main( int argc, char **argv )
   user.mx = 10; user.my = 10; user.bheight=0.1;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-bheight",&user.bheight,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-bheight",&user.bheight,&flg);CHKERRQ(ierr);
 
   user.bmx = user.mx/2; user.bmy = user.my/2;
-  ierr = PetscOptionsGetInt(NULL,"-bmx",&user.bmx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-bmy",&user.bmy,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-bmx",&user.bmx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-bmy",&user.bmy,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mx:%D, my:%D, bmx:%D, bmy:%D, height:%g\n",user.mx,user.my,user.bmx,user.bmy,(double)user.bheight);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ int main( int argc, char **argv )
 
   ierr = DMGetLocalToGlobalMapping(user.dm,&isltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(user.H,isltog,isltog);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-matrixfree",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-matrixfree",&flg);CHKERRQ(ierr);
   if (flg) {
       ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,N,N,(void*)&user,&H_shell);
       ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)(void))MyMatMult);CHKERRQ(ierr);
@@ -731,20 +731,20 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   /* Scale the boundary if desired */
 
-  ierr = PetscOptionsGetReal(NULL,"-bottom",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-bottom",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Bottom, scl);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetReal(NULL,"-top",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-top",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Top, scl);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetReal(NULL,"-right",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-right",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Right, scl);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetReal(NULL,"-left",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-left",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Left, scl);CHKERRQ(ierr);
   }
@@ -786,7 +786,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 
   ierr = VecGetArray(XL,&xl);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
   /* Compute the optional lower box */
   if (cylinder){
     for (i=xs; i< xs+xm; i++){
@@ -838,7 +838,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscReal      zero=0.0;
   PetscBool      flg;
 
-  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
   if (flg && start==0){ /* The zero vector is reasonable */
     ierr = VecSet(X, zero);CHKERRQ(ierr);
   } else if (flg && start>0){ /* Try a random start between -0.5 and 0.5 */

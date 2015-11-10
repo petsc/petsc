@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
   PetscInitialize(&argc, &argv, NULL, help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-m", &m, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-m", &m, NULL);CHKERRQ(ierr);
 
   /* PART 1:  Generate vector, then write it to Mathematica */
 
