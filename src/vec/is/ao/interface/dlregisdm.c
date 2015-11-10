@@ -21,6 +21,7 @@ PetscErrorCode  AOFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&AOList);CHKERRQ(ierr);
   AOPackageInitialized = PETSC_FALSE;
+  AORegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
