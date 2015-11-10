@@ -25,6 +25,7 @@ typedef struct {
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   PetscBool     viewHierarchy;     /* Whether to view the hierarchy */
+  PetscBool     simplex;           /* Simplicial mesh */
   /* Problem definition */
   BCType        bcType;
   CoeffType     variableCoefficient;
@@ -295,6 +296,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->restart             = PETSC_FALSE;
   options->check               = PETSC_FALSE;
   options->viewHierarchy       = PETSC_FALSE;
+  options->simplex             = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -323,6 +325,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-check", "Compare with default integration routines", "ex12.c", options->check, &options->check, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_view_hierarchy", "View the coarsened hierarchy", "ex12.c", options->viewHierarchy, &options->viewHierarchy, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex12.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -343,7 +346,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+    if (user->simplex) {
+      ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+    }
+    else {
+      PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
+
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells,  DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    }
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
@@ -502,24 +512,25 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE        feCh  = NULL;
   PetscFE        fe;
   PetscDS        prob;
+  PetscBool      simplex = user->simplex;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
   if (user->bcType == NEUMANN) {
-    ierr = PetscFECreateDefault(dm, dim-1, 1, PETSC_TRUE, "bd_", -1, &feBd);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, dim-1, 1, simplex, "bd_", -1, &feBd);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feBd, "potential");CHKERRQ(ierr);
   }
   if (user->variableCoefficient == COEFF_FIELD) {
     PetscQuadrature q;
 
-    ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, "mat_", -1, &feAux);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
   }
-  if (user->check) {ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, "ch_", -1, &feCh);CHKERRQ(ierr);}
+  if (user->check) {ierr = PetscFECreateDefault(dm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);}
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
     ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
@@ -595,7 +606,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
   /* Create FE space for the error */
-  ierr = PetscFECreateDefault(dm, user->dim, 1, PETSC_TRUE, "error_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user->dim, 1, user->simplex, "error_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
   /* Create DM for error */
@@ -686,7 +697,7 @@ PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *
   PetscFunctionBegin;
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
   /* Create FE space for the error */
-  ierr = PetscFECreateDefault(dm, user->dim, 1, PETSC_TRUE, "error_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user->dim, 1, user->simplex, "error_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
   /* Create DM for error */
