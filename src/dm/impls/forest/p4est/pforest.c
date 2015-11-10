@@ -37,7 +37,7 @@
 #define DMFTopologyDestroy_pforest       _append_pforest(DMFTopologyDestroy)
 #define DMFTopologyCreate_pforest        _append_pforest(DMFTopologyCreate)
 #define DMFTopologyCreateBrick_pforest   _append_pforest(DMFTopologyCreateBrick)
-#define DMConvert_Plex_pforest           _append_pforest(DMConvert_Plex)
+#define DMConvert_plex_pforest           _append_pforest(DMConvert_plex)
 #define DMPlexCreateConnectivity_pforest _append_pforest(DMPlexCreateConnectivity)
 
 typedef struct {
@@ -181,7 +181,7 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   pforest->forest = NULL;
   ierr = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
   ierr = PetscFree(forest->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_Plex_pforest),NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -661,8 +661,8 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 }
 
 #undef __FUNCT__
-#define __FUNCT__ _pforest_string(DMConvert_Plex_pforest)
-static PetscErrorCode DMConvert_Plex_pforest(DM dm, DMType newtype, DM *pforest)
+#define __FUNCT__ _pforest_string(DMConvert_plex_pforest)
+static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
 {
   MPI_Comm       comm;
   PetscBool      isPlex;
@@ -726,7 +726,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   pforest->ghost  = NULL;
   pforest->lnodes = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_Plex_pforest),DMConvert_Plex_pforest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
