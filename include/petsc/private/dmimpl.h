@@ -151,7 +151,7 @@ struct _p_DM {
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                    *data;
   /* Hierarchy / Submeshes */
-  DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
+  DM                      coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
   DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;

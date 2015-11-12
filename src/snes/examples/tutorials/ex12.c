@@ -400,13 +400,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
     char      convType[256];
     PetscBool flg;
 
     ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();
     if (flg) {
       DM dmConv;
 
@@ -416,8 +416,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         *dm  = dmConv;
       }
     }
-    ierr = PetscOptionsEnd();
   }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (user->viewHierarchy) {
     DM       cdm = *dm;

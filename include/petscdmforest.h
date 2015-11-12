@@ -44,6 +44,9 @@ PETSC_EXTERN PetscErrorCode DMForestGetMinimumRefinement(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMForestSetMaximumRefinement(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMForestGetMaximumRefinement(DM, PetscInt *);
 
+PETSC_EXTERN PetscErrorCode DMForestSetInitialRefinement(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMForestGetInitialRefinement(DM, PetscInt *);
+
 PETSC_EXTERN PetscErrorCode DMForestGetCellChart(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMForestGetCellSF(DM, PetscSF *);
 

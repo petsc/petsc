@@ -35,6 +35,8 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
     ierr = PetscFree(forest->cellWeights);CHKERRQ(ierr);
   }
+  ierr = DMDestroy(&forest->fine);CHKERRQ(ierr);
+  ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
   ierr = PetscFree(forest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -78,7 +80,7 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(base, DM_CLASSID, 2);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the base after setup");
   ierr = PetscObjectReference((PetscObject)base);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
@@ -107,23 +109,20 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 #define __FUNCT__ "DMForestSetCoarseForest"
 PetscErrorCode DMForestSetCoarseForest(DM dm,DM coarse)
 {
-  DM_Forest        *forest       = (DM_Forest *) dm->data;
   DM               base;
   DMForestTopology topology;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(coarse, DM_CLASSID, 2);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the coarse forest after setup");
   if (!coarse->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a coarse forest that is not set up");
-  ierr = PetscObjectReference((PetscObject)coarse);CHKERRQ(ierr);
-  ierr = DMDestroy(&forest->coarse);CHKERRQ(ierr);
+  ierr = DMSetCoarseDM(dm,coarse);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(coarse,&base);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
   ierr = DMForestGetTopology(coarse,&topology);CHKERRQ(ierr);
   ierr = DMForestSetTopology(dm,topology);CHKERRQ(ierr);
-  forest->coarse = coarse;
   PetscFunctionReturn(0);
 }
 
@@ -131,12 +130,10 @@ PetscErrorCode DMForestSetCoarseForest(DM dm,DM coarse)
 #define __FUNCT__ "DMForestGetCoarseForest"
 PetscErrorCode DMForestGetCoarseForest(DM dm, DM *coarse)
 {
-  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coarse, 2);
-  *coarse = forest->coarse;
+  ierr = DMGetCoarseDM(dm,coarse);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -151,7 +148,7 @@ PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(fine, DM_CLASSID, 2);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the fine forest after setup");
   if (!fine->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a fine forest that is not set up");
   ierr = PetscObjectReference((PetscObject)fine);CHKERRQ(ierr);
@@ -288,6 +285,32 @@ PetscErrorCode DMForestGetMinimumRefinement(DM dm, PetscInt *minRefinement)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(minRefinement,2);
   *minRefinement = forest->minRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetInitialRefinement"
+PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the initial refinement after setup");
+  forest->initRefinement = initRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetInitialRefinement"
+PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(initRefinement,2);
+  *initRefinement = forest->initRefinement;
   PetscFunctionReturn(0);
 }
 
@@ -546,12 +569,12 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsObject,DM dm)
 {
   DM_Forest                  *forest = (DM_Forest *) dm->data;
-  PetscBool                  flg;
+  PetscBool                  flg, flg1, flg2, flg3, flg4;
   DMForestTopology           oldTopo;
   char                       stringBuffer[256];
   PetscViewer                viewer;
   PetscViewerFormat          format;
-  PetscInt                   adjDim, adjCodim, overlap, minRefinement, maxRefinement, grade;
+  PetscInt                   adjDim, adjCodim, overlap, minRefinement, initRefinement, maxRefinement, grade;
   PetscReal                  weightsFactor;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscErrorCode             ierr;
@@ -561,12 +584,20 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsOb
   forest->setFromOptions = PETSC_TRUE;
   ierr = PetscOptionsHead(PetscOptionsObject,"DMForest Options");CHKERRQ(ierr);
   ierr = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMForestSetTopology(dm,(DMForestTopology)stringBuffer);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg4);CHKERRQ(ierr);
+  if ((PetscInt) flg1 + (PetscInt) flg2 + (PetscInt) flg3 + (PetscInt) flg4 > 1) {
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Specify only one of -dm_forest_{topology,base_dm,coarse_forest,fine_forest}");
   }
-  ierr = PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
+  if (flg1) {
+    ierr = DMForestSetTopology(dm,(DMForestTopology)stringBuffer);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetCoarseForest(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetFineForest(dm,NULL);CHKERRQ(ierr);
+  }
+  if (flg2) {
     DM         base;
 
     ierr = DMCreate(PetscObjectComm((PetscObject)dm),&base);CHKERRQ(ierr);
@@ -575,9 +606,11 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsOb
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
     ierr = DMDestroy(&base);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetCoarseForest(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetFineForest(dm,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
+  if (flg3) {
     DM         coarse;
 
     ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarse);CHKERRQ(ierr);
@@ -586,9 +619,11 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsOb
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = DMForestSetCoarseForest(dm,coarse);CHKERRQ(ierr);
     ierr = DMDestroy(&coarse);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetFineForest(dm,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
+  if (flg4) {
     DM         fine;
 
     ierr = DMCreate(PetscObjectComm((PetscObject)dm),&fine);CHKERRQ(ierr);
@@ -597,6 +632,9 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsOb
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = DMForestSetFineForest(dm,fine);CHKERRQ(ierr);
     ierr = DMDestroy(&fine);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetCoarseForest(dm,NULL);CHKERRQ(ierr);
   }
   ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_forest_adjacency_dimension","set the dimension of points that define adjacency in the forest","DMForestSetAdjacencyDimension",adjDim,&adjDim,&flg);CHKERRQ(ierr);
@@ -619,6 +657,11 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsOb
   ierr = PetscOptionsInt("-dm_forest_minimum_refinement","set the minimum level of refinement in the forest","DMForestSetMinimumRefinement",minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetInitialRefinement(dm,&initRefinement);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_initial_refinement","set the initial level of refinement in the forest","DMForestSetInitialRefinement",initRefinement,&initRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetInitialRefinement(dm,initRefinement);CHKERRQ(ierr);
   }
   ierr = DMForestGetMaximumRefinement(dm,&maxRefinement);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_forest_maximum_refinement","set the maximum level of refinement in the forest","DMForestSetMaximumRefinement",maxRefinement,&maxRefinement,&flg);CHKERRQ(ierr);
@@ -676,12 +719,12 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->setFromOptions      = PETSC_FALSE;
   forest->topology            = NULL;
   forest->base                = NULL;
-  forest->coarse              = NULL;
   forest->fine                = NULL;
   forest->adjDim              = PETSC_DEFAULT;
   forest->overlap             = PETSC_DEFAULT;
   forest->minRefinement       = PETSC_DEFAULT;
   forest->maxRefinement       = PETSC_DEFAULT;
+  forest->initRefinement      = PETSC_DEFAULT;
   forest->cStart              = PETSC_DETERMINE;
   forest->cEnd                = PETSC_DETERMINE;
   forest->cellSF              = 0;

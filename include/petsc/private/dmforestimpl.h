@@ -16,12 +16,12 @@ typedef struct {
   PetscBool                  setFromOptions;
   DMForestTopology           topology;
   DM                         base;
-  DM                         coarse;
   DM                         fine;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;
   PetscInt                   maxRefinement;
+  PetscInt                   initRefinement;
   PetscInt                   cStart;
   PetscInt                   cEnd;
   PetscSF                    cellSF;

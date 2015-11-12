@@ -207,6 +207,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   adaptFrom = coarse ? coarse : fine;
   if (!adaptFrom && !base && !topoName) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs a topology, a base DM, or a DM to adapt from");
 
+  if (adaptFrom) {
+    ierr = DMSetUp(adaptFrom);CHKERRQ(ierr);
+  }
+
   /* === Step 1: DMFTopology === */
   if (adaptFrom) { /* reference already created topology */
     PetscBool         ispforest;
@@ -217,23 +221,19 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (!ispforest) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Trying to adapt from %s, which is not %s\n",((PetscObject)adaptFrom)->type_name,DMPFOREST);
     ierr = DMForestGetBaseDM(adaptFrom,&base);CHKERRQ(ierr);
     ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
+    ierr = DMForestGetTopology(adaptFrom,&topoName);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,topoName);CHKERRQ(ierr);
     if (!apforest->topo) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
     apforest->topo->refct++;
     pforest->topo = apforest->topo;
   }
-  else if (topoName) { /* use a name constructor */
-    DMFTopology_pforest *topo;
-
-    ierr = DMFTopologyCreate_pforest(dm,topoName,&topo);CHKERRQ(ierr);
-    pforest->topo = topo;
-    /* TODO: construct base? */
-  }
-  else { /* construct from base */
+  else if (base) { /* use a name constructor */
     PetscBool isPlex, isDA;
-    const char *name;
 
-    ierr = PetscObjectGetName((PetscObject)base,&name);CHKERRQ(ierr);
-    ierr = DMForestSetTopology(dm,(DMForestTopology)name);CHKERRQ(ierr);
+    if (!topoName) {
+      ierr = PetscObjectGetName((PetscObject)base,&topoName);CHKERRQ(ierr);
+      ierr = DMForestSetTopology(dm,topoName);CHKERRQ(ierr);
+    }
     ierr = PetscObjectTypeCompare((PetscObject)base,DMPLEX,&isPlex);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)base,DMDA,&isDA);CHKERRQ(ierr);
     if (isPlex) {
@@ -285,6 +285,13 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 #endif
     }
   }
+  else { /* construct from topology name */
+    DMFTopology_pforest *topo;
+
+    ierr = DMFTopologyCreate_pforest(dm,topoName,&topo);CHKERRQ(ierr);
+    pforest->topo = topo;
+    /* TODO: construct base? */
+  }
 
   /* === Step 2: get the leaves of the forest === */
   if (adaptFrom) { /* start with the old forest */
@@ -297,16 +304,27 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
   }
   else {
-    PetscInt minLevel;
+    PetscInt initLevel, minLevel;
 
+    ierr = DMForestGetInitialRefinement(dm,&initLevel);CHKERRQ(ierr);
     ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
     PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(PetscObjectComm((PetscObject)dm),pforest->topo->conn,
                                                              0,           /* minimum number of quadrants per processor */
-                                                             minLevel,    /* minimum level of refinement */
+                                                             initLevel,   /* level of refinement */
                                                              1,           /* uniform refinement */
                                                              0,           /* we don't allocate any per quadrant data */
                                                              NULL,        /* there is no special quadrant initialization */
                                                              (void *)dm)); /* this dm is the user context */
+    if (initLevel > minLevel) {
+      DMType type;
+      DM     coarseDM;
+
+      ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarseDM);CHKERRQ(ierr);
+      ierr = DMGetType(dm,&type);CHKERRQ(ierr);
+      ierr = DMSetType(coarseDM,type);CHKERRQ(ierr);
+      ierr = DMForestSetFineForest(coarseDM,dm);CHKERRQ(ierr);
+      ierr = DMForestSetInitialRefinement(coarseDM,initLevel - 1);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -330,6 +348,7 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
   if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
