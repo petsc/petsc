@@ -228,6 +228,43 @@ class BaseTestMatAnyAIJ(object):
         self.A.getSubMatrix(rows, cols, S)
         S.destroy()
 
+    def testGetSubMatrices(self):
+        if 'baij' in self.A.getType(): return # XXX
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        #
+        rs, re = self.A.getOwnershipRange()
+        cs, ce = self.A.getOwnershipRangeColumn()
+        rows = N.array(range(rs, re), dtype=PETSc.IntType)
+        cols = N.array(range(cs, ce), dtype=PETSc.IntType)
+        rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
+        cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
+        #
+        (S,) = self.A.getSubMatrices(rows, cols)
+        S.zeroEntries()
+        self.A.getSubMatrices(rows, cols, submats=[S])
+        S.destroy()
+        #
+        (S1,) = self.A.getSubMatrices([rows], [cols])
+        (S2,) = self.A.getSubMatrices([rows], [cols])
+        self.assertTrue(S1.equal(S2))
+        S2.zeroEntries()
+        self.A.getSubMatrices([rows], [cols], [S2])
+        self.assertTrue(S1.equal(S2))
+        S1.destroy()
+        S2.destroy()
+        #
+        if 'seq' not in self.A.getType(): return # XXX
+        S1, S2 = self.A.getSubMatrices([rows, rows], [cols, cols])
+        self.assertTrue(S1.equal(S2))
+        S1.zeroEntries()
+        S2.zeroEntries()
+        self.A.getSubMatrices([rows, rows], [cols, cols], [S1, S2])
+        self.assertTrue(S1.equal(S2))
+        S1.destroy()
+        S2.destroy()
+
     def testCreateTranspose(self):
         self._preallocate()
         self._set_values_ijv()
