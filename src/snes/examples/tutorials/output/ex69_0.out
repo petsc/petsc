@@ -11,7 +11,7 @@ Labels:
   markerBottom: 1 strata of sizes (3)
   marker: 5 strata of sizes (5, 3, 5, 5, 3)
   depth: 3 strata of sizes (9, 16, 8)
-Integral of pressure: -2.77556e-17
+Integral of pressure: 0.
 L_2 Error: [0.000608802, 0.0353728]
 L_2 Residual: 0.0465972
 Linear L_2 Residual: 0.0465972
@@ -171,7 +171,7 @@ SNES Object: 1 MPI processes
         using I-node routines: found 24 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 0.0259 [0.000635, 0.0259]
-Integral of pressure: 0
+Integral of pressure: 0.
 Solution
 Vec Object:Solution 1 MPI processes
   type: seq

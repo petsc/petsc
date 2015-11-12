@@ -12,10 +12,10 @@ Labels:
   marker: 4 strata of sizes (25, 25, 25, 25)
   Face Sets: 4 strata of sizes (21, 21, 21, 21)
   depth: 3 strata of sizes (169, 312, 144)
-Integral of pressure: -5.89806e-17
+Integral of pressure: 0.
   0 SNES Function norm 0.0228994 
     0 KSP Residual norm 1.37669 
-    1 KSP Residual norm 7.68362e-09 
+    1 KSP Residual norm 7.68361e-09 
     2 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_ATOL iterations 2
   1 SNES Function norm < 1.e-11
@@ -164,4 +164,4 @@ SNES Object: 1 MPI processes
         using I-node routines: found 625 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 3.24e-05 [2.51e-06, 3.23e-05]
-Integral of pressure: 1.14492e-16
+Integral of pressure: 0.
