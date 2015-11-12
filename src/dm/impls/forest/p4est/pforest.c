@@ -263,10 +263,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       PetscErrorCode       ierr;
 
       ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);
-      if (depth == 2) {
+      if (depth == 1) {
         ierr  = DMPlexInterpolate(base,&connDM);CHKERRQ(ierr);
       }
-      else if (depth == P4EST_DIM + 1) {
+      else if (depth == P4EST_DIM) {
         connDM = base;
         ierr   = PetscObjectReference((PetscObject)base);CHKERRQ(ierr);
       }
@@ -358,7 +358,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     }
   }
   if (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity || forest->weightsFactor) {
-    if (!forest->cellWeights && !forest->weightCapacity && !forest->weightsFactor) {
+    if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
       PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
     }
     else {
@@ -522,8 +522,8 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
     }
     ierr = DMPlexRestoreTransitiveClosure(dm,e,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(ctt);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(ctt,&ettSize);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(ett);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(ett,&ettSize);CHKERRQ(ierr);
   ierr = P4estTopidxCast(ettSize,&numEtt);CHKERRQ(ierr);
 
   /* This routine allocates space for the arrays, which we fill below */
@@ -600,7 +600,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 #endif
         /* encode neighbor face and orientation in tree_to_face per p4est_connectivity standard (see
          * p4est_connectivity.h, p8est_connectivity.h) */
-        conn->tree_to_face[6 * (p - cStart) + myFace[s]] = (int8_t) myFace[1 - s] + p4estOrient * P4EST_FACES;
+        conn->tree_to_face[P4EST_FACES * (p - cStart) + myFace[s]] = (int8_t) myFace[1 - s] + p4estOrient * P4EST_FACES;
       }
     }
   }
@@ -698,12 +698,13 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];
 
+        conn->tree_to_vertex[P4EST_CHILDREN * (c - cStart) + v] = P4EST_CHILDREN * (c - cStart) + v;
         /* p4est vertices are always embedded in R^3 */
         for (i = 0; i < 3; i++) {
-          conn->tree_to_vertex[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = 0.;
+          conn->vertices[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = 0.;
         }
         for (i = 0; i < lim; i++) {
-          conn->tree_to_vertex[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = PetscRealPart(cellCoords[v * coordDim + i]);
+          conn->vertices[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = PetscRealPart(cellCoords[v * coordDim + i]);
         }
       }
       ierr = DMPlexVecRestoreClosure(dm, coordSec, coordVec, c, &dof, &cellCoords);CHKERRQ(ierr);
@@ -818,6 +819,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   /* set forest defaults */
   ierr = DMForestSetTopology(dm,"unit");CHKERRQ(ierr);
   ierr = DMForestSetMinimumRefinement(dm,0);CHKERRQ(ierr);
+  ierr = DMForestSetInitialRefinement(dm,0);CHKERRQ(ierr);
   ierr = DMForestSetMaximumRefinement(dm,P4EST_QMAXLEVEL);CHKERRQ(ierr);
   ierr = DMForestSetGradeFactor(dm,2);CHKERRQ(ierr);
   ierr = DMForestSetAdjacencyDimension(dm,0);CHKERRQ(ierr);

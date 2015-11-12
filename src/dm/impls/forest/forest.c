@@ -376,7 +376,7 @@ PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
-  ierr = PetscStrallocpy((const char *)adaptStrategy,(char **)adaptStrategy);CHKERRQ(ierr);
+  ierr = PetscStrallocpy((const char *) adaptStrategy,(char **)&forest->adaptStrategy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -755,12 +755,12 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->cellSF              = 0;
   forest->adaptMarkers        = NULL;
   forest->adaptCopyMode       = PETSC_USE_POINTER;
-  forest->adaptStrategy       = DMFORESTADAPTALL;
   forest->gradeFactor         = 2;
   forest->cellWeights         = NULL;
   forest->cellWeightsCopyMode = PETSC_USE_POINTER;
   forest->weightsFactor       = 1.;
   forest->weightCapacity      = 1.;
+  ierr = DMForestSetAdaptivityStrategy(dm,DMFORESTADAPTALL);CHKERRQ(ierr);
   ierr = DMInitialize_Forest(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
