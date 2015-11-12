@@ -29,6 +29,7 @@
 #define DMInitialize_pforest             _append_pforest(DMInitialize)
 #define DMCreate_pforest                 _append_pforest(DMCreate)
 #define DMForestDestroy_pforest          _append_pforest(DMForestDestroy)
+#define DMForestTemplate_pforest         _append_pforest(DMForestTemplate)
 #define DMSetUp_pforest                  _append_pforest(DMSetUp)
 #define DMView_pforest                   _append_pforest(DMView)
 #define DMView_VTK_pforest               _append_pforest(DMView_VTK)
@@ -51,6 +52,7 @@ typedef struct {
   p4est_t             *forest;
   p4est_ghost_t       *ghost;
   p4est_lnodes_t      *lnodes;
+  PetscBool            partition_for_coarsening;
 } DM_Forest_pforest;
 
 #undef __FUNCT__
@@ -185,7 +187,32 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestTemplate_pforest)
+static PetscErrorCode DMForestTemplate_pforest(DM dm, DM tdm)
+{
+  DM_Forest_pforest *pforest  = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  DM_Forest_pforest *tpforest = (DM_Forest_pforest *) ((DM_Forest *) tdm->data)->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (pforest->topo) pforest->topo->refct++;
+  ierr = DMFTopologyDestroy_pforest(&(tpforest->topo));CHKERRQ(ierr);
+  tpforest->topo = pforest->topo;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,p4est_connectivity_t**);
+
+static int pforest_coarsen_uniform (p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
+{
+  PetscInt minLevel = *((PetscInt *) p4est->user_pointer);
+
+  if ((PetscInt) quadrants[0]->level > minLevel) {
+    return 1;
+  }
+  return 0;
+}
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMSetUp_pforest)
@@ -207,10 +234,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   adaptFrom = coarse ? coarse : fine;
   if (!adaptFrom && !base && !topoName) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs a topology, a base DM, or a DM to adapt from");
 
-  if (adaptFrom) {
-    ierr = DMSetUp(adaptFrom);CHKERRQ(ierr);
-  }
-
   /* === Step 1: DMFTopology === */
   if (adaptFrom) { /* reference already created topology */
     PetscBool         ispforest;
@@ -219,21 +242,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
     ierr = PetscObjectTypeCompare((PetscObject)adaptFrom,DMPFOREST,&ispforest);CHKERRQ(ierr);
     if (!ispforest) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Trying to adapt from %s, which is not %s\n",((PetscObject)adaptFrom)->type_name,DMPFOREST);
-    ierr = DMForestGetBaseDM(adaptFrom,&base);CHKERRQ(ierr);
-    ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
-    ierr = DMForestGetTopology(adaptFrom,&topoName);CHKERRQ(ierr);
-    ierr = DMForestSetTopology(dm,topoName);CHKERRQ(ierr);
     if (!apforest->topo) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
-    apforest->topo->refct++;
-    pforest->topo = apforest->topo;
+    ierr = DMSetUp(adaptFrom);CHKERRQ(ierr);
+    ierr = DMForestTemplate(adaptFrom,dm);CHKERRQ(ierr);
   }
-  else if (base) { /* use a name constructor */
+  else if (base) { /* construct a connectivity from base */
     PetscBool isPlex, isDA;
 
-    if (!topoName) {
-      ierr = PetscObjectGetName((PetscObject)base,&topoName);CHKERRQ(ierr);
-      ierr = DMForestSetTopology(dm,topoName);CHKERRQ(ierr);
-    }
+    ierr = PetscObjectGetName((PetscObject)base,&topoName);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,topoName);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)base,DMPLEX,&isPlex);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)base,DMDA,&isDA);CHKERRQ(ierr);
     if (isPlex) {
@@ -300,7 +317,18 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
     PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
     /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
-    /* ... */
+    if (coarse) { /* coarsen */
+      /* TODO: Non uniform coarsening case?  Recursive?  Flags. */
+      PetscInt minLevel;
+
+      ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
+      pforest->forest->user_pointer = (void *) &minLevel;
+      PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
+      pforest->forest->user_pointer = (void *) dm;
+    }
+    else { /* refine */
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
+    }
     PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
   }
   else {
@@ -323,7 +351,19 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMGetType(dm,&type);CHKERRQ(ierr);
       ierr = DMSetType(coarseDM,type);CHKERRQ(ierr);
       ierr = DMForestSetFineForest(coarseDM,dm);CHKERRQ(ierr);
-      ierr = DMForestSetInitialRefinement(coarseDM,initLevel - 1);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
+      if (forest->setFromOptions) {
+        ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
+      }
+    }
+  }
+  if (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity || forest->weightsFactor) {
+    if (!forest->cellWeights && !forest->weightCapacity && !forest->weightsFactor) {
+      PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
+    }
+    else {
+      /* TODO: handle non-uniform partition cases */
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
     }
   }
   PetscFunctionReturn(0);
@@ -353,7 +393,7 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_VTK_VTU:
-    if (!dm->setupcalled || !pforest->forest) SETERRQ (PetscObjectComm(odm),PETSC_ERR_ARG_WRONG,"DM has not been setup with a valid forest");
+    if (!pforest->forest) SETERRQ (PetscObjectComm(odm),PETSC_ERR_ARG_WRONG,"DM has not been setup with a valid forest");
     name = vtk->filename;
     ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(name+len-4,".vtu",&hasExt);CHKERRQ(ierr);
@@ -703,12 +743,61 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMSetFromOptions_pforest)
+static PetscErrorCode DMSetFromOptions_pforest(PetscOptions *PetscOptionsObject,DM dm)
+{
+  DM_Forest_pforest *pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSetFromOptions_Forest(PetscOptionsObject,dm);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DM" P4EST_STRING " options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_p4est_partition_for_coarsening","partition forest to allow for coarsening","DMP4estSetPartitionForCoarsening",pforest->partition_for_coarsening,&(pforest->partition_for_coarsening),NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#if !defined(P4_TO_P8)
+#define DMPforestGetPartitionForCoarsening DMP4estGetPartitionForCoarsening
+#define DMPforestSetPartitionForCoarsening DMP4estSetPartitionForCoarsening
+#else
+#define DMPforestGetPartitionForCoarsening DMP8estGetPartitionForCoarsening
+#define DMPforestSetPartitionForCoarsening DMP8estSetPartitionForCoarsening
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMPforestGetPartitionForCoarsening)
+PETSC_EXTERN PetscErrorCode DMPforestGetPartitionForCoarsening(DM dm, PetscBool *flg)
+{
+  DM_Forest_pforest *pforest;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  *flg = pforest->partition_for_coarsening;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMPforestSetPartitionForCoarsening)
+PETSC_EXTERN PetscErrorCode DMPforestSetPartitionForCoarsening(DM dm, PetscBool flg)
+{
+  DM_Forest_pforest *pforest;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  pforest->partition_for_coarsening = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
   PetscFunctionBegin;
   dm->ops->setup = DMSetUp_pforest;
   dm->ops->view  = DMView_pforest;
+  dm->ops->setfromoptions = DMSetFromOptions_pforest;
   PetscFunctionReturn(0);
 }
 
@@ -737,13 +826,15 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   /* create p4est data */
   ierr = PetscNewLog(dm,&pforest);CHKERRQ(ierr);
 
-  forest          = (DM_Forest *) dm->data;
-  forest->data    = pforest;
-  forest->destroy = DMForestDestroy_pforest;
-  pforest->topo   = NULL;
-  pforest->forest = NULL;
-  pforest->ghost  = NULL;
-  pforest->lnodes = NULL;
+  forest            = (DM_Forest *) dm->data;
+  forest->data      = pforest;
+  forest->destroy   = DMForestDestroy_pforest;
+  forest->ftemplate = DMForestTemplate_pforest;
+  pforest->topo     = NULL;
+  pforest->forest   = NULL;
+  pforest->ghost    = NULL;
+  pforest->lnodes   = NULL;
+  pforest->partition_for_coarsening = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -13,10 +13,10 @@ typedef struct {
   PetscErrorCode             (*createcellchart)(DM,PetscInt*,PetscInt*);
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
+  PetscErrorCode             (*ftemplate)(DM,DM);
   PetscBool                  setFromOptions;
   DMForestTopology           topology;
   DM                         base;
-  DM                         fine;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;

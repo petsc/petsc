@@ -101,4 +101,13 @@ PETSC_EXTERN PetscErrorCode DMForestSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM,Mat *);
 PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);
 
+/* miscellaneous */
+PETSC_EXTERN PetscErrorCode DMForestTemplate(DM,DM);
+
+/* p4est */
+PETSC_EXTERN PetscErrorCode DMP4estGetPartitionForCoarsening(DM,PetscBool *);
+PETSC_EXTERN PetscErrorCode DMP4estSetPartitionForCoarsening(DM,PetscBool);
+PETSC_EXTERN PetscErrorCode DMP8estGetPartitionForCoarsening(DM,PetscBool *);
+PETSC_EXTERN PetscErrorCode DMP8estSetPartitionForCoarsening(DM,PetscBool);
+
 #endif
