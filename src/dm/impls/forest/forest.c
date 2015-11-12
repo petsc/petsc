@@ -35,7 +35,6 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
     ierr = PetscFree(forest->cellWeights);CHKERRQ(ierr);
   }
-  ierr = DMDestroy(&forest->fine);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
   ierr = PetscFree(forest);CHKERRQ(ierr);
@@ -141,7 +140,6 @@ PetscErrorCode DMForestGetCoarseForest(DM dm, DM *coarse)
 #define __FUNCT__ "DMForestSetFineForest"
 PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
 {
-  DM_Forest        *forest = (DM_Forest *) dm->data;
   DM               base;
   DMForestTopology topology;
   PetscErrorCode   ierr;
@@ -151,13 +149,11 @@ PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
   PetscValidHeaderSpecific(fine, DM_CLASSID, 2);
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the fine forest after setup");
   if (!fine->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a fine forest that is not set up");
-  ierr = PetscObjectReference((PetscObject)fine);CHKERRQ(ierr);
-  ierr = DMDestroy(&forest->fine);CHKERRQ(ierr);
+  ierr = DMSetFineDM(dm,fine);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(fine,&base);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
   ierr = DMForestGetTopology(fine,&topology);CHKERRQ(ierr);
   ierr = DMForestSetTopology(dm,topology);CHKERRQ(ierr);
-  forest->fine = fine;
   PetscFunctionReturn(0);
 }
 
@@ -165,12 +161,10 @@ PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
 #define __FUNCT__ "DMForestGetFineForest"
 PetscErrorCode DMForestGetFineForest(DM dm, DM *fine)
 {
-  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(fine, 2);
-  *fine = forest->fine;
+  ierr = DMGetFineDM(dm,fine);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -719,7 +713,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->setFromOptions      = PETSC_FALSE;
   forest->topology            = NULL;
   forest->base                = NULL;
-  forest->fine                = NULL;
   forest->adjDim              = PETSC_DEFAULT;
   forest->overlap             = PETSC_DEFAULT;
   forest->minRefinement       = PETSC_DEFAULT;

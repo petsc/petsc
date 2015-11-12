@@ -72,6 +72,8 @@ PETSC_EXTERN PetscErrorCode DMRefine(DM,MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMCoarsen(DM,MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMGetCoarseDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoarseDM(DM,DM);
+PETSC_EXTERN PetscErrorCode DMGetFineDM(DM,DM*);
+PETSC_EXTERN PetscErrorCode DMSetFineDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMRefineHierarchy(DM,PetscInt,DM[]);
 PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy(DM,PetscInt,DM[]);
 PETSC_EXTERN PetscErrorCode DMCoarsenHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,Mat,Vec,Mat,DM,void*),void*);

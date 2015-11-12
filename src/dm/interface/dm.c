@@ -461,6 +461,49 @@ PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCountNonCyclicReferences"
+static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse, PetscBool recurseFine, PetscInt *ncrefct)
+{
+  PetscInt i, refct = ((PetscObject) dm)->refct;
+  DMNamedVecLink nlink;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* count all the circular references of DM and its contained Vecs */
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->localin[i])  refct--;
+    if (dm->globalin[i]) refct--;
+  }
+  for (nlink=dm->namedglobal; nlink; nlink=nlink->next) refct--;
+  for (nlink=dm->namedlocal; nlink; nlink=nlink->next) refct--;
+  if (dm->x) {
+    DM obj;
+    ierr = VecGetDM(dm->x, &obj);CHKERRQ(ierr);
+    if (obj == dm) refct--;
+  }
+  if (dm->coarseMesh && dm->coarseMesh->fineMesh == dm) {
+    refct--;
+    if (recurseCoarse) {
+      PetscInt coarseCount;
+
+      ierr = DMCountNonCyclicReferences(dm->coarseMesh, PETSC_TRUE, PETSC_FALSE,&coarseCount);CHKERRQ(ierr);
+      refct += coarseCount;
+    }
+  }
+  if (dm->fineMesh && dm->fineMesh->coarseMesh == dm) {
+    refct--;
+    if (recurseFine) {
+      PetscInt fineCount;
+
+      ierr = DMCountNonCyclicReferences(dm->fineMesh, PETSC_FALSE, PETSC_TRUE,&fineCount);CHKERRQ(ierr);
+      refct += fineCount;
+    }
+  }
+  *ncrefct = refct;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy"
 /*@
     DMDestroy - Destroys a vector packer or DM.
@@ -477,7 +520,7 @@ PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
 {
-  PetscInt       i, cnt = 0;
+  PetscInt       i, cnt;
   DMNamedVecLink nlink,nnext;
   PetscErrorCode ierr;
 
@@ -485,20 +528,10 @@ PetscErrorCode  DMDestroy(DM *dm)
   if (!*dm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*dm),DM_CLASSID,1);
 
-  /* count all the circular references of DM and its contained Vecs */
-  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if ((*dm)->localin[i])  cnt++;
-    if ((*dm)->globalin[i]) cnt++;
-  }
-  for (nlink=(*dm)->namedglobal; nlink; nlink=nlink->next) cnt++;
-  for (nlink=(*dm)->namedlocal; nlink; nlink=nlink->next) cnt++;
-  if ((*dm)->x) {
-    DM obj;
-    ierr = VecGetDM((*dm)->x, &obj);CHKERRQ(ierr);
-    if (obj == *dm) cnt++;
-  }
-
-  if (--((PetscObject)(*dm))->refct - cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
+  /* count all non-cyclic references in the doubly-linked list of coarse<->fine meshes */
+  ierr = DMCountNonCyclicReferences(*dm,PETSC_TRUE,PETSC_TRUE,&cnt);CHKERRQ(ierr);
+  --((PetscObject)(*dm))->refct;
+  if (--cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
   /*
      Need this test because the dm references the vectors that
      reference the dm, so destroying the dm calls destroy on the
@@ -618,7 +651,14 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
 
+  if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) {
+    ierr = DMSetFineDM((*dm)->coarseMesh,NULL);CHKERRQ(ierr);
+  }
   ierr = DMDestroy(&(*dm)->coarseMesh);CHKERRQ(ierr);
+  if ((*dm)->fineMesh && (*dm)->fineMesh->coarseMesh == *dm) {
+    ierr = DMSetCoarseDM((*dm)->fineMesh,NULL);CHKERRQ(ierr);
+  }
+  ierr = DMDestroy(&(*dm)->fineMesh);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
@@ -5294,6 +5334,56 @@ PetscErrorCode DMSetCoarseDM(DM dm, DM cdm)
   ierr = PetscObjectReference((PetscObject)cdm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm->coarseMesh);CHKERRQ(ierr);
   dm->coarseMesh = cdm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetFineDM"
+/*@
+  DMGetFineDM - Get the fine mesh from which this was obtained by refinement
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. fdm - The fine DM
+
+  Level: intermediate
+
+.seealso: DMSetFineDM()
+@*/
+PetscErrorCode DMGetFineDM(DM dm, DM *fdm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(fdm, 2);
+  *fdm = dm->fineMesh;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetFineDM"
+/*@
+  DMSetFineDM - Set the fine mesh from which this was obtained by refinement
+
+  Input Parameters:
++ dm - The DM object
+- fdm - The fine DM
+
+  Level: intermediate
+
+.seealso: DMGetFineDM()
+@*/
+PetscErrorCode DMSetFineDM(DM dm, DM fdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (fdm) PetscValidHeaderSpecific(fdm, DM_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject)fdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm->fineMesh);CHKERRQ(ierr);
+  dm->fineMesh = fdm;
   PetscFunctionReturn(0);
 }
 
