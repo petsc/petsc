@@ -14,21 +14,21 @@ typedef enum {RUN_FULL, RUN_TEST, RUN_PERF} RunType;
 typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR} CoeffType;
 
 typedef struct {
-  PetscInt      debug;             /* The debugging level */
-  RunType       runType;           /* Whether to run tests, or solve the full problem */
-  PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
-  PetscLogEvent createMeshEvent;
-  PetscBool     showInitial, showSolution, restart, check;
+  PetscInt       debug;             /* The debugging level */
+  RunType        runType;           /* Whether to run tests, or solve the full problem */
+  PetscBool      jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
+  PetscLogEvent  createMeshEvent;
+  PetscBool      showInitial, showSolution, restart, check;
   /* Domain and mesh definition */
-  PetscInt      dim;               /* The topological mesh dimension */
-  char          filename[2048];    /* The optional ExodusII file */
-  PetscBool     interpolate;       /* Generate intermediate mesh elements */
-  PetscReal     refinementLimit;   /* The largest allowable cell volume */
-  PetscBool     viewHierarchy;     /* Whether to view the hierarchy */
-  PetscBool     simplex;           /* Simplicial mesh */
+  PetscInt       dim;               /* The topological mesh dimension */
+  char           filename[2048];    /* The optional ExodusII file */
+  PetscBool      interpolate;       /* Generate intermediate mesh elements */
+  PetscReal      refinementLimit;   /* The largest allowable cell volume */
+  PetscBool      viewHierarchy;     /* Whether to view the hierarchy */
+  PetscBool      simplex;           /* Simplicial mesh */
   /* Problem definition */
-  BCType        bcType;
-  CoeffType     variableCoefficient;
+  BCType         bcType;
+  CoeffType      variableCoefficient;
   PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   /* Solver */
   PC            pcmg;              /* This is needed for error monitoring */
@@ -424,15 +424,38 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt i   = 0;
     char     buf[256];
 
-    while (cdm) {ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr); ++i;}
+    while (cdm) {
+      ierr = DMSetUp(cdm);CHKERRQ(ierr);
+      ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+      ++i;
+    }
     cdm = *dm;
     while (cdm) {
-      PetscViewer viewer;
+      PetscViewer       viewer;
+      PetscViewerFormat format;
+      PetscBool   isHDF5, isVTK;
 
       --i;
-      ierr = PetscSNPrintf(buf, 256, "ex12-%d.h5", i);CHKERRQ(ierr);
-      ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer,PETSCVIEWERHDF5);CHKERRQ(ierr);
+      ierr = PetscViewerSetOptionsPrefix(viewer,"hierarchy_");CHKERRQ(ierr);
+      ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
+      if (isHDF5) {
+        ierr = PetscSNPrintf(buf, 256, "ex12-%d.h5", i);CHKERRQ(ierr);
+      }
+      else if (isVTK) {
+        ierr = PetscSNPrintf(buf, 256, "ex12-%d.vtu", i);CHKERRQ(ierr);
+        ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscSNPrintf(buf, 256, "ex12-%d", i);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
     }

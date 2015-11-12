@@ -26,8 +26,6 @@ PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, DM tdm)
   ierr = DMForestSetPartitionOverlap(tdm,overlap);CHKERRQ(ierr);
   ierr = DMForestGetMinimumRefinement(dm,&ref);CHKERRQ(ierr);
   ierr = DMForestSetMinimumRefinement(tdm,ref);CHKERRQ(ierr);
-  ierr = DMForestGetInitialRefinement(dm,&ref);CHKERRQ(ierr);
-  ierr = DMForestSetInitialRefinement(tdm,ref);CHKERRQ(ierr);
   ierr = DMForestGetMaximumRefinement(dm,&ref);CHKERRQ(ierr);
   ierr = DMForestSetMaximumRefinement(tdm,ref);CHKERRQ(ierr);
   ierr = DMForestGetAdaptivityStrategy(dm,&strat);CHKERRQ(ierr);

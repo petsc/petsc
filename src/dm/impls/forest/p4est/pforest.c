@@ -53,6 +53,7 @@ typedef struct {
   p4est_ghost_t       *ghost;
   p4est_lnodes_t      *lnodes;
   PetscBool            partition_for_coarsening;
+  PetscBool            coarsen_hierarchy;
 } DM_Forest_pforest;
 
 #undef __FUNCT__
@@ -317,7 +318,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
     PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
     /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
-    if (coarse) { /* coarsen */
+    if (fine) { /* coarsen */
       /* TODO: Non uniform coarsening case?  Recursive?  Flags. */
       PetscInt minLevel;
 
@@ -344,6 +345,16 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                              NULL,        /* there is no special quadrant initialization */
                                                              (void *)dm)); /* this dm is the user context */
     if (initLevel > minLevel) {
+      pforest->coarsen_hierarchy = PETSC_TRUE;
+    }
+  }
+  if (pforest->coarsen_hierarchy) {
+    PetscInt initLevel, minLevel;
+
+    ierr = DMForestGetInitialRefinement(dm,&initLevel);CHKERRQ(ierr);
+    ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
+    if (initLevel > minLevel) {
+      DM_Forest_pforest *coarse_pforest;
       DMType type;
       DM     coarseDM;
 
@@ -355,6 +366,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       if (forest->setFromOptions) {
         ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
       }
+      ierr = DMForestSetInitialRefinement(coarseDM,initLevel - 1);CHKERRQ(ierr);
+      coarse_pforest = (DM_Forest_pforest *) ((DM_Forest *) coarseDM->data)->data;
+      coarse_pforest->coarsen_hierarchy = PETSC_TRUE;
     }
   }
   if (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity || forest->weightsFactor) {
@@ -837,6 +851,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   pforest->ghost    = NULL;
   pforest->lnodes   = NULL;
   pforest->partition_for_coarsening = PETSC_TRUE;
+  pforest->coarsen_hierarchy = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
