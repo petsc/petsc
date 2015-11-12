@@ -1,5 +1,5 @@
 numProcs   = 8
-./ex1 on a arch-opt-mpich named thing06.ftm.alcf.anl.gov with 8 processors, by bsmith Wed Nov 11 22:37:28 2015
+./ex1 on a arch-opt-mpich named thing05.ftm.alcf.anl.gov with 8 processors, by bsmith Thu Nov 12 23:27:09 2015
 Using Petsc Development GIT revision: v3.6.2-1540-geddb79b  GIT Date: 2015-11-11 14:39:31 -0600
 Configure options: --download-fblaslapack --download-hwloc --download-mpich --with-debugging=0 PETSC_ARCH=arch-opt-mpich
 -----------------------------------------
@@ -26,15 +26,15 @@ gcc -fPIC -g -O -I/home/bsmith/petsc/arch-opt-mpich/include -L/home/bsmith/petsc
 -matload_block_size 5
 -pc_type asm
 #End of PETSc Option Table entries
-MPI rank 0 Process id: 35787 coreid 0
-MPI rank 1 Process id: 35788 coreid 9
-MPI rank 2 Process id: 35789 coreid 18
-MPI rank 3 Process id: 35790 coreid 27
-MPI rank 4 Process id: 35791 coreid 1
-MPI rank 5 Process id: 35792 coreid 10
-MPI rank 6 Process id: 35793 coreid 19
-MPI rank 7 Process id: 35794 coreid 28
+MPI rank 0 Process id: 50158 coreid 0
+MPI rank 1 Process id: 50159 coreid 9
+MPI rank 2 Process id: 50160 coreid 18
+MPI rank 3 Process id: 50161 coreid 27
+MPI rank 4 Process id: 50162 coreid 1
+MPI rank 5 Process id: 50163 coreid 10
+MPI rank 6 Process id: 50164 coreid 19
+MPI rank 7 Process id: 50165 coreid 28
 ----------------------------------------------------
                 Time     Min to Max Range   Proportion of KSP
-VecScatterBegin 2.87e-03   - 38.6 %  21.0 %   4.46e+00 %
-VecScatterEnd   1.28e-02   - 82.2 % 105.2 %   1.99e+01 %
+VecScatterBegin 2.62e-03   - 33.3 %  29.2 %   4.21e+00 %
+VecScatterEnd   9.44e-03   - 78.6 % 116.2 %   1.52e+01 %
