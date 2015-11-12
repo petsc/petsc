@@ -49,6 +49,7 @@ typedef struct {
   SuperLUStat_t     stat;
   Mat               A_dup;
   PetscScalar       *rhs_dup;
+  GlobalLU_t        Glu;
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscBool CleanUpSuperLU;
@@ -179,7 +180,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 #else
     PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu,&lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #endif
   } else if (F->factortype == MAT_FACTOR_ILU) {
@@ -202,7 +203,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 #else
     PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
@@ -370,7 +371,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #else
     PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu,&lu->mem_usage, &lu->stat, &info));
 #endif
 #endif
   } else if (A->factortype == MAT_FACTOR_ILU) {
@@ -392,7 +393,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #else
     PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
