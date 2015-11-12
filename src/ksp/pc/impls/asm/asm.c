@@ -31,7 +31,7 @@ typedef struct {
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
   /* For multiplicative solve */
-  Mat       *lmat;                /* submatrix for overlapping multiplicative (process) subdomain */
+  Mat       *lmats;               /* submatrices for overlapping multiplicative (process) subdomain */
   Vec        lx, ly;              /* work vectors */
   IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
@@ -389,7 +389,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
   }
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
-    ierr = MatGetSubMatrices(pc->pmat, 1, &osm->lis, &osm->lis, scall, &osm->lmat);CHKERRQ(ierr);
+    IS      *cis;
+    PetscInt c;
+
+    ierr = PetscMalloc1(osm->n_local_true, &cis);CHKERRQ(ierr);
+    for (c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
+    ierr = MatGetSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats);CHKERRQ(ierr);
+    ierr = PetscFree(cis);CHKERRQ(ierr);
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -497,7 +503,9 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
         ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
         ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
         ierr = VecScale(osm->ly, -1.0);CHKERRQ(ierr);
-        ierr = MatMult(osm->lmat[0], osm->ly, osm->lx);CHKERRQ(ierr);
+        ierr = MatMult(osm->lmats[i+1], osm->ly, osm->y[i+1]);CHKERRQ(ierr);
+        ierr = VecScatterBegin(osm->restriction[i+1], osm->y[i+1], osm->lx, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->restriction[i+1], osm->y[i+1], osm->lx, INSERT_VALUES, reverse);CHKERRQ(ierr);
       }
     }
     /* handle the rest of the scatters that do not have local solves */
@@ -602,7 +610,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
     ierr = ISDestroy(&osm->lis);CHKERRQ(ierr);
-    ierr = MatDestroyMatrices(1, &osm->lmat);CHKERRQ(ierr);
+    ierr = MatDestroyMatrices(osm->n_local_true, &osm->lmats);CHKERRQ(ierr);
     ierr = VecDestroy(&osm->lx);CHKERRQ(ierr);
     ierr = VecDestroy(&osm->ly);CHKERRQ(ierr);
   }
