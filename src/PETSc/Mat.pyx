@@ -95,6 +95,11 @@ class MatAssemblyType(object):
     FINAL = FINAL_ASSEMBLY
     FLUSH = FLUSH_ASSEMBLY
 
+class MatInfoType(object):
+    LOCAL = MAT_LOCAL
+    GLOBAL_MAX = MAT_GLOBAL_MAX
+    GLOBAL_SUM = MAT_GLOBAL_SUM
+
 class MatStructure(object):
     # native
     SAME_NONZERO_PATTERN      = MAT_SAME_NONZERO_PATTERN
@@ -146,6 +151,7 @@ cdef class Mat(Object):
     OrderingType    = MatOrderingType
     FactorShiftType = MatFactorShiftType
     SORType         = MatSORType
+    InfoType        = MatInfoType
     #
 
     def __cinit__(self):
@@ -597,6 +603,12 @@ cdef class Mat(Object):
         cdef IS cols = IS()
         CHKERR( MatGetOwnershipIS(self.mat, &rows.iset, &cols.iset) )
         return (rows, cols)
+
+    def getInfo(self, info=None):
+        cdef PetscMatInfoType itype = infotype(info)
+        cdef PetscMatInfo cinfo
+        CHKERR( MatGetInfo(self.mat, itype, &cinfo) )
+        return cinfo
 
     def duplicate(self, copy=False):
         cdef PetscMatDuplicateOption flag = MAT_DO_NOT_COPY_VALUES
@@ -1468,6 +1480,7 @@ cdef class NullSpace(Object):
 del MatType
 del MatOption
 del MatAssemblyType
+del MatInfoType
 del MatStructure
 del MatOrderingType
 del MatFactorShiftType
