@@ -556,15 +556,18 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   if (user->check) {ierr = PetscFECreateDefault(dm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);}
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
+    DM coordDM;
+
     ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
     ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(cdm,&coordDM);CHKERRQ(ierr);
     if (feAux) {
       DM      dmAux;
       PetscDS probAux;
 
       ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(cdm, dmAux);CHKERRQ(ierr);
+      ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
       ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
       ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
@@ -576,7 +579,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       PetscDS probCh;
 
       ierr = DMClone(cdm, &dmCh);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(cdm, dmCh);CHKERRQ(ierr);
+      ierr = DMSetCoordinateDM(dmCh, coordDM);CHKERRQ(ierr);
       ierr = DMGetDS(dmCh, &probCh);CHKERRQ(ierr);
       ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
@@ -616,7 +619,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
-  DM             dm, edm;
+  DM             dm, edm, coordDM;
   PetscDS        prob;
   PetscFE        fe;
   Vec            du, r;
@@ -633,8 +636,9 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
   ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
   /* Create DM for error */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
   ierr = DMClone(dm, &edm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, edm);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(edm, coordDM);CHKERRQ(ierr);
   ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   /* Calculate solution */
@@ -707,7 +711,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
 PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
-  DM             dm, edm;
+  DM             dm, edm, coordDM;
   PetscDS        prob;
   PetscFE        fe;
   Vec            u, r;
@@ -724,8 +728,9 @@ PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *
   ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
   /* Create DM for error */
+  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
   ierr = DMClone(dm, &edm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, edm);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(edm, coordDM);CHKERRQ(ierr);
   ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   /* Calculate error */
