@@ -17,6 +17,7 @@
 #include <p4est_ghost.h>
 #include <p4est_lnodes.h>
 #include <p4est_vtk.h>
+#include <p4est_plex.h>
 #else
 #include <p8est.h>
 #include <p8est_extended.h>
@@ -24,6 +25,7 @@
 #include <p8est_ghost.h>
 #include <p8est_lnodes.h>
 #include <p8est_vtk.h>
+#include <p8est_plex.h>
 #endif
 
 #define DMInitialize_pforest             _append_pforest(DMInitialize)
@@ -40,6 +42,8 @@
 #define DMFTopologyCreateBrick_pforest   _append_pforest(DMFTopologyCreateBrick)
 #define DMConvert_plex_pforest           _append_pforest(DMConvert_plex)
 #define DMPlexCreateConnectivity_pforest _append_pforest(DMPlexCreateConnectivity)
+#define DMConvert_pforest_plex           _infix_pforest(DMConvert,_plex)
+#define DMCreateCoordinateDM_pforest     _append_pforest(DMCreateCoordinateDM)
 
 typedef struct {
   PetscInt             refct;
@@ -54,6 +58,7 @@ typedef struct {
   p4est_lnodes_t      *lnodes;
   PetscBool            partition_for_coarsening;
   PetscBool            coarsen_hierarchy;
+  DM                   plex;
 } DM_Forest_pforest;
 
 #undef __FUNCT__
@@ -167,6 +172,23 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMCreateCoordinateDM_pforest)
+static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
+{
+  PetscSection   section;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMConvert(dm,DMPLEX,cdm);CHKERRQ(ierr);
+  /* why what follows ? */
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&section);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(*cdm,section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMForestDestroy_pforest)
 static PetscErrorCode DMForestDestroy_pforest(DM dm)
 {
@@ -185,6 +207,7 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   ierr = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
   ierr = PetscFree(forest->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -750,10 +773,216 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (!isPlex) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPLEX,((PetscObject)dm)->type_name);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expeted DM dimension %d, got %d\n",P4EST_DIM,dim);
+  if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM dimension %d, got %d\n",P4EST_DIM,dim);
   ierr = DMCreate(comm,pforest);CHKERRQ(ierr);
   ierr = DMSetType(*pforest,DMPFOREST);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(*pforest,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "locidx_to_PetscInt"
+static PetscErrorCode locidx_to_PetscInt (sc_array_t * array)
+{
+  sc_array_t         *newarray;
+  size_t              zz, count = array->elem_count;
+
+  PetscFunctionBegin;
+  if (array->elem_size != sizeof (p4est_locidx_t)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong locidx size");
+
+  if (sizeof (p4est_locidx_t) == sizeof (PetscInt)) {
+    PetscFunctionReturn(0);
+  }
+
+  newarray = sc_array_new_size (sizeof (PetscInt), array->elem_count);
+  for (zz = 0; zz < count; zz++) {
+    p4est_locidx_t      il = *((p4est_locidx_t *) sc_array_index (array, zz));
+    PetscInt           *ip = (PetscInt *) sc_array_index (newarray, zz);
+
+    *ip = (PetscInt) il;
+  }
+
+  sc_array_reset (array);
+  sc_array_init_size (array, sizeof (PetscInt), count);
+  sc_array_copy (array, newarray);
+  sc_array_destroy (newarray);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "coords_double_to_PetscScalar"
+static PetscErrorCode coords_double_to_PetscScalar (sc_array_t * array, PetscInt dim)
+{
+  sc_array_t         *newarray;
+  size_t              zz, count = array->elem_count;
+
+  PetscFunctionBegin;
+  if (array->elem_size != 3 * sizeof (double)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong coordinate size");
+
+  if (sizeof (double) == sizeof (PetscScalar) && dim == 3) {
+    PetscFunctionReturn(0);
+  }
+
+  newarray = sc_array_new_size (dim * sizeof (PetscScalar), array->elem_count);
+  for (zz = 0; zz < count; zz++) {
+    int                 i;
+    double             *id = (double *) sc_array_index (array, zz);
+    PetscScalar        *ip = (PetscScalar *) sc_array_index (newarray, zz);
+
+    for (i = 0; i < dim; i++) {
+      ip[i] = 0.;
+    }
+    for (i = 0; i < PetscMin(dim,3); i++) {
+      ip[i] = (PetscScalar) id[i];
+    }
+  }
+
+  sc_array_reset (array);
+  sc_array_init_size (array, dim * sizeof (PetscScalar), count);
+  sc_array_copy (array, newarray);
+  sc_array_destroy (newarray);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "locidx_pair_to_PetscSFNode"
+static PetscErrorCode locidx_pair_to_PetscSFNode (sc_array_t * array)
+{
+  sc_array_t         *newarray;
+  size_t              zz, count = array->elem_count;
+
+  PetscFunctionBegin;
+  if (array->elem_size != 2 * sizeof (p4est_locidx_t)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong locidx size");
+
+  newarray = sc_array_new_size (sizeof (PetscSFNode), array->elem_count);
+  for (zz = 0; zz < count; zz++) {
+    p4est_locidx_t     *il = (p4est_locidx_t *) sc_array_index (array, zz);
+    PetscSFNode        *ip = (PetscSFNode *) sc_array_index (newarray, zz);
+
+    ip->rank = (PetscInt) il[0];
+    ip->index = (PetscInt) il[1];
+  }
+
+  sc_array_reset (array);
+  sc_array_init_size (array, sizeof (PetscSFNode), count);
+  sc_array_copy (array, newarray);
+  sc_array_destroy (newarray);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMConvert_pforest_plex)
+static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
+{
+  DM_Forest_pforest *pforest;
+  DM             refTree;
+  PetscInt       adjDim, adjCodim, coordDim;
+  MPI_Comm       comm;
+  PetscBool      isPforest;
+  PetscInt       dim;
+  PetscInt       overlap;
+  p4est_connect_type_t ctype;
+  p4est_locidx_t first_local_quad = -1;
+  sc_array_t     *points_per_dim, *cone_sizes, *cones, *cone_orientations, *coords, *children, *parents, *childids, *leaves, *remotes;
+  PetscSection   parentSection;
+  PetscSF        pointSF;
+  size_t         zz, count;
+  PetscInt       pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPFOREST,&isPforest);CHKERRQ(ierr);
+  if (!isPforest) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPFOREST,((PetscObject)dm)->type_name);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM dimension %d, got %d\n",P4EST_DIM,dim);
+  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  if (pforest->plex) {
+    ierr = PetscObjectReference((PetscObject)pforest->plex);CHKERRQ(ierr);
+    *plex = pforest->plex;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMCreate(comm,plex);CHKERRQ(ierr);
+  ierr = DMSetType(*plex,DMPLEX);CHKERRQ(ierr);
+  ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
+  ierr = DMForestGetAdjacencyCodimension(dm,&adjCodim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
+  if (adjDim == 0) {
+    ctype = P4EST_CONNECT_FULL;
+  }
+  else if (adjCodim == 1) {
+    ctype = P4EST_CONNECT_FACE;
+  }
+#if defined(P4_TO_P8)
+  else if (adjDim == 1) {
+    ctype = P8EST_CONNECT_EDGE;
+  }
+#endif
+  else {
+    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Invalid adjacency dimension %d",adjDim);
+  }
+  ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+
+  points_per_dim    = sc_array_new(sizeof (p4est_locidx_t));
+  cone_sizes        = sc_array_new(sizeof (p4est_locidx_t));
+  cones             = sc_array_new(sizeof (p4est_locidx_t));
+  cone_orientations = sc_array_new(sizeof (p4est_locidx_t));
+  coords            = sc_array_new(3 * sizeof (double));
+  children          = sc_array_new(sizeof (p4est_locidx_t));
+  parents           = sc_array_new(sizeof (p4est_locidx_t));
+  childids          = sc_array_new(sizeof (p4est_locidx_t));
+  leaves            = sc_array_new(sizeof (p4est_locidx_t));
+  remotes           = sc_array_new(2 * sizeof (p4est_locidx_t));
+
+  PetscStackCallP4est(p4est_get_plex_data,(pforest->forest,ctype,(int)overlap,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
+
+  ierr = locidx_to_PetscInt(points_per_dim);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(cone_sizes);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(cones);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(cone_orientations);CHKERRQ(ierr);
+  ierr = coords_double_to_PetscScalar(coords, coordDim);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(children);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(parents);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(childids);CHKERRQ(ierr);
+  ierr = locidx_to_PetscInt(leaves);CHKERRQ(ierr);
+  ierr = locidx_pair_to_PetscSFNode(remotes);CHKERRQ(ierr);
+
+  ierr = DMSetDimension(*plex,P4EST_DIM);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*plex,coordDim);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromDAG(*plex,P4EST_DIM,(PetscInt *)points_per_dim->array,(PetscInt *)cone_sizes->array,(PetscInt *)cones->array,(PetscInt *)cone_orientations->array,(PetscScalar *)coords->array);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
+  ierr = DMPlexCreateDefaultReferenceTree(comm,P4EST_DIM,PETSC_FALSE,&refTree);CHKERRQ(ierr);
+  ierr = DMPlexSetReferenceTree(*plex,refTree);CHKERRQ(ierr);
+  ierr = DMDestroy(&refTree);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm,&parentSection);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(*plex,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(parentSection,pStart,pEnd);CHKERRQ(ierr);
+  count = children->elem_count;
+  for(zz = 0;zz < count;zz++) {
+    PetscInt            child = *((PetscInt *) sc_array_index(children,zz));
+
+    ierr = PetscSectionSetDof(parentSection,child,1);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(parentSection);CHKERRQ(ierr);
+  ierr = DMPlexSetTree(*plex,parentSection,(PetscInt *)parents->array,(PetscInt *)childids->array);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(pointSF,pEnd - pStart,(PetscInt)leaves->elem_count,(PetscInt *)leaves->array,PETSC_COPY_VALUES,(PetscSFNode *)remotes->array,PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)*plex);CHKERRQ(ierr);
+  pforest->plex = *plex;
+
+  sc_array_destroy (points_per_dim);
+  sc_array_destroy (cone_sizes);
+  sc_array_destroy (cones);
+  sc_array_destroy (cone_orientations);
+  sc_array_destroy (coords);
+  sc_array_destroy (children);
+  sc_array_destroy (parents);
+  sc_array_destroy (childids);
+  sc_array_destroy (leaves);
+  sc_array_destroy (remotes);
+
   PetscFunctionReturn(0);
 }
 
@@ -810,9 +1039,10 @@ PETSC_EXTERN PetscErrorCode DMPforestSetPartitionForCoarsening(DM dm, PetscBool 
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
   PetscFunctionBegin;
-  dm->ops->setup = DMSetUp_pforest;
-  dm->ops->view  = DMView_pforest;
-  dm->ops->setfromoptions = DMSetFromOptions_pforest;
+  dm->ops->setup              = DMSetUp_pforest;
+  dm->ops->view               = DMView_pforest;
+  dm->ops->setfromoptions     = DMSetFromOptions_pforest;
+  dm->ops->createcoordinatedm = DMCreateCoordinateDM_pforest;
   PetscFunctionReturn(0);
 }
 
@@ -854,6 +1084,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   pforest->coarsen_hierarchy = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
