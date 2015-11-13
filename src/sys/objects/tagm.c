@@ -313,3 +313,47 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
   }
   PetscFunctionReturn(0);
 }
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscCommSplitShared"
+/*@C
+    PetscCommSplitShared - Given a PETSc communicator returns a communicator of all ranks that shared a common memory
+
+
+    Collective on comm.
+
+    Input Parameter:
+.   comm    - MPI_Comm
+
+    Output Parameter:
+.   scomm - the new MPI_Comm 
+
+
+    Level: developer
+
+    Concepts: MPI subcomm^numbering
+
+@*/
+PetscErrorCode  PetscCommSplitShared(MPI_Comm comm,MPI_Comm *scomm)
+{
+  PetscErrorCode ierr;
+  MPI_Group      group,sgroup;
+  PetscMPIInt    size,*sranks,*ranks,i;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED,0, MPI_INFO_NULL,scomm);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_size(*scomm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(comm, &group);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(*scomm, &sgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&sranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&ranks);CHKERRQ(ierr);
+  for (i=0; i<size; i++) sranks[i] = i;
+  ierr = MPI_Group_translate_ranks(sgroup, size, sranks, group, ranks);CHKERRQ(ierr);
+  ierr = PetscFree(sranks);CHKERRQ(ierr);
+  for (i=0; i<size; i++) {
+    ierr = PetscPrintf(MPI_COMM_SELF,"Shared memory rank %d global rank %d\n",i,ranks[i]);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
