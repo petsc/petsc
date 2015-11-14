@@ -2883,6 +2883,9 @@ PETSC_EXTERN PetscErrorCode PetscHeapDestroy(PetscHeap*);
 PETSC_EXTERN PetscErrorCode PetscHeapView(PetscHeap,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscProcessPlacementView(PetscViewer);
+typedef struct _n_PetscCommShared* PetscCommShared;
+PETSC_EXTERN PetscErrorCode  PetscCommSharedGet(MPI_Comm,PetscCommShared*);
+
 
 /*S
    PetscSegBuffer - a segmented extendable buffer

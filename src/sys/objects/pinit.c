@@ -38,6 +38,7 @@ MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_Shared_keyval    = MPI_KEYVAL_INVALID;
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -367,6 +368,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm comm,PetscMPIInt ke
   ierr = PetscInfo1(0,"Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
+
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm,PetscMPIInt,void *,void *);
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -915,6 +918,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);CHKERRQ(ierr);
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelShared,&Petsc_Shared_keyval,(void*)0);CHKERRQ(ierr);
 
   /*
      Build the options database

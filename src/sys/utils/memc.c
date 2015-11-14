@@ -101,7 +101,7 @@ PetscErrorCode  PetscMemmove(void *a,void *b,size_t n)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscProcessPlacementView"
-/*@
+/*@C
      PetscProcessPlacementView - display the MPI process placement by core
 
   Input Parameter:

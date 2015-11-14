@@ -314,10 +314,39 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
   PetscFunctionReturn(0);
 }
 
+struct _n_PetscCommShared {
+  PetscMPIInt *ranks;    /* global ranks of each rank in this shared memory comm */
+  PetscMPIInt size;
+  MPI_Comm    comm,scomm;
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DelShared"
+/*
+   Private routine to delete internal tag/name shared memory communicator when a communicator is freed.
+
+   This is called by MPI, not by users. This is called by MPI_Comm_free() when the communicator that has this  data as an attribute is freed.
+
+   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
+
+*/
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm comm,PetscMPIInt keyval,void *val,void *extra_state)
+{
+  PetscErrorCode  ierr;
+  PetscCommShared scomm = (PetscCommShared)val;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo1(0,"Deleting shared subcommunicator in a MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = MPI_Comm_free(&scomm->scomm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscFree(scomm->ranks);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscFree(val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+
 #undef  __FUNCT__
-#define __FUNCT__ "PetscCommSplitShared"
+#define __FUNCT__ "PetscCommSharedGet"
 /*@C
-    PetscCommSplitShared - Given a PETSc communicator returns a communicator of all ranks that shared a common memory
+    PetscCommSharedGet - Given a PETSc communicator returns a communicator of all ranks that shared a common memory
 
 
     Collective on comm.
@@ -326,34 +355,47 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
 .   comm    - MPI_Comm
 
     Output Parameter:
-.   scomm - the new MPI_Comm 
-
+.   scomm - the shared memory communicator object
 
     Level: developer
+
+    Notes: This should be called only with an PetscCommDuplicate() communictor
+
+           When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
     Concepts: MPI subcomm^numbering
 
 @*/
-PetscErrorCode  PetscCommSplitShared(MPI_Comm comm,MPI_Comm *scomm)
+PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
 {
-  PetscErrorCode ierr;
-  MPI_Group      group,sgroup;
-  PetscMPIInt    size,*sranks,*ranks,i;
+  PetscErrorCode   ierr;
+  MPI_Group        group,sgroup;
+  PetscMPIInt      *sranks,i,flg;
+  PetscCommCounter *counter;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED,0, MPI_INFO_NULL,scomm);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(comm,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
 
-  ierr = MPI_Comm_size(*scomm,&size);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,&scomm,&flg);CHKERRQ(ierr);
+  if (flg) PetscFunctionReturn(0);
+
+  ierr        = PetscNew(scomm);CHKERRQ(ierr);
+  (*scomm)->comm = comm;
+
+  ierr = MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED,0, MPI_INFO_NULL,&(*scomm)->scomm);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_size((*scomm)->scomm,&(*scomm)->size);CHKERRQ(ierr);
   ierr = MPI_Comm_group(comm, &group);CHKERRQ(ierr);
-  ierr = MPI_Comm_group(*scomm, &sgroup);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&sranks);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&ranks);CHKERRQ(ierr);
-  for (i=0; i<size; i++) sranks[i] = i;
-  ierr = MPI_Group_translate_ranks(sgroup, size, sranks, group, ranks);CHKERRQ(ierr);
+  ierr = MPI_Comm_group((*scomm)->scomm, &sgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1((*scomm)->size,&sranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1((*scomm)->size,&(*scomm)->ranks);CHKERRQ(ierr);
+  for (i=0; i<(*scomm)->size; i++) sranks[i] = i;
+  ierr = MPI_Group_translate_ranks(sgroup, (*scomm)->size, sranks, group, (*scomm)->ranks);CHKERRQ(ierr);
   ierr = PetscFree(sranks);CHKERRQ(ierr);
-  for (i=0; i<size; i++) {
-    ierr = PetscPrintf(MPI_COMM_SELF,"Shared memory rank %d global rank %d\n",i,ranks[i]);CHKERRQ(ierr);
+  for (i=0; i<(*scomm)->size; i++) {
+    ierr = PetscInfo2(NULL,"Shared memory rank %d global rank %d\n",i,(*scomm)->ranks[i]);CHKERRQ(ierr);
   }
-
+  ierr = MPI_Attr_put(comm,Petsc_Shared_keyval,*scomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
