@@ -79,9 +79,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
     PetscInt maxits;
     ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
     ierr = KSPGetType(sub_ksp,&type);CHKERRQ(ierr);
-    //ierr = KSPGMRESSetRestart(sub_ksp, restart);  CHKERRQ(ierr);
-    ierr = KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, restart); CHKERRQ(ierr);
-
+    ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,restart);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(sub_ksp);CHKERRQ(ierr);
     ierr = KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\tInner Iteration: rtol %.2e, abstol %.2e, dtol %.2e, maxits %d\n",rtol,abstol,dtol,maxits);CHKERRQ(ierr);
