@@ -28,7 +28,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscInt       size,Istart,Iend,i,*ind_row,first_iteration = 1,its = 0,total = 0,col = 0;
   PetscInt       size_ls = 12,iter_minimization = 0,maxiter_ls = 15,cgls = 0,restart = 30;
   
-   PetscFunctionBegin;  
+  PetscFunctionBegin;  
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Tsirm","");
   ierr = PetscOptionsInt("-ksp_tsirm_cgls","Method used for the minimization step","",cgls,&cgls,NULL);CHKERRQ(ierr); /*0:LSQR, 1:CGLS*/
   ierr = PetscOptionsReal("-ksp_tsirm_tol_ls","Tolerance threshold for the minimization step","",tol_ls,&tol_ls,NULL);CHKERRQ(ierr);
@@ -69,7 +69,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
 
   {
     PetscReal rtol,abstol,dtol;
-    PetscInt maxits;
+    PetscInt maxits; 
     ierr = KSPGetTolerances(ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\tTSIRM: rtol %.2e, abstol %.2e, dtol %.2e, maxits %d\n",rtol,abstol,dtol,maxits);CHKERRQ(ierr);
   }
@@ -79,6 +79,9 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
     PetscInt maxits;
     ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
     ierr = KSPGetType(sub_ksp,&type);CHKERRQ(ierr);
+    //ierr = KSPGMRESSetRestart(sub_ksp, restart);  CHKERRQ(ierr);
+    ierr = KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, restart); CHKERRQ(ierr);
+
     ierr = KSPSetFromOptions(sub_ksp);CHKERRQ(ierr);
     ierr = KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\tInner Iteration: rtol %.2e, abstol %.2e, dtol %.2e, maxits %d\n",rtol,abstol,dtol,maxits);CHKERRQ(ierr);
