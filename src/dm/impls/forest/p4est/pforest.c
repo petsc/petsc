@@ -275,6 +275,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (!apforest->topo) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
     ierr = DMSetUp(adaptFrom);CHKERRQ(ierr);
     ierr = DMForestTemplate(adaptFrom,dm);CHKERRQ(ierr);
+    ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
+    ierr = DMForestGetTopology(dm,&topoName);CHKERRQ(ierr);
   }
   else if (base) { /* construct a connectivity from base */
     PetscBool isPlex, isDA;
@@ -288,20 +290,20 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       PetscInt             depth;
       PetscMPIInt          size;
       p4est_connectivity_t *conn = NULL;
-      DM                   connDM;
       DMFTopology_pforest  *topo;
       PetscInt             *tree_face_to_uniq;
       PetscErrorCode       ierr;
 
       ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);
       if (depth == 1) {
-        ierr  = DMPlexInterpolate(base,&connDM);CHKERRQ(ierr);
+        DM connDM;
+
+        ierr = DMPlexInterpolate(base,&connDM);CHKERRQ(ierr);
+        base = connDM;
+        ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
+        ierr = DMDestroy(&connDM);CHKERRQ(ierr);
       }
-      else if (depth == P4EST_DIM) {
-        connDM = base;
-        ierr   = PetscObjectReference((PetscObject)base);CHKERRQ(ierr);
-      }
-      else {
+      else if (depth != P4EST_DIM) {
         SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Base plex is neither interpolated nor uninterpolated? depth %d, expected 2 or %d\n",depth,P4EST_DIM + 1);
       }
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -310,12 +312,11 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
         ierr = DMPlexGetRedundantDM(base,&dmRedundant);CHKERRQ(ierr);
         if (!dmRedundant) SETERRQ(comm,PETSC_ERR_PLIB,"Could not create redundant DM\n");
-        ierr   = DMDestroy(&connDM);CHKERRQ(ierr);
-        connDM = dmRedundant;
+        base = dmRedundant;
+        ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
+        ierr = DMDestroy(&dmRedundant);CHKERRQ(ierr);
       }
-      ierr = DMPlexCreateConnectivity_pforest(connDM,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
-      /* if we had to interpolate or make redundant, destroy the temporary dm */
-      ierr = DMDestroy(&connDM);CHKERRQ(ierr);
+      ierr = DMPlexCreateConnectivity_pforest(base,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
       topo->refct             = 1;
       topo->conn              = conn;
@@ -324,6 +325,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       pforest->topo           = topo;
     }
     else if (isDA) {
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
 #if 0
       PetscInt N[3], P[3];
 
@@ -332,6 +334,20 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                                   /* don't use Morton order */
       ierr = DMFTopologyCreateBrick_pforest(dm,N,P,&pforest->topo,PETSC_FALSE);CHKERRQ(ierr);
 #endif
+    }
+    {
+      PetscInt numLabels, l;
+
+      ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
+      for (l = 0; l < numLabels; l++) {
+        PetscBool  isDepth;
+        const char *name;
+
+        ierr = DMGetLabelName(base, l, &name);CHKERRQ(ierr);
+        ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
+        if (isDepth) continue;
+        ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
+      }
     }
   }
   else { /* construct from topology name */
@@ -362,8 +378,22 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
     }
     PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
+    {
+      PetscInt numLabels, l;
+
+      ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
+      for (l = 0; l < numLabels; l++) {
+        PetscBool  isDepth;
+        const char *name;
+
+        ierr = DMGetLabelName(adaptFrom, l, &name);CHKERRQ(ierr);
+        ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
+        if (isDepth) continue;
+        ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
+      }
+    }
   }
-  else {
+  else { /* initial */
     PetscInt initLevel, minLevel;
 
     ierr = DMForestGetInitialRefinement(dm,&initLevel);CHKERRQ(ierr);
@@ -402,7 +432,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       coarse_pforest->coarsen_hierarchy = PETSC_TRUE;
     }
   }
-  if (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity || forest->weightsFactor) {
+  if (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.) {
     if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
       PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
     }
