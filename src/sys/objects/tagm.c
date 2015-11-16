@@ -399,3 +399,55 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
   ierr = MPI_Attr_put(comm,Petsc_Shared_keyval,*scomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscCommSharedGlobalToLocal"
+/*@C
+    PetscCommSharedGlobalToLocal - Given a global rank returns the local rank in the shared communicator
+
+
+    Collective on comm.
+
+    Input Parameters:
++   scomm - the shared memory communicator object
+-   grank - the global rank
+
+    Output Parameter:
+.   lrank - the local rank, or -1 if it does not exist
+
+    Level: developer
+
+    Notes:
+           When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
+
+    Developer Notes: Assumes the scomm->ranks[] is sorted
+
+    It may be better to rewrite this to map multiple global ranks to local in the same function call
+
+    Concepts: MPI subcomm^numbering
+
+@*/
+PetscErrorCode  PetscCommSharedGlobalToLocal(PetscCommShared scomm,PetscMPIInt grank,PetscMPIInt *lrank)
+{
+  PetscMPIInt      low,high,t,i;
+
+  PetscFunctionBegin;
+  *lrank = -1;
+  if (grank < scomm->ranks[0]) PetscFunctionReturn(0);
+  if (grank > scomm->ranks[scomm->size-1]) PetscFunctionReturn(0);
+  low  = 0;
+  high = scomm->size;
+  while (high-low > 5) {
+    t = (low+high)/2;
+    if (scomm->ranks[t] > grank) high = t;
+    else low = t;
+  }
+  for (i=low; i<high; i++) {
+    if (scomm->ranks[i] > grank) PetscFunctionReturn(0);
+    if (scomm->ranks[i] == grank) {
+      *lrank = i;
+      PetscFunctionReturn(0);
+    }
+  }
+  PetscFunctionReturn(0);
+}
