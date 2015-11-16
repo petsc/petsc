@@ -49,6 +49,7 @@ typedef struct {
   PetscInt             refct;
   p4est_connectivity_t *conn;
   p4est_geometry_t     *geom;
+  PetscInt             *tree_face_to_uniq; /* p4est does not explicitly enumerate facets, but we must to keep track of labels */
 } DMFTopology_pforest;
 
 typedef struct {
@@ -77,10 +78,13 @@ static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
   }
   PetscStackCallP4est(p4est_geometry_destroy,((*topo)->geom));
   PetscStackCallP4est(p4est_connectivity_destroy,((*topo)->conn));
+  ierr = PetscFree((*topo)->tree_face_to_uniq);CHKERRQ(ierr);
   ierr = PetscFree(*topo);CHKERRQ(ierr);
   *topo = NULL;
   PetscFunctionReturn(0);
 }
+
+static PetscErrorCode PforestConnectivityEnumerateFacets(p4est_connectivity_t*,PetscInt **);
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMFTopologyCreateBrick_pforest)
@@ -99,6 +103,7 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
   PetscStackCallP4estReturn((*topo)->conn,p8est_connectivity_new_brick,((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1));
 #endif
   PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
+  ierr = PforestConnectivityEnumerateFacets((*topo)->conn,&(*topo)->tree_face_to_uniq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -167,6 +172,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
       PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
     }
 #endif
+    ierr = PforestConnectivityEnumerateFacets((*topo)->conn,&(*topo)->tree_face_to_uniq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -226,7 +232,7 @@ static PetscErrorCode DMForestTemplate_pforest(DM dm, DM tdm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,p4est_connectivity_t**);
+static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,p4est_connectivity_t**,PetscInt**);
 
 static int pforest_coarsen_uniform (p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
 {
@@ -284,6 +290,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       p4est_connectivity_t *conn = NULL;
       DM                   connDM;
       DMFTopology_pforest  *topo;
+      PetscInt             *tree_face_to_uniq;
       PetscErrorCode       ierr;
 
       ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);
@@ -306,14 +313,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr   = DMDestroy(&connDM);CHKERRQ(ierr);
         connDM = dmRedundant;
       }
-      ierr = DMPlexCreateConnectivity_pforest(connDM,&conn);CHKERRQ(ierr);
+      ierr = DMPlexCreateConnectivity_pforest(connDM,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
       /* if we had to interpolate or make redundant, destroy the temporary dm */
       ierr = DMDestroy(&connDM);CHKERRQ(ierr);
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
-      topo->refct   = 1;
-      topo->conn    = conn;
-      topo->geom    = NULL;
-      pforest->topo = topo;
+      topo->refct             = 1;
+      topo->conn              = conn;
+      topo->geom              = NULL;
+      topo->tree_face_to_uniq = tree_face_to_uniq;
+      pforest->topo           = topo;
     }
     else if (isDA) {
 #if 0
@@ -475,8 +483,35 @@ static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PforestConnectivityEnumerateFacets"
+static PetscErrorCode PforestConnectivityEnumerateFacets(p4est_connectivity_t *conn, PetscInt **tree_face_to_uniq)
+{
+  PetscInt       *ttf, f, t, g, count;
+  PetscInt       numFacets;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  numFacets = conn->num_trees * P4EST_FACES;
+  ierr = PetscMalloc1(numFacets,&ttf);CHKERRQ(ierr);
+  for (f = 0; f < numFacets; f++) ttf[f] = -1;
+  for (g = 0, count = 0, t = 0; t < conn->num_trees; t++) {
+    for (f = 0; f < P4EST_FACES; f++, g++) {
+      if (ttf[g] == -1) {
+        PetscInt ng;
+
+        ttf[g] = count++;
+        ng = conn->tree_to_tree[g] * P4EST_FACES + (conn->tree_to_face[g] % P4EST_FACES);
+        ttf[ng] = ttf[g];
+      }
+    }
+  }
+  *tree_face_to_uniq = ttf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMPlexCreateConnectivity_pforest)
-static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity_t **connOut)
+static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity_t **connOut, PetscInt **tree_face_to_uniq)
 {
   p4est_topidx_t       numTrees, numVerts, numCorns, numCtt;
   PetscSection         ctt;
@@ -492,6 +527,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   p4est_connectivity_t *conn;
   PetscInt             cStart, cEnd, c, vStart, vEnd, v, fStart, fEnd, f;
   PetscInt             *star = NULL, *closure = NULL, closureSize, starSize, cttSize;
+  PetscInt             *ttf;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -571,6 +607,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 
   /* 2: visit every face, determine neighboring cells(trees) */
   ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1((cEnd-cStart) * P4EST_FACES,&ttf);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; f++) {
     PetscInt numSupp, s;
     PetscInt myFace[2] = {-1, -1};
@@ -599,6 +636,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         }
       }
       if (i >= P4EST_FACES) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %d faced %d mismatch\n",p,f);
+      ttf[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = f - fStart;
       if (numSupp == 1) {
         /* boundary faces indicated by self reference */
         conn->tree_to_tree[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = p - cStart;
@@ -753,6 +791,8 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 #endif
 
   *connOut = conn;
+
+  *tree_face_to_uniq = ttf;
 
   PetscFunctionReturn(0);
 }
