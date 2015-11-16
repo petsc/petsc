@@ -997,6 +997,15 @@ PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
 /*S
+    MatFactorError - indicates what type of error in matrix factor
+
+    Level: beginner
+
+    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+S*/
+typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY} MatFactorError;
+
+/*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
@@ -1025,19 +1034,20 @@ typedef struct {
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
   PetscReal     shifttype;      /* type of shift added to matrix factor to prevent zero pivots */
   PetscReal     shiftamount;     /* how large the shift is */
+  MatFactorError errortype;      /* type of error */
 } MatFactorInfo;
 
 PETSC_EXTERN PetscErrorCode MatFactorInfoInitialize(MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatCholeskyFactor(Mat,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatCholeskyFactorSymbolic(Mat,Mat,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,Mat,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatLUFactor(Mat,IS,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatILUFactor(Mat,IS,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatLUFactorSymbolic(Mat,Mat,IS,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatILUFactorSymbolic(Mat,Mat,IS,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatICCFactorSymbolic(Mat,Mat,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatICCFactor(Mat,IS,const MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatLUFactorNumeric(Mat,Mat,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatCholeskyFactor(Mat,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatCholeskyFactorSymbolic(Mat,Mat,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,Mat,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatLUFactor(Mat,IS,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatILUFactor(Mat,IS,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatLUFactorSymbolic(Mat,Mat,IS,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatILUFactorSymbolic(Mat,Mat,IS,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatICCFactorSymbolic(Mat,Mat,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatICCFactor(Mat,IS,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatLUFactorNumeric(Mat,Mat,MatFactorInfo*);
 PETSC_EXTERN PetscErrorCode MatGetInertia(Mat,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatSolve(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatForwardSolve(Mat,Vec,Vec);

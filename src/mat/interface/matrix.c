@@ -2751,7 +2751,7 @@ $                   Run with the option -info to determine an optimal value to u
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatLUFactor(Mat mat,IS row,IS col,const MatFactorInfo *info)
+PetscErrorCode  MatLUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   MatFactorInfo  tinfo;
@@ -2813,7 +2813,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatILUFactor(Mat mat,IS row,IS col,const MatFactorInfo *info)
+PetscErrorCode  MatILUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2870,7 +2870,7 @@ $                   Run with the option -info to determine an optimal value to u
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
+PetscErrorCode  MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2928,7 +2928,7 @@ PetscErrorCode  MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2982,7 +2982,7 @@ PetscErrorCode  MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatCholeskyFactor(Mat mat,IS perm,const MatFactorInfo *info)
+PetscErrorCode  MatCholeskyFactor(Mat mat,IS perm,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -3040,7 +3040,7 @@ $                   Run with the option -info to determine an optimal value to u
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo *info)
+PetscErrorCode  MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -3098,7 +3098,7 @@ PetscErrorCode  MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFact
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
+PetscErrorCode  MatCholeskyFactorNumeric(Mat fact,Mat mat,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -6439,7 +6439,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
+PetscErrorCode  MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -6503,7 +6503,7 @@ $      expected fill - as ratio of original fill.
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo *info)
+PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -8149,7 +8149,7 @@ PetscErrorCode MatGetNearNullSpace(Mat mat,MatNullSpace *nullsp)
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-PetscErrorCode  MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
+PetscErrorCode  MatICCFactor(Mat mat,IS row,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 

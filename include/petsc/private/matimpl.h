@@ -41,8 +41,8 @@ struct _MatOps {
   PetscErrorCode (*solvetranspose)(Mat,Vec,Vec);
   /*10*/
   PetscErrorCode (*solvetransposeadd)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*lufactor)(Mat,IS,IS,const MatFactorInfo*);
-  PetscErrorCode (*choleskyfactor)(Mat,IS,const MatFactorInfo*);
+  PetscErrorCode (*lufactor)(Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*choleskyfactor)(Mat,IS,MatFactorInfo*);
   PetscErrorCode (*sor)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
   PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
   /*15*/
@@ -58,22 +58,22 @@ struct _MatOps {
   PetscErrorCode (*zeroentries)(Mat);
   /*24*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
-  PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
-  PetscErrorCode (*lufactornumeric)(Mat,Mat,const MatFactorInfo*);
-  PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
-  PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,const MatFactorInfo*);
+  PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*lufactornumeric)(Mat,Mat,MatFactorInfo*);
+  PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,MatFactorInfo*);
+  PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,MatFactorInfo*);
   /*29*/
   PetscErrorCode (*setup)(Mat);
-  PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
-  PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
+  PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,MatFactorInfo*);
   PetscErrorCode (*placeholder_32)(Mat);
   PetscErrorCode (*placeholder_33)(Mat);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);
   PetscErrorCode (*backwardsolve)(Mat,Vec,Vec);
-  PetscErrorCode (*ilufactor)(Mat,IS,IS,const MatFactorInfo*);
-  PetscErrorCode (*iccfactor)(Mat,IS,const MatFactorInfo*);
+  PetscErrorCode (*ilufactor)(Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*iccfactor)(Mat,IS,MatFactorInfo*);
   /*39*/
   PetscErrorCode (*axpy)(Mat,PetscScalar,Mat,MatStructure);
   PetscErrorCode (*getsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);

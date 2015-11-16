@@ -1139,7 +1139,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
-PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps =(Mat_MUMPS*)(F)->spptr;
   PetscErrorCode ierr;
@@ -1171,6 +1171,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     } else if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
       if (!A->erroriffpe) {
         ierr = PetscInfo2(F,"matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       } else {
         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, matrix is numerically singular\n",mumps->id.INFOG(1),mumps->id.INFO(2));
       }
@@ -1349,7 +1350,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 /* Note Petsc r(=c) permutation is used when mumps->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
-PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;
@@ -1440,7 +1441,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_BAIJMUMPS"
-PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;
@@ -1511,7 +1512,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
 /* Note the Petsc r permutation and factor info are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MUMPS"
-PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;

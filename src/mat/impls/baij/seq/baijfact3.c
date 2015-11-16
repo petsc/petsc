@@ -183,7 +183,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool natur
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   PetscInt           n  =a->mbs,bs = A->rmap->bs,bs2=a->bs2;
@@ -345,7 +345,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ_inplace"
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   PetscInt           n  =a->mbs,bs = A->rmap->bs,bs2=a->bs2;

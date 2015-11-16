@@ -348,7 +348,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_PaStiX"
-PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,MatFactorInfo *info)
 {
   Mat_Pastix     *lu =(Mat_Pastix*)(F)->spptr;
   Mat            *tseq;

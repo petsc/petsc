@@ -1171,7 +1171,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Inode"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,MatFactorInfo *info)
 {
   Mat             C     =B;
   Mat_SeqAIJ      *a    =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)C->data;
@@ -1889,7 +1889,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Inode_inplace"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,MatFactorInfo *info)
 {
   Mat             C     = B;
   Mat_SeqAIJ      *a    = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;

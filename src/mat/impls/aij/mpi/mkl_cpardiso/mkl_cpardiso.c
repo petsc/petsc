@@ -366,7 +366,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_MKL_CPARDISO"
-PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,MatFactorInfo *info)
 {
   Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(F)->spptr;
   PetscErrorCode   ierr;
