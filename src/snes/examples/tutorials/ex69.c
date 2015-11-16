@@ -3343,7 +3343,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNu
 
   PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) vec, "Pressure Null Space");CHKERRQ(ierr);
   ierr = VecViewFromOptions(vec, NULL, "-null_space_vec_view");CHKERRQ(ierr);
@@ -3407,13 +3407,13 @@ int main(int argc, char **argv)
   ierr = SNESGetJacobian(snes, NULL, &J, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
 
-  ierr = DMPlexProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", pint);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Initial Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-initial_vec_view");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
@@ -3429,7 +3429,7 @@ int main(int argc, char **argv)
     Vec r;
 
     ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
     ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) r, "Solution Error");CHKERRQ(ierr);
     ierr = VecViewFromOptions(r, NULL, "-error_vec_view");CHKERRQ(ierr);

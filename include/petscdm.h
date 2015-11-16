@@ -238,4 +238,8 @@ PETSC_EXTERN PetscErrorCode DMGetNumBoundary(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
 PETSC_EXTERN PetscErrorCode DMIsBoundaryPoint(DM, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMCopyBoundary(DM, DM);
+
+PETSC_EXTERN PetscErrorCode DMProjectFunction(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void**,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMProjectFunctionLocal(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void**,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMProjectFunctionLabelLocal(DM,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 #endif

@@ -144,7 +144,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
   Level: developer
 
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff()
+.seealso: DMProjectFunction(), DMPlexComputeL2Diff()
 @*/
 PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec X)
 {

@@ -311,8 +311,8 @@ int main(int argc, char **argv)
   ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*)) DMPlexSNESComputeJacobianFEM,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMPlexProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = DMPlexComputeL2FieldDiff(dm, user.exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", ferrors[0]);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ int main(int argc, char **argv)
     Vec r;
 
     ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
     ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution Error\n");CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

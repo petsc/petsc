@@ -158,7 +158,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 
     ctx[0] = dimEmbed;
     ctx[1] = d;
-    ierr = DMPlexProjectFunction(dm, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
   }
   for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system */
@@ -192,7 +192,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 
   Level: advanced
 
-.seealso: DMPlexGetMaxProjectionHeight(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
+.seealso: DMPlexGetMaxProjectionHeight(), DMProjectFunctionLocal(), DMProjectFunctionLabelLocal()
 @*/
 PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 {
@@ -218,7 +218,7 @@ PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 
   Level: intermediate
 
-.seealso: DMPlexSetMaxProjectionHeight(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
+.seealso: DMPlexSetMaxProjectionHeight(), DMProjectFunctionLocal(), DMProjectFunctionLabelLocal()
 @*/
 PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 {
@@ -231,8 +231,8 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectFunctionLabelLocal"
-PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+#define __FUNCT__ "DMProjectFunctionLabelLocal_plex"
+PetscErrorCode DMProjectFunctionLabelLocal_plex(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDualSpace *sp, *cellsp;
   PetscInt       *numComp;
@@ -345,8 +345,8 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectFunctionLocal"
-PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+#define __FUNCT__ "DMProjectFunctionLocal_plex"
+PetscErrorCode DMProjectFunctionLocal_plex(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDualSpace *sp, *cellsp;
   PetscInt       *numComp;
@@ -452,48 +452,6 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscI
     for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&cellsp[f]);CHKERRQ(ierr);}
     ierr = PetscFree(cellsp);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectFunction"
-/*@C
-  DMPlexProjectFunction - This projects the given function into the function space provided.
-
-  Input Parameters:
-+ dm      - The DM
-. funcs   - The coordinate functions to evaluate, one per field
-. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
-- mode    - The insertion mode for values
-
-  Output Parameter:
-. X - vector
-
-   Calling sequence of func:
-$    func(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
-
-+  dim - The spatial dimension
-.  x   - The coordinates
-.  Nf  - The number of fields
-.  u   - The output field values
--  ctx - optional user-defined function context
-
-  Level: developer
-
-.seealso: DMPlexComputeL2Diff()
-@*/
-PetscErrorCode DMPlexProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
-{
-  Vec            localX;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunctionLocal(dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -609,7 +567,7 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FEM_Internal(DM dm, PetscInt fi
   ierr = PetscCalloc2(numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
   funcs[field] = func;
   ctxs[field]  = ctx;
-  ierr = DMPlexProjectFunctionLabelLocal(dm, label, numids, ids, funcs, ctxs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLabelLocal(dm, label, numids, ids, funcs, ctxs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
   ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -762,7 +720,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
 
   Level: developer
 
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
+.seealso: DMProjectFunction(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
@@ -805,7 +763,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, con
     numComponents += Nc;
   }
   ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -875,7 +833,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, con
 
   Level: developer
 
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff()
+.seealso: DMProjectFunction(), DMPlexComputeL2Diff()
 @*/
 PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
@@ -905,7 +863,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(Petsc
     ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     numComponents += Nc;
   }
-  /* ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
+  /* ierr = DMProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
   ierr = PetscMalloc7(numComponents,&funcVal,dim,&coords,dim,&realSpaceDer,dim,&v0,dim*dim,&J,dim*dim,&invJ,dim,&interpolantVec);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -993,7 +951,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(Petsc
 
   Level: developer
 
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2GradientDiff()
+.seealso: DMProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
 {
@@ -1036,7 +994,7 @@ PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt
     numComponents += Nc;
   }
   ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscCalloc7(numFields,&localDiff,numComponents,&funcVal,numComponents,&interpolant,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -1105,7 +1063,7 @@ PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt
 
   Level: developer
 
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
+.seealso: DMProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, Vec D)
 {
@@ -1147,7 +1105,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, 
     numComponents += Nc;
   }
   ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);

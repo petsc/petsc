@@ -28,25 +28,28 @@
 #include <p8est_plex.h>
 #endif
 
-#define DMInitialize_pforest             _append_pforest(DMInitialize)
-#define DMCreate_pforest                 _append_pforest(DMCreate)
-#define DMForestDestroy_pforest          _append_pforest(DMForestDestroy)
-#define DMForestTemplate_pforest         _append_pforest(DMForestTemplate)
-#define DMSetUp_pforest                  _append_pforest(DMSetUp)
-#define DMView_pforest                   _append_pforest(DMView)
-#define DMView_VTK_pforest               _append_pforest(DMView_VTK)
-#define DM_Forest_pforest                _append_pforest(DM_Forest)
-#define DMFTopology_pforest              _append_pforest(DMFTopology)
-#define DMFTopologyDestroy_pforest       _append_pforest(DMFTopologyDestroy)
-#define DMFTopologyCreate_pforest        _append_pforest(DMFTopologyCreate)
-#define DMFTopologyCreateBrick_pforest   _append_pforest(DMFTopologyCreateBrick)
-#define DMConvert_plex_pforest           _append_pforest(DMConvert_plex)
-#define DMPlexCreateConnectivity_pforest _append_pforest(DMPlexCreateConnectivity)
-#define DMConvert_pforest_plex           _infix_pforest(DMConvert,_plex)
-#define DMCreateCoordinateDM_pforest     _append_pforest(DMCreateCoordinateDM)
-#define DMCreateGlobalVector_pforest     _append_pforest(DMCreateGlobalVector)
-#define DMCreateLocalVector_pforest      _append_pforest(DMCreateLocalVector)
-#define DMCreateMatrix_pforest           _append_pforest(DMCreateMatrix)
+#define DMInitialize_pforest                  _append_pforest(DMInitialize)
+#define DMCreate_pforest                      _append_pforest(DMCreate)
+#define DMForestDestroy_pforest               _append_pforest(DMForestDestroy)
+#define DMForestTemplate_pforest              _append_pforest(DMForestTemplate)
+#define DMSetUp_pforest                       _append_pforest(DMSetUp)
+#define DMView_pforest                        _append_pforest(DMView)
+#define DMView_VTK_pforest                    _append_pforest(DMView_VTK)
+#define DM_Forest_pforest                     _append_pforest(DM_Forest)
+#define DMFTopology_pforest                   _append_pforest(DMFTopology)
+#define DMFTopologyDestroy_pforest            _append_pforest(DMFTopologyDestroy)
+#define DMFTopologyCreate_pforest             _append_pforest(DMFTopologyCreate)
+#define DMFTopologyCreateBrick_pforest        _append_pforest(DMFTopologyCreateBrick)
+#define DMConvert_plex_pforest                _append_pforest(DMConvert_plex)
+#define DMPlexCreateConnectivity_pforest      _append_pforest(DMPlexCreateConnectivity)
+#define DMConvert_pforest_plex                _infix_pforest(DMConvert,_plex)
+#define DMCreateCoordinateDM_pforest          _append_pforest(DMCreateCoordinateDM)
+#define DMCreateGlobalVector_pforest          _append_pforest(DMCreateGlobalVector)
+#define DMCreateLocalVector_pforest           _append_pforest(DMCreateLocalVector)
+#define DMCreateMatrix_pforest                _append_pforest(DMCreateMatrix)
+#define DMProjectFunctionLocal_pforest        _append_pforest(DMProjectFunctionLocal_pforest)
+#define DMProjectFunctionLabelLocal_pforest   _append_pforest(DMProjectFunctionLabelLocal_pforest)
+#define DMLocalToGlobalBegin_pforest
 
 static PetscErrorCode DMConvert_pforest_plex(DM,DMType,DM*);
 
@@ -1182,17 +1185,63 @@ static PetscErrorCode DMCreateMatrix_pforest(DM dm,Mat *mat)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMProjectFunctionLocal_pforest)
+static PetscErrorCode DMProjectFunctionLocal_pforest(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+{
+  DM_Forest_pforest *pforest;
+  DM                plex;
+  PetscDS           ds;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  if (!pforest->plex) {
+    ierr = DMConvert_pforest_plex(dm,DMPLEX,NULL);CHKERRQ(ierr);
+  }
+  plex = pforest->plex;
+  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+  ierr = DMSetDS(plex,ds);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(plex,funcs,ctxs,mode,localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMProjectFunctionLabelLocal_pforest)
+static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+{
+  DM_Forest_pforest *pforest;
+  DM                plex;
+  PetscDS           ds;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  if (!pforest->plex) {
+    ierr = DMConvert_pforest_plex(dm,DMPLEX,NULL);CHKERRQ(ierr);
+  }
+  plex = pforest->plex;
+  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+  ierr = DMSetDS(plex,ds);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLabelLocal(plex,label,numIds,ids,funcs,ctxs,mode,localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
   PetscFunctionBegin;
-  dm->ops->setup              = DMSetUp_pforest;
-  dm->ops->view               = DMView_pforest;
-  dm->ops->setfromoptions     = DMSetFromOptions_pforest;
-  dm->ops->createcoordinatedm = DMCreateCoordinateDM_pforest;
-  dm->ops->createglobalvector = DMCreateGlobalVector_pforest;
-  dm->ops->createlocalvector  = DMCreateLocalVector_pforest;
-  dm->ops->creatematrix       = DMCreateMatrix_pforest;
+  dm->ops->setup                     = DMSetUp_pforest;
+  dm->ops->view                      = DMView_pforest;
+  dm->ops->setfromoptions            = DMSetFromOptions_pforest;
+  dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
+  dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
+  dm->ops->createlocalvector         = DMCreateLocalVector_pforest;
+  dm->ops->creatematrix              = DMCreateMatrix_pforest;
+  dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
+  dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
   PetscFunctionReturn(0);
 }
 

@@ -1001,6 +1001,8 @@ extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
 extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
+extern PetscErrorCode DMProjectFunctionLocal_plex(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+extern PetscErrorCode DMProjectFunctionLabelLocal_plex(DM,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexReplace_Static"
@@ -1315,6 +1317,8 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createsubdm                     = DMCreateSubDM_Plex;
   dm->ops->getdimpoints                    = DMGetDimPoints_Plex;
   dm->ops->locatepoints                    = DMLocatePoints_Plex;
+  dm->ops->projectfunctionlocal            = DMProjectFunctionLocal_plex;
+  dm->ops->projectfunctionlabellocal       = DMProjectFunctionLabelLocal_plex;
   PetscFunctionReturn(0);
 }
 

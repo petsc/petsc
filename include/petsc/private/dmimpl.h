@@ -54,6 +54,9 @@ struct _DMOps {
 
   PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
   PetscErrorCode (*locatepoints)(DM,Vec,IS*);
+
+  PetscErrorCode (*projectfunctionlocal)(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+  PetscErrorCode (*projectfunctionlabellocal)(DM,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
