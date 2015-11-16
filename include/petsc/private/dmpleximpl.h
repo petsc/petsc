@@ -83,21 +83,6 @@ typedef struct {
   void *data;
 } FluentSection;
 
-struct _n_Boundary {
-  const char *name;
-  const char *labelname;
-  DMLabel     label;
-  PetscBool   essential;
-  PetscInt    field;
-  PetscInt    numcomps;
-  PetscInt   *comps;
-  void      (*func)();
-  PetscInt    numids;
-  PetscInt   *ids;
-  void       *ctx;
-  DMBoundary  next;
-};
-
 struct _PetscGridHash {
   PetscInt     dim;
   PetscReal    lower[3];    /* The lower-left corner */
@@ -170,9 +155,6 @@ typedef struct {
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
-
-  /* Problem definition */
-  DMBoundary           boundary;          /* List of boundary conditions */
 
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */

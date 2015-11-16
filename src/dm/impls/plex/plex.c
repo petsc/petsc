@@ -714,27 +714,6 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BoundaryDestroy"
-static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
-{
-  DMBoundary     b, next;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!boundary) PetscFunctionReturn(0);
-  b = *boundary;
-  *boundary = NULL;
-  for (; b; b = next) {
-    next = b->next;
-    ierr = PetscFree(b->comps);CHKERRQ(ierr);
-    ierr = PetscFree(b->ids);CHKERRQ(ierr);
-    ierr = PetscFree(b->name);CHKERRQ(ierr);
-    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
-    ierr = PetscFree(b);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Plex"
@@ -757,7 +736,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
-  ierr = BoundaryDestroy(&mesh->boundary);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->anchorSection);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->anchorIS);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->parentSection);CHKERRQ(ierr);
@@ -5648,12 +5626,12 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = DMGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     PetscInt  field;
     PetscBool isEssential;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     if (isFE[field] && isEssential) ++numBC;
   }
   /* Add ghost cell boundaries for FVM */
@@ -5678,13 +5656,13 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscInt        bd2, field, numComps, numValues;
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (!isFE[field]) continue;
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {
       const char *bdname;
-      ierr = DMPlexGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
       if (duplicate) break;
     }

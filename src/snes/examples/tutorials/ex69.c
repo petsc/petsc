@@ -3306,13 +3306,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     comp = 1;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 0;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 1;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 0;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);

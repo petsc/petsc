@@ -1419,7 +1419,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscInt fStart, Petsc
     PetscInt               ghost, c, pd, d, numChildren, numCells;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-    ierr = DMPlexIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
+    ierr = DMIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, face, &numChildren, NULL);CHKERRQ(ierr);
     if (ghost >= 0 || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, face, &numCells);CHKERRQ(ierr);
@@ -1495,7 +1495,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalBdDimension(prob, &totDimBd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = DMGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     const char     *bdLabel;
     DMLabel         label;
@@ -1505,7 +1505,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
     PetscInt        field, numValues, numPoints, p, dep, numFaces;
     PetscBool       isEssential;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (isEssential) continue;
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
@@ -2205,9 +2205,9 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   ierr = PetscFree3(u,u_t,elemMat);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = DMGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = DMGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     const char     *bdLabel;
     DMLabel         label;
@@ -2217,7 +2217,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     PetscInt        field, numValues, numPoints, p, dep, numFaces;
     PetscBool       isEssential;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (isEssential) continue;
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);

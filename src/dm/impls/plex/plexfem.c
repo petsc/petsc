@@ -717,7 +717,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
   if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 4);}
   if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 5);}
   if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 6);}
-  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = DMGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     PetscBool       isEssential;
     const char     *labelname;
@@ -730,7 +730,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
     const PetscInt *ids;
     void           *ctx;
 
-    ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &labelname, &field, NULL, NULL, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, b, &isEssential, NULL, &labelname, &field, NULL, NULL, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
     if (!isEssential) continue;
     ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);

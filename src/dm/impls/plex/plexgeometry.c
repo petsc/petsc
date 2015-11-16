@@ -1670,7 +1670,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
       PetscInt               ncell, side;
 
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      ierr = DMIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
       if ((ghost >= 0) || boundary) continue;
       ierr  = DMPlexGetSupport(dm, faces[f], &fcells);CHKERRQ(ierr);
       side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
@@ -1684,7 +1684,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
     ierr = PetscFVComputeGradient(fvm, usedFaces, dx, grad);CHKERRQ(ierr);
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      ierr = DMIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
       if ((ghost >= 0) || boundary) continue;
       for (d = 0; d < dim; ++d) gref[usedFaces][d] = grad[usedFaces*dim+d];
       ++usedFaces;
@@ -1724,7 +1724,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscInt               numChildren, numCells, c;
 
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
+    ierr = DMIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
     if ((ghost >= 0) || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
@@ -1753,7 +1753,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscInt               numChildren, numCells, c;
 
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
+    ierr = DMIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
     if ((ghost >= 0) || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);

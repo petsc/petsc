@@ -254,9 +254,9 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
     for (f = 0; f < 3; ++f) {ierr = PetscDSSetDiscretization(prob, f, (PetscObject) fe[f]);CHKERRQ(ierr);}
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 1, 0, NULL, (void (*)()) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 2, 0, NULL, (void (*)()) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 1, 0, NULL, (void (*)()) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 2, 0, NULL, (void (*)()) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   for (f = 0; f < 3; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}

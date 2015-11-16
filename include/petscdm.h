@@ -233,4 +233,9 @@ PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM);
 
+PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, PetscBool, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode DMGetNumBoundary(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode DMIsBoundaryPoint(DM, PetscInt, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMCopyBoundary(DM, DM);
 #endif

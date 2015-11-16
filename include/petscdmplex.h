@@ -210,6 +210,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGradientFVM(DM, PetscFV, Vec, Vec, DM *
 
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, Vec, PetscReal, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt, const PetscInt [], const PetscInt [], PetscInt, const PetscInt [], const IS [], const IS [], IS, PetscSection *);
 
@@ -247,14 +248,6 @@ PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll(PetscObject, PetscViewer);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetScale(DM, PetscUnit, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetScale(DM, PetscUnit, PetscReal);
-
-typedef struct _n_Boundary *DMBoundary;
-PETSC_EXTERN PetscErrorCode DMPlexAddBoundary(DM, PetscBool, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
-PETSC_EXTERN PetscErrorCode DMPlexGetNumBoundary(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
-PETSC_EXTERN PetscErrorCode DMPlexIsBoundaryPoint(DM, PetscInt, PetscBool *);
-PETSC_EXTERN PetscErrorCode DMPlexCopyBoundary(DM, DM);
-PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 
 typedef struct {
   DM    dm;

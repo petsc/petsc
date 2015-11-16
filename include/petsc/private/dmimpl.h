@@ -127,6 +127,23 @@ struct _n_DMLabelLinkList {
 };
 typedef struct _n_DMLabelLinkList *DMLabelLinkList;
 
+typedef struct _n_Boundary *DMBoundary;
+
+struct _n_Boundary {
+  const char *name;
+  const char *labelname;
+  DMLabel     label;
+  PetscBool   essential;
+  PetscInt    field;
+  PetscInt    numcomps;
+  PetscInt   *comps;
+  void      (*func)();
+  PetscInt    numids;
+  PetscInt   *ids;
+  void       *ctx;
+  DMBoundary  next;
+};
+
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
@@ -184,6 +201,7 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscDS                 prob;
+  DMBoundary              boundary;          /* List of boundary conditions */
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */
