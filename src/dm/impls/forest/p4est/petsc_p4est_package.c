@@ -53,7 +53,7 @@ static PetscErrorCode PetscP4estFinalize(void)
 #define __FUNCT__ "PetscP4estInitialize"
 PetscErrorCode PetscP4estInitialize(void)
 {
-  PetscBool      psc_catch_signals    = PETSC_TRUE;
+  PetscBool      psc_catch_signals    = PETSC_FALSE;
   PetscBool      psc_print_backtrace  = PETSC_TRUE;
   int            psc_log_threshold    = SC_LP_DEFAULT;
   int            pp4est_log_threshold = SC_LP_DEFAULT;
