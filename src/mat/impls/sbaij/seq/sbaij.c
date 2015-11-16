@@ -1011,7 +1011,7 @@ noinsert1:;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactor_SeqSBAIJ"
-PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
+PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inA->data;
   Mat            outA;
