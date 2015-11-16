@@ -243,6 +243,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   Mat            A,B;
   Mat            mat,pmat;
   MatNullSpace   nullsp;
+  PCFailedReason pcreason;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -330,6 +331,8 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+
   ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
@@ -484,7 +487,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   Mat               mat,pmat;
   MPI_Comm          comm;
-  PetscInt          pcreason;
+  PCFailedReason    pcreason;
   MatNullSpace      nullsp;
   Vec               btmp,vec_rhs=0;
 

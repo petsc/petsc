@@ -99,6 +99,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
+  ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (dir->inplace) {
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
     ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
@@ -107,7 +108,6 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col);CHKERRQ(ierr);
     }
-    ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
@@ -148,8 +148,17 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
-    ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+    if (((PC_Factor*)dir)->info.errortype) { /* FactorSymbolic() fails */
+      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
+      pc->failedreason = factinfo.errortype;
+      PetscFunctionReturn(0);
+    }
+
     ierr = MatLUFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if (((PC_Factor*)dir)->info.errortype) { /* FactorNumeric() fails */
+      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
+      pc->failedreason = factinfo.errortype;
+    }
   }
   PetscFunctionReturn(0);
 }
