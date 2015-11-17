@@ -907,11 +907,11 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
-PetscErrorCode  PCGetSetUpFailedReason(PC pc,PCFailedReason *reason)
+PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason)
 {
   PetscFunctionBegin;
   if (pc->setupcalled < 0) *reason = pc->setupcalled;
-  else *reason = 0;
+  else *reason = pc->failedreason;
   PetscFunctionReturn(0);
 }
 

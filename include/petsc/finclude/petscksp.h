@@ -51,6 +51,19 @@
       parameter (KSP_DIVERGED_INDEFINITE_PC  = -8)
       parameter (KSP_DIVERGED_NANORINF       = -9)
       parameter (KSP_DIVERGED_INDEFINITE_MAT = -10)
+      parameter (KSP_DIVERGED_PCSETUP_FAILED = -11)
+!  
+!  KSPConvergedSubReason
+!
+      PetscEnum KSP_PCFACTOR_NOERROR
+      PetscEnum KSP_PCFACTOR_STRUCT_ZEROPIVOT
+      PetscEnum KSP_PCFACTOR_NUMERIC_ZEROPIVOT
+      PetscEnum KSP_PCFACTOR_OUTMEMORY
+
+      parameter (KSP_PCFACTOR_NOERROR=0)
+      parameter (KSP_PCFACTOR_STRUCT_ZEROPIVOT=-1)
+      parameter (KSP_PCFACTOR_NUMERIC_ZEROPIVOT=-2)
+      parameter (KSP_KSP_PCFACTOR_OUTMEMORY=-3)
 
       parameter (KSP_CONVERGED_ITERATING = 0)
 !

@@ -237,7 +237,7 @@ PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
-PetscErrorCode  KSPSetUp(KSP ksp)
+PetscErrorCode KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
   Mat            A,B;
@@ -332,6 +332,9 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    printf("KSPSetUp: pcreason %d\n",pcreason);
+  }
 
   ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
@@ -367,7 +370,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isAscii;
@@ -387,6 +390,9 @@ PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"Linear %s solve did not converge due to %s iterations %D\n",((PetscObject) ksp)->prefix,KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      }
+      if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+        printf("display ksp->subreason %d\n",ksp->subreason);
       }
     }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
@@ -480,7 +486,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
+PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
@@ -530,7 +536,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
   if (pcreason) {
+    printf("KSPSolve: pcreason %d\n",pcreason);
     ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+    ksp->subreason = pcreason;
     goto skipsolve;
   }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);

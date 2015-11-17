@@ -2425,7 +2425,7 @@ PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,MatReuse sc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactor_SeqAIJ"
-PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *info)
+PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
   PetscErrorCode ierr;
