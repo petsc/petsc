@@ -2213,7 +2213,7 @@ noinsert1:;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactor_SeqBAIJ"
-PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *info)
+PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)inA->data;
   Mat            outA;

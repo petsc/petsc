@@ -33,6 +33,7 @@
       PetscEnum KSP_DIVERGED_INDEFINITE_PC
       PetscEnum KSP_DIVERGED_NANORINF
       PetscEnum KSP_DIVERGED_INDEFINITE_MAT
+      PetscEnum KSP_DIVERGED_PCSETUP_FAILED
 
       parameter (KSP_CONVERGED_RTOL            = 2)
       parameter (KSP_CONVERGED_ATOL            = 3)
@@ -63,7 +64,7 @@
       parameter (KSP_PCFACTOR_NOERROR=0)
       parameter (KSP_PCFACTOR_STRUCT_ZEROPIVOT=-1)
       parameter (KSP_PCFACTOR_NUMERIC_ZEROPIVOT=-2)
-      parameter (KSP_KSP_PCFACTOR_OUTMEMORY=-3)
+      parameter (KSP_PCFACTOR_OUTMEMORY=-3)
 
       parameter (KSP_CONVERGED_ITERATING = 0)
 !
