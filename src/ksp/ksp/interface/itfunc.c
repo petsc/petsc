@@ -538,7 +538,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   if (pcreason) {
     printf("KSPSolve: pcreason %d\n",pcreason);
     ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
-    ksp->subreason = pcreason;
+    ksp->subreason = (KSPConvergedSubReason)pcreason;
     goto skipsolve;
   }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
