@@ -1681,6 +1681,11 @@ runex94_matmatmult_2:
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex94_matmatmult_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_1.tmp
+runex94_matmatmult_scalable:
+	-@${MPIEXEC} -n 4 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -matmatmult_via scalable > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_matmatmult_scalable, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
 runex94_scalable0:
 	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_via nonscalable > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
@@ -2511,7 +2516,8 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm  ex99.PE
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 runex40_2 ex40.rm ex41.PETSc runex41 ex41.rm \
                                  ex42.PETSc runex42 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  \
                                  ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
-                                 ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
+                                 ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_matmatmult_scalable \
+                                 runex94_scalable0 runex94_scalable1 \
                                  runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
                                  ex111.PETSc runex111_3 ex111.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \

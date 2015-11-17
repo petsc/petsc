@@ -118,31 +118,10 @@ int main(int argc,char **args)
       ierr   = MatScale(A,alpha);CHKERRQ(ierr);
       ierr   = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
-
-    /* Create vector x that is compatible with B */
-    ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(B,NULL,&n);CHKERRQ(ierr);
-    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-
-    norm = 0.0;
-    for (i=0; i<10; i++) {
-      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(B,x,v1);CHKERRQ(ierr);
-      ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*B*x */
-      ierr = MatMult(C,x,v1);CHKERRQ(ierr);   /* v1 = C*x   */
-      ierr = VecNorm(v1,NORM_2,&norm_abs);CHKERRQ(ierr);
-      ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
-      ierr = VecNorm(v1,NORM_2,&norm_tmp);CHKERRQ(ierr);
-
-      norm_tmp /= norm_abs;
-      if (norm_tmp > norm) norm = norm_tmp;
+    ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult()\n");CHKERRQ(ierr);
     }
-    if (norm >= tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|: %g\n",(double)norm);CHKERRQ(ierr);
-    }
-
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
 
     /* Test MatDuplicate() of C */
