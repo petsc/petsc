@@ -3,8 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.0.tar.gz',
-                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_5.0.tar.gz']
+    self.gitcommit        = 'v5.0'
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-superlu.git',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_5.0.tar.gz']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
     self.liblist          = [['libsuperlu_5.0.a']]
