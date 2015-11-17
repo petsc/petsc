@@ -24,8 +24,7 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
   PetscFunctionBegin;
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
   ierr          = PetscNew(&ta);CHKERRQ(ierr);
-  ta->tablesize = (3*n)/2 + 17;
-  if (ta->tablesize < n) ta->tablesize = PETSC_MAX_INT/4; /* overflow */
+  ta->tablesize = 17 + PetscIntMultTruncate(3,n/2);
   ierr       = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr       = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head   = 0;
@@ -110,7 +109,7 @@ PetscErrorCode  PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
 #undef __FUNCT__
 #define __FUNCT__ "PetscTableAddExpand"
 /*
-    PetscTableAddExpand - called PetscTableAdd() if more space needed
+    PetscTableAddExpand - called by PetscTableAdd() if more space is needed
 
 */
 PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
@@ -121,9 +120,8 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
   PetscInt       *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
   PetscFunctionBegin;
-  if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
-  ta->tablesize = 2*tsize;
-  if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
+  ta->tablesize = PetscIntMultTruncate(2,ta->tablesize);
+  if (tsize == ta->tablesize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Table is as large as possible; ./configure with the option --with-64-bit-integers to run this large case");
 
   ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
@@ -242,16 +240,13 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
 
   PetscFunctionBegin;
   /* before making the table larger check if key is already in table */
-  while (ii++ < ta->tablesize) {
+  while (ii++ < tsize) {
     if (ta->keytable[hash] == key) PetscFunctionReturn(0);
     hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
   }
 
-  /* alloc new (bigger) table */
-  if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
-  ta->tablesize = 2*tsize;
-  if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
-
+  ta->tablesize = PetscIntMultTruncate(2,ta->tablesize);
+  if (tsize == ta->tablesize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Table is as large as possible; ./configure with the option --with-64-bit-integers to run this large case");
   ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
 
