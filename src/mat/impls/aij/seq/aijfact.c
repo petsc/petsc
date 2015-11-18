@@ -199,7 +199,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
-      nnz  = (n - i)*nzi; /* estimated and max additional space needed */
+      nnz  = PetscIntMultTruncate(n - i,nzi); /* estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
       reallocs++;
     }
@@ -1799,7 +1799,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     bi[i+1]  = bi[i] + nzi;
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
-      nnz  = 2*nzi*(n - i); /* estimated and max additional space needed */
+      nnz  = PetscIntMultTruncate(2,PetscIntMultTruncate(nzi,n - i)); /* estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
       ierr = PetscFreeSpaceGet(nnz,&current_space_lvl);CHKERRQ(ierr);
       reallocs++;
@@ -1996,7 +1996,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
-      nnz  = nzi*(n - i); /* estimated and max additional space needed */
+      nnz  = PetscIntMultTruncate(nzi,n - i); /* estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
       ierr = PetscFreeSpaceGet(nnz,&current_space_lvl);CHKERRQ(ierr);
       reallocs++;
@@ -2520,7 +2520,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
         i    = am - k + 1; /* num of unfactored rows */
-        i   *= PetscMin(nzk, i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i    = PetscIntMultTruncate(i,PetscMin(nzk, i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
@@ -2723,7 +2723,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
         i    = am - k + 1; /* num of unfactored rows */
-        i   *= PetscMin(nzk, (i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i    = PetscIntMultTruncate(i,PetscMin(nzk, i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
@@ -2905,7 +2905,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzk) {
       i    = am - k + 1; /* num of unfactored rows */
-      i   *= PetscMin(nzk,i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      i    = PetscIntMultTruncate(i,PetscMin(nzk,i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
       reallocs++;
     }

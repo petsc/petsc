@@ -2367,6 +2367,41 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscIntSumTruncate"
+/*@C
+
+   PetscIntSumTruncate - Computes the sum of two positive PetscInt and truncates the value to slightly less than the maximal possible value
+
+   Not Collective
+
+   Input Parameter:
++     a - the PetscInt value
+-     b - the second value
+
+   Output Parameter:
+.     c - the result as a PetscInt value
+
+   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
+   Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
+
+
+   This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
+
+   Level: advanced
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+@*/
+PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
+{
+  Petsc64bitInt r;
+
+  r  =  ((Petsc64bitInt)a) + ((Petsc64bitInt)b);
+  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  return (PetscInt) r;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscIntMultError"
 /*@C
 
@@ -2399,10 +2434,45 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Product of two integer %d %d overflow, you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif
-  *result = (PetscInt) r;
+  if (result) *result = (PetscInt) r;
   PetscFunctionReturn(0);
 }
 
+ #undef __FUNCT__
+#define __FUNCT__ "PetscIntSumError"
+/*@C
+
+   PetscIntSumError - Computes the product of two positive PetscInt and generates an error with overflow.
+
+   Not Collective
+
+   Input Parameter:
++     a - the PetscInt value
+-     b - the second value
+
+   Output Parameter:ma
+.     c - the result as a PetscInt value
+
+   Use PetscIntMult64bit() to compute the product of two 32 bit PetscInt and store in a Petsc64bitInt
+   Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
+
+   Level: advanced
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
+{
+  Petsc64bitInt r;
+
+  PetscFunctionBegin;
+  r  =  ((Petsc64bitInt)a) + ((Petsc64bitInt)b);
+#if !defined(PETSC_USE_64BIT_INDICES)
+  if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sum of two integer %d %d overflow, you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
+#endif
+  if (result) *result = (PetscInt) r;
+  PetscFunctionReturn(0);
+}
+ 
 /*
      The IBM include files define hz, here we hide it so that it may be used as a regular user variable.
 */

@@ -3022,7 +3022,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
   /* Note, aspect ratio of P is the same as the aspect ratio of SeqAIJ inside P */
-  ierr          = PetscFreeSpaceGet((ai[am]/pm)*pn,&free_space);CHKERRQ(ierr);
+  ierr          = PetscFreeSpaceGet(PetscIntMultTruncate(ai[am]/pm,pn),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
@@ -3072,7 +3072,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
       /* If free space is not available, make more free space */
       /* Double the amount of total space in the list */
       if (current_space->local_remaining<cnzi) {
-        ierr = PetscFreeSpaceGet(cnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+        ierr = PetscFreeSpaceGet(PetscIntSumTruncate(cnzi,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       }
 
       /* Copy data into free space, and zero out denserows */
