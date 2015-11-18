@@ -409,9 +409,6 @@ typedef enum {/* converged */
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 PETSC_EXTERN const char *const*KSPConvergedReasons;
 
-/* See PCFailedReason */
-typedef enum {KSP_PCFACTOR_NOERROR=0,KSP_PCFACTOR_STRUCT_ZEROPIVOT=-1,KSP_PCFACTOR_NUMERIC_ZEROPIVOT=-2,KSP_PCFACTOR_OUTMEMORY=-3} KSPConvergedSubReason;
-
 /*MC
      KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b)
 

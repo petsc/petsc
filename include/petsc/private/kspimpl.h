@@ -61,7 +61,6 @@ struct _p_KSP {
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
   KSPConvergedReason    reason;
-  KSPConvergedSubReason subreason;
   PetscBool             errorifnotconverged; /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed
