@@ -1425,7 +1425,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ptap->api   = NULL;
   ptap->apj   = NULL;
   ptap->merge = merge;
-  ptap->rmax  = rmax;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)
@@ -1946,7 +1945,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ptap->api   = NULL;
   ptap->apj   = NULL;
   ptap->merge = merge;
-  ptap->rmax  = rmax;
   ptap->apa   = NULL;
 
   *C = Cmpi;
