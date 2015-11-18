@@ -57,6 +57,7 @@ struct _DMOps {
 
   PetscErrorCode (*projectfunctionlocal)(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
   PetscErrorCode (*projectfunctionlabellocal)(DM,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+  PetscErrorCode (*computel2diff)(DM,PetscErrorCode(**)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *diff);
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;

@@ -2375,7 +2375,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
   } else {
-    ierr = DMPlexComputeL2Diff(dm, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
     if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error[0]);CHKERRQ(ierr);}
     else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
   }

@@ -50,6 +50,7 @@
 #define DMProjectFunctionLocal_pforest        _append_pforest(DMProjectFunctionLocal_pforest)
 #define DMProjectFunctionLabelLocal_pforest   _append_pforest(DMProjectFunctionLabelLocal_pforest)
 #define DMCreateDefaulSection_pforest         _append_pforest(DMCreateDefaultSection_pforest)
+#define DMComputeL2Diff_pforest               _append_pforest(DMComputeL2Diff_pforest)
 
 static PetscErrorCode DMConvert_pforest_plex(DM,DMType,DM*);
 
@@ -1232,6 +1233,28 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, DMLabel label, 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMComputeL2Diff_plex)
+PetscErrorCode DMComputeL2Diff_pforest(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+{
+  DM_Forest_pforest *pforest;
+  DM                plex;
+  PetscDS           ds;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  if (!pforest->plex) {
+    ierr = DMConvert_pforest_plex(dm,DMPLEX,NULL);CHKERRQ(ierr);
+  }
+  plex = pforest->plex;
+  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+  ierr = DMSetDS(plex,ds);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(plex,funcs,ctxs,X,diff);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateDefaultSection_pforest)
 static PetscErrorCode DMCreateDefaultSection_pforest(DM dm)
 {
@@ -1271,6 +1294,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
   dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
   dm->ops->createdefaultsection      = DMCreateDefaultSection_pforest;
+  dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   PetscFunctionReturn(0);
 }
 

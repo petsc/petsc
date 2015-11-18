@@ -3420,7 +3420,7 @@ int main(int argc, char **argv)
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2Diff(dm, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
   ierr = DMPlexComputeL2FieldDiff(dm, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);

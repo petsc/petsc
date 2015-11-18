@@ -705,24 +705,8 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeL2Diff"
-/*@C
-  DMPlexComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
-
-  Input Parameters:
-+ dm    - The DM
-. funcs - The functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each function, or NULL.
-- X     - The coefficient vector u_h
-
-  Output Parameter:
-. diff - The diff ||u - u_h||_2
-
-  Level: developer
-
-.seealso: DMProjectFunction(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
-@*/
-PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+#define __FUNCT__ "DMComputeL2Diff_plex"
+PetscErrorCode DMComputeL2Diff_plex(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt   debug = 0;
   PetscSection     section;
@@ -833,7 +817,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, con
 
   Level: developer
 
-.seealso: DMProjectFunction(), DMPlexComputeL2Diff()
+.seealso: DMProjectFunction(), DMComputeL2Diff()
 @*/
 PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
@@ -951,7 +935,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(Petsc
 
   Level: developer
 
-.seealso: DMProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2GradientDiff()
+.seealso: DMProjectFunction(), DMComputeL2Diff(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
 {
@@ -1063,7 +1047,7 @@ PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscErrorCode (**funcs)(PetscInt
 
   Level: developer
 
-.seealso: DMProjectFunction(), DMPlexComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
+.seealso: DMProjectFunction(), DMComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, Vec D)
 {

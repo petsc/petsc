@@ -1416,7 +1416,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
 
   Level: developer
 
-.seealso: DMDAProjectFunction(), DMPlexComputeL2Diff()
+.seealso: DMDAProjectFunction(), DMComputeL2Diff()
 @*/
 PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {

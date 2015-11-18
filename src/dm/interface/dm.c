@@ -5679,7 +5679,7 @@ $    func(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void 
 
   Level: developer
 
-.seealso: DMPlexComputeL2Diff()
+.seealso: DMComputeL2Diff()
 @*/
 PetscErrorCode DMProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
@@ -5721,5 +5721,35 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectfunctionlabellocal) (dm, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComputeL2Diff"
+/*@C
+  DMComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
+
+  Input Parameters:
++ dm    - The DM
+. funcs - The functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each function, or NULL.
+- X     - The coefficient vector u_h
+
+  Output Parameter:
+. diff - The diff ||u - u_h||_2
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
+@*/
+PetscErrorCode DMComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,4);
+  if (!dm->ops->computel2diff) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMComputeL2Diff",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->computel2diff)(dm,funcs,ctxs,X,diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

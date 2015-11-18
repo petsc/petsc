@@ -1003,6 +1003,7 @@ extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fie
 extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 extern PetscErrorCode DMProjectFunctionLocal_plex(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 extern PetscErrorCode DMProjectFunctionLabelLocal_plex(DM,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+extern PetscErrorCode DMComputeL2Diff_plex(DM,PetscErrorCode(**)(PetscInt,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexReplace_Static"
@@ -1319,6 +1320,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->locatepoints                    = DMLocatePoints_Plex;
   dm->ops->projectfunctionlocal            = DMProjectFunctionLocal_plex;
   dm->ops->projectfunctionlabellocal       = DMProjectFunctionLabelLocal_plex;
+  dm->ops->computel2diff                   = DMComputeL2Diff_plex;
   PetscFunctionReturn(0);
 }
 

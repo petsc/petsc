@@ -879,7 +879,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
     if (user.showSolution) {
@@ -901,7 +901,7 @@ int main(int argc, char **argv)
     /* Check discretization error */
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
     /* Check residual */
