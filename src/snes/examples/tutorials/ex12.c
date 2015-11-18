@@ -619,9 +619,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
-  DM             dm, edm, coordDM;
-  PetscDS        prob;
-  PetscFE        fe;
+  DM             dm;
   Vec            du, r;
   PetscInt       level = 0;
   PetscBool      hasLevel;
@@ -631,23 +629,14 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
 
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
-  /* Create FE space for the error */
-  ierr = PetscFECreateDefault(dm, user->dim, 1, user->simplex, "error_", -1, &fe);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
-  /* Create DM for error */
-  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
-  ierr = DMClone(dm, &edm);CHKERRQ(ierr);
-  ierr = DMSetCoordinateDM(edm, coordDM);CHKERRQ(ierr);
-  ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   /* Calculate solution */
   {
-    PC       pc = user->pcmg; /* The MG PC */
-    DM       fdm,  cdm;
-    KSP      fksp, cksp;
-    Vec      fu,   cu;
-    PetscInt levels, l;
+    PC        pc = user->pcmg; /* The MG PC */
+    DM        fdm,  cdm;
+    KSP       fksp, cksp;
+    Vec       fu,   cu;
+    PetscInt  levels, l;
+    PetscBool isPlex;
 
     ierr = KSPBuildSolution(ksp, NULL, &du);CHKERRQ(ierr);
     ierr = PetscObjectComposedDataGetInt((PetscObject) ksp, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
@@ -675,18 +664,17 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
     }
   }
   /* Calculate error */
-  ierr = DMGetGlobalVector(edm, &r);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, user->exactFuncs, NULL, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+  ierr = VecAXPY(r,-1.0,du);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
-  ierr = DMPlexComputeL2DiffVec(edm, user->exactFuncs, NULL, du, r);CHKERRQ(ierr);
   /* View error */
   ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
   ierr = VecView(r, viewer);CHKERRQ(ierr);
   /* Cleanup */
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(edm, &r);CHKERRQ(ierr);
-  ierr = DMDestroy(&edm);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -711,9 +699,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
 PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
-  DM             dm, edm, coordDM;
-  PetscDS        prob;
-  PetscFE        fe;
+  DM             dm;
   Vec            u, r;
   PetscInt       level;
   PetscBool      hasLevel;
@@ -723,21 +709,12 @@ PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-  /* Create FE space for the error */
-  ierr = PetscFECreateDefault(dm, user->dim, 1, user->simplex, "error_", -1, &fe);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(buf, 256, "%D", its);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, buf);CHKERRQ(ierr);
-  /* Create DM for error */
-  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
-  ierr = DMClone(dm, &edm);CHKERRQ(ierr);
-  ierr = DMSetCoordinateDM(edm, coordDM);CHKERRQ(ierr);
-  ierr = DMGetDS(edm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   /* Calculate error */
   ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(edm, &r);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
-  ierr = DMPlexComputeL2DiffVec(edm, user->exactFuncs, NULL, u, r);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, user->exactFuncs, NULL, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+  ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
   /* View error */
   ierr = PetscObjectComposedDataGetInt((PetscObject) snes, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
   ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
@@ -745,9 +722,7 @@ PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *
   ierr = VecView(r, viewer);CHKERRQ(ierr);
   /* Cleanup */
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(edm, &r);CHKERRQ(ierr);
-  ierr = DMDestroy(&edm);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
