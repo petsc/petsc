@@ -8211,8 +8211,8 @@ MatGetOrdering().
 The following routines perform complete, in-place, symbolic, and numerical
 factorizations for symmetric and nonsymmetric matrices, respectively:
 \begin{tabbing}
-  MatCholeskyFactor(Mat matrix,IS permutation,const MatFactorInfo *info);\\
-  MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,const MatFactorInfo *info);
+  MatCholeskyFactor(Mat matrix,IS permutation,MatFactorInfo *info);\\
+  MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,MatFactorInfo *info);
 \end{tabbing}
 The argument \trl{info->fill > 1} is the predicted fill
 expected in the factored matrix, as a ratio of the original fill.
@@ -8236,8 +8236,8 @@ one obtains that matrix object that will hold the factor
 \end{tabbing}
 and then performs the factorization
 \begin{tabbing}
-  MatCholeskyFactorSymbolic(Mat factor,Mat matrix,IS perm,const MatFactorInfo *info);\\
-  MatLUFactorSymbolic(Mat factor,Mat matrix,IS rowperm,IS colperm,const MatFactorInfo *info);\\
+  MatCholeskyFactorSymbolic(Mat factor,Mat matrix,IS perm,MatFactorInfo *info);\\
+  MatLUFactorSymbolic(Mat factor,Mat matrix,IS rowperm,IS colperm,MatFactorInfo *info);\\
   MatCholeskyFactorNumeric(Mat factor,Mat matrix,MatFactorInfo);\\
   MatLUFactorNumeric(Mat factor,Mat matrix,MatFactorInfo *info);
 \end{tabbing}

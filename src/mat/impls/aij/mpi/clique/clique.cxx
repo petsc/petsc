@@ -200,7 +200,7 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_Clique"
-PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
   Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
@@ -230,7 +230,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_Clique"
-PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
   Mat_Clique        *Acliq=(Mat_Clique*)F->spptr;

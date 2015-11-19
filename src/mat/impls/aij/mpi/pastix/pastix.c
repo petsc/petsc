@@ -511,7 +511,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,MatFactorInfo *info)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJPASTIX"
-PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix*)F->spptr;
 
@@ -527,7 +527,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFact
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJPASTIX"
-PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix*)(F)->spptr;
 
