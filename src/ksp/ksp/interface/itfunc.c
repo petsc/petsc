@@ -332,11 +332,9 @@ PetscErrorCode KSPSetUp(KSP ksp)
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
-#if 0
   if (pcreason) {
-    printf("KSPSetUp: pcreason %d\n",pcreason);
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
   }
-#endif
 
   ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
@@ -393,13 +391,11 @@ PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       }
-#if 0
       if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
         PCFailedReason reason;
         ierr = PCGetSetUpFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
-        printf("  display ksp->subreason ... %d \n",(PCFailedReason)reason);
+        ierr = PetscViewerASCIIPrintf(viewer,"               PCSETUP_FAILED due to %s \n",PCFailedReasons[reason]);CHKERRQ(ierr);
       }
-#endif
     }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   }
