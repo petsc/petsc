@@ -151,7 +151,6 @@ static PetscErrorCode PCSetUp_LU(PC pc)
     if (((PC_Factor*)dir)->info.errortype) { /* FactorSymbolic() fails */
       MatFactorInfo factinfo=((PC_Factor*)dir)->info;
       pc->failedreason = (PCFailedReason)factinfo.errortype;
-      printf("MatLUFactorSymbolic: pc->failedreason %d\n",pc->failedreason);
       PetscFunctionReturn(0);
     }
 
@@ -159,7 +158,6 @@ static PetscErrorCode PCSetUp_LU(PC pc)
     if (((PC_Factor*)dir)->info.errortype) { /* FactorNumeric() fails */
       MatFactorInfo factinfo=((PC_Factor*)dir)->info;
       pc->failedreason = (PCFailedReason)factinfo.errortype;
-      printf("MatLUFactorNumeric: pc->failedreason %d\n",pc->failedreason);
     }
   }
   PetscFunctionReturn(0);
