@@ -1147,10 +1147,14 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info)
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  if (mumps->id.INFOG(1) == -6) {
-    ierr = PetscInfo2(A,"MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+  if (mumps->id.INFOG(1) < 0) {
+    if (mumps->id.INFOG(1) == -6) {
+      ierr = PetscInfo2(A,"MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+    } 
+    ierr = PetscInfo2(A,"MatFactorNumeric is called after analysis phase fails, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+
   ierr = (*mumps->ConvertToTriples)(A, 1, MAT_REUSE_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
 
   /* numerical factorization phase */

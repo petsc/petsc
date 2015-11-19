@@ -97,6 +97,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     }
     if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if (((PC_Factor*)dir)->info.errortype) { /* Factor() fails */
+      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+      PetscFunctionReturn(0);
+    }
 
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
@@ -145,7 +150,17 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
+    if (((PC_Factor*)dir)->info.errortype) { /* FactorSymbolic() fails */
+      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+      PetscFunctionReturn(0);
+    }
+
     ierr = MatCholeskyFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if (((PC_Factor*)dir)->info.errortype) { /* FactorNumeric() fails */
+      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    }
   }
   PetscFunctionReturn(0);
 }

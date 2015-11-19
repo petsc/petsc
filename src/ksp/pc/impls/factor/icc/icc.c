@@ -28,7 +28,18 @@ static PetscErrorCode PCSetup_ICC(PC pc)
 
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
+
+  if (((PC_Factor*)icc)->info.errortype) { /* FactorSymbolic() fails */
+    MatFactorInfo factinfo=((PC_Factor*)icc)->info;
+    pc->failedreason = (PCFailedReason)factinfo.errortype;
+    PetscFunctionReturn(0);
+  }
+ 
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
+  if (((PC_Factor*)icc)->info.errortype) { /* FactorNumeric() fails */
+    MatFactorInfo factinfo=((PC_Factor*)icc)->info;
+    pc->failedreason = (PCFailedReason)factinfo.errortype;
+  }
   PetscFunctionReturn(0);
 }
 

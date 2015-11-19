@@ -185,6 +185,12 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
 
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKERRQ(ierr);
+    if (((PC_Factor*)ilu)->info.errortype) { /* Factor() fails */
+      MatFactorInfo factinfo=((PC_Factor*)ilu)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+      PetscFunctionReturn(0);
+    }
+
     ((PC_Factor*)ilu)->fact = pc->pmat;
     /* must update the pc record of the matrix state or the PC will attempt to run PCSetUp() yet again */
     ierr = PetscObjectStateGet((PetscObject)pc->pmat,&pc->matstate);CHKERRQ(ierr);
@@ -229,8 +235,17 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
     }
-    ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+    if (((PC_Factor*)ilu)->info.errortype) { /* FactorSymbolic() fails */
+      MatFactorInfo factinfo=((PC_Factor*)ilu)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+      PetscFunctionReturn(0);
+    }
+
     ierr = MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
+    if (((PC_Factor*)ilu)->info.errortype) { /* FactorNumeric() fails */
+      MatFactorInfo factinfo=((PC_Factor*)ilu)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    }
   }
   PetscFunctionReturn(0);
 }

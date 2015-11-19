@@ -109,6 +109,12 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col);CHKERRQ(ierr);
     }
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if (((PC_Factor*)dir)->info.errortype) { /* Factor() fails */
+      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
+      pc->failedreason = (PCFailedReason)factinfo.errortype;
+      PetscFunctionReturn(0);
+    }
+
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
