@@ -32,7 +32,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Tsirm","");
   ierr = PetscOptionsInt("-ksp_tsirm_cgls","Method used for the minimization step","",cgls,&cgls,NULL);CHKERRQ(ierr); /*0:LSQR, 1:CGLS*/
   ierr = PetscOptionsReal("-ksp_tsirm_tol_ls","Tolerance threshold for the minimization step","",tol_ls,&tol_ls,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_tsirm_maxiter_ls","Maximum number of iterations for the minimization step","",maxiter_ls,&maxiter_ls,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_tsirm_max_it_ls","Maximum number of iterations for the minimization step","",maxiter_ls,&maxiter_ls,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_tsirm_size_ls","Number of residuals for minimization","",size_ls,&size_ls,NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
   
