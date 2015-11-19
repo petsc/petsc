@@ -1173,7 +1173,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info)
       if (mumps->id.INFO(2) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",-mumps->id.INFO(2));
       else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d bytes\n",mumps->id.INFO(2));
     } else if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
-      if (!A->erroriffpe) {
+      if (!A->erroriffailure) {
         ierr = PetscInfo2(F,"matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         info->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       } else {
@@ -1425,7 +1425,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo 
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) {
     if (mumps->id.INFOG(1) == -6) {
-      if (!A->erroriffpe) {
+      if (!A->erroriffailure) {
         ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
       } else {
@@ -1498,7 +1498,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) {
     if (mumps->id.INFOG(1) == -6) {
-      if (!A->erroriffpe) {
+      if (!A->erroriffailure) {
         ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
       } else {
@@ -1570,7 +1570,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,MatFactorInfo *i
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) {
     if (mumps->id.INFOG(1) == -6) {
-      if (!A->erroriffpe) {
+      if (!A->erroriffailure) {
         ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
       } else {

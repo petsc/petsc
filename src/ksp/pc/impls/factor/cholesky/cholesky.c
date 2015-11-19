@@ -86,6 +86,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (dir->inplace) {
     if (dir->row && dir->col && (dir->row != dir->col)) {
       ierr = ISDestroy(&dir->row);CHKERRQ(ierr);

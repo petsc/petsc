@@ -99,7 +99,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
-  ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (dir->inplace) {
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
     ierr = ISDestroy(&dir->col);CHKERRQ(ierr);

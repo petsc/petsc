@@ -183,7 +183,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const 
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
-PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;

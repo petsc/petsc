@@ -169,6 +169,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     }
   }
 
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (ilu->inplace) {
     if (!pc->setupcalled) {
 

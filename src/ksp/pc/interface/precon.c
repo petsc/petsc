@@ -977,8 +977,8 @@ PetscErrorCode  PCSetUp(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
-  ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
-  ierr = MatSetErrorIfFPE(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFailure(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);

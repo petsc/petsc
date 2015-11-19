@@ -13,6 +13,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     if (!((PC_Factor*)icc)->fact) {
       ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
