@@ -1,6 +1,6 @@
 /*
     This file implements TSIRM, the Two-Stage Iteration with least-squares Residual Minimization method. 
-    It is an iterative method to solve large sparse linear systems fo the form Ax=b, and it improves the convergence of Krylov based iterative methods.
+    It is an iterative method to solve large sparse linear systems of the form Ax=b, and it improves the convergence of Krylov based iterative methods.
     The principle is to build an external iteration over a Krylov method (for example GMRES), and to frequently store its current residual in a matrix S. After a given number of outer iterations, a least-squares minimization step (with CGLS or LSQR) is applied on S, in order to compute a better solution and to make new iterations if required.
 */
 #include <petsc/private/kspimpl.h>	/*I "petscksp.h" I*/
