@@ -2251,6 +2251,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   MPI_Request            *send_waits = NULL,*recv_waits = NULL;
   MPI_Status             recv_status,*send_status;
   PetscErrorCode         ierr;
+  PetscCommShared        scomm;
+  PetscMPIInt            jj;
 
   PetscFunctionBegin;
   ierr   = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -2345,6 +2347,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ctx->todata   = (void*)to;
   to->starts[0] = 0;
 
+  ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
   if (nrecvs) {
     /* move the data into the send scatter */
     base     = owners[rank];
@@ -2355,6 +2358,10 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       values = rsvalues;
       rsvalues += olengths1[i];
       for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base;
+      ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)to->procs[i],&jj);CHKERRQ(ierr);
+      if (jj > -1) {
+        PetscPrintf(PETSC_COMM_SELF,"[%d] Sending values shared memory partner %d,global rank %d\n",rank,jj,to->procs[i]);
+      }
     }
   }
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
@@ -2377,6 +2384,10 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       lowner[i]            = count;
       from->procs[count++] = i;
       from->starts[count]  = start[count] = start[count-1] + nprocs[i];
+      ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)i,&jj);CHKERRQ(ierr);
+      if (jj > -1) {
+        PetscPrintf(PETSC_COMM_SELF,"[%d] Receiving values shared memory partner %d global rank %d\n",rank,jj,i);
+      }
     }
   }
 
