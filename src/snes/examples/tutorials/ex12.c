@@ -455,7 +455,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
       ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerHDF5Open(comm, buf, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
     }

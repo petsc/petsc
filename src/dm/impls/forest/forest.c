@@ -71,6 +71,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
     ierr = PetscFree(forest->cellWeights);CHKERRQ(ierr);
   }
+  ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
   ierr = PetscFree(forest);CHKERRQ(ierr);

@@ -2075,9 +2075,18 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
   PetscObject    check;
   PetscInt       cStart, cEnd, cEndInterior;
+  PetscBool      isPlex;
+  DM             plex = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (!isPlex) {
+    ierr = DMConvert(dm,DMPLEX,&plex);CHKERRQ(ierr);
+    if (!plex) {SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot convert to DMPlex");}
+    ierr = DMCopyDMSNES(dm,plex);CHKERRQ(ierr);
+    dm = plex;
+  }
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
@@ -2085,6 +2094,9 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   ierr = PetscObjectQuery((PetscObject) dm, "dmCh", &check);CHKERRQ(ierr);
   if (check) {ierr = DMPlexComputeResidualFEM_Check_Internal(dm, X, NULL, F, user);CHKERRQ(ierr);}
   else       {ierr = DMPlexComputeResidual_Internal(dm, cStart, cEnd, PETSC_MIN_REAL, X, NULL, F, user);CHKERRQ(ierr);}
+  if (!isPlex) {
+    ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2334,13 +2346,25 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
 PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *user)
 {
   PetscInt       cStart, cEnd, cEndInterior;
+  DM             plex = NULL;
+  PetscBool      isPlex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (!isPlex) {
+    ierr = DMConvert(dm,DMPLEX,&plex);CHKERRQ(ierr);
+    if (!plex) {SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot convert to DMPlex");}
+    ierr = DMCopyDMSNES(dm,plex);CHKERRQ(ierr);
+    dm = plex;
+  }
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexComputeJacobian_Internal(dm, cStart, cEnd, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
+  if (!isPlex) {
+    ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
