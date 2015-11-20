@@ -1169,18 +1169,22 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info)
   }
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) {
-    if (mumps->id.INFOG(1) == -13) {
-      if (mumps->id.INFO(2) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",-mumps->id.INFO(2));
-      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d bytes\n",mumps->id.INFO(2));
-    } else if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
-      if (!A->erroriffailure) {
+    if (A->erroriffailure) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));
+    } else {
+      if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
         ierr = PetscInfo2(F,"matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         info->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      } else if (mumps->id.INFOG(1) == -13) {
+        ierr = PetscInfo2(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, cannot allocate required memory %d megabytes\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_OUTMEMORY;
+      } else if (mumps->id.INFOG(1) == -8 || mumps->id.INFOG(1) == -9 || (-16 < mumps->id.INFOG(1) && mumps->id.INFOG(1) < -10) ) {
+        ierr = PetscInfo2(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, problem with workarray \n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_OUTMEMORY;
       } else {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, matrix is numerically singular\n",mumps->id.INFOG(1),mumps->id.INFO(2));
+        ierr = PetscInfo2(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_OTHER;
       }
-    } else {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));
     }
   }
   if (!mumps->myid && mumps->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d\n",mumps->id.INFOG(16));
