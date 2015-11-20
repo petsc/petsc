@@ -1003,7 +1003,7 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
     Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 S*/
-typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY} MatFactorError;
+typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization

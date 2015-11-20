@@ -1351,6 +1351,32 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorSymbolic_MUMPS_ReportIfError"
+PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,MatFactorInfo *info,Mat_MUMPS *mumps)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (mumps->id.INFOG(1) < 0) {
+    if (A->erroriffailure) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
+    } else {
+      if (mumps->id.INFOG(1) == -6) {
+        ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
+      } else if (mumps->id.INFOG(1) == -5 || mumps->id.INFOG(1) == -7) {
+        ierr = PetscInfo2(F,"problem of workspace, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_OUTMEMORY;
+      } else {
+        ierr = PetscInfo2(F,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
+        info->errortype = MAT_FACTOR_OTHER;
+      }
+    } 
+  }
+  PetscFunctionReturn(0);
+}
+
 /* Note Petsc r(=c) permutation is used when mumps->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
@@ -1423,18 +1449,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo 
     break;
   }
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) {
-    if (mumps->id.INFOG(1) == -6) {
-      if (!A->erroriffailure) {
-        ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
-        info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
-      } else {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d, matrix is numerically singular\n",mumps->id.INFOG(1),mumps->id.INFO(2));
-      }
-    } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
-    }
-  }
+  ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
 
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve           = MatSolve_MUMPS;
@@ -1496,18 +1511,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo
     break;
   }
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) {
-    if (mumps->id.INFOG(1) == -6) {
-      if (!A->erroriffailure) {
-        ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
-        info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
-      } else {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d, matrix is numerically singular\n",mumps->id.INFOG(1),mumps->id.INFO(2));
-      }
-    } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
-    }
-  }
+  ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
 
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve           = MatSolve_MUMPS;
@@ -1568,18 +1572,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,MatFactorInfo *i
     break;
   }
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) {
-    if (mumps->id.INFOG(1) == -6) {
-      if (!A->erroriffailure) {
-        ierr = PetscInfo2(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
-        info->errortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
-      } else {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d, matrix is numerically singular\n",mumps->id.INFOG(1),mumps->id.INFO(2));
-      }
-    } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
-    }
-  }
+  ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
+
 
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;
