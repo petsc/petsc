@@ -177,8 +177,8 @@ PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char messa
   int            err;
 
   PetscFunctionBegin;
-  if (obj) PetscValidHeader(obj,1);
-  PetscValidCharPointer(message,2);
+  if (obj) PetscValidHeader(obj,2);
+  PetscValidCharPointer(message,3);
   if (!PetscLogPrintInfo) PetscFunctionReturn(0);
   if ((!PetscLogPrintInfoNull) && !vobj) PetscFunctionReturn(0);
   if (obj && !PetscInfoFlags[obj->classid - PETSC_SMALLEST_CLASSID - 1]) PetscFunctionReturn(0);
