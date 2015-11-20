@@ -910,7 +910,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason)
 {
   PetscFunctionBegin;
-  if (pc->setupcalled < 0) *reason = pc->setupcalled;
+  if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
   PetscFunctionReturn(0);
 }
