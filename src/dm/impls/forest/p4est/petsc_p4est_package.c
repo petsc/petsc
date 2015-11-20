@@ -43,6 +43,10 @@ static PetscErrorCode PetscP4estFinalize(void)
 
   PetscFunctionBegin;
   if (PetscBeganSc) {
+    /* We do not want libsc to abort on a mismatched allocation and prevent further Petsc unwinding */
+    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(sc_package_id,0));
+    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(p4est_package_id,0));
+    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(-1,0));
     PetscStackCallP4est(sc_finalize,());
   }
   ierr = PetscHeaderDestroy(&P4estLoggingObject);CHKERRQ(ierr);
