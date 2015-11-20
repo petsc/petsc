@@ -1177,6 +1177,7 @@ static PetscErrorCode DMCreateGlobalVector_pforest(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateLocalVector_pforest)
 static PetscErrorCode DMCreateLocalVector_pforest(DM dm,Vec *vec)
@@ -1190,6 +1191,7 @@ static PetscErrorCode DMCreateLocalVector_pforest(DM dm,Vec *vec)
   ierr = DMCreateLocalVector(plex,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateMatrix_pforest)
@@ -1273,7 +1275,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
-  dm->ops->createlocalvector         = DMCreateLocalVector_pforest;
+  dm->ops->createlocalvector         = DMCreateLocalVector_Section_Private;
   dm->ops->creatematrix              = DMCreateMatrix_pforest;
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
   dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
