@@ -78,7 +78,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    if not self.sharedLibraries.useShared:
+    if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin():
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload()
     if self.setCompilers.isDarwin():
