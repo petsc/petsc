@@ -161,7 +161,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
    the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive columns of S 
    are equal to the real and the imaginary parts of the associated vectors. 
    -the (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus
-
+   -this is currently not implemented when PETSc is built with complex numbers
 
    One must call KSPSetComputeRitz() before calling KSPSetUp()
    in order for this routine to work correctly.
@@ -179,7 +179,6 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Ritz pairs not requested before KSPSetUp()");
-
   if (ksp->ops->computeritz) {ierr = (*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1489,7 +1488,7 @@ PetscErrorCode  KSPSetComputeEigenvalues(KSP ksp,PetscBool flg)
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetComputeRitz"
 /*@
-   KSPSetComputeRitz - Sets a flag so that the ritz or harmonic ritz pairs
+   KSPSetComputeRitz - Sets a flag so that the Ritz or harmonic Ritz pairs
    will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 

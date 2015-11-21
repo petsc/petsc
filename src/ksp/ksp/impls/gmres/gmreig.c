@@ -193,6 +193,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_USE_COMPLEX)
 #undef __FUNCT__
 #define __FUNCT__ "KSPComputeRitz_GMRES"
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
@@ -206,10 +207,6 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   PetscReal      *SR,*work;
   PetscBLASInt   bn,bN,lwork,idummy;
   PetscScalar    *t,sdummy;
-
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),-1,"NO SUPPORT FOR COMPLEX VALUES AT THIS TIME");
-#endif
 
   PetscFunctionBegin;
   /* n: size of the Hessenberg matrix */
@@ -338,6 +335,6 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   ierr  = PetscFree(wi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+#endif
 
 
