@@ -27,7 +27,10 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    # Get the SUPERLU directories
+    if (self.compilers.c99flag == None):
+      raise RuntimeError('SUPERLU_DIST: install requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
+    if not self.make.haveGNUMake:
+      raise RuntimeError('SUPERLU_DIST: install requires GNU make. Suggest using --download-make')
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('SuperLUroot  = '+self.packageDir+'\n')
@@ -67,7 +70,7 @@ class Configure(config.package.Package):
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
         # SLASRC,DLASRC,SCLAUX,DZLAUX appear to be required in 5.0
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make superlulib LAAUX="" CLASRC="" ZLASRC="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make+' superlulib LAAUX="" CLASRC="" ZLASRC="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output+err,'make.inc')
