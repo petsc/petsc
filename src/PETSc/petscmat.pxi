@@ -98,6 +98,11 @@ cdef extern from * nogil:
         MAT_FLUSH_ASSEMBLY
         MAT_FINAL_ASSEMBLY
 
+    ctypedef enum PetscMatInfoType "MatInfoType":
+        MAT_LOCAL
+        MAT_GLOBAL_MAX
+        MAT_GLOBAL_SUM
+
     ctypedef enum  PetscMatStructure "MatStructure":
         MAT_SAME_NONZERO_PATTERN      "SAME_NONZERO_PATTERN"
         MAT_DIFFERENT_NONZERO_PATTERN "DIFFERENT_NONZERO_PATTERN"
@@ -314,6 +319,18 @@ cdef extern from * nogil:
         PetscReal usedt, dt, dtcol, dtcount
         PetscReal zeropivot, pivotinblocks
         PetscReal shifttype, shiftamount
+
+    ctypedef struct PetscMatInfo "MatInfo":
+        PetscLogDouble block_size
+        PetscLogDouble nz_allocated, nz_used, nz_unneeded
+        PetscLogDouble memory
+        PetscLogDouble assemblies
+        PetscLogDouble mallocs
+        PetscLogDouble fill_ratio_given, fill_ratio_needed
+        PetscLogDouble factor_mallocs
+
+    int MatGetInfo(PetscMat,PetscMatInfoType,PetscMatInfo*)
+
     int MatFactorInfoInitialize(PetscMatFactorInfo*)
 
     int MatCholeskyFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
@@ -524,6 +541,11 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) \
     elif assembly is False: return MAT_FINAL_ASSEMBLY
     elif assembly is True:  return MAT_FLUSH_ASSEMBLY
     else:                   return assembly
+
+cdef inline PetscMatInfoType infotype(object info) \
+    except <PetscMatInfoType>(-1):
+    if   info is None: return MAT_GLOBAL_SUM
+    else:              return info
 
 # -----------------------------------------------------------------------------
 
