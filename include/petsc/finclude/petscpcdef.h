@@ -77,5 +77,5 @@
 #define PCMGType PetscEnum
 #define PCMGCycleType PetscEnum
 #define PCExoticType PetscEnum
-
+#define PCFailedReason PetscEnum
 #endif
