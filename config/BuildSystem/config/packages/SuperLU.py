@@ -28,9 +28,9 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     if (self.compilers.c99flag == None):
-      raise RuntimeError('SUPERLU_DIST: install requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
+      raise RuntimeError(self.PACKAGE+': install requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
     if not self.make.haveGNUMake:
-      raise RuntimeError('SUPERLU_DIST: install requires GNU make. Suggest using --download-make')
+      raise RuntimeError(self.PACKAGE+': install requires GNU make. Suggest using --download-make')
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('SuperLUroot  = '+self.packageDir+'\n')
