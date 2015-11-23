@@ -1,5 +1,6 @@
 #include <petsc/private/dmforestimpl.h>
 #include <petsc/private/dmpleximpl.h>
+#include <petsc/private/dmlabelimpl.h>
 #include <petsc/private/viewerimpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 #include "petsc_p4est_package.h"
@@ -18,6 +19,8 @@
 #include <p4est_lnodes.h>
 #include <p4est_vtk.h>
 #include <p4est_plex.h>
+#include <p4est_bits.h>
+#include <p4est_extended.h>
 #else
 #include <p8est.h>
 #include <p8est_extended.h>
@@ -26,6 +29,8 @@
 #include <p8est_lnodes.h>
 #include <p8est_vtk.h>
 #include <p8est_plex.h>
+#include <p8est_bits.h>
+#include <p8est_extended.h>
 #endif
 
 #define DMInitialize_pforest                  _append_pforest(DMInitialize)
@@ -68,6 +73,9 @@ typedef struct {
   p4est_lnodes_t      *lnodes;
   PetscBool            partition_for_coarsening;
   PetscBool            coarsen_hierarchy;
+  PetscBool            labelsFinalized;
+  PetscInt             cLocalStart;
+  PetscInt             cLocalEnd;
   DM                   plex;
 } DM_Forest_pforest;
 
@@ -960,6 +968,217 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPforestGetLabelsFinalized"
+static PetscErrorCode DMPforestGetLabelsFinalized(DM dm, PetscBool *finalized)
+{
+  DM_Forest_pforest *pforest = (DM_Forest_pforest *) ((DM_Forest *)dm->data)->data;
+
+  PetscFunctionBegin;
+  *finalized = pforest->labelsFinalized;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPforestGetPlex(DM,DM*);
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPforestLabelsInitialize"
+static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
+{
+  DM_Forest         *forest  = (DM_Forest *) dm->data;
+  DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
+  PetscInt          cLocalStart, cLocalEnd, cStart, cEnd, fStart, fEnd, eStart, eEnd, vStart, vEnd;
+  PetscInt          pStart, pEnd, p;
+  DM                base;
+  PetscInt          *star = NULL, starSize;
+  DMLabelLink       next = dm->labels->next;
+  PetscInt          guess = 0;
+  p4est_topidx_t    num_trees = pforest->topo->conn->num_trees;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
+  cLocalStart = pforest->cLocalStart;
+  cLocalEnd   = pforest->cLocalEnd;
+  ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(plex,1,&fStart,&fEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(plex,1,&eStart,&eEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(plex,0,&vStart,&vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
+  /* go through the mesh: use star to find a quadrant that borders a point.  Use the closure to determine the
+   * orientation of the quadrant relative to that point.  Use that to relate the point to the numbering in the base
+   * mesh, and extract a label value (since the base mesh is redundantly distributed, can be found locally). */
+  while (next) {
+    DMLabel baseLabel;
+    DMLabel label = next->label;
+
+    ierr = DMGetLabel(base,label->name,&baseLabel);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt s, c = -1, l;
+      PetscInt *closure = NULL, closureSize;
+      p4est_quadrant_t * ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
+      p4est_tree_t *trees = (p4est_tree_t *) pforest->forest->trees->array;
+      p4est_quadrant_t * q;
+      PetscInt t;
+
+      ierr = DMPlexGetTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+      for (s = 0; s < starSize; s++) {
+        PetscInt point = star[2*s];
+
+        if (cStart <= point && point < cEnd) {
+          ierr = DMPlexGetTransitiveClosure(plex,point,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+          for (l = 0; l < closureSize; l++) {
+            PetscInt point = star[2*s];
+            if (closure[2 * l] == p) {
+              c = point;
+              break;
+            }
+          }
+          ierr = DMPlexRestoreTransitiveClosure(plex,point,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+          if (l < closureSize) {
+            break;
+          }
+        }
+      }
+      ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+      if (s == starSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %d in its closure",p);
+
+      if (c < cLocalStart) {
+        /* get from the beginning of the ghost layer */
+        q = &(ghosts[c]);
+        t = (PetscInt) q->p.piggy1.which_tree;
+      }
+      else if (c < cLocalEnd) {
+        PetscInt lo = 0, hi = num_trees;
+        /* get from local quadrants: have to find the right tree */
+
+        c -= cLocalStart;
+
+        do {
+          p4est_tree_t *tree;
+
+          if (guess < lo || guess >= num_trees || lo >= hi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed binary search");
+          tree = &trees[guess];
+          if (c < tree->quadrants_offset) {
+            hi = guess;
+          }
+          else if (c < tree->quadrants_offset + (PetscInt) tree->quadrants.elem_count) {
+            q = &((p4est_quadrant_t *)tree->quadrants.array)[c - (PetscInt) tree->quadrants_offset];
+            t = guess;
+            break;
+          }
+          else {
+            lo = guess + 1;
+          }
+          guess = lo + (hi - lo) / 2;
+        } while (1);
+      }
+      else {
+        /* get from the end of the ghost layer */
+        c -= (cLocalEnd - cLocalEnd);
+
+        q = &(ghosts[c]);
+        t = (PetscInt) q->p.piggy1.which_tree;
+      }
+
+      if (l == 0) { /* cell */
+        PetscBool hasT;
+
+        ierr = DMLabelHasPoint(baseLabel,t,&hasT);CHKERRQ(ierr);
+        if (hasT) {
+          PetscInt val;
+
+          ierr = DMLabelGetValue(baseLabel,t,&val);CHKERRQ(ierr);
+          ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        }
+      }
+      else if (l >= 1 && l < 1 + P4EST_FACES) { /* facet */
+        p4est_quadrant_t nq;
+        int              isInside;
+
+        l = PetscFaceToP4estFace[l - 1];
+        PetscStackCallP4est(p4est_quadrant_face_neighbor,(q,l,&nq));
+        PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
+        if (!isInside) {
+          /* this facet is in the interior of a tree, so it inherits the label of the tree */
+          PetscInt val;
+
+          ierr = DMLabelGetValue(baseLabel,t,&val);CHKERRQ(ierr);
+          ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        }
+        else {
+          PetscInt f = pforest->topo->tree_face_to_uniq[P4EST_FACES * t + l], val;
+
+          ierr = DMLabelGetValue(baseLabel,f+fStart,&val);CHKERRQ(ierr);
+          ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        }
+      }
+#ifdef P4_TO_P8
+      else if (l >= 1 + P4EST_FACES && l < 1 + P4EST_FACES + P8EST_EDGES) { /* edge */
+        PetscInt e, val;
+
+        l = PetscEdgeToP4estEdge[l - (1 + P4EST_FACES)];
+        e = pforest->topo->conn->tree_to_edge[P8EST_EDGES * t + l];
+        ierr = DMLabelGetValue(baseLabel,e+eStart,&val);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+      }
+#endif
+      else { /* vertex */
+        PetscInt v, val;
+
+#ifdef P4_TO_P8
+        l = PetscVertToP4estVert[l - (1 + P4EST_FACES + P8EST_CHILDREN)];
+#else
+        l = PetscVertToP4estVert[l - (1 + P4EST_FACES)];
+#endif
+        v = pforest->topo->conn->tree_to_corner[P4EST_CHILDREN * t + l];
+        ierr = DMLabelGetValue(baseLabel,v+vStart,&val);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+      }
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPforestLabelsFinalize"
+static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex, PetscBool recurse)
+{
+  DM             adapt;
+  PetscBool      labelsFinalized = PETSC_TRUE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetFineDM(dm,&adapt);CHKERRQ(ierr);
+  if (adapt) {
+    ierr = DMPforestGetLabelsFinalized(adapt,&labelsFinalized);CHKERRQ(ierr);
+  }
+  if (!adapt || !labelsFinalized) {
+    ierr = DMGetCoarseDM(dm,&adapt);CHKERRQ(ierr);
+    if (adapt) {
+      ierr = DMPforestGetLabelsFinalized(adapt,&labelsFinalized);CHKERRQ(ierr);
+    }
+  }
+  if (adapt) {
+    if (!labelsFinalized && recurse) {
+      DM adaptPlex;
+
+      ierr = DMPforestGetPlex(adapt,&adaptPlex);CHKERRQ(ierr);
+      ierr = DMPforestLabelsFinalize(adapt,adaptPlex,PETSC_FALSE);
+    }
+    /* TODO: transfer labels from a fine/coarse mesh */
+#if 0
+    ierr = DMPforestLabelsTransfer(adapt,dm);CHKERRQ(ierr);
+#endif
+  }
+  else {
+    /* Initialize labels from the base dm */
+    ierr = DMPforestLabelsInitialize(dm,plex);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMConvert_pforest_plex)
 static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 {
@@ -1021,8 +1240,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     leaves            = sc_array_new(sizeof (p4est_locidx_t));
     remotes           = sc_array_new(2 * sizeof (p4est_locidx_t));
 
-    PetscStackCallP4est(p4est_get_plex_data,(pforest->forest,ctype,(int)overlap,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
+    PetscStackCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)overlap,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
 
+    pforest->cLocalStart = (PetscInt) first_local_quad;
+    pforest->cLocalEnd   = pforest->cLocalStart + (PetscInt) pforest->forest->local_num_quadrants;
     ierr = locidx_to_PetscInt(points_per_dim);CHKERRQ(ierr);
     ierr = locidx_to_PetscInt(cone_sizes);CHKERRQ(ierr);
     ierr = locidx_to_PetscInt(cones);CHKERRQ(ierr);
@@ -1069,6 +1290,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (childids);
     sc_array_destroy (leaves);
     sc_array_destroy (remotes);
+
+    /* copy labels, boundary */
+    ierr = DMPforestLabelsFinalize(dm,newPlex,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMCopyBoundary(dm,newPlex);CHKERRQ(ierr);
   }
   newPlex = pforest->plex;
   if (plex) {
@@ -1310,16 +1535,19 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   /* create p4est data */
   ierr = PetscNewLog(dm,&pforest);CHKERRQ(ierr);
 
-  forest            = (DM_Forest *) dm->data;
-  forest->data      = pforest;
-  forest->destroy   = DMForestDestroy_pforest;
-  forest->ftemplate = DMForestTemplate_pforest;
-  pforest->topo     = NULL;
-  pforest->forest   = NULL;
-  pforest->ghost    = NULL;
-  pforest->lnodes   = NULL;
+  forest                            = (DM_Forest *) dm->data;
+  forest->data                      = pforest;
+  forest->destroy                   = DMForestDestroy_pforest;
+  forest->ftemplate                 = DMForestTemplate_pforest;
+  pforest->topo                     = NULL;
+  pforest->forest                   = NULL;
+  pforest->ghost                    = NULL;
+  pforest->lnodes                   = NULL;
   pforest->partition_for_coarsening = PETSC_TRUE;
-  pforest->coarsen_hierarchy = PETSC_FALSE;
+  pforest->coarsen_hierarchy        = PETSC_FALSE;
+  pforest->cLocalStart              = -1;
+  pforest->cLocalEnd                = -1;
+  pforest->labelsFinalized          = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
