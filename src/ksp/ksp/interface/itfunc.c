@@ -539,6 +539,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+    ierr = VecSetInf(x);CHKERRQ(ierr);
     goto skipsolve;
   }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
