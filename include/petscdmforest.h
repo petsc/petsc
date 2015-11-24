@@ -15,11 +15,12 @@
 J*/
 typedef const char* DMForestTopology;
 
+/* Just a name for the shape of the domain */
 PETSC_EXTERN PetscErrorCode DMForestSetTopology(DM, DMForestTopology);
 PETSC_EXTERN PetscErrorCode DMForestGetTopology(DM, DMForestTopology *);
 
 /* this is the coarsest possible forest: can be any DM which we can
- * convert to a DMForest */
+ * convert to a DMForest (right now: plex) */
 PETSC_EXTERN PetscErrorCode DMForestSetBaseDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMForestGetBaseDM(DM, DM *);
 
