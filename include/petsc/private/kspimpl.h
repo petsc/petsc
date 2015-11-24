@@ -317,12 +317,11 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
     else {\
       PetscErrorCode ierr;\
       PCFailedReason pcreason;\
-      PetscReal      sendbuf,recvbuf; \
+      PetscInt       sendbuf,pcreason_max; \
       ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
-      sendbuf = (PetscReal)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
-      pcreason = (PCFailedReason)recvbuf;\
-      if (pcreason) {\
+      sendbuf = (PetscInt)pcreason; \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
       } else {\
         ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
