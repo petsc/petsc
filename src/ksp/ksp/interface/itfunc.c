@@ -540,7 +540,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
     ierr = VecSetInf(x);CHKERRQ(ierr);
-    goto skipsolve;
+    /* goto skipsolve; -- skipsolve skips KSPCheckNorm() which sets ksp->reason */
   }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   VecLocked(ksp->vec_sol,3);

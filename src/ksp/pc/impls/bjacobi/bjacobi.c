@@ -637,15 +637,21 @@ PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/kspimpl.h>  
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Singleblock"
 PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 {
   PetscErrorCode ierr;
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
+  KSP            subksp = jac->ksp[0];
 
   PetscFunctionBegin;
-  ierr = KSPSetUp(jac->ksp[0]);CHKERRQ(ierr);
+  ierr = KSPSetUp(subksp);CHKERRQ(ierr);
+  if (subksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    PC subpc=subksp->pc;
+    pc->failedreason = (PCFailedReason)subpc->failedreason;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -910,6 +916,10 @@ PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
   PetscFunctionBegin;
   for (i=0; i<n_local; i++) {
     ierr = KSPSetUp(jac->ksp[i]);CHKERRQ(ierr);
+    if (jac->ksp[i]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      PC subpc=jac->ksp[i]->pc;
+      pc->failedreason = (PCFailedReason)subpc->failedreason;
+    }
   }
   PetscFunctionReturn(0);
 }
