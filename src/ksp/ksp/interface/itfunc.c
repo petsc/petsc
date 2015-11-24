@@ -607,7 +607,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
-  skipsolve:
+  /* skipsolve: */
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
