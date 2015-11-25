@@ -539,10 +539,13 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
-    ierr = VecSetInf(x);CHKERRQ(ierr);
-    /* goto skipsolve; -- skipsolve skips KSPCheckNorm() which sets ksp->reason */
+    /* goto skipsolve;  -- not all processors skipsolve causes hang! */
   }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+  }
   VecLocked(ksp->vec_sol,3);
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
@@ -594,6 +597,9 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_rhs = btmp;
   }
   ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
+  if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+  }
   ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {

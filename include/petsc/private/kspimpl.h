@@ -303,7 +303,17 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
   if (PetscIsInfOrNanScalar(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
     else {\
-      ksp->reason = KSP_DIVERGED_NANORINF;\
+      PetscErrorCode ierr;\
+      PCFailedReason pcreason;\
+      PetscInt       sendbuf,pcreason_max; \
+      ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      sendbuf = (PetscInt)pcreason; \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (pcreason_max) {\
+        ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+      } else {\
+        ksp->reason = KSP_DIVERGED_NANORINF;\
+      }\
       PetscFunctionReturn(0);\
     }\
   }
@@ -324,7 +334,6 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
       } else {\
-        ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
         ksp->reason = KSP_DIVERGED_NANORINF;\
       }\
       PetscFunctionReturn(0);\
