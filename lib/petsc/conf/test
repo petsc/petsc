@@ -8,6 +8,7 @@
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
 testexamples_C: ${TESTEXAMPLES_C}
+testexamples_C_Info: ${TESTEXAMPLES_C_INFO}
 testexamples_C_NotSingle: ${TESTEXAMPLES_C_NOTSINGLE}
 testexamples_Cxx: ${TESTEXAMPLES_CXX}
 testexamples_C_X: ${TESTEXAMPLES_C_X}
