@@ -173,7 +173,7 @@ class Configure(config.base.Configure):
       fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
     else:
       fd.write('Libs: '+plibs+'\n')
-    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS)
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'\n')
 
     fd.close()
     return
