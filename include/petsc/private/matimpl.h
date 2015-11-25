@@ -1269,7 +1269,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk,lsize;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
   ierr = PetscIntMultError(2,nlnk_max+1,&lsize);CHKERRQ(ierr);
@@ -1388,7 +1388,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk,lsize;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
   ierr = PetscIntMultError(2,nlnk_max+1,&lsize);CHKERRQ(ierr);
@@ -1478,7 +1478,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *ln
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk,lsize;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
   ierr = PetscIntMultError(3,nlnk_max+3,&lsize);CHKERRQ(ierr);
