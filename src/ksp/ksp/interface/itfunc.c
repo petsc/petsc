@@ -500,7 +500,6 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   Mat               mat,pmat;
   MPI_Comm          comm;
-  PCFailedReason    pcreason;
   MatNullSpace      nullsp;
   Vec               btmp,vec_rhs=0;
 
