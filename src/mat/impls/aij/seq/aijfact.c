@@ -350,7 +350,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
       /* estimated additional space needed */
-      nnz  = PetscIntMultTruncate(2,PetscIntMult64bit(n-1,nzi));
+      nnz  = PetscIntMultTruncate(2,PetscIntMultTruncate(n-1,nzi));
       ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
       reallocs++;
     }
