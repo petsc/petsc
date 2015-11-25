@@ -1196,6 +1196,11 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   ierr = KSPSolve(jac->ksp[0],mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
 
+  if (jac->ksp[0]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    PC subpc=jac->ksp[0]->pc;
+    pc->failedreason = (PCFailedReason)subpc->failedreason;
+  }
+
   ierr = VecResetArray(mpjac->xsub);CHKERRQ(ierr);
   ierr = VecResetArray(mpjac->ysub);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);

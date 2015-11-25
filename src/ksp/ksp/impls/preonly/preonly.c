@@ -25,7 +25,9 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
   ierr        = PCSetInitialGuessNonzero(ksp->pc,(PetscBool) !(int)ksp->guess_zero);CHKERRQ(ierr);
   ierr        = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   ksp->its    = 1;
-  ksp->reason = KSP_CONVERGED_ITS;
+  if (ksp->reason != KSP_DIVERGED_PCSETUP_FAILED) {
+    ksp->reason = KSP_CONVERGED_ITS;
+  }
   PetscFunctionReturn(0);
 }
 
