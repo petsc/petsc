@@ -1272,7 +1272,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,Pets
   PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscIntMultError(2,nlnk_max+1,&lsize);CHKERRQ(ierr);
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
   ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   ierr = PetscBTCreate(lnk_max,bt);CHKERRQ(ierr);
   llnk = *lnk;
@@ -1391,7 +1391,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk
   PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscIntMultError(2,nlnk_max+1,&lsize);CHKERRQ(ierr);
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
   ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;               /* number of entries on the list */
