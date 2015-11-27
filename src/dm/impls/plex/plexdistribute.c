@@ -610,7 +610,12 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   ierr = ISRestoreIndices(rootrank, &rrank);CHKERRQ(ierr);
   ierr = ISRestoreIndices(leafrank, &nrank);CHKERRQ(ierr);
   /* Add additional overlap levels */
-  for (l = 1; l < levels; l++) {ierr = DMPlexPartitionLabelAdjacency(dm, ovAdjByRank);CHKERRQ(ierr);}
+  for (l = 1; l < levels; l++) {
+    /* Propagate point donations over SF to capture remote connections */
+    ierr = DMPlexPartitionLabelPropagate(dm, ovAdjByRank);CHKERRQ(ierr);
+    /* Add next level of point donations to the label */
+    ierr = DMPlexPartitionLabelAdjacency(dm, ovAdjByRank);CHKERRQ(ierr);
+  }
   /* We require the closure in the overlap */
   ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
   ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);

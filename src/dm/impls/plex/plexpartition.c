@@ -1500,6 +1500,55 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelPropagate"
+/*@
+  DMPlexPartitionLabelPropagate - Propagate points in a partition label over the point SF
+
+  Input Parameters:
++ dm     - The DM
+- label  - DMLabel assinging ranks to remote roots
+
+  Level: developer
+
+  Note: This is required when generating multi-level overlaps to capture
+  overlap points from non-neighbouring partitions.
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
+{
+  MPI_Comm        comm;
+  PetscMPIInt     rank;
+  PetscSF         sfPoint;
+  DMLabel         lblRoots;
+  IS              rankIS, pointIS;
+  const PetscInt *ranks;
+  PetscInt        numRanks, r;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  /* Push point contributions from roots into remote leaves */
+  ierr = DMLabelDistribute(label, sfPoint, &lblRoots);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(lblRoots, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt remoteRank = ranks[r];
+    if (remoteRank == rank) continue;
+    ierr = DMLabelGetStratumIS(lblRoots, remoteRank, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelInsertIS(label, pointIS, remoteRank);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&lblRoots);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPartitionLabelInvert"
 /*@
   DMPlexPartitionLabelInvert - Create a partition label of remote roots from a local root label
