@@ -226,7 +226,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f    = info->fill;
-  ierr = PetscFreeSpaceGet((PetscInt)(f*(ai[n]+1)),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(f,ai[n]+1),&free_space);CHKERRQ(ierr);
 
   current_space = free_space;
 
@@ -262,7 +262,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
-      nnz  = 2*(n - i)*nzi; /* estimated and max additional space needed */
+      nnz  = PetscIntMultTruncate(2,PetscIntMultTruncate(n - i,nzi)); /* estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
       reallocs++;
     }
@@ -385,7 +385,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f             = info->fill;
-  ierr          = PetscFreeSpaceGet((PetscInt)(f*(ai[n]+1)),&free_space);CHKERRQ(ierr);
+  ierr          = PetscFreeSpaceGet(PetscRealIntMultTruncate(f,ai[n]+1),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   for (i=0; i<n; i++) {
@@ -420,7 +420,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
-      nnz  = (n - i)*nzi; /* estimated and max additional space needed */
+      nnz  = PetscIntMultTruncate(n - i,nzi); /* estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
       reallocs++;
     }

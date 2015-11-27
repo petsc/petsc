@@ -190,7 +190,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
 
   /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ad->i[am]+ao->i[am]+p_loc->i[pm])),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],PetscIntSumTruncate(ao->i[am],p_loc->i[pm]))),&free_space);CHKERRQ(ierr);
   current_space = free_space;
   nspacedouble  = 0;
 
@@ -224,7 +224,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
-      ierr = PetscFreeSpaceGet(apnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(apnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
@@ -666,7 +666,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   ierr = PetscLLCondensedCreate(pN,pN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) -OOM for ex56, np=8k on Intrepid! */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(adi[am],PetscIntSumTruncate(aoi[am],pi_loc[pm]))),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   for (i=0; i<am; i++) {
@@ -695,7 +695,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
-      ierr = PetscFreeSpaceGet(apnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(apnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
@@ -725,7 +725,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   coi[0] = 0;
 
   /* set initial free space to be fill*(nnz(p->B) + nnz(AP)) */
-  nnz           = fill*(poti[pon] + api[am]);
+  nnz           = PetscRealIntMultTruncate(fill,PetscIntSumTruncate(poti[pon],api[am]));
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
@@ -743,7 +743,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
 
     /* If free space is not available, double the total space in the list */
     if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(nnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
@@ -873,7 +873,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   pti[0] = 0;
 
   /* set initial free space to be fill*(nnz(P) + nnz(AP)) */
-  nnz           = fill*(pi_loc[pm] + api[am]);
+  nnz           = PetscRealIntMultTruncate(fill,PetscIntSumTruncate(pi_loc[pm],api[am]));
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
@@ -911,7 +911,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(nnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
     /* copy data into free space, then initialize lnk */

@@ -1054,11 +1054,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
   /* initial FreeSpace size is fill*(ai[am]+am)/2 */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[am]/2,am/2)),&free_space);CHKERRQ(ierr);
 
   current_space = free_space;
 
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space_lvl);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[am]/2,am/2)),&free_space_lvl);CHKERRQ(ierr);
   current_space_lvl = free_space_lvl;
 
   for (k=0; k<am; k++) {  /* for each active row k */
@@ -1106,7 +1106,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzk) {
       i    = am - k + 1; /* num of unfactored rows */
-      i    = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      i    = PetscMin(PetscIntMultTruncate(i,nzk), PetscIntMultTruncate(i,i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
       ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
       reallocs++;
@@ -1254,7 +1254,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   ierr = PetscLLCreate(mbs,mbs,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
   /* initial FreeSpace size is fill* (ai[mbs]+mbs)/2 */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[mbs]+mbs)/2),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[mbs]/2,mbs/2)),&free_space);CHKERRQ(ierr);
 
   current_space = free_space;
 
@@ -1299,7 +1299,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzk) {
       i    = mbs - k + 1; /* num of unfactored rows */
-      i    = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      i    = PetscMin(PetscIntMultTruncate(i,nzk), PetscIntMultTruncate(i,i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
       reallocs++;
     }

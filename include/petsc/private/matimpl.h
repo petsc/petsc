@@ -968,7 +968,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     bt        - PetscBT (bitarray) with all bits set to false
 */
 #define PetscIncompleteLLCreate(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
-  (PetscMalloc1(2*nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
+  (PetscIntMultError(2,nlnk,NULL) || PetscMalloc1(2*nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
 /*
   Initialize a sorted linked list used for ILU and ICC
@@ -1269,10 +1269,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(2*(nlnk_max+2),lnk);CHKERRQ(ierr);
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   ierr = PetscBTCreate(lnk_max,bt);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;         /* number of entries on the list */
@@ -1387,10 +1388,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(2*(nlnk_max+2),lnk);CHKERRQ(ierr);
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */
@@ -1476,10 +1478,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *ln
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(3*(nlnk_max+3),lnk);CHKERRQ(ierr);
+  ierr = PetscIntMultError(3,nlnk_max+3,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;   /* nlnk: number of entries on the list */
   llnk[1] = 0;          /* number of integer entries represented in list */

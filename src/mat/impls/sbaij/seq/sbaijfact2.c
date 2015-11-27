@@ -2525,11 +2525,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
     ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
     /* initial FreeSpace size is fill*(ai[am]+1) */
-    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,ai[am]+1),&free_space);CHKERRQ(ierr);
 
     current_space = free_space;
 
-    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,ai[am]+1),&free_space_lvl);CHKERRQ(ierr);
 
     current_space_lvl = free_space_lvl;
 
@@ -2572,7 +2572,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
         i    = am - k + 1; /* num of unfactored rows */
-        i   *= PetscMin(nzk, i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i    = PetscIntMultTruncate(i,PetscMin(nzk, i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
@@ -2728,11 +2728,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
     ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
     /* initial FreeSpace size is fill*(ai[am]+1) */
-    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,ai[am]+1),&free_space);CHKERRQ(ierr);
 
     current_space = free_space;
 
-    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,ai[am]+1),&free_space_lvl);CHKERRQ(ierr);
 
     current_space_lvl = free_space_lvl;
 
@@ -2774,7 +2774,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
         i    = am - k + 1; /* num of unfactored rows */
-        i    = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i    = PetscMin(PetscIntMultTruncate(i,nzk), PetscIntMultTruncate(i,i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;

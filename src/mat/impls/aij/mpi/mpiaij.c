@@ -4253,7 +4253,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
 
   /* initial FreeSpace size is 2*(num of local nnz(seqmat)) */
   len  = ai[owners[rank+1]] - ai[owners[rank]];
-  ierr = PetscFreeSpaceGet((PetscInt)(2*len+1),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscIntMultTruncate(2,len)+1,&free_space);CHKERRQ(ierr);
 
   current_space = free_space;
 
@@ -4291,7 +4291,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<bnzi) {
-      ierr = PetscFreeSpaceGet(bnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(bnzi,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
     /* copy data into free space, then initialize lnk */
@@ -4784,10 +4784,11 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
     k         = 0;
     for (i=0; i<nrecvs; i++) {
       rowlen = (PetscInt*)rvalues + rstarts[i]*rbs;
-      nrows  = rbs*(rstarts[i+1]-rstarts[i]); /* num of rows to be recieved */
+      nrows  = rbs*(rstarts[i+1]-rstarts[i]); /* num of rows to be received */
       for (j=0; j<nrows; j++) {
         b_othi[k+1] = b_othi[k] + rowlen[j];
-        len        += rowlen[j]; k++;
+        ierr = PetscIntSumError(rowlen[j],len,&len);
+        k++;
       }
       rstartsj[i+1] = len; /* starting point of (i+1)-th incoming msg in bufj and bufa */
     }
