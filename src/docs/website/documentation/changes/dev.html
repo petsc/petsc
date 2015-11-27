@@ -154,15 +154,19 @@ PetscOptionsReject(PetscOptions,const char[],const char[]);
       <h4>KSP:</h4>
       <ul>
         <li>KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+        <li>-ksp_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
         <li>SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+        <li>-snes_monitor_solution/residual/solution_update now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <ul>
         <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+        <li>-ts_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
+        <li>-ts_monitor_binary_solution filename should now be written as -ts_monitor_solution binary:filename</li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>

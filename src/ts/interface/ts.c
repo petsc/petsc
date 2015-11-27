@@ -22,6 +22,94 @@ struct _n_TSMonitorDrawCtx {
 };
 
 #undef __FUNCT__
+#define __FUNCT__ "TSMonitorSetFromOptions"
+/*@C
+   TSMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+
+   Collective on TS
+
+   Input Parameters:
++  ts - TS object you wish to monitor
+.  name - the monitor type one is seeking
+.  help - message indicating what monitoring is done
+.  manual - manual page for the monitor
+.  monitor - the monitor function
+-  monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the TS or PetscViewer objects
+
+   Level: developer
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),PetscErrorCode (*monitorsetup)(TS,PetscViewer))
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+    if (monitorsetup) {
+      ierr = (*monitorsetup)(ts,viewer);CHKERRQ(ierr);
+    }
+    ierr = TSMonitorSet(ts,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointMonitorSetFromOptions"
+/*@C
+   TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+
+   Collective on TS
+
+   Input Parameters:
++  ts - TS object you wish to monitor
+.  name - the monitor type one is seeking
+.  help - message indicating what monitoring is done
+.  manual - manual page for the monitor
+.  monitor - the monitor function
+-  monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the TS or PetscViewer objects
+
+   Level: developer
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),PetscErrorCode (*monitorsetup)(TS,PetscViewer))
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+    if (monitorsetup) {
+      ierr = (*monitorsetup)(ts,viewer);CHKERRQ(ierr);
+    }
+    ierr = TSAdjointMonitorSet(ts,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions"
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
@@ -55,7 +143,7 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_monitor_draw_solution - Monitor solution graphically
 .  -ts_monitor_draw_solution_phase  <xleft,yleft,xright,yright> - Monitor solution graphically with phase diagram, requires problem with exactly 2 degrees of freedom
 .  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
-.  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
+.  -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
 .  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
 .  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 .  -ts_adjoint_monitor - print information at each adjoint time step
@@ -73,7 +161,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 {
   PetscBool              opt,flg,tflg;
   PetscErrorCode         ierr;
-  PetscViewer            monviewer;
   char                   monfilename[PETSC_MAX_PATH_LEN];
   SNES                   snes;
   TSAdapt                adapt;
@@ -136,11 +223,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 #endif
 
   /* Monitor options */
-  ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
+  ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault",TSAdjointMonitorDefault,NULL);CHKERRQ(ierr);
+
   ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
 
@@ -248,18 +334,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
-  opt  = PETSC_FALSE;
-  ierr = PetscOptionsString("-ts_monitor_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer ctx;
-    if (monfilename[0]) {
-      ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)ts),monfilename,FILE_MODE_WRITE,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-    } else {
-      ctx = PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)ts));
-      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))NULL);CHKERRQ(ierr);
-    }
-  }
+
   opt  = PETSC_FALSE;
   ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -344,12 +419,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     tdm->ijacobianctx = NULL;
     ierr = TSSetIJacobian(ts, NULL, NULL, TSComputeIJacobianDefaultColor, 0);CHKERRQ(ierr);
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
-  }
-
-  ierr = PetscOptionsString("-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = TSAdjointMonitorSet(ts,TSAdjointMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
   /*
@@ -4987,9 +5056,9 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorSolutionBinary"
+#define __FUNCT__ "TSMonitorSolution"
 /*@C
-   TSMonitorSolutionBinary - Monitors progress of the TS solvers by VecView() for the solution at each timestep. Normally the viewer is a binary file
+   TSMonitorSolution - Monitors progress of the TS solvers by VecView() for the solution at each timestep. Normally the viewer is a binary file or a PetscDraw object
 
    Collective on TS
 
@@ -5006,7 +5075,7 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec u,void *viewer)
+PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *viewer)
 {
   PetscErrorCode ierr;
   PetscViewer    v = (PetscViewer)viewer;
