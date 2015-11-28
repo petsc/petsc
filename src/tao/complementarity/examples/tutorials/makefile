@@ -52,12 +52,12 @@ runblackscholes_5:
 	${RM} -f blackscholes_5.tmp
 
 runblackscholes_6:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type subvec > blackscholes_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type subvec -tao_max_it 9 > blackscholes_6.tmp 2>&1; \
 	${DIFF} output/blackscholes_6.out blackscholes_6.tmp || printf '${PWD}\nPossible problem with blackscholes_6 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_6.tmp
 
 runblackscholes_7:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type mask > blackscholes_7.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type mask -tao_max_it 9 > blackscholes_7.tmp 2>&1; \
 	${DIFF} output/blackscholes_7.out blackscholes_7.tmp || printf '${PWD}\nPossible problem with blackscholes_7 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_7.tmp
 
