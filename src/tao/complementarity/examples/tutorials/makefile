@@ -47,7 +47,7 @@ runblackscholes_4:
 	${RM} -f blackscholes_4.tmp
 
 runblackscholes_5:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi > blackscholes_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi -tao_max_it 5 > blackscholes_5.tmp 2>&1; \
 	${DIFF} output/blackscholes_5.out blackscholes_5.tmp || printf '${PWD}\nPossible problem with blackscholes_5 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_5.tmp
 
