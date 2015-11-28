@@ -6,10 +6,40 @@
 #include <petsc/private/kspimpl.h>	/*I "petscksp.h" I*/
 #include <petscksp.h>
 
+typedef struct {
+  PetscReal tol_ls;
+  PetscInt  size_ls,maxiter_ls,cgls,size,Istart,Iend;
+  Mat       A,S;
+  Vec       Alpha,r;
+} KSP_TSIRM;
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_TSIRM"
 static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
 {
+  PetscErrorCode ierr;
+  KSP_TSIRM      *tsirm = (KSP_TSIRM*)ksp->data;
+  
+  PetscFunctionBegin;
+  /* Initialization */
+  tsirm->tol_ls     = 1e-40;
+  tsirm->size_ls    = 12;
+  tsirm->maxiter_ls = 15;
+  tsirm->cgls       = 0;
+  
+  /* Matrix of the system */
+  ierr = KSPGetOperators(ksp,&tsirm->A,NULL);CHKERRQ(ierr);    /* Matrix of the system   */
+  ierr = MatGetSize(tsirm->A,&tsirm->size,NULL);CHKERRQ(ierr); /* Size of the system     */
+  ierr = MatGetOwnershipRange(tsirm->A,&tsirm->Istart,&tsirm->Iend);CHKERRQ(ierr);
+  
+  /* Matrix S of residuals */
+  ierr = MatCreate(PETSC_COMM_WORLD,&tsirm->S);CHKERRQ(ierr); 
+  ierr = MatSetSizes(tsirm->S,tsirm->Iend-tsirm->Istart,PETSC_DECIDE,tsirm->size,tsirm->size_ls);CHKERRQ(ierr);
+  ierr = MatSetType(tsirm->S,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(tsirm->S);CHKERRQ(ierr);
+  
+  /* Residual and vector Alpha computed in the minimization step */
+  ierr = MatCreateVecs(tsirm->S,&tsirm->Alpha,&tsirm->r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -18,160 +48,126 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
 PetscErrorCode KSPSolve_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;
+  KSP_TSIRM      *tsirm = (KSP_TSIRM*)ksp->data;
   KSP            sub_ksp;
   PC             pc;
-  PCType         type;
-  Mat            S,AS,A;
-  Vec            Alpha,x,b,r,Ax;
-  PetscScalar    T1,T2,*array;
-  PetscReal      tol_ls = 1e-40,norm = 20;
-  PetscInt       size,Istart,Iend,i,*ind_row,first_iteration = 1,its = 0,total = 0,col = 0;
-  PetscInt       size_ls = 12,iter_minimization = 0,maxiter_ls = 15,cgls = 0,restart = 30;
+  Mat            AS;
+  Vec            x,b;
+  PetscScalar    *array;
+  PetscReal      norm = 20;
+  PetscInt       i,*ind_row,first_iteration = 1,its = 0,total = 0,col = 0;
+  PetscInt       iter_minimization = 0,restart = 30;
   
   PetscFunctionBegin;  
-  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Tsirm","");
-  ierr = PetscOptionsInt("-ksp_tsirm_cgls","Method used for the minimization step","",cgls,&cgls,NULL);CHKERRQ(ierr); /*0:LSQR, 1:CGLS*/
-  ierr = PetscOptionsReal("-ksp_tsirm_tol_ls","Tolerance threshold for the minimization step","",tol_ls,&tol_ls,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_tsirm_max_it_ls","Maximum number of iterations for the minimization step","",maxiter_ls,&maxiter_ls,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_tsirm_size_ls","Number of residuals for minimization","",size_ls,&size_ls,NULL);CHKERRQ(ierr);
-  PetscOptionsEnd();
-  
-  /* System of equations */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n***** Enter tsirm:\n");CHKERRQ(ierr);
-  KSPGetRhs(ksp,&b);            /* Right-hand side vector */
-  KSPGetOperators(ksp,&A,NULL); /* Matrix of the system   */
-  KSPGetSolution(ksp,&x);       /* Solution vector        */
-  VecGetSize(b,&size);          /* Size of the system     */
-  MatGetOwnershipRange(A,&Istart,&Iend);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\tSize of vector %D\n",size);CHKERRQ(ierr);
-  
-  /* Matrix S of residuals */
-  ierr = MatCreate(PETSC_COMM_WORLD,&S);CHKERRQ(ierr);
-  ierr = MatSetSizes(S,Iend-Istart,PETSC_DECIDE,size,size_ls);CHKERRQ(ierr);
-  ierr = MatSetType(S,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatSetUp(S);CHKERRQ(ierr);
-  
-  /* Vector Alpha computed in the minimization step */
-  ierr = VecCreate(PETSC_COMM_WORLD,&Alpha);CHKERRQ(ierr);
-  ierr = VecSetSizes(Alpha,PETSC_DECIDE,size_ls);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(Alpha);CHKERRQ(ierr);
-  
-  ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&Ax);CHKERRQ(ierr);
+  x = ksp->vec_sol; /* Solution vector        */
+  b = ksp->vec_rhs; /* Right-hand side vector */
   
   /* Row indexes (these indexes are global) */
-  ind_row = (PetscInt*)malloc(sizeof(PetscInt)*(Iend-Istart));
-  for (i=0;i<Iend-Istart;i++) ind_row[i] = i+Istart;
+  ind_row = (PetscInt*)malloc(sizeof(PetscInt)*(tsirm->Iend-tsirm->Istart));
+  for (i=0;i<tsirm->Iend-tsirm->Istart;i++) ind_row[i] = i+tsirm->Istart;
   
-  /* TSIRM code */
+  /* Inner solver */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-
-  {
-    PetscReal rtol,abstol,dtol;
-    PetscInt maxits; 
-    ierr = KSPGetTolerances(ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\tTSIRM: rtol %.2e, abstol %.2e, dtol %.2e, maxits %d\n",rtol,abstol,dtol,maxits);CHKERRQ(ierr);
-  }
+  ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,restart);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(sub_ksp);CHKERRQ(ierr);
   
-  {
-    PetscReal rtol,abstol,dtol;
-    PetscInt maxits;
-    ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
-    ierr = KSPGetType(sub_ksp,&type);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,restart);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(sub_ksp);CHKERRQ(ierr);
-    ierr = KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\tInner Iteration: rtol %.2e, abstol %.2e, dtol %.2e, maxits %d\n",rtol,abstol,dtol,maxits);CHKERRQ(ierr);
-  }
-  
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\tKSP type of the inner iteration: %s\n",type);CHKERRQ(ierr);
-  
-  T1 = MPI_Wtime();
   /* previously it seemed good but with SNES it seems not good... */
-  ierr = KSP_MatMult(sub_ksp,A,x,r);CHKERRQ(ierr);
-  VecAXPY(r,-1,b);
-  VecNorm(r,NORM_2,&norm);
+  ierr = KSP_MatMult(sub_ksp,tsirm->A,x,tsirm->r);CHKERRQ(ierr);
+  ierr = VecAXPY(tsirm->r,-1,b);CHKERRQ(ierr);
+  ierr = VecNorm(tsirm->r,NORM_2,&norm);CHKERRQ(ierr);
   ksp->its = 0;
-  KSPConvergedDefault(ksp,ksp->its,norm,&ksp->reason,ksp->cnvP);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\tConverged: %d, Residual norm: %.2e, Iterations: %d\n",ksp->reason,norm,ksp->its);CHKERRQ(ierr);
+  ierr = KSPConvergedDefault(ksp,ksp->its,norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(sub_ksp,PETSC_TRUE);CHKERRQ(ierr);
   do {
-    for (col=0;col<size_ls && ksp->reason==0;col++) {
+    for (col=0;col<tsirm->size_ls && ksp->reason==0;col++) {
       /* Solve (inner ietration) */
       ierr = KSPSolve(sub_ksp,b,x);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(sub_ksp,&its);CHKERRQ(ierr);
       total += its;
       
       /* Build S^T */
-      ierr = VecGetArray(x,&array);
-      ierr = MatSetValues(S,Iend-Istart,ind_row,1,&col,array,INSERT_VALUES);
-      VecRestoreArray(x,&array);
+      ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+      ierr = MatSetValues(tsirm->S,tsirm->Iend-tsirm->Istart,ind_row,1,&col,array,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
       
-      KSPGetResidualNorm(sub_ksp,&norm);
+      ierr = KSPGetResidualNorm(sub_ksp,&norm);CHKERRQ(ierr);
       ksp->rnorm = norm;
       ksp->its ++;
-      KSPConvergedDefault(ksp,ksp->its,norm,&ksp->reason,ksp->cnvP);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Converged: %D,	Residual norm: %.2g,	Outer iterations: %D,	Inner iteration: %D	Total iterations: %D\n",ksp->reason,ksp->rnorm,ksp->its,its,total);CHKERRQ(ierr);
+      ierr = KSPConvergedDefault(ksp,ksp->its,norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      ierr = KSPMonitor(ksp,ksp->its,norm);CHKERRQ(ierr);
     }
     
     /* Minimization step */
     if (!ksp->reason) {
-      MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);
-      MatAssemblyEnd(S,MAT_FINAL_ASSEMBLY);
+      ierr = MatAssemblyBegin(tsirm->S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tsirm->S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       if (first_iteration) {
-        MatMatMult(A,S,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AS);
+        ierr = MatMatMult(tsirm->A,tsirm->S,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AS);CHKERRQ(ierr);
         first_iteration = 0;
       } else {
-        MatMatMult(A,S,MAT_REUSE_MATRIX,PETSC_DEFAULT,&AS);
+        ierr = MatMatMult(tsirm->A,tsirm->S,MAT_REUSE_MATRIX,PETSC_DEFAULT,&AS);CHKERRQ(ierr);
       }
       
-      if (cgls) {
-        /* CGLS method */
-        KSP ksp3;
-        PC pc;
+      /* CGLS or LSQR method to minimize the residuals*/
+      KSP ksp_min;  /*KSP for minimization */
+      PC pc_min;    /*PC for minimization */
         
-        ierr = KSPCreate(PETSC_COMM_WORLD,&ksp3);CHKERRQ(ierr);
-        ierr = KSPSetType(ksp3,KSPCGLS);CHKERRQ(ierr);
-        ierr = KSPSetOperators(ksp3,AS,AS);CHKERRQ(ierr);
-        ierr = KSPSetTolerances(ksp3,tol_ls,PETSC_DEFAULT,PETSC_DEFAULT,maxiter_ls);CHKERRQ(ierr);
-        ierr = KSPGetPC(ksp3,&pc);CHKERRQ(ierr);
-        ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-        ierr = KSPSolve(ksp3,b,Alpha);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(ksp3,&iter_minimization);CHKERRQ(ierr);
-        ierr = KSPGetResidualNorm(ksp3,&norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"\nCGLS: iter %d, norm %.2e\n\n",iter_minimization,norm);CHKERRQ(ierr);
-      } else {
-        /* LSQR method */
-        KSP ksp3;
-        PC pc;
-        
-        ierr = KSPCreate(PETSC_COMM_WORLD,&ksp3);CHKERRQ(ierr);
-        ierr = KSPSetType(ksp3,KSPLSQR);CHKERRQ(ierr);
-        ierr = KSPSetOperators(ksp3,AS,AS);CHKERRQ(ierr);
-        ierr = KSPSetTolerances(ksp3,tol_ls,PETSC_DEFAULT,PETSC_DEFAULT,maxiter_ls);CHKERRQ(ierr);
-        ierr = KSPGetPC(ksp3,&pc);CHKERRQ(ierr);
-        ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-        ierr = KSPSolve(ksp3,b,Alpha);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(ksp3,&iter_minimization);CHKERRQ(ierr);
-        ierr = KSPGetResidualNorm(ksp3,&norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"\nLSQR: iter %d, norm %.2e\n\n",iter_minimization,norm);CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_min);CHKERRQ(ierr);
+      if (tsirm->cgls) {
+        ierr = KSPSetType(ksp_min,KSPCGLS);CHKERRQ(ierr);
       }
-      
-      /* Minimizer */
-      MatMult(S,Alpha,x); /* x = S * Alpha */
+      else {
+        ierr = KSPSetType(ksp_min,KSPLSQR);CHKERRQ(ierr);
+      }
+      ierr = KSPSetOperators(ksp_min,AS,AS);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(ksp_min,tsirm->tol_ls,PETSC_DEFAULT,PETSC_DEFAULT,tsirm->maxiter_ls);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp_min,&pc_min);CHKERRQ(ierr);
+      ierr = PCSetType(pc_min,PCNONE);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp_min,b,tsirm->Alpha);CHKERRQ(ierr);    /* Find Alpha such that ||AS Alpha = b|| */ 
+      ierr = KSPGetIterationNumber(ksp_min,&iter_minimization);CHKERRQ(ierr);
+      ierr = KSPGetResidualNorm(ksp_min,&norm);CHKERRQ(ierr);
+      ierr = KSPMonitor(ksp_min,iter_minimization,norm);CHKERRQ(ierr);
+
+      /* Apply minimization */
+      ierr = MatMult(tsirm->S,tsirm->Alpha,x);CHKERRQ(ierr); /* x = S * Alpha */
     }
   } while (ksp->its<ksp->max_it && !ksp->reason);
   
   ksp->its = total;
-  T2 = MPI_Wtime();
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n\t\t\t -- Execution time of the step			: %g (s)\n",T2-T1);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\t\t\t -- Total number of iterations of the step	: %D\n\n",total);CHKERRQ(ierr);
-  
-  ierr = VecDestroy(&Alpha);CHKERRQ(ierr);
-  ierr = MatDestroy(&S);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&Ax);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetFromOptions_TSIRM"
+PetscErrorCode KSPSetFromOptions_TSIRM(PetscOptions *PetscOptionsObject,KSP ksp)
+{
+  PetscErrorCode ierr;
+  KSP_TSIRM      *tsirm = (KSP_TSIRM*)ksp->data;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP TSIRM options");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_tsirm_cgls","Method used for the minimization step","",tsirm->cgls,&tsirm->cgls,NULL);CHKERRQ(ierr); /*0:LSQR, 1:CGLS*/
+  ierr = PetscOptionsReal("-ksp_tsirm_tol_ls","Tolerance threshold for the minimization step","",tsirm->tol_ls,&tsirm->tol_ls,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_tsirm_max_it_ls","Maximum number of iterations for the minimization step","",tsirm->maxiter_ls,&tsirm->maxiter_ls,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_tsirm_size_ls","Number of residuals for minimization","",tsirm->size_ls,&tsirm->size_ls,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_TSIRM"
+PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
+{
+  KSP_TSIRM       *tsirm = (KSP_TSIRM*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Free work vectors */
+  ierr = MatDestroy(&tsirm->S);CHKERRQ(ierr);
+  ierr = VecDestroy(&tsirm->Alpha);CHKERRQ(ierr);
+  ierr = VecDestroy(&tsirm->r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -180,18 +176,20 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;
+  KSP_TSIRM      *tsirm;
   
   PetscFunctionBegin;
-  ksp->data = (void*)0;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
-  ksp->ops->setup = KSPSetUp_TSIRM;
-  ksp->ops->solve = KSPSolve_TSIRM;
-  ksp->ops->destroy = KSPDestroyDefault;
-  ksp->ops->buildsolution = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual = KSPBuildResidualDefault;
-  ksp->ops->setfromoptions = 0;
-  ksp->ops->view = 0;
+  ierr                     = PetscNewLog(ksp,&tsirm);CHKERRQ(ierr);
+  ksp->data                = (void*)tsirm;
+  ierr                     = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr                     = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ksp->ops->setup          = KSPSetUp_TSIRM;
+  ksp->ops->solve          = KSPSolve_TSIRM;
+  ksp->ops->destroy        = KSPDestroy_TSIRM;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->setfromoptions = KSPSetFromOptions_TSIRM; 
+  ksp->ops->view           = 0;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"This is not supported for complex numbers");
 #endif
