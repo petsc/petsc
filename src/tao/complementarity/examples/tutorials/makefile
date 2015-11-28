@@ -32,7 +32,7 @@ runblackscholes:
 	${RM} -f blackscholes_1.tmp
 
 runblackscholes_2:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type ssfls > blackscholes_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type ssfls -tao_max_it 9 > blackscholes_2.tmp 2>&1; \
 	${DIFF} output/blackscholes_2.out blackscholes_2.tmp || printf '${PWD}\nPossible problem with blackscholes_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_2.tmp
 
