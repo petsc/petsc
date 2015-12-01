@@ -889,7 +889,7 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao,PetscReal fmin)
 #undef __FUNCT__
 #define __FUNCT__ "TaoGetFunctionLowerBound"
 /*@
-   TaoGetFunctionLowerBound - Sets a bound on the solution objective value.
+   TaoGetFunctionLowerBound - Gets the bound on the solution objective value.
    When an approximate solution with an objective value below this number
    has been found, the solver will terminate.
 
