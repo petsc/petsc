@@ -771,6 +771,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
     ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     if (pcreason_max) {
       *reason = KSP_DIVERGED_PCSETUP_FAILED;
+      ierr    = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
       ierr    = PetscInfo(ksp,"Linear solver pcsetup fails, declaring divergence \n");CHKERRQ(ierr);
     } else {
       *reason = KSP_DIVERGED_NANORINF;

@@ -311,6 +311,7 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
       ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
       } else {\
         ksp->reason = KSP_DIVERGED_NANORINF;\
       }\
@@ -333,6 +334,7 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
       ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
       } else {\
         ksp->reason = KSP_DIVERGED_NANORINF;\
       }\

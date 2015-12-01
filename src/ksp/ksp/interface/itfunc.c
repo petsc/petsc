@@ -595,8 +595,9 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
   if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
     ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
-  }
-  ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  } 
+  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+ 
   ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
