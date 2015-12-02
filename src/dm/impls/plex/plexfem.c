@@ -1743,8 +1743,8 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
           /* Transform points from real space to coarse reference space */
           ierr = DMPlexComputeCellGeometryFEM(dmc, coarseCells[ccell], NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
+          for (d = 0; d < dim; ++d) pVReal[d] = pV[ccell*dim+d];
           CoordinatesRealToRef(dim, dim, v0c, invJc, pVReal, x);
-          for (d = 0; d < dim; ++d) pV[ccell*dim+d] = pVReal[d];
 
           if (id == PETSCFE_CLASSID) {
             PetscFE    fe = (PetscFE) obj;
