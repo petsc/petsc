@@ -1556,6 +1556,8 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
 @*/
 PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *user)
 {
+  DM_Plex       *mesh = (DM_Plex *) dmf->data;
+  const char    *name = "Interpolator";
   PetscDS        prob;
   PetscSection   fsection, csection, globalFSection, globalCSection;
   PetscHashJK    ht;
@@ -1763,6 +1765,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
             }
           }
           /* Update interpolator */
+          if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(cell, name, Nc, numCIndices, elemMat);CHKERRQ(ierr);}
           ierr = MatSetValues(In, Nc, &findices[i*Nc], numCIndices, cindices, elemMat, INSERT_VALUES);CHKERRQ(ierr);
           ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
         }
