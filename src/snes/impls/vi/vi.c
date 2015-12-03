@@ -400,8 +400,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   if (!snes->ops->computevariablebounds && snes->dm) {
     PetscBool flag;
     ierr = DMHasVariableBounds(snes->dm, &flag);CHKERRQ(ierr);
-
-    snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
+    if (flag) {
+      snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
+    }
   }
   if (!snes->usersetbounds) {
     if (snes->ops->computevariablebounds) {

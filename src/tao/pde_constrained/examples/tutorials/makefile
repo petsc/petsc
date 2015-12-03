@@ -38,7 +38,7 @@ runelliptic_2:
         ${RM} -f elliptic_2.tmp
 
 runparabolic:
-	-@${MPIEXEC} -n 1 ./parabolic -tao_cmonitor -tao_type lcl -ns 1  -tao_gatol 1.e-4 > parabolic_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./parabolic -tao_cmonitor -tao_type lcl -ns 1  -tao_gatol 1.e-4 -ksp_max_it 30 > parabolic_1.tmp 2>&1;\
         ${DIFF} output/parabolic_1.out parabolic_1.tmp || printf '${PWD}\nPossible problem with parabolic_1 stdout, diffs above \n=========================================\n';\
         ${RM} -f parabolic_1.tmp
 
