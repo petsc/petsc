@@ -682,7 +682,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,MatFactorInfo *inf
 
   PetscFunctionBegin;
   sctx->newshift = PETSC_FALSE;
-  if (PetscAbsScalar(sctx->pv) <= _zero) {
+  if (!PetscIsNanScalar(sctx->pv) && PetscAbsScalar(sctx->pv) <= _zero) {
     if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
       info->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
