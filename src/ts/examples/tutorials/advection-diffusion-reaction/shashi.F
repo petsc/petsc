@@ -242,7 +242,19 @@
 
 
             subroutine ShashiInitialGuess(an_r)
-        implicit PetscScalar (a-h,o-z)
+!        implicit PetscScalar (a-h,o-z)
+        implicit none
+        PetscScalar an_c_additive
+        PetscScalar       an_h_additive
+        PetscScalar an_o_additive
+        PetscScalar   atom_c_init
+        PetscScalar atom_h_init
+        PetscScalar atom_n_init
+        PetscScalar atom_o_init
+        PetscScalar h_init
+        PetscScalar p_init
+        PetscInt nfuel
+        PetscScalar temp,pt
         PetscScalar an_r(26),k_eq(23),f_eq(26)
         PetscScalar d_eq(26,26),H_molar(26)
         PetscInt an_h(1),an_c(1)
@@ -251,7 +263,7 @@
         PetscInt i_pwr2,i_co2_h2o 
         
         pt = 0.1
-        atom_c_init =6.7408177364816552E-022 
+        atom_c_init =6.7408177364816552D-022 
         atom_h_init = 2.0
         atom_o_init = 1.0
         atom_n_init = 3.76
@@ -292,32 +304,32 @@
       an_r(26) =     1.66030D-24
 
 #if defined(solution)
-      an_r( 1 ) =      3.802208E-33
-      an_r( 2 ) =      1.298287E-29
-      an_r( 3 ) =      2.533067E-04
-      an_r( 4 ) =      6.865078E-22
-      an_r( 5 ) =      9.993125E-01
-      an_r( 6 ) =      1.879964E+00
-      an_r( 7 ) =      4.449489E-13
-      an_r( 8 ) =      3.428687E-07
-      an_r( 9 ) =      7.105138E-05
-      an_r(10 ) =      1.094368E-04
-      an_r(11 ) =      2.362305E-06
-      an_r(12 ) =      1.107145E-09
-      an_r(13 ) =      1.276162E-24
-      an_r(14 ) =      6.315538E-04
-      an_r(15 ) =      2.356540E-09
-      an_r(16 ) =      2.048248E-09
-      an_r(17 ) =      1.966187E-22
-      an_r(18 ) =      7.856497E-29
-      an_r(19 ) =      1.987840E-36
-      an_r(20 ) =      8.182441E-22
-      an_r(21 ) =      2.684880E-16
-      an_r(22 ) =      2.680473E-16
-      an_r(23 ) =      6.594967E-18
-      an_r(24 ) =      2.509714E-21
-      an_r(25 ) =      3.096459E-21
-      an_r(26 ) =      6.149551E-18
+      an_r( 1 ) =      3.802208D-33
+      an_r( 2 ) =      1.298287D-29
+      an_r( 3 ) =      2.533067D-04
+      an_r( 4 ) =      6.865078D-22
+      an_r( 5 ) =      9.993125D-01
+      an_r( 6 ) =      1.879964D+00
+      an_r( 7 ) =      4.449489D-13
+      an_r( 8 ) =      3.428687D-07
+      an_r( 9 ) =      7.105138D-05
+      an_r(10 ) =      1.094368D-04
+      an_r(11 ) =      2.362305D-06
+      an_r(12 ) =      1.107145D-09
+      an_r(13 ) =      1.276162D-24
+      an_r(14 ) =      6.315538D-04
+      an_r(15 ) =      2.356540D-09
+      an_r(16 ) =      2.048248D-09
+      an_r(17 ) =      1.966187D-22
+      an_r(18 ) =      7.856497D-29
+      an_r(19 ) =      1.987840D-36
+      an_r(20 ) =      8.182441D-22
+      an_r(21 ) =      2.684880D-16
+      an_r(22 ) =      2.680473D-16
+      an_r(23 ) =      6.594967D-18
+      an_r(24 ) =      2.509714D-21
+      an_r(25 ) =      3.096459D-21
+      an_r(26 ) =      6.149551D-18
 #endif
       
       return
@@ -326,16 +338,31 @@
 
 
       subroutine ShashiFormFunction(an_r,f_eq)
-       implicit PetscScalar (a-h,o-z)
+!       implicit PetscScalar (a-h,o-z)
+        implicit none
+        PetscScalar an_c_additive
+        PetscScalar       an_h_additive
+        PetscScalar an_o_additive
+        PetscScalar   atom_c_init
+        PetscScalar atom_h_init
+        PetscScalar atom_n_init
+        PetscScalar atom_o_init
+        PetscScalar h_init
+        PetscScalar p_init
+        PetscInt nfuel
+        PetscScalar temp,pt
        PetscScalar an_r(26),k_eq(23),f_eq(26)
        PetscScalar d_eq(26,26),H_molar(26)
        PetscInt an_h(1),an_c(1)
        PetscScalar part_p(26),idiff
         PetscInt i_cc,i_hh,i_h2o
         PetscInt i_pwr2,i_co2_h2o 
-
+        PetscScalar an_t,sum_h,pt_cubed,pt_five
+        PetscScalar pt_four,pt_val1,pt_val2
+        PetscScalar a_io2
+        PetscInt i,ip
         pt = 0.1
-        atom_c_init =6.7408177364816552E-022 
+        atom_c_init =6.7408177364816552D-022 
         atom_h_init = 2.0
         atom_o_init = 1.0
         atom_n_init = 3.76
@@ -519,16 +546,42 @@
       end
 
       subroutine ShashiFormJacobian(an_r,d_eq)
-        implicit PetscScalar (a-h,o-z)
+!        implicit PetscScalar (a-h,o-z)
+        implicit none
+        PetscScalar an_c_additive
+        PetscScalar       an_h_additive
+        PetscScalar an_o_additive
+        PetscScalar   atom_c_init
+        PetscScalar atom_h_init
+        PetscScalar atom_n_init
+        PetscScalar atom_o_init
+        PetscScalar h_init
+        PetscScalar p_init
+        PetscInt nfuel
+        PetscScalar temp,pt
+        PetscScalar an_t,ai_o2,sum_h
+        PetscScalar an_tot1_d,an_tot1
+        PetscScalar an_tot2_d,an_tot2
+        PetscScalar const5,const3,const2
+        PetscScalar   const_cube
+        PetscScalar   const_five
+        PetscScalar   const_four
+        PetscScalar   const_six
+        PetscInt jj,jb,ii3,id,ib,ip,i
+        PetscScalar   pt2,pt1
         PetscScalar an_r(26),k_eq(23),f_eq(26)
         PetscScalar d_eq(26,26),H_molar(26)
         PetscInt an_h(1),an_c(1)
         PetscScalar ai_pwr1,part_p(26),idiff
         PetscInt i_cc,i_hh
         PetscInt i_h2o,i_pwr2,i_co2_h2o
+        PetscScalar pt_cube,pt_five
+        PetscScalar pt_four
+        PetscScalar pt_val1,pt_val2,a_io2
+        PetscInt j
 
         pt = 0.1
-        atom_c_init =6.7408177364816552E-022 
+        atom_c_init =6.7408177364816552D-022 
         atom_h_init = 2.0
         atom_o_init = 1.0
         atom_n_init = 3.76
@@ -988,6 +1041,12 @@
         d_eq(26,24) = 1    
         d_eq(26,25) = 1   
         d_eq(26,26) = 1
+
+           do j = 1,26
+              do i = 1,26
+                 write(44,*)i,j,d_eq(i,j)
+              enddo
+           enddo
 
         return
         end
