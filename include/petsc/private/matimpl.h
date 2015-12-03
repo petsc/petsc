@@ -620,7 +620,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (!PetscIsNanScalar(sctx->pv) && PetscAbsScalar(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
     else sctx->shift_amount *= 2.0;
@@ -640,7 +640,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (!PetscIsNanScalar(sctx->pv) && PetscRealPart(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
       sctx->shift_fraction = sctx->shift_hi;
@@ -664,7 +664,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
-  if (!PetscIsNanScalar(sctx->pv) && PetscAbsScalar(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     sctx->pv          += info->shiftamount;
     sctx->shift_amount = 0.0;
     sctx->nshift++;
@@ -682,7 +682,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,MatFactorInfo *inf
 
   PetscFunctionBegin;
   sctx->newshift = PETSC_FALSE;
-  if (!PetscIsNanScalar(sctx->pv) && PetscAbsScalar(sctx->pv) <= _zero) {
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
       info->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;

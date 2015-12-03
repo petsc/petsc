@@ -889,6 +889,17 @@ runex10_aijcusparse:
 	   if (${DIFF} output/ex10_aijcusparse.out ex10_aijcusparse.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_aijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_aijcusparse.tmp
+runex10_zeropivot:
+	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_pc_type bjacobi > ex10.tmp 2>&1; \
+	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_zeropivot, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10.tmp
+runex10_zeropivot_2:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1 > ex10.tmp 2>&1; \
+	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_zeropivot_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10.tmp
+
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -1409,8 +1420,9 @@ TESTEXAMPLES_LUSOL	                = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
                                           ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
 TESTEXAMPLES_MUMPS_DATAFILESPATH        = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
-                                          runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
-                                          runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm
+                                          runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 \
+                                          runex10_mumps_redundant runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 \
+                                          runex10_zeropivot runex10_zeropivot_2 ex10.rm
 TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
 			  	          runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
                                           ex10.rm
