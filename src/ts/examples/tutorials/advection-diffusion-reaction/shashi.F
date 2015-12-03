@@ -44,7 +44,7 @@
       SNES     snes
       PC       pc
       KSP      ksp
-      Vec      x,r
+      Vec      x,r,lb,ub
       Mat      J
       SNESLineSearch linesearch
       PetscErrorCode  ierr
@@ -54,6 +54,7 @@
       PetscReal   tol
       PetscBool   setls
       PetscScalar,pointer :: xx(:)
+      PetscScalar zero,big
       
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -86,6 +87,8 @@
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
+      big  = PETSC_INFINITY
+      zero = 0.0
       i2  = 26
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
@@ -102,6 +105,7 @@
       call VecCreateSeq(PETSC_COMM_SELF,i2,x,ierr)
       call VecDuplicate(x,r,ierr)
 
+
 !  Create Jacobian matrix data structure
 
       call MatCreateDense(PETSC_COMM_SELF,26,26,26,26,                          &
@@ -116,6 +120,13 @@
       call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,     &
      &     ierr)
 
+      call VecDuplicate(x,lb,ierr)
+      call VecDuplicate(x,ub,ierr)
+      call VecSet(lb,zero,ierr)
+      call VecSet(ub,big,ierr)
+      call SNESVISetVariableBounds(snes,lb,ub,ierr)
+
+      call SNESSetType(snes,SNESVINEWTONRSLS,ierr)
 
       call SNESSetFromOptions(snes,ierr)
 
@@ -132,7 +143,8 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+      call VecDestroy(lb,ierr)
+      call VecDestroy(ub,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call MatDestroy(J,ierr)
@@ -268,8 +280,8 @@
         atom_o_init = 1.0
         atom_n_init = 3.76
         nfuel = 1
-        an_c = 1
-        an_h = 4
+        an_c(1) = 1
+        an_h(1) = 4
         an_c_additive = 2
         an_h_additive = 6
         an_o_additive = 1
@@ -367,8 +379,8 @@
         atom_o_init = 1.0
         atom_n_init = 3.76
         nfuel = 1
-        an_c = 1
-        an_h = 4
+        an_c(1) = 1
+        an_h(1) = 4
         an_c_additive = 2
         an_h_additive = 6
         an_o_additive = 1
@@ -541,7 +553,10 @@
       f_eq(26) = -(an_r(20) + an_r(22) + an_r(23)) 
      ,          +(an_r(21) + an_r(24) + an_r(25) + an_r(26))
 
-
+             do i = 1,26
+                 write(44,*)i,f_eq(i)
+              enddo
+              
       return
       end
 
@@ -586,15 +601,66 @@
         atom_o_init = 1.0
         atom_n_init = 3.76
         nfuel = 1
-        an_c = 1
-        an_h = 4
+        an_c(1) = 1
+        an_h(1) = 4
         an_c_additive = 2
         an_h_additive = 6
         an_o_additive = 1
         h_init = 128799.7267952987
         p_init = 0.1
         temp = 1500
-        
+
+       k_eq( 1) =     1.75149D-05
+       k_eq( 2) =     4.01405D-06
+       k_eq( 3) =     6.04663D-14
+       k_eq( 4) =     2.73612D-01
+       k_eq( 5) =     3.25592D-03
+       k_eq( 6) =     5.33568D+05
+       k_eq( 7) =     2.07479D+05
+       k_eq( 8) =     1.11841D-02
+       k_eq( 9) =     1.72684D-03
+       k_eq(10) =     1.98588D-07
+       k_eq(11) =     7.23600D+27
+       k_eq(12) =     5.73926D+49
+       k_eq(13) =     1.00000D+00
+       k_eq(14) =     1.64493D+16
+       k_eq(15) =     2.73837D-29
+       k_eq(16) =     3.27419D+50
+       k_eq(17) =     1.72447D-23
+       k_eq(18) =     4.24657D-06
+       k_eq(19) =     1.16065D-14
+       k_eq(20) =     3.28020D+25
+       k_eq(21) =     1.06291D+00
+       k_eq(22) =     9.11507D+02
+       k_eq(23) =     6.02837D+03
+
+       H_molar( 1) =     3.26044D+03
+       H_molar( 2) =    -8.00407D+04
+       H_molar( 3) =     4.05873D+04
+       H_molar( 4) =    -3.31849D+05
+       H_molar( 5) =    -1.93654D+05
+       H_molar( 6) =     3.84035D+04
+       H_molar( 7) =     4.97589D+05
+       H_molar( 8) =     2.74483D+05
+       H_molar( 9) =     1.30022D+05
+       H_molar(10) =     7.58429D+04
+       H_molar(11) =     2.42948D+05
+       H_molar(12) =     1.44588D+05
+       H_molar(13) =    -7.16891D+04
+       H_molar(14) =     3.63075D+04
+       H_molar(15) =     9.23880D+04
+       H_molar(16) =     6.50477D+04
+       H_molar(17) =     3.04310D+05
+       H_molar(18) =     7.41707D+05
+       H_molar(19) =     6.32767D+05
+       H_molar(20) =     8.90624D+05
+       H_molar(21) =     2.49805D+04
+       H_molar(22) =     6.43473D+05
+       H_molar(23) =     1.02861D+06
+       H_molar(24) =    -6.07503D+03
+       H_molar(25) =     1.27020D+05
+       H_molar(26) =    -1.07011D+05
+       
 !
 !=======
       do jb = 1,26
@@ -678,7 +744,7 @@
 
            i_cc = an_c(1)
            i_hh = an_h(1)
-           ai_o2     = i_cc + i_hh/4.0
+           ai_o2     = i_cc + float(i_hh)/4.0
            i_co2_h2o = i_cc + i_hh/2
            i_h2o     = i_hh/2
            ai_pwr1  = 1 + i_cc + float(i_hh)/4.0
@@ -1020,9 +1086,9 @@
 
 !======== 
 !for 25 
-
+        
         d_eq(25,1) = an_r(26)*(pt)*(-1/const2)
-     ,             - k_eq(23)*an_r(21)*an_r(10)*pt*pt * (-2/const_cube)
+     ,       - k_eq(23)*an_r(21)*an_r(10)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(25,jj) = d_eq(25,1)
         enddo
@@ -1042,11 +1108,13 @@
         d_eq(26,25) = 1   
         d_eq(26,26) = 1
 
+
            do j = 1,26
-              do i = 1,26
-                 write(44,*)i,j,d_eq(i,j)
+         do i = 1,26
+                write(44,*)i,j,d_eq(i,j)
               enddo
            enddo
 
+           
         return
         end
