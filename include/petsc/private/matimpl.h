@@ -620,7 +620,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero){
+  if (!PetscIsNanScalar(sctx->pv) && PetscAbsScalar(sctx->pv) <= _zero){
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
     else sctx->shift_amount *= 2.0;
@@ -640,7 +640,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscRealPart(sctx->pv) <= _zero){
+  if (!PetscIsNanScalar(sctx->pv) && PetscRealPart(sctx->pv) <= _zero){
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
       sctx->shift_fraction = sctx->shift_hi;
@@ -664,7 +664,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero){
+  if (!PetscIsNanScalar(sctx->pv) && PetscAbsScalar(sctx->pv) <= _zero){
     sctx->pv          += info->shiftamount;
     sctx->shift_amount = 0.0;
     sctx->nshift++;
