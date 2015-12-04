@@ -958,6 +958,83 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelGather"
+/*@
+  DMLabelGather - Gather all label values from leafs into roots
+
+  Input Parameters:
++ label - the DMLabel
+. point - the Star Forest point communication map
+
+  Input Parameters:
++ label - the new DMLabel with localised leaf values
+
+  Level: developer
+
+  Note: This is the inverse operation to DMLabelDistribute.
+
+.seealso: DMLabelDistribute()
+@*/
+PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
+{
+  MPI_Comm       comm;
+  PetscSection   rootSection;
+  PetscSF        sfLabel;
+  PetscSFNode   *rootPoints, *leafPoints;
+  PetscInt       p, s, d, nroots, nleaves, nmultiroots, idx, dof, offset;
+  const PetscInt *rootDegree, *ilocal;
+  PetscInt       *rootStrata;
+  char          *name;
+  PetscInt       nameSize;
+  size_t         len = 0;
+  PetscMPIInt    rank, numProcs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  /* Bcast name */
+  if (!rank) {ierr = PetscStrlen(label->name, &len);CHKERRQ(ierr);}
+  nameSize = len;
+  ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nameSize+1, &name);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscMemcpy(name, label->name, nameSize+1);CHKERRQ(ierr);}
+  ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+  ierr = DMLabelCreate(name, labelNew);CHKERRQ(ierr);
+  ierr = PetscFree(name);CHKERRQ(ierr);
+  /* Gather rank/index pairs of leaves into local roots to build
+     an inverse, multi-rooted SF. Note that this ignores local leaf
+     indexing due to the use of the multiSF in PetscSFGather. */
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves, &leafPoints);CHKERRQ(ierr);
+  for (p = 0; p < nleaves; p++) {
+    leafPoints[p].index = ilocal[p];
+    leafPoints[p].rank = rank;
+  }
+  ierr = PetscSFComputeDegreeBegin(sf, &rootDegree);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(sf, &rootDegree);CHKERRQ(ierr);
+  for (p = 0, nmultiroots = 0; p < nroots; ++p) nmultiroots += rootDegree[p];
+  ierr = PetscMalloc1(nmultiroots, &rootPoints);CHKERRQ(ierr);
+  ierr = PetscSFGatherBegin(sf, MPIU_2INT, leafPoints, rootPoints);CHKERRQ(ierr);
+  ierr = PetscSFGatherEnd(sf, MPIU_2INT, leafPoints, rootPoints);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,& sfLabel);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfLabel, nroots, nmultiroots, NULL, PETSC_OWN_POINTER, rootPoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  /* Migrate label over inverted SF to pull stratum values at leaves into roots. */
+  ierr = DMLabelDistribute_Internal(label, sfLabel, &rootSection, &rootStrata);CHKERRQ(ierr);
+  /* Rebuild the point strata on the receiver */
+  for (p = 0, idx = 0; p < nroots; p++) {
+    for (d = 0; d < rootDegree[p]; d++) {
+      ierr = PetscSectionGetDof(rootSection, idx+d, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(rootSection, idx+d, &offset);CHKERRQ(ierr);
+      for (s = 0; s < dof; s++) {ierr = DMLabelSetValue(*labelNew, p, rootStrata[offset+s]);CHKERRQ(ierr);}
+    }
+    idx += rootDegree[p];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelConvertToSection"
 PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS *is)
 {
