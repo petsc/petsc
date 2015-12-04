@@ -345,10 +345,12 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
-        if (norm < 1.e-12) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
-        } else {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+        if (!PetscIsNanScalar(norm)) {
+          if (norm < 1.e-12) {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
+          } else {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+          }
         }
       }
     }   /* while (num_rhs--) */
@@ -391,10 +393,12 @@ int main(int argc,char **args)
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-      if (norm < 1.e-12) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+      if (!PetscIsNanScalar(norm)) {
+        if (norm < 1.e-12 && !PetscIsNanScalar((PetscScalar)norm)) {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
+        } else {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
