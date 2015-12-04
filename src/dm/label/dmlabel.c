@@ -818,27 +818,84 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelDistribute_Internal"
+PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSection *leafSection, PetscInt **leafStrata)
+{
+  MPI_Comm       comm;
+  PetscInt       s, l, nroots, nleaves, dof, offset, size;
+  PetscInt      *remoteOffsets, *rootStrata, *rootIdx;
+  PetscSection   rootSection;
+  PetscSF        labelSF;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (label) {ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);}
+  ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
+  /* Build a section of stratum values per point, generate the according SF
+     and distribute point-wise stratum values to leaves. */
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, 0, nroots);CHKERRQ(ierr);
+  if (label) {
+    for (s = 0; s < label->numStrata; ++s) {
+      for (l = 0; l < label->stratumSizes[s]; l++) {
+        ierr = PetscSectionGetDof(rootSection, label->points[s][l], &dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(rootSection, label->points[s][l], dof+1);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+  /* Create a point-wise array of stratum values */
+  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &rootStrata);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nroots, &rootIdx);CHKERRQ(ierr);
+  if (label) {
+    for (s = 0; s < label->numStrata; ++s) {
+      for (l = 0; l < label->stratumSizes[s]; l++) {
+        const PetscInt p = label->points[s][l];
+        ierr = PetscSectionGetOffset(rootSection, p, &offset);CHKERRQ(ierr);
+        rootStrata[offset+rootIdx[p]++] = label->stratumValues[s];
+      }
+    }
+  }
+  /* Build SF that maps label points to remote processes */
+  ierr = PetscSectionCreate(comm, leafSection);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(sf, rootSection, &remoteOffsets, *leafSection);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(sf, rootSection, remoteOffsets, *leafSection, &labelSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
+  /* Send the strata for each point over the derived SF */
+  ierr = PetscSectionGetStorageSize(*leafSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, leafStrata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(labelSF, MPIU_INT, rootStrata, *leafStrata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(labelSF, MPIU_INT, rootStrata, *leafStrata);CHKERRQ(ierr);
+  /* Clean up */
+  ierr = PetscFree(rootStrata);CHKERRQ(ierr);
+  ierr = PetscFree(rootIdx);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&labelSF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelDistribute"
 PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
   MPI_Comm       comm;
-  PetscSection   rootSection, leafSection;
-  PetscSF        labelSF;
-  PetscInt       p, pStart, pEnd, l, lStart, lEnd, s, nroots, nleaves, size, dof, offset, stratum;
-  PetscInt      *remoteOffsets, *rootStrata, *rootIdx, *leafStrata, *strataIdx;
+  PetscSection   leafSection;
+  PetscInt       p, pStart, pEnd, s, size, dof, offset, stratum;
+  PetscInt      *leafStrata, *strataIdx;
   char          *name;
   PetscInt       nameSize;
   PetscHashI     stratumHash;
   PETSC_UNUSED   PetscHashIIter ret, iter;
   size_t         len = 0;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (label) {ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);}
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   /* Bcast name */
   if (!rank) {ierr = PetscStrlen(label->name, &len);CHKERRQ(ierr);}
   nameSize = len;
@@ -848,53 +905,11 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = DMLabelCreate(name, labelNew);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
-  /* Build a section detailing strata-per-point, distribute and build SF
-     from that and then send our points. */
-  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(rootSection, 0, nroots);CHKERRQ(ierr);
-  if (label) {
-    for (s = 0; s < label->numStrata; ++s) {
-      lStart = 0;
-      lEnd = label->stratumSizes[s];
-      for (l=lStart; l<lEnd; l++) {
-        ierr = PetscSectionGetDof(rootSection, label->points[s][l], &dof);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(rootSection, label->points[s][l], dof+1);CHKERRQ(ierr);
-      }
-    }
-  }
-  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
-
-  /* Create a point-wise array of point strata */
-  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size, &rootStrata);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nroots, &rootIdx);CHKERRQ(ierr);
-  if (label) {
-    for (s = 0; s < label->numStrata; ++s) {
-      lStart = 0;
-      lEnd = label->stratumSizes[s];
-      for (l=lStart; l<lEnd; l++) {
-        p = label->points[s][l];
-        ierr = PetscSectionGetOffset(rootSection, p, &offset);CHKERRQ(ierr);
-        /* Send stratum values for each point */
-        rootStrata[offset+rootIdx[p]++] = label->stratumValues[s];
-      }
-    }
-  }
-
-  /* Build SF that maps label points to remote processes */
-  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
-  ierr = PetscSFDistributeSection(sf, rootSection, &remoteOffsets, leafSection);CHKERRQ(ierr);
-  ierr = PetscSFCreateSectionSF(sf, rootSection, remoteOffsets, leafSection, &labelSF);CHKERRQ(ierr);
-  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-
-  /* Send the strata for each point over the derived SF */
-  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size, &leafStrata);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(labelSF, MPIU_INT, rootStrata, leafStrata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(labelSF, MPIU_INT, rootStrata, leafStrata);CHKERRQ(ierr);
+  /* Distribute stratum values over the SF and get the point mapping on the receiver */
+  ierr = DMLabelDistribute_Internal(label, sf, &leafSection, &leafStrata);CHKERRQ(ierr);
   /* Determine received stratum values and initialise new label*/
   PetscHashICreate(stratumHash);
+  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
   for (p = 0; p < size; ++p) PetscHashIPut(stratumHash, leafStrata[p], ret, iter);
   PetscHashISize(stratumHash, (*labelNew)->numStrata);
   ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->arrayValid);CHKERRQ(ierr);
@@ -924,7 +939,6 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
     PetscHashICreate((*labelNew)->ht[s]);
     ierr = PetscMalloc1((*labelNew)->stratumSizes[s], &(*labelNew)->points[s]);CHKERRQ(ierr);
   }
-
   /* Insert points into new strata */
   ierr = PetscCalloc1((*labelNew)->numStrata, &strataIdx);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
@@ -937,13 +951,9 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
     }
   }
   PetscHashIDestroy(stratumHash);
-  ierr = PetscFree(rootStrata);CHKERRQ(ierr);
   ierr = PetscFree(leafStrata);CHKERRQ(ierr);
-  ierr = PetscFree(rootIdx);CHKERRQ(ierr);
   ierr = PetscFree(strataIdx);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&labelSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
